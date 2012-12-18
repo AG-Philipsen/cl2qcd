@@ -25,3 +25,4 @@ integrationsteps0=16
 num_timescales=1
 tau=0.5
 
+use_same_rnd_numbers=true

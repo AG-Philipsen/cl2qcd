@@ -46,6 +46,7 @@ int main(int argc, const char* argv[])
 
 		init_timer.reset();
 		hardware::System system(parameters, true);
+		physics::PRNG prng(system);
 		Gaugefield_inverter gaugefield(&system);
 
 		//one needs 2 tasks here since the correlator-module produces the sources...
@@ -56,7 +57,7 @@ int main(int argc, const char* argv[])
 		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device);
+		gaugefield.init(numtasks, primary_device, prng);
 
 
 		logger.info() << "Gaugeobservables:";
@@ -77,7 +78,7 @@ int main(int argc, const char* argv[])
 			//CP: these are esssentially the same actions as the "normal" inverter performs...
 			logger.info() << "Perform inversion on device.." ;
 
-			gaugefield.create_sources();
+			gaugefield.create_sources(prng);
 			gaugefield.perform_inversion(&solver_timer);
 
 			//flavour_doublet_correlators does a sync at the beginning

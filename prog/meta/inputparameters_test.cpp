@@ -59,13 +59,9 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_kappa(), 0.125);
 	BOOST_REQUIRE_EQUAL(params.get_mu(), 0.006);
 	BOOST_REQUIRE_EQUAL(params.get_csw(), 0.);
-	BOOST_REQUIRE_EQUAL(params.get_iter0(), 0);
-	BOOST_REQUIRE_EQUAL(params.get_iter1(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_kappa_mp(), 0.125);
 	BOOST_REQUIRE_EQUAL(params.get_mu_mp(), 0.006);
 	BOOST_REQUIRE_EQUAL(params.get_csw_mp(), 0.);
-	BOOST_REQUIRE_EQUAL(params.get_iter0_mp(), 0);
-	BOOST_REQUIRE_EQUAL(params.get_iter1_mp(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_cgmax(), 1000);
 	BOOST_REQUIRE_EQUAL(params.get_cgmax_mp(), 1000);
 	BOOST_REQUIRE_EQUAL(params.get_theta_fermion_spatial(), 0.);
@@ -185,13 +181,9 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_kappa(), 0.25);
 	BOOST_REQUIRE_EQUAL(params.get_mu(), 0.06);
 	BOOST_REQUIRE_EQUAL(params.get_csw(), 0.1);
-	BOOST_REQUIRE_EQUAL(params.get_iter0(), 2);
-	BOOST_REQUIRE_EQUAL(params.get_iter1(), 3);
 	BOOST_REQUIRE_EQUAL(params.get_kappa_mp(), 0.1125);
 	BOOST_REQUIRE_EQUAL(params.get_mu_mp(), 0.016);
 	BOOST_REQUIRE_EQUAL(params.get_csw_mp(), 0.2);
-	BOOST_REQUIRE_EQUAL(params.get_iter0_mp(), 4);
-	BOOST_REQUIRE_EQUAL(params.get_iter1_mp(), 5);
 	BOOST_REQUIRE_EQUAL(params.get_cgmax(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_cgmax_mp(), 103);
 	BOOST_REQUIRE_EQUAL(params.get_theta_fermion_spatial(), 0.8);

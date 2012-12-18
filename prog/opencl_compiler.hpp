@@ -150,6 +150,10 @@ private:
 	void dumpBinary(cl_program program, std::string md5) const;
 
 	cl_program loadBinary(std::string md5) const;
+
+	cl_program loadSources() const;
+
+	void buildProgram(cl_program) const;
 };
 
 #endif /* _OPENCL_COMPILER_H_ */

@@ -74,7 +74,7 @@ namespace hardware {
 			PRNGBuffer(size_t elems, Device * device);
 
 			/**
-			 * The size of the buffer in bytes.
+			 * The size of the buffer in elements.
 			 */
 			const size_t elems;
 		};

@@ -6,7 +6,8 @@
 
 #include "../host_random.h"
 #include "../hardware/buffers/prng_buffer.hpp"
-//#include "../hardware/code/prng.hpp"
+#include <fstream>
+#include <stdexcept>
 
 physics::PRNG::~PRNG()
 {
@@ -20,8 +21,10 @@ physics::PRNG::PRNG(const hardware::System& system) :
 {
 	using hardware::buffers::PRNGBuffer;
 
+	auto params = system.get_inputparameters();
+
 	// initialize host prng
-	uint32_t seed = system.get_inputparameters().get_host_seed();
+	uint32_t seed = params.get_host_seed();
 	prng_init(seed);
 
 	// initialize devices
@@ -31,6 +34,38 @@ for(hardware::Device * device : system.get_devices()) {
 		auto code = device->get_prng_code();
 		code->initialize(buffer, ++seed);
 		buffers.push_back(buffer);
+	}
+
+	// additional initalization in case of known start
+	if(!params.get_initial_prng_state().empty()) {
+		std::ifstream file(params.get_initial_prng_state().c_str(), std::ios_base::binary);
+
+		std::string test;
+		getline(file, test);
+		if(test != "OpTiMaL PRNG State") {
+			throw std::invalid_argument(params.get_initial_prng_state() + " does not seem to contain a valid prng state");
+		}
+		file.seekg(6, std::ios_base::cur);
+		size_t host_state_size = prng_size();
+		int* host_state = new int[host_state_size];
+		file.read(reinterpret_cast<char*>(host_state), host_state_size * sizeof(int));
+		prng_set(host_state);
+		delete[] host_state;
+		file.seekg(1, std::ios_base::cur); // skip newline
+		for(auto buffer: buffers) {
+			size_t buffer_bytes;
+			file >> buffer_bytes;
+			if(buffer_bytes != buffer->get_bytes()) {
+				throw std::invalid_argument(params.get_initial_prng_state() + " does not seem to contain a valid prng state");
+			}
+			file.seekg(1, std::ios_base::cur); // skip space
+			char* state = new char[buffer_bytes];
+			file.read(state, buffer_bytes);
+			buffer->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>(state));
+			file.seekg(1, std::ios_base::cur); // skip newline
+			delete[] state;
+		}
+		// TODO check if file is empty
 	}
 }
 const std::vector<const hardware::buffers::PRNGBuffer*> physics::PRNG::get_buffers() const noexcept
@@ -173,5 +208,28 @@ void physics::gaussianComplexVector(hmc_complex * vector, int length, hmc_float 
 		vector[idx].im *= sigma;
 	}
 	// SL: not yet tested
+}
+
+void physics::PRNG::store(const std::string filename) const
+{
+	// TODO this misses a lot of error handling
+	std::ofstream file(filename.c_str(), std::ios_base::binary);
+	file << "OpTiMaL PRNG State\n";
+	file << "Host: ";
+	size_t host_state_size = prng_size();
+	int* host_state = new int[host_state_size];
+	prng_get(host_state);
+	file.write(reinterpret_cast<char*>(host_state), host_state_size * sizeof(int));
+	delete[] host_state;
+	file << '\n';
+	for(auto buffer: buffers) {
+		size_t buffer_bytes = buffer->get_bytes();
+		file << buffer_bytes << ' ';
+		char* state = new char[buffer_bytes];
+		buffer->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(state));
+		file.write(state, buffer_bytes);
+		file << '\n';
+		delete[] state;
+	}
 }
 

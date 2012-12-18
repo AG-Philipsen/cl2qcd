@@ -34,7 +34,7 @@ void Gaugefield_hmc::finalize_opencl()
 //////////////////////////////////////////////////////////
 // Methods for HMC-Algorithm
 
-void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
+void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer, const physics::PRNG& prng)
 {
 	klepsydra::Monotonic step_timer;
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
@@ -46,7 +46,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	copyData(get_task_hmc(0)->get_new_u(), gf_code->get_gaugefield());
 
 	logger.trace() << "\tHMC:\tinit spinorfield and gaugemomentum" ;
-	this->init_gaugemomentum_spinorfield(solver_timer);
+	this->init_gaugemomentum_spinorfield(solver_timer, prng);
 
 	logger.trace() << "\tHMC:\tupdate gaugefield and gaugemomentum" ;
 	hardware::buffers::copyData(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p());
@@ -90,9 +90,15 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
 	hmcout <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
 	//print number of iterations used in inversions with full and force precision
-	hmcout << "\t" << get_parameters().get_iter0() << "\t" << get_parameters().get_iter1();
+	/** 
+	 * @todo: The counters should be implemented once the solver class is used!"
+	 * until then, only write "0"!
+	 */
+	int iter0 = 0;
+	int iter1 = 0;
+	hmcout << "\t" << iter0 << "\t" << iter1;
 	if(get_parameters().get_use_mp() ) {
-		hmcout << "\t" << get_parameters().get_iter0_mp() << "\t" << get_parameters().get_iter1_mp();
+		hmcout << "\t" << iter0 << "\t" << iter1;
 	}
 	if(meta::get_use_rectangles(get_parameters()) ) {
 		//print rectangle value
@@ -623,23 +629,23 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 	logger.debug() << "\tHMC [INT]:\tfinished 2MN";
 }
 
-void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer)
+void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer, const physics::PRNG& prng)
 {
 	auto gaugefield = get_device_for_task(task_hmc)->get_gaugefield_code()->get_gaugefield();
-	auto prng = &get_device_for_task(task_hmc)->get_prng_code()->get_prng_buffer();
+	auto prng_buf = prng.get_buffers().at(device_id_for_task[task_hmc]);
 	auto gm_code = get_device_for_task(task_hmc)->get_gaugemomentum_code();
 
 	//init gauge_momenta, saved in clmem_p
-	gm_code->generate_gaussian_gaugemomenta_device(get_task_hmc(0)->get_clmem_p(), prng);
+	gm_code->generate_gaussian_gaugemomenta_device(get_task_hmc(0)->get_clmem_p(), prng_buf);
 	if(! get_parameters().get_use_gauge_only() ) {
 		//init/update spinorfield phi
-		get_task_hmc(0)->generate_spinorfield_gaussian(prng);
+		get_task_hmc(0)->generate_spinorfield_gaussian(prng_buf);
 		//calc init energy for spinorfield
 		get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_init());
 		if(get_parameters().get_use_mp() ) {
 			//update spinorfield with heavy mass: det(kappa_mp, mu_mp)
 			get_task_hmc(0)->md_update_spinorfield(gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
-			get_task_hmc(0)->generate_spinorfield_gaussian(prng);
+			get_task_hmc(0)->generate_spinorfield_gaussian(prng_buf);
 			//calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
 			get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_mp_init());
 			//update detratio spinorfield: det(kappa, mu) / det(kappa_mp, mu_mp)

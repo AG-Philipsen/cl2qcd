@@ -22,6 +22,7 @@
 #include "host_use_timer.h"
 
 #include "exceptions.h"
+#include "physics/prng.hpp"
 
 #include "logger.hpp"
 
@@ -50,7 +51,7 @@ public:
 	 *
 	 * @deprecated move to constructor
 	 */
-	void init(int numtasks, cl_device_type primary_device_type);
+	void init(int numtasks, cl_device_type primary_device_type, physics::PRNG& prng);
 	/**
 	 * Initialize class.
 	 * Helper function called by init()
@@ -95,19 +96,19 @@ public:
 	 * Initializes the gaugefield, called by init()
 	 * calls init_gaugefield(sourcefile) with the name from inputparameters
 	 */
-	void init_gaugefield();
+	void init_gaugefield(physics::PRNG& prng);
 	/**
 	 * Initializes the gaugefield, called by init()
 	 * @param name of gaugefield file
 	 */
-	void init_gaugefield(const char*);
+	void init_gaugefield(const char*, physics::PRNG& prng);
 
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
 	 * Not implemented yet, throws an exception
 	 * @param field gaugefield
 	 */
-	void set_gaugefield_hot(Matrixsu3 * field);
+	void set_gaugefield_hot(Matrixsu3 * field, physics::PRNG& prng);
 	/**
 	 * Initializing the gaugefield consisting of structs for a cold start
 	 * @param field gaugefield
@@ -272,7 +273,7 @@ public:
 	* @param[in] check Size of the ILDG field.
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
-	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check);
+	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check);
 	/**
 	* Create the IDLG representation of the given gaugefield.
 	*
@@ -280,7 +281,7 @@ public:
 	* @param[in] source The gaugefield in the internal representation
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
-	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source);
+	void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source);
 
 	void print_profiling(std::string filename);
 
@@ -300,6 +301,7 @@ public:
 protected:
 	cl_device_type* devicetypes;
 	hardware::code::Opencl_Module ** opencl_modules;
+	int* device_id_for_task;
 
 private:
 	/**
@@ -314,7 +316,6 @@ private:
 	Matrixsu3 * sgf;
 	int num_tasks;
 	int num_devices;
-	int* device_id_for_task;
 
 	//OpenCL:
 	cl_device_id* cl_devices;

@@ -1,6 +1,7 @@
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
+#include "../host_random.h"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -15,9 +16,9 @@ std::string const version = "0.1";
 class TestGaugefield : public Gaugefield_hybrid {
 
 public:
-	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system) {
+	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
 		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
 		meta::print_info_hmc("test program", inputfile);
 		print_gaugeobservables(0);
 	};
@@ -26,6 +27,8 @@ public:
 	virtual void finalize_opencl();
 
 	hardware::code::Gaugemomentum * get_device();
+private:
+	physics::PRNG prng;
 };
 
 void TestGaugefield::init_tasks()

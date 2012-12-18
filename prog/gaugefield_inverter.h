@@ -25,6 +25,7 @@
 #endif
 
 #include "gaugefield_hybrid.h"
+#include "physics/prng.hpp"
 
 /**
  * Class for the gaugefield. Includes initialization, device management for multiple devices. Performs calculation of correlators.
@@ -105,7 +106,7 @@ public:
 	 */
 	hardware::code::Correlator* get_task_correlator();
 
-	void create_sources();
+	void create_sources(const physics::PRNG& prng);
 
 	const hardware::buffers::Plain<spinor> * get_clmem_corr();
 

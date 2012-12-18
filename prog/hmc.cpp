@@ -27,6 +27,7 @@ int main(int argc, const char* argv[])
 		hmc_observables obs;
 
 		hardware::System system(parameters);
+		physics::PRNG prng(system);
 		Gaugefield_hmc gaugefield(&system);
 
 		//use 1 task: the hmc-algorithm
@@ -37,7 +38,7 @@ int main(int argc, const char* argv[])
 		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device);
+		gaugefield.init(numtasks, primary_device, prng);
 
 
 		logger.info() << "Gaugeobservables:";
@@ -59,36 +60,45 @@ int main(int argc, const char* argv[])
 		hmc_float acc_rate = 0.;
 		int writefreq = parameters.get_writefrequency();
 		int savefreq = parameters.get_savefrequency();
-		//This is the random-number generator for the metropolis-step
-		prng_init(parameters.get_host_seed());
 
 		logger.info() << "perform HMC on device(s)... ";
 
 		//main hmc-loop
 		for(; iter < hmc_iter; iter ++) {
 			//generate new random-number for Metropolis step
-			hmc_float rnd_number = prng_double();
-			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer);
+			hmc_float rnd_number = prng.get_double();
+			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer, prng);
 			acc_rate += obs.accept;
 			if( ( (iter + 1) % writefreq ) == 0 ) {
-			  std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
+				std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
 				gaugefield.print_hmcobservables(obs, iter, gaugeout_name);
-			}
-			else if(parameters.get_print_to_screen() )
+			} else if(parameters.get_print_to_screen() )
 				gaugefield.print_hmcobservables(obs, iter);
 
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
+				// save gaugefield
 				gaugefield.synchronize(0);
 				gaugefield.save(iter + 1);
-			}
-			//always save the config on the last iteration
-			if( iter == hmc_iter - 1 ) {
-				gaugefield.synchronize(0);
-				std::string outputfile = "conf.save";
-				logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
-				gaugefield.save(outputfile, iter+1);
+
+				// save prng
+				std::ostringstream prng_file_name;
+				prng_file_name << "prng.";
+				prng_file_name.fill('0');
+				prng_file_name.width(parameters.get_config_number_digits());
+				prng_file_name << iter;
+				prng.store(prng_file_name.str());
 			}
 		}
+
+		//always save the config on the last iteration
+		gaugefield.synchronize(0);
+		std::string outputfile = "conf.save";
+		logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
+		gaugefield.save(outputfile, iter + 1);
+		outputfile = "prng.save";
+		logger.info() << "saving current prng state to \"" << outputfile << "\"";
+		prng.store(outputfile);
+
 		logger.info() << "HMC done";
 		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, parameters.get_hmcsteps()) << "%";
 		perform_timer.add();

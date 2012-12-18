@@ -1,4 +1,4 @@
-0.57
+0.5635
 ## reference plaquette value for the HMC tests starting from conf.00200
 ## When making the test, the output was:
 ## test nr	output
@@ -7,6 +7,9 @@
 ## UPDATE: With the new rnd-nr generator, this changed:
 ## 11		0.568892979811969
 ## 12		0.570000917079818
+## UPDATE: With "use_same_rnd_numbers" this changed:	   	
+## 11		[14:53:14] INFO:	HMC [OBS]:	200	0.562499895971995	-0.0916138937080754	0.151292279267353
+## 12		[14:54:51] INFO: 	HMC [OBS]:	200     0.565292948919772	-0.0955040993450088 0.17104583459429
 
 
 

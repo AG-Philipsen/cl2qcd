@@ -35,9 +35,9 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
 
-		init(1, device_type);
+		init(1, device_type, prng);
 	};
 
 	virtual void init_tasks();
@@ -48,6 +48,7 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
+	physics::PRNG prng;
 };
 
 

@@ -184,6 +184,39 @@ double prng_double()
 #endif // USE_PRNG_XXX
 }
 
+int prng_size()
+{
+#ifdef USE_PRNG_NR3
+#error No implemented PRNG chosen
+#elif defined(USE_PRNG_RANLUX)
+	return rlxd_size();
+#else // USE_PRNG_XXX
+#error No implemented PRNG chosen
+#endif // USE_PRNG_XXX
+}
+
+void prng_get(int* buf)
+{
+#ifdef USE_PRNG_NR3
+#error No implemented PRNG chosen
+#elif defined(USE_PRNG_RANLUX)
+	rlxd_get(buf);
+#else // USE_PRNG_XXX
+#error No implemented PRNG chosen
+#endif // USE_PRNG_XXX
+}
+
+void prng_set(int* buf)
+{
+#ifdef USE_PRNG_NR3
+#error No implemented PRNG chosen
+#elif defined(USE_PRNG_RANLUX)
+	rlxd_reset(buf);
+#else // USE_PRNG_XXX
+#error No implemented PRNG chosen
+#endif // USE_PRNG_XXX
+}
+
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 {
 	hmc_float delta;

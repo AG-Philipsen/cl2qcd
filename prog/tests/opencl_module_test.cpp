@@ -11,9 +11,9 @@
 
 class TestGaugefield : public Gaugefield_hybrid {
 public:
-	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system) {
+	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
 		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
 		std::string name = "test program";
 		meta::print_info_hmc(name.c_str(), inputfile);
 		logger.info() << "gaugeobservables: ";
@@ -22,6 +22,8 @@ public:
 	virtual void finalize_opencl() override;
 
 	hardware::code::Gaugefield * get_device();
+private:
+	physics::PRNG prng;
 };
 
 hardware::code::Gaugefield* TestGaugefield::get_device()

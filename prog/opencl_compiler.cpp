@@ -19,7 +19,14 @@
 namespace fs = boost::filesystem;
 /// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
 
-const std::string CACHE_DIR_NAME = "OpTiMaL/ocl_cache";
+#include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/interprocess/sync/sharable_lock.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
+namespace ip = boost::interprocess;
+
+const std::string CACHE_DIR_NAME("OpTiMaL/ocl_cache");
+
+const fs::path sourceDir(SOURCEDIR);
 
 /**
  * Get the path on which to store a binary with the given md5
@@ -30,6 +37,12 @@ const std::string CACHE_DIR_NAME = "OpTiMaL/ocl_cache";
  * All filles will be stored in the subdirectory given by CACHE_DIR_NAME.
  */
 static fs::path get_binary_file_path(std::string md5);
+/**
+ * Get the lock for the binary file of the given md5.
+ *
+ * The lock might be stored in an extra file next to the binary.
+ */
+static ip::file_lock get_lock_file(std::string md5);
 
 ClSourcePackage ClSourcePackage::operator <<(const std::string& file)
 {
@@ -66,101 +79,41 @@ const std::string ClSourcePackage::getOptions() const
 
 TmpClKernel::operator cl_kernel() const
 {
+	using namespace ip;
+
 	cl_int clerr;
 
 	logger.trace() << "Collecting sources to build the program for the " << kernel_name << " kernel";
 
-	// write kernel files into sources
-	// create array to point to contents of the different source files
-	char ** sources = new char *[ files.size() ];
-	size_t * source_sizes = new size_t[ files.size() ];
-
 	std::string md5 = generateMD5();
 
-	cl_program program = loadBinary(md5);
+	cl_program program;
 
+	// Us the lock to ensure that the binary is not read and written at the same time
+	file_lock lock_file = get_lock_file(md5);
+	{
+		sharable_lock<file_lock> lock_shared(lock_file);
+		program = loadBinary(md5);
+	}
 	if(!program) {
-		logger.debug() << "Program not found in cache, building from source";
-		std::string sourcecode;
-		for(size_t n = 0; n < files.size(); n++) {
-			std::stringstream tmp;
-			tmp << SOURCEDIR << '/' << files[n];
-			logger.debug() << "Read kernel source from file: " << tmp.str();
-
-			std::fstream file;
-			file.open(tmp.str().c_str());
-			if( !file.is_open() ) throw File_Exception(tmp.str());
-
-			file.seekg(0, std::ios::end);
-			source_sizes[n] = file.tellg();
-			file.seekg(0, std::ios::beg);
-
-			sources[n] = new char[source_sizes[n]];
-
-			file.read( sources[n], source_sizes[n] );
-
-			file.close();
+		// yes, at this exact point the file is not locked. someone might create a working binary while we are waiting
+		// we need a write lock while we write to the file.
+		// also scopy reading of source and building into this
+		// once we got the lock first check whether maybe someone else build a working binary in the meantime
+		scoped_lock<file_lock> lock_exclusive(lock_file);
+		program = loadBinary(md5);
+		if(program) {
+			// yeah, easy way out
+			buildProgram(program);
+		} else {
+			// build and write (the writing is why we need the exclusive lock
+			program = loadSources();
+			buildProgram(program);
+			dumpBinary(program, md5);
 		}
-
-		logger.trace() << "Creating program for the " << kernel_name << " kernel from collected sources";
-
-		program = clCreateProgramWithSource(context, files.size() , (const char**) sources, source_sizes, &clerr);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateProgramWithSource", __FILE__, __LINE__);
+	} else {
+		buildProgram(program);
 	}
-
-	logger.trace() << "Building kernel " << kernel_name << " using these options: \"" << build_options << "\"";
-
-	clerr = clBuildProgram(program, 1, &device, build_options.c_str(), 0, 0);
-	if(logger.beDebug()) {
-		cl_int failed = clerr;
-		if(clerr != CL_SUCCESS) {
-			logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
-
-			// dump program source
-			size_t sourceSize;
-			clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-			if(!clerr && sourceSize > 1) { // 0-terminated -> always at least one byte
-				char* source = new char[sourceSize];
-				clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
-				if(!clerr) {
-					char const * const FILENAME = "broken_source.cl";
-					std::ofstream srcFile(FILENAME);
-					srcFile << source;
-					srcFile.close();
-					logger.debug() << "Dumped broken source to " << FILENAME;
-				}
-				delete[] source;
-			}
-		}
-
-		logger.trace() << "Finished building program";
-
-		// get build result
-		size_t logSize;
-		clerr = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-		if(!clerr && logSize > 1) { // 0-terminated -> always at least one byte
-			logger.debug() << "Build Log:";
-			char* log = new char[logSize];
-			clerr = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
-			logger.debug() << log;
-			delete [] log;
-		}
-		if(clerr) {
-			throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
-		}
-
-		if(failed) {
-			clerr = failed;
-		}
-	}
-	if(clerr) {
-		logger.fatal() << "... failed, aborting.";
-
-		throw Opencl_Error(clerr, "clBuildProgram", __FILE__, __LINE__);
-	}
-
-	// store built binary to working directory
-	dumpBinary(program, md5);
 
 	// extract kernel
 	cl_kernel kernel = clCreateKernel(program, kernel_name.c_str(), &clerr);
@@ -645,7 +598,6 @@ cl_program TmpClKernel::loadBinary(std::string md5) const
 
 	std::time_t binary_date = fs::last_write_time(binaryfile);
 
-	fs::path sourceDir(SOURCEDIR);
 	for(size_t n = 0; n < files.size(); n++) {
 		fs::path file = sourceDir / files[n];
 		if(fs::last_write_time(file) > binary_date) {
@@ -691,10 +643,53 @@ cl_program TmpClKernel::loadBinary(std::string md5) const
 	return program;
 }
 
+cl_program TmpClKernel::loadSources() const
+{
+	// write kernel files into sources
+	// create array to point to contents of the different source files
+	char ** sources = new char *[ files.size() ];
+	size_t * source_sizes = new size_t[ files.size() ];
+
+	logger.debug() << "Program not found in cache, building from source";
+	std::string sourcecode;
+	for(size_t n = 0; n < files.size(); n++) {
+		fs::path filename = sourceDir / files[n];
+		logger.debug() << "Read kernel source from file: " << filename;
+
+		fs::ifstream file(filename);
+		if( !file.is_open() ) throw File_Exception(filename.string());
+
+		file.seekg(0, std::ios::end);
+		source_sizes[n] = file.tellg();
+		file.seekg(0, std::ios::beg);
+
+		sources[n] = new char[source_sizes[n]];
+
+		file.read( sources[n], source_sizes[n] );
+
+		file.close();
+	}
+
+	logger.trace() << "Creating program for the " << kernel_name << " kernel from collected sources";
+
+	cl_int clerr;
+	cl_program program = clCreateProgramWithSource(context, files.size() , (const char**) sources, source_sizes, &clerr);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateProgramWithSource", __FILE__, __LINE__);
+
+	return program;
+}
 
 static fs::path get_binary_file_path(std::string md5)
 {
-	const fs::path cache_dir = fs::temp_directory_path() / CACHE_DIR_NAME;
+	static std::string user_name;
+	if(user_name.empty()) {
+		char* _user_name = getenv("USER");
+		if(!_user_name) {
+			throw Print_Error_Message("Failed to get user name", __FILE__, __LINE__);
+		}
+		user_name = _user_name;
+	}
+	const fs::path cache_dir = fs::temp_directory_path() / (user_name + '-' + CACHE_DIR_NAME);
 	const std::string file_name = md5 + ".elf";
 	return cache_dir / file_name;
 }
@@ -707,3 +702,71 @@ TmpClKernel::TmpClKernel(const std::string kernel_name, const std::string build_
 
 ClSourcePackage::ClSourcePackage(const std::vector<std::string>& files, const std::string& options)
 	: files(files), options(boost::trim_copy(options)) {}
+
+void TmpClKernel::buildProgram(cl_program program) const
+{
+	logger.trace() << "Building kernel " << kernel_name << " using these options: \"" << build_options << "\"";
+
+	cl_int clerr = clBuildProgram(program, 1, &device, build_options.c_str(), 0, 0);
+	if(logger.beDebug()) {
+		cl_int failed = clerr;
+		if(clerr != CL_SUCCESS) {
+			logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
+
+			// dump program source
+			size_t sourceSize;
+			clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
+			if(!clerr && sourceSize > 1) { // 0-terminated -> always at least one byte
+				char* source = new char[sourceSize];
+				clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
+				if(!clerr) {
+					char const * const FILENAME = "broken_source.cl";
+					std::ofstream srcFile(FILENAME);
+					srcFile << source;
+					srcFile.close();
+					logger.debug() << "Dumped broken source to " << FILENAME;
+				}
+				delete[] source;
+			}
+		}
+
+		logger.trace() << "Finished building program";
+
+		// get build result
+		size_t logSize;
+		clerr = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
+		if(!clerr && logSize > 1) { // 0-terminated -> always at least one byte
+			logger.debug() << "Build Log:";
+			char* log = new char[logSize];
+			clerr = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
+			logger.debug() << log;
+			delete [] log;
+		}
+		if(clerr) {
+			throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
+		}
+
+		if(failed) {
+			clerr = failed;
+		}
+	}
+	if(clerr) {
+		logger.fatal() << "... failed, aborting.";
+
+		throw Opencl_Error(clerr, "clBuildProgram", __FILE__, __LINE__);
+	}
+}
+
+static ip::file_lock get_lock_file(std::string md5)
+{
+	using namespace fs;
+
+	path lock_file_path = get_binary_file_path(md5).replace_extension("lock");
+	std::string lock_file_name = lock_file_path.string();
+	logger.debug() << "Using lock file " << lock_file_name;
+	if(!exists(lock_file_path)) {
+		create_directories(lock_file_path.parent_path());
+		ofstream dummy(lock_file_path);
+	}
+	return ip::file_lock(lock_file_name.c_str());
+}

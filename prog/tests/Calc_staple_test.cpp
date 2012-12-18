@@ -35,9 +35,9 @@ public:
 
 class Dummyfield : public Gaugefield_hybrid {
 public:
-	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
+	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
 		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
 		meta::print_info_hmc(exec_name.c_str(), inputfile);
 	};
 	virtual void init_tasks();
@@ -51,6 +51,7 @@ private:
 	void clear_buffers();
 	const hardware::buffers::Plain<hmc_float> * out;
 	hmc_float * host_out;
+	physics::PRNG prng;
 };
 
 void Dummyfield::init_tasks()

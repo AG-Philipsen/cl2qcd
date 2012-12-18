@@ -128,6 +128,10 @@ uint32_t Inputparameters::get_host_seed() const noexcept
 {
   return host_seed;
 }
+std::string Inputparameters::get_initial_prng_state() const noexcept
+{
+  return initial_prng_state;
+}
 
 //gaugefield parameters
 double Inputparameters::get_beta() const noexcept
@@ -186,14 +190,6 @@ double Inputparameters::get_csw() const noexcept
 {
   return csw;
 }
-int Inputparameters::get_iter0() const noexcept
-{
-  return iter0;
-}
-int Inputparameters::get_iter1() const noexcept
-{
-  return iter1;
-}
 double Inputparameters::get_kappa_mp() const noexcept
 {
   return kappa_mp;
@@ -205,14 +201,6 @@ double Inputparameters::get_mu_mp() const noexcept
 double Inputparameters::get_csw_mp() const noexcept
 {
   return csw_mp;
-}
-int Inputparameters::get_iter0_mp() const noexcept
-{
-  return iter0_mp;
-}
-int Inputparameters::get_iter1_mp() const noexcept
-{
-  return iter1_mp;
 }
 int Inputparameters::get_cgmax() const noexcept
 {
@@ -535,6 +523,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
 	("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
 	("host_seed", po::value<uint32_t>(&host_seed)->default_value(4815))
+	("initial_prng_state", po::value<std::string>(&initial_prng_state)->default_value(""))
 
 	//gaugefield parameters
 	("beta", po::value<double>(&beta)->default_value(4.0))
@@ -554,13 +543,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("kappa", po::value<double>(&kappa)->default_value(0.125))
 	("mu", po::value<double>(&mu)->default_value(0.006))
 	("csw", po::value<double>(&csw)->default_value(0.))
-	("iter0", po::value<int>(&iter0)->default_value(0))
-	("iter1", po::value<int>(&iter1)->default_value(0))
 	("kappa_mp", po::value<double>(&kappa_mp)->default_value(0.125))
 	("mu_mp", po::value<double>(&mu_mp)->default_value(0.006))
 	("csw_mp", po::value<double>(&csw_mp)->default_value(0.))
-	("iter0_mp", po::value<int>(&iter0_mp)->default_value(0))
-	("iter1_mp", po::value<int>(&iter1_mp)->default_value(0))
 	("cgmax", po::value<int>(&cgmax)->default_value(1000))
 	("cgmax_mp", po::value<int>(&cgmax_mp)->default_value(1000))
 	("theta_fermion_spatial", po::value<double>(&theta_fermion_spatial)->default_value(0.))

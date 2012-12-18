@@ -59,6 +59,7 @@ static void print_info_global(const meta::Inputparameters& params)
 		logger.info() << "## USE ANISOTROPY: OFF";
 	}
 	logger.info() << "## Number of devices demanded for calculations: " << params.get_device_count()  ;
+	logger.info() << "## PRNG SEED:\t" << params.get_host_seed();
 	logger.info() << "## **********************************************************";
 	logger.info() << "## I/O parameters:";
 	logger.info() << "## SvConf:  " << params.get_saveconfigs();
@@ -116,6 +117,7 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 		*os << "## USE ANISOTROPY: OFF" << endl;
 	}
 	*os  << "## Number of devices demanded for calculations: " << params.get_device_count()  << endl;
+	*os  << "## PRNG SEED:\t" << params.get_host_seed() << endl;
 	*os  << "## **********************************************************" << endl;
 	*os  << "## I/O parameters:" << endl;
 	*os  << "## SvConf:  " << params.get_saveconfigs() << endl;

@@ -34,12 +34,14 @@ class Dummyfield : public Gaugefield_hybrid {
 
 public:
 	Dummyfield(cl_device_type device_type, const hardware::System * system)
-		: Gaugefield_hybrid(system) {
-		init(1, device_type);
+		: Gaugefield_hybrid(system), prng(*system) {
+		init(1, device_type, prng);
 	};
 
 	virtual void init_tasks();
 	virtual void finalize_opencl();
+private:
+	physics::PRNG prng;
 };
 
 BOOST_AUTO_TEST_CASE( GPU )

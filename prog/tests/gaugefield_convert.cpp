@@ -10,8 +10,8 @@
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
-		init(1, device_type);
+	Dummyfield(cl_device_type device_type, const hardware::System * system, physics::PRNG& prng) : Gaugefield_hybrid(system) {
+		init(1, device_type, prng);
 		fill_buffers();
 	};
 
@@ -33,7 +33,8 @@ BOOST_AUTO_TEST_CASE(CPU_cold)
 	const char* _params[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
+	physics::PRNG prng(system);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system, prng);
 	dummy.set_gaugefield_cold(dummy.in);
 
 	dummy.send();
@@ -47,8 +48,9 @@ BOOST_AUTO_TEST_CASE(CPU_hot)
 	const char* _params[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
-	dummy.set_gaugefield_hot(dummy.in);
+	physics::PRNG prng(system);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system, prng);
+	dummy.set_gaugefield_hot(dummy.in, prng);
 
 	dummy.send();
 	dummy.recieve();
@@ -61,7 +63,8 @@ BOOST_AUTO_TEST_CASE(GPU_cold)
 	const char* _params[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
+	physics::PRNG prng(system);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system, prng);
 	dummy.set_gaugefield_cold(dummy.in);
 
 	dummy.send();
@@ -75,8 +78,9 @@ BOOST_AUTO_TEST_CASE(GPU_hot)
 	const char* _params[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
-	dummy.set_gaugefield_hot(dummy.in);
+	physics::PRNG prng(system);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system, prng);
+	dummy.set_gaugefield_hot(dummy.in, prng);
 
 	dummy.send();
 	dummy.recieve();
