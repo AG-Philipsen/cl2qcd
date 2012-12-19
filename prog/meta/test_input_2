@@ -16,6 +16,7 @@ saveconfigs = true
 writefrequency = 10
 savefrequency = 10
 sourcefile = conf.11111
+ignore_checksum_errors = true
 print_to_screen = true
 host_seed = 42
 

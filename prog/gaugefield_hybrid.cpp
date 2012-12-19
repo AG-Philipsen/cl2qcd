@@ -260,7 +260,9 @@ void Gaugefield_hybrid::init_gaugefield(const char* sourcefile, physics::PRNG& p
 				logger.error() << "Checksum of data does not match checksum given in file.";
 				logger.error() << "Calculated Checksum: " << checksum;
 				logger.error() << "Embedded Checksum:   " << parameters_source.checksum;
-				throw File_Exception(sourcefile);
+				if(!parameters.get_ignore_checksum_errors()) {
+					throw File_Exception(sourcefile);
+				}
 			}
 
 			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);

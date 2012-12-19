@@ -120,6 +120,10 @@ std::string Inputparameters::get_sourcefile() const noexcept
 {
   return sourcefile;
 }
+bool Inputparameters::get_ignore_checksum_errors() const noexcept
+{
+	return ignore_checksum_errors;
+}
 bool Inputparameters::get_print_to_screen() const noexcept
 {
   return print_to_screen;
@@ -521,6 +525,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("writefrequency", po::value<int>(&writefrequency)->default_value(1))
 	("savefrequency", po::value<int>(&savefrequency)->default_value(100))
 	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
+	("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
 	("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
 	("host_seed", po::value<uint32_t>(&host_seed)->default_value(4815))
 	("initial_prng_state", po::value<std::string>(&initial_prng_state)->default_value(""))

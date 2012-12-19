@@ -83,7 +83,9 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 		logger.error() << "Checksum of data does not match checksum given in file.";
 		logger.error() << "Calculated Checksum: " << checksum;
 		logger.error() << "Embedded Checksum:   " << parameters_source.checksum;
-		throw File_Exception(ildgfile);
+		if(!parameters.get_ignore_checksum_errors()) {
+			throw File_Exception(ildgfile);
+		}
 	}
 
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
