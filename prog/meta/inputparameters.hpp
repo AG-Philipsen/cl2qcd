@@ -72,6 +72,7 @@ public:
 	int get_writefrequency() const noexcept;
 	int get_savefrequency() const noexcept;
 	std::string get_sourcefile() const noexcept;
+	bool get_ignore_checksum_errors() const noexcept;
 	bool get_print_to_screen() const noexcept;
 	//This is obvious!!!
 	uint32_t get_host_seed() const noexcept;
@@ -196,6 +197,7 @@ private:
 	int writefrequency;
 	int savefrequency;
 	std::string sourcefile;
+	bool ignore_checksum_errors;
 	bool print_to_screen;
 	//This is obvious!!!
 	uint32_t host_seed;
