@@ -107,9 +107,9 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 	}
 }
 
-#ifdef CL_VERSION_1_2
 void hardware::buffers::Buffer::clear() const
 {
+#ifdef CL_VERSION_1_2
 	if(sizeof(hmc_complex_zero) % bytes) {
 		cl_char foo = 0;
 		cl_int err = clEnqueueFillBuffer(*device, cl_buffer, &foo, sizeof(foo), 0, bytes, 0, nullptr, nullptr);
@@ -122,5 +122,7 @@ void hardware::buffers::Buffer::clear() const
 			throw hardware::OpenclException(err, "clEnqueueFillBuffer", __FILE__, __LINE__);
 		}
 	}
-}
+#else
+	device->get_buffer_code()->clear(this);
 #endif
+}

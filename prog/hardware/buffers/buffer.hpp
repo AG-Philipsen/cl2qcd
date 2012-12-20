@@ -89,12 +89,10 @@ namespace hardware {
 			 */
 			hardware::Device * get_device() const noexcept;
 
-#ifdef CL_VERSION_1_2
 			/**
 			 * Set all bytes of this buffer to zero.
 			 */
 			void clear() const;
-#endif
 
 		private:
 			/**
