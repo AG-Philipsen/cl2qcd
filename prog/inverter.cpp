@@ -65,7 +65,6 @@ int main(int argc, const char* argv[])
 
 				perform_inversion(&result, &gaugefield, sources, parameters);
 
-				release_spinorfields(sources);
 
 				if(parameters.get_measure_correlators() ) {
 					//get name for file to which correlators are to be stored
@@ -78,6 +77,9 @@ int main(int argc, const char* argv[])
 					std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
 					flavour_doublet_chiral_condensate(gaugefield, result, pbp_fn, 0);
 				}
+
+				release_spinorfields(result);
+				release_spinorfields(sources);
 			}
 		} else {
 			Gaugefield gaugefield(system, prng);
@@ -89,8 +91,6 @@ int main(int argc, const char* argv[])
 			const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
 
 			perform_inversion(&result, &gaugefield, sources, parameters);
-
-			release_spinorfields(sources);
 
 			if(parameters.get_measure_correlators() ) {
 				//get name for file to which correlators are to be stored
@@ -105,6 +105,7 @@ int main(int argc, const char* argv[])
 			}
 
 			release_spinorfields(result);
+			release_spinorfields(sources);
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();
