@@ -99,7 +99,7 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 			device->get_buffer_code()->copy_16_bytes(this, orig);
 		} else {
 			logger.debug() << "Using default OpenCL buffer copy method for " << this->bytes << " bytes on " << dev_name << '.';
-			int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, 0, 0, this->bytes, 0, 0, 0);
+			int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, 0, 0, this->bytes, 0, nullptr, nullptr);
 			if(err) {
 				throw hardware::OpenclException(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
 			}
@@ -108,14 +108,13 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 }
 void hardware::buffers::Buffer::copyDataBlock(const Buffer* orig, const size_t dest_offset, const size_t src_offset, const size_t bytes) const
 {
+	logger.debug() << "Copying " << bytes << " bytes from offset " << src_offset << " to offset " << dest_offset;
+	logger.debug() << "Source buffer size: " << orig->bytes;
+	logger.debug() << "Dest buffer size:   " << this->bytes;
 	if(this->bytes < dest_offset + bytes || orig->bytes < src_offset + bytes) {
 		throw std::invalid_argument("Copy range exceeds buffer size!");
 	} else {
-		/*
-		 * Now we have to play with the device a little.
-		 * It seems on AMD hardware the buffer copy thing either pretty much sucks or I am using it wrong.
-		 */
-		int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, src_offset, dest_offset, bytes, 0, 0, 0);
+		int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, src_offset, dest_offset, bytes, 0, nullptr, nullptr);
 		if(err) {
 			throw hardware::OpenclException(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
 		}
