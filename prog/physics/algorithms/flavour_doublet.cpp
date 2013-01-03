@@ -125,7 +125,10 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<const ph
 	delete [] host_result_az;
 }
 
-//void hardware::algorithms::flavour_doublet_chiral_condensate(const physics::lattices::Gaugefield& gaugefield, const std::vector<const physics::lattices::Spinorfield*>& result, std::string pbp_fn, int number);
+void physics::algorithms::flavour_doublet_chiral_condensate(const physics::lattices::Gaugefield& gaugefield, const std::vector<const physics::lattices::Spinorfield*>& result, std::string pbp_fn, int number)
+{
+	throw Print_Error_Message("Not implemented", __FILE__, __LINE__);
+}
 
 static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<const physics::lattices::Spinorfield*>& fields, const size_t device_idx, hardware::Device * device)
 {
