@@ -10,6 +10,7 @@ add_library(algorithms
 	solver.cpp
 	heatbath.cpp
 	kappa_clover.cpp
+	flavour_doublet.cpp
 )
 target_link_libraries(algorithms
 		lattices

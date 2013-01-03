@@ -70,6 +70,19 @@ namespace hardware {
 				return elements;
 			}
 
+			/**
+			 * Get data from another buffer.
+			 * If the whole buffer should be copied use copyData(dest, src) instead!
+			 *
+			 * Will thorw an invalid_argument exception if the source buffer is of a different size.
+			 */
+			void copyDataBlock(const Buffer* orig, const size_t dest_offset, const size_t src_offset = 0, size_t elems = 0) const {
+				if(!elems) {
+					elems = this->elements;
+				}
+				Buffer::copyDataBlock(orig, dest_offset * sizeof(T), src_offset * sizeof(T), elems * sizeof(T));
+			}
+
 		private:
 			const size_t elements;
 		};
