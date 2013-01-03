@@ -89,10 +89,23 @@ namespace physics {
 			 */
 			const std::vector<const hardware::buffers::SU3 *> get_buffers() const noexcept;
 
+			/**
+			 * Smear the gaugefield.
+			 *
+			 * Creates a backup which can be restored via the unsmear command.
+			 */
+			void smear();
+
+			/**
+			 * Restore the unsmeared gaugefield from the backup created before smearing.
+			 */
+			void unsmear();
+
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
-			const std::vector<const hardware::buffers::SU3 *> buffers;
+			std::vector<const hardware::buffers::SU3 *> buffers;
+			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
 
 			/**
 			 * Utility function for construction.

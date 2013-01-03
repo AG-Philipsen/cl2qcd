@@ -19,7 +19,8 @@
  */
 extern std::string const version;
 
-static std::vector<const hardware::buffers::SU3 *> allocate_buffers(hardware::System& system);
+static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system);
+static void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers);
 
 static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, physics::PRNG& prng);
 static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
@@ -33,7 +34,7 @@ static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng)
-	: system(system), prng(prng), buffers(allocate_buffers(system))
+	: system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers()
 {
 	auto parameters = system.get_inputparameters();
 	switch(parameters.get_startcondition()) {
@@ -101,7 +102,7 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	check_sourcefileparameters(parameters, plaq, parameters_source);
 }
 
-static std::vector<const hardware::buffers::SU3 *> allocate_buffers(hardware::System& system)
+static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system)
 {
 	using hardware::buffers::SU3;
 
@@ -112,11 +113,18 @@ static std::vector<const hardware::buffers::SU3 *> allocate_buffers(hardware::Sy
 	return buffers;
 }
 
-physics::lattices::Gaugefield::~Gaugefield()
+static void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers)
 {
-for(auto buffer: buffers) {
+for(auto buffer: *buffers) {
 		delete buffer;
 	}
+	buffers->clear();
+}
+
+physics::lattices::Gaugefield::~Gaugefield()
+{
+	release_buffers(&buffers);
+	release_buffers(&unsmeared_buffers);
 }
 
 static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, physics::PRNG& prng)
@@ -514,4 +522,53 @@ static void make_big_endian_from_float(char* out, const hmc_float in)
 	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
 		out[i] = val.b[sizeof(hmc_float) - 1 - i];
 	}
+}
+
+void physics::lattices::Gaugefield::smear()
+{
+	auto parameters = system.get_inputparameters();
+
+	unsmeared_buffers = allocate_buffers(system);
+
+	for(size_t i = 0; i < buffers.size(); ++i) {
+		auto buf = buffers[i];
+		auto device = buf->get_device();
+		auto gf_code = device->get_gaugefield_code();
+
+		hardware::buffers::copyData(unsmeared_buffers[i], buf);
+
+		int rho_iter = parameters.get_rho_iter();
+		logger.debug() << "\t\tperform " << rho_iter << " steps of stout-smearing to the gaugefield...";
+
+		//one needs a temporary gf to apply the smearing to
+		const hardware::buffers::SU3 gf_tmp(buf->get_elements(), device);
+		for(int i = 0; i < rho_iter - 1; i += 2) {
+			gf_code->stout_smear_device(buf, &gf_tmp);
+			gf_code->stout_smear_device(&gf_tmp, buf);
+		}
+		//if rho_iter is odd one has to copy ones more
+		if(rho_iter % 2 == 1) {
+			gf_code->stout_smear_device(buf, &gf_tmp);
+			hardware::buffers::copyData(buf, &gf_tmp);
+		}
+	}
+}
+
+void physics::lattices::Gaugefield::unsmear()
+{
+	if(unsmeared_buffers.size() == 0) {
+		logger.warn() << "Tried to unsmear gaugefield that is not smeared.";
+		return;
+	}
+
+	auto parameters = system.get_inputparameters();
+
+	unsmeared_buffers = allocate_buffers(system);
+
+	for(size_t i = 0; i < buffers.size(); ++i) {
+		auto buf = buffers[i];
+		hardware::buffers::copyData(buf, unsmeared_buffers[i]);
+	}
+
+	release_buffers(&unsmeared_buffers);
 }
