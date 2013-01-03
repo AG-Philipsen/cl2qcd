@@ -11,6 +11,7 @@ add_library(algorithms
 	heatbath.cpp
 	kappa_clover.cpp
 	flavour_doublet.cpp
+	inversion.cpp
 )
 target_link_libraries(algorithms
 		lattices

@@ -8,10 +8,6 @@
 //this includes header used by all executables
 #include "general_header.h"
 
-//should only be included in main prog
-#include "gaugefield_inverter.h"
-#include "gaugefield_hybrid.h"
-
 usetimer solver_timer;
 
 void print_solver_profiling(std::string filename)

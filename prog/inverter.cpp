@@ -1,9 +1,19 @@
 #include "inverter.h"
 
+#include "physics/lattices/gaugefield.hpp"
+#include "physics/lattices/spinorfield.hpp"
+#include "physics/sources.hpp"
+#include "physics/algorithms/flavour_doublet.hpp"
+#include "physics/algorithms/inversion.hpp"
+
 #include "meta/util.hpp"
 
 int main(int argc, const char* argv[])
 {
+	using namespace physics::lattices;
+	using namespace physics::algorithms;
+	using namespace physics;
+
 	try {
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
@@ -26,12 +36,6 @@ int main(int argc, const char* argv[])
 		init_timer.reset();
 		hardware::System system(parameters);
 		physics::PRNG prng(system);
-		Gaugefield_inverter gaugefield(&system);
-
-		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
-
-		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(2, primary_device, prng);
 
 		init_timer.add();
 
@@ -40,9 +44,6 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		perform_timer.reset();
-		/** @todo usage of solver_timer has to be checked. No output yet */
-		usetimer solver_timer;
-
 		logger.info() << "Perform inversion(s) on device.." ;
 
 		if(parameters.get_read_multiple_configs()) {
@@ -55,44 +56,55 @@ int main(int argc, const char* argv[])
 			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
 				std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
-				gaugefield.init_gaugefield(config_name.c_str(), prng);
-				gaugefield.synchronize(0);
+				Gaugefield gaugefield(system, prng, config_name);
 				if(parameters.get_print_to_screen() ) {
-					gaugefield.print_gaugeobservables(iter);
+					print_gaugeobservables(gaugefield, 0);
 				}
-				gaugefield.create_sources(prng);
-				gaugefield.perform_inversion(&solver_timer);
+				const std::vector<const Spinorfield*> sources = create_sources(system, prng);
+				const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+
+				perform_inversion(&result, &gaugefield, sources, parameters);
+
+				release_spinorfields(sources);
 
 				if(parameters.get_measure_correlators() ) {
 					//get name for file to which correlators are to be stored
 					std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
 					//flavour_doublet_correlators does a sync at the beginning
-					gaugefield.flavour_doublet_correlators(corr_fn);
+					flavour_doublet_correlators(result, sources, corr_fn, parameters);
 				}
 				if(parameters.get_measure_pbp() ) {
 					//get name for file to which pbp is to be stored
 					std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
-					gaugefield.flavour_doublet_chiral_condensate(pbp_fn, iter);
+					flavour_doublet_chiral_condensate(gaugefield, result, pbp_fn, 0);
 				}
 			}
 		} else {
-			logger.info() << "Gaugeobservables:";
-			gaugefield.print_gaugeobservables(0);
+			Gaugefield gaugefield(system, prng);
 
-			gaugefield.create_sources(prng);
-			gaugefield.perform_inversion(&solver_timer);
+			logger.info() << "Gaugeobservables:";
+			print_gaugeobservables(gaugefield, 0);
+
+			const std::vector<const Spinorfield*> sources = create_sources(system, prng);
+			const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+
+			perform_inversion(&result, &gaugefield, sources, parameters);
+
+			release_spinorfields(sources);
 
 			if(parameters.get_measure_correlators() ) {
 				//get name for file to which correlators are to be stored
 				std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, "");
 				//flavour_doublet_correlators does a sync at the beginning
-				gaugefield.flavour_doublet_correlators(corr_fn);
+				flavour_doublet_correlators(result, sources, corr_fn, parameters);
 			}
 			if(parameters.get_measure_pbp() ) {
 				//get name for file to which pbp is to be stored
 				std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, "");
-				gaugefield.flavour_doublet_chiral_condensate(pbp_fn, 0);
+				flavour_doublet_chiral_condensate(gaugefield, result, pbp_fn, 0);
 			}
+
+			release_spinorfields(result);
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();
@@ -117,12 +129,6 @@ int main(int argc, const char* argv[])
 			}
 			print_solver_profiling(profiling_out);
 		}
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// free variables
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		gaugefield.finalize();
 
 	} //try
 	//exceptions from Opencl classes
