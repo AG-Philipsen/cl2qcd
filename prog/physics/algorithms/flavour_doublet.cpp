@@ -142,8 +142,8 @@ for(auto field: fields) {
 for(auto field: fields) {
 		auto buffer = field->get_buffers().at(device_idx);
 		size_t elems = buffer->get_elements();
-		offset += elems;
 		result->copyDataBlock(buffer, offset);
+		offset += elems;
 	}
 	return result;
 }
