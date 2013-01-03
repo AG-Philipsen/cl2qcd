@@ -85,7 +85,7 @@ int main(int argc, const char* argv[])
 				prng_file_name << "prng.";
 				prng_file_name.fill('0');
 				prng_file_name.width(parameters.get_config_number_digits());
-				prng_file_name << iter;
+				prng_file_name << iter + 1;
 				prng.store(prng_file_name.str());
 			}
 		}
