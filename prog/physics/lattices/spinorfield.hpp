@@ -67,6 +67,11 @@ namespace physics {
 	 */
 	void release_spinorfields(const std::vector<const Spinorfield *> fields);
 
+	/**
+	 * Calculate the scalar product of two spinorfields.
+	 */
+	hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
+
 	}
 }
 

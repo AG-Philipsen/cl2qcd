@@ -62,3 +62,26 @@ for(auto buffer: buffers) {
 		fermion_code->gamma5_device(buffer);
 	}
 }
+
+hmc_complex physics::lattices::scalar_product(const Spinorfield& left, const Spinorfield& right)
+{
+	auto left_buffers = left.get_buffers();
+	auto right_buffers = right.get_buffers();
+
+	// TODO implemente for more than one device
+	if(left_buffers.size() > 1 || right_buffers.size() > 1) {
+		throw Print_Error_Message("physics::lattices::scalar_product(const Spinorfield&, const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
+	}
+
+	auto left_buf = left_buffers[0];
+	auto right_buf = right_buffers[0];
+	auto device = left_buf->get_device();
+	hardware::buffers::Plain<hmc_complex> result_buf(1, device);
+	auto spinor_code = device->get_spinor_code();
+
+	spinor_code->set_complex_to_scalar_product_device(left_buf, right_buf, &result_buf);
+
+	hmc_complex result;
+	result_buf.dump(&result);
+	return result;
+}
