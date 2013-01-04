@@ -6,14 +6,14 @@
 #include "../../meta/util.hpp"
 #include <cassert>
 
-static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(hardware::System& system);
+static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system);
 
-physics::lattices::Spinorfield::Spinorfield(hardware::System& system)
+physics::lattices::Spinorfield::Spinorfield(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
 {
 }
 
-static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(hardware::System& system)
+static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system)
 {
 	using hardware::buffers::Plain;
 
@@ -31,7 +31,7 @@ for(auto buffer: buffers) {
 	}
 }
 
-const std::vector<const physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(hardware::System& system, const size_t n)
+const std::vector<const physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n)
 {
 	std::vector<const Spinorfield *> fields;
 	fields.reserve(n);
@@ -53,4 +53,12 @@ for(auto field: fields) {
 const std::vector<const hardware::buffers::Plain<spinor> *> physics::lattices::Spinorfield::get_buffers() const noexcept
 {
 	return buffers;
+}
+
+void physics::lattices::Spinorfield::gamma5() const
+{
+for(auto buffer: buffers) {
+		auto fermion_code = buffer->get_device()->get_fermion_code();
+		fermion_code->gamma5_device(buffer);
+	}
 }

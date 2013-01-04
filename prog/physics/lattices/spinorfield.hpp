@@ -25,7 +25,7 @@ namespace physics {
 			/**
 			 * Construct a gaugefield based on the input-files of the system
 			 */
-			Spinorfield(hardware::System&);
+			Spinorfield(const hardware::System&);
 
 			/**
 			 * Release resources
@@ -44,6 +44,11 @@ namespace physics {
 			 */
 			const std::vector<const hardware::buffers::Plain<spinor> *> get_buffers() const noexcept;
 
+			/**
+			 * Apply Gamma5 to the Spinorfield
+			 */
+			void gamma5() const;
+
 		private:
 			hardware::System const& system;
 			const std::vector<const hardware::buffers::Plain<spinor> *> buffers;
@@ -54,7 +59,7 @@ namespace physics {
 	 *
 	 * \param n The number of spinorfields to create
 	 */
-	const std::vector<const Spinorfield *> create_spinorfields(hardware::System& system, const size_t n)
+	const std::vector<const Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n)
 ;
 
 	/**
