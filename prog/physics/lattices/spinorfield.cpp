@@ -85,3 +85,24 @@ hmc_complex physics::lattices::scalar_product(const Spinorfield& left, const Spi
 	result_buf.dump(&result);
 	return result;
 }
+
+hmc_float physics::lattices::squarenorm(const Spinorfield& field)
+{
+	auto field_buffers = field.get_buffers();
+
+	// TODO implemente for more than one device
+	if(field_buffers.size() > 1) {
+		throw Print_Error_Message("physics::lattices::squarenorm(const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
+	}
+
+	auto field_buf = field_buffers[0];
+	auto device = field_buf->get_device();
+	hardware::buffers::Plain<hmc_float> result_buf(1, device);
+	auto spinor_code = device->get_spinor_code();
+
+	spinor_code->set_float_to_global_squarenorm_device(field_buf, &result_buf);
+
+	hmc_float result;
+	result_buf.dump(&result);
+	return result;
+}

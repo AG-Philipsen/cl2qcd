@@ -72,6 +72,11 @@ namespace physics {
 	 */
 	hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
 
+	/**
+	 * Calculate the squarenorm of the spinorfield
+	 */
+	hmc_float squarenorm(const Spinorfield& field);
+
 	}
 }
 
