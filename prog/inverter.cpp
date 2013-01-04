@@ -75,7 +75,7 @@ int main(int argc, const char* argv[])
 				if(parameters.get_measure_pbp() ) {
 					//get name for file to which pbp is to be stored
 					std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
-					flavour_doublet_chiral_condensate(gaugefield, result, pbp_fn, 0);
+					flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
 				}
 
 				release_spinorfields(result);
@@ -101,7 +101,7 @@ int main(int argc, const char* argv[])
 			if(parameters.get_measure_pbp() ) {
 				//get name for file to which pbp is to be stored
 				std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, "");
-				flavour_doublet_chiral_condensate(gaugefield, result, pbp_fn, 0);
+				flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
 			}
 
 			release_spinorfields(result);
