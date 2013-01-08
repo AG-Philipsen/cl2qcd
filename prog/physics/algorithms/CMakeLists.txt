@@ -22,3 +22,4 @@ target_link_libraries(algorithms
 # Definition of tets
 #
 
+add_unit_test(physics::algorithms::flavour_doublet flavour_doublet_test)
