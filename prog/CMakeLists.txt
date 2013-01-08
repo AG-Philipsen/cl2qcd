@@ -121,7 +121,6 @@ set_abs_paths(OPTIMAL_FILES
 	exceptions.cpp
 	gaugefield_hmc.cpp
 	gaugefield_hybrid.cpp
-	gaugefield_inverter.cpp
 	host_geometry.cpp
 	host_operations_gaugefield.cpp
 	host_random.cpp
