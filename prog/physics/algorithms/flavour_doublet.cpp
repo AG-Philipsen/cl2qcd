@@ -14,43 +14,21 @@ static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<c
 
 static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
-static void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
+static size_t get_num_corr_entries(const meta::Inputparameters& params);
+static std::vector<hmc_float> calculate_correlator(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
 
 void physics::algorithms::flavour_doublet_correlators(const std::vector<const physics::lattices::Spinorfield*>& result, const std::vector<const physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& parameters)
 {
 	using namespace std;
 
-	int num_corr_entries =  0;
-	switch (parameters.get_corr_dir()) {
-		case 0 :
-			num_corr_entries = parameters.get_ntime();
-			break;
-		case 3 :
-			num_corr_entries = parameters.get_nspace();
-			break;
-		default :
-			stringstream errmsg;
-			errmsg << "Correlator direction " << parameters.get_corr_dir() << " has not been implemented.";
-			throw Print_Error_Message(errmsg.str());
-	}
-
-	hmc_float* host_result_ps = new hmc_float [num_corr_entries];
-	hmc_float* host_result_sc = new hmc_float [num_corr_entries];
-	hmc_float* host_result_vx = new hmc_float [num_corr_entries];
-	hmc_float* host_result_vy = new hmc_float [num_corr_entries];
-	hmc_float* host_result_vz = new hmc_float [num_corr_entries];
-	hmc_float* host_result_ax = new hmc_float [num_corr_entries];
-	hmc_float* host_result_ay = new hmc_float [num_corr_entries];
-	hmc_float* host_result_az = new hmc_float [num_corr_entries];
-
-	calculate_correlator(host_result_ps, num_corr_entries, "ps", result, sources, parameters);
-	calculate_correlator(host_result_sc, num_corr_entries, "sc", result, sources, parameters);
-	calculate_correlator(host_result_vx, num_corr_entries, "vx", result, sources, parameters);
-	calculate_correlator(host_result_vy, num_corr_entries, "vy", result, sources, parameters);
-	calculate_correlator(host_result_vz, num_corr_entries, "vz", result, sources, parameters);
-	calculate_correlator(host_result_ax, num_corr_entries, "ax", result, sources, parameters);
-	calculate_correlator(host_result_ay, num_corr_entries, "ay", result, sources, parameters);
-	calculate_correlator(host_result_az, num_corr_entries, "az", result, sources, parameters);
+	auto result_ps = calculate_correlator("ps", result, sources, parameters);
+	auto result_sc = calculate_correlator("sc", result, sources, parameters);
+	auto result_vx = calculate_correlator("vx", result, sources, parameters);
+	auto result_vy = calculate_correlator("vy", result, sources, parameters);
+	auto result_vz = calculate_correlator("vz", result, sources, parameters);
+	auto result_ax = calculate_correlator("ax", result, sources, parameters);
+	auto result_ay = calculate_correlator("ay", result, sources, parameters);
+	auto result_az = calculate_correlator("az", result, sources, parameters);
 
 	if(parameters.get_print_to_screen() )
 		meta::print_info_flavour_doublet_correlators(parameters);
@@ -60,35 +38,33 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<const ph
 	// @todo One could also implement to write all results on screen if wanted
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
-	for(int j = 0; j < num_corr_entries; j++) {
-		logger.info() << j << "\t" << scientific << setprecision(14) << host_result_ps[j];
-		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result_ps[j] << endl;
+	for(int j = 0; j < result_ps.size(); j++) {
+		logger.info() << j << "\t" << scientific << setprecision(14) << result_ps[j];
+		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << result_ps[j] << endl;
 	}
 
 	//the scalar (J=0, P=0)
-	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result_sc[j] << endl;
+	for(int j = 0; j < result_sc.size(); j++) {
+		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << result_sc[j] << endl;
 	}
 
 	//the vector (J=1, P=1)
-	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result_vx[j] + host_result_vy[j] + host_result_vz[j]) / 3. << "\t" << host_result_vx[j] << "\t" << host_result_vy[j] << "\t" << host_result_vz[j] << endl;
+	if(result_vx.size() != result_vy.size() || result_vx.size() != result_vz.size()) {
+		throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
+	}
+	for(int j = 0; j < result_vx.size(); j++) {
+		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (result_vx[j] + result_vy[j] + result_vz[j]) / 3. << "\t" << result_vx[j] << "\t" << result_vy[j] << "\t" << result_vz[j] << endl;
 	}
 
 	//the axial vector (J=1, P=0)
-	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (host_result_ax[j] + host_result_ay[j] + host_result_az[j]) / 3. << "\t" << host_result_ax[j] << "\t" << host_result_ay[j] << "\t" << host_result_az[j] << endl;
+	if(result_ax.size() != result_ay.size() || result_ax.size() != result_az.size()) {
+		throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
+	}
+	for(int j = 0; j < result_ax.size(); j++) {
+		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (result_ax[j] + result_ay[j] + result_az[j]) / 3. << "\t" << result_ax[j] << "\t" << result_ay[j] << "\t" << result_az[j] << endl;
 	}
 
 	of << endl;
-	delete [] host_result_ps;
-	delete [] host_result_sc;
-	delete [] host_result_vx;
-	delete [] host_result_vy;
-	delete [] host_result_vz;
-	delete [] host_result_ax;
-	delete [] host_result_ay;
-	delete [] host_result_az;
 }
 
 void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<const physics::lattices::Spinorfield*>& inverted, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
@@ -223,7 +199,7 @@ for(auto phi: solved_fields) {
 	return result;
 }
 
-static void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+static std::vector<hmc_float> calculate_correlator(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
 	auto first_field_buffers = corr.at(0)->get_buffers();
@@ -233,6 +209,7 @@ static void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::s
 	auto code = device->get_correlator_code();
 
 
+	const size_t num_corr_entries = get_num_corr_entries(params);
 	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
 	result.clear();
 
@@ -253,5 +230,21 @@ static void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::s
 		delete merged_corrs;
 	}
 
-	result.dump(out);
+	std::vector<hmc_float> out(num_corr_entries);
+	result.dump(out.data());
+	return out;
+}
+
+static size_t get_num_corr_entries(const meta::Inputparameters& parameters)
+{
+	switch (parameters.get_corr_dir()) {
+		case 0 :
+			return parameters.get_ntime();
+		case 3 :
+			return parameters.get_nspace();
+		default :
+			std::stringstream errmsg;
+			errmsg << "Correlator direction " << parameters.get_corr_dir() << " has not been implemented.";
+			throw Print_Error_Message(errmsg.str());
+	}
 }
