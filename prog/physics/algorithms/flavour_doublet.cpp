@@ -16,7 +16,7 @@ static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const
 static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
 static void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
 
-void physics::algorithms::flavour_doublet_correlators(const std::vector<const physics::lattices::Spinorfield*>& result, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string corr_fn, const meta::Inputparameters& parameters)
+void physics::algorithms::flavour_doublet_correlators(const std::vector<const physics::lattices::Spinorfield*>& result, const std::vector<const physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& parameters)
 {
 	using namespace std;
 
@@ -55,12 +55,7 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<const ph
 	if(parameters.get_print_to_screen() )
 		meta::print_info_flavour_doublet_correlators(parameters);
 
-	ofstream of(corr_fn.c_str(), ios_base::app);
-	if(of.is_open()) {
-		meta::print_info_flavour_doublet_correlators(&of, parameters);
-	} else {
-		throw File_Exception(corr_fn);
-	}
+	meta::print_info_flavour_doublet_correlators(&of, parameters);
 
 	// @todo One could also implement to write all results on screen if wanted
 	//the pseudo-scalar (J=0, P=1)
@@ -86,7 +81,6 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<const ph
 	}
 
 	of << endl;
-	of.close();
 	delete [] host_result_ps;
 	delete [] host_result_sc;
 	delete [] host_result_vx;

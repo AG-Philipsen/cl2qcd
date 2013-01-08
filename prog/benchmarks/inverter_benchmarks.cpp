@@ -30,16 +30,16 @@ int main(int argc, const char* argv[])
 		}
 
 		//get name for file to which correlators are to be stored
-		stringstream corr_fn;
+		string corr_fn;
 		switch ( parameters.get_startcondition() ) {
 			case meta::Inputparameters::start_from_source :
-				corr_fn << parameters.get_sourcefile() << "_correlators.dat" ;
+				corr_fn = parameters.get_sourcefile() + "_correlators.dat" ;
 				break;
 			case meta::Inputparameters::hot_start :
-				corr_fn << "conf.hot_correlators.dat" ;
+				corr_fn = "conf.hot_correlators.dat" ;
 				break;
 			case meta::Inputparameters::cold_start :
-				corr_fn << "conf.cold_correlators.dat" ;
+				corr_fn = "conf.cold_correlators.dat" ;
 				break;
 		}
 
@@ -68,20 +68,27 @@ int main(int argc, const char* argv[])
 		int hmc_iter = parameters.get_hmcsteps();
 		int iter;
 
-		logger.trace() << "Perform " << hmc_iter << "of benchmarking";
-		for(iter = 0; iter < hmc_iter; iter ++) {
-			//CP: these are esssentially the same actions as the "normal" inverter performs...
-			logger.info() << "Perform inversion on device.." ;
+		{
+			ofstream corr_file(corr_fn.c_str(), ios_base::app);
+			if(!corr_file.is_open()) {
+				throw File_Exception(corr_fn);
+			}
 
-			const std::vector<const Spinorfield*> sources = create_sources(system, prng);
-			const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
-			flavour_doublet_correlators(result, sources, corr_fn.str(), parameters);
+			logger.trace() << "Perform " << hmc_iter << "of benchmarking";
+			for(iter = 0; iter < hmc_iter; iter ++) {
+				//CP: these are esssentially the same actions as the "normal" inverter performs...
+				logger.info() << "Perform inversion on device.." ;
 
-			logger.trace() << "Inversion done" ;
-			release_spinorfields(result);
-			release_spinorfields(sources);
+				const std::vector<const Spinorfield*> sources = create_sources(system, prng);
+				const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+				flavour_doublet_correlators(result, sources, corr_file, parameters);
+
+				logger.trace() << "Inversion done" ;
+				release_spinorfields(result);
+				release_spinorfields(sources);
+			}
+			logger.trace() << "inverter-benchmarking done" ;
 		}
-		logger.trace() << "inverter-benchmarking done" ;
 
 		perform_timer.add();
 

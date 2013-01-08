@@ -69,8 +69,11 @@ int main(int argc, const char* argv[])
 				if(parameters.get_measure_correlators() ) {
 					//get name for file to which correlators are to be stored
 					std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
-					//flavour_doublet_correlators does a sync at the beginning
-					flavour_doublet_correlators(result, sources, corr_fn, parameters);
+					ofstream of(corr_fn.c_str(), ios_base::app);
+					if(!of.is_open()) {
+						throw File_Exception(corr_fn);
+					}
+					flavour_doublet_correlators(result, sources, of, parameters);
 				}
 				if(parameters.get_measure_pbp() ) {
 					//get name for file to which pbp is to be stored
@@ -95,8 +98,11 @@ int main(int argc, const char* argv[])
 			if(parameters.get_measure_correlators() ) {
 				//get name for file to which correlators are to be stored
 				std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, "");
-				//flavour_doublet_correlators does a sync at the beginning
-				flavour_doublet_correlators(result, sources, corr_fn, parameters);
+				ofstream of(corr_fn.c_str(), ios_base::app);
+				if(!of.is_open()) {
+					throw File_Exception(corr_fn);
+				}
+				flavour_doublet_correlators(result, sources, of, parameters);
 			}
 			if(parameters.get_measure_pbp() ) {
 				//get name for file to which pbp is to be stored
