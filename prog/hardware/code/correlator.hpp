@@ -40,7 +40,7 @@ public:
 	/**
 	 * Calculate the correlator on the device.
 	 */
-	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = 0);
+	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = nullptr);
 
 	/**
 	 * Get kernel for correlator indicated by which
@@ -133,8 +133,7 @@ private:
 	 * Calculate specific correlator on device.
 	 * This function is overloaded depending on whether one needs the source for the calculation or not.
 	 */
-	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator);
-	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
+	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = nullptr);
 };
 
 }
