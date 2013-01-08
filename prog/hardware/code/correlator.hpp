@@ -38,11 +38,9 @@ public:
 	void create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice);
 
 	/**
-	 * Calculate specific correlator on device.
-	 * This function is overloaded depending on whether one needs the source for the calculation or not.
+	 * Calculate the correlator on the device.
 	 */
-	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator);
-	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
+	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = 0);
 
 	/**
 	 * Get kernel for correlator indicated by which
@@ -130,6 +128,13 @@ private:
 	cl_kernel pbp_tm_one_end;
 
 	ClSourcePackage basic_correlator_code;
+
+	/**
+	 * Calculate specific correlator on device.
+	 * This function is overloaded depending on whether one needs the source for the calculation or not.
+	 */
+	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator);
+	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
 };
 
 }

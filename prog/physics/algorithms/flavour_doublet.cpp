@@ -14,39 +14,7 @@ static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<c
 
 static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
-
-void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
-{
-	// assert single device
-	auto first_field_buffers = corr.at(0)->get_buffers();
-	// require single device
-	assert(first_field_buffers.size() == 1);
-	hardware::Device * device = first_field_buffers.at(0)->get_device();
-	auto code = device->get_correlator_code();
-
-
-	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
-	result.clear();
-
-	// for each source
-	if(corr.size() != sources.size()) {
-		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
-	}
-	// TODO adjust correlator kernels!
-	if(params.get_sourcetype() == meta::Inputparameters::point) {
-		auto merged_corrs = merge_spinorfields(corr, 0, device);
-		code->correlator_device(code->get_correlator_kernel(type), merged_corrs, &result);
-		delete merged_corrs;
-	} else {
-		auto merged_corrs = merge_spinorfields(corr, 0, device);
-		auto merged_sources = merge_spinorfields(sources, 0, device);
-		code->correlator_device(code->get_correlator_kernel(type), merged_corrs, merged_sources, &result);
-		delete merged_sources;
-		delete merged_corrs;
-	}
-
-	result.dump(out);
-}
+static void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
 
 void physics::algorithms::flavour_doublet_correlators(const std::vector<const physics::lattices::Spinorfield*>& result, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string corr_fn, const meta::Inputparameters& parameters)
 {
@@ -259,4 +227,37 @@ for(auto phi: solved_fields) {
 	result.re *= norm;
 	result.im *= norm;
 	return result;
+}
+
+static void calculate_correlator(hmc_float* out, size_t num_corr_entries, std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+{
+	// assert single device
+	auto first_field_buffers = corr.at(0)->get_buffers();
+	// require single device
+	assert(first_field_buffers.size() == 1);
+	hardware::Device * device = first_field_buffers.at(0)->get_device();
+	auto code = device->get_correlator_code();
+
+
+	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
+	result.clear();
+
+	// for each source
+	if(corr.size() != sources.size()) {
+		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
+	}
+	// TODO adjust correlator kernels!
+	if(params.get_sourcetype() == meta::Inputparameters::point) {
+		auto merged_corrs = merge_spinorfields(corr, 0, device);
+		code->correlator(code->get_correlator_kernel(type), &result, merged_corrs);
+		delete merged_corrs;
+	} else {
+		auto merged_corrs = merge_spinorfields(corr, 0, device);
+		auto merged_sources = merge_spinorfields(sources, 0, device);
+		code->correlator(code->get_correlator_kernel(type), &result, merged_corrs, merged_sources);
+		delete merged_sources;
+		delete merged_corrs;
+	}
+
+	result.dump(out);
 }

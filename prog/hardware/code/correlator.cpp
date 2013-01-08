@@ -362,6 +362,15 @@ void hardware::code::Correlator::correlator_device(const cl_kernel correlator_ke
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source)
+{
+	if(source) {
+		correlator_device(correlator_kernel, in, source, correlator);
+	} else {
+		correlator_device(correlator_kernel, in, correlator);
+	}
+}
+
 size_t hardware::code::Correlator::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
