@@ -32,6 +32,13 @@ public:
 	 */
 	void copy_16_bytes(const hardware::buffers::Buffer * dest, const hardware::buffers::Buffer * orig) const;
 
+	/**
+	 * Clears the given buffer
+	 *
+	 * \dest the buffer to set to zero
+	 */
+	void clear(const hardware::buffers::Buffer * dest) const;
+
 protected:
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -56,6 +63,8 @@ private:
 	Buffer(const meta::Inputparameters& params, hardware::Device * device);
 
 	cl_kernel _copy_16_bytes;
+	cl_kernel _clear_bytes;
+	cl_kernel _clear_float4;
 };
 
 }

@@ -8,10 +8,6 @@
 //this includes header used by all executables
 #include "general_header.h"
 
-//should only be included in main prog
-#include "gaugefield_inverter.h"
-#include "gaugefield_hybrid.h"
-
 usetimer solver_timer;
 
 void print_solver_profiling(std::string filename)
@@ -34,7 +30,7 @@ void print_solver_profiling(std::string filename)
 	out << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << std::endl;
 	out << "## **********************************************************" << endl;
 	out.close();
-	
+
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Solver Times [mus]:\ttime\tcalls\tavg" ;
 	logger.info() << "##\t" << time_total << "\t" << calls_total << "\t" << avg_time;

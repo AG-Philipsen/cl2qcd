@@ -10,3 +10,21 @@ __kernel void copy_16_bytes(__global float4 * const restrict to, __global const 
 		to[0] = from[0];
 	}
 }
+
+#ifdef PARALLEL_FOR
+__kernel void clear_bytes(__global char * const restrict dest, const ulong bytes)
+{
+	PARALLEL_FOR(i, bytes) {
+		dest[i] = 0;
+	}
+}
+
+__kernel void clear_float4(__global float4 * const restrict dest, const ulong elems)
+{
+	PARALLEL_FOR(i, elems) {
+		dest[i] = (float4) {
+			0.f, 0.f, 0.f, 0.f
+		};
+	}
+}
+#endif

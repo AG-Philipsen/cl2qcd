@@ -10,6 +10,8 @@ add_library(algorithms
 	solver.cpp
 	heatbath.cpp
 	kappa_clover.cpp
+	flavour_doublet.cpp
+	inversion.cpp
 )
 target_link_libraries(algorithms
 		lattices
@@ -20,3 +22,4 @@ target_link_libraries(algorithms
 # Definition of tets
 #
 
+add_unit_test(physics::algorithms::flavour_doublet flavour_doublet_test)

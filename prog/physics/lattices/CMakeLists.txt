@@ -8,6 +8,8 @@
 
 add_library(lattices
 	gaugefield.cpp
+	spinorfield.cpp
+	spinorfield_eo.cpp
 )
 target_link_libraries(lattices
 	hardware
@@ -18,3 +20,5 @@ target_link_libraries(lattices
 # Definition of tets
 #
 add_unit_test(physics::lattices::Gaugefield gaugefield_test)
+add_unit_test(physics::lattices::Spinorfield spinorfield_test)
+add_unit_test(physics::lattices::Spinorfield_eo spinorfield_eo_test)

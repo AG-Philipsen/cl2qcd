@@ -5,7 +5,9 @@
  */
 
 #include "buffer.hpp"
+#include "plain.hpp"
 #include "../system.hpp"
+#include "../../meta/type_ops.hpp"
 #include <stdexcept>
 
 // use the boost test framework
@@ -53,5 +55,45 @@ for(Device * device : devices) {
 		BOOST_CHECK_THROW(copyData(&dummy, &dummy2), std::invalid_argument);
 		copyData(&dummy2, &dummy3);
 		BOOST_CHECK_THROW(copyData(&dummy3, &dummy), std::invalid_argument);
+	}
+}
+
+BOOST_AUTO_TEST_CASE(clear)
+{
+	// normal buffer doesn't have input/output -> only test exception if different size
+
+	using namespace hardware;
+	using namespace hardware::buffers;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	System system(params);
+	const std::vector<Device*>& devices = system.get_devices();
+for(Device * device : devices) {
+		{
+			const size_t SIZE = 1024;
+			float host[SIZE];
+			fill(host, SIZE);
+			Plain<float> dummy(SIZE, device);
+			dummy.load(host);
+			dummy.clear();
+			dummy.dump(host);
+			for(int i = 0; i < SIZE; ++i) {
+				BOOST_REQUIRE_EQUAL(host[i], 0.f);
+			}
+		}
+
+		{
+			const size_t SIZE = 71;
+			char host[SIZE];
+			fill(host, SIZE);
+			Plain<char> dummy(SIZE, device);
+			dummy.load(host);
+			dummy.clear();
+			dummy.dump(host);
+			for(int i = 0; i < SIZE; ++i) {
+				BOOST_REQUIRE_EQUAL(host[i], 0);
+			}
+		}
 	}
 }

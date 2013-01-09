@@ -89,12 +89,10 @@ namespace hardware {
 			 */
 			hardware::Device * get_device() const noexcept;
 
-#ifdef CL_VERSION_1_2
 			/**
 			 * Set all bytes of this buffer to zero.
 			 */
 			void clear() const;
-#endif
 
 		private:
 			/**
@@ -145,6 +143,14 @@ namespace hardware {
 			 * returns true on is_finished().
 			 */
 			hardware::SynchronizationEvent dump_async(void * array) const;
+
+			/**
+			 * Utility function to get the data from another buffer. Should only be used using
+			 * Should be implemented by children using element instead of bytes sizes
+			 *
+			 * Will thorw an invalid_argument exception if the source buffer is of a different size.
+			 */
+			void copyDataBlock(const Buffer* orig, const size_t dest_offset, const size_t src_offset, const size_t bytes) const;
 		};
 
 		template<class T> inline void copyData(const T* dest, const T* orig)

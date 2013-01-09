@@ -34,73 +34,73 @@ void hardware::code::Correlator::fill_kernels()
 	logger.debug() << "Create correlator kernels...";
 
 	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
-	  create_point_source = createKernel("create_point_source") << basic_correlator_code << prng_code << "spinorfield_point_source.cl";
+		create_point_source = createKernel("create_point_source") << basic_correlator_code << prng_code << "spinorfield_point_source.cl";
 	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
-	  create_volume_source = createKernel("create_volume_source") << basic_correlator_code << prng_code << "spinorfield_volume_source.cl";
+		create_volume_source = createKernel("create_volume_source") << basic_correlator_code << prng_code << "spinorfield_volume_source.cl";
 	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
-	  create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
+		create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
 	else if (get_parameters().get_sourcetype() == meta::Inputparameters::zslice)
-	  create_zslice_source = createKernel("create_zslice_source") << basic_correlator_code << prng_code << "spinorfield_zslice_source.cl";
+		create_zslice_source = createKernel("create_zslice_source") << basic_correlator_code << prng_code << "spinorfield_zslice_source.cl";
 
-	if(get_parameters().get_measure_correlators() ){
-	  //CP: If a pointsource is chosen, the correlators have a particular simple form. 
-	  if(get_parameters().get_sourcetype() == meta::Inputparameters::point){
-	    std::string filename_tmp =  "fermionobservables_correlators_point.cl";
-	    switch (get_parameters().get_corr_dir()) {
-	    case 0 :
-	      correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << filename_tmp;
-	      correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << filename_tmp;
-	      correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << filename_tmp;
-	      correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << filename_tmp;
-	      correlator_vz = createKernel("correlator_vz_t") << basic_correlator_code << filename_tmp;
-	      correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << filename_tmp;
-	      correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << filename_tmp;
-	      correlator_az = createKernel("correlator_az_t") << basic_correlator_code << filename_tmp;
-	      break;
-	    case 3 :
-	      correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << filename_tmp;
-	      correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << filename_tmp;
-	      correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << filename_tmp;
-	      correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << filename_tmp;
-	      correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << filename_tmp;
-	      correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << filename_tmp;
-	      correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << filename_tmp;
-	      correlator_az = createKernel("correlator_az_z") << basic_correlator_code << filename_tmp;
-	      break;
-	    default:
-	      stringstream errmsg;
-	      errmsg << "Could not create correlator kernel as correlator direction " << get_parameters().get_corr_dir() << " has not been implemented.";
-	      throw Print_Error_Message(errmsg.str());
-	    }
-	  } else{
-	    std::string filename_tmp =  "fermionobservables_correlators_stochastic.cl";
-	    switch (get_parameters().get_corr_dir()) {
-	    case 0 :
-	      correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << filename_tmp;
-	      correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << filename_tmp;
-	      correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << filename_tmp;
-	      correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << filename_tmp;
-	      correlator_vz = createKernel("correlator_vz_t") << basic_correlator_code << filename_tmp;
-	      correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << filename_tmp;
-	      correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << filename_tmp;
-	      correlator_az = createKernel("correlator_az_t") << basic_correlator_code << filename_tmp;
-	      break;
-	    case 3 :
-	      correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << filename_tmp;
-	      correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << filename_tmp;
-	      correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << filename_tmp;
-	      correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << filename_tmp;
-	      correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << filename_tmp;
-	      correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << filename_tmp;
-	      correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << filename_tmp;
-	      correlator_az = createKernel("correlator_az_z") << basic_correlator_code << filename_tmp;
-	      break;
-	    default:
-	      stringstream errmsg;
-	      errmsg << "Could not create correlator kernel as correlator direction " << get_parameters().get_corr_dir() << " has not been implemented.";
-	      throw Print_Error_Message(errmsg.str());
-	    }
-	  }
+	if(get_parameters().get_measure_correlators() ) {
+		//CP: If a pointsource is chosen, the correlators have a particular simple form.
+		if(get_parameters().get_sourcetype() == meta::Inputparameters::point) {
+			std::string filename_tmp =  "fermionobservables_correlators_point.cl";
+			switch (get_parameters().get_corr_dir()) {
+				case 0 :
+					correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << filename_tmp;
+					correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << filename_tmp;
+					correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << filename_tmp;
+					correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << filename_tmp;
+					correlator_vz = createKernel("correlator_vz_t") << basic_correlator_code << filename_tmp;
+					correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << filename_tmp;
+					correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << filename_tmp;
+					correlator_az = createKernel("correlator_az_t") << basic_correlator_code << filename_tmp;
+					break;
+				case 3 :
+					correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << filename_tmp;
+					correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << filename_tmp;
+					correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << filename_tmp;
+					correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << filename_tmp;
+					correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << filename_tmp;
+					correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << filename_tmp;
+					correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << filename_tmp;
+					correlator_az = createKernel("correlator_az_z") << basic_correlator_code << filename_tmp;
+					break;
+				default:
+					stringstream errmsg;
+					errmsg << "Could not create correlator kernel as correlator direction " << get_parameters().get_corr_dir() << " has not been implemented.";
+					throw Print_Error_Message(errmsg.str());
+			}
+		} else {
+			std::string filename_tmp =  "fermionobservables_correlators_stochastic.cl";
+			switch (get_parameters().get_corr_dir()) {
+				case 0 :
+					correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << filename_tmp;
+					correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << filename_tmp;
+					correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << filename_tmp;
+					correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << filename_tmp;
+					correlator_vz = createKernel("correlator_vz_t") << basic_correlator_code << filename_tmp;
+					correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << filename_tmp;
+					correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << filename_tmp;
+					correlator_az = createKernel("correlator_az_t") << basic_correlator_code << filename_tmp;
+					break;
+				case 3 :
+					correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << filename_tmp;
+					correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << filename_tmp;
+					correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << filename_tmp;
+					correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << filename_tmp;
+					correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << filename_tmp;
+					correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << filename_tmp;
+					correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << filename_tmp;
+					correlator_az = createKernel("correlator_az_z") << basic_correlator_code << filename_tmp;
+					break;
+				default:
+					stringstream errmsg;
+					errmsg << "Could not create correlator kernel as correlator direction " << get_parameters().get_corr_dir() << " has not been implemented.";
+					throw Print_Error_Message(errmsg.str());
+			}
+		}
 	}
 }
 
@@ -108,28 +108,28 @@ void hardware::code::Correlator::clear_kernels()
 {
 	int clerr = CL_SUCCESS;
 	if(correlator_ps)
-	  clerr = clReleaseKernel(correlator_ps);
+		clerr = clReleaseKernel(correlator_ps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_sc)
-	  clerr = clReleaseKernel(correlator_sc);
+		clerr = clReleaseKernel(correlator_sc);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_vx)
-	  clerr = clReleaseKernel(correlator_vx);
+		clerr = clReleaseKernel(correlator_vx);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_vy)
-	  clerr = clReleaseKernel(correlator_vy);
+		clerr = clReleaseKernel(correlator_vy);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_vz)
-	  clerr = clReleaseKernel(correlator_vz);
+		clerr = clReleaseKernel(correlator_vz);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_ax)
-	  clerr = clReleaseKernel(correlator_ax);
+		clerr = clReleaseKernel(correlator_ax);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_ay)
-	  clerr = clReleaseKernel(correlator_ay);
+		clerr = clReleaseKernel(correlator_ay);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_az)
-	  clerr = clReleaseKernel(correlator_az);
+		clerr = clReleaseKernel(correlator_az);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(create_point_source) {
 		clerr = clReleaseKernel(create_point_source);
@@ -223,21 +223,21 @@ void hardware::code::Correlator::create_point_source_device(const hardware::buff
 	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
 
 	if(logger.beDebug()) {
-	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-	  hmc_float sqn;
-	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-	  sqn_tmp.dump(&sqn);
-	  logger.debug() <<  "\t|source|^2:\t" << sqn;
-	  if(sqn != sqn) {
-	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 
 }
 
 void hardware::code::Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng)
 {
-  get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
+	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -252,20 +252,20 @@ void hardware::code::Correlator::create_volume_source_device(const hardware::buf
 	get_device()->enqueue_kernel( create_volume_source, gs2, ls2);
 
 	if(logger.beDebug()) {
-	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-	  hmc_float sqn;
-	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-	  sqn_tmp.dump(&sqn);
-	  logger.debug() <<  "\t|source|^2:\t" << sqn;
-	  if(sqn != sqn) {
-	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 }
 
 void hardware::code::Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice)
 {
-  get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
+	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -285,20 +285,20 @@ void hardware::code::Correlator::create_timeslice_source_device(const hardware::
 	get_device()->enqueue_kernel( create_timeslice_source, gs2, ls2);
 
 	if(logger.beDebug()) {
-	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-	  hmc_float sqn;
-	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-	  sqn_tmp.dump(&sqn);
-	  logger.debug() <<  "\t|source|^2:\t" << sqn;
-	  if(sqn != sqn) {
-	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 }
 
 void hardware::code::Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice)
 {
-  get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
+	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -319,49 +319,88 @@ void hardware::code::Correlator::create_zslice_source_device(const hardware::buf
 	get_device()->enqueue_kernel( create_zslice_source, gs2, ls2);
 
 	if(logger.beDebug()) {
-	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-	  hmc_float sqn;
-	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-	  sqn_tmp.dump(&sqn);
-	  logger.debug() <<  "\t|source|^2:\t" << sqn;
-	  if(sqn != sqn) {
-	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 }
 
-void hardware::code::Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator)
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source)
 {
+	int clerr;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), in->get_cl_buffer());
+	clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), correlator->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), correlator->get_cl_buffer());
+	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	if(source) {
+		clerr = clSetKernelArg(correlator_kernel, 2, sizeof(cl_mem), source->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	}
 
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void hardware::code::Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * in4)
 {
+	int clerr;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), in->get_cl_buffer());
+	clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), correlator->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), source->get_cl_buffer());
+	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), in1->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_kernel, 2, sizeof(cl_mem), correlator->get_cl_buffer());
+	clerr = clSetKernelArg(correlator_kernel, 2, sizeof(cl_mem), in2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 3, sizeof(cl_mem), in3->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 4, sizeof(cl_mem), in4->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * source1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * source2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * source3, const hardware::buffers::Plain<spinor> * in4, const hardware::buffers::Plain<spinor> * source4)
+{
+	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
+	//set arguments
+	clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), correlator->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), in1->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 2, sizeof(cl_mem), source1->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 3, sizeof(cl_mem), in2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 4, sizeof(cl_mem), source2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 5, sizeof(cl_mem), in3->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 6, sizeof(cl_mem), source3->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 7, sizeof(cl_mem), in4->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 8, sizeof(cl_mem), source4->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
+}
 size_t hardware::code::Correlator::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
@@ -515,21 +554,21 @@ void hardware::code::Correlator::print_profiling(const std::string& filename, in
 		Opencl_Module::print_profiling(filename, create_zslice_source);
 	}
 	if(correlator_ps)
-	  Opencl_Module::print_profiling(filename, correlator_ps);
+		Opencl_Module::print_profiling(filename, correlator_ps);
 	if(correlator_sc)
-	  Opencl_Module::print_profiling(filename, correlator_sc);
+		Opencl_Module::print_profiling(filename, correlator_sc);
 	if(correlator_vx)
-	  Opencl_Module::print_profiling(filename, correlator_vx);
+		Opencl_Module::print_profiling(filename, correlator_vx);
 	if(correlator_vy)
-	  Opencl_Module::print_profiling(filename, correlator_vy);
+		Opencl_Module::print_profiling(filename, correlator_vy);
 	if(correlator_vz)
-	  Opencl_Module::print_profiling(filename, correlator_vz);
+		Opencl_Module::print_profiling(filename, correlator_vz);
 	if(correlator_ax)
-	  Opencl_Module::print_profiling(filename, correlator_ax);
+		Opencl_Module::print_profiling(filename, correlator_ax);
 	if(correlator_ay)
-	  Opencl_Module::print_profiling(filename, correlator_ay);
+		Opencl_Module::print_profiling(filename, correlator_ay);
 	if(correlator_az)
-	  Opencl_Module::print_profiling(filename, correlator_az);
+		Opencl_Module::print_profiling(filename, correlator_az);
 }
 
 hardware::code::Correlator::Correlator(const meta::Inputparameters& params, hardware::Device * device)
