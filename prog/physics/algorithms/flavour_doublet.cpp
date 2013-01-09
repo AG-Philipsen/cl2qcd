@@ -15,6 +15,7 @@ static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<c
 static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
 static size_t get_num_corr_entries(const meta::Inputparameters& params);
+static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<const physics::lattices::Spinorfield*>& fields, size_t index);
 
 void physics::algorithms::flavour_doublet_correlators(const std::vector<const physics::lattices::Spinorfield*>& result, const std::vector<const physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& parameters)
 {
@@ -198,7 +199,7 @@ for(auto phi: solved_fields) {
 	return result;
 }
 
-std::vector<hmc_float> physics::algorithms::calculate_correlator(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+static std::vector<hmc_float> calculate_correlator_componentwise(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
 	auto first_field_buffers = corr.at(0)->get_buffers();
@@ -206,7 +207,6 @@ std::vector<hmc_float> physics::algorithms::calculate_correlator(std::string typ
 	assert(first_field_buffers.size() == 1);
 	hardware::Device * device = first_field_buffers.at(0)->get_device();
 	auto code = device->get_correlator_code();
-
 
 	const size_t num_corr_entries = get_num_corr_entries(params);
 	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
@@ -216,22 +216,76 @@ std::vector<hmc_float> physics::algorithms::calculate_correlator(std::string typ
 	if(corr.size() != sources.size()) {
 		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
 	}
-	// TODO adjust correlator kernels!
-	if(params.get_sourcetype() == meta::Inputparameters::point) {
-		auto merged_corrs = merge_spinorfields(corr, 0, device);
-		code->correlator(code->get_correlator_kernel(type), &result, merged_corrs);
-		delete merged_corrs;
-	} else {
-		auto merged_corrs = merge_spinorfields(corr, 0, device);
-		auto merged_sources = merge_spinorfields(sources, 0, device);
-		code->correlator(code->get_correlator_kernel(type), &result, merged_corrs, merged_sources);
-		delete merged_sources;
-		delete merged_corrs;
+	auto corr_bufs = extract_buffers(corr, 0);
+	auto source_bufs = extract_buffers(sources, 0);
+	for(int i = 0; i < corr.size(); i++) {
+		if(params.get_sourcetype() == meta::Inputparameters::point) {
+			code->correlator(code->get_correlator_kernel(type), &result, corr_bufs[i]);
+		} else {
+			code->correlator(code->get_correlator_kernel(type), &result, corr_bufs[i], source_bufs[i]);
+		}
 	}
 
 	std::vector<hmc_float> out(num_corr_entries);
 	result.dump(out.data());
 	return out;
+}
+
+static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<const physics::lattices::Spinorfield*>& fields, size_t index)
+{
+	std::vector<const hardware::buffers::Plain<spinor>*> buffers;
+for(auto field: fields) {
+		buffers.push_back(field->get_buffers().at(index));
+	}
+	return buffers;
+}
+
+static std::vector<hmc_float> calculate_correlator_colorwise(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+{
+	// assert single device
+	auto first_field_buffers = corr.at(0)->get_buffers();
+	// require single device
+	if(first_field_buffers.size() != 1) {
+		throw Print_Error_Message("Correlators are currently only implemented for a single device.", __FILE__, __LINE__);
+	}
+	hardware::Device * device = first_field_buffers.at(0)->get_device();
+	auto code = device->get_correlator_code();
+
+	const size_t num_corr_entries = get_num_corr_entries(params);
+	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
+	result.clear();
+
+	auto kernel = code->get_correlator_kernel(type);
+
+	// for each source
+	if(corr.size() != sources.size()) {
+		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
+	}
+	auto corr_bufs = extract_buffers(corr, 0);
+	auto source_bufs = extract_buffers(sources, 0);
+	// TODO adjust correlator kernels!
+	for(int i = 0; i < corr.size(); i += 4) {
+		if(params.get_sourcetype() == meta::Inputparameters::point) {
+			code->correlator(kernel, &result, corr_bufs.at(i), corr_bufs.at(i + 1), corr_bufs.at(i + 2), corr_bufs.at(i + 3));
+		} else {
+			code->correlator(kernel, &result, corr_bufs.at(i), source_bufs.at(i), corr_bufs.at(i + 1), source_bufs.at(i + 1), corr_bufs.at(i + 2), source_bufs.at(i + 2), corr_bufs.at(i + 3), source_bufs.at(i + 3));
+		}
+	}
+
+	std::vector<hmc_float> out(num_corr_entries);
+	result.dump(out.data());
+	return out;
+}
+
+std::vector<hmc_float> physics::algorithms::calculate_correlator(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+{
+	if(type == "ps") {
+		return calculate_correlator_componentwise(type, corr, sources, params);
+	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az") {
+		return calculate_correlator_colorwise(type, corr, sources, params);
+	} {
+		throw Print_Error_Message("Correlator calculation has not been implemented for " + type, __FILE__, __LINE__);
+	}
 }
 
 static size_t get_num_corr_entries(const meta::Inputparameters& parameters)

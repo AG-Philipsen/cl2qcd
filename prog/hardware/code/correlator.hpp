@@ -39,8 +39,11 @@ public:
 
 	/**
 	 * Calculate the correlator on the device.
+	 * This function is overloaded depending on whether one needs the source for the calculation or not.
 	 */
 	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = nullptr);
+	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * in4);
+	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * source1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * source2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * source3, const hardware::buffers::Plain<spinor> * in4, const hardware::buffers::Plain<spinor> * source4);
 
 	/**
 	 * Get kernel for correlator indicated by which
@@ -128,12 +131,6 @@ private:
 	cl_kernel pbp_tm_one_end;
 
 	ClSourcePackage basic_correlator_code;
-
-	/**
-	 * Calculate specific correlator on device.
-	 * This function is overloaded depending on whether one needs the source for the calculation or not.
-	 */
-	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = nullptr);
 };
 
 }

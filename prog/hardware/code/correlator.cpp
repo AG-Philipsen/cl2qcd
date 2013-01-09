@@ -330,7 +330,7 @@ void hardware::code::Correlator::create_zslice_source_device(const hardware::buf
 	}
 }
 
-void hardware::code::Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source)
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source)
 {
 	int clerr;
 	//query work-sizes for kernel
@@ -350,11 +350,57 @@ void hardware::code::Correlator::correlator_device(const cl_kernel correlator_ke
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source)
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * in4)
 {
-	correlator_device(correlator_kernel, correlator, in, source);
+	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
+	//set arguments
+	clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), correlator->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), in1->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 2, sizeof(cl_mem), in2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 3, sizeof(cl_mem), in3->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 4, sizeof(cl_mem), in4->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * source1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * source2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * source3, const hardware::buffers::Plain<spinor> * in4, const hardware::buffers::Plain<spinor> * source4)
+{
+	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
+	//set arguments
+	clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), correlator->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), in1->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 2, sizeof(cl_mem), source1->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 3, sizeof(cl_mem), in2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 4, sizeof(cl_mem), source2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 5, sizeof(cl_mem), in3->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 6, sizeof(cl_mem), source3->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 7, sizeof(cl_mem), in4->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_kernel, 8, sizeof(cl_mem), source4->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
+}
 size_t hardware::code::Correlator::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
