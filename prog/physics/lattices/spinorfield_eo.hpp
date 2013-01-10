@@ -8,6 +8,7 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/spinor.hpp"
 #include "../prng.hpp"
+#include "spinorfield.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -65,18 +66,6 @@ private:
 };
 
 /**
- * Create n spinorfields.
- *
- * \param n The number of spinorfields to create
- */
-const std::vector<const Spinorfield_eo *> create_spinorfields(const hardware::System& system, const size_t n);
-
-/**
- * Release the given spinorfields
- */
-void release_spinorfields(const std::vector<const Spinorfield_eo *> fields);
-
-/**
  * Calculate the scalar product of two spinorfields.
  */
 hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
@@ -107,6 +96,23 @@ void sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_e
  */
 void saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z);
 
+/**
+ * Split the given Spinorfield into even and odd Spinorfield_eo.
+ *
+ * @param[out] even The even part
+ * @param[out] odd  The odd part
+ * @param[in]  in   The Spinorfield to split
+ */
+void convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in);
+
+/**
+ * Merge the given even and odd Spinorfield_eo into one Spinorfield.
+ *
+ * @param[out] merged The merged Spinorfield
+ * @param[in]  even   The even part
+ * @param[in]  odd    The odd part
+ */
+void convert_to_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd);
 }
 }
 

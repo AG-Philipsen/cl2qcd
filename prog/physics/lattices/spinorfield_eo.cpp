@@ -169,3 +169,37 @@ void physics::lattices::saxsbypz(const Spinorfield_eo* out, const hmc_complex al
 		device->get_spinor_code()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], &alpha_buf, &beta_buf, out_buf);
 	}
 }
+
+void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in)
+{
+	auto even_bufs = even->get_buffers();
+	auto odd_bufs = odd->get_buffers();
+	auto in_bufs = in.get_buffers();
+	size_t num_bufs = in_bufs.size();
+
+	if(even_bufs.size() != num_bufs || odd_bufs.size() != num_bufs) {
+		throw std::invalid_argument("Output buffers do not use the same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto spinor_code = in_bufs[i]->get_device()->get_spinor_code();
+		spinor_code->convert_to_eoprec_device(even_bufs[i], odd_bufs[i], in_bufs[i]);
+	}
+}
+
+void physics::lattices::convert_to_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd)
+{
+	auto merged_bufs = merged->get_buffers();
+	auto even_bufs = even.get_buffers();
+	auto odd_bufs = odd.get_buffers();
+	size_t num_bufs = merged_bufs.size();
+
+	if(even_bufs.size() != num_bufs || odd_bufs.size() != num_bufs) {
+		throw std::invalid_argument("Output buffers do not use the same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto spinor_code = merged_bufs[i]->get_device()->get_spinor_code();
+		spinor_code->convert_from_eoprec_device(even_bufs[i], odd_bufs[i], merged_bufs[i]);
+	}
+}
