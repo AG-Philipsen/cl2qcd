@@ -14,41 +14,41 @@
  * that is storage of the lattice values as a whole.
  */
 namespace physics {
-	namespace lattices {
+namespace lattices {
 
-		/**
-		 * Representation of a gaugefield.
-		 */
-		class Spinorfield_eo {
+/**
+ * Representation of a gaugefield.
+ */
+class Spinorfield_eo {
 
-		public:
-			/**
-			 * Construct a gaugefield based on the input-files of the system
-			 */
-			Spinorfield_eo(hardware::System&);
+public:
+	/**
+	 * Construct a gaugefield based on the input-files of the system
+	 */
+	Spinorfield_eo(hardware::System&);
 
-			/**
-			 * Release resources
-			 */
-			~Spinorfield_eo();
+	/**
+	 * Release resources
+	 */
+	~Spinorfield_eo();
 
-			/*
-			 * Spinorfield_eos cannot be copied
-			 */
-			Spinorfield_eo& operator=(const Spinorfield_eo&) = delete;
-			Spinorfield_eo(const Spinorfield_eo&) = delete;
-			Spinorfield_eo() = delete;
+	/*
+	 * Spinorfield_eos cannot be copied
+	 */
+	Spinorfield_eo& operator=(const Spinorfield_eo&) = delete;
+	Spinorfield_eo(const Spinorfield_eo&) = delete;
+	Spinorfield_eo() = delete;
 
-			/**
-			 * Get the buffers containing the gaugefield state on the devices.
-			 */
-			const std::vector<const hardware::buffers::Spinor *> get_buffers() const noexcept;
+	/**
+	 * Get the buffers containing the gaugefield state on the devices.
+	 */
+	const std::vector<const hardware::buffers::Spinor *> get_buffers() const noexcept;
 
-		private:
-			hardware::System const& system;
-			const std::vector<const hardware::buffers::Spinor *> buffers;
-		};
-	}
+private:
+	hardware::System const& system;
+	const std::vector<const hardware::buffers::Spinor *> buffers;
+};
+}
 }
 
 #endif /*_PHYSICS_LATTICES_SPINORFIELD_EO_ */
