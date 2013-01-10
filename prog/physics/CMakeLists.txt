@@ -9,11 +9,16 @@
 add_library(physics
 	prng.cpp
 	sources.cpp
+	../host_random.cpp
 )
 add_modules(physics
 	lattices
 	fermionmatrix
 	algorithms
+)
+target_link_libraries(physics
+	meta
+	hardware
 )
 
 #
