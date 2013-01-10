@@ -33,8 +33,8 @@ public:
 	void generate_gaussian_spinorfield_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::PRNGBuffer * prng);
 
 	//    linear Algebra operations
-	void convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::Plain<spinor> * out);
-	void convert_to_eoprec_device(const hardware::buffers::Spinor * out1, const hardware::buffers::Spinor * out2, const hardware::buffers::Plain<spinor> * in);
+	void convert_from_eoprec_device(const hardware::buffers::Spinor * even, const hardware::buffers::Spinor * odd, const hardware::buffers::Plain<spinor> * out);
+	void convert_to_eoprec_device(const hardware::buffers::Spinor * even, const hardware::buffers::Spinor * odd, const hardware::buffers::Plain<spinor> * in);
 
 	void set_complex_to_scalar_product_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<spinor> * b, const hardware::buffers::Plain<hmc_complex> * out);
 	void set_complex_to_scalar_product_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Spinor * b, const hardware::buffers::Plain<hmc_complex> * out);
