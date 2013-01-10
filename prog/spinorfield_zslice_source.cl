@@ -17,6 +17,8 @@ __kernel void create_zslice_source(__global spinor * const restrict b, __global 
 	uint3 coord;
 	coord.z=zslice;
 
+	hmc_float sigma;
+
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 	  for(int y = 0; y<NSPACE; y++) {
 	    for (int t = 0; t < NTIME; t++){
@@ -72,7 +74,7 @@ __kernel void create_zslice_source(__global spinor * const restrict b, __global 
 		
 	      case 3: //"gaussian"
 		/** @todo what is the norm here? */
-		hmc_float sigma = 0.5;
+		sigma = 0.5;
 		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e0.e0.re = tmp.re;
 		out_tmp.e0.e0.im = tmp.im;

@@ -14,6 +14,8 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 	spinor out_tmp;
 	hmc_complex tmp;
 
+	hmc_float sigma;
+
 	for(int id_tmp = id; id_tmp < VOLSPACE; id_tmp += global_size) {
 	  //CP: switch between source content
 	  switch(SOURCE_CONTENT){
@@ -62,7 +64,7 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 
 	  case 3: //"gaussian"
 	    /** @todo what is the norm here? */
-	    hmc_float sigma = 0.5;
+	    sigma = 0.5;
 	    tmp = gaussianNormalPair(&rnd);
 	    out_tmp.e0.e0.re = tmp.re;
 	    out_tmp.e0.e0.im = tmp.im;
