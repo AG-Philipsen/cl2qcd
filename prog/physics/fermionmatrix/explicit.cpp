@@ -61,7 +61,7 @@ void physics::fermionmatrix::M_tm_minus(const physics::lattices::Spinorfield * o
 	fermion_code->M_tm_minus_device(in_bufs[0], out_bufs[0], gf_bufs[0], kappa, mubar);
 }
 
-void M_tm_inverse_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
+void physics::fermionmatrix::M_tm_inverse_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
@@ -79,7 +79,7 @@ void M_tm_inverse_sitediagonal(const physics::lattices::Spinorfield_eo * out, co
 	fermion_code->M_tm_inverse_sitediagonal_device(in_bufs[0], out_bufs[0], mubar);
 }
 
-void M_tm_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF)
+void physics::fermionmatrix::M_tm_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
@@ -97,7 +97,7 @@ void M_tm_sitediagonal(const physics::lattices::Spinorfield_eo * out, const phys
 	fermion_code->M_tm_sitediagonal_device(in_bufs[0], out_bufs[0], mubar);
 }
 
-void M_tm_inverse_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF)
+void physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
@@ -115,7 +115,7 @@ void M_tm_inverse_sitediagonal_minus(const physics::lattices::Spinorfield_eo * o
 	fermion_code->M_tm_inverse_sitediagonal_minus_device(in_bufs[0], out_bufs[0], mubar);
 }
 
-void M_tm_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF)
+void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
@@ -133,7 +133,7 @@ void M_tm_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, cons
 	fermion_code->M_tm_sitediagonal_minus_device(in_bufs[0], out_bufs[0], mubar);
 }
 
-void dslash(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, int evenodd, hmc_float kappa = ARG_DEF)
+void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, int evenodd, hmc_float kappa)
 {
 	auto out_bufs = out->get_buffers();
 	auto gf_bufs = gf.get_buffers();
