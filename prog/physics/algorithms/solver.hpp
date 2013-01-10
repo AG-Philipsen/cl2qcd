@@ -10,7 +10,7 @@
 #include "../../hardware/device.hpp"
 #include <stdexcept>
 #include "../../hardware/system.hpp"
-#include "../fermionmatrix.hpp"
+#include "../fermionmatrix/fermionmatrix.hpp"
 #include "../../logger.hpp"
 
 namespace physics {
