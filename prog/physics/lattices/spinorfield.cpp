@@ -129,3 +129,62 @@ void physics::lattices::Spinorfield::gaussian(const physics::PRNG& prng) const
 		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_device(spin_buf, prng_buf);
 	}
 }
+
+void physics::lattices::saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y)
+{
+	auto out_bufs = out->get_buffers();
+	auto x_bufs = x.get_buffers();
+	auto y_bufs = y.get_buffers();
+
+	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		hardware::buffers::Plain<hmc_complex> alpha_buf(1, device);
+		alpha_buf.load(&alpha);
+		device->get_spinor_code()->saxpy_device(x_bufs[i], y_bufs[i], &alpha_buf, out_buf);
+	}
+}
+
+void physics::lattices::sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x)
+{
+	auto out_bufs = out->get_buffers();
+	auto x_bufs = x.get_buffers();
+
+	if(out_bufs.size() != x_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		hardware::buffers::Plain<hmc_complex> alpha_buf(1, device);
+		alpha_buf.load(&alpha);
+		device->get_spinor_code()->sax_device(x_bufs[i], &alpha_buf, out_buf);
+	}
+}
+
+void physics::lattices::saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z)
+{
+	auto out_bufs = out->get_buffers();
+	auto x_bufs = x.get_buffers();
+	auto y_bufs = y.get_buffers();
+	auto z_bufs = z.get_buffers();
+
+	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size() || out_bufs.size() != z_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		hardware::buffers::Plain<hmc_complex> alpha_buf(1, device);
+		hardware::buffers::Plain<hmc_complex> beta_buf(1, device);
+		alpha_buf.load(&alpha);
+		beta_buf.load(&beta);
+		device->get_spinor_code()->saxsbypz_device(x_bufs[i], y_bufs[i], z_bufs[i], &alpha_buf, &beta_buf, out_buf);
+	}
+}

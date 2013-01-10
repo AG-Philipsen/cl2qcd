@@ -87,6 +87,27 @@ namespace physics {
 	 */
 	hmc_float squarenorm(const Spinorfield& field);
 
+	/**
+	 * Perform the BLAS operation saxpy.
+	 *
+	 * out = alpha * x + y
+	 */
+	void saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y);
+
+	/**
+	 * Perform the BLAS operation sax.
+	 *
+	 * out = alpha * x
+	 */
+	void sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x);
+
+	/**
+	 * Perform the BLAS operation saxsbypz.
+	 *
+	 * out = alpha * x + beta * y + z
+	 */
+	void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z);
+
 	}
 }
 
