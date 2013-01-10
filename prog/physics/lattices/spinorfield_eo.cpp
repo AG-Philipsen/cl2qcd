@@ -6,14 +6,14 @@
 #include "../../meta/util.hpp"
 #include <cassert>
 
-static std::vector<const hardware::buffers::Spinor *> allocate_buffers(hardware::System& system);
+static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
 
-physics::lattices::Spinorfield_eo::Spinorfield_eo(hardware::System& system)
+physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
 {
 }
 
-static  std::vector<const hardware::buffers::Spinor *> allocate_buffers(hardware::System& system)
+static  std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system)
 {
 	using hardware::buffers::Spinor;
 

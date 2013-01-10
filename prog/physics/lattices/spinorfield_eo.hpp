@@ -26,7 +26,7 @@ public:
 	/**
 	 * Construct a gaugefield based on the input-files of the system
 	 */
-	Spinorfield_eo(hardware::System&);
+	Spinorfield_eo(const hardware::System&);
 
 	/**
 	 * Release resources
