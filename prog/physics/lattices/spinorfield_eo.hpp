@@ -44,10 +44,64 @@ public:
 	 */
 	const std::vector<const hardware::buffers::Spinor *> get_buffers() const noexcept;
 
+	/**
+	 * Set Spinorfield to zero
+	 */
+	void zero() const;
+
+	/**
+	 * Set Spinorfield to be gaussian.
+	 */
+	void gaussian(const physics::PRNG& prng) const;
+
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Spinor *> buffers;
 };
+
+/**
+ * Create n spinorfields.
+ *
+ * \param n The number of spinorfields to create
+ */
+const std::vector<const Spinorfield_eo *> create_spinorfields(const hardware::System& system, const size_t n);
+
+/**
+ * Release the given spinorfields
+ */
+void release_spinorfields(const std::vector<const Spinorfield_eo *> fields);
+
+/**
+ * Calculate the scalar product of two spinorfields.
+ */
+hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
+
+/**
+ * Calculate the squarenorm of the spinorfield
+ */
+hmc_float squarenorm(const Spinorfield_eo& field);
+
+/**
+ * Perform the BLAS operation saxpy.
+ *
+ * out = alpha * x + y
+ */
+void saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y);
+
+/**
+ * Perform the BLAS operation sax.
+ *
+ * out = alpha * x
+ */
+void sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x);
+
+/**
+ * Perform the BLAS operation saxsbypz.
+ *
+ * out = alpha * x + beta * y + z
+ */
+void saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z);
+
 }
 }
 
