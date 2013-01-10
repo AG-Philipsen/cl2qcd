@@ -8,4 +8,10 @@
 
 add_library(fermionmatrix
 	fermionmatrix.cpp
+	explicit.cpp
+)
+target_link_libraries(fermionmatrix
+	meta
+	hardware
+	lattices
 )

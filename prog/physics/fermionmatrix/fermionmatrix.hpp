@@ -1,12 +1,16 @@
-#ifndef _FERMIONMATRIXH_
-#define _FERMIONMATRIXH_
+/** @file
+ * Definition of fermionmatrix operations.
+ */
+
+#ifndef _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_
+#define _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_
 
 #include "../hardware/code/fermions.hpp"
 
-#include "../hardware/buffers/plain.hpp"
-#include "../hardware/buffers/su3.hpp"
-#include "../hardware/buffers/spinor.hpp"
 #include "../host_use_timer.h"
+#include "../lattices/spinorfield.hpp"
+#include "../lattices/spinorfield_eo.hpp"
+#include "../lattices/gaugefield.hpp"
 
 #include "../hardware/device.hpp"
 /**
@@ -15,6 +19,20 @@
 namespace physics {
 
 namespace fermionmatrix {
+
+/*
+ * Explicit Fermion operations
+ */
+void M_wilson(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in, hmc_float kappa = ARG_DEF);
+void M_tm_plus(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+void M_tm_minus(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+void M_tm_inverse_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF);
+void M_tm_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF);
+void M_tm_inverse_sitediagonal_minus_device(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF);
+void M_tm_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar = ARG_DEF);
+void dslash(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, int evenodd, hmc_float kappa = ARG_DEF);
+
+
 /**
  * A generic fermion matrix
  */
@@ -139,4 +157,4 @@ public:
 };
 }
 }
-#endif /* _FERMIONMATRIXH_ */
+#endif /* _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_ */

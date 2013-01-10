@@ -348,5 +348,3 @@ cl_ulong physics::fermionmatrix::QplusQminus_eo::get_Bytes() const
 	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
 }
-
-
