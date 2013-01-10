@@ -115,3 +115,17 @@ for(auto buffer: buffers) {
 	}
 }
 
+void physics::lattices::Spinorfield::gaussian(const physics::PRNG& prng) const
+{
+	auto prng_bufs = prng.get_buffers();
+
+	if(buffers.size() != prng_bufs.size()) {
+		throw std::invalid_argument("PRNG does not use same devices as spinorfield");
+	}
+
+	for(size_t i = 0; i < buffers.size(); ++i) {
+		auto spin_buf = buffers[i];
+		auto prng_buf = prng_bufs[i];
+		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_device(spin_buf, prng_buf);
+	}
+}

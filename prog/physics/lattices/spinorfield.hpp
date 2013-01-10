@@ -54,6 +54,11 @@ namespace physics {
 			 */
 			void zero() const;
 
+			/**
+			 * Set Spinorfield to be gaussian.
+			 */
+			void gaussian(const physics::PRNG& prng) const;
+
 		private:
 			hardware::System const& system;
 			const std::vector<const hardware::buffers::Plain<spinor> *> buffers;
