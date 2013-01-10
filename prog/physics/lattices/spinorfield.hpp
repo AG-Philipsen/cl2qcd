@@ -49,6 +49,11 @@ namespace physics {
 			 */
 			void gamma5() const;
 
+			/**
+			 * Set Spinorfield to zero
+			 */
+			void zero() const;
+
 		private:
 			hardware::System const& system;
 			const std::vector<const hardware::buffers::Plain<spinor> *> buffers;

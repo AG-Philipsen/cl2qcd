@@ -106,3 +106,12 @@ hmc_float physics::lattices::squarenorm(const Spinorfield& field)
 	result_buf.dump(&result);
 	return result;
 }
+
+void physics::lattices::Spinorfield::zero() const
+{
+for(auto buffer: buffers) {
+		auto spinor_code = buffer->get_device()->get_spinor_code();
+		spinor_code->set_zero_spinorfield_device(buffer);
+	}
+}
+
