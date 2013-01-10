@@ -90,6 +90,7 @@ const std::vector<const physics::lattices::Spinorfield *> physics::create_source
 			case meta::Inputparameters::sourcetypes::zslice:
 				logger.debug() << "start creating zslice-source...";
 				set_zslice_source(source, prng, params.get_source_z());
+				break;
 			default:
 				throw std::domain_error("no such sourcetype");
 		}
