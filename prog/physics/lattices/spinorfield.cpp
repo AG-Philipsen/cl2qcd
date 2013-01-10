@@ -115,6 +115,14 @@ for(auto buffer: buffers) {
 	}
 }
 
+void physics::lattices::Spinorfield::cold() const
+{
+for(auto buffer: buffers) {
+		auto spinor_code = buffer->get_device()->get_spinor_code();
+		spinor_code->set_spinorfield_cold_device(buffer);
+	}
+}
+
 void physics::lattices::Spinorfield::gaussian(const physics::PRNG& prng) const
 {
 	auto prng_bufs = prng.get_buffers();

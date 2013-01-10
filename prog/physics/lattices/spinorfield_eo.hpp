@@ -50,6 +50,11 @@ public:
 	void zero() const;
 
 	/**
+	 * Set Spinorfield to cold
+	 */
+	void cold() const;
+
+	/**
 	 * Set Spinorfield to be gaussian.
 	 */
 	void gaussian(const physics::PRNG& prng) const;
