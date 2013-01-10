@@ -46,6 +46,11 @@ public:
 	const std::vector<const hardware::buffers::Spinor *> get_buffers() const noexcept;
 
 	/**
+	 * Apply Gamma5 to the Spinorfield
+	 */
+	void gamma5() const;
+
+	/**
 	 * Set Spinorfield to zero
 	 */
 	void zero() const;

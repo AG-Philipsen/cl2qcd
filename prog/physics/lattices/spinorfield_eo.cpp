@@ -203,3 +203,11 @@ void physics::lattices::convert_to_eoprec(const Spinorfield* merged, const Spino
 		spinor_code->convert_from_eoprec_device(even_bufs[i], odd_bufs[i], merged_bufs[i]);
 	}
 }
+
+void physics::lattices::Spinorfield_eo::gamma5() const
+{
+for(auto buffer: buffers) {
+		auto fermion_code = buffer->get_device()->get_fermion_code();
+		fermion_code->gamma5_eo_device(buffer);
+	}
+}
