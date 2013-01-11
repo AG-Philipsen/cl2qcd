@@ -57,12 +57,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			solver->gamma5_device(source_buf);
 			hardware::code::QplusQminus f_neo(solver);
+			const hardware::buffers::Plain<spinor> clmem_tmp  (meta::get_spinorfieldsize(params), device);
 			converged = solver->cg(f_neo, result_buf, source_buf, gf_buf, params.get_solver_prec());
+			hardware::buffers::copyData(&clmem_tmp, result_buf);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
-			//therefore, use source as an intermediate buffer
-			solver->Qminus(result_buf, source_buf, gf_buf, params.get_kappa(), meta::get_mubar(params ));
-			//save the result to result_buf
-			hardware::buffers::copyData(result_buf, source_buf);
+			solver->Qminus(&clmem_tmp, result_buf, gf_buf, params.get_kappa(), meta::get_mubar(params ));
 		} else {
 			hardware::code::M f_neo(solver);
 			converged = solver->bicgstab(f_neo, result_buf, source_buf, gf_buf, params.get_solver_prec());
