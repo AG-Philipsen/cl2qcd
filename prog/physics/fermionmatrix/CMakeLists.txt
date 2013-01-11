@@ -9,7 +9,6 @@
 add_library(fermionmatrix
 	fermionmatrix.cpp
 	explicit.cpp
-	compound.cpp
 )
 target_link_libraries(fermionmatrix
 	meta
