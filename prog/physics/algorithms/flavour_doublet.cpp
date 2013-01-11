@@ -186,10 +186,10 @@ static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics
 	 * D_d - D_u = - 4 i kappa amu gamma_5 <-> D^-1_u - D^-1_d = - 4 i kappa amu gamma_5 (D^-1_u)^dagger D^-1_u
 	 * With this, the chiral condensate is:
 	 * <pbp> = ... = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
-	 *       = - 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
+	 *       = 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
 	 * NOTE: Here one only needs Phi...
 	 */
-	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * (-2.) / params.get_num_sources();
+	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * 2. / params.get_num_sources();
 
 	logger.info() << "chiral condensate:" ;
 	for(auto phi: solved_fields) {
