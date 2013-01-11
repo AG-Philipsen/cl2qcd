@@ -12,8 +12,8 @@
 
 static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<const physics::lattices::Spinorfield*>& fields, const size_t device_idx, hardware::Device * device);
 
-static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
-static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
+static void flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
+static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
 static size_t get_num_corr_entries(const meta::Inputparameters& params);
 static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<const physics::lattices::Spinorfield*>& fields, size_t index);
 
@@ -73,24 +73,13 @@ void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<co
 
 	auto params = system.get_inputparameters();
 
-	hmc_complex result;
 	if(params.get_pbp_version() == meta::Inputparameters::std) {
-		result = flavour_doublet_chiral_condensate_std(inverted, sources, pbp_fn, number, system);
+	  flavour_doublet_chiral_condensate_std(inverted, sources, pbp_fn, number, system);
 	} else if(params.get_fermact() == meta::Inputparameters::twistedmass && params.get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) {
-		result = flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
+		flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
 	} else {
-		throw std::invalid_argument("No valid chiral condensate version has ben selected.");
+				throw std::invalid_argument("No valid chiral condensate version has ben selected.");
 	}
-
-	// Output
-	ofstream of;
-	of.open(pbp_fn.c_str(), ios_base::app);
-	if(!of.is_open()) {
-		throw File_Exception(pbp_fn);
-	}
-	logger.info() << "chiral condensate:" ;
-	logger.info() << number << "\t" << scientific << setprecision(14) << result.re << "\t" << result.im;
-	of << number << "\t" << scientific << setprecision(14) << result.re << "\t" << result.im << endl;
 }
 
 static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<const physics::lattices::Spinorfield*>& fields, const size_t device_idx, hardware::Device * device)
@@ -111,13 +100,21 @@ for(auto field: fields) {
 	return result;
 }
 
-static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
+static void flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
 {
 	using namespace physics::lattices;
 
 	auto params = system.get_inputparameters();
 
-	hmc_complex result = {0., 0.};
+	// Output
+	using namespace std;
+	ofstream of;
+	of.open(pbp_fn.c_str(), std::ios_base::app);
+	if(!of.is_open()) {
+		throw File_Exception(pbp_fn);
+	}
+
+	hmc_float result = 0.;
 	/**
 	 * In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
 	 * <pbp> = <ubu + dbd> = 2<ubu> = 2 Tr_(space, colour, dirac) ( D^-1 )
@@ -143,60 +140,64 @@ static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const
 	Spinorfield phi(system);
 	Spinorfield xi(system);
 	assert(solved_fields.size() == sources.size());
+	hmc_float norm = 4. * params.get_kappa() * 2. / meta::get_vol4d(params) / params.get_num_sources();
+	logger.info() << "chiral condensate:" ;
 	for(size_t i = 0; i < solved_fields.size(); ++i) {
 		copyData(&phi, solved_fields[i]);
 		copyData(&xi, sources[i]);
 
 		if(params.get_fermact() == meta::Inputparameters::twistedmass) {
-			xi.gamma5();
+		  xi.gamma5();
 		}
 
 		hmc_complex tmp = scalar_product(xi, phi);
+		tmp.re*=norm;
+		tmp.im*=norm;
 		switch(params.get_fermact()) {
 			case  meta::Inputparameters::wilson:
-				result.re += tmp.re;
-				result.im += tmp.im;
+				result = tmp.re;
 				break;
 			case meta::Inputparameters::twistedmass:
-				//NOTE: Here I just swap the assignments
-				result.re += tmp.im;
-				result.im += tmp.re;
+				result = tmp.im;
 				break;
 			default:
 				throw std::invalid_argument("chiral condensate not implemented for given fermion action");
 		}
+		logger.info() << number << "\t" << scientific << setprecision(14) << result;
+		of << number << "\t" << scientific << setprecision(14) << result << endl;
 	}
-	//Normalization: The 2/r from above plus 1/VOL4D
-	hmc_float norm = 2. / params.get_num_sources() / meta::get_vol4d(params);
-	result.re *= norm;
-	result.im *= norm;
-
-	return result;
 }
 
-static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system)
+static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system)
 {
-	hmc_complex result = {0., 0.};
+	hmc_float result = 0.;
+	auto params = system.get_inputparameters();
+
+	// Output
+	using namespace std;
+	ofstream of;
+	of.open(pbp_fn.c_str(), ios_base::app);
+	if(!of.is_open()) {
+		throw File_Exception(pbp_fn);
+	}
+
 	/**
 	 * For twisted-mass fermions one can also employ the one-end trick, which origins from
 	 * D_d - D_u = - 4 i kappa amu gamma_5 <-> D^-1_u - D^-1_d = - 4 i kappa amu gamma_5 (D^-1_u)^dagger D^-1_u
 	 * With this, the chiral condensate is:
 	 * <pbp> = ... = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
-	 *       = - 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
+	 *       = 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
 	 * NOTE: Here one only needs Phi...
 	 */
-	logger.debug() << "init buffers for chiral condensate calculation...";
-for(auto phi: solved_fields) {
+	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * 2. / params.get_num_sources();
+
+	logger.info() << "chiral condensate:" ;
+	for(auto phi: solved_fields) {
 		hmc_float tmp = squarenorm(*phi);
-		result.re += tmp;
-		result.im += 0;
+		result = tmp*norm;
+		logger.info() << number << "\t" << scientific << setprecision(14) << result;
+		of << number << "\t" << scientific << setprecision(14) << result;
 	}
-	//Normalization: The 1/r from above plus 1/VOL4D and the additional factor - 4 kappa amu ( = 2 mubar )
-	auto params = system.get_inputparameters();
-	hmc_float norm = 1. / params.get_num_sources() / meta::get_vol4d(params) * (-2.) * meta::get_mubar(params);
-	result.re *= norm;
-	result.im *= norm;
-	return result;
 }
 
 static std::vector<hmc_float> calculate_correlator_componentwise(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
