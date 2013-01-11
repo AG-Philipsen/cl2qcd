@@ -16,6 +16,9 @@ add_library(meta
 	../logger.cpp
 )
 add_dependencies(meta git_commit_id_header)
+target_link_libraries(meta
+	einhard
+)
 
 #
 # Definition of tets
