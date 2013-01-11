@@ -143,6 +143,7 @@ static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const
 	Spinorfield phi(system);
 	Spinorfield xi(system);
 	assert(solved_fields.size() == sources.size());
+	hmc_float norm = 4. * params.get_kappa() * 2. / meta::get_vol4d(params) / params.get_num_sources();
 	for(size_t i = 0; i < solved_fields.size(); ++i) {
 		copyData(&phi, solved_fields[i]);
 		copyData(&xi, sources[i]);
@@ -152,6 +153,8 @@ static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const
 		}
 
 		hmc_complex tmp = scalar_product(xi, phi);
+		tmp.re*=norm;
+		tmp.im*=norm;
 		switch(params.get_fermact()) {
 			case  meta::Inputparameters::wilson:
 				result.re += tmp.re;
@@ -166,17 +169,13 @@ static hmc_complex flavour_doublet_chiral_condensate_std(const std::vector<const
 				throw std::invalid_argument("chiral condensate not implemented for given fermion action");
 		}
 	}
-	//Normalization: The 2/r from above plus 1/VOL4D
-	hmc_float norm = 2. / params.get_num_sources() / meta::get_vol4d(params);
-	result.re *= norm;
-	result.im *= norm;
-
 	return result;
 }
 
 static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system)
 {
 	hmc_complex result = {0., 0.};
+	auto params = system.get_inputparameters();
 	/**
 	 * For twisted-mass fermions one can also employ the one-end trick, which origins from
 	 * D_d - D_u = - 4 i kappa amu gamma_5 <-> D^-1_u - D^-1_d = - 4 i kappa amu gamma_5 (D^-1_u)^dagger D^-1_u
@@ -185,17 +184,14 @@ static hmc_complex flavour_doublet_chiral_condensate_tm(const std::vector<const 
 	 *       = - 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
 	 * NOTE: Here one only needs Phi...
 	 */
+	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * (-2.) / params.get_num_sources();
+
 	logger.debug() << "init buffers for chiral condensate calculation...";
 for(auto phi: solved_fields) {
 		hmc_float tmp = squarenorm(*phi);
-		result.re += tmp;
+		result.re += tmp*norm;
 		result.im += 0;
 	}
-	//Normalization: The 1/r from above plus 1/VOL4D and the additional factor - 4 kappa amu ( = 2 mubar )
-	auto params = system.get_inputparameters();
-	hmc_float norm = 1. / params.get_num_sources() / meta::get_vol4d(params) * (-2.) * meta::get_mubar(params);
-	result.re *= norm;
-	result.im *= norm;
 	return result;
 }
 
