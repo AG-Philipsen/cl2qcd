@@ -383,6 +383,7 @@ static void print_info_gauge(std::ostream* os, const meta::Inputparameters& para
 	*os << "## **********************************************************" << endl;
 	*os << "## Gauge parameters:" << endl;
 	*os << "##" << endl;
+	*os << "## beta:  " << params.get_beta() << endl;
 	if(params.get_gaugeact() == Inputparameters::wilson) {
 		*os <<  "## gauge action: unimproved Wilson" << endl;
 	}
@@ -400,6 +401,7 @@ static void print_info_gauge(const meta::Inputparameters& params)
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Gauge parameters:";
 	logger.info() << "##" ;
+	logger.info() << "## beta:  " << params.get_beta();
 	if(params.get_gaugeact() == Inputparameters::wilson) {
 		logger.info() <<  "## gauge action: unimproved Wilson";
 	}
