@@ -21,6 +21,14 @@ namespace lattices {
  */
 template<class T> void copyData(const T* to, const T* from);
 
+/**
+ * Copy the contents of one lattice to another
+ *
+ * \param[out] dest The lattice to copy to
+ * \param[in]  from The lattice to copy from
+ */
+template<class T> void copyData(const T* to, const T& from);
+
 
 /**
  * Pseudo-Randomize a lattice. This can be usefull for testcases.
@@ -34,9 +42,9 @@ template <class T> void pseudo_randomize(int seed);
 /*
  * TEMPLATE IMPLEMENTATIONS
  */
-template<class T> void copyData(const T* to, const T* from)
+template<class T> void copyData(const T* to, const T& from)
 {
-	auto from_buffers = from->get_buffers();
+	auto from_buffers = from.get_buffers();
 	auto dest_buffers = to->get_buffers();
 	if(from_buffers.size() != dest_buffers.size()) {
 		throw std::invalid_argument("The lattices need to have the same number of buffers.");
@@ -45,6 +53,11 @@ template<class T> void copyData(const T* to, const T* from)
 	for(size_t i = 0; i < from_buffers.size(); ++i) {
 		hardware::buffers::copyData(dest_buffers[i], from_buffers[i]);
 	}
+}
+
+template<class T> void copyData(const T* to, const T* from)
+{
+	copyData(to, *from);
 }
 
 template <class Lattice, typename Basetype> void pseudo_randomize(const Lattice* to, int seed)

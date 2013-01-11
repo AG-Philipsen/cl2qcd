@@ -59,6 +59,17 @@ class SolverDidNotSolve : public SolverException {
 		SolverDidNotSolve(int iterations, std::string filename, int linenumber) : SolverException("Solver did not solve.", iterations, filename, linenumber) { };
 };
 
+/**
+ * Solve the linear system A * x = b for x using the BiCGstab algorithm
+ *
+ *
+ * \return The number of iterations performed
+ *
+ * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
+ *
+ * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
+ */
+int bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
 }
 }
 }
