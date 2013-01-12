@@ -4,6 +4,7 @@
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <fstream>
+#include <cmath>
 
 using namespace std;
 

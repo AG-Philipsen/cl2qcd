@@ -11,6 +11,7 @@
 #include "../../host_readgauge.h"
 #include <cassert>
 #include "../../checksum.h"
+#include <fstream>
 
 /**
  * Version number.

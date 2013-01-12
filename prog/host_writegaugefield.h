@@ -8,13 +8,6 @@
 #include "types.h"
 #include "exceptions.h"
 
-#include <cstdlib>
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <time.h>
-
 extern "C" {
 #include <lime.h>
 #include <lime_fixed_types.h>

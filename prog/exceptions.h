@@ -7,10 +7,7 @@
 
 #include "globaldefs.h"
 
-#include <cstdlib>
-#include <iostream>
 #include <string>
-#include <sstream>
 
 class File_Exception {
 public:

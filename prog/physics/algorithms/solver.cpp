@@ -10,6 +10,8 @@
 #include "../../logger.hpp"
 #include "../../operations_complex.h"
 #include "../lattices/util.hpp"
+#include <cmath>
+#include <sstream>
 
 static std::string create_solver_stuck_message(int iterations);
 /**

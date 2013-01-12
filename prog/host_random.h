@@ -6,10 +6,6 @@
 #ifndef _RANDOMH_
 #define _RANDOMH_
 
-#include <cstdlib>
-#include <cstdio>
-#include <sstream>
-
 #include "globaldefs.h"
 #include "types.h"
 #include "host_geometry.h"

@@ -5,12 +5,7 @@
 #ifndef _GAUGEFIELDHMCH_
 #define _GAUGEFIELDHMCH_
 
-#include <cstdlib>
-#include <fstream>
-#include <cmath>
-#include <cstdio>
 #include <string>
-#include <vector>
 
 #include "globaldefs.h"
 #include "types.h"

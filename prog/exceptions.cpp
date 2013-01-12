@@ -1,6 +1,7 @@
 #include "exceptions.h"
 
 #include "meta/inputparameters.hpp"
+#include <sstream>
 
 File_Exception::File_Exception(const char* name)
 {

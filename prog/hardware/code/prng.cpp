@@ -2,6 +2,7 @@
 
 #include "../../logger.hpp"
 #include "../device.hpp"
+#include <sstream>
 
 using namespace std;
 

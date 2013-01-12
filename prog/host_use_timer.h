@@ -4,14 +4,6 @@
 #ifndef _USETIMERH_
 #define _USETIMERH_
 
-#include <cstdlib>
-#include <cmath>
-#include <cstdio>
-#include <string>
-#include <vector>
-#include <sstream>
-//#include <boost/lexical_cast.hpp>
-
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else

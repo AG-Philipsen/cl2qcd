@@ -5,6 +5,7 @@
 #include "../device.hpp"
 
 #include <cassert>
+#include <cmath>
 
 using namespace std;
 
