@@ -81,6 +81,7 @@ int main(int argc, const char* argv[])
 
 				const std::vector<const Spinorfield*> sources = create_sources(system, prng);
 				const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+				perform_inversion(&result, &gaugefield, sources, system);
 				flavour_doublet_correlators(result, sources, corr_file, parameters);
 
 				logger.trace() << "Inversion done" ;

@@ -63,7 +63,7 @@ int main(int argc, const char* argv[])
 				const std::vector<const Spinorfield*> sources = create_sources(system, prng);
 				const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
 
-				perform_inversion(&result, &gaugefield, sources, parameters);
+				perform_inversion(&result, &gaugefield, sources, system);
 
 
 				if(parameters.get_measure_correlators() ) {
@@ -93,7 +93,7 @@ int main(int argc, const char* argv[])
 			const std::vector<const Spinorfield*> sources = create_sources(system, prng);
 			const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
 
-			perform_inversion(&result, &gaugefield, sources, parameters);
+			perform_inversion(&result, &gaugefield, sources, system);
 
 			if(parameters.get_measure_correlators() ) {
 				//get name for file to which correlators are to be stored

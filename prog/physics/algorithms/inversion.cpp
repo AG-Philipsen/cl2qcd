@@ -4,13 +4,16 @@
 
 #include "inversion.hpp"
 #include "../meta/util.hpp"
+#include "solver.hpp"
 #include <cassert>
+#include "../lattices/util.hpp"
 
-static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* result, const physics::lattices::Gaugefield& gaugefield, const physics::lattices::Spinorfield* source, const meta::Inputparameters& params);
+static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* result, const physics::lattices::Gaugefield& gaugefield, const physics::lattices::Spinorfield* source, const hardware::System& system);
 
-void physics::algorithms::perform_inversion(const std::vector<const physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+void physics::algorithms::perform_inversion(const std::vector<const physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<const physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {
-	int num_sources = params.get_num_sources();
+	int num_sources = sources.size();
+	auto params = system.get_inputparameters();
 
 	//apply stout smearing if wanted
 	if(params.get_use_smearing())
@@ -18,15 +21,19 @@ void physics::algorithms::perform_inversion(const std::vector<const physics::lat
 
 	for(int k = 0; k < num_sources; k++) {
 		logger.debug() << "calling solver..";
-		invert_M_nf2_upperflavour(result->at(k), *gaugefield, sources.at(k), params);
+		invert_M_nf2_upperflavour(result->at(k), *gaugefield, sources[k], system);
 	}
 
 	if(params.get_use_smearing())
 		gaugefield->unsmear();
 }
 
-static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* result, const physics::lattices::Gaugefield& gaugefield, const physics::lattices::Spinorfield* source, const meta::Inputparameters& params)
+static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* result, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield* source, const hardware::System& system)
 {
+	using namespace physics::lattices;
+	using namespace physics::algorithms::solvers;
+	using namespace physics::fermionmatrix;
+
 	/** This solves the sparse-matrix system
 	 *  A x = b
 	 *  with  x == result
@@ -38,9 +45,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 	// assert a single GPU
 	assert(result->get_buffers().size() == 1);
 
+	auto params = system.get_inputparameters();
+
 	auto result_buf = result->get_buffers().at(0);
 	auto source_buf = source->get_buffers().at(0);
-	auto gf_buf = gaugefield.get_buffers().at(0);
+	auto gf_buf = gf.get_buffers().at(0);
 	auto device = result_buf->get_device();
 
 	int converged = -1;
@@ -51,28 +60,30 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		//noneo case
 		//Trial solution
 		///@todo this should go into a more general function
-		spinor_code->set_spinorfield_cold_device(result_buf);
+		result->cold();
 		if(params.get_solver() == meta::Inputparameters::cg) {
-			const hardware::buffers::Plain<spinor> clmem_tmp  (meta::get_spinorfieldsize(params), device);
+			Spinorfield tmp(system);
 			//to use cg, one needs an hermitian matrix, which is QplusQminus
 			//the source must now be gamma5 b, to obtain the desired solution in the end
-			solver->gamma5_device(source_buf);
-			hardware::code::QplusQminus f_neo(solver);
-			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
-			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
-			converged = solver->cg(f_neo, result_buf, source_buf, gf_buf, params.get_solver_prec());
-			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
-			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
-			hardware::buffers::copyData(&clmem_tmp, result_buf);
+			copyData(&tmp, source);
+			tmp.gamma5();
+			QplusQminus f_neo(params.get_kappa(), meta::get_mubar(params), system);
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
+			converged = cg(result, f_neo, gf, tmp, system, params.get_solver_prec());
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
+			copyData(&tmp, result);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
-			solver->Qminus(&clmem_tmp, result_buf, gf_buf, params.get_kappa(), meta::get_mubar(params ));
+			Qminus qminus(params.get_kappa(), meta::get_mubar(params), system);
+			qminus(result, gf, tmp);
 		} else {
-			hardware::code::M f_neo(solver);
-			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
-			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
-			converged = solver->bicgstab(f_neo, result_buf, source_buf, gf_buf, params.get_solver_prec());
-			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
-			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
+			M f_neo(params.get_kappa(), meta::get_mubar(params), system);
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
+			converged = bicgstab(result, f_neo, gf, *source, system, params.get_solver_prec());
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
+			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
 		}
 	} else {
 		/**
