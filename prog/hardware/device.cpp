@@ -302,7 +302,7 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 			logger.error() << "Could not retrieve length of kernel name";
 		}
 
-		//throw hardware::OpenclException(clerr, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
+		throw hardware::OpenclException(clerr, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
 	}
 
 	// evaluate profiling if required
