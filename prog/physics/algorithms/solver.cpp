@@ -102,7 +102,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 
 		//check if algorithm is stuck
 		//if rho is too small the algorithm will get stuck and will never converge!!
-		if(abs(rho_next.re) < 1e-25 && abs(rho_next.im) < 1e-25 ) {
+		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
 			//print the last residuum
 			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 			throw SolverStuck(iter, __FILE__, __LINE__);
@@ -233,7 +233,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 		hmc_complex rho_next = scalar_product(rhat, rn);
 		//check if algorithm is stuck
 		//if rho is too small the algorithm will get stuck and will never converge!!
-		if(abs(rho_next.re) < 1e-25 && abs(rho_next.im) < 1e-25 ) {
+		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
 			//print the last residuum
 			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 			throw SolverStuck(iter, __FILE__, __LINE__);
@@ -387,7 +387,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 		}
 		rho_next = scalar_product(rhat, rn);
 		//check if algorithm is stuck
-		if(abs(rho_next.re) < 1e-25 && abs(rho_next.im) < 1e-25 ) {
+		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
 			//print the last residuum
 			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 			throw SolverStuck(iter, __FILE__, __LINE__);
@@ -555,7 +555,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 		//rho_next = (rhat, rn)
 		hmc_complex rho_next = scalar_product(rhat, rn);
 		//check if algorithm is stuck
-		if(abs(rho_next.re) < 1e-25 && abs(rho_next.im) < 1e-25 ) {
+		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
 			//print the last residuum
 			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 			SolverStuck(iter, __FILE__, __LINE__);
