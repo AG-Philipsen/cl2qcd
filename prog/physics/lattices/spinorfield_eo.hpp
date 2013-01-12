@@ -117,7 +117,7 @@ void convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, co
  * @param[in]  even   The even part
  * @param[in]  odd    The odd part
  */
-void convert_to_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd);
+void convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd);
 }
 }
 

@@ -187,7 +187,7 @@ void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spin
 	}
 }
 
-void physics::lattices::convert_to_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd)
+void physics::lattices::convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd)
 {
 	auto merged_bufs = merged->get_buffers();
 	auto even_bufs = even.get_buffers();
