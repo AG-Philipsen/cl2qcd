@@ -53,18 +53,26 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		///@todo this should go into a more general function
 		spinor_code->set_spinorfield_cold_device(result_buf);
 		if(params.get_solver() == meta::Inputparameters::cg) {
+			const hardware::buffers::Plain<spinor> clmem_tmp  (meta::get_spinorfieldsize(params), device);
 			//to use cg, one needs an hermitian matrix, which is QplusQminus
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			solver->gamma5_device(source_buf);
 			hardware::code::QplusQminus f_neo(solver);
-			const hardware::buffers::Plain<spinor> clmem_tmp  (meta::get_spinorfieldsize(params), device);
+			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
 			converged = solver->cg(f_neo, result_buf, source_buf, gf_buf, params.get_solver_prec());
+			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
 			hardware::buffers::copyData(&clmem_tmp, result_buf);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
 			solver->Qminus(&clmem_tmp, result_buf, gf_buf, params.get_kappa(), meta::get_mubar(params ));
 		} else {
 			hardware::code::M f_neo(solver);
+			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
 			converged = solver->bicgstab(f_neo, result_buf, source_buf, gf_buf, params.get_solver_prec());
+			if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
 		}
 	} else {
 		/**
@@ -96,6 +104,10 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 */
 		spinor_code->convert_to_eoprec_device(&clmem_source_odd, &clmem_source_even, source_buf);
 
+		if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
+		if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\teven source before inversion ");
+		if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_odd, true, "\todd source before inversion ");
+
 		//prepare sources
 		/**
 		 * This changes the even source according to (with A = M + D):
@@ -121,7 +133,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			solver->gamma5_eo_device(&clmem_source_even);
 			hardware::code::QplusQminus_eo f_eo(solver);
+			if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field before inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource before inversion ");
 			converged = solver->cg_eo(f_eo, &result_buf_eo, &clmem_source_even, gf_buf, params.get_solver_prec());
+			if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field after inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource after inversion ");
 			//now, calc Qminus result_buf_eo to obtain x = A^⁻1 b
 			//therefore, use source as an intermediate buffer
 			solver->Qminus_eo(&result_buf_eo, &clmem_source_even, gf_buf, params.get_kappa(), meta::get_mubar(params));
@@ -129,7 +145,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			hardware::buffers::copyData(&result_buf_eo, &clmem_source_even);
 		} else {
 			hardware::code::Aee f_eo(solver);
+			if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field before inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource before inversion ");
 			converged = solver->bicgstab_eo(f_eo, &result_buf_eo, &clmem_source_even, gf_buf, params.get_solver_prec());
+			if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field after inversion ");
+			if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource after inversion ");
 		}
 
 		//odd solution
@@ -165,6 +185,8 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		//CP: suppose the odd sol is saved in inout_eoprec, the even one in clmem_tmp_eo_1
 		spinor_code->convert_from_eoprec_device( &clmem_tmp_eo_1, &result_buf_eo, result_buf);
 	}
+
+	if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tsolution ");
 
 	if (converged < 0) {
 		if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
