@@ -15,7 +15,7 @@ void physics::fermionmatrix::M_wilson(const physics::lattices::Spinorfield * out
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("M_wilson is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
@@ -34,7 +34,7 @@ void physics::fermionmatrix::M_tm_plus(const physics::lattices::Spinorfield * ou
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("M_tm_plus is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
@@ -53,7 +53,7 @@ void physics::fermionmatrix::M_tm_minus(const physics::lattices::Spinorfield * o
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("M_tm_minus is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
@@ -71,7 +71,7 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal(const physics::lattices::
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("M_tm_inverse_sitediagonal is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
@@ -89,7 +89,7 @@ void physics::fermionmatrix::M_tm_sitediagonal(const physics::lattices::Spinorfi
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("M_tm_sitediagonal is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
@@ -107,7 +107,7 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(const physics::latt
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("M_tm_inverse_sitediagonal_minus is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
@@ -125,7 +125,7 @@ void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Sp
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("M_tm_sitediagonal_minus is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
@@ -144,7 +144,7 @@ void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * ou
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 0) {
+	if(num_bufs != 1) {
 		throw Print_Error_Message("dslash is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
