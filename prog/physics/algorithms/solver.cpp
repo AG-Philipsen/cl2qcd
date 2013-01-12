@@ -488,7 +488,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 	hmc_complex rho;
 
 	int iter;
-	for(int iter; iter < params.get_cgmax(); iter++) {
+	for(int iter = 0; iter < params.get_cgmax(); iter++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//initial r_n, saved in p
 			f(&rn, gf, *x);
