@@ -62,7 +62,7 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield 
 	}
 }
 
-static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec)
+static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
 {
 	// TODO this function often contains -1 in the comment but 1 in the code...
 	using physics::lattices::Spinorfield;
@@ -168,7 +168,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
-static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec, hmc_float kappa, hmc_float)
+static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
 {
 	using physics::lattices::Spinorfield;
 	using physics::algorithms::solvers::SolverStuck;
