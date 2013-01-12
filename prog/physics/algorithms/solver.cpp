@@ -60,13 +60,13 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 	hmc_float resid;
 	hmc_complex alpha, omega, rho;
 
-	Spinorfield v(system);
-	Spinorfield p(system);
-	Spinorfield rn(system);
-	Spinorfield rhat(system);
-	Spinorfield s(system);
-	Spinorfield t(system);
-	Spinorfield aux(system);
+	const Spinorfield v(system);
+	const Spinorfield p(system);
+	const Spinorfield rn(system);
+	const Spinorfield rhat(system);
+	const Spinorfield s(system);
+	const Spinorfield t(system);
+	const Spinorfield aux(system);
 
 	int iter;
 	for(iter = 0; iter < params.get_cgmax(); iter++) {
@@ -165,12 +165,12 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 	hmc_float resid;
 	hmc_complex rho;
 
-	Spinorfield p(system);
-	Spinorfield rn(system);
-	Spinorfield rhat(system);
-	Spinorfield v(system);
-	Spinorfield s(system);
-	Spinorfield t(system);
+	const Spinorfield p(system);
+	const Spinorfield rn(system);
+	const Spinorfield rhat(system);
+	const Spinorfield v(system);
+	const Spinorfield s(system);
+	const Spinorfield t(system);
 
 	int iter;
 	for(iter = 0; iter < params.get_cgmax(); iter++) {
@@ -239,6 +239,77 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 		saxsbypz(&p, beta, p, tmp2, v, rn);
 		//rho_next = rho
 		rho = rho_next;
+	}
+	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+}
+
+int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
+{
+	using physics::lattices::Spinorfield;
+	using physics::algorithms::solvers::SolverStuck;
+	using physics::algorithms::solvers::SolverDidNotSolve;
+
+	auto params = system.get_inputparameters();
+
+	const Spinorfield rn(system);
+	const Spinorfield p(system);
+	const Spinorfield v(system);
+
+	hmc_complex rho_next;
+
+	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
+	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	int iter;
+	for(iter = 0; iter < params.get_cgmax(); iter ++) {
+		hmc_complex omega;
+		if(iter % params.get_iter_refresh() == 0) {
+			//rn = A*inout
+			f(&rn, gf, *x);
+			//rn = source - A*inout
+			saxpy(&rn, {1., 0.}, b, rn);
+			//p = rn
+			copyData(&p, rn);
+			//omega = (rn,rn)
+			omega = scalar_product(rn, rn);
+		} else {
+			//update omega
+			omega = rho_next;
+		}
+		//v = A pn
+		f(&v, gf, p);
+		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
+		hmc_complex rho = scalar_product(p, v);
+		hmc_complex alpha = complexdivide(omega, rho);
+		hmc_complex tmp1 = complexsubtract( {0., 0.}, alpha);
+
+		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
+		saxpy(x, tmp1, p, *x);
+		//rn+1 = rn - alpha*v -> rhat
+		saxpy(&rn, alpha, v, rn);
+
+		//calc residuum
+		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+		rho_next = scalar_product(rn, rn);
+		hmc_float resid = rho_next.re;
+		//this is the orig. call
+		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
+		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+
+		logger.debug() << "resid: " << resid;
+		//test if resid is NAN
+		if(resid != resid) {
+			logger.fatal() << "\tNAN occured in cg!";
+			throw SolverStuck(iter, __FILE__, __LINE__);
+		}
+		if(resid < prec)
+			return iter;
+
+		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
+		hmc_complex beta = complexdivide(rho_next, omega);
+
+		//pn+1 = rn+1 + beta*pn
+		hmc_complex tmp2 = complexsubtract( {0., 0.}, beta);
+		saxpy(&p, tmp2, p, rn);
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
