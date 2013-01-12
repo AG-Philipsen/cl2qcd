@@ -578,3 +578,139 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
+
+int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+{
+	using physics::lattices::Spinorfield_eo;
+	using physics::algorithms::solvers::SolverStuck;
+	using physics::algorithms::solvers::SolverDidNotSolve;
+
+	// TODO start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+
+	auto params = system.get_inputparameters();
+
+	/// @todo make configurable from outside
+	const int RESID_CHECK_FREQUENCY = params.get_cg_iteration_block_size();
+	if(RESID_CHECK_FREQUENCY != 1) {
+		logger.warn() << "The residuum is currently checked at every iteration, even though you selected a check only every " << RESID_CHECK_FREQUENCY << " iterations.";
+	}
+	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
+	if(USE_ASYNC_COPY) {
+		logger.warn() << "Asynchroneous copying in the CG is currently unimplemented!";
+	}
+
+	hmc_complex rho_next;
+
+	const Spinorfield_eo p(system);
+	const Spinorfield_eo rn(system);
+	const Spinorfield_eo v(system);
+
+	//this corresponds to the above function
+	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	int iter;
+	for(iter = 0; iter < params.get_cgmax(); iter ++) {
+		hmc_complex omega;
+		if(iter % params.get_iter_refresh() == 0) {
+			//rn = A*inout
+			f(&rn, gf, *x);
+			//rn = source - A*inout
+			saxpy(&rn, {1., 0.}, rn, *x);
+			//p = rn
+			copyData(&p, rn);
+			//omega = (rn,rn)
+			omega = scalar_product(rn, rn);
+		} else {
+			//update omega
+			omega = rho_next;
+		}
+		//v = A pn
+		f(&v, gf, p);
+
+		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
+		hmc_complex rho = scalar_product(p, v);
+		hmc_complex alpha = complexdivide(omega, rho);
+		hmc_complex tmp1 = complexsubtract( {0., 0.}, alpha);
+
+		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
+		saxpy(x, tmp1, p, *x);
+		//switch between original version and kernel merged one
+		if(params.get_use_merge_kernels_spinor()) {
+			//merge two calls:
+			//rn+1 = rn - alpha*v -> rhat
+			//and
+			//rho_next = |rhat|^2
+			//rho_next is a complex number, set its imag to zero
+			//spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
+			throw Print_Error_Message("Kernel merging currently not implemented", __FILE__, __LINE__);
+		} else {
+			//rn+1 = rn - alpha*v -> rhat
+			saxpy(&rn, alpha, v, rn);
+
+			//calc residuum
+			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+			rho_next = scalar_product(rn, rn);
+		}
+		//if(iter % RESID_CHECK_FREQUENCY == 0) {
+		hmc_float resid;
+		//if(USE_ASYNC_COPY) {
+		//  if(iter) {
+		//    resid_event.wait();
+		//    resid = resid_rho.re;
+		//  } else {
+		//    // first iteration
+		//    resid = prec;
+		//  }
+		//  resid_event = clmem_rho_next.dump_async(&resid_rho);
+		//} else {
+		//  clmem_rho_next.dump(&resid_rho);
+		//  resid = resid_rho.re;
+		//  //this is the orig. call
+		//  //set_float_to_global_squarenorm_device(&clmem_rn, clmem_resid);
+		//  //get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+		//}
+
+		logger.debug() << "resid: " << resid;
+		//test if resid is NAN
+		if(resid != resid) {
+			logger.fatal() << "\tNAN occured in cg_eo!";
+			throw SolverStuck(iter, __FILE__, __LINE__);
+		}
+		if(resid < prec) {
+			//if(USE_ASYNC_COPY) {
+			//  // make sure everything using our event is completed
+			//  resid_event.wait();
+			//}
+			// report on performance
+			if(logger.beInfo()) {
+				// we are always synchroneous here, as we had to recieve the residium from the device
+				uint64_t duration = timer.getTime();
+
+				// calculate flops
+				unsigned refreshs = iter / params.get_iter_refresh() + 1;
+				cl_ulong mf_flops = f.get_flops();
+
+				// TODO reenable flop calculation
+				//cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * spinor_code->get_flop_size("saxpy_eoprec");
+				//total_flops *= iter;
+
+				//total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+				cl_ulong total_flops = 0;
+
+				// report performanc
+				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+			}
+
+			return iter;
+		}
+		//}
+
+		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
+		hmc_complex beta = complexdivide(rho_next, omega);
+
+		//pn+1 = rn+1 + beta*pn
+		hmc_complex tmp2 = complexsubtract( {0., 0.}, beta);
+		saxpy(&p, tmp2, rn, p);
+	}
+	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+}
