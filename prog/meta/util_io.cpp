@@ -383,6 +383,7 @@ static void print_info_gauge(std::ostream* os, const meta::Inputparameters& para
 	*os << "## **********************************************************" << endl;
 	*os << "## Gauge parameters:" << endl;
 	*os << "##" << endl;
+	*os << "## beta:  " << params.get_beta() << endl;
 	if(params.get_gaugeact() == Inputparameters::wilson) {
 		*os <<  "## gauge action: unimproved Wilson" << endl;
 	}
@@ -400,6 +401,7 @@ static void print_info_gauge(const meta::Inputparameters& params)
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Gauge parameters:";
 	logger.info() << "##" ;
+	logger.info() << "## beta:  " << params.get_beta();
 	if(params.get_gaugeact() == Inputparameters::wilson) {
 		logger.info() <<  "## gauge action: unimproved Wilson";
 	}
@@ -684,6 +686,7 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	logger.info() << "## **********************************************************";
 	logger.info() << "## fermionic observables file naming parameters:";
 	if (params.get_measure_correlators() == true) {
+	  logger.info() << "## measure correlators in direction: " << params.get_corr_dir();
 		logger.info() << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix();
 		logger.info() << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix();
 	}
@@ -717,6 +720,7 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	*os << "## **********************************************************" << endl;
 	*os << "## fermionic observables file naming parameters:" << endl;
 	if (params.get_measure_correlators() == true) {
+	  *os << "## measure correlators in direction: " << params.get_corr_dir() << endl;
 		*os << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix() << endl;
 		*os << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix() << endl;
 	}

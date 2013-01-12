@@ -126,14 +126,67 @@ add_test(Opencl_module_molecular_dynamics_GPU_REC12 opencl_module_molecular_dyna
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 
 # Test the inverter for correct inversion
-add_test(Inverter1_CPU_TM_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1)
-add_test(Inverter3_GPU_TM_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_3)
-add_test(Inverter5_CPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_5)
-add_test(Inverter7_GPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_7)
-add_test(Inverter9_CPU_TM_EO_CG ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref_cg ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_9)
-add_test(Inverter11_GPU_TM_EO_CG ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref_cg ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_11)
-add_test(Inverter13_CPU_TM_CG ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref_cg ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_13)
-add_test(Inverter15_GPU_TM_CG ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref_cg ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_15)
+## even testnumbers correspond to tests using even-odd-precond., 
+## odd numbers to those who don`t
+## tests on a cold config
+add_test(Inverter1_CPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=0 --use_rec12=false --use_eo=false)
+add_test(Inverter2_CPU_TM_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=0 --use_rec12=false --use_eo=true)
+add_test(Inverter3_CPU_TM_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=0 --use_rec12=true --use_eo=false)
+add_test(Inverter4_CPU_TM_EO_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=0 --use_rec12=true --use_eo=true)
+add_test(Inverter5_GPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=1 --use_rec12=false --use_eo=false)
+add_test(Inverter6_GPU_TM_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=1 --use_rec12=false --use_eo=true)
+add_test(Inverter7_GPU_TM_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=1 --use_rec12=true --use_eo=false)
+add_test(Inverter8_GPU_TM_EO_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=1 --use_rec12=true --use_eo=true)
+## tests on a given config
+## the config does not contain a valid checksum, the resulting error will be ignored
+add_test(Inverter9_CPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=0 --use_rec12=false --use_eo=false --ignore_checksum_errors=true )
+add_test(Inverter10_CPU_TM_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=0
+ --use_rec12=false --use_eo=true --ignore_checksum_errors=true)
+add_test(Inverter11_CPU_TM_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 
+--use_gpu=0 --use_rec12=true --use_eo=false  --ignore_checksum_errors=true)
+add_test(Inverter12_CPU_TM_EO_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 
+--use_gpu=0 --use_rec12=true --use_eo=true  --ignore_checksum_errors=true)
+add_test(Inverter13_GPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=1 
+--use_rec12=false --use_eo=false  --ignore_checksum_errors=true)
+add_test(Inverter14_GPU_TM_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 
+--use_gpu=1 --use_rec12=false --use_eo=true  --ignore_checksum_errors=true)
+add_test(Inverter15_GPU_TM_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 
+--use_gpu=1 --use_rec12=true --use_eo=false  --ignore_checksum_errors=true)  
+add_test(Inverter16_GPU_TM_EO_REC12 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 
+--use_gpu=1 --use_rec12=true --use_eo=true  --ignore_checksum_errors=true)
+
+# Test the correlators
+## the inverter test above have tested also the z-dir correlators, the t-dir correlators are pending
+add_test(Inverter17_CPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref 
+${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=0 --use_eo=false --corr_dir=0)
+add_test(Inverter18_CPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=1 --use_eo=false --corr_dir=0)
+add_test(Inverter19_CPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref3 
+${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=0 --use_eo=false --corr_dir=0 --ignore_checksum_errors=true )
+add_test(Inverter20_CPU_TM ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref3 
+${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=1 --use_eo=false --corr_dir=0 --ignore_checksum_errors=true )
+
+# Tests for pure Wilson fermions
+## compared to the inverter tests above, only the fermionmatrix is different
+#in that it needs less matrix kernels.
+#thus only redo tests 1,2,5,6,9,10,13,14 from above
+add_test(Inverter21_CPU_W ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref4 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=0  
+--use_eo=false --fermact=WILSON)
+add_test(Inverter22_CPU_W_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref4 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=0  
+--use_eo=true --fermact=WILSON)
+add_test(Inverter23_GPU_W ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref4 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=1  
+--use_eo=false --fermact=WILSON)
+add_test(Inverter24_GPU_W_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref4 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1 --use_gpu=1 
+--use_eo=true --fermact=WILSON)
+## tests on a given config
+## the config does not contain a valid checksum, the resulting error will be ignored
+add_test(Inverter25_CPU_W ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref5 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=0  
+--use_eo=false --ignore_checksum_errors=true --fermact=WILSON)
+add_test(Inverter26_CPU_W_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref5 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=0
+  --use_eo=true --ignore_checksum_errors=true --fermact=WILSON)
+add_test(Inverter27_GPU_W ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref5 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 --use_gpu=1 
+ --use_eo=false  --ignore_checksum_errors=true --fermact=WILSON)
+add_test(Inverter28_GPU_W_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref5 ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_2 
+--use_gpu=1 --use_eo=true  --ignore_checksum_errors=true --fermact=WILSON)
 
 # Test the heatbath
 add_test(Heatbath1_CPU_DP ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHeatbath.py ${CMAKE_CURRENT_SOURCE_DIR}/heatbath_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/heatbath_test_input_1)
