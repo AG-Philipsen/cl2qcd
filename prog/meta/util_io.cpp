@@ -686,6 +686,7 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	logger.info() << "## **********************************************************";
 	logger.info() << "## fermionic observables file naming parameters:";
 	if (params.get_measure_correlators() == true) {
+	  logger.info() << "## measure correlators in direction: " << params.get_corr_dir();
 		logger.info() << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix();
 		logger.info() << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix();
 	}
@@ -719,6 +720,7 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	*os << "## **********************************************************" << endl;
 	*os << "## fermionic observables file naming parameters:" << endl;
 	if (params.get_measure_correlators() == true) {
+	  *os << "## measure correlators in direction: " << params.get_corr_dir() << endl;
 		*os << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix() << endl;
 		*os << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix() << endl;
 	}
