@@ -25,6 +25,19 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
  */
 static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
 
+/**
+ * A "save" version of the bicgstab algorithm.
+ *
+ * This is chosen if "bicgstab_save" is selected in the inputfile
+ */
+static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
+
+/**
+ * BICGstab implementation with a different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
+ * In particular this version does not perform the check if the "real" residuum is sufficiently small!
+ */
+static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
+
 physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { };
 
 static std::string create_solver_stuck_message(int iterations)
@@ -310,6 +323,258 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		//pn+1 = rn+1 + beta*pn
 		hmc_complex tmp2 = complexsubtract( {0., 0.}, beta);
 		saxpy(&p, tmp2, p, rn);
+	}
+	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+}
+
+int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec)
+{
+	auto params = system.get_inputparameters();
+
+	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
+	if (params.get_solver() == meta::Inputparameters::bicgstab_save) {
+		return bicgstab_save(x, A, gf, b, system, prec);
+	} else { /*if (get_parameters().get_solver() == meta::Inputparameters::bicgstab)*/
+		// NOTE: I commented out the if, since one runs into trouble if one uses CG in the HMC.
+		// Then, no bicgstab type is chosen, however, one still uses it "hardcoded".
+		// Then one gets a fatal, which is not really meaningful. In this way, it is like in the eo case.
+		return bicgstab_fast(x, A, gf, b, system, prec);
+	}
+}
+
+static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+{
+	using physics::lattices::Spinorfield_eo;
+	using physics::algorithms::solvers::SolverStuck;
+	using physics::algorithms::solvers::SolverDidNotSolve;
+
+	// TODO start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+
+	auto params = system.get_inputparameters();
+
+	const Spinorfield_eo s(system);
+	const Spinorfield_eo t(system);
+	const Spinorfield_eo v(system);
+	const Spinorfield_eo p(system);
+	const Spinorfield_eo rn(system);
+	const Spinorfield_eo rhat(system);
+	const Spinorfield_eo aux(system);
+
+	//CP: these have to be on the host
+	unsigned retests = 0;
+
+	int cgmax = params.get_cgmax();
+
+	hmc_complex alpha, omega, rho, rho_next;
+	hmc_float resid;
+
+	int iter;
+	for(iter = 0; iter < cgmax; iter++) {
+		if(iter % params.get_iter_refresh() == 0) {
+			v.zero();
+			p.zero();
+
+			f(&rn, gf, *x);
+
+			saxpy(&rn, {1., 0.}, rn, *x);
+
+			copyData(&rhat, rn);
+
+			alpha = {1., 0.};
+			omega = {1., 0.};
+			rho = {1., 0.};
+		}
+		rho_next = scalar_product(rhat, rn);
+		//check if algorithm is stuck
+		if(abs(rho_next.re) < 1e-25 && abs(rho_next.im) < 1e-25 ) {
+			//print the last residuum
+			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+			throw SolverStuck(iter, __FILE__, __LINE__);
+		}
+		hmc_complex tmp1 = complexdivide(rho_next, rho);
+		rho = rho_next;
+		hmc_complex tmp2 = complexdivide(alpha, omega);
+		hmc_complex beta = complexmult(tmp1, tmp2);
+
+		tmp1 = complexmult(beta, omega);
+		tmp2 = complexsubtract( {0., 0.}, tmp1);
+		saxsbypz(&p, beta, p, tmp2, v, rn);
+
+		f(&v, gf, p);
+
+		tmp1 = scalar_product(rhat, v);
+		alpha = complexdivide(rho, tmp1);
+
+		saxpy(&s, alpha, v, rn);
+
+		f(&t, gf, s);
+
+		tmp1 = scalar_product(t, s);
+		//!!CP: can this also be global_squarenorm??
+		tmp2 = scalar_product(t, t);
+		omega = complexdivide(tmp1, tmp2);
+
+		saxpy(&rn, omega, t, s);
+
+		saxsbypz(x, alpha, p, omega, s, *x);
+
+		resid = squarenorm(rn);
+
+		logger.debug() << "resid: " << resid;
+		//test if resid is NAN
+		if(resid != resid) {
+			logger.fatal() << "\tNAN occured in bicgstab_eo!";
+			throw SolverStuck(iter, __FILE__, __LINE__);
+		}
+		if(resid < prec) {
+			++retests;
+
+			f(&aux, gf, *x);
+			saxpy(&aux, {1., 0.}, aux, *x);
+
+			hmc_float trueresid = squarenorm(aux);
+			if(trueresid < prec) {
+				// report on performance
+				if(logger.beInfo()) {
+					// we are always synchroneous here, as we had to recieve the residium from the device
+					uint64_t duration = timer.getTime();
+
+					// calculate flops
+					unsigned refreshs = iter / params.get_iter_refresh() + 1;
+					cl_ulong mf_flops = f.get_flops();
+
+					// TODO fix flop calculation
+					//cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * spinor_code->get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec");
+					//total_flops *= iter;
+
+					//total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec"));
+
+					//total_flops += retests * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec"));
+					cl_ulong total_flops = 0;
+
+					// report performanc
+					logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+				}
+
+				// we are done here
+				return iter;
+			}
+		}
+	}
+	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+}
+
+static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec)
+{
+	using physics::lattices::Spinorfield_eo;
+	using physics::algorithms::solvers::SolverStuck;
+	using physics::algorithms::solvers::SolverDidNotSolve;
+
+	// TODO start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+
+	auto params = system.get_inputparameters();
+
+	const Spinorfield_eo p(system);
+	const Spinorfield_eo rn(system);
+	const Spinorfield_eo rhat(system);
+	const Spinorfield_eo s(system);
+	const Spinorfield_eo t(system);
+	const Spinorfield_eo v(system);
+
+	hmc_complex rho;
+
+	int iter;
+	for(int iter; iter < params.get_cgmax(); iter++) {
+		if(iter % params.get_iter_refresh() == 0) {
+			//initial r_n, saved in p
+			f(&rn, gf, *x);
+			saxpy(&p, {1., 0}, rn, *x);
+			//rhat = p
+			copyData(&rhat, p);
+			//r_n = p
+			copyData(&rn, p);
+			//rho = (rhat, rn)
+			rho = scalar_product(rhat, rn);
+		}
+		//resid = (rn,rn)
+		hmc_float resid = squarenorm(rn);
+
+		logger.debug() << "resid: " << resid;
+		//test if resid is NAN
+		if(resid != resid) {
+			logger.fatal() << "\tNAN occured in bicgstab_eo!";
+			throw SolverStuck(iter, __FILE__, __LINE__);
+		}
+		if(resid < prec) {
+			// report on performance
+			if(logger.beInfo()) {
+				// we are always synchroneous here, as we had to recieve the residium from the device
+				uint64_t duration = timer.getTime();
+
+				// calculate flops
+				unsigned refreshs = iter / params.get_iter_refresh() + 1;
+				cl_ulong mf_flops = f.get_flops();
+
+				// TODO fix flop calculation
+				//cl_ulong total_flops = get_flop_size("global_squarenorm_eoprec") + 2 * mf_flops + 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 2 * spinor_code->get_flop_size("saxpy_eoprec") + 2 * spinor_code->get_flop_size("saxsbypz_eoprec") + 3 * get_flop_size("product");
+				//total_flops *= iter;
+
+				//total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+				cl_ulong total_flops = 0;
+
+				// report performanc
+				logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+			}
+
+			// we are done here
+			return iter;
+		}
+		//v = A*p
+		f(&v, gf, p);
+		//tmp1 = (rhat, v)
+		hmc_complex tmp1 = scalar_product(rhat, v);
+		//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
+		hmc_complex alpha = complexdivide(rho, tmp1);
+		//s = - alpha * v - r_n
+		saxpy(&s, alpha, v, rn);
+		//t = A s
+		f(&t, gf, s);
+		//tmp1 = (t, s)
+		tmp1 = scalar_product(t, s);
+		//!!CP: this can also be global_squarenorm, but one needs a complex number here
+		//tmp2 = (t,t)
+		hmc_complex tmp2 = scalar_product(t, t);
+		//omega = tmp1/tmp2 = (t,s)/(t,t)
+		hmc_complex omega = complexdivide(tmp1, tmp2);
+		//inout = alpha*p + omega * s + inout
+		saxsbypz(x, alpha, p, omega, s, *x);
+		//r_n = - omega*t - s
+		saxpy(&rn, omega, t, s);
+		//rho_next = (rhat, rn)
+		hmc_complex rho_next = scalar_product(rhat, rn);
+		//check if algorithm is stuck
+		if(abs(rho_next.re) < 1e-25 && abs(rho_next.im) < 1e-25 ) {
+			//print the last residuum
+			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+			SolverStuck(iter, __FILE__, __LINE__);
+		}
+
+		//tmp1 = rho_next/rho = (rhat, rn)/..
+		tmp1 = complexdivide(rho_next, rho);
+		//tmp2 = alpha/omega = ...
+		tmp2 = complexdivide(alpha, omega);
+		//beta = tmp1*tmp2 = alpha*rho_next / (omega*rho)
+		hmc_complex beta = complexmult(tmp1, tmp2);
+		//tmp1 = beta*omega = alpha* rho_next / rho
+		tmp1 = complexmult(beta, omega);
+		//tmp2 = -tmp1
+		tmp2 = complexsubtract( {0., 0.}, tmp1);
+		//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
+		saxsbypz(&p, beta, p, tmp2, v, rn);
+		//rho_next = rho
+		rho = rho_next;
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
