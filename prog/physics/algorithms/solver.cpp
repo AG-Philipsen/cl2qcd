@@ -654,7 +654,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			rho_next = scalar_product(rn, rn);
 		}
 		//if(iter % RESID_CHECK_FREQUENCY == 0) {
-		hmc_float resid;
+		hmc_float resid = rho_next.re;
 		//if(USE_ASYNC_COPY) {
 		//  if(iter) {
 		//    resid_event.wait();
