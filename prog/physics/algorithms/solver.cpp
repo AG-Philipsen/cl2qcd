@@ -42,6 +42,14 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 
 physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { };
 
+static void trace_squarenorm(const std::string msg, const physics::lattices::Spinorfield_eo& x)
+{
+	if(logger.beTrace()) {
+		hmc_float tmp = squarenorm(x);
+		logger.trace() << msg << std::scientific << std::setprecision(10) << tmp;
+	}
+}
+
 static std::string create_solver_stuck_message(int iterations)
 {
 	std::ostringstream tmp;
@@ -608,6 +616,9 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 	const Spinorfield_eo rn(system);
 	const Spinorfield_eo v(system);
 
+	trace_squarenorm("CG: b: ", b);
+	trace_squarenorm("CG: x: ", *x);
+
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	int iter;
@@ -616,10 +627,13 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		if(iter % params.get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(&rn, gf, *x);
+			trace_squarenorm("CG: rn: ", rn);
 			//rn = source - A*inout
 			saxpy(&rn, {1., 0.}, rn, *x);
+			trace_squarenorm("CG: rn: ", rn);
 			//p = rn
 			copyData(&p, rn);
+			trace_squarenorm("CG: p: ", p);
 			//omega = (rn,rn)
 			omega = scalar_product(rn, rn);
 		} else {
@@ -628,6 +642,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		}
 		//v = A pn
 		f(&v, gf, p);
+		trace_squarenorm("CG: v: ", v);
 
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		hmc_complex rho = scalar_product(p, v);
@@ -636,6 +651,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		saxpy(x, tmp1, p, *x);
+		trace_squarenorm("CG: x: ", *x);
 		//switch between original version and kernel merged one
 		if(params.get_use_merge_kernels_spinor()) {
 			//merge two calls:
@@ -648,6 +664,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		} else {
 			//rn+1 = rn - alpha*v -> rhat
 			saxpy(&rn, alpha, v, rn);
+			trace_squarenorm("CG: rn: ", rn);
 
 			//calc residuum
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
@@ -713,6 +730,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		//pn+1 = rn+1 + beta*pn
 		hmc_complex tmp2 = complexsubtract( {0., 0.}, beta);
 		saxpy(&p, tmp2, rn, p);
+		trace_squarenorm("CG: p: ", p);
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
