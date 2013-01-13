@@ -10,6 +10,9 @@
 
 static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* result, const physics::lattices::Gaugefield& gaugefield, const physics::lattices::Spinorfield* source, const hardware::System& system);
 
+template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield& in, std::string msg);
+template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield* in, std::string msg);
+
 void physics::algorithms::perform_inversion(const std::vector<const physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<const physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {
 	int num_sources = sources.size();
@@ -61,22 +64,22 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			copyData(&tmp, source);
 			tmp.gamma5();
 			QplusQminus f_neo(params.get_kappa(), meta::get_mubar(params), system);
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
+			print_debug_inv_field(result, "\tinv. field before inversion ");
+			print_debug_inv_field(source, "\tsource before inversion ");
 			converged = cg(result, f_neo, gf, tmp, system, params.get_solver_prec());
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
+			print_debug_inv_field(result, "\tinv. field after inversion ");
+			print_debug_inv_field(source, "\tsource after inversion ");
 			copyData(&tmp, result);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
 			Qminus qminus(params.get_kappa(), meta::get_mubar(params), system);
 			qminus(result, gf, tmp);
 		} else {
 			M f_neo(params.get_kappa(), meta::get_mubar(params), system);
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field before inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
+			print_debug_inv_field(result, "\tinv. field before inversion ");
+			print_debug_inv_field(source, "\tsource before inversion ");
 			converged = bicgstab(result, f_neo, gf, *source, system, params.get_solver_prec());
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tinv. field after inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource after inversion ");
+			print_debug_inv_field(result, "\tinv. field after inversion ");
+			print_debug_inv_field(source, "\tsource after inversion ");
 		}
 	} else {
 		/**
@@ -104,9 +107,9 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 */
 		convert_to_eoprec(&source_odd, &source_even, *source);
 
-		// TODO readd if(logger.beDebug()) solver->print_info_inv_field(source_buf, false, "\tsource before inversion ");
-		// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\teven source before inversion ");
-		// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_odd, true, "\todd source before inversion ");
+		print_debug_inv_field(source, "\tsource before inversion ");
+		print_debug_inv_field(&source_even, "\teven source before inversion ");
+		print_debug_inv_field(&source_odd, "\todd source before inversion ");
 
 		//prepare sources
 		/**
@@ -133,11 +136,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			source_even.gamma5();
 			QplusQminus_eo f_eo(params.get_kappa(), meta::get_mubar(params), system);
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field before inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource before inversion ");
+			print_debug_inv_field(&result_eo, "\tinv field before inversion ");
+			print_debug_inv_field(&source_even, "\tsource before inversion ");
 			converged = cg(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec());
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field after inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource after inversion ");
+			print_debug_inv_field(&result_eo, "\tinv field after inversion ");
+			print_debug_inv_field(&source_even, "\tsource after inversion ");
 			//now, calc Qminus result_buf_eo to obtain x = A^⁻1 b
 			//therefore, use source as an intermediate buffer
 			Qminus_eo qminus(params.get_kappa(), meta::get_mubar(params), system);
@@ -146,11 +149,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			copyData(&result_eo, source_even);
 		} else {
 			Aee f_eo(params.get_kappa(), meta::get_mubar(params), system);
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field before inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource before inversion ");
+			print_debug_inv_field(&result_eo, "\tinv field before inversion ");
+			print_debug_inv_field(&source_even, "\tsource before inversion ");
 			converged = bicgstab(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec());
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&result_buf_eo, true, "\tinv field after inversion ");
-			// TODO readd if(logger.beDebug()) solver->print_info_inv_field(&clmem_source_even, true, "\tsource after inversion ");
+			print_debug_inv_field(&result_eo, "\tinv field after inversion ");
+			print_debug_inv_field(&source_even, "\tsource after inversion ");
 		}
 
 		//odd solution
@@ -187,9 +190,23 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		convert_from_eoprec(result, tmp1, result_eo);
 	}
 
-	// TODO readd if(logger.beDebug()) solver->print_info_inv_field(result_buf, false, "\tsolution ");
+	print_debug_inv_field(result, "\tsolution ");
 
 	// TODO catch or document exceptions
 	logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
+}
+
+template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield* in, std::string msg)
+{
+	return print_debug_inv_field(*in, msg);
+}
+template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield& in, std::string msg)
+{
+	if(logger.beDebug()) {
+		hmc_float tmp = squarenorm(in);
+		logger.debug() << msg << std::scientific << std::setprecision(10) << tmp;
+		return tmp;
+	}
+	return 0;
 }
 
