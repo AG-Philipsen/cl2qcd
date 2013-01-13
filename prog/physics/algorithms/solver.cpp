@@ -386,8 +386,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 			p.zero();
 
 			f(&rn, gf, *x);
-
-			saxpy(&rn, {1., 0.}, rn, *x);
+			saxpy(&rn, {1., 0.}, rn, b);
 
 			copyData(&rhat, rn);
 
@@ -441,7 +440,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 			++retests;
 
 			f(&aux, gf, *x);
-			saxpy(&aux, {1., 0.}, aux, *x);
+			saxpy(&aux, {1., 0.}, aux, b);
 
 			hmc_float trueresid = squarenorm(aux);
 			if(trueresid < prec) {
@@ -500,7 +499,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 		if(iter % params.get_iter_refresh() == 0) {
 			//initial r_n, saved in p
 			f(&rn, gf, *x);
-			saxpy(&p, {1., 0}, rn, *x);
+			saxpy(&p, {1., 0}, rn, b);
 			//rhat = p
 			copyData(&rhat, p);
 			//r_n = p
@@ -629,7 +628,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			f(&rn, gf, *x);
 			trace_squarenorm("CG: rn: ", rn);
 			//rn = source - A*inout
-			saxpy(&rn, {1., 0.}, rn, *x);
+			saxpy(&rn, {1., 0.}, rn, b);
 			trace_squarenorm("CG: rn: ", rn);
 			//p = rn
 			copyData(&p, rn);
