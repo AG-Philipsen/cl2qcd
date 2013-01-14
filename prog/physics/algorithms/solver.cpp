@@ -167,7 +167,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 			//aux = A inout
 			f(&aux, gf, *x);
 			//aux = -aux + source
-			saxpy(&aux, {1., 0.}, aux, *x);
+			saxpy(&aux, {1., 0.}, aux, b);
 			//trueresid = (aux, aux)
 			hmc_float trueresid = squarenorm(aux);
 			logger.debug() << "\tsolver converged! true resid:\t" << trueresid;
