@@ -47,13 +47,13 @@ int main(int argc, const char* argv[])
 		logger.info() << "Perform inversion(s) on device.." ;
 
 		if(parameters.get_read_multiple_configs()) {
-			int iter_end = parameters.get_config_read_end();
-			int iter_start = parameters.get_config_read_start();
-			int iter_incr = parameters.get_config_read_incr();
+			const int iter_end = parameters.get_config_read_end();
+			const int iter_start = parameters.get_config_read_start();
+			const int iter_incr = parameters.get_config_read_incr();
 			int iter = 0;
 
 			//main loop
-			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
+			for(iter = iter_start; iter <= iter_end; iter += iter_incr) {
 				std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
 				Gaugefield gaugefield(system, prng, config_name);
