@@ -1598,8 +1598,8 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 	hardware::SynchronizationEvent resid_event;
 	hmc_complex resid_rho;
 
-	if(logger.beTrace()) print_info_inv_field(inout, true, "inout: ");
-	if(logger.beTrace()) print_info_inv_field(source, true, "source: ");
+	if(logger.beTrace()) print_info_inv_field(inout, true, "CG: inout: ");
+	if(logger.beTrace()) print_info_inv_field(source, true, "CG: source: ");
 
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
@@ -1614,13 +1614,13 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 		if(iter % get_parameters().get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(inout, &clmem_rn_eo, gf, kappa, mubar);
-			if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "rn: ");
+			if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "CG: rn: ");
 			//rn = source - A*inout
 			spinor_code->saxpy_eoprec_device(&clmem_rn_eo, source, &clmem_one, &clmem_rn_eo);
-			if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "rn: ");
+			if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "CG: rn: ");
 			//p = rn
 			hardware::buffers::copyData(&clmem_p_eo, &clmem_rn_eo);
-			if(logger.beTrace()) print_info_inv_field(&clmem_p_eo, true, "p: ");
+			if(logger.beTrace()) print_info_inv_field(&clmem_p_eo, true, "CG: p: ");
 			//omega = (rn,rn)
 			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rn_eo, &clmem_rn_eo, &clmem_omega);
 		} else {
@@ -1629,7 +1629,7 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 		}
 		//v = A pn
 		f(&clmem_p_eo, &clmem_v_eo, gf, kappa, mubar);
-		if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "&clmem_v_eo: ");
+		if(logger.beTrace()) print_info_inv_field(&clmem_v_eo, true, "CG: v: ");
 
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rho);
@@ -1638,12 +1638,12 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		spinor_code->saxpy_eoprec_device(&clmem_p_eo, inout, &clmem_tmp1, inout);
-		if(logger.beTrace()) print_info_inv_field(inout, true, "inout: ");
+		if(logger.beTrace()) print_info_inv_field(inout, true, "CG: inout: ");
 		//switch between original version and kernel merged one
 		if(get_parameters().get_use_merge_kernels_spinor() == false) {
 			//rn+1 = rn - alpha*v -> rhat
 			spinor_code->saxpy_eoprec_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo);
-			if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "rn: ");
+			if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "CG: rn: ");
 
 			//calc residuum
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
@@ -1714,7 +1714,7 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 		//pn+1 = rn+1 + beta*pn
 		spinor_code->set_complex_to_product_device(&clmem_beta, &clmem_minusone, &clmem_tmp2);
 		spinor_code->saxpy_eoprec_device(&clmem_p_eo, &clmem_rn_eo, &clmem_tmp2, &clmem_p_eo);
-		if(logger.beTrace()) print_info_inv_field(&clmem_rn_eo, true, "rn: ");
+		if(logger.beTrace()) print_info_inv_field(&clmem_p_eo, true, "CG: p: ");
 	}
 	return -1;
 }
