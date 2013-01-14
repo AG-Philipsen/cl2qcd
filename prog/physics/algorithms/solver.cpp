@@ -728,7 +728,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 
 		//pn+1 = rn+1 + beta*pn
 		hmc_complex tmp2 = complexsubtract( {0., 0.}, beta);
-		saxpy(&p, tmp2, rn, p);
+		saxpy(&p, tmp2, p, rn);
 		trace_squarenorm("CG: p: ", p);
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
