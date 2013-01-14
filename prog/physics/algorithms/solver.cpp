@@ -289,7 +289,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 			//rn = A*inout
 			f(&rn, gf, *x);
 			//rn = source - A*inout
-			saxpy(&rn, {1., 0.}, b, rn);
+			saxpy(&rn, {1., 0.}, rn, b);
 			//p = rn
 			copyData(&p, rn);
 			//omega = (rn,rn)
