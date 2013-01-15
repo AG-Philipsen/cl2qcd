@@ -709,12 +709,15 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 				// calculate flops
 				const unsigned refreshs = iter / params.get_iter_refresh() + 1;
 				const cl_ulong mf_flops = f.get_flops();
+				logger.trace() << "mf_flops: " << mf_flops;
 
 				cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
 				                       + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
 				                       + 3 * get_flops<Spinorfield_eo, saxpy>(system);
 				total_flops *= iter;
+				logger.trace() << "total_flops: " << total_flops;
 				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
+				logger.trace() << "total_flops: " << total_flops;
 
 				// report performanc
 				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";

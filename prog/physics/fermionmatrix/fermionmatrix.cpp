@@ -205,6 +205,7 @@ if(devices.size() != 1) {
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
 	}
+	logger.trace() << "Aee flops: " << res;
 	return res;
 }
 void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
@@ -269,6 +270,7 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
 	}
+	logger.trace() << "Aee_minus flops: " << res;
 	return res;
 }
 void physics::fermionmatrix::Qplus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
@@ -292,6 +294,7 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
 
 	cl_ulong res = aee.get_flops();
 	res += fermion_code->get_flop_size("gamma5_eo");
+	logger.trace() << "Qplus_eo flops: " << res;
 	return res;
 }
 void physics::fermionmatrix::Qminus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
@@ -315,6 +318,7 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const
 
 	cl_ulong res = aee_minus.get_flops();
 	res += fermion_code->get_flop_size("gamma5_eo");
+	logger.trace() << "Qminus_eo flops: " << res;
 	return res;
 }
 void physics::fermionmatrix::QplusQminus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
@@ -326,5 +330,8 @@ void physics::fermionmatrix::QplusQminus_eo::operator()(const physics::lattices:
 }
 cl_ulong physics::fermionmatrix::QplusQminus_eo::get_flops() const
 {
-	return q_minus.get_flops() + q_plus.get_flops();
+	cl_ulong res = q_minus.get_flops() + q_plus.get_flops();
+	logger.trace() << "QplusQminus_eo flops: " << res;
+	return res;
+
 }
