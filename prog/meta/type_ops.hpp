@@ -9,6 +9,7 @@
 
 #include "../types.h"
 #include "../types_fermions.h"
+#include "../operations_complex.h"
 
 #include <ostream>
 
@@ -109,5 +110,16 @@ template<> void fill(hmc_complex* array, size_t num_elems, int seed);
 template<> void fill(Matrixsu3* array, size_t num_elems, int seed);
 template<> void fill(spinor* array, size_t num_elems, int seed);
 template<> void fill(ae* array, size_t num_elems, int seed);
+
+/*
+ * OP counts for complex operations
+ */
+template<typename S, S (*T)(S)> size_t get_flops();
+template<typename S, S (*T)(S,S)> size_t get_flops();
+template<> size_t get_flops<hmc_complex, complexconj>();
+template<> size_t get_flops<hmc_complex, complexmult>();
+template<> size_t get_flops<hmc_complex, complexadd>();
+template<> size_t get_flops<hmc_complex, complexsubtract>();
+template<> size_t get_flops<hmc_complex, complexdivide>();
 
 #endif /* _META_TYPE_OPS */

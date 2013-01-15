@@ -70,3 +70,24 @@ template<> void fill(ae* array, size_t num_elems, int seed)
 		};
 	}
 }
+
+template<> size_t get_flops<hmc_complex, complexconj>()
+{
+	return 0;
+}
+template<> size_t get_flops<hmc_complex, complexmult>()
+{
+	return 6;
+}
+template<> size_t get_flops<hmc_complex, complexadd>()
+{
+	return 2;
+}
+template<> size_t get_flops<hmc_complex, complexsubtract>()
+{
+	return 2;
+}
+template<> size_t get_flops<hmc_complex, complexdivide>()
+{
+	return 11;
+}

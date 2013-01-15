@@ -1,3 +1,6 @@
+#ifndef OPERATIONS_COMPLEX
+#define OPERATIONS_COMPLEX
+
 inline hmc_complex complexconj(hmc_complex in)
 {
 	in.im = -(in.im);
@@ -36,3 +39,5 @@ inline hmc_complex complexdivide(const hmc_complex numerator, const hmc_complex 
 	res.im = (numerator.im * denominator.re - numerator.re * denominator.im ) / norm;
 	return res;
 }
+
+#endif /* OPERATIONS_COMPLEX */
