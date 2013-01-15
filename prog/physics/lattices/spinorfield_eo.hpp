@@ -75,10 +75,16 @@ private:
  */
 hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
 
+template<typename S, hmc_complex (*T)(const S&, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::scalar_product>(const hardware::System&);
+
 /**
  * Calculate the squarenorm of the spinorfield
  */
 hmc_float squarenorm(const Spinorfield_eo& field);
+
+template<typename S, hmc_float (*T)(const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System&);
 
 /**
  * Perform the BLAS operation saxpy.
@@ -87,6 +93,9 @@ hmc_float squarenorm(const Spinorfield_eo& field);
  */
 void saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y);
 
+template<typename S, void (*T)(const S*, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System&);
+
 /**
  * Perform the BLAS operation sax.
  *
@@ -94,12 +103,18 @@ void saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield
  */
 void sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x);
 
+template<typename S, void (*T)(const S*, const hmc_complex, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System&);
+
 /**
  * Perform the BLAS operation saxsbypz.
  *
  * out = alpha * x + beta * y + z
  */
 void saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z);
+
+template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System&);
 
 /**
  * Split the given Spinorfield into even and odd Spinorfield_eo.

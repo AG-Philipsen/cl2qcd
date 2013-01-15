@@ -211,3 +211,61 @@ for(auto buffer: buffers) {
 		fermion_code->gamma5_eo_device(buffer);
 	}
 }
+
+template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::scalar_product>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	if(devices.size() != 1) {
+		throw Print_Error_Message("Currently only supported on a single device", __FILE__, __LINE__);
+	}
+
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_flop_size("scalar_product_eoprec");
+}
+
+template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	if(devices.size() != 1) {
+		throw Print_Error_Message("Currently only supported on a single device", __FILE__, __LINE__);
+	}
+
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_flop_size("global_squarenorm_eoprec");
+}
+
+template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	if(devices.size() != 1) {
+		throw Print_Error_Message("Currently only supported on a single device", __FILE__, __LINE__);
+	}
+
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_flop_size("sax_eoprec");
+}
+template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	if(devices.size() != 1) {
+		throw Print_Error_Message("Currently only supported on a single device", __FILE__, __LINE__);
+	}
+
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_flop_size("saxpy_eoprec");
+}
+template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	if(devices.size() != 1) {
+		throw Print_Error_Message("Currently only supported on a single device", __FILE__, __LINE__);
+	}
+
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_flop_size("saxsbypz_eoprec");
+}
