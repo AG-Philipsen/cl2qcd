@@ -9,6 +9,7 @@
 
 #include "../../logger.hpp"
 #include "../../operations_complex.h"
+#include "../../meta/type_ops.hpp"
 #include "../lattices/util.hpp"
 #include <cmath>
 #include <sstream>
@@ -354,9 +355,9 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_
 
 static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
 {
-	using physics::lattices::Spinorfield_eo;
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
+	using namespace physics::lattices;
 
 	// TODO start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
@@ -447,20 +448,21 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 				// report on performance
 				if(logger.beInfo()) {
 					// we are always synchroneous here, as we had to recieve the residium from the device
-					uint64_t duration = timer.getTime();
+					const uint64_t duration = timer.getTime();
 
 					// calculate flops
-					unsigned refreshs = iter / params.get_iter_refresh() + 1;
-					cl_ulong mf_flops = f.get_flops();
+					const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+					const size_t mf_flops = f.get_flops();
 
 					// TODO fix flop calculation
-					//cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * spinor_code->get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec");
-					//total_flops *= iter;
+					cl_ulong total_flops = 4 * get_flops<Spinorfield_eo, scalar_product>(system) + 4 * get_flops<hmc_complex, complexdivide>()
+					                       + 3 * get_flops<hmc_complex, complexmult>() + 2 * get_flops<Spinorfield_eo, saxsbypz>(system)
+					                       + 2 * mf_flops + 2 * get_flops<Spinorfield_eo, saxpy>(system)
+					                       + get_flops<Spinorfield_eo, squarenorm>(system);
+					total_flops *= iter;
 
-					//total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec"));
-
-					//total_flops += retests * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec"));
-					cl_ulong total_flops = 0;
+					total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system));
+					total_flops += retests * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, squarenorm>(system));
 
 					// report performanc
 					logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
@@ -476,7 +478,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 
 static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec)
 {
-	using physics::lattices::Spinorfield_eo;
+	using namespace physics::lattices;
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
@@ -520,18 +522,20 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 			// report on performance
 			if(logger.beInfo()) {
 				// we are always synchroneous here, as we had to recieve the residium from the device
-				uint64_t duration = timer.getTime();
+				const uint64_t duration = timer.getTime();
 
 				// calculate flops
-				unsigned refreshs = iter / params.get_iter_refresh() + 1;
-				cl_ulong mf_flops = f.get_flops();
-
-				// TODO fix flop calculation
-				//cl_ulong total_flops = get_flop_size("global_squarenorm_eoprec") + 2 * mf_flops + 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 2 * spinor_code->get_flop_size("saxpy_eoprec") + 2 * spinor_code->get_flop_size("saxsbypz_eoprec") + 3 * get_flop_size("product");
-				//total_flops *= iter;
+				const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+				const cl_ulong mf_flops = f.get_flops();
 
 				//total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
-				cl_ulong total_flops = 0;
+				cl_ulong total_flops = get_flops<Spinorfield_eo, squarenorm>(system) + 2 * mf_flops
+				                       + 4 * get_flops<Spinorfield_eo, scalar_product>(system) + 4 * get_flops<hmc_complex, complexdivide>()
+				                       + 2 * get_flops<Spinorfield_eo, saxpy>(system) + 2 * get_flops<Spinorfield_eo, saxsbypz>(system)
+				                       + 3 * get_flops<hmc_complex, complexmult>();
+				total_flops *= iter;
+
+				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
 
 				// report performanc
 				logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
