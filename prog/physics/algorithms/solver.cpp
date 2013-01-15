@@ -594,7 +594,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 
 int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
 {
-	using physics::lattices::Spinorfield_eo;
+	using namespace physics::lattices;
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
@@ -706,18 +706,17 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			// report on performance
 			if(logger.beInfo()) {
 				// we are always synchroneous here, as we had to recieve the residium from the device
-				uint64_t duration = timer.getTime();
+				const uint64_t duration = timer.getTime();
 
 				// calculate flops
-				unsigned refreshs = iter / params.get_iter_refresh() + 1;
-				cl_ulong mf_flops = f.get_flops();
+				const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+				const cl_ulong mf_flops = f.get_flops();
 
-				// TODO reenable flop calculation
-				//cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * spinor_code->get_flop_size("saxpy_eoprec");
-				//total_flops *= iter;
-
-				//total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
-				cl_ulong total_flops = 0;
+				cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
+				                       + 2 * get_flops<hmc_complex, complexdivide>() + 2 * get_flops<hmc_complex, complexmult>()
+				                       + 3 * get_flops<Spinorfield_eo, saxpy>(system);
+				total_flops *= iter;
+				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
 
 				// report performanc
 				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
