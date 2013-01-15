@@ -189,17 +189,18 @@ if(devices.size() != 1) {
 	throw Print_Error_Message("get_flops is currently only implemented for a single device.");
 }
 	auto spinor_code = devices[0]->get_spinor_code();
+	auto fermion_code = devices[0]->get_fermion_code();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
-			res = 2 * spinor_code->get_flop_size("dslash_eo");
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
-			res = 2 * spinor_code->get_flop_size("dslash_eo");
-			res += spinor_code->get_flop_size("M_tm_inverse_sitediagonal");
-			res += spinor_code->get_flop_size("M_tm_sitediagonal");
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
+			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal");
+			res += fermion_code->get_flop_size("M_tm_sitediagonal");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
@@ -254,17 +255,18 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
 	}
 	auto spinor_code = devices[0]->get_spinor_code();
+	auto fermion_code = devices[0]->get_fermion_code();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
-			res = 2 * spinor_code->get_flop_size("dslash_eo");
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
-			res = 2 * spinor_code->get_flop_size("dslash_eo");
-			res += spinor_code->get_flop_size("M_tm_inverse_sitediagonal_minus");
-			res += spinor_code->get_flop_size("M_tm_sitediagonal_minus");
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
+			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal_minus");
+			res += fermion_code->get_flop_size("M_tm_sitediagonal_minus");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
