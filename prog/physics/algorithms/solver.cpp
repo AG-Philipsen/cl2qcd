@@ -41,7 +41,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
  */
 static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
 
-physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { };
+physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { }
 
 static void trace_squarenorm(const std::string msg, const physics::lattices::Spinorfield_eo& x)
 {
@@ -454,7 +454,6 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 					const unsigned refreshs = iter / params.get_iter_refresh() + 1;
 					const size_t mf_flops = f.get_flops();
 
-					// TODO fix flop calculation
 					cl_ulong total_flops = 4 * get_flops<Spinorfield_eo, scalar_product>(system) + 4 * get_flops<hmc_complex, complexdivide>()
 					                       + 3 * get_flops<hmc_complex, complexmult>() + 2 * get_flops<Spinorfield_eo, saxsbypz>(system)
 					                       + 2 * mf_flops + 2 * get_flops<Spinorfield_eo, saxpy>(system)
@@ -528,7 +527,6 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 				const unsigned refreshs = iter / params.get_iter_refresh() + 1;
 				const cl_ulong mf_flops = f.get_flops();
 
-				//total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
 				cl_ulong total_flops = get_flops<Spinorfield_eo, squarenorm>(system) + 2 * mf_flops
 				                       + 4 * get_flops<Spinorfield_eo, scalar_product>(system) + 4 * get_flops<hmc_complex, complexdivide>()
 				                       + 2 * get_flops<Spinorfield_eo, saxpy>(system) + 2 * get_flops<Spinorfield_eo, saxsbypz>(system)
@@ -713,7 +711,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 				const cl_ulong mf_flops = f.get_flops();
 
 				cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
-				                       + 2 * get_flops<hmc_complex, complexdivide>() + 2 * get_flops<hmc_complex, complexmult>()
+				                       + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
 				                       + 3 * get_flops<Spinorfield_eo, saxpy>(system);
 				total_flops *= iter;
 				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
