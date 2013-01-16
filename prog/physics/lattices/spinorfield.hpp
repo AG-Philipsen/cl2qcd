@@ -8,6 +8,7 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/plain.hpp"
 #include "../prng.hpp"
+#include "scalar.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -67,6 +68,12 @@ public:
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Plain<spinor> *> buffers;
+
+	friend hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
+	friend hmc_float squarenorm(const Spinorfield& field);
+	friend void saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y);
+	friend void sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x);
+	friend void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z);
 };
 
 /**
@@ -86,11 +93,13 @@ void release_spinorfields(const std::vector<const Spinorfield *> fields);
  * Calculate the scalar product of two spinorfields.
  */
 hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
+void scalar_product(const Scalar<hmc_complex>* res, const Spinorfield& left, const Spinorfield& right);
 
 /**
  * Calculate the squarenorm of the spinorfield
  */
 hmc_float squarenorm(const Spinorfield& field);
+void squarenorm(const Scalar<hmc_float>* res, const Spinorfield& field);
 
 /**
  * Perform the BLAS operation saxpy.
@@ -98,6 +107,7 @@ hmc_float squarenorm(const Spinorfield& field);
  * out = alpha * x + y
  */
 void saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y);
+void saxpy(const Spinorfield* out, const Scalar<hmc_complex>& alpha, const Spinorfield& x, const Spinorfield& y);
 
 /**
  * Perform the BLAS operation sax.
@@ -105,6 +115,7 @@ void saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x
  * out = alpha * x
  */
 void sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x);
+void sax(const Spinorfield* out, const Scalar<hmc_complex>& alpha, const Spinorfield& x);
 
 /**
  * Perform the BLAS operation saxsbypz.
@@ -112,6 +123,7 @@ void sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x);
  * out = alpha * x + beta * y + z
  */
 void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z);
+void saxsbypz(const Spinorfield* out, const Scalar<hmc_complex>& alpha, const Spinorfield& x, const Scalar<hmc_complex>& beta, const Spinorfield& y, const Spinorfield& z);
 
 }
 }
