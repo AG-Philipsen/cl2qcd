@@ -634,11 +634,21 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		logger.warn() << "Asynchroneous copying in the CG is currently unimplemented!";
 	}
 
-	hmc_complex rho_next;
-
 	const Spinorfield_eo p(system);
 	const Spinorfield_eo rn(system);
 	const Spinorfield_eo v(system);
+
+	const Scalar<hmc_complex> alpha(system);
+	const Scalar<hmc_complex> beta(system);
+	const Scalar<hmc_complex> omega(system);
+	const Scalar<hmc_complex> rho(system);
+	const Scalar<hmc_complex> rho_next(system);
+	const Scalar<hmc_complex> tmp1(system);
+	const Scalar<hmc_complex> tmp2(system);
+	const Scalar<hmc_complex> one(system);
+	one.store(hmc_complex_one);
+	const Scalar<hmc_complex> minus_one(system);
+	minus_one.store(hmc_complex_minusone);
 
 	trace_squarenorm("CG: b: ", b);
 	trace_squarenorm("CG: x: ", *x);
@@ -647,31 +657,30 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	int iter;
 	for(iter = 0; iter < params.get_cgmax(); iter ++) {
-		hmc_complex omega;
 		if(iter % params.get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(&rn, gf, *x);
 			trace_squarenorm("CG: rn: ", rn);
 			//rn = source - A*inout
-			saxpy(&rn, {1., 0.}, rn, b);
+			saxpy(&rn, one, rn, b);
 			trace_squarenorm("CG: rn: ", rn);
 			//p = rn
 			copyData(&p, rn);
 			trace_squarenorm("CG: p: ", p);
 			//omega = (rn,rn)
-			omega = scalar_product(rn, rn);
+			scalar_product(&omega, rn, rn);
 		} else {
 			//update omega
-			omega = rho_next;
+			copyData(&omega, rho_next);
 		}
 		//v = A pn
 		f(&v, gf, p);
 		trace_squarenorm("CG: v: ", v);
 
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		hmc_complex rho = scalar_product(p, v);
-		hmc_complex alpha = complexdivide(omega, rho);
-		hmc_complex tmp1 = complexsubtract( {0., 0.}, alpha);
+		scalar_product(&rho, p, v);
+		divide(&alpha, omega, rho);
+		multiply(&tmp1, minus_one, alpha);
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		saxpy(x, tmp1, p, *x);
@@ -692,10 +701,10 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 
 			//calc residuum
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-			rho_next = scalar_product(rn, rn);
+			scalar_product(&rho_next, rn, rn);
 		}
 		//if(iter % RESID_CHECK_FREQUENCY == 0) {
-		hmc_float resid = rho_next.re;
+		hmc_float resid = rho_next.get().re;
 		//if(USE_ASYNC_COPY) {
 		//  if(iter) {
 		//    resid_event.wait();
@@ -751,10 +760,10 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		//}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-		hmc_complex beta = complexdivide(rho_next, omega);
+		divide(&beta, rho_next, omega);
 
 		//pn+1 = rn+1 + beta*pn
-		hmc_complex tmp2 = complexsubtract( {0., 0.}, beta);
+		multiply(&tmp2, minus_one, beta);
 		saxpy(&p, tmp2, p, rn);
 		trace_squarenorm("CG: p: ", p);
 	}
