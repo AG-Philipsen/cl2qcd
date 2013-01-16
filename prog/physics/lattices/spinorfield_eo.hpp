@@ -9,6 +9,7 @@
 #include "../../hardware/buffers/spinor.hpp"
 #include "../prng.hpp"
 #include "spinorfield.hpp"
+#include "scalar.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -68,12 +69,19 @@ public:
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Spinor *> buffers;
+
+	friend hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
+	friend hmc_float squarenorm(const Spinorfield_eo& field);
+	friend void saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y);
+	friend void sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x);
+	friend void saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z);
 };
 
 /**
  * Calculate the scalar product of two spinorfields.
  */
 hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
+void scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right);
 
 template<typename S, hmc_complex (*T)(const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::scalar_product>(const hardware::System&);
@@ -82,6 +90,7 @@ template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices
  * Calculate the squarenorm of the spinorfield
  */
 hmc_float squarenorm(const Spinorfield_eo& field);
+void squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field);
 
 template<typename S, hmc_float (*T)(const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System&);
@@ -92,6 +101,7 @@ template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices
  * out = alpha * x + y
  */
 void saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y);
+void saxpy(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y);
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System&);
@@ -102,6 +112,7 @@ template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices
  * out = alpha * x
  */
 void sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x);
+void sax(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x);
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System&);
@@ -112,6 +123,7 @@ template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices
  * out = alpha * x + beta * y + z
  */
 void saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z);
+void saxsbypz(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Scalar<hmc_complex>& beta, const Spinorfield_eo& y, const Spinorfield_eo& z);
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System&);

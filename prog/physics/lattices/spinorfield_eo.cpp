@@ -38,46 +38,62 @@ const std::vector<const hardware::buffers::Spinor *> physics::lattices::Spinorfi
 
 hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right)
 {
+	const Scalar<hmc_complex> res(left.system);
+	scalar_product(&res, left, right);
+	return res.get();
+}
+
+void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right)
+{
+	auto res_buffers = res->get_buffers();
 	auto left_buffers = left.get_buffers();
 	auto right_buffers = right.get_buffers();
+	size_t num_buffers = res_buffers.size();
 
 	// TODO implemente for more than one device
-	if(left_buffers.size() > 1 || right_buffers.size() > 1) {
-		throw Print_Error_Message("physics::lattices::scalar_product(const Spinorfield&, const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
+	if(num_buffers != 1) {
+		throw Print_Error_Message("physics::lattices::scalar_product(const Spinorfield_eo&, const Spinorfield_eo&) is not implemented for multiple devices", __FILE__, __LINE__);
+	}
+	if(num_buffers != left_buffers.size() || num_buffers != right_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
 	}
 
+	auto res_buf = res_buffers[0];
 	auto left_buf = left_buffers[0];
 	auto right_buf = right_buffers[0];
-	auto device = left_buf->get_device();
-	hardware::buffers::Plain<hmc_complex> result_buf(1, device);
+	auto device = res_buf->get_device();
 	auto spinor_code = device->get_spinor_code();
 
-	spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, &result_buf);
-
-	hmc_complex result;
-	result_buf.dump(&result);
-	return result;
+	spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
 }
 
 hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field)
 {
+	const Scalar<hmc_float> res(field.system);
+	squarenorm(&res, field);
+	return res.get();
+}
+
+void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field)
+{
 	auto field_buffers = field.get_buffers();
+	auto res_buffers = res->get_buffers();
+	size_t num_buffers = field_buffers.size();
 
 	// TODO implemente for more than one device
-	if(field_buffers.size() > 1) {
-		throw Print_Error_Message("physics::lattices::squarenorm(const Spinorfield_eo&) is not implemented for multiple devices", __FILE__, __LINE__);
+	if(num_buffers != 1) {
+		throw Print_Error_Message("physics::lattices::squarenorm(const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
+	}
+	if(num_buffers != res_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not sue the same number of devices.");
 	}
 
 	auto field_buf = field_buffers[0];
+	auto res_buf = res_buffers[0];
 	auto device = field_buf->get_device();
-	hardware::buffers::Plain<hmc_float> result_buf(1, device);
 	auto spinor_code = device->get_spinor_code();
 
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, &result_buf);
-
-	hmc_float result;
-	result_buf.dump(&result);
-	return result;
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
 }
 
 void physics::lattices::Spinorfield_eo::zero() const
@@ -113,60 +129,80 @@ void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) cons
 
 void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
 {
+	const Scalar<hmc_complex> alpha_buf(out->system);
+	alpha_buf.store(alpha);
+	saxpy(out, alpha_buf, x, y);
+}
+
+void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
+{
 	auto out_bufs = out->get_buffers();
+	auto alpha_bufs = alpha.get_buffers();
 	auto x_bufs = x.get_buffers();
 	auto y_bufs = y.get_buffers();
 
-	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
+	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}
 
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		hardware::buffers::Plain<hmc_complex> alpha_buf(1, device);
-		alpha_buf.load(&alpha);
-		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], &alpha_buf, out_buf);
+		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
 	}
 }
 
 void physics::lattices::sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x)
 {
+	const Scalar<hmc_complex> alpha_buf(out->system);
+	alpha_buf.store(alpha);
+	sax(out, alpha_buf, x);
+}
+
+void physics::lattices::sax(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x)
+{
 	auto out_bufs = out->get_buffers();
+	auto alpha_bufs = alpha.get_buffers();
 	auto x_bufs = x.get_buffers();
 
-	if(out_bufs.size() != x_bufs.size()) {
+	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != x_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}
 
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		hardware::buffers::Plain<hmc_complex> alpha_buf(1, device);
-		alpha_buf.load(&alpha);
-		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], &alpha_buf, out_buf);
+		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
 	}
 }
 
 void physics::lattices::saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z)
 {
+	const Scalar<hmc_complex> alpha_buf(out->system);
+	const Scalar<hmc_complex> beta_buf(out->system);
+	alpha_buf.store(alpha);
+	beta_buf.store(beta);
+	saxsbypz(out, alpha_buf, x, beta_buf, y, z);
+}
+
+void physics::lattices::saxsbypz(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Scalar<hmc_complex>& beta, const Spinorfield_eo& y, const Spinorfield_eo& z)
+{
 	auto out_bufs = out->get_buffers();
+	auto alpha_bufs = alpha.get_buffers();
 	auto x_bufs = x.get_buffers();
+	auto beta_bufs = beta.get_buffers();
 	auto y_bufs = y.get_buffers();
 	auto z_bufs = z.get_buffers();
 
-	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size() || out_bufs.size() != z_bufs.size()) {
+	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != beta_bufs.size() || out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size() || out_bufs.size() != z_bufs.size()) {
 		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
 	}
+
 
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		hardware::buffers::Plain<hmc_complex> alpha_buf(1, device);
-		hardware::buffers::Plain<hmc_complex> beta_buf(1, device);
-		alpha_buf.load(&alpha);
-		beta_buf.load(&beta);
-		device->get_spinor_code()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], &alpha_buf, &beta_buf, out_buf);
+		device->get_spinor_code()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
 	}
 }
 
