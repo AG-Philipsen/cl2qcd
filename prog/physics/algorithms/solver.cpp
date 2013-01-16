@@ -11,6 +11,7 @@
 #include "../../operations_complex.h"
 #include "../../meta/type_ops.hpp"
 #include "../lattices/util.hpp"
+#include "../lattices/scalar_complex.hpp"
 #include <cmath>
 #include <sstream>
 
@@ -377,8 +378,18 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 
 	int cgmax = params.get_cgmax();
 
-	hmc_complex alpha, omega, rho, rho_next;
-	hmc_float resid;
+	const Scalar<hmc_complex> alpha(system);
+	const Scalar<hmc_complex> beta(system);
+	const Scalar<hmc_complex> omega(system);
+	const Scalar<hmc_complex> rho(system);
+	const Scalar<hmc_complex> rho_next(system);
+	const Scalar<hmc_complex> tmp1(system);
+	const Scalar<hmc_complex> tmp2(system);
+	const Scalar<hmc_complex> one(system);
+	one.store(hmc_complex_one);
+	const Scalar<hmc_complex> minus_one(system);
+	minus_one.store(hmc_complex_minusone);
+	hmc_float resid = 1.;
 
 	int iter;
 	for(iter = 0; iter < cgmax; iter++) {
@@ -387,43 +398,44 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 			p.zero();
 
 			f(&rn, gf, *x);
-			saxpy(&rn, {1., 0.}, rn, b);
+			saxpy(&rn, one, rn, b);
 
 			copyData(&rhat, rn);
 
-			alpha = {1., 0.};
-			omega = {1., 0.};
-			rho = {1., 0.};
+			copyData(&alpha, one);
+			copyData(&omega, one);
+			copyData(&rho, one);
 		}
-		rho_next = scalar_product(rhat, rn);
+		scalar_product(&rho_next, rhat, rn);
 		//check if algorithm is stuck
-		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
+		const hmc_complex test = rho_next.get();
+		if(std::abs(test.re) < 1e-25 && std::abs(test.im) < 1e-25 ) {
 			//print the last residuum
 			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 			throw SolverStuck(iter, __FILE__, __LINE__);
 		}
-		hmc_complex tmp1 = complexdivide(rho_next, rho);
-		rho = rho_next;
-		hmc_complex tmp2 = complexdivide(alpha, omega);
-		hmc_complex beta = complexmult(tmp1, tmp2);
+		divide(&tmp1, rho_next, rho);
+		copyData(&rho, rho_next);
+		divide(&tmp2, alpha, omega);
+		multiply(&beta, tmp1, tmp2);
 
-		tmp1 = complexmult(beta, omega);
-		tmp2 = complexsubtract( {0., 0.}, tmp1);
+		multiply(&tmp1, beta, omega);
+		multiply(&tmp2, minus_one, tmp1);
 		saxsbypz(&p, beta, p, tmp2, v, rn);
 
 		f(&v, gf, p);
 
-		tmp1 = scalar_product(rhat, v);
-		alpha = complexdivide(rho, tmp1);
+		scalar_product(&tmp1, rhat, v);
+		divide(&alpha, rho, tmp1);
 
 		saxpy(&s, alpha, v, rn);
 
 		f(&t, gf, s);
 
-		tmp1 = scalar_product(t, s);
+		scalar_product(&tmp1, t, s);
 		//!!CP: can this also be global_squarenorm??
-		tmp2 = scalar_product(t, t);
-		omega = complexdivide(tmp1, tmp2);
+		scalar_product(&tmp2, t, t);
+		divide(&omega, tmp1, tmp2);
 
 		saxpy(&rn, omega, t, s);
 
@@ -441,7 +453,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 			++retests;
 
 			f(&aux, gf, *x);
-			saxpy(&aux, {1., 0.}, aux, b);
+			saxpy(&aux, one, aux, b);
 
 			hmc_float trueresid = squarenorm(aux);
 			if(trueresid < prec) {
