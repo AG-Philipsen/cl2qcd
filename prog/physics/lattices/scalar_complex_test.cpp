@@ -73,3 +73,25 @@ BOOST_AUTO_TEST_CASE(division)
 	BOOST_REQUIRE_CLOSE(0.44, res_host.re, 1);
 	BOOST_REQUIRE_CLOSE(0.08, res_host.im, 1);
 }
+
+BOOST_AUTO_TEST_CASE(conversion)
+{
+	using namespace physics::lattices;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	logger.debug() << "Devices: " << system.get_devices().size();
+
+	Scalar<hmc_float> real_dev(system);
+	Scalar<hmc_complex> complex_dev(system);
+
+	hmc_float real_host = 1.37;
+	hmc_complex complex_host = {2.34, 5.67};
+
+	real_dev.store(real_host);
+	complex_dev.store(complex_host);
+	convert(&complex_dev, real_dev);
+	hmc_complex ref = {real_host, 0.};
+	BOOST_REQUIRE_EQUAL(ref, complex_dev.get());
+}

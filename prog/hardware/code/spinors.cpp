@@ -47,6 +47,7 @@ void hardware::code::Spinors::fill_kernels()
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
+	convert = createKernel("convert_float_to_complex") << get_device()->get_gaugefield_code()->get_sources() << "complex_convert.cl";
 	ratio = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
 	product = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
 
@@ -101,6 +102,8 @@ void hardware::code::Spinors::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(_global_squarenorm_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(convert);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(ratio);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(product);
@@ -138,6 +141,11 @@ void hardware::code::Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls
 
 	//Query specific sizes for kernels if needed
 	string kernelname = get_kernel_name(kernel);
+	if(kernelname.compare("convert_float_to_complex") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
 	if(kernelname.compare("ratio") == 0) {
 		*ls = 1;
 		*gs = 1;
@@ -469,6 +477,21 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	get_device()->enqueue_kernel(scalar_product_reduction, gs2, ls2);
 }
 
+void hardware::code::Spinors::set_complex_to_float_device(const hardware::buffers::Plain<hmc_float> * in, const hardware::buffers::Plain<hmc_complex> * out)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convert, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convert, 1, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(convert, gs2, ls2);
+}
 
 void hardware::code::Spinors::set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out)
 {
@@ -782,6 +805,10 @@ size_t hardware::code::Spinors::get_read_write_size(const std::string& in) const
 		/// @NOTE: here, the local reduction is not taken into account
 		return D * Seo * (C * 12  + 1 );
 	}
+	if (in == "convert_float_to_complex") {
+		//this kernel reads 1 float and writes 1 complex number
+		return (C + 1) * D;
+	}
 	if (in == "ratio") {
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
@@ -892,6 +919,9 @@ uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
 		return Seo * meta::get_flop_spinor_sqnorm() + (Seo - 1) * 2;
 	}
+	if (in == "convert_float_to_complex") {
+		return 0;
+	}
 	if (in == "ratio") {
 		return 11;
 	}
@@ -931,6 +961,7 @@ void hardware::code::Spinors::print_profiling(const std::string& filename, int n
 	Opencl_Module::print_profiling(filename, scalar_product_eoprec);
 	Opencl_Module::print_profiling(filename, global_squarenorm_eoprec);
 	Opencl_Module::print_profiling(filename, ratio);
+	Opencl_Module::print_profiling(filename, convert);
 	Opencl_Module::print_profiling(filename, product);
 	Opencl_Module::print_profiling(filename, convertSpinorfieldToSOA_eo);
 	Opencl_Module::print_profiling(filename, convertSpinorfieldFromSOA_eo);

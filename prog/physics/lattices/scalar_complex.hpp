@@ -16,6 +16,8 @@ namespace lattices {
 void multiply(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right);
 void divide(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& numerator, const Scalar<hmc_complex>& denominator);
 
+void convert(const Scalar<hmc_complex>* dest, const Scalar<hmc_float>& src);
+
 }
 
 }

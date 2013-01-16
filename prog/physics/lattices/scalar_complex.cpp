@@ -69,3 +69,18 @@ void physics::lattices::divide(const Scalar<hmc_complex>* dest, const Scalar<hmc
 		code->set_complex_to_ratio_device(numerator_bufs[i], denominator_bufs[i], dest_bufs[i]);
 	}
 }
+
+void physics::lattices::convert(const Scalar<hmc_complex>* dest, const Scalar<hmc_float>& src)
+{
+	auto dest_bufs = dest->get_buffers();
+	size_t num_bufs = dest_bufs.size();
+	auto src_bufs = src.get_buffers();
+
+	if(num_bufs != src_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = dest_bufs[i]->get_device()->get_spinor_code();
+		code->set_complex_to_float_device(src_bufs[i], dest_bufs[i]);
+	}
+}
