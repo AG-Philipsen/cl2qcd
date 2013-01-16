@@ -505,20 +505,30 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 	const Spinorfield_eo t(system);
 	const Spinorfield_eo v(system);
 
-	hmc_complex rho;
+	const Scalar<hmc_complex> alpha(system);
+	const Scalar<hmc_complex> beta(system);
+	const Scalar<hmc_complex> omega(system);
+	const Scalar<hmc_complex> rho(system);
+	const Scalar<hmc_complex> rho_next(system);
+	const Scalar<hmc_complex> tmp1(system);
+	const Scalar<hmc_complex> tmp2(system);
+	const Scalar<hmc_complex> one(system);
+	one.store(hmc_complex_one);
+	const Scalar<hmc_complex> minus_one(system);
+	minus_one.store(hmc_complex_minusone);
 
 	int iter;
 	for(iter = 0; iter < params.get_cgmax(); iter++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//initial r_n, saved in p
 			f(&rn, gf, *x);
-			saxpy(&p, {1., 0}, rn, b);
+			saxpy(&p, one, rn, b);
 			//rhat = p
 			copyData(&rhat, p);
 			//r_n = p
 			copyData(&rn, p);
 			//rho = (rhat, rn)
-			rho = scalar_product(rhat, rn);
+			scalar_product(&rho, rhat, rn);
 		}
 		//resid = (rn,rn)
 		hmc_float resid = squarenorm(rn);
@@ -557,47 +567,48 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 		//v = A*p
 		f(&v, gf, p);
 		//tmp1 = (rhat, v)
-		hmc_complex tmp1 = scalar_product(rhat, v);
+		scalar_product(&tmp1, rhat, v);
 		//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
-		hmc_complex alpha = complexdivide(rho, tmp1);
+		divide(&alpha, rho, tmp1);
 		//s = - alpha * v - r_n
 		saxpy(&s, alpha, v, rn);
 		//t = A s
 		f(&t, gf, s);
 		//tmp1 = (t, s)
-		tmp1 = scalar_product(t, s);
+		scalar_product(&tmp1, t, s);
 		//!!CP: this can also be global_squarenorm, but one needs a complex number here
 		//tmp2 = (t,t)
-		hmc_complex tmp2 = scalar_product(t, t);
+		scalar_product(&tmp2, t, t);
 		//omega = tmp1/tmp2 = (t,s)/(t,t)
-		hmc_complex omega = complexdivide(tmp1, tmp2);
+		divide(&omega, tmp1, tmp2);
 		//inout = alpha*p + omega * s + inout
 		saxsbypz(x, alpha, p, omega, s, *x);
 		//r_n = - omega*t - s
 		saxpy(&rn, omega, t, s);
 		//rho_next = (rhat, rn)
-		hmc_complex rho_next = scalar_product(rhat, rn);
+		scalar_product(&rho_next, rhat, rn);
+		const hmc_complex test = rho_next.get();
 		//check if algorithm is stuck
-		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
+		if(std::abs(test.re) < 1e-25 && std::abs(test.im) < 1e-25 ) {
 			//print the last residuum
 			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 			SolverStuck(iter, __FILE__, __LINE__);
 		}
 
 		//tmp1 = rho_next/rho = (rhat, rn)/..
-		tmp1 = complexdivide(rho_next, rho);
+		divide(&tmp1, rho_next, rho);
 		//tmp2 = alpha/omega = ...
-		tmp2 = complexdivide(alpha, omega);
+		divide(&tmp2, alpha, omega);
 		//beta = tmp1*tmp2 = alpha*rho_next / (omega*rho)
-		hmc_complex beta = complexmult(tmp1, tmp2);
+		multiply(&beta, tmp1, tmp2);
 		//tmp1 = beta*omega = alpha* rho_next / rho
-		tmp1 = complexmult(beta, omega);
+		multiply(&tmp1, beta, omega);
 		//tmp2 = -tmp1
-		tmp2 = complexsubtract( {0., 0.}, tmp1);
+		multiply(&tmp2, minus_one, tmp1);
 		//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
 		saxsbypz(&p, beta, p, tmp2, v, rn);
 		//rho_next = rho
-		rho = rho_next;
+		copyData(&rho, rho_next);
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
