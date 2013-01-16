@@ -10,8 +10,6 @@
 #include "../meta/util.hpp"
 #include "../lattices/util.hpp"
 
-static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<const physics::lattices::Spinorfield*>& fields, const size_t device_idx, hardware::Device * device);
-
 static void flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
 static size_t get_num_corr_entries(const meta::Inputparameters& params);
@@ -80,24 +78,6 @@ void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<co
 	} else {
 				throw std::invalid_argument("No valid chiral condensate version has ben selected.");
 	}
-}
-
-static hardware::buffers::Plain<spinor> * merge_spinorfields(const std::vector<const physics::lattices::Spinorfield*>& fields, const size_t device_idx, hardware::Device * device)
-{
-	size_t total_elems = 0;
-for(auto field: fields) {
-		total_elems += field->get_buffers().at(device_idx)->get_elements();
-	}
-	hardware::buffers::Plain<spinor> * result = new hardware::buffers::Plain<spinor>(total_elems, device);
-
-	size_t offset = 0;
-for(auto field: fields) {
-		auto buffer = field->get_buffers().at(device_idx);
-		size_t elems = buffer->get_elements();
-		result->copyDataBlock(buffer, offset);
-		offset += elems;
-	}
-	return result;
 }
 
 static void flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
