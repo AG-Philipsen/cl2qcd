@@ -11,7 +11,8 @@ namespace lattices {
 /**
  * Representation of a gaugefield.
  */
-class Swappable {
+struct Swappable {
+
 	/**
 	 * Ensure the data is available for usage on the device.
 	 *

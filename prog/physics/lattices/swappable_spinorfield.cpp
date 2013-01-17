@@ -29,7 +29,9 @@ void physics::lattices::SwappableSpinorfield::swap_in()
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		buffers[i]->load(swap[i]);
+		spinor* host_mem = swap[i];
+		buffers[i]->load(host_mem);
+		delete[] host_mem;
 	}
 	swap.clear();
 }
@@ -60,4 +62,29 @@ std::vector<physics::lattices::Spinorfield *> physics::lattices::create_swappabl
 	}
 
 	return fields;
+}
+
+void physics::lattices::swap_out(const std::vector<Spinorfield*>& fields)
+{
+	logger.trace() << "Swapping out spinorfields.";
+	for(auto field: fields) {
+		auto swappable_field = dynamic_cast<Swappable*>(field);
+		if(!swappable_field) {
+			throw Print_Error_Message("swap_out was given a field that is not swappable", __FILE__, __LINE__);
+		}
+		swappable_field->swap_out();
+	}
+	logger.trace() << "Finished swapping out spinorfields.";
+}
+
+void physics::lattices::swap_in(const std::vector<Spinorfield*>& fields)
+{
+	logger.trace() << "Swapping in spinorfields.";
+	for(auto field: fields) {
+		auto swappable_field = dynamic_cast<Swappable*>(field);
+		if(swappable_field) {
+			swappable_field->swap_in();
+		}
+	}
+	logger.trace() << "Finished swapping in spinorfields.";
 }

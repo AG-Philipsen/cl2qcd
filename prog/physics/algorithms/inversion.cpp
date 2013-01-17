@@ -7,11 +7,29 @@
 #include "solver.hpp"
 #include <cassert>
 #include "../lattices/util.hpp"
+#include "../lattices/swappable.hpp"
 
 static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* result, const physics::lattices::Gaugefield& gaugefield, const physics::lattices::Spinorfield* source, const hardware::System& system);
 
 template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield& in, std::string msg);
 template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield* in, std::string msg);
+static void try_swap_in(physics::lattices::Spinorfield* field);
+static void try_swap_out(physics::lattices::Spinorfield* field);
+
+static void try_swap_in(physics::lattices::Spinorfield* field)
+{
+	auto swappable = dynamic_cast<physics::lattices::Swappable*>(field);
+	if(swappable) {
+		swappable->swap_in();
+	}
+}
+static void try_swap_out(physics::lattices::Spinorfield* field)
+{
+	auto swappable = dynamic_cast<physics::lattices::Swappable*>(field);
+	if(swappable) {
+		swappable->swap_out();
+	}
+}
 
 void physics::algorithms::perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {
@@ -24,7 +42,17 @@ void physics::algorithms::perform_inversion(const std::vector<physics::lattices:
 
 	for(int k = 0; k < num_sources; k++) {
 		logger.debug() << "calling solver..";
-		invert_M_nf2_upperflavour(result->at(k), *gaugefield, sources[k], system);
+
+		auto source = sources[k];
+		auto res = result->at(k);
+
+		try_swap_in(source);
+		try_swap_in(res);
+
+		invert_M_nf2_upperflavour(res, *gaugefield, source, system);
+
+		try_swap_out(source);
+		try_swap_out(res);
 	}
 
 	if(params.get_use_smearing())

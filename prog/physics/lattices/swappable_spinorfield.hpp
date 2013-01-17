@@ -58,6 +58,20 @@ private:
  */
 std::vector<Spinorfield *> create_swappable_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false);
 
+/**
+ * Swap out the given spinorfields
+ *
+ * \throws Print_Error_Message if not all Spinorfields are swappable
+ */
+void swap_out(const std::vector<Spinorfield *>& fields);
+
+/**
+ * Swap in the given spinorfields
+ *
+ * If a spinorfield is not swappable this is not an error.
+ */
+void swap_in(const std::vector<Spinorfield *>& fields);
+
 }
 }
 

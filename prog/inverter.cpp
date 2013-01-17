@@ -60,11 +60,16 @@ int main(int argc, const char* argv[])
 				if(parameters.get_print_to_screen() ) {
 					print_gaugeobservables(gaugefield, 0);
 				}
-				const std::vector<Spinorfield*> sources = create_sources(system, prng);
-				const std::vector<Spinorfield*> result = create_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
+				const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng);
+				const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
+
+				swap_out(sources);
+				swap_out(result);
 
 				perform_inversion(&result, &gaugefield, sources, system);
 
+				swap_in(sources);
+				swap_in(result);
 
 				if(parameters.get_measure_correlators() ) {
 					//get name for file to which correlators are to be stored
@@ -90,10 +95,18 @@ int main(int argc, const char* argv[])
 			logger.info() << "Gaugeobservables:";
 			print_gaugeobservables(gaugefield, 0);
 
-			auto sources = create_sources(system, prng);
-			auto result = create_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
+			const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng);
+			const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
+
+			swap_out(sources);
+			swap_out(result);
 
 			perform_inversion(&result, &gaugefield, sources, system);
+
+			logger.info() << "Finished inversion. Starting measurements.";
+
+			swap_in(sources);
+			swap_in(result);
 
 			if(parameters.get_measure_correlators() ) {
 				//get name for file to which correlators are to be stored
