@@ -10,7 +10,7 @@
 static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
 
 physics::lattices::Spinorfield::Spinorfield(const hardware::System& system, const bool place_on_host)
-	: system(system), buffers(allocate_buffers(system, place_on_host))
+	: system(system), buffers(allocate_buffers(system, place_on_host)), place_on_host(place_on_host)
 {
 }
 
@@ -27,9 +27,25 @@ static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(c
 
 physics::lattices::Spinorfield::~Spinorfield()
 {
+	clear_buffers();
+}
+
+
+void physics::lattices::Spinorfield::clear_buffers()
+{
 for(auto buffer: buffers) {
 		delete buffer;
 	}
+	buffers.clear();
+}
+
+void physics::lattices::Spinorfield::fill_buffers()
+{
+	if(buffers.size() != 0) {
+		return;
+	}
+
+	buffers = allocate_buffers(system, place_on_host);
 }
 
 const std::vector<const physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host)

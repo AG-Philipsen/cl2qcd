@@ -31,7 +31,7 @@ public:
 	/**
 	 * Release resources
 	 */
-	~Spinorfield();
+	virtual ~Spinorfield();
 
 	/*
 	 * Spinorfields cannot be copied
@@ -65,9 +65,21 @@ public:
 	 */
 	void gaussian(const physics::PRNG& prng) const;
 
+protected:
+	/**
+	 * Allow (re-)creation of buffers by children
+	 */
+	void fill_buffers();
+
+	/**
+	 * Allow destruction of buffers by children
+	 */
+	void clear_buffers();
+
 private:
 	hardware::System const& system;
-	const std::vector<const hardware::buffers::Plain<spinor> *> buffers;
+	std::vector<const hardware::buffers::Plain<spinor> *> buffers;
+	const bool place_on_host;
 
 	friend hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
 	friend hmc_float squarenorm(const Spinorfield& field);
