@@ -58,7 +58,7 @@ int main(int argc, const char* argv[])
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
 				Gaugefield gaugefield(system, prng, config_name);
 				if(parameters.get_print_to_screen() ) {
-					print_gaugeobservables(gaugefield, 0);
+					print_gaugeobservables(gaugefield, iter);
 				}
 				if(parameters.get_measure_correlators() ) {
 				  // for the correlator calculation, all sources are needed on the device
@@ -87,7 +87,7 @@ int main(int argc, const char* argv[])
 
 				    perform_inversion(&result, &gaugefield, sources, parameters, 1);
 
-				    flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
+				    flavour_doublet_chiral_condensate(result, sources, pbp_fn, iter, system);
 				    release_spinorfields(result);
 				    release_spinorfields(sources);
 				  }
