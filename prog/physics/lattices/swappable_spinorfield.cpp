@@ -11,7 +11,10 @@ physics::lattices::SwappableSpinorfield::SwappableSpinorfield(const hardware::Sy
 
 physics::lattices::SwappableSpinorfield::~SwappableSpinorfield()
 {
-	// nothing to do
+	for(auto host_mem: swap) {
+		delete[] host_mem;
+	}
+	swap.clear();
 }
 
 void physics::lattices::SwappableSpinorfield::swap_in()
