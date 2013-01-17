@@ -65,10 +65,9 @@ void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfie
 
 static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, physics::PRNG& prng, const meta::Inputparameters& params);
 
-std::vector<physics::lattices::Spinorfield *> physics::create_sources(hardware::System& system, PRNG& prng)
+std::vector<physics::lattices::Spinorfield *> physics::create_sources(hardware::System& system, PRNG& prng, const size_t n_sources)
 {
 	auto params = system.get_inputparameters();
-	const size_t n_sources = params.get_num_sources();
 
 	auto sources = lattices::create_spinorfields(system, n_sources, params.get_place_sources_on_host());
 	fill_sources(sources, prng, params);
@@ -79,7 +78,7 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 {
 	using namespace physics;
 
-	for(int k = 0; k < params.get_num_sources(); k++) {
+	for(int k = 0; k < sources.size(); k++) {
 		auto source = sources[k];
 
 		switch(params.get_sourcetype()) {
@@ -106,10 +105,9 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 	}
 }
 
-std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(hardware::System& system, PRNG& prng)
+std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(hardware::System& system, PRNG& prng, const size_t n_sources)
 {
 	auto params = system.get_inputparameters();
-	const size_t n_sources = params.get_num_sources();
 
 	auto sources = lattices::create_swappable_spinorfields(system, n_sources, params.get_place_sources_on_host());
 	fill_sources(sources, prng, params);

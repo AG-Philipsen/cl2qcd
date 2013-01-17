@@ -58,36 +58,46 @@ int main(int argc, const char* argv[])
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
 				Gaugefield gaugefield(system, prng, config_name);
 				if(parameters.get_print_to_screen() ) {
-					print_gaugeobservables(gaugefield, 0);
+					print_gaugeobservables(gaugefield, iter);
 				}
-				const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng);
-				const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
-
-				swap_out(sources);
-				swap_out(result);
-
-				perform_inversion(&result, &gaugefield, sources, system);
-
-				swap_in(sources);
-				swap_in(result);
-
 				if(parameters.get_measure_correlators() ) {
-					//get name for file to which correlators are to be stored
-					std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
-					ofstream of(corr_fn.c_str(), ios_base::app);
-					if(!of.is_open()) {
-						throw File_Exception(corr_fn);
-					}
-					flavour_doublet_correlators(result, sources, of, parameters);
+				  // for the correlator calculation, all sources are needed on the device
+				  const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng, parameters.get_num_sources());
+				  const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
+
+				  swap_out(sources);
+				  swap_out(result);
+
+				  perform_inversion(&result, &gaugefield, sources, system);
+
+				  swap_in(sources);
+				  swap_in(result);
+
+				  //get name for file to which correlators are to be stored
+				  std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
+				  ofstream of(corr_fn.c_str(), ios_base::app);
+				  if(!of.is_open()) {
+				    throw File_Exception(corr_fn);
+				  }
+				  flavour_doublet_correlators(result, sources, of, parameters);
+				  release_spinorfields(result);
+				  release_spinorfields(sources);
 				}
 				if(parameters.get_measure_pbp() ) {
-					//get name for file to which pbp is to be stored
-					std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
-					flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
-				}
+				  //get name for file to which pbp is to be stored
+				  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
+				  // the chiral condensate needs only one source at a time
+				  for(int i_sources = 0; i_sources < parameters.get_num_sources(); i_sources ++){
+				    auto sources = create_sources(system, prng, 1);
+				    auto result = create_spinorfields(system, sources.size());
 
-				release_spinorfields(result);
-				release_spinorfields(sources);
+				    perform_inversion(&result, &gaugefield, sources, parameters);
+
+				    flavour_doublet_chiral_condensate(result, sources, pbp_fn, iter, system);
+				    release_spinorfields(result);
+				    release_spinorfields(sources);
+				  }
+				}
 			}
 		} else {
 			Gaugefield gaugefield(system, prng);
@@ -95,36 +105,46 @@ int main(int argc, const char* argv[])
 			logger.info() << "Gaugeobservables:";
 			print_gaugeobservables(gaugefield, 0);
 
-			const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng);
-			const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
-
-			swap_out(sources);
-			swap_out(result);
-
-			perform_inversion(&result, &gaugefield, sources, system);
-
-			logger.info() << "Finished inversion. Starting measurements.";
-
-			swap_in(sources);
-			swap_in(result);
-
 			if(parameters.get_measure_correlators() ) {
-				//get name for file to which correlators are to be stored
-				std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, "");
-				ofstream of(corr_fn.c_str(), ios_base::app);
-				if(!of.is_open()) {
-					throw File_Exception(corr_fn);
-				}
-				flavour_doublet_correlators(result, sources, of, parameters);
+			  // for the correlator calculation, all sources are needed on the device
+			  const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng, parameters.get_num_sources());
+			  const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
+
+			  swap_out(sources);
+			  swap_out(result);
+
+			  perform_inversion(&result, &gaugefield, sources, system);
+
+			  logger.info() << "Finished inversion. Starting measurements.";
+
+			  swap_in(sources);
+			  swap_in(result);
+
+			  //get name for file to which correlators are to be stored
+			  std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, parameters.get_sourcefile().c_str());
+			  ofstream of(corr_fn.c_str(), ios_base::app);
+			  if(!of.is_open()) {
+			    throw File_Exception(corr_fn);
+			  }
+			  flavour_doublet_correlators(result, sources, of, parameters);
+			  release_spinorfields(result);
+			  release_spinorfields(sources);
 			}
 			if(parameters.get_measure_pbp() ) {
-				//get name for file to which pbp is to be stored
-			  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, (parameters.get_sourcefile()).c_str());
-				flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
+			  //get name for file to which pbp is to be stored
+			  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, parameters.get_sourcefile().c_str());
+			  // the chiral condensate needs only one source at a time
+			  for(int i_sources = 0; i_sources < parameters.get_num_sources(); i_sources ++){
+			    auto sources = create_sources(system, prng, 1);
+			    auto result = create_spinorfields(system, sources.size());
+			    
+			    perform_inversion(&result, &gaugefield, sources, parameters);
+			    
+			    flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
+			    release_spinorfields(result);
+			    release_spinorfields(sources);
+			  }  
 			}
-
-			release_spinorfields(result);
-			release_spinorfields(sources);
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();

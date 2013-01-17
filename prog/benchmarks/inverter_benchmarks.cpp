@@ -79,7 +79,7 @@ int main(int argc, const char* argv[])
 				//CP: these are esssentially the same actions as the "normal" inverter performs...
 				logger.info() << "Perform inversion on device.." ;
 
-				auto sources = create_sources(system, prng);
+				auto sources = create_sources(system, prng, parameters.get_num_sources());
 				auto result = create_spinorfields(system, sources.size());
 				perform_inversion(&result, &gaugefield, sources, system);
 				flavour_doublet_correlators(result, sources, corr_file, parameters);

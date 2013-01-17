@@ -16,14 +16,14 @@ template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorf
 
 void physics::algorithms::perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {
-	int num_sources = sources.size();
 	auto params = system.get_inputparameters();
+	const size_t num_sources = sources.size();
 
 	//apply stout smearing if wanted
 	if(params.get_use_smearing())
 		gaugefield->smear();
 
-	for(int k = 0; k < num_sources; k++) {
+	for(size_t k = 0; k < num_sources; k++) {
 		logger.debug() << "calling solver..";
 
 		auto source = sources[k];
@@ -55,7 +55,6 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 	 *        b == source
 	 * using a Krylov-Solver (BiCGStab or CG)
 	 */
-
 	// assert a single GPU
 	assert(result->get_buffers().size() == 1);
 
