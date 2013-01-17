@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
 						auto sources = create_sources(system, prng, 1);
 						auto result = create_spinorfields(system, sources.size());
 
-						perform_inversion(&result, &gaugefield, sources, parameters);
+						perform_inversion(&result, &gaugefield, sources, system);
 
 						flavour_doublet_chiral_condensate(result, sources, pbp_fn, iter, system);
 						release_spinorfields(result);
@@ -138,7 +138,7 @@ int main(int argc, const char* argv[])
 					auto sources = create_sources(system, prng, 1);
 					auto result = create_spinorfields(system, sources.size());
 
-					perform_inversion(&result, &gaugefield, sources, parameters);
+					perform_inversion(&result, &gaugefield, sources, system);
 
 					flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
 					release_spinorfields(result);
