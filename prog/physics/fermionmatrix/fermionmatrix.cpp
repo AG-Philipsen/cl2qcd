@@ -134,8 +134,6 @@ cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 }
 void physics::fermionmatrix::QplusQminus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
-	/** @todo The local creation of the temporary field is known to cause performance problems... */
-	physics::lattices::Spinorfield tmp(get_system()); // FIXME somehow pool this...
 	q_minus(&tmp, gf, in);
 	q_plus(out, gf, tmp);
 }
@@ -156,7 +154,6 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
 	const hardware::System& system = get_system();
-	physics::lattices::Spinorfield_eo tmp(system); // FIXME somehow pool this...
 
 	hmc_float kappa = get_kappa();
 	hmc_float mubar = get_mubar();
@@ -168,15 +165,13 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case meta::Inputparameters::twistedmass: {
-			physics::lattices::Spinorfield_eo tmp2(system); // FIXME somehow pool this...
+		case meta::Inputparameters::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
 			M_tm_sitediagonal(&tmp, in, mubar);
 			saxpy(out, {1., 0.}, *out, tmp);
-		}
-		break;
+			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
 	}
@@ -222,7 +217,6 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
 	const hardware::System& system = get_system();
-	physics::lattices::Spinorfield_eo tmp(system); // FIXME somehow pool this...
 
 	hmc_float kappa = get_kappa();
 	hmc_float mubar = get_mubar();
@@ -234,15 +228,13 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case meta::Inputparameters::twistedmass: {
-			physics::lattices::Spinorfield_eo tmp2(system); // FIXME somehow pool this...
+		case meta::Inputparameters::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal_minus(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
 			M_tm_sitediagonal_minus(&tmp, in, mubar);
 			saxpy(out, {1., 0.}, *out, tmp);
-		}
-		break;
+			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
 	}
@@ -325,8 +317,6 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const
 }
 void physics::fermionmatrix::QplusQminus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
 {
-	/** @todo The local creation of the temporary field is known to cause performance problems... */
-	physics::lattices::Spinorfield_eo tmp(get_system()); // FIXME somehow pool this...
 	q_minus(&tmp, gf, in);
 	q_plus(out, gf, tmp);
 }
