@@ -63,14 +63,14 @@ void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfie
 	buffer->get_device()->get_correlator_code()->create_zslice_source_device(buffer, prng_buffer, z);
 }
 
-const std::vector<const physics::lattices::Spinorfield *> physics::create_sources(hardware::System& system, PRNG& prng)
+const std::vector<const physics::lattices::Spinorfield *> physics::create_sources(hardware::System& system, PRNG& prng, const size_t n_sources)
 {
 	auto params = system.get_inputparameters();
-	const size_t n_sources = params.get_num_sources();
+	//	const size_t n_sources = params.get_num_sources();
 
 	const std::vector<const physics::lattices::Spinorfield *> sources = lattices::create_spinorfields(system, n_sources);
 
-	for(int k = 0; k < params.get_num_sources(); k++) {
+	for(int k = 0; k < n_sources; k++) {
 		auto source = sources[k];
 
 		switch(system.get_inputparameters().get_sourcetype()) {

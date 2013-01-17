@@ -60,29 +60,38 @@ int main(int argc, const char* argv[])
 				if(parameters.get_print_to_screen() ) {
 					print_gaugeobservables(gaugefield, 0);
 				}
-				const std::vector<const Spinorfield*> sources = create_sources(system, prng);
-				const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
-
-				perform_inversion(&result, &gaugefield, sources, parameters);
-
-
 				if(parameters.get_measure_correlators() ) {
-					//get name for file to which correlators are to be stored
-					std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
-					ofstream of(corr_fn.c_str(), ios_base::app);
-					if(!of.is_open()) {
-						throw File_Exception(corr_fn);
-					}
-					flavour_doublet_correlators(result, sources, of, parameters);
+				  // for the correlator calculation, all sources are needed on the device
+				  const std::vector<const Spinorfield*> sources = create_sources(system, prng, parameters.get_num_sources());
+				  const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+
+				  perform_inversion(&result, &gaugefield, sources, parameters, parameters.get_num_sources());
+
+				  //get name for file to which correlators are to be stored
+				  std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
+				  ofstream of(corr_fn.c_str(), ios_base::app);
+				  if(!of.is_open()) {
+				    throw File_Exception(corr_fn);
+				  }
+				  flavour_doublet_correlators(result, sources, of, parameters);
+				  release_spinorfields(result);
+				  release_spinorfields(sources);
 				}
 				if(parameters.get_measure_pbp() ) {
-					//get name for file to which pbp is to be stored
-					std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
-					flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
-				}
+				  //get name for file to which pbp is to be stored
+				  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
+				  // the chiral condensate needs only one source at a time
+				  for(int i_sources = 0; i_sources < parameters.get_num_sources(); i_sources ++){
+				    const std::vector<const Spinorfield*> sources = create_sources(system, prng, 1);
+				    const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
 
-				release_spinorfields(result);
-				release_spinorfields(sources);
+				    perform_inversion(&result, &gaugefield, sources, parameters, 1);
+
+				    flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
+				    release_spinorfields(result);
+				    release_spinorfields(sources);
+				  }
+				}
 			}
 		} else {
 			Gaugefield gaugefield(system, prng);
@@ -90,28 +99,38 @@ int main(int argc, const char* argv[])
 			logger.info() << "Gaugeobservables:";
 			print_gaugeobservables(gaugefield, 0);
 
-			const std::vector<const Spinorfield*> sources = create_sources(system, prng);
-			const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
-
-			perform_inversion(&result, &gaugefield, sources, parameters);
-
 			if(parameters.get_measure_correlators() ) {
-				//get name for file to which correlators are to be stored
-				std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, "");
-				ofstream of(corr_fn.c_str(), ios_base::app);
-				if(!of.is_open()) {
-					throw File_Exception(corr_fn);
-				}
-				flavour_doublet_correlators(result, sources, of, parameters);
+			  // for the correlator calculation, all sources are needed on the device
+			  const std::vector<const Spinorfield*> sources = create_sources(system, prng, parameters.get_num_sources());
+			  const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+
+			  perform_inversion(&result, &gaugefield, sources, parameters, parameters.get_num_sources());
+
+			  //get name for file to which correlators are to be stored
+			  std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, parameters.get_sourcefile().c_str());
+			  ofstream of(corr_fn.c_str(), ios_base::app);
+			  if(!of.is_open()) {
+			    throw File_Exception(corr_fn);
+			  }
+			  flavour_doublet_correlators(result, sources, of, parameters);
+			  release_spinorfields(result);
+			  release_spinorfields(sources);
 			}
 			if(parameters.get_measure_pbp() ) {
-				//get name for file to which pbp is to be stored
-			  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, (parameters.get_sourcefile()).c_str());
-				flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
+			  //get name for file to which pbp is to be stored
+			  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, parameters.get_sourcefile().c_str());
+			  // the chiral condensate needs only one source at a time
+			  for(int i_sources = 0; i_sources < parameters.get_num_sources(); i_sources ++){
+			    const std::vector<const Spinorfield*> sources = create_sources(system, prng, 1);
+			    const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+			    
+			    perform_inversion(&result, &gaugefield, sources, parameters, 1);
+			    
+			    flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
+			    release_spinorfields(result);
+			    release_spinorfields(sources);
+			  }  
 			}
-
-			release_spinorfields(result);
-			release_spinorfields(sources);
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();

@@ -13,8 +13,9 @@ namespace physics {
 
 	/**
 	 * Create sources as specified by the input parameters of the system.
+	 * \param n_sources Number of sources to create
 	 */
-	const std::vector<const lattices::Spinorfield *> create_sources(hardware::System& system, PRNG& prng);
+	const std::vector<const lattices::Spinorfield *> create_sources(hardware::System& system, PRNG& prng, const size_t n_sources);
 
 	void set_point_source(const physics::lattices::Spinorfield *, int k, const meta::Inputparameters& params);
 	void set_volume_source(const physics::lattices::Spinorfield *, PRNG& prng);

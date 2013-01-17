@@ -8,10 +8,8 @@
 
 static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* result, const physics::lattices::Gaugefield& gaugefield, const physics::lattices::Spinorfield* source, const meta::Inputparameters& params);
 
-void physics::algorithms::perform_inversion(const std::vector<const physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+void physics::algorithms::perform_inversion(const std::vector<const physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params, const int num_sources)
 {
-	int num_sources = params.get_num_sources();
-
 	//apply stout smearing if wanted
 	if(params.get_use_smearing())
 		gaugefield->smear();
@@ -34,7 +32,6 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 	 *        b == source
 	 * using a Krylov-Solver (BiCGStab or CG)
 	 */
-
 	// assert a single GPU
 	assert(result->get_buffers().size() == 1);
 
