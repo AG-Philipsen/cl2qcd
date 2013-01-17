@@ -61,7 +61,7 @@ int main(int argc, const char* argv[])
 					print_gaugeobservables(gaugefield, 0);
 				}
 				const std::vector<const Spinorfield*> sources = create_sources(system, prng);
-				const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+				const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
 
 				perform_inversion(&result, &gaugefield, sources, system);
 
@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
 			print_gaugeobservables(gaugefield, 0);
 
 			const std::vector<const Spinorfield*> sources = create_sources(system, prng);
-			const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size());
+			const std::vector<const Spinorfield*> result = create_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
 
 			perform_inversion(&result, &gaugefield, sources, system);
 
