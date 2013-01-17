@@ -80,6 +80,7 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 
 	for(int k = 0; k < sources.size(); k++) {
 		auto source = sources[k];
+		try_swap_in(source);
 
 		switch(params.get_sourcetype()) {
 			case meta::Inputparameters::point:
@@ -102,6 +103,8 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 			default:
 				throw std::domain_error("no such sourcetype");
 		}
+
+		try_swap_out(source);
 	}
 }
 

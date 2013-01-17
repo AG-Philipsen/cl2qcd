@@ -65,9 +65,6 @@ int main(int argc, const char* argv[])
 					const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng, parameters.get_num_sources());
 					const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
 
-					swap_out(sources);
-					swap_out(result);
-
 					perform_inversion(&result, &gaugefield, sources, system);
 
 					swap_in(sources);

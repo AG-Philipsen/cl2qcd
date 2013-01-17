@@ -61,7 +61,9 @@ std::vector<physics::lattices::Spinorfield *> physics::lattices::create_swappabl
 	fields.reserve(n);
 
 	for(size_t i = 0; i < n; ++i) {
-		fields.push_back(new SwappableSpinorfield(system, place_on_host));
+		auto field = new SwappableSpinorfield(system, place_on_host);
+		field->swap_out();
+		fields.push_back(field);
 	}
 
 	return fields;
