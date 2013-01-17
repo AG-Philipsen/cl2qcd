@@ -10,6 +10,8 @@
 #include <sstream>
 #include "../logger.hpp"
 
+static std::vector<hardware::Device*> filter_cpus(const std::vector<hardware::Device*>& devices);
+
 hardware::System::System(const meta::Inputparameters& params, bool enable_profiling)
 	: params(params)
 {
@@ -70,6 +72,13 @@ hardware::System::System(const meta::Inputparameters& params, bool enable_profil
 			}
 #endif
 			devices.push_back(dev);
+		}
+		// for now, if a gpu was found then throw out cpus
+for(auto device: devices) {
+			if(device->get_device_type() == CL_DEVICE_TYPE_GPU) {
+				devices = filter_cpus(devices);
+				break;
+			}
 		}
 	} else {
 for(int i: selection) {
@@ -156,4 +165,15 @@ void hardware::print_profiling(const System& system, const std::string& filename
 void hardware::print_profiling(const System * system, const std::string& filename)
 {
 	print_profiling(*system, filename);
+}
+
+static std::vector<hardware::Device*> filter_cpus(const std::vector<hardware::Device*>& devices)
+{
+	std::vector<hardware::Device*> filtered;
+for(auto device: devices) {
+		if(device->get_device_type() != CL_DEVICE_TYPE_CPU) {
+			filtered.push_back(device);
+		}
+	}
+	return filtered;
 }
