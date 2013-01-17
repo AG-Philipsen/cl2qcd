@@ -286,10 +286,13 @@ void hardware::code::Spinors::saxpy_device(const hardware::buffers::Plain<spinor
 	clerr = clSetKernelArg(saxpy_arg, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg, 2, sizeof(hmc_complex), &alpha);
+	clerr = clSetKernelArg(saxpy_arg, 2, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg, 3, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_arg, 3, sizeof(hmc_float), &alpha.im);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_arg, 4, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(saxpy_arg , gs2, ls2);
@@ -375,10 +378,13 @@ void hardware::code::Spinors::saxpy_eoprec_device(const hardware::buffers::Spino
 	clerr = clSetKernelArg(saxpy_arg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg_eoprec, 2, sizeof(hmc_complex), &alpha);
+	clerr = clSetKernelArg(saxpy_arg_eoprec, 2, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg_eoprec, 3, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_arg_eoprec, 3, sizeof(hmc_float), &alpha.im);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_arg_eoprec, 4, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( saxpy_arg_eoprec, gs2, ls2);

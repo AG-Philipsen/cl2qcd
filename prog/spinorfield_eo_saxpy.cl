@@ -15,10 +15,14 @@ __kernel void saxpy_eoprec(__global const spinorStorageType * const restrict x, 
 	}
 }
 
-__kernel void saxpy_arg_eoprec(__global const spinorStorageType * const restrict x, __global const spinorStorageType * const restrict y, const hmc_complex alpha, __global spinorStorageType * const restrict out)
+__kernel void saxpy_arg_eoprec(__global const spinorStorageType * const restrict x, __global const spinorStorageType * const restrict y, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const restrict out)
 {
-	int id = get_global_id(0);
-	int global_size = get_global_size(0);
+	const int id = get_global_id(0);
+	const int global_size = get_global_size(0);
+
+	const hmc_complex alpha = (hmc_complex) {
+		alpha_re, alpha_im
+	};
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		spinor x_tmp = getSpinor_eo(x, id_tmp);
