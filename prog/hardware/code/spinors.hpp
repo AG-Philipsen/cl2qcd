@@ -47,9 +47,11 @@ public:
 	void set_zero_spinorfield_device(const hardware::buffers::Plain<spinor> * x);
 	void set_zero_spinorfield_eoprec_device(const hardware::buffers::Spinor * x);
 	void saxpy_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<spinor> * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<spinor> * out);
+	void saxpy_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<spinor> * y, const hmc_complex alpha, const hardware::buffers::Plain<spinor> * out);
 	void sax_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<spinor> * out);
 	void saxsbypz_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<spinor> * y, const hardware::buffers::Plain<spinor> * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Plain<spinor> * out);
 	void saxpy_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out);
+	void saxpy_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hmc_complex alpha, const hardware::buffers::Spinor * out);
 	void sax_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out);
 	void saxsbypz_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Spinor * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Spinor * out);
 	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
@@ -123,6 +125,7 @@ private:
 	//BLAS
 	cl_kernel set_spinorfield_cold;
 	cl_kernel saxpy;
+	cl_kernel saxpy_arg;
 	cl_kernel sax;
 	cl_kernel saxsbypz;
 	cl_kernel set_zero_spinorfield;
@@ -132,6 +135,7 @@ private:
 	cl_kernel set_eoprec_spinorfield_cold;
 	cl_kernel set_zero_spinorfield_eoprec;
 	cl_kernel saxpy_eoprec;
+	cl_kernel saxpy_arg_eoprec;
 	cl_kernel sax_eoprec;
 	cl_kernel saxsbypz_eoprec;
 
