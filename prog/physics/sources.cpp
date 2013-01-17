@@ -63,17 +63,26 @@ void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfie
 	buffer->get_device()->get_correlator_code()->create_zslice_source_device(buffer, prng_buffer, z);
 }
 
-const std::vector<const physics::lattices::Spinorfield *> physics::create_sources(hardware::System& system, PRNG& prng)
+static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, physics::PRNG& prng, const meta::Inputparameters& params);
+
+std::vector<physics::lattices::Spinorfield *> physics::create_sources(hardware::System& system, PRNG& prng)
 {
 	auto params = system.get_inputparameters();
 	const size_t n_sources = params.get_num_sources();
 
-	const std::vector<const physics::lattices::Spinorfield *> sources = lattices::create_spinorfields(system, n_sources, params.get_place_sources_on_host());
+	auto sources = lattices::create_spinorfields(system, n_sources, params.get_place_sources_on_host());
+	fill_sources(sources, prng, params);
+	return sources;
+}
+
+static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, physics::PRNG& prng, const meta::Inputparameters& params)
+{
+	using namespace physics;
 
 	for(int k = 0; k < params.get_num_sources(); k++) {
 		auto source = sources[k];
 
-		switch(system.get_inputparameters().get_sourcetype()) {
+		switch(params.get_sourcetype()) {
 			case meta::Inputparameters::point:
 				logger.debug() << "start creating point-source...";
 				//CP: k has to be between 0..12 (corresponds to spin-color index)
@@ -95,5 +104,14 @@ const std::vector<const physics::lattices::Spinorfield *> physics::create_source
 				throw std::domain_error("no such sourcetype");
 		}
 	}
+}
+
+std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(hardware::System& system, PRNG& prng)
+{
+	auto params = system.get_inputparameters();
+	const size_t n_sources = params.get_num_sources();
+
+	auto sources = lattices::create_swappable_spinorfields(system, n_sources, params.get_place_sources_on_host());
+	fill_sources(sources, prng, params);
 	return sources;
 }

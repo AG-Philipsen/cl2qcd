@@ -15,9 +15,9 @@ namespace algorithms {
  * @param[in] result The Spinorfields
  * @param[in] corr_fn filename
  */
-void flavour_doublet_correlators(const std::vector<const physics::lattices::Spinorfield*>& result, const std::vector<const physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& params);
+void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& params);
 
-std::vector<hmc_float> calculate_correlator(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
+std::vector<hmc_float> calculate_correlator(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
 
 /**
  * Calculate 2 flavour chiral condesate from private solution_buffer and store it to a file
@@ -27,7 +27,7 @@ std::vector<hmc_float> calculate_correlator(std::string type, const std::vector<
  * @param[in] number number of gaugefield configuration
  * @param[in] system The system to operate on
  */
-void flavour_doublet_chiral_condensate(const std::vector<const physics::lattices::Spinorfield*>& solved, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
+void flavour_doublet_chiral_condensate(const std::vector<physics::lattices::Spinorfield*>& solved, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 }
 
 }

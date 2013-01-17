@@ -50,8 +50,15 @@ private:
 	std::vector<spinor*> swap;
 };
 
+/**
+ * Create n spinorfields that can be swapped.
+ * For combatibiltiy reasons return normal spinorfield pointers.
+ *
+ * \param n The number of spinorfields to create
+ */
+std::vector<Spinorfield *> create_swappable_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false);
+
 }
 }
 
 #endif /*_PHYSICS_LATTICES_SWAPPABLESPINORFIELD_ */
-

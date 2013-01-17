@@ -93,13 +93,13 @@ private:
  *
  * \param n The number of spinorfields to create
  */
-const std::vector<const Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false)
+std::vector<Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false)
 ;
 
 /**
  * Release the given spinorfields
  */
-void release_spinorfields(const std::vector<const Spinorfield *> fields);
+void release_spinorfields(const std::vector<Spinorfield *> fields);
 
 /**
  * Calculate the scalar product of two spinorfields.

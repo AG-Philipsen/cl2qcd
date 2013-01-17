@@ -10,12 +10,12 @@
 #include "../meta/util.hpp"
 #include "../lattices/util.hpp"
 
-static void flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
-static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
+static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lattices::Spinorfield*>& solved_fields, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
+static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
 static size_t get_num_corr_entries(const meta::Inputparameters& params);
-static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<const physics::lattices::Spinorfield*>& fields, size_t index);
+static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<physics::lattices::Spinorfield*>& fields, size_t index);
 
-void physics::algorithms::flavour_doublet_correlators(const std::vector<const physics::lattices::Spinorfield*>& result, const std::vector<const physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& parameters)
+void physics::algorithms::flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& parameters)
 {
 	using namespace std;
 
@@ -65,7 +65,7 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<const ph
 	of << endl;
 }
 
-void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<const physics::lattices::Spinorfield*>& inverted, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
+void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<physics::lattices::Spinorfield*>& inverted, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
 {
 	using namespace std;
 
@@ -80,7 +80,7 @@ void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<co
 	}
 }
 
-static void flavour_doublet_chiral_condensate_std(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, const std::vector<const physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
+static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lattices::Spinorfield*>& solved_fields, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
 {
 	using namespace physics::lattices;
 
@@ -148,7 +148,7 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<const physic
 	}
 }
 
-static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system)
+static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system)
 {
 	hmc_float result = 0.;
 	auto params = system.get_inputparameters();
@@ -180,7 +180,7 @@ static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics
 	}
 }
 
-static std::vector<hmc_float> calculate_correlator_componentwise(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+static std::vector<hmc_float> calculate_correlator_componentwise(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
 	auto first_field_buffers = corr.at(0)->get_buffers();
@@ -212,7 +212,7 @@ static std::vector<hmc_float> calculate_correlator_componentwise(std::string typ
 	return out;
 }
 
-static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<const physics::lattices::Spinorfield*>& fields, size_t index)
+static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<physics::lattices::Spinorfield*>& fields, size_t index)
 {
 	std::vector<const hardware::buffers::Plain<spinor>*> buffers;
 for(auto field: fields) {
@@ -221,7 +221,7 @@ for(auto field: fields) {
 	return buffers;
 }
 
-static std::vector<hmc_float> calculate_correlator_colorwise(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+static std::vector<hmc_float> calculate_correlator_colorwise(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
 	auto first_field_buffers = corr.at(0)->get_buffers();
@@ -258,7 +258,7 @@ static std::vector<hmc_float> calculate_correlator_colorwise(std::string type, c
 	return out;
 }
 
-std::vector<hmc_float> physics::algorithms::calculate_correlator(std::string type, const std::vector<const physics::lattices::Spinorfield*>& corr, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+std::vector<hmc_float> physics::algorithms::calculate_correlator(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	if(type == "ps") {
 		return calculate_correlator_componentwise(type, corr, sources, params);

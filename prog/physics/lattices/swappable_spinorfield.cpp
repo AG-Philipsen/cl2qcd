@@ -49,3 +49,15 @@ void physics::lattices::SwappableSpinorfield::swap_out()
 
 	clear_buffers();
 }
+
+std::vector<physics::lattices::Spinorfield *> physics::lattices::create_swappable_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host)
+{
+	std::vector<Spinorfield *> fields;
+	fields.reserve(n);
+
+	for(size_t i = 0; i < n; ++i) {
+		fields.push_back(new SwappableSpinorfield(system, place_on_host));
+	}
+
+	return fields;
+}

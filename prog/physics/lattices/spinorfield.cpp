@@ -48,9 +48,9 @@ void physics::lattices::Spinorfield::fill_buffers()
 	buffers = allocate_buffers(system, place_on_host);
 }
 
-const std::vector<const physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host)
+std::vector<physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host)
 {
-	std::vector<const Spinorfield *> fields;
+	std::vector<Spinorfield *> fields;
 	fields.reserve(n);
 
 	for(size_t i = 0; i < n; ++i) {
@@ -60,7 +60,7 @@ const std::vector<const physics::lattices::Spinorfield *> physics::lattices::cre
 	return fields;
 }
 
-void physics::lattices::release_spinorfields(const std::vector<const physics::lattices::Spinorfield *> fields)
+void physics::lattices::release_spinorfields(const std::vector<physics::lattices::Spinorfield *> fields)
 {
 for(auto field: fields) {
 		delete field;

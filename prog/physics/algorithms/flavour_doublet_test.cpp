@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(stochastic_source_3)
 	test_correlator(params, ps, sc, vx, vy, vz, ax, ay, az);
 }
 
-void check_correlator(std::string which, const std::vector<const physics::lattices::Spinorfield*>& solved, const std::vector<const physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params, const std::vector<hmc_float>& ref)
+void check_correlator(std::string which, const std::vector<physics::lattices::Spinorfield*>& solved, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params, const std::vector<hmc_float>& ref)
 {
 	using namespace std;
 
