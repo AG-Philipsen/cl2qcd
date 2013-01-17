@@ -76,9 +76,9 @@ void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<co
 	if(params.get_pbp_version() == meta::Inputparameters::std) {
 	  flavour_doublet_chiral_condensate_std(inverted, sources, pbp_fn, number, system);
 	} else if(params.get_fermact() == meta::Inputparameters::twistedmass && params.get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) {
-		flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
+	  flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
 	} else {
-				throw std::invalid_argument("No valid chiral condensate version has ben selected.");
+	  throw std::invalid_argument("No valid chiral condensate version has ben selected.");
 	}
 }
 
@@ -131,8 +131,8 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<const physic
 	 *       = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
 	 *       = Tr( i gamma_5 (D^-1_u - gamma_5 D^-1_u^dagger gamma_5) )
 	 *       = Tr( i gamma_5 (D^-1_u -  D^-1_u^dagger ) )
-	 *       = 2 Im Tr ( gamma_5 D^-1_u)
-	 *       = lim_r->inf 2/r  (gamma_5 Xi_r, Phi_r)
+	 *       = Nf Im Tr ( gamma_5 D^-1_u)
+	 *       = lim_r->inf Nf/r  (gamma_5 Xi_r, Phi_r)
 	 * NOTE: The basic difference compared to the pure Wilson case is only the gamma_5 and that one takes the imaginary part!
 	 */
 	// Need 2 spinors at once..
@@ -140,7 +140,12 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<const physic
 	Spinorfield phi(system);
 	Spinorfield xi(system);
 	assert(solved_fields.size() == sources.size());
-	hmc_float norm = 4. * params.get_kappa() * 2. / meta::get_vol4d(params) / params.get_num_sources();
+	/*
+	 * Normalize for VOL4D and Nf
+	 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
+	 * The additional factor of 2 / 12 is inserted to fit the reference values.
+	 */
+	hmc_float norm = 4. * params.get_kappa() * 2. / meta::get_vol4d(params) / 2. / 12.;
 	logger.info() << "chiral condensate:" ;
 	for(size_t i = 0; i < solved_fields.size(); ++i) {
 		copyData(&phi, solved_fields[i]);
@@ -189,7 +194,12 @@ static void flavour_doublet_chiral_condensate_tm(const std::vector<const physics
 	 *       = 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
 	 * NOTE: Here one only needs Phi...
 	 */
-	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * 2. / params.get_num_sources();
+	/*
+	 * Normalize for VOL4D and Nf
+	 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
+	 * The additional factor of 2 / 12 is inserted to fit the reference values.
+	 */
+	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * 2. / 2. / 12.;
 
 	logger.info() << "chiral condensate:" ;
 	for(auto phi: solved_fields) {
