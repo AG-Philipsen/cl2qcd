@@ -7,21 +7,21 @@
 #include <cassert>
 #include <stdexcept>
 
-static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system);
+static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
 
-physics::lattices::Spinorfield::Spinorfield(const hardware::System& system)
-	: system(system), buffers(allocate_buffers(system))
+physics::lattices::Spinorfield::Spinorfield(const hardware::System& system, const bool place_on_host)
+	: system(system), buffers(allocate_buffers(system, place_on_host))
 {
 }
 
-static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system)
+static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host)
 {
 	using hardware::buffers::Plain;
 
 	// only use device 0 for now
 	hardware::Device * device = system.get_devices().at(0);
 	std::vector<const Plain<spinor>*> buffers;
-	buffers.push_back(new Plain<spinor>(meta::get_spinorfieldsize(system.get_inputparameters()), device));
+	buffers.push_back(new Plain<spinor>(meta::get_spinorfieldsize(system.get_inputparameters()), device, place_on_host));
 	return buffers;
 }
 
@@ -32,13 +32,13 @@ for(auto buffer: buffers) {
 	}
 }
 
-const std::vector<const physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n)
+const std::vector<const physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host)
 {
 	std::vector<const Spinorfield *> fields;
 	fields.reserve(n);
 
 	for(size_t i = 0; i < n; ++i) {
-		fields.push_back(new Spinorfield(system));
+		fields.push_back(new Spinorfield(system, place_on_host));
 	}
 
 	return fields;

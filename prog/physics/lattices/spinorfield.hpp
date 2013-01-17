@@ -26,7 +26,7 @@ public:
 	/**
 	 * Construct a gaugefield based on the input-files of the system
 	 */
-	Spinorfield(const hardware::System&);
+	Spinorfield(const hardware::System&, const bool place_on_host = false);
 
 	/**
 	 * Release resources
@@ -81,7 +81,7 @@ private:
  *
  * \param n The number of spinorfields to create
  */
-const std::vector<const Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n)
+const std::vector<const Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false)
 ;
 
 /**
