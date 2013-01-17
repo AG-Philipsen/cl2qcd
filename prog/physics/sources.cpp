@@ -68,7 +68,7 @@ const std::vector<const physics::lattices::Spinorfield *> physics::create_source
 	auto params = system.get_inputparameters();
 	const size_t n_sources = params.get_num_sources();
 
-	const std::vector<const physics::lattices::Spinorfield *> sources = lattices::create_spinorfields(system, n_sources);
+	const std::vector<const physics::lattices::Spinorfield *> sources = lattices::create_spinorfields(system, n_sources, params.get_place_sources_on_host());
 
 	for(int k = 0; k < params.get_num_sources(); k++) {
 		auto source = sources[k];
