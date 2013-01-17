@@ -116,6 +116,7 @@ public:
 	int get_source_y() const noexcept;
 	int get_source_z() const noexcept;
 	int get_source_t() const noexcept;
+	bool get_place_sources_on_host() const noexcept;
 
 	double get_solver_prec() const noexcept;
 	double get_force_prec() const noexcept;
@@ -241,6 +242,7 @@ private:
 	int source_y;
 	int source_z;
 	int source_t;
+	bool place_sources_on_host;
 
 	double solver_prec;
 	double force_prec;

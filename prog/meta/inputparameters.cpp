@@ -262,6 +262,10 @@ int Inputparameters::get_source_t() const noexcept
 {
   return source_t;
 }
+bool Inputparameters::get_place_sources_on_host() const noexcept
+{
+	return place_sources_on_host;
+}
 
 double Inputparameters::get_solver_prec() const noexcept
 {
@@ -569,6 +573,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("source_y", po::value<int>(&source_y)->default_value(0))
 	("source_z", po::value<int>(&source_z)->default_value(0))
 	("source_t", po::value<int>(&source_t)->default_value(0))
+	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false))
 #ifdef _USEDOUBLEPREC_
 	("solver_prec", po::value<double>(&solver_prec)->default_value(1e-23))
 	("force_prec", po::value<double>(&force_prec)->default_value(1e-12))
