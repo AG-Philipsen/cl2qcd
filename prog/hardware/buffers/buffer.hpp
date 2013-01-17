@@ -54,8 +54,10 @@ namespace hardware {
 			 *
 			 * \param bytes The size of the buffer in bytes
 			 * \param device The device to locate the buffer on
+			 * \param place_on_host Request the buffer to remain on the host
+			 *                      Allows to avoid memory limits if many buffers are required
 			 */
-			Buffer(size_t bytes, Device * device);
+			Buffer(size_t bytes, Device * device, bool place_on_host = false);
 	
 			virtual ~Buffer();
 	

@@ -9,10 +9,10 @@
 #include "../system.hpp"
 #include "../../logger.hpp"
 
-static cl_mem allocateBuffer(size_t bytes, cl_context context);
+static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host);
 
-hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device)
-	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context)), device(device)
+hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device, bool place_on_host)
+	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context, place_on_host)), device(device)
 {
 	// nothing to do here, initialization complete
 }
@@ -22,10 +22,11 @@ hardware::buffers::Buffer::~Buffer()
 	clReleaseMemObject(cl_buffer);
 }
 
-static cl_mem allocateBuffer(size_t bytes, cl_context context)
+static cl_mem allocateBuffer(size_t bytes, cl_context context, const bool place_on_host)
 {
 	cl_int err;
-	cl_mem cl_buffer = clCreateBuffer(context, 0, bytes, 0, &err);
+	const cl_mem_flags mem_flags = place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0;
+	cl_mem cl_buffer = clCreateBuffer(context, mem_flags, bytes, 0, &err);
 	if(err) {
 		throw hardware::OpenclException(err, "clCreateBuffer", __FILE__, __LINE__);
 	}
