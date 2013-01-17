@@ -48,7 +48,7 @@ namespace hardware {
 		 * \param inputparams The inputparameters of the application
 		 * \param enableProfiling Whether we want to use profiling
 		 */
-		System(const meta::Inputparameters&, bool enable_profiling = false);
+		explicit System(const meta::Inputparameters&, bool enable_profiling = false);
 
 		~System();
 
