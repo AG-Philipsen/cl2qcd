@@ -2,7 +2,7 @@
  * Implementation of the solver algorithms
  *
  * (c) 2012-2013 Christopher Pinke <pinke@th.uni-frankfurt.de>
- * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2012-2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
 
 #include "solver.hpp"
@@ -626,9 +626,6 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 
 	/// @todo make configurable from outside
 	const int RESID_CHECK_FREQUENCY = params.get_cg_iteration_block_size();
-	if(RESID_CHECK_FREQUENCY != 1) {
-		logger.warn() << "The residuum is currently checked at every iteration, even though you selected a check only every " << RESID_CHECK_FREQUENCY << " iterations.";
-	}
 	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
 	if(USE_ASYNC_COPY) {
 		logger.warn() << "Asynchroneous copying in the CG is currently unimplemented!";
@@ -703,61 +700,61 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 			scalar_product(&rho_next, rn, rn);
 		}
-		//if(iter % RESID_CHECK_FREQUENCY == 0) {
-		hmc_float resid = rho_next.get().re;
-		//if(USE_ASYNC_COPY) {
-		//  if(iter) {
-		//    resid_event.wait();
-		//    resid = resid_rho.re;
-		//  } else {
-		//    // first iteration
-		//    resid = prec;
-		//  }
-		//  resid_event = clmem_rho_next.dump_async(&resid_rho);
-		//} else {
-		//  clmem_rho_next.dump(&resid_rho);
-		//  resid = resid_rho.re;
-		//  //this is the orig. call
-		//  //set_float_to_global_squarenorm_device(&clmem_rn, clmem_resid);
-		//  //get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-		//}
-
-		logger.debug() << "resid: " << resid;
-		//test if resid is NAN
-		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in cg_eo!";
-			throw SolverStuck(iter, __FILE__, __LINE__);
-		}
-		if(resid < prec) {
+		if(iter % RESID_CHECK_FREQUENCY == 0) {
+			hmc_float resid = rho_next.get().re;
 			//if(USE_ASYNC_COPY) {
-			//  // make sure everything using our event is completed
-			//  resid_event.wait();
+			//  if(iter) {
+			//    resid_event.wait();
+			//    resid = resid_rho.re;
+			//  } else {
+			//    // first iteration
+			//    resid = prec;
+			//  }
+			//  resid_event = clmem_rho_next.dump_async(&resid_rho);
+			//} else {
+			//  clmem_rho_next.dump(&resid_rho);
+			//  resid = resid_rho.re;
+			//  //this is the orig. call
+			//  //set_float_to_global_squarenorm_device(&clmem_rn, clmem_resid);
+			//  //get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 			//}
-			// report on performance
-			if(logger.beInfo()) {
-				// we are always synchroneous here, as we had to recieve the residium from the device
-				const uint64_t duration = timer.getTime();
 
-				// calculate flops
-				const unsigned refreshs = iter / params.get_iter_refresh() + 1;
-				const cl_ulong mf_flops = f.get_flops();
-				logger.trace() << "mf_flops: " << mf_flops;
-
-				cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
-				                       + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
-				                       + 3 * get_flops<Spinorfield_eo, saxpy>(system);
-				total_flops *= iter;
-				logger.trace() << "total_flops: " << total_flops;
-				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
-				logger.trace() << "total_flops: " << total_flops;
-
-				// report performanc
-				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+			logger.debug() << "resid: " << resid;
+			//test if resid is NAN
+			if(resid != resid) {
+				logger.fatal() << "\tNAN occured in cg_eo!";
+				throw SolverStuck(iter, __FILE__, __LINE__);
 			}
+			if(resid < prec) {
+				//if(USE_ASYNC_COPY) {
+				//  // make sure everything using our event is completed
+				//  resid_event.wait();
+				//}
+				// report on performance
+				if(logger.beInfo()) {
+					// we are always synchroneous here, as we had to recieve the residium from the device
+					const uint64_t duration = timer.getTime();
 
-			return iter;
+					// calculate flops
+					const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+					const cl_ulong mf_flops = f.get_flops();
+					logger.trace() << "mf_flops: " << mf_flops;
+
+					cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
+					                       + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
+					                       + 3 * get_flops<Spinorfield_eo, saxpy>(system);
+					total_flops *= iter;
+					logger.trace() << "total_flops: " << total_flops;
+					total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
+					logger.trace() << "total_flops: " << total_flops;
+
+					// report performanc
+					logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+				}
+
+				return iter;
+			}
 		}
-		//}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 		divide(&beta, rho_next, omega);
