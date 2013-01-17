@@ -13,23 +13,6 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 
 template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield& in, std::string msg);
 template<class Spinorfield> static hmc_float print_debug_inv_field(const Spinorfield* in, std::string msg);
-static void try_swap_in(physics::lattices::Spinorfield* field);
-static void try_swap_out(physics::lattices::Spinorfield* field);
-
-static void try_swap_in(physics::lattices::Spinorfield* field)
-{
-	auto swappable = dynamic_cast<physics::lattices::Swappable*>(field);
-	if(swappable) {
-		swappable->swap_in();
-	}
-}
-static void try_swap_out(physics::lattices::Spinorfield* field)
-{
-	auto swappable = dynamic_cast<physics::lattices::Swappable*>(field);
-	if(swappable) {
-		swappable->swap_out();
-	}
-}
 
 void physics::algorithms::perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {

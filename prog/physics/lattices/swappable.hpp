@@ -29,7 +29,33 @@ struct Swappable {
 	virtual void swap_out() = 0;
 };
 
+/**
+ * Swap in the given field if it is a Swapable.
+ */
+template <class C> void try_swap_in(C* field);
+/**
+ * Swap out the given field if it is a Swapable.
+ */
+template <class C> void try_swap_out(C* field);
 }
+}
+
+/*
+ * Template implementation
+ */
+template <class C> void physics::lattices::try_swap_in(C* field)
+{
+	auto swappable = dynamic_cast<Swappable*>(field);
+	if(swappable) {
+		swappable->swap_in();
+	}
+}
+template <class C> void physics::lattices::try_swap_out(C* field)
+{
+	auto swappable = dynamic_cast<Swappable*>(field);
+	if(swappable) {
+		swappable->swap_out();
+	}
 }
 
 #endif /* _PHYSICS_LATTICES_SWAPPABLE_ */
