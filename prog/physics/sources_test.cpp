@@ -24,7 +24,7 @@ void test_sources(std::string type, int num_sources)
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	auto sources = create_sources(system, prng);
+	auto sources = create_sources(system, prng, params.get_num_sources());
 
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), static_cast<const int>(sources.size()));
 
