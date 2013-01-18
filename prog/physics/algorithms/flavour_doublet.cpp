@@ -190,7 +190,7 @@ static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::latt
 	}
 }
 
-static std::vector<hmc_float> calculate_correlator_componentwise(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
 	auto first_field_buffers = corr.at(0)->get_buffers();
@@ -231,7 +231,7 @@ for(auto field: fields) {
 	return buffers;
 }
 
-static std::vector<hmc_float> calculate_correlator_colorwise(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
 	auto first_field_buffers = corr.at(0)->get_buffers();
@@ -268,7 +268,7 @@ static std::vector<hmc_float> calculate_correlator_colorwise(std::string type, c
 	return out;
 }
 
-std::vector<hmc_float> physics::algorithms::calculate_correlator(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
+std::vector<hmc_float> physics::algorithms::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	if(type == "ps") {
 		return calculate_correlator_componentwise(type, corr, sources, params);

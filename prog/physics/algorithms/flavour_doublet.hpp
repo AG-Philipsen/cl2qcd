@@ -17,7 +17,7 @@ namespace algorithms {
  */
 void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& params);
 
-std::vector<hmc_float> calculate_correlator(std::string type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
+std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
 
 /**
  * Calculate 2 flavour chiral condesate from private solution_buffer and store it to a file
