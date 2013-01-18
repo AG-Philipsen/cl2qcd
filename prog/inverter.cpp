@@ -67,9 +67,6 @@ int main(int argc, const char* argv[])
 
 					perform_inversion(&result, &gaugefield, sources, system);
 
-					swap_in(sources);
-					swap_in(result);
-
 					//get name for file to which correlators are to be stored
 					std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
 					ofstream of(corr_fn.c_str(), ios_base::app);

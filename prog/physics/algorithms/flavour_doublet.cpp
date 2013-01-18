@@ -9,6 +9,7 @@
 #include <fstream>
 #include "../meta/util.hpp"
 #include "../lattices/util.hpp"
+#include "../lattices/swappable.hpp"
 
 static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lattices::Spinorfield*>& solved_fields, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
@@ -192,6 +193,9 @@ for(auto phi: solved_fields) {
 
 static void calculate_correlator(const std::string& type, const hardware::buffers::Plain<hmc_float>* result, physics::lattices::Spinorfield* corr, physics::lattices::Spinorfield* source, const meta::Inputparameters& params)
 {
+	try_swap_in(corr);
+	try_swap_in(source);
+
 	// assert single device
 	auto corr_bufs = corr->get_buffers();
 	auto source_bufs = source->get_buffers();
@@ -207,6 +211,9 @@ static void calculate_correlator(const std::string& type, const hardware::buffer
 	} else {
 		code->correlator(code->get_correlator_kernel(type), result, corr_bufs[0], source_bufs[0]);
 	}
+
+	try_swap_out(corr);
+	try_swap_out(source);
 }
 
 static void calculate_correlator(const std::string& type, const hardware::buffers::Plain<hmc_float>* result,
@@ -217,12 +224,20 @@ static void calculate_correlator(const std::string& type, const hardware::buffer
                                  const meta::Inputparameters& params)
 {
 	// assert single device
+	try_swap_in(corr1);
+	try_swap_in(source1);
 	auto corr1_bufs = corr1->get_buffers();
 	auto source1_bufs = source1->get_buffers();
+	try_swap_in(corr2);
+	try_swap_in(source2);
 	auto corr2_bufs = corr2->get_buffers();
 	auto source2_bufs = source2->get_buffers();
+	try_swap_in(corr3);
+	try_swap_in(source3);
 	auto corr3_bufs = corr3->get_buffers();
 	auto source3_bufs = source3->get_buffers();
+	try_swap_in(corr4);
+	try_swap_in(source4);
 	auto corr4_bufs = corr4->get_buffers();
 	auto source4_bufs = source4->get_buffers();
 
@@ -240,12 +255,23 @@ static void calculate_correlator(const std::string& type, const hardware::buffer
 	} else {
 		code->correlator(code->get_correlator_kernel(type), result, corr1_bufs[0], source1_bufs[0], corr2_bufs[0], source2_bufs[0], corr3_bufs[0], source3_bufs[0], corr4_bufs[0], source4_bufs[0]);
 	}
+
+	try_swap_out(corr1);
+	try_swap_out(source1);
+	try_swap_out(corr2);
+	try_swap_out(source2);
+	try_swap_out(corr3);
+	try_swap_out(source3);
+	try_swap_out(corr4);
+	try_swap_out(source4);
 }
 
 static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
-	auto first_field_buffers = corr.at(0)->get_buffers();
+	auto first_corr = corr.at(0);
+	try_swap_in(first_corr);
+	auto first_field_buffers = first_corr->get_buffers();
 	// require single device
 	assert(first_field_buffers.size() == 1);
 	hardware::Device * device = first_field_buffers.at(0)->get_device();
@@ -270,7 +296,9 @@ static std::vector<hmc_float> calculate_correlator_componentwise(const std::stri
 static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
-	auto first_field_buffers = corr.at(0)->get_buffers();
+	auto first_corr = corr.at(0);
+	try_swap_in(first_corr);
+	auto first_field_buffers = first_corr->get_buffers();
 	// require single device
 	if(first_field_buffers.size() != 1) {
 		throw Print_Error_Message("Correlators are currently only implemented for a single device.", __FILE__, __LINE__);
