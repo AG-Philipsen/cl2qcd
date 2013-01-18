@@ -190,6 +190,58 @@ for(auto phi: solved_fields) {
 	}
 }
 
+static void calculate_correlator(const std::string& type, const hardware::buffers::Plain<hmc_float>* result, physics::lattices::Spinorfield* corr, physics::lattices::Spinorfield* source, const meta::Inputparameters& params)
+{
+	// assert single device
+	auto corr_bufs = corr->get_buffers();
+	auto source_bufs = source->get_buffers();
+
+	size_t num_bufs = 1;
+	if(num_bufs != source_bufs.size() || num_bufs != corr_bufs.size()) {
+		throw std::invalid_argument("The arguments are using different devices.");
+	}
+
+	auto code = result->get_device()->get_correlator_code();
+	if(params.get_sourcetype() == meta::Inputparameters::point) {
+		code->correlator(code->get_correlator_kernel(type), result, corr_bufs[0]);
+	} else {
+		code->correlator(code->get_correlator_kernel(type), result, corr_bufs[0], source_bufs[0]);
+	}
+}
+
+static void calculate_correlator(const std::string& type, const hardware::buffers::Plain<hmc_float>* result,
+                                 physics::lattices::Spinorfield* corr1, physics::lattices::Spinorfield* source1,
+                                 physics::lattices::Spinorfield* corr2, physics::lattices::Spinorfield* source2,
+                                 physics::lattices::Spinorfield* corr3, physics::lattices::Spinorfield* source3,
+                                 physics::lattices::Spinorfield* corr4, physics::lattices::Spinorfield* source4,
+                                 const meta::Inputparameters& params)
+{
+	// assert single device
+	auto corr1_bufs = corr1->get_buffers();
+	auto source1_bufs = source1->get_buffers();
+	auto corr2_bufs = corr2->get_buffers();
+	auto source2_bufs = source2->get_buffers();
+	auto corr3_bufs = corr3->get_buffers();
+	auto source3_bufs = source3->get_buffers();
+	auto corr4_bufs = corr4->get_buffers();
+	auto source4_bufs = source4->get_buffers();
+
+	size_t num_bufs = 1;
+	if(num_bufs != source1_bufs.size() || num_bufs != corr1_bufs.size()
+	   || num_bufs != source2_bufs.size() || num_bufs != corr2_bufs.size()
+	   || num_bufs != source3_bufs.size() || num_bufs != corr3_bufs.size()
+	   || num_bufs != source4_bufs.size() || num_bufs != corr4_bufs.size() ) {
+		throw std::invalid_argument("The arguments are using different devices.");
+	}
+
+	auto code = result->get_device()->get_correlator_code();
+	if(params.get_sourcetype() == meta::Inputparameters::point) {
+		code->correlator(code->get_correlator_kernel(type), result, corr1_bufs[0], corr2_bufs[0], corr3_bufs[0], corr3_bufs[0]);
+	} else {
+		code->correlator(code->get_correlator_kernel(type), result, corr1_bufs[0], source1_bufs[0], corr2_bufs[0], source2_bufs[0], corr3_bufs[0], source3_bufs[0], corr4_bufs[0], source4_bufs[0]);
+	}
+}
+
 static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
 {
 	// assert single device
@@ -197,7 +249,6 @@ static std::vector<hmc_float> calculate_correlator_componentwise(const std::stri
 	// require single device
 	assert(first_field_buffers.size() == 1);
 	hardware::Device * device = first_field_buffers.at(0)->get_device();
-	auto code = device->get_correlator_code();
 
 	const size_t num_corr_entries = get_num_corr_entries(params);
 	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
@@ -207,28 +258,13 @@ static std::vector<hmc_float> calculate_correlator_componentwise(const std::stri
 	if(corr.size() != sources.size()) {
 		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
 	}
-	auto corr_bufs = extract_buffers(corr, 0);
-	auto source_bufs = extract_buffers(sources, 0);
 	for(int i = 0; i < corr.size(); i++) {
-		if(params.get_sourcetype() == meta::Inputparameters::point) {
-			code->correlator(code->get_correlator_kernel(type), &result, corr_bufs[i]);
-		} else {
-			code->correlator(code->get_correlator_kernel(type), &result, corr_bufs[i], source_bufs[i]);
-		}
+		calculate_correlator(type, &result, corr.at(i), sources.at(i), params);
 	}
 
 	std::vector<hmc_float> out(num_corr_entries);
 	result.dump(out.data());
 	return out;
-}
-
-static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<physics::lattices::Spinorfield*>& fields, size_t index)
-{
-	std::vector<const hardware::buffers::Plain<spinor>*> buffers;
-for(auto field: fields) {
-		buffers.push_back(field->get_buffers().at(index));
-	}
-	return buffers;
 }
 
 static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params)
@@ -246,21 +282,13 @@ static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& 
 	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
 	result.clear();
 
-	auto kernel = code->get_correlator_kernel(type);
-
 	// for each source
 	if(corr.size() != sources.size()) {
 		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
 	}
-	auto corr_bufs = extract_buffers(corr, 0);
-	auto source_bufs = extract_buffers(sources, 0);
 	// TODO adjust correlator kernels!
 	for(int i = 0; i < corr.size(); i += 4) {
-		if(params.get_sourcetype() == meta::Inputparameters::point) {
-			code->correlator(kernel, &result, corr_bufs.at(i), corr_bufs.at(i + 1), corr_bufs.at(i + 2), corr_bufs.at(i + 3));
-		} else {
-			code->correlator(kernel, &result, corr_bufs.at(i), source_bufs.at(i), corr_bufs.at(i + 1), source_bufs.at(i + 1), corr_bufs.at(i + 2), source_bufs.at(i + 2), corr_bufs.at(i + 3), source_bufs.at(i + 3));
-		}
+		calculate_correlator(type, &result, corr.at(i), sources.at(i), corr.at(i + 1), sources.at(i + 1), corr.at(i + 2), sources.at(i + 2), corr.at(i + 3), sources.at(i + 3), params);
 	}
 
 	std::vector<hmc_float> out(num_corr_entries);
