@@ -14,7 +14,13 @@
 static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lattices::Spinorfield*>& solved_fields, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);
 static size_t get_num_corr_entries(const meta::Inputparameters& params);
-static std::vector<const hardware::buffers::Plain<spinor>*> extract_buffers(const std::vector<physics::lattices::Spinorfield*>& fields, size_t index);
+static void calculate_correlator(const std::string& type, const hardware::buffers::Plain<hmc_float>* result, physics::lattices::Spinorfield* corr, physics::lattices::Spinorfield* source, const meta::Inputparameters& params);
+static void calculate_correlator(const std::string& type, const hardware::buffers::Plain<hmc_float>* result,
+                                 physics::lattices::Spinorfield* corr1, physics::lattices::Spinorfield* source1,
+                                 physics::lattices::Spinorfield* corr2, physics::lattices::Spinorfield* source2,
+                                 physics::lattices::Spinorfield* corr3, physics::lattices::Spinorfield* source3,
+                                 physics::lattices::Spinorfield* corr4, physics::lattices::Spinorfield* source4,
+                                 const meta::Inputparameters& params);
 
 void physics::algorithms::flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& parameters)
 {
@@ -37,13 +43,13 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<physics:
 	// @todo One could also implement to write all results on screen if wanted
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
-	for(int j = 0; j < result_ps.size(); j++) {
+	for(size_t j = 0; j < result_ps.size(); j++) {
 		logger.info() << j << "\t" << scientific << setprecision(14) << result_ps[j];
 		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << result_ps[j] << endl;
 	}
 
 	//the scalar (J=0, P=0)
-	for(int j = 0; j < result_sc.size(); j++) {
+	for(size_t j = 0; j < result_sc.size(); j++) {
 		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << result_sc[j] << endl;
 	}
 
@@ -51,7 +57,7 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<physics:
 	if(result_vx.size() != result_vy.size() || result_vx.size() != result_vz.size()) {
 		throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
 	}
-	for(int j = 0; j < result_vx.size(); j++) {
+	for(size_t j = 0; j < result_vx.size(); j++) {
 		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (result_vx[j] + result_vy[j] + result_vz[j]) / 3. << "\t" << result_vx[j] << "\t" << result_vy[j] << "\t" << result_vz[j] << endl;
 	}
 
@@ -59,7 +65,7 @@ void physics::algorithms::flavour_doublet_correlators(const std::vector<physics:
 	if(result_ax.size() != result_ay.size() || result_ax.size() != result_az.size()) {
 		throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
 	}
-	for(int j = 0; j < result_ax.size(); j++) {
+	for(size_t j = 0; j < result_ax.size(); j++) {
 		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (result_ax[j] + result_ay[j] + result_az[j]) / 3. << "\t" << result_ax[j] << "\t" << result_ay[j] << "\t" << result_az[j] << endl;
 	}
 
@@ -284,7 +290,7 @@ static std::vector<hmc_float> calculate_correlator_componentwise(const std::stri
 	if(corr.size() != sources.size()) {
 		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
 	}
-	for(int i = 0; i < corr.size(); i++) {
+	for(size_t i = 0; i < corr.size(); i++) {
 		calculate_correlator(type, &result, corr.at(i), sources.at(i), params);
 	}
 
@@ -304,7 +310,6 @@ static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& 
 		throw Print_Error_Message("Correlators are currently only implemented for a single device.", __FILE__, __LINE__);
 	}
 	hardware::Device * device = first_field_buffers.at(0)->get_device();
-	auto code = device->get_correlator_code();
 
 	const size_t num_corr_entries = get_num_corr_entries(params);
 	const hardware::buffers::Plain<hmc_float> result(num_corr_entries, device);
@@ -315,7 +320,7 @@ static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& 
 		throw std::invalid_argument("Correlated and source fields need to be of the same size.");
 	}
 	// TODO adjust correlator kernels!
-	for(int i = 0; i < corr.size(); i += 4) {
+	for(size_t i = 0; i < corr.size(); i += 4) {
 		calculate_correlator(type, &result, corr.at(i), sources.at(i), corr.at(i + 1), sources.at(i + 1), corr.at(i + 2), sources.at(i + 2), corr.at(i + 3), sources.at(i + 3), params);
 	}
 
