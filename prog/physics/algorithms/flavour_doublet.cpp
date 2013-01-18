@@ -72,11 +72,11 @@ void physics::algorithms::flavour_doublet_chiral_condensate(const std::vector<ph
 	auto params = system.get_inputparameters();
 
 	if(params.get_pbp_version() == meta::Inputparameters::std) {
-	  flavour_doublet_chiral_condensate_std(inverted, sources, pbp_fn, number, system);
+		flavour_doublet_chiral_condensate_std(inverted, sources, pbp_fn, number, system);
 	} else if(params.get_fermact() == meta::Inputparameters::twistedmass && params.get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) {
-	  flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
+		flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
 	} else {
-	  throw std::invalid_argument("No valid chiral condensate version has ben selected.");
+		throw std::invalid_argument("No valid chiral condensate version has ben selected.");
 	}
 }
 
@@ -132,12 +132,12 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lat
 		copyData(&xi, sources[i]);
 
 		if(params.get_fermact() == meta::Inputparameters::twistedmass) {
-		  xi.gamma5();
+			xi.gamma5();
 		}
 
 		hmc_complex tmp = scalar_product(xi, phi);
-		tmp.re*=norm;
-		tmp.im*=norm;
+		tmp.re *= norm;
+		tmp.im *= norm;
 		switch(params.get_fermact()) {
 			case  meta::Inputparameters::wilson:
 				result = tmp.re;
@@ -182,9 +182,9 @@ static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::latt
 	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * 2. / 2. / 12.;
 
 	logger.info() << "chiral condensate:" ;
-	for(auto phi: solved_fields) {
+for(auto phi: solved_fields) {
 		hmc_float tmp = squarenorm(*phi);
-		result = tmp*norm;
+		result = tmp * norm;
 		logger.info() << number << "\t" << scientific << setprecision(14) << result;
 		of << number << "\t" << scientific << setprecision(14) << result;
 	}
