@@ -236,7 +236,7 @@ static void calculate_correlator(const std::string& type, const hardware::buffer
 
 	auto code = result->get_device()->get_correlator_code();
 	if(params.get_sourcetype() == meta::Inputparameters::point) {
-		code->correlator(code->get_correlator_kernel(type), result, corr1_bufs[0], corr2_bufs[0], corr3_bufs[0], corr3_bufs[0]);
+		code->correlator(code->get_correlator_kernel(type), result, corr1_bufs[0], corr2_bufs[0], corr3_bufs[0], corr4_bufs[0]);
 	} else {
 		code->correlator(code->get_correlator_kernel(type), result, corr1_bufs[0], source1_bufs[0], corr2_bufs[0], source2_bufs[0], corr3_bufs[0], source3_bufs[0], corr4_bufs[0], source4_bufs[0]);
 	}
