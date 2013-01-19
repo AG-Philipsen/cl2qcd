@@ -52,7 +52,7 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 }
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, bool hot)
-	: system(system), prng(prng), buffers(allocate_buffers(system))
+	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
 {
 	if(hot) {
 		set_hot(buffers, prng);
@@ -62,7 +62,7 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 }
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, std::string ildgfile)
-	: system(system), prng(prng), buffers(allocate_buffers(system))
+	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
 {
 	fill_from_ildg(ildgfile);
 }
