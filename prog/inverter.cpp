@@ -65,7 +65,15 @@ int main(int argc, const char* argv[])
 					const std::vector<Spinorfield*> sources = create_swappable_sources(system, prng, parameters.get_num_sources());
 					const std::vector<Spinorfield*> result = create_swappable_spinorfields(system, sources.size(), parameters.get_place_sources_on_host());
 
+					swap_out(sources);
+					swap_out(result);
+
 					perform_inversion(&result, &gaugefield, sources, system);
+
+					logger.info() << "Finished inversion. Starting measurements.";
+					
+					swap_in(sources);
+					swap_in(result);
 
 					//get name for file to which correlators are to be stored
 					std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
