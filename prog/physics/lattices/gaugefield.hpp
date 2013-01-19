@@ -8,6 +8,7 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
+#include "../../host_readgauge.h"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -101,6 +102,11 @@ namespace physics {
 			 */
 			void unsmear();
 
+		  /**
+		   * Get sourcefileparameters
+		   */
+		  sourcefileparameters get_parameters_source();
+
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
@@ -111,6 +117,12 @@ namespace physics {
 			 * Utility function for construction.
 			 */
 			void fill_from_ildg(std::string);
+
+		  /*
+		   * Contains metadata of sourcefile
+		   */
+		  sourcefileparameters parameters_source;
+
 		};
 
 		/**

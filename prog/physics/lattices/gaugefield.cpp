@@ -35,7 +35,7 @@ static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng)
-	: system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers()
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source() 
 {
 	auto parameters = system.get_inputparameters();
 	switch(parameters.get_startcondition()) {
@@ -75,7 +75,6 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	Matrixsu3 * gf_host = new Matrixsu3[buffers[0]->get_elements()];
 
 	char * gf_ildg; // filled by readsourcefile
-	sourcefileparameters parameters_source;
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters.get_precision(), &gf_ildg);
 
 	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.num_entries_source * sizeof(hmc_float), parameters);
@@ -574,4 +573,9 @@ void physics::lattices::Gaugefield::unsmear()
 	}
 
 	release_buffers(&unsmeared_buffers);
+}
+
+sourcefileparameters physics::lattices::Gaugefield::get_parameters_source()
+{
+  return parameters_source;
 }
