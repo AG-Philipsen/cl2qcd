@@ -96,8 +96,10 @@ int main(int argc, const char* argv[])
 		} else {
 			Gaugefield gaugefield(system, prng);
 
+			logger.info() << gaugefield.get_parameters_source().trajectorynr_source;
+
 			logger.info() << "Gaugeobservables:";
-			print_gaugeobservables(gaugefield, 0);
+			print_gaugeobservables(gaugefield, gaugefield.get_parameters_source().trajectorynr_source);
 
 			if(parameters.get_measure_correlators() ) {
 				// for the correlator calculation, all sources are needed on the device
@@ -134,7 +136,7 @@ int main(int argc, const char* argv[])
 
 					perform_inversion(&result, &gaugefield, sources, system);
 
-					flavour_doublet_chiral_condensate(result, sources, pbp_fn, 0, system);
+					flavour_doublet_chiral_condensate(result, sources, pbp_fn, gaugefield.get_parameters_source().trajectorynr_source, system);
 					release_spinorfields(result);
 					release_spinorfields(sources);
 				}
