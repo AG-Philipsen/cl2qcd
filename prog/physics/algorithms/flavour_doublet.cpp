@@ -22,9 +22,14 @@ static void calculate_correlator(const std::string& type, const hardware::buffer
                                  physics::lattices::Spinorfield* corr4, physics::lattices::Spinorfield* source4,
                                  const meta::Inputparameters& params);
 
-void physics::algorithms::flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& parameters)
+void physics::algorithms::flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::string corr_fn, const meta::Inputparameters& parameters)
 {
 	using namespace std;
+
+	ofstream of(corr_fn.c_str(), ios_base::app);
+	if(!of.is_open()) {
+	  throw File_Exception(corr_fn);
+	}
 
 	auto result_ps = calculate_correlator("ps", result, sources, parameters);
 	auto result_sc = calculate_correlator("sc", result, sources, parameters);

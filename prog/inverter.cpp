@@ -78,11 +78,7 @@ int main(int argc, const char* argv[])
 		    
 		    //get name for file to which correlators are to be stored
 		    std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
-		    ofstream of(corr_fn.c_str(), ios_base::app);
-		    if(!of.is_open()) {
-		      throw File_Exception(corr_fn);
-		    }
-		    flavour_doublet_correlators(result, sources, of, parameters);
+		    flavour_doublet_correlators(result, sources, corr_fn, parameters);
 		    release_spinorfields(result);
 		    release_spinorfields(sources);
 		  }

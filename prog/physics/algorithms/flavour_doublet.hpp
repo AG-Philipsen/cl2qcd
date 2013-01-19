@@ -15,7 +15,7 @@ namespace algorithms {
  * @param[in] result The Spinorfields
  * @param[in] corr_fn filename
  */
-void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::ostream& of, const meta::Inputparameters& params);
+void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::string corr_fn, const meta::Inputparameters& params);
 
 std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params);
 
