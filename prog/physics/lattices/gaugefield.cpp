@@ -110,7 +110,6 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	delete[] gf_host;
 
 	hmc_float plaq = plaquette();
-	logger.info() << plaq;
 	check_sourcefileparameters(parameters, plaq, parameters_source);
 }
 
