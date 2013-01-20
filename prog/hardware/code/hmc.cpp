@@ -1016,6 +1016,12 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	logger.debug() << "\tHMC [DH]:\tS[GF]_0:\t" << setprecision(10) << s_old;
 	logger.debug() << "\tHMC [DH]:\tS[GF]_1:\t" << setprecision(10) << s_new;
 	logger.info()  << "\tHMC [DH]:\tdS[GF]: \t" << setprecision(10) << deltaH;
+	//check on NANs
+	if (s_old != s_old || s_new != s_new || deltaH != deltaH){
+	  std::stringstream errstr;
+	  errstr << "NAN occured in HMC! Aborting!";
+	  throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+	}
 
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
@@ -1029,6 +1035,12 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	logger.debug() << "\tHMC [DH]:\tS[GM]_0:\t" << setprecision(10) << 0.5 * p2;
 	logger.debug() << "\tHMC [DH]:\tS[GM]_1:\t" << setprecision(10) << 0.5 * new_p2;
 	logger.info()  << "\tHMC [DH]:\tdS[GM]: \t" << setprecision(10) << 0.5 * (p2 - new_p2);
+	//check on NANs
+	if (p2 != p2 || new_p2 != new_p2 || deltaH != deltaH){
+	  std::stringstream errstr;
+	  errstr << "NAN occured in HMC! Aborting!";
+	  throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+	}
 
 	//Fermion-Part:
 	if(! get_parameters().get_use_gauge_only() ) {
@@ -1044,6 +1056,12 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  logger.debug() << "\tHMC [DH]:\tS[DET]_0:\t" << setprecision(10) <<  spinor_energy_init;
 		  logger.debug() << "\tHMC [DH]:\tS[DET]_1:\t" << setprecision(10) << s_fermion_final;
 		  logger.info() <<  "\tHMC [DH]:\tdS[DET]:\t" << spinor_energy_init - s_fermion_final;
+		  //check on NANs
+		  if (spinor_energy_init != spinor_energy_init || s_fermion_final != s_fermion_final || deltaH != deltaH){
+		    std::stringstream errstr;
+		    errstr << "NAN occured in HMC! Aborting!";
+		    throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+		  }
 
 		  // det(m_light/m_heavy)
 		  hmc_float spinor_energy_mp_init, s_fermion_mp_final;
@@ -1055,6 +1073,12 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  logger.debug() << "\tHMC [DH]:\tS[DETRAT]_0\t" << setprecision(10) <<  spinor_energy_mp_init;
 		  logger.debug() << "\tHMC [DH]:\tS[DETRAT]_1:\t" << setprecision(10) << s_fermion_mp_final;
 		  logger.info() <<  "\tHMC [DH]:\tdS[DETRAT]:\t" << spinor_energy_mp_init - s_fermion_mp_final;
+		  //check on NANs
+		  if (spinor_energy_mp_init != spinor_energy_mp_init || s_fermion_mp_final != s_fermion_mp_final || deltaH != deltaH){
+		    std::stringstream errstr;
+		    errstr << "NAN occured in HMC! Aborting!";
+		    throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+		  }
 		}
 		else {
 		  //in this case one has contributions from det(m_light)
@@ -1068,6 +1092,12 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  logger.debug() << "\tHMC [DH]:\tS[DET]_0:\t" << setprecision(10) <<  spinor_energy_init;
 		  logger.debug() << "\tHMC [DH]:\tS[DET]_1:\t" << setprecision(10) << s_fermion_final;
 		  logger.info() <<  "\tHMC [DH]:\tdS[DET]: \t" << spinor_energy_init - s_fermion_final;
+		  //check on NANs
+		  if (spinor_energy_init != spinor_energy_init || s_fermion_final != s_fermion_final || deltaH != deltaH){
+		    std::stringstream errstr;
+		    errstr << "NAN occured in HMC! Aborting!";
+		    throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+		  }
 		}
 	}
 	//Metropolis-Part
