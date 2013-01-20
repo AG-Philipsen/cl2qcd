@@ -64,7 +64,18 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, std::string ildgfile)
 	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
 {
-	fill_from_ildg(ildgfile);
+	auto parameters = system.get_inputparameters();
+	switch(parameters.get_startcondition()) {
+		case meta::Inputparameters::start_from_source:
+			fill_from_ildg(ildgfile);
+			break;
+		case meta::Inputparameters::cold_start:
+			set_cold(buffers);
+			break;
+		case meta::Inputparameters::hot_start:
+			set_hot(buffers, prng);
+			break;
+	}
 }
 
 void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
