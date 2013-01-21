@@ -210,7 +210,7 @@ static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::latt
 		hmc_float tmp = squarenorm(*phi);
 		result = tmp * norm;
 		logger.info() << number << "\t" << scientific << setprecision(14) << result;
-		of << number << "\t" << scientific << setprecision(14) << result;
+		of << number << "\t" << scientific << setprecision(14) << result << endl;
 	}
 }
 
