@@ -139,6 +139,13 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lat
 	 * The additional factor of 2 is inserted to fit the reference values.
 	 */
 	hmc_float norm = 4. * params.get_kappa() * 2. / meta::get_vol4d(params) / 2. / 12.;
+	/**
+	 * Currently, there is a problem with the sign if even-odd is used (issue #389).
+	 * This seems to cause the a wrong sign in the chiral condensate, which will be compensated for now.
+	 */
+	if(params.get_use_eo() ){
+	  norm *= -1.;
+	}
 	logger.info() << "chiral condensate:" ;
 	for(size_t i = 0; i < solved_fields.size(); ++i) {
 		copyData(&phi, solved_fields[i]);

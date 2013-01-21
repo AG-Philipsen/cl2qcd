@@ -169,7 +169,7 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		//odd solution
 		/** The odd solution is obtained from the even one according to:
 		 *  x_o = M_inv b_o - M_inv D x_e  
-		 * @todo: find out why it must be
+		 * @todo: find out why it must be (issue #389)
 		 *  x_o = - M_inv b_o - M_inv D x_e
 		 *      = -(M_inv D x_e + M_inv b_o)
 		 */
