@@ -109,8 +109,9 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lat
 	hmc_float result = 0.;
 	/**
 	 * In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
-	 * <pbp> = <ubu + dbd> = 2<ubu> = 2 Tr_(space, colour, dirac) ( D^-1 )
-	 auto spinor_code = solver->get_device()->get_spinor_code(); *       = lim_r->inf 2/r (Xi_r, Phi_r)
+	 * <pbp> = <ubu + dbd> = 2<ubu>  
+	 *       = 2 Tr_(space, colour, dirac) ( D^-1 )
+	 *       = lim_r->inf 2/r (Xi_r, Phi_r)
 	 * where the estimators satisfy
 	 * D^-1(x,y)_(a,b, A,B) = lim_r->inf Phi_r(x)_a,A (Xi_r(y)_b,B)^dagger
 	 * and Phi fulfills
@@ -123,9 +124,9 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lat
 	 *       = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
 	 *       = Tr( i gamma_5 (D^-1_u - gamma_5 D^-1_u^dagger gamma_5) )
 	 *       = Tr( i gamma_5 (D^-1_u -  D^-1_u^dagger ) )
-	 *       = Nf Im Tr ( gamma_5 D^-1_u)
-	 *       = lim_r->inf Nf/r  (gamma_5 Xi_r, Phi_r)
-	 * NOTE: The basic difference compared to the pure Wilson case is only the gamma_5 and that one takes the imaginary part!
+	 *       = - Nf Im Tr ( gamma_5 D^-1_u)
+	 *       = - lim_r->inf Nf/r  (gamma_5 Xi_r, Phi_r)
+	 * NOTE: The basic difference compared to the pure Wilson case is the gamma_5 and that one takes the negative imaginary part!
 	 */
 	// Need 2 spinors at once..
 	logger.debug() << "init buffers for chiral condensate calculation...";
@@ -133,9 +134,9 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lat
 	Spinorfield xi(system);
 	assert(solved_fields.size() == sources.size());
 	/*
-	 * Normalize for VOL4D and Nf
+	 * Normalize for VOL4D, NF and spinor entries (NC * ND = 12)
 	 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
-	 * The additional factor of 2 / 12 is inserted to fit the reference values.
+	 * The additional factor of 2 is inserted to fit the reference values.
 	 */
 	hmc_float norm = 4. * params.get_kappa() * 2. / meta::get_vol4d(params) / 2. / 12.;
 	logger.info() << "chiral condensate:" ;
@@ -146,7 +147,7 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lat
 		if(params.get_fermact() == meta::Inputparameters::twistedmass) {
 			xi.gamma5();
 		}
-
+		
 		hmc_complex tmp = scalar_product(xi, phi);
 		tmp.re *= norm;
 		tmp.im *= norm;
@@ -155,7 +156,7 @@ static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lat
 				result = tmp.re;
 				break;
 			case meta::Inputparameters::twistedmass:
-				result = tmp.im;
+			  result = (-1.) * tmp.im;
 				break;
 			default:
 				throw std::invalid_argument("chiral condensate not implemented for given fermion action");
@@ -182,19 +183,23 @@ static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::latt
 	 * For twisted-mass fermions one can also employ the one-end trick, which origins from
 	 * D_d - D_u = - 4 i kappa amu gamma_5 <-> D^-1_u - D^-1_d = - 4 i kappa amu gamma_5 (D^-1_u)^dagger D^-1_u
 	 * With this, the chiral condensate is:
-	 * <pbp> = ... = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
+	 * <pbp> = ... 
+	 *       = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
+	 *       = - 4 i kappa amu Tr ( i gamma_5 gamma_5 (D^-1_u)^dagger D^-1_u )
+	 *       = 4 kappa amu Tr ((D^-1_u)^dagger D^-1_u) 
 	 *       = 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
+	 *       = 4 kappa amu lim_r->inf 1/R |Phi_r|^2
 	 * NOTE: Here one only needs Phi...
 	 */
 	/*
-	 * Normalize for VOL4D and Nf
+	 * Normalize for VOL4D, Nf and spinor entries (NC * ND = 12)
 	 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
-	 * The additional factor of 2 / 12 is inserted to fit the reference values.
+	 * The additional factor of 2 is inserted to fit the reference values.
 	 */
 	hmc_float norm = 4. * params.get_kappa()  / meta::get_vol4d(params)  * meta::get_mubar(params ) * 2. / 2. / 12.;
 
 	logger.info() << "chiral condensate:" ;
-for(auto phi: solved_fields) {
+	for(auto phi: solved_fields) {
 		hmc_float tmp = squarenorm(*phi);
 		result = tmp * norm;
 		logger.info() << number << "\t" << scientific << setprecision(14) << result;
