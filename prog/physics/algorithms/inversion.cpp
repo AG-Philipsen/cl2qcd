@@ -108,7 +108,7 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 
 		//convert source and input-vector to eoprec-format
 		/**
-		 * This currently is a workaround connceted to issue #387
+		 * This currently is a workaround connected to issue #387
 		 * the roles of even/odd vectors are interchanged!
 		 * @todo: fix
 		 * original code:
@@ -168,9 +168,10 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 
 		//odd solution
 		/** The odd solution is obtained from the even one according to:
-		 *  x_o = M_inv D x_e - M_inv b_o
+		 *  x_o = M_inv b_o - M_inv D x_e  
 		 * @todo: find out why it must be
-		 *  x_o = -(M_inv D x_e + M_inv b_o)
+		 *  x_o = - M_inv b_o - M_inv D x_e
+		 *      = -(M_inv D x_e + M_inv b_o)
 		 */
 		if(params.get_fermact() == meta::Inputparameters::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
@@ -188,7 +189,7 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		///CP: whole solution
 		//convert source and input-vector to eoprec-format
 		/**
-		 * This currently is a workaround connceted to issue #387
+		 * This currently is a workaround connected to issue #387
 		 * the roles of even/odd vectors are interchanged!
 		 * @todo: fix
 		 * original code:
