@@ -8,7 +8,7 @@
 #define _PHYSICS_LATTICES_GAUGEMOMENTA_
 
 #include "../../hardware/system.hpp"
-#include "../../hardware/buffers/plain.hpp"
+#include "../../hardware/buffers/gaugemomentum.hpp"
 #include "../prng.hpp"
 #include "scalar.hpp"
 
@@ -58,7 +58,15 @@ public:
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
+
+	friend hmc_float squarenorm(const Gaugemomenta&);
 };
+
+/**
+ * Calculate the squarenorm of the gaugemomenta
+ */
+hmc_float squarenorm(const Gaugemomenta& field);
+void squarenorm(const Scalar<hmc_float>* res, const Gaugemomenta& field);
 
 }
 }

@@ -57,3 +57,32 @@ void physics::lattices::Gaugemomenta::gaussian(const physics::PRNG& prng) const
 		buf->get_device()->get_gaugemomentum_code()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
 	}
 }
+
+hmc_float physics::lattices::squarenorm(const Gaugemomenta& field)
+{
+	const Scalar<hmc_float> res(field.system);
+	squarenorm(&res, field);
+	return res.get();
+}
+
+void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Gaugemomenta& field)
+{
+	auto field_buffers = field.get_buffers();
+	auto res_buffers = res->get_buffers();
+	size_t num_buffers = field_buffers.size();
+
+	// TODO implemente for more than one device
+	if(num_buffers != 1) {
+		throw Print_Error_Message("physics::lattices::squarenorm(const Gaugemomenta&) is not implemented for multiple devices", __FILE__, __LINE__);
+	}
+	if(num_buffers != res_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not sue the same number of devices.");
+	}
+
+	auto field_buf = field_buffers[0];
+	auto res_buf = res_buffers[0];
+	auto device = field_buf->get_device();
+	auto code = device->get_gaugemomentum_code();
+
+	code->set_float_to_gaugemomentum_squarenorm_device(field_buf, res_buf);
+}

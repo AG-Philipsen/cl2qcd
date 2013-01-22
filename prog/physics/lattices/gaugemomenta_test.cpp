@@ -87,6 +87,43 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	// run code
 	gm.gaussian(prng);
 
-	BOOST_FAIL("Not implemented");
+	// simple verification
+	BOOST_REQUIRE_NE(squarenorm(gm), 0.);
+}
+
+BOOST_AUTO_TEST_CASE(squarenorm)
+{
+	using namespace physics::lattices;
+	using physics::lattices::squarenorm;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	logger.debug() << "Devices: " << system.get_devices().size();
+
+	Gaugemomenta gm(system);
+	physics::PRNG prng(system);
+
+	// only two very simple tests
+
+	// this must be zero...
+	gm.zero();
+	BOOST_REQUIRE_EQUAL(squarenorm(gm), 0.);
+
+	// this should never be zero
+	gm.gaussian(prng);
+	BOOST_REQUIRE_NE(squarenorm(gm), 0.);
+
+	// and the same for the asynchroneous variant
+	Scalar<hmc_float> res(system);
+
+	gm.zero();
+	squarenorm(&res, gm);
+	BOOST_REQUIRE_EQUAL(res.get(), 0.);
+
+	// this should never be zero
+	gm.gaussian(prng);
+	squarenorm(&res, gm);
+	BOOST_REQUIRE_NE(res.get(), 0.);
 }
 
