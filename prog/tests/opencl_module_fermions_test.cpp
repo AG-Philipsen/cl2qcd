@@ -93,9 +93,9 @@ void fill_sf_with_random(spinor * sf_in, int size, int seed)
 
 void fill_sf_with_random(spinor * sf_in, int size)
 {
-  fill_sf_with_random(sf_in, size, 123456);
+	fill_sf_with_random(sf_in, size, 123456);
 }
-  
+
 hardware::code::Fermions* TestGaugefield::get_device()
 {
 	return static_cast<hardware::code::Fermions*>(opencl_modules[0]);
@@ -103,7 +103,7 @@ hardware::code::Fermions* TestGaugefield::get_device()
 
 void test_build(std::string inputfile)
 {
-  logger.info() << "build opencl_module_hmc";
+	logger.info() << "build opencl_module_hmc";
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
@@ -115,22 +115,21 @@ void test_build(std::string inputfile)
 
 void test_m_fermion(std::string inputfile, int switcher)
 {
-  //switcher switches between similar functions
-  //0: m_wilson (pure wilson)
-  //1: m_tm_plus (twisted mass, upper flavour)
-  //2: m_tm_minus (twisted mass, lower flavour)
+	//switcher switches between similar functions
+	//0: m_wilson (pure wilson)
+	//1: m_tm_plus (twisted mass, upper flavour)
+	//2: m_tm_minus (twisted mass, lower flavour)
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-        if(switcher == 0){
-	  kernelName = "m_wilson";
-        } else if(switcher == 1){
-	  kernelName = "m_tm_plus";
-        } else if(switcher == 2){
-	  kernelName = "m_tm_minus";
-        }
-        else{
-          logger.fatal() << "wrong parameter in test_m_fermion";
+	if(switcher == 0) {
+		kernelName = "m_wilson";
+	} else if(switcher == 1) {
+		kernelName = "m_tm_plus";
+	} else if(switcher == 2) {
+		kernelName = "m_tm_minus";
+	} else {
+		logger.fatal() << "wrong parameter in test_m_fermion";
 	}
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
@@ -169,15 +168,14 @@ void test_m_fermion(std::string inputfile, int switcher)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	if(switcher == 0){
-	  device->M_wilson_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa());
-	} else if(switcher == 1){
-	  device->M_tm_plus_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
-	} else if(switcher == 2){
-	  device->M_tm_minus_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
-	}
-	else{
-	  logger.fatal() << "wrong parameter in test_m_fermion";
+	if(switcher == 0) {
+		device->M_wilson_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa());
+	} else if(switcher == 1) {
+		device->M_tm_plus_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	} else if(switcher == 2) {
+		device->M_tm_minus_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	} else {
+		logger.fatal() << "wrong parameter in test_m_fermion";
 	}
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -197,38 +195,39 @@ void test_m_fermion(std::string inputfile, int switcher)
 
 void test_m_wilson(std::string inputfile)
 {
-  test_m_fermion(inputfile, 0);
+	test_m_fermion(inputfile, 0);
 }
 
 void test_m_tm_plus(std::string inputfile)
 {
-  test_m_fermion(inputfile, 1);
+	test_m_fermion(inputfile, 1);
 }
 
 void test_m_tm_minus(std::string inputfile)
 {
-  test_m_fermion(inputfile, 2);
+	test_m_fermion(inputfile, 2);
 }
 
-hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in){
-  hmc_float res = 0.;
-  for(int i = 0; i<NUM_ELEMS; i++){
-    spinor tmp = in[i];
-    res += 
-      tmp.e0.e0.re + tmp.e0.e0.im + 
-      tmp.e0.e1.re + tmp.e0.e1.im + 
-      tmp.e0.e2.re + tmp.e0.e2.im + 
-      tmp.e1.e0.re + tmp.e1.e0.im + 
-      tmp.e1.e1.re + tmp.e1.e1.im + 
-      tmp.e1.e2.re + tmp.e1.e2.im +
-      tmp.e2.e0.re + tmp.e2.e0.im + 
-      tmp.e2.e1.re + tmp.e2.e1.im + 
-      tmp.e3.e2.re + tmp.e2.e2.im + 
-      tmp.e3.e0.re + tmp.e3.e0.im + 
-      tmp.e3.e1.re + tmp.e3.e1.im + 
-      tmp.e3.e2.re + tmp.e3.e2.im ;
-  }
-  return res;
+hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
+{
+	hmc_float res = 0.;
+	for(int i = 0; i < NUM_ELEMS; i++) {
+		spinor tmp = in[i];
+		res +=
+		  tmp.e0.e0.re + tmp.e0.e0.im +
+		  tmp.e0.e1.re + tmp.e0.e1.im +
+		  tmp.e0.e2.re + tmp.e0.e2.im +
+		  tmp.e1.e0.re + tmp.e1.e0.im +
+		  tmp.e1.e1.re + tmp.e1.e1.im +
+		  tmp.e1.e2.re + tmp.e1.e2.im +
+		  tmp.e2.e0.re + tmp.e2.e0.im +
+		  tmp.e2.e1.re + tmp.e2.e1.im +
+		  tmp.e3.e2.re + tmp.e2.e2.im +
+		  tmp.e3.e0.re + tmp.e3.e0.im +
+		  tmp.e3.e1.re + tmp.e3.e1.im +
+		  tmp.e3.e2.re + tmp.e3.e2.im ;
+	}
+	return res;
 }
 
 void test_gamma5(std::string inputfile)
@@ -344,9 +343,9 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 
 	std::string kernelName;
 	if(switcher)
-	  kernelName= "m_tm_sitediagonal";
+		kernelName = "m_tm_sitediagonal";
 	else
-	  kernelName = "m_tm_sitediagonal_minus";
+		kernelName = "m_tm_sitediagonal_minus";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -388,7 +387,7 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 	} else {
 		device->M_tm_sitediagonal_minus_device( &in, &out);
 	}
-	
+
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
@@ -406,12 +405,12 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 
 void test_m_tm_sitediagonal(std::string inputfile)
 {
-  test_m_tm_sitediagonal_plus_minus(inputfile, true);
+	test_m_tm_sitediagonal_plus_minus(inputfile, true);
 }
 
 void test_m_tm_sitediagonal_minus(std::string inputfile)
 {
-  test_m_tm_sitediagonal_plus_minus(inputfile, false);
+	test_m_tm_sitediagonal_plus_minus(inputfile, false);
 }
 
 void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
@@ -420,9 +419,9 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 
 	std::string kernelName;
 	if(switcher)
-	  kernelName= "m_tm_inverse_sitediagonal";
+		kernelName = "m_tm_inverse_sitediagonal";
 	else
-	  kernelName = "m_tm_inverse_sitediagonal_minus";
+		kernelName = "m_tm_inverse_sitediagonal_minus";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -481,12 +480,12 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 
 void test_m_tm_inverse_sitediagonal(std::string inputfile)
 {
-  test_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
+	test_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
 }
 
 void test_m_tm_inverse_sitediagonal_minus(std::string inputfile)
 {
-  test_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
+	test_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
 }
 
 void test_dslash_eo(std::string inputfile)
@@ -586,9 +585,9 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(params.get_use_pointsource()) {
-	  device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa() );
+		device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa() );
 	} else {
-	  device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa() );
+		device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa() );
 	}
 	in.dump(sf_out);
 	logger.info() << "result:";
@@ -612,9 +611,9 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 
 	std::string kernelName;
 	if(switcher)
-	  kernelName = "dslash_AND_m_tm_inverse_sitediagonal";
+		kernelName = "dslash_AND_m_tm_inverse_sitediagonal";
 	else
-	  kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
+		kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -655,15 +654,15 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(params.get_use_pointsource()) {
-	  if(switcher)
-	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
-	  else
-	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+		if(switcher)
+			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+		else
+			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 	} else {
-	  if(switcher)
-	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
-	  else
-	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+		if(switcher)
+			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+		else
+			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
 	}
 	out.dump(sf_out);
 	logger.info() << "result:";
@@ -682,12 +681,14 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	BOOST_MESSAGE("Test done");
 }
 
-void test_dslash_and_m_tm_inverse_sitediagonal(std::string inputfile){
-  test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
+void test_dslash_and_m_tm_inverse_sitediagonal(std::string inputfile)
+{
+	test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
 }
 
-void test_dslash_and_m_tm_inverse_sitediagonal_minus(std::string inputfile){
-  test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
+void test_dslash_and_m_tm_inverse_sitediagonal_minus(std::string inputfile)
+{
+	test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
 }
 
 void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool switcher)
@@ -735,9 +736,9 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(switcher)
-	  device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+		device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
 	else
-	  device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+		device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
 	out.dump(sf_out);
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -756,24 +757,24 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 
 void test_m_tm_sitediagonal_and_gamma5_eo(std::string inputfile)
 {
-  test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, true);
+	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, true);
 }
 
 void test_m_tm_sitediagonal_minus_and_gamma5_eo(std::string inputfile)
 {
-  test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, false);
+	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, false);
 }
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-  test_build("/opencl_module_fermions_build_input_1");
+	test_build("/opencl_module_fermions_build_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( BUILD_2 )
 {
-  test_build("/opencl_module_fermions_build_input_2");
+	test_build("/opencl_module_fermions_build_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -783,32 +784,32 @@ BOOST_AUTO_TEST_SUITE( M_WILSON )
 
 BOOST_AUTO_TEST_CASE( M_WILSON_1)
 {
-  test_m_wilson("/m_wilson_input_1");
+	test_m_wilson("/m_wilson_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( M_WILSON_2)
 {
-  test_m_wilson("/m_wilson_input_2");
+	test_m_wilson("/m_wilson_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( M_WILSON_3)
 {
-  test_m_wilson("/m_wilson_input_3");
+	test_m_wilson("/m_wilson_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( M_WILSON_4)
 {
-  test_m_wilson("/m_wilson_input_4");
+	test_m_wilson("/m_wilson_input_4");
 }
 
 BOOST_AUTO_TEST_CASE( M_WILSON_5)
 {
-  test_m_wilson("/m_wilson_input_5");
+	test_m_wilson("/m_wilson_input_5");
 }
 
 BOOST_AUTO_TEST_CASE( M_WILSON_6)
 {
-  test_m_wilson("/m_wilson_input_6");
+	test_m_wilson("/m_wilson_input_6");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -817,27 +818,27 @@ BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
 BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
 {
-  test_m_tm_minus("/m_tm_minus_input_1");
+	test_m_tm_minus("/m_tm_minus_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
 {
-  test_m_tm_minus("/m_tm_minus_input_2");
+	test_m_tm_minus("/m_tm_minus_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
 {
-  test_m_tm_minus("/m_tm_minus_input_3");
+	test_m_tm_minus("/m_tm_minus_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
 {
-  test_m_tm_minus("/m_tm_minus_input_4");
+	test_m_tm_minus("/m_tm_minus_input_4");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
 {
-  test_m_tm_minus("/m_tm_minus_input_5");
+	test_m_tm_minus("/m_tm_minus_input_5");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -922,17 +923,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
 
 BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
 {
-    test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_1");
+	test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_2)
 {
-    test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_2");
+	test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_3)
 {
-    test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_3");
+	test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -960,17 +961,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
 
 BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1)
 {
-    test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_1");
+	test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_2)
 {
-    test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_2");
+	test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_3)
 {
-    test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_3");
+	test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1097,22 +1098,22 @@ BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO )
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_1");
+	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_2)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_2");
+	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_3)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_3");
+	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_4)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_4");
+	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1121,22 +1122,22 @@ BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO )
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_1");
+	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_2)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_2");
+	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_3)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_3");
+	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_4)
 {
-  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_4");
+	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1181,22 +1182,21 @@ BOOST_AUTO_TEST_SUITE_END()
 
 void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 {
-  //switcher switches between similar functions
-  //0: m_wilson (pure wilson)
-  //1: m_tm_plus (twisted mass, upper flavour)
-  //2: m_tm_minus (twisted mass, lower flavour)
+	//switcher switches between similar functions
+	//0: m_wilson (pure wilson)
+	//1: m_tm_plus (twisted mass, upper flavour)
+	//2: m_tm_minus (twisted mass, lower flavour)
 	using namespace hardware::buffers;
 
 	std::string kernelName = "Test equivalence of ";
-        if(switcher == 0){
-	  kernelName += "m_wilson";
-        } else if(switcher == 1){
-	  kernelName += "m_tm_plus";
-        } else if(switcher == 2){
-	  kernelName += "m_tm_minus";
-        }
-        else{
-          logger.fatal() << "wrong parameter in test_m_fermion";
+	if(switcher == 0) {
+		kernelName += "m_wilson";
+	} else if(switcher == 1) {
+		kernelName += "m_tm_plus";
+	} else if(switcher == 2) {
+		kernelName += "m_tm_minus";
+	} else {
+		logger.fatal() << "wrong parameter in test_m_fermion";
 	}
 	kernelName += " in eo- and non-eo formulation";
 	printKernelInfo(kernelName);
@@ -1224,13 +1224,13 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in_eo1, NUM_ELEMENTS_SF_EO);
-	  fill_sf_with_one(sf_in_eo2, NUM_ELEMENTS_SF_EO);
-	  fill_sf_with_one(sf_in_noneo, NUM_ELEMENTS_SF);
+		fill_sf_with_one(sf_in_eo1, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in_eo2, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in_noneo, NUM_ELEMENTS_SF);
 	} else {
-	  fill_sf_with_random(sf_in_eo1, NUM_ELEMENTS_SF_EO, 123456);
-	  fill_sf_with_random(sf_in_eo2, NUM_ELEMENTS_SF_EO, 78910);
-	  fill_sf_with_random(sf_in_noneo, NUM_ELEMENTS_SF, 123456);
+		fill_sf_with_random(sf_in_eo1, NUM_ELEMENTS_SF_EO, 123456);
+		fill_sf_with_random(sf_in_eo2, NUM_ELEMENTS_SF_EO, 78910);
+		fill_sf_with_random(sf_in_noneo, NUM_ELEMENTS_SF, 123456);
 	}
 	BOOST_REQUIRE(sf_in_eo1);
 	BOOST_REQUIRE(sf_in_eo2);
@@ -1257,11 +1257,11 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	if(params.get_solver() != meta::Inputparameters::cg) {
-	  //use use_pointsource to choose whether to copy the eo rnd vectors to noneo or vise versa
-	  if(params.get_use_pointsource())
-	    spinor_code->convert_from_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
-	  else
-	    spinor_code->convert_to_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
+		//use use_pointsource to choose whether to copy the eo rnd vectors to noneo or vise versa
+		if(params.get_use_pointsource())
+			spinor_code->convert_from_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
+		else
+			spinor_code->convert_to_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
 	}
 
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
@@ -1277,15 +1277,14 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	sqnorm.dump(&cpu_back_noneo);
 	logger.info() << cpu_back_noneo;
 	logger.info() << "Run kernel";
-	if(switcher == 0){
-	  device->M_wilson_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa());
-	} else if(switcher == 1){
-	  device->M_tm_plus_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
-	} else if(switcher == 2){
-	  device->M_tm_minus_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
-	}
-	else{
-	  logger.fatal() << "wrong parameter in test_m_fermion";
+	if(switcher == 0) {
+		device->M_wilson_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa());
+	} else if(switcher == 1) {
+		device->M_tm_plus_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	} else if(switcher == 2) {
+		device->M_tm_minus_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	} else {
+		logger.fatal() << "wrong parameter in test_m_fermion";
 	}
 	logger.info() << "result:";
 	hmc_float cpu_res_noneo;
@@ -1304,80 +1303,80 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	sqnorm.dump(&cpu_back_eo2);
 	logger.info() << cpu_back_eo2;
 	logger.info() << "Run kernel";
-	if(switcher == 0){
-	  //suppose in1 is the even, in2 the odd input vector
-	  //now calc out_tmp_eo1 = (1 in1 + D_eo in2)
-	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
-	  
-	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
+	if(switcher == 0) {
+		//suppose in1 is the even, in2 the odd input vector
+		//now calc out_tmp_eo1 = (1 in1 + D_eo in2)
+		spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+		spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
 
-	  spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &in_eo1, &minusone, &out_tmp_eo1);
-	  
-	  //now calc out_tmp_eo2 = ( 1 in2 + D_oe in1)
-	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
-	  
-	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
-	  
-	  spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &in_eo2, &minusone, &out_tmp_eo2);
-	  
-	  //now, both output vectors have to be converted back to noneo
-	  spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
-	} else if(switcher == 1){
-	  //suppose in1 is the even, in2 the odd input vector
-	  //now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
-	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
-	  
-	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
-	  device->M_tm_sitediagonal_device(&in_eo1, &tmp_eo,  meta::get_mubar(params));
+		device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
 
-	  spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
-	  
-	  //now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
-	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
-	  
-	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
-	  device->M_tm_sitediagonal_device(&in_eo2, &tmp_eo,  meta::get_mubar(params));
-	  
-	  spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
-	  
-	  //now, both output vectors have to be converted back to noneo
-	  spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
-	} else if(switcher == 2){
-	  //suppose in1 is the even, in2 the odd input vector
-	  //now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
-	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
-	  
-	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
-	  device->M_tm_sitediagonal_minus_device(&in_eo1, &tmp_eo,  meta::get_mubar(params));
+		spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &in_eo1, &minusone, &out_tmp_eo1);
 
-	  spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
-	  
-	  //now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
-	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
-	  
-	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
-	  device->M_tm_sitediagonal_minus_device(&in_eo2, &tmp_eo,  meta::get_mubar(params));
-	  
-	  spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
-	  
-	  //now, both output vectors have to be converted back to noneo
-	  spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
-	}  
+		//now calc out_tmp_eo2 = ( 1 in2 + D_oe in1)
+		spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+		spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
+
+		device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
+
+		spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &in_eo2, &minusone, &out_tmp_eo2);
+
+		//now, both output vectors have to be converted back to noneo
+		spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
+	} else if(switcher == 1) {
+		//suppose in1 is the even, in2 the odd input vector
+		//now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
+		spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+		spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
+
+		device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
+		device->M_tm_sitediagonal_device(&in_eo1, &tmp_eo,  meta::get_mubar(params));
+
+		spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
+
+		//now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
+		spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+		spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
+
+		device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
+		device->M_tm_sitediagonal_device(&in_eo2, &tmp_eo,  meta::get_mubar(params));
+
+		spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
+
+		//now, both output vectors have to be converted back to noneo
+		spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
+	} else if(switcher == 2) {
+		//suppose in1 is the even, in2 the odd input vector
+		//now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
+		spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+		spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
+
+		device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
+		device->M_tm_sitediagonal_minus_device(&in_eo1, &tmp_eo,  meta::get_mubar(params));
+
+		spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
+
+		//now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
+		spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+		spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
+
+		device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
+		device->M_tm_sitediagonal_minus_device(&in_eo2, &tmp_eo,  meta::get_mubar(params));
+
+		spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
+
+		//now, both output vectors have to be converted back to noneo
+		spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
+	}
 	logger.info() << "result:";
 	hmc_float cpu_res_eo;
 	spinor_code->set_float_to_global_squarenorm_device(&out_eo, &sqnorm);
 	sqnorm.dump(&cpu_res_eo);
 	logger.info() << cpu_res_eo;
-  
+
 	logger.info() << "Finalize device";
 	cpu.finalize();
-	
+
 	logger.info() << "Clear buffers";
 	delete[] sf_in_noneo;
 	delete[] sf_out_noneo;
@@ -1394,24 +1393,24 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 
 void test_m_wilson_compare_noneo_eo(std::string inputfile)
 {
-  test_m_fermion_compare_noneo_eo(inputfile, 0);
+	test_m_fermion_compare_noneo_eo(inputfile, 0);
 }
 
 void test_m_tm_plus_compare_noneo_eo(std::string inputfile)
 {
-  test_m_fermion_compare_noneo_eo(inputfile, 1);
+	test_m_fermion_compare_noneo_eo(inputfile, 1);
 }
 
 void test_m_tm_minus_compare_noneo_eo(std::string inputfile)
 {
-  test_m_fermion_compare_noneo_eo(inputfile, 2);
+	test_m_fermion_compare_noneo_eo(inputfile, 2);
 }
 
 BOOST_AUTO_TEST_SUITE(M_WILSON_COMPARE_NONEO_EO )
 
 BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_1)
 {
-  test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_1");
+	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_1");
 }
 
 BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_2)
