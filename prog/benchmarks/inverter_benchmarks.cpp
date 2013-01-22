@@ -68,28 +68,21 @@ int main(int argc, const char* argv[])
 		int hmc_iter = parameters.get_hmcsteps();
 		int iter;
 
-		{
-			ofstream corr_file(corr_fn.c_str(), ios_base::app);
-			if(!corr_file.is_open()) {
-				throw File_Exception(corr_fn);
-			}
+		logger.trace() << "Perform " << hmc_iter << "of benchmarking";
+		for(iter = 0; iter < hmc_iter; iter ++) {
+			//CP: these are esssentially the same actions as the "normal" inverter performs...
+			logger.info() << "Perform inversion on device.." ;
 
-			logger.trace() << "Perform " << hmc_iter << "of benchmarking";
-			for(iter = 0; iter < hmc_iter; iter ++) {
-				//CP: these are esssentially the same actions as the "normal" inverter performs...
-				logger.info() << "Perform inversion on device.." ;
+			auto sources = create_sources(system, prng, parameters.get_num_sources());
+			auto result = create_spinorfields(system, sources.size());
+			perform_inversion(&result, &gaugefield, sources, system);
+			flavour_doublet_correlators(result, sources, corr_fn.c_str(), parameters);
 
-				auto sources = create_sources(system, prng, parameters.get_num_sources());
-				auto result = create_spinorfields(system, sources.size());
-				perform_inversion(&result, &gaugefield, sources, system);
-				flavour_doublet_correlators(result, sources, corr_file, parameters);
-
-				logger.trace() << "Inversion done" ;
-				release_spinorfields(result);
-				release_spinorfields(sources);
-			}
-			logger.trace() << "inverter-benchmarking done" ;
+			logger.trace() << "Inversion done" ;
+			release_spinorfields(result);
+			release_spinorfields(sources);
 		}
+		logger.trace() << "inverter-benchmarking done" ;
 
 		perform_timer.add();
 
