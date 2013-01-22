@@ -6,6 +6,7 @@
 
 #include "gaugemomenta.hpp"
 #include "../../meta/util.hpp"
+#include <stdexcept>
 
 static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);
 
@@ -41,5 +42,18 @@ void physics::lattices::Gaugemomenta::zero() const
 {
 for(auto buffer: buffers) {
 		buffer->get_device()->get_gaugemomentum_code()->set_zero_gaugemomentum(buffer);
+	}
+}
+
+void physics::lattices::Gaugemomenta::gaussian(const physics::PRNG& prng) const
+{
+	size_t num_bufs = buffers.size();
+	auto prng_bufs = prng.get_buffers();
+	if(num_bufs != prng_bufs.size()) {
+		throw std::invalid_argument("The PRNG is using different devices than the gaugemomenta");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto buf = buffers[i];
+		buf->get_device()->get_gaugemomentum_code()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
 	}
 }

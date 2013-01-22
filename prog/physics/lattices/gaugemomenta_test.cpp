@@ -68,3 +68,25 @@ static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed)
 	fill(host_mem, num_elems, seed);
 	buf->get_device()->get_gaugemomentum_code()->importGaugemomentumBuffer(buf, host_mem);
 }
+
+BOOST_AUTO_TEST_CASE(gaussian)
+{
+	using namespace physics::lattices;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	logger.debug() << "Devices: " << system.get_devices().size();
+
+	Gaugemomenta gm(system);
+	physics::PRNG prng(system);
+
+	// fill with zeros
+	gm.zero();
+
+	// run code
+	gm.gaussian(prng);
+
+	BOOST_FAIL("Not implemented");
+}
+

@@ -48,6 +48,13 @@ public:
 	 */
 	void zero() const;
 
+	/**
+	 * Fill the Gaugemomenta according to a gaussian distribution.
+	 *
+	 * \exception std::invalid_argument if the prng is using different devices than this object
+	 */
+	void gaussian(const physics::PRNG& prng) const;
+
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
