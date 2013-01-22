@@ -24,6 +24,7 @@ namespace code {
 class Spinors : public Opencl_Module {
 public:
 	friend hardware::Device;
+	friend hardware::buffers::Spinor;
 
 	virtual ~Spinors();
 

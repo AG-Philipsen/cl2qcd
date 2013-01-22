@@ -6,6 +6,7 @@
 
 #include "spinor.hpp"
 #include "../device.hpp"
+#include "plain.hpp"
 
 #include <stdexcept>
 
@@ -56,7 +57,11 @@ bool hardware::buffers::Spinor::is_soa() const noexcept
 void hardware::buffers::Spinor::load(const spinor * ptr) const
 {
 	if(is_soa()) {
-		throw std::logic_error("Data cannot be loaded into SOA buffers.");
+		auto device = get_device();
+		Plain<spinor> plain(get_elements(), device);
+		plain.load(ptr);
+		device->get_spinor_code()->convertSpinorfieldToSOA_eo_device(this, &plain);
+		device->synchronize();
 	} else {
 		Buffer::load(ptr);
 	}
@@ -65,7 +70,10 @@ void hardware::buffers::Spinor::load(const spinor * ptr) const
 void hardware::buffers::Spinor::dump(spinor * ptr) const
 {
 	if(is_soa()) {
-		throw std::logic_error("Data cannot be dumped from SOA buffers.");
+		auto device = get_device();
+		Plain<spinor> plain(get_elements(), device);
+		device->get_spinor_code()->convertSpinorfieldFromSOA_eo_device(&plain, this);
+		plain.dump(ptr);
 	} else {
 		Buffer::dump(ptr);
 	}

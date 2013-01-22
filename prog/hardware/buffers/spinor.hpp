@@ -48,16 +48,14 @@ namespace hardware {
 			/**
 			 * Load data from the given pointer into the buffer.
 			 *
-			 * This only works for AoS-Buffers. If the buffer is a SoA buffer
-			 * an std::logic_error will be thrown.
+			 * Note that this requires creation of a temporary buffer in case the buffer uses a SOA layout!
 			 */
 			void load(const spinor *) const;
 
 			/**
 			 * Store data from the buffer into the given pointer.
 			 *
-			 * This only works for AoS-Buffers. If the buffer is a SoA buffer
-			 * an std::logic_error will be thrown.
+			 * Note that this requires creation of a temporary buffer in case the buffer uses a SOA layout!
 			 */
 			void dump(spinor *) const;
 
