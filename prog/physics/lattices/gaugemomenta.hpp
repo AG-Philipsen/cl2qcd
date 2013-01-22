@@ -43,6 +43,11 @@ public:
 	 */
 	const std::vector<const hardware::buffers::Gaugemomentum *> get_buffers() const noexcept;
 
+	/**
+	 * Set the Gaugemomenta to zero
+	 */
+	void zero() const;
+
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;

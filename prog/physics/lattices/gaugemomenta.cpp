@@ -36,3 +36,10 @@ const std::vector<const hardware::buffers::Gaugemomentum *> physics::lattices::G
 {
 	return buffers;
 }
+
+void physics::lattices::Gaugemomenta::zero() const
+{
+for(auto buffer: buffers) {
+		buffer->get_device()->get_gaugemomentum_code()->set_zero_gaugemomentum(buffer);
+	}
+}
