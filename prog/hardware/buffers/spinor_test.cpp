@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware::buffers;
 
 	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters());
+	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
 for(Device * device : system.get_devices()) {
 		spinor* buf = new spinor[elems];
 		spinor* buf2 = new spinor[elems];
