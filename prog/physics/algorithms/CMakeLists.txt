@@ -12,6 +12,7 @@ add_library(algorithms
 	kappa_clover.cpp
 	flavour_doublet.cpp
 	inversion.cpp
+	molecular_dynamics.cpp
 )
 target_link_libraries(algorithms
 		lattices
