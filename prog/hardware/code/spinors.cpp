@@ -168,16 +168,26 @@ void hardware::code::Spinors::convert_from_eoprec_device(const hardware::buffers
 {
 	using namespace hardware::buffers;
 
+	// check buffer sizes
+	const size_t in_size = in1->get_elements();
+	if(in_size != meta::get_vol4d(get_parameters()) / 2 || in2->get_elements() != in_size) {
+		throw std::invalid_argument("input buffers must be of size VOL4D / 2");
+	}
+	const size_t out_size = out->get_elements();
+	if(out_size != meta::get_vol4d(get_parameters())) {
+		throw std::invalid_argument("output buffer must be of size VOL4D");
+	}
+
 	const hardware::buffers::Buffer * tmp1, * tmp2;
 	if(in1->is_soa()) {
-		Plain<spinor> * tmp = new Plain<spinor>(in1->get_elements(), get_device());
+		Plain<spinor> * tmp = new Plain<spinor>(in_size, get_device());
 		convertSpinorfieldFromSOA_eo_device(tmp, in1);
 		tmp1 = tmp;
 	} else {
 		tmp1 = in1;
 	}
 	if(in2->is_soa()) {
-		Plain<spinor> * tmp = new Plain<spinor>(in2->get_elements(), get_device());
+		Plain<spinor> * tmp = new Plain<spinor>(in_size, get_device());
 		convertSpinorfieldFromSOA_eo_device(tmp, in2);
 		tmp2 = tmp;
 	} else {
@@ -212,14 +222,24 @@ void hardware::code::Spinors::convert_to_eoprec_device(const hardware::buffers::
 {
 	using namespace hardware::buffers;
 
+	// check buffer sizes
+	const size_t out_size = out1->get_elements();
+	if(out_size != meta::get_vol4d(get_parameters()) / 2 || out2->get_elements() != out_size) {
+		throw std::invalid_argument("output buffers must be of size VOL4D / 2");
+	}
+	const size_t in_size = in->get_elements();
+	if(in_size != meta::get_vol4d(get_parameters())) {
+		throw std::invalid_argument("input buffer must be of size VOL4D");
+	}
+
 	const hardware::buffers::Buffer * tmp1, * tmp2;
 	if(out1->is_soa()) {
-		tmp1 = new Plain<spinor>(out1->get_elements(), get_device());
+		tmp1 = new Plain<spinor>(out_size, get_device());
 	} else {
 		tmp1 = out1;
 	}
 	if(out2->is_soa()) {
-		tmp2 = new Plain<spinor>(out2->get_elements(), get_device());
+		tmp2 = new Plain<spinor>(out_size, get_device());
 	} else {
 		tmp2 = out2;
 	}
