@@ -2,6 +2,9 @@
  * Declaration of the flavour doublets algorithms
  */
 
+#ifndef _PHYSICS_ALGORITHMS_FLAVOUR_DOUBLET_
+#define _PHYSICS_ALGORITHMS_FLAVOUR_DOUBLET_
+
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/spinorfield.hpp"
 
@@ -31,3 +34,5 @@ void flavour_doublet_chiral_condensate(const std::vector<physics::lattices::Spin
 }
 
 }
+
+#endif /* _PHYSICS_ALGORITHMS_FLAVOUR_DOUBLET_ */
