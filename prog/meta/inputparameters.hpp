@@ -234,7 +234,6 @@ private:
 	//at the moment, only 2 solvers are implemented..
 	solver _solver;
 	solver _solver_mp;
-	bool use_pointsource;
 	bool use_gauge_only;
 	int num_sources;
 	int source_x;
