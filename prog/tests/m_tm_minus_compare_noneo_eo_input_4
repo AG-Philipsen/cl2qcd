@@ -12,7 +12,7 @@ fermact=TWISTEDMASS
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
 #this controls the conversion from or to eoprec
-use_pointsource=true
+read_multiple_configs=true
 
 #this specifies the acceptance precision
 solver_prec=1e-8
