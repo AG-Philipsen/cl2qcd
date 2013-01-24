@@ -13,6 +13,7 @@ add_library(algorithms
 	flavour_doublet.cpp
 	inversion.cpp
 	molecular_dynamics.cpp
+	metropolis.cpp
 )
 target_link_libraries(algorithms
 		lattices

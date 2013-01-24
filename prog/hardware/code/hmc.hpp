@@ -55,7 +55,7 @@ public:
 	void md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield);
 	void generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng);
-	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const hardware::buffers::SU3 * gaugefield);
+	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const hardware::buffers::SU3 * gaugefield); // TODO port
 	void calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
@@ -68,7 +68,7 @@ public:
 	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa = ARG_DEF);
   hmc_float calc_s_fermion(const hardware::buffers::SU3 * gaugefield, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield);
+	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield); // TODO port
 
 	void virtual print_profiling(const std::string& filename, int number) const override;
 
