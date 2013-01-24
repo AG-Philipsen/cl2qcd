@@ -1,7 +1,8 @@
 /** @file
- * Declaration of the molecular dynamics algorithms
+ * Implementation of the molecular dynamics algorithms
  *
  * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2012-2013 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
  */
 
 #include "molecular_dynamics.hpp"
