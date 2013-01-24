@@ -7,6 +7,7 @@
 #include "molecular_dynamics.hpp"
 
 #include <stdexcept>
+#include "../fermionmatrix/fermionmatrix.hpp"
 
 void physics::algorithms::md_update_gaugemomenta(const physics::lattices::Gaugemomenta * const dest, const physics::lattices::Gaugemomenta& src, const hmc_float eps)
 {
@@ -108,4 +109,18 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 	auto gf_buf = gf_bufs[0];
 	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
 	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
+}
+
+void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+{
+	physics::fermionmatrix::Qplus qplus(kappa, mubar, system);
+	qplus(out, gf, orig);
+	trace_squarenorm("Spinorfield after update", *out);
+}
+
+void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+{
+	physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system);
+	qplus(out, gf, orig);
+	trace_squarenorm("Spinorfield after update", *out);
 }
