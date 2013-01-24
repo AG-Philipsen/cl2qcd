@@ -127,12 +127,12 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
 	trace_squarenorm("Spinorfield after update", *out);
 }
 
-void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+template<class FERMIONMATRIX, class SPINORFIELD> static void md_update_spinorfield_mp(const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
-	using physics::fermionmatrix::Qplus;
+	using physics::algorithms::solvers::bicgstab;
 
-	physics::lattices::Spinorfield tmp(system);
-	Qplus qplus(kappa, mubar, system);
+	SPINORFIELD tmp(system);
+	FERMIONMATRIX qplus(kappa, mubar, system);
 
 	trace_squarenorm("Spinorfield before update", orig);
 
@@ -152,41 +152,23 @@ void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spin
 	trace_squarenorm("\tsource before inversion.", tmp);
 
 	auto params = system.get_inputparameters();
-	Qplus qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-	const int iterations = solvers::bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
+	FERMIONMATRIX qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
+	const int iterations = bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
 	logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 
 	trace_squarenorm("\tinv. field after inversion ", *out);
+}
+
+void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+{
+	using physics::fermionmatrix::Qplus;
+
+	::md_update_spinorfield_mp<Qplus>(out, gf, orig, system, kappa, mubar);
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::fermionmatrix::Qplus_eo;
 
-	physics::lattices::Spinorfield_eo tmp(system);
-	Qplus_eo qplus(kappa, mubar, system);
-
-	trace_squarenorm("Spinorfield before update", orig);
-
-	qplus(&tmp, gf, orig);
-
-	//Now one needs ( Qplus )^-1 (heavy_mass) using tmp as source to get phi_mp
-	//use always bicgstab here
-	logger.debug() << "\t\t\tstart solver";
-
-	/** @todo at the moment, we can only put in a cold spinorfield
-	 * or a point-source spinorfield as trial-solution
-	 */
-	out->zero();
-	out->gamma5();
-
-	trace_squarenorm("\tinv. field before inversion.", *out);
-	trace_squarenorm("\tsource before inversion.", tmp);
-
-	auto params = system.get_inputparameters();
-	Qplus_eo qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-	const int iterations = solvers::bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
-	logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-
-	trace_squarenorm("\tinv. field after inversion ", *out);
+	::md_update_spinorfield_mp<Qplus_eo>(out, gf, orig, system, kappa, mubar);
 }
