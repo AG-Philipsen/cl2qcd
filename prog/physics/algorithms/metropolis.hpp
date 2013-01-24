@@ -20,6 +20,9 @@ namespace algorithms {
 hmc_float calc_s_fermion(const physics::lattices::Spinorfield * phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar);
 hmc_float calc_s_fermion(const physics::lattices::Spinorfield_eo * phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar);
 
+hmc_float calc_s_fermion_mp(const physics::lattices::Spinorfield * phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar);
+hmc_float calc_s_fermion_mp(const physics::lattices::Spinorfield_eo * phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar);
+
 }
 }
 
