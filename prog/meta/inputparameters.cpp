@@ -104,10 +104,6 @@ Inputparameters::startcondition Inputparameters::get_startcondition() const noex
 {
   return _startcondition;
 }
-bool Inputparameters::get_saveconfigs() const noexcept
-{
-  return saveconfigs;
-}
 int Inputparameters::get_writefrequency() const noexcept
 {
   return writefrequency;

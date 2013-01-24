@@ -33,7 +33,6 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_ntime(), 8);
 
 	BOOST_REQUIRE_EQUAL(params.get_startcondition(), Inputparameters::cold_start);
-	BOOST_REQUIRE_EQUAL(params.get_saveconfigs(), false);
 	BOOST_REQUIRE_EQUAL(params.get_writefrequency(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_savefrequency(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_sourcefile(), "conf.00000");
@@ -155,7 +154,6 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_ntime(), 12);
 
 	BOOST_REQUIRE_EQUAL(params.get_startcondition(), Inputparameters::start_from_source);
-	BOOST_REQUIRE_EQUAL(params.get_saveconfigs(), true);
 	BOOST_REQUIRE_EQUAL(params.get_writefrequency(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_savefrequency(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_sourcefile(), "conf.11111");

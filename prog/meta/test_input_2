@@ -12,7 +12,6 @@ nspace = 32
 ntime = 12
 
 startcondition = continue
-saveconfigs = true
 writefrequency = 10
 savefrequency = 10
 sourcefile = conf.11111

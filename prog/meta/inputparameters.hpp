@@ -68,7 +68,6 @@ public:
 	int get_ntime() const noexcept;
 
 	startcondition get_startcondition() const noexcept;
-	bool get_saveconfigs() const noexcept;
 	int get_writefrequency() const noexcept;
 	int get_savefrequency() const noexcept;
 	std::string get_sourcefile() const noexcept;
