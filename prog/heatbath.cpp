@@ -64,7 +64,6 @@ int main(int argc, const char* argv[])
 				print_gaugeobservables(gaugefield, i, gaugeout_name);
 			}
 			if( savefreq != 0 && ( (i + 1) % savefreq ) == 0 ) {
-				gaugefield.synchronize(0);
 				gaugefield.save(i+1);
 			}
 		}
