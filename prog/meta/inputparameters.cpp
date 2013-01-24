@@ -234,10 +234,6 @@ bool Inputparameters::get_use_eo() const noexcept
 {
   return use_eo;
 }
-bool Inputparameters::get_use_pointsource() const noexcept
-{
-  return use_pointsource;
-}
 bool Inputparameters::get_use_gauge_only() const noexcept
 {
   return use_gauge_only;
