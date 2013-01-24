@@ -179,7 +179,7 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	if(params.get_use_pointsource()) {
+	if(params.get_read_multiple_configs()) {
 		device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa() );
 	} else {
 		device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa() );
@@ -248,7 +248,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	if(params.get_use_pointsource()) {
+	if(params.get_read_multiple_configs()) {
 		if(switcher)
 			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 		else
