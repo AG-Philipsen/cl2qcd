@@ -929,8 +929,8 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	if(params.get_solver() != meta::Inputparameters::cg) {
-		//use use_pointsource to choose whether to copy the eo rnd vectors to noneo or vise versa
-		if(params.get_use_pointsource())
+		//use read_multiple_configs to choose whether to copy the eo rnd vectors to noneo or vise versa
+	  if(params.get_read_multiple_configs())
 			spinor_code->convert_from_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
 		else
 			spinor_code->convert_to_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
