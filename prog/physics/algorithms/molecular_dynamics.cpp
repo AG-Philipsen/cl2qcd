@@ -42,7 +42,7 @@ void physics::algorithms::md_update_gaugefield(const physics::lattices::Gaugefie
 	}
 }
 
-void physics::algorithms::gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf)
+void physics::algorithms::gauge_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf)
 {
 	auto gm_bufs = gm->get_buffers();
 	auto gf_bufs = gf.get_buffers();
@@ -57,7 +57,7 @@ void physics::algorithms::gauge_force(const physics::lattices::Gaugemomenta * gm
 	code->gauge_force_device(gf_buf, gm_buf);
 }
 
-void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf)
+void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf)
 {
 	auto gm_bufs = gm->get_buffers();
 	auto gf_bufs = gf.get_buffers();
@@ -72,7 +72,7 @@ void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemoment
 	code->gauge_force_tlsym_device(gf_buf, gm_buf);
 }
 
-void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, hmc_float kappa = ARG_DEF)
+void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
 {
 	auto gm_bufs = gm->get_buffers();
 	auto Y_bufs = Y.get_buffers();
@@ -91,7 +91,7 @@ void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::la
 	code->fermion_force_device(Y_buf, X_buf, gf_buf, gm_buf, kappa);
 }
 
-void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Spinorfield_eo& Y, const physics::lattices::Spinorfield_eo& X, const physics::lattices::Gaugefield& gf, hmc_float kappa = ARG_DEF)
+void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield_eo& Y, const physics::lattices::Spinorfield_eo& X, const int evenodd, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
 {
 	auto gm_bufs = gm->get_buffers();
 	auto Y_bufs = Y.get_buffers();
@@ -107,5 +107,5 @@ void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::la
 	auto X_buf = X_bufs[0];
 	auto gf_buf = gf_bufs[0];
 	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, kappa);
+	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
 }
