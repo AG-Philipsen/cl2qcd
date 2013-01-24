@@ -9,7 +9,7 @@ kappa=0.125
 
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
-use_pointsource=false
+read_multiple_configs=false
 
 #this specifies the acceptance precision
 solver_prec=1e-8

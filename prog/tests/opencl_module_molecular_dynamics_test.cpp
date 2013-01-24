@@ -560,8 +560,8 @@ void test_f_fermion_eo(std::string inputfile)
 	logger.info() << cpu_back2;
 	logger.info() << "Run kernel";
 
-	//switch according to "use_pointsource"
-	if(params.get_use_pointsource()) {
+	//switch according to "read_multiple_configs"
+	if(params.get_read_multiple_configs()) {
 		int tmp = EVEN;
 		device->fermion_force_eo_device(&in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, tmp, params.get_kappa() );
 	} else {
@@ -934,9 +934,9 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 		in1_noneo.load(sf_in1_noneo);
 		in2_noneo.load(sf_in2_noneo);
 	} else {
-		//one can either convert to or from eoprec, use use_pointsource for that
+		//one can either convert to or from eoprec, use read_multiple_configs for that
 		//NOTE: there is machinery to compare vectors in the old executable
-		if(params.get_use_pointsource()) {
+		if(params.get_read_multiple_configs()) {
 			spinor_code->copy_to_eoprec_spinorfield_buffer(&in1_eo, sf_in1_eo);
 			spinor_code->copy_to_eoprec_spinorfield_buffer(&in2_eo, sf_in2_eo);
 			spinor_code->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
