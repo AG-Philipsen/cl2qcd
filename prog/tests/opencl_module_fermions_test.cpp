@@ -380,7 +380,6 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	//switch according to "use_pointsource"
 	hmc_float cpu_res;
 	if(switcher) {
 		device->M_tm_sitediagonal_device( &in, &out);
@@ -456,7 +455,6 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	//switch according to "use_pointsource"
 	hmc_float cpu_res;
 	if(switcher) {
 		device->M_tm_inverse_sitediagonal_device( &in, &out);
@@ -519,9 +517,8 @@ void test_dslash_eo(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	//switch according to "use_pointsource"
 	hmc_float cpu_res;
-	if(params.get_use_pointsource()) {
+	if(params.get_read_multiple_configs()) {
 		device->dslash_eo_device( &in_eo_even, &out_eo, gf_code->get_gaugefield(), EVEN, params.get_kappa() );
 	} else {
 		device->dslash_eo_device( &in_eo_even, &out_eo, gf_code->get_gaugefield(), ODD, params.get_kappa() );
