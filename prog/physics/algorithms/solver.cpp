@@ -44,14 +44,6 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 
 physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { }
 
-static void trace_squarenorm(const std::string msg, const physics::lattices::Spinorfield_eo& x)
-{
-	if(logger.beTrace()) {
-		hmc_float tmp = squarenorm(x);
-		logger.trace() << msg << std::scientific << std::setprecision(10) << tmp;
-	}
-}
-
 static std::string create_solver_stuck_message(int iterations)
 {
 	std::ostringstream tmp;

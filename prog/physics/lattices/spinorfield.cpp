@@ -258,3 +258,11 @@ void physics::lattices::saxsbypz(const Spinorfield* out, const Scalar<hmc_comple
 		device->get_spinor_code()->saxsbypz_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
 	}
 }
+
+void physics::lattices::trace_squarenorm(const std::string& msg, const physics::lattices::Spinorfield& x)
+{
+	if(logger.beTrace()) {
+		hmc_float tmp = squarenorm(x);
+		logger.trace() << msg << std::scientific << std::setprecision(10) << tmp;
+	}
+}

@@ -137,6 +137,7 @@ void sax(const Spinorfield* out, const Scalar<hmc_complex>& alpha, const Spinorf
 void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z);
 void saxsbypz(const Spinorfield* out, const Scalar<hmc_complex>& alpha, const Spinorfield& x, const Scalar<hmc_complex>& beta, const Spinorfield& y, const Spinorfield& z);
 
+void trace_squarenorm(const std::string& msg, const physics::lattices::Spinorfield& x);
 }
 }
 
