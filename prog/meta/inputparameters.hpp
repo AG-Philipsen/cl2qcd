@@ -192,7 +192,6 @@ private:
 	int ntime;
 
 	startcondition _startcondition;
-	bool saveconfigs;
 	int writefrequency;
 	int savefrequency;
 	std::string sourcefile;
