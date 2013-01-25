@@ -143,7 +143,6 @@ void test_sf_squarenorm(std::string inputfile)
 	in.load(sf_in);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
 	logger.info() << "result:";
@@ -189,7 +188,6 @@ void test_sf_squarenorm_eo(std::string inputfile)
 	in.load(sf_in);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
 	logger.info() << "result:";
@@ -245,7 +243,6 @@ void test_sf_scalar_product(std::string inputfile)
 	in2.load(sf_in2);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
 	logger.info() << "result:";
@@ -302,7 +299,6 @@ void test_sf_scalar_product_eo(std::string inputfile)
 	in2.load(sf_in2);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
 	logger.info() << "result:";
@@ -343,7 +339,6 @@ void test_sf_cold(std::string inputfile, bool switcher)
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
         if(switcher)
@@ -388,7 +383,6 @@ void test_sf_cold_eo(std::string inputfile, bool switcher)
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
 	if(switcher)
@@ -447,7 +441,6 @@ void test_sf_sax(std::string inputfile)
 	alpha.load(&alpha_host);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
 	device->sax_device(&in, &alpha, &out);
@@ -464,12 +457,16 @@ void test_sf_sax(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_saxpy(std::string inputfile)
+void test_sf_saxpy(std::string inputfile, bool switcher)
 {
+  //switcher chooses between saxpy and saxpy_arg kernel, which have the same functionality
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "saxpy";
+	if( switcher)
+	  kernelName = "saxpy";
+	else
+	  kernelName = "saxpy_arg";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -511,10 +508,12 @@ void test_sf_saxpy(std::string inputfile)
 	alpha.load(&alpha_host);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
-	device->saxpy_device(&in, &in2, &alpha, &out);
+	if (switcher)
+	  device->saxpy_device(&in, &in2, &alpha, &out);
+	else
+	  device->saxpy_device(&in, &in2, alpha_host, &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -568,7 +567,6 @@ void test_sf_sax_eo(std::string inputfile)
 	alpha.load(&alpha_host);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
 	device->sax_eoprec_device(&in, &alpha, &out);
@@ -775,72 +773,146 @@ BOOST_AUTO_TEST_SUITE(SF_SAXPY)
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_1 )
 {
-  test_sf_saxpy("/sf_saxpy_input_1");
+  test_sf_saxpy("/sf_saxpy_input_1", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_2 )
 {
-  test_sf_saxpy("/sf_saxpy_input_2");
+  test_sf_saxpy("/sf_saxpy_input_2", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_3 )
 {
-  test_sf_saxpy("/sf_saxpy_input_3");
+  test_sf_saxpy("/sf_saxpy_input_3", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_4 )
 {
-  test_sf_saxpy("/sf_saxpy_input_4");
+  test_sf_saxpy("/sf_saxpy_input_4", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_5 )
 {
-  test_sf_saxpy("/sf_saxpy_input_5");
+  test_sf_saxpy("/sf_saxpy_input_5", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_6 )
 {
-  test_sf_saxpy("/sf_saxpy_input_6");
+  test_sf_saxpy("/sf_saxpy_input_6", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_7 )
 {
-  test_sf_saxpy("/sf_saxpy_input_7");
+  test_sf_saxpy("/sf_saxpy_input_7", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_8 )
 {
-  test_sf_saxpy("/sf_saxpy_input_8");
+  test_sf_saxpy("/sf_saxpy_input_8", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_9 )
 {
-  test_sf_saxpy("/sf_saxpy_input_9");
+  test_sf_saxpy("/sf_saxpy_input_9", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_10 )
 {
-  test_sf_saxpy("/sf_saxpy_input_10");
+  test_sf_saxpy("/sf_saxpy_input_10", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_11 )
 {
-  test_sf_saxpy("/sf_saxpy_input_11");
+  test_sf_saxpy("/sf_saxpy_input_11", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_12 )
 {
-  test_sf_saxpy("/sf_saxpy_input_12");
+  test_sf_saxpy("/sf_saxpy_input_12", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_13 )
 {
-  test_sf_saxpy("/sf_saxpy_input_13");
+  test_sf_saxpy("/sf_saxpy_input_13", true);
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_14 )
 {
-  test_sf_saxpy("/sf_saxpy_input_14");
+  test_sf_saxpy("/sf_saxpy_input_14", true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SAXPY_ARG)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_1 )
+{
+  test_sf_saxpy("/sf_saxpy_input_1", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_2 )
+{
+  test_sf_saxpy("/sf_saxpy_input_2", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_3 )
+{
+  test_sf_saxpy("/sf_saxpy_input_3", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_4 )
+{
+  test_sf_saxpy("/sf_saxpy_input_4", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_5 )
+{
+  test_sf_saxpy("/sf_saxpy_input_5", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_6 )
+{
+  test_sf_saxpy("/sf_saxpy_input_6", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_7 )
+{
+  test_sf_saxpy("/sf_saxpy_input_7", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_8 )
+{
+  test_sf_saxpy("/sf_saxpy_input_8", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_9 )
+{
+  test_sf_saxpy("/sf_saxpy_input_9", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_10 )
+{
+  test_sf_saxpy("/sf_saxpy_input_10", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_11 )
+{
+  test_sf_saxpy("/sf_saxpy_input_11", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_12 )
+{
+  test_sf_saxpy("/sf_saxpy_input_12", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_13 )
+{
+  test_sf_saxpy("/sf_saxpy_input_13", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_14 )
+{
+  test_sf_saxpy("/sf_saxpy_input_14", false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
