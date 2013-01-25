@@ -653,16 +653,18 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_cplx(std::string inputfile, bool switcher)
+void test_cplx(std::string inputfile, int switcher)
 {
-  //switcher chooses between product and ratio
+  //switcher chooses between product and ratio and convert
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	if (switcher)
+	if (switcher == 0)
 	  kernelName = "product";
-	else
+	else if(switcher == 1)
 	  kernelName = "ratio";
+	else if (switcher == 2)
+	  kernelName = "convert";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -686,10 +688,16 @@ void test_cplx(std::string inputfile, bool switcher)
 	beta.load(&beta_host);
 
 	logger.info() << "Run kernel";
-	if(switcher)
+	if(switcher == 0)
 	  device->set_complex_to_product_device(&alpha, &beta, &sqnorm);
-	else
+	else if (switcher ==1)
 	  device->set_complex_to_ratio_device(&alpha, &beta, &sqnorm);
+	if(switcher == 2){
+	  hardware::buffers::Plain<hmc_float> gamma(1, device->get_device());
+	  hmc_float tmp = (params.get_beta());
+	  gamma.load(&tmp);
+	  device->set_complex_to_float_device(&gamma, &sqnorm);
+	}
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	hmc_complex tmp;
@@ -1190,32 +1198,32 @@ BOOST_AUTO_TEST_SUITE(CPLX_PRODUCT)
 
 BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_1 )
 {
-  test_cplx("/cplx_product_input_1", true);
+  test_cplx("/cplx_product_input_1", 0);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_2 )
 {
-  test_cplx("/cplx_product_input_2", true);
+  test_cplx("/cplx_product_input_2", 0);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_3 )
 {
-  test_cplx("/cplx_product_input_3", true);
+  test_cplx("/cplx_product_input_3", 0);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_4 )
 {
-  test_cplx("/cplx_product_input_4", true);
+  test_cplx("/cplx_product_input_4", 0);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_5 )
 {
-  test_cplx("/cplx_product_input_5", true);
+  test_cplx("/cplx_product_input_5", 0);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_6 )
 {
-  test_cplx("/cplx_product_input_6", true);
+  test_cplx("/cplx_product_input_6", 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1224,22 +1232,36 @@ BOOST_AUTO_TEST_SUITE(CPLX_RATIO)
 
 BOOST_AUTO_TEST_CASE( CPLX_RATIO_1 )
 {
-  test_cplx("/cplx_ratio_input_1", false);
+  test_cplx("/cplx_ratio_input_1", 1);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_RATIO_2 )
 {
-  test_cplx("/cplx_ratio_input_2", false);
+  test_cplx("/cplx_ratio_input_2", 1);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_RATIO_3 )
 {
-  test_cplx("/cplx_ratio_input_3", false);
+  test_cplx("/cplx_ratio_input_3", 1);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_RATIO_4 )
 {
-  test_cplx("/cplx_ratio_input_4", false);
+  test_cplx("/cplx_ratio_input_4", 1);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CPLX_CONVERT)
+
+BOOST_AUTO_TEST_CASE( CPLX_CONVERT_1 )
+{
+  test_cplx("/cplx_convert_input_1", 2);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_CONVERT_2 )
+{
+  test_cplx("/cplx_convert_input_2", 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
