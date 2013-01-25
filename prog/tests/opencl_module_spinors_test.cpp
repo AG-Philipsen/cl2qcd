@@ -126,22 +126,10 @@ void test_sf_cold(std::string inputfile)
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
 	hardware::code::Spinors * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
 	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	//	in.load(sf_in);
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
@@ -158,9 +146,42 @@ void test_sf_cold(std::string inputfile)
 	logger.info() << "Finalize device";
 	cpu.finalize();
 
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_sf_cold_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "set_spinorfield_cold_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
+	logger.info() << "Run kernel";
+	device->set_eoprec_spinorfield_cold_device(&in);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -185,6 +206,15 @@ BOOST_AUTO_TEST_SUITE(SF_COLD)
 BOOST_AUTO_TEST_CASE( SF_COLD_1 )
 {
 	test_sf_cold("/sf_cold_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_COLD_EO)
+
+BOOST_AUTO_TEST_CASE( SF_COLD_EO_1 )
+{
+	test_sf_cold("/sf_cold_eo_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
