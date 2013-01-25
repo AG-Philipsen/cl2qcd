@@ -1060,3 +1060,77 @@ BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_14 )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SAXPY_ARG_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_1 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_1", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_2 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_2", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_3 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_3", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_4 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_4", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_5 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_5", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_6 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_6", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_7 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_7", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_8 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_8", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_9 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_9", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_10 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_10", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_11 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_11", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_12 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_12", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_13 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_13", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_14 )
+{
+  test_sf_saxpy_eo("/sf_saxpy_eo_input_14", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
