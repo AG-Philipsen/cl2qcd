@@ -204,6 +204,119 @@ void test_sf_squarenorm_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_scalar_product(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "scalar_product";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	spinor * sf_in;
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	spinor * sf_in2;
+	sf_in2 = new spinor[NUM_ELEMENTS_SF];
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
+	}
+	else {
+	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
+	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
+	}
+	BOOST_REQUIRE(sf_in);
+	BOOST_REQUIRE(sf_in2);
+
+	in.load(sf_in);
+	in2.load(sf_in2);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
+	logger.info() << "Run kernel";
+	logger.info() << "result:";
+	hmc_complex cpu_res_tmp;
+	spinor_code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
+	sqnorm.dump(&cpu_res_tmp);
+	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_sf_scalar_product_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "scalar_product";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	spinor * sf_in;
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	spinor * sf_in2;
+	sf_in2 = new spinor[NUM_ELEMENTS_SF];
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
+	}
+	else {
+	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
+	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
+	}
+	BOOST_REQUIRE(sf_in);
+	BOOST_REQUIRE(sf_in2);
+
+	in.load(sf_in);
+	in2.load(sf_in2);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
+	logger.info() << "Run kernel";
+	logger.info() << "result:";
+	hmc_complex cpu_res_tmp;
+	spinor_code->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
+	sqnorm.dump(&cpu_res_tmp);
+	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
 
 void test_sf_cold(std::string inputfile, bool switcher)
 {
@@ -336,6 +449,35 @@ BOOST_AUTO_TEST_CASE( SF_SQUARENORM_2 )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_1 )
+{
+  test_sf_scalar_product("/sf_scalar_product_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_2 )
+{
+  test_sf_scalar_product("/sf_scalar_product_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_1 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_2 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE(SF_COLD)
 

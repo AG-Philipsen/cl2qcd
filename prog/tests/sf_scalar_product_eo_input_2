@@ -1,12 +1,13 @@
 NS=4
 NT=4
 
-use_eo=false
-solver=cg
+use_eo=true
+solver=bicgstab
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=3072.
+test_ref_val=755.63251802472189
+
 
 
