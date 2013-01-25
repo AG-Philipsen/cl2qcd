@@ -191,12 +191,12 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-	test_build("/opencl_module_fermions_build_input_1");
+	test_build("/opencl_module_spinors_build_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( BUILD_2 )
 {
-	test_build("/opencl_module_fermions_build_input_2");
+	test_build("/opencl_module_spinors_build_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
