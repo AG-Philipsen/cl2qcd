@@ -92,6 +92,14 @@ add_test(Opencl_module_CPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} 
 add_test(Opencl_module_GPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(Opencl_module_GPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
+add_executable(opencl_module_spinors_test opencl_module_spinors_test.cpp)
+target_link_libraries(opencl_module_spinors_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_spinors_CPU       opencl_module_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_spinors_GPU       opencl_module_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 add_executable(opencl_module_fermions_test opencl_module_fermions_test.cpp)
 target_link_libraries(opencl_module_fermions_test
 	optimal
