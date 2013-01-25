@@ -65,12 +65,12 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfie
 	 * or a point-source spinorfield as trial-solution
 	 */
 	const Spinorfield_eo solution(system);
-	solution.cold();
 
 	logger.debug() << "\t\t\tstart solver";
 
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	if(params.get_solver() == meta::Inputparameters::cg) {
+		solution.cold();
 		trace_squarenorm("\tinv. field before inversion ", solution);
 
 		const QplusQminus_eo fm(kappa, mubar, system);
@@ -82,6 +82,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfie
 		const Qminus_eo qminus(kappa, mubar, system);
 		qminus(phi_inv, gf, solution);
 	} else {
+		solution.zero();
 		solution.gamma5();
 		trace_squarenorm("\tinv. field before inversion ", solution);
 		trace_squarenorm("\tsource before inversion ", phi);
@@ -167,11 +168,11 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 	qplus_mp(&tmp, gf, phi);
 
 	const Spinorfield_eo solution(system);
-	solution.cold();
 
 	logger.debug() << "\t\t\tstart solver";
 
 	if(params.get_solver() == meta::Inputparameters::cg) {
+		solution.cold();
 		trace_squarenorm("\tinv. field before inversion ", solution);
 
 		const QplusQminus_eo fm(kappa, mubar, system);
@@ -183,6 +184,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 		const Qminus_eo qminus(kappa, mubar, system);
 		qminus(phi_inv, gf, solution);
 	} else {
+		solution.zero();
 		solution.gamma5();
 		trace_squarenorm("\tinv. field before inversion ", solution);
 		trace_squarenorm("\tsource before inversion ", tmp);
