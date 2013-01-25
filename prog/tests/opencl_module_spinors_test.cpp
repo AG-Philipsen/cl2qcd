@@ -464,6 +464,70 @@ void test_sf_sax(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_saxpy(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "saxpy";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
+	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
+
+	spinor * sf_in;
+	spinor * sf_in2;
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_in2 = new spinor[NUM_ELEMENTS_SF];
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
+	}
+	else {
+	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
+	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
+	}
+	BOOST_REQUIRE(sf_in);
+	BOOST_REQUIRE(sf_in2);
+
+	in.load(sf_in);
+	in2.load(sf_in2);
+	alpha.load(&alpha_host);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
+	logger.info() << "Run kernel";
+	device->saxpy_device(&in, &in2, &alpha, &out);
+
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
 void test_sf_sax_eo(std::string inputfile)
 {
 	using namespace hardware::buffers;
@@ -703,6 +767,80 @@ BOOST_AUTO_TEST_CASE( SF_SAX_EO_6 )
 BOOST_AUTO_TEST_CASE( SF_SAX_EO_7 )
 {
   test_sf_sax_eo("/sf_sax_eo_input_7");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SAXPY)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_1 )
+{
+  test_sf_saxpy("/sf_saxpy_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_2 )
+{
+  test_sf_saxpy("/sf_saxpy_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_3 )
+{
+  test_sf_saxpy("/sf_saxpy_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_4 )
+{
+  test_sf_saxpy("/sf_saxpy_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_5 )
+{
+  test_sf_saxpy("/sf_saxpy_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_6 )
+{
+  test_sf_saxpy("/sf_saxpy_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_7 )
+{
+  test_sf_saxpy("/sf_saxpy_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_8 )
+{
+  test_sf_saxpy("/sf_saxpy_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_9 )
+{
+  test_sf_saxpy("/sf_saxpy_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_10 )
+{
+  test_sf_saxpy("/sf_saxpy_input_10");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_11 )
+{
+  test_sf_saxpy("/sf_saxpy_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_12 )
+{
+  test_sf_saxpy("/sf_saxpy_input_12");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_13 )
+{
+  test_sf_saxpy("/sf_saxpy_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_14 )
+{
+  test_sf_saxpy("/sf_saxpy_input_14");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
