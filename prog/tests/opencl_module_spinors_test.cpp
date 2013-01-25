@@ -653,6 +653,57 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_cplx(std::string inputfile, bool switcher)
+{
+  //switcher chooses between product and ratio
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	if (switcher)
+	  kernelName = "product";
+	else
+	  kernelName = "ratio";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
+	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
+	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
+	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
+	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
+	logger.info() << "Use beta = (" << beta_host.re << ","<< beta_host.im <<")";
+
+	alpha.load(&alpha_host);
+	beta.load(&beta_host);
+
+	logger.info() << "Run kernel";
+	if(switcher)
+	  device->set_complex_to_product_device(&alpha, &beta, &sqnorm);
+	else
+	  device->set_complex_to_ratio_device(&alpha, &beta, &sqnorm);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	hmc_complex tmp;
+	sqnorm.dump(&tmp);
+	cpu_res = tmp.re + tmp.im;
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+
 BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -1131,6 +1182,64 @@ BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_13 )
 BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_14 )
 {
   test_sf_saxpy_eo("/sf_saxpy_eo_input_14", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CPLX_PRODUCT)
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_1 )
+{
+  test_cplx("/cplx_product_input_1", true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_2 )
+{
+  test_cplx("/cplx_product_input_2", true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_3 )
+{
+  test_cplx("/cplx_product_input_3", true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_4 )
+{
+  test_cplx("/cplx_product_input_4", true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_5 )
+{
+  test_cplx("/cplx_product_input_5", true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_6 )
+{
+  test_cplx("/cplx_product_input_6", true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CPLX_RATIO)
+
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_1 )
+{
+  test_cplx("/cplx_ratio_input_1", false);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_2 )
+{
+  test_cplx("/cplx_ratio_input_2", false);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_3 )
+{
+  test_cplx("/cplx_ratio_input_3", false);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_4 )
+{
+  test_cplx("/cplx_ratio_input_4", false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
