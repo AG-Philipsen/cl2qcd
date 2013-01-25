@@ -113,12 +113,16 @@ void test_build(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_cold(std::string inputfile)
+void test_sf_cold(std::string inputfile, bool switcher)
 {
+  //switcher decides if the sf is set to cold or zero   
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "set_spinorfield_cold";
+	if(switcher)
+	  kernelName = "set_spinorfield_cold";
+	else
+	  kernelName = "set_spinorfield_zero";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -137,7 +141,11 @@ void test_sf_cold(std::string inputfile)
 	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
-	device->set_spinorfield_cold_device(&in);
+        if(switcher)
+	  device->set_spinorfield_cold_device(&in);
+        else
+          device->set_zero_spinorfield_device(&in);
+
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
@@ -150,12 +158,16 @@ void test_sf_cold(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_cold_eo(std::string inputfile)
+void test_sf_cold_eo(std::string inputfile, bool switcher)
 {
+  //switcher decides if the sf is set to cold or zero
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "set_spinorfield_cold_eo";
+	if(switcher)
+	  kernelName = "set_spinorfield_cold_eo";
+	else
+	  kernelName = "set_spinorfield_zero_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -174,7 +186,10 @@ void test_sf_cold_eo(std::string inputfile)
 	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "Run kernel";
-	device->set_eoprec_spinorfield_cold_device(&in);
+	if(switcher)
+	  device->set_eoprec_spinorfield_cold_device(&in);
+	else
+	  device->set_zero_spinorfield_eoprec_device(&in);
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
@@ -191,7 +206,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-	test_build("/opencl_module_spinors_build_input_1");
+  test_build("/opencl_module_spinors_build_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( BUILD_2 )
@@ -205,7 +220,7 @@ BOOST_AUTO_TEST_SUITE(SF_COLD)
 
 BOOST_AUTO_TEST_CASE( SF_COLD_1 )
 {
-	test_sf_cold("/sf_cold_input_1");
+  test_sf_cold("/sf_cold_input_1", true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -214,7 +229,25 @@ BOOST_AUTO_TEST_SUITE(SF_COLD_EO)
 
 BOOST_AUTO_TEST_CASE( SF_COLD_EO_1 )
 {
-	test_sf_cold("/sf_cold_eo_input_1");
+	test_sf_cold("/sf_cold_eo_input_1", true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_ZERO)
+
+BOOST_AUTO_TEST_CASE( SF_ZERO_1 )
+{
+  test_sf_cold("/sf_zero_input_1", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_ZERO_EO)
+
+BOOST_AUTO_TEST_CASE( SF_ZERO_EO_1 )
+{
+  test_sf_cold("/sf_zero_eo_input_1",  false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
