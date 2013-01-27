@@ -727,6 +727,80 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_saxsbypz_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "saxsbypz_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor in3(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
+	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
+	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
+	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
+	logger.info() << "Use beta = (" << beta_host.re << ","<< beta_host.im <<")";
+
+	spinor * sf_in;
+	spinor * sf_in2;
+	spinor * sf_in3;
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_in2 = new spinor[NUM_ELEMENTS_SF];
+	sf_in3 = new spinor[NUM_ELEMENTS_SF];
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);
+	}
+	else {
+	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
+	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
+	  fill_sf_with_random(sf_in3, NUM_ELEMENTS_SF, 789);
+	}
+	BOOST_REQUIRE(sf_in);
+	BOOST_REQUIRE(sf_in2);
+	BOOST_REQUIRE(sf_in3);
+
+	in.load(sf_in);
+	in2.load(sf_in2);
+	in3.load(sf_in3);
+	alpha.load(&alpha_host);
+	beta.load(&beta_host);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+
+	logger.info() << "Run kernel";
+	device->saxsbypz_eoprec_device(&in, &in2, &in3, &alpha, &beta, &out);
+
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
 void test_cplx(std::string inputfile, int switcher)
 {
   //switcher chooses between product and ratio and convert
@@ -1390,6 +1464,60 @@ BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_9 )
 BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_10 )
 {
   test_sf_saxsbypz("/sf_saxsbypz_input_10");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SAXSBYPZ_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_1 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_2 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_3 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_4 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_5 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_6 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_7 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_8 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_9 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_10 )
+{
+  test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_10");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
