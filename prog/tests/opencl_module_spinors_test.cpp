@@ -23,6 +23,7 @@ public:
 	virtual void finalize_opencl();
 
 	hardware::code::Spinors * get_device();
+  physics::PRNG* get_prng();
 
 private:
 	physics::PRNG prng;
@@ -171,6 +172,64 @@ hmc_float count_sf_eo(spinor * sf_in, int size, bool eo, meta::Inputparameters &
   return sum;
 }
 
+hmc_float count_sf(spinor * sf_in, int size)
+{
+  hmc_float sum = 0.;
+  for (int i = 0; i<size;i++){
+    sum +=
+       sf_in[i].e0.e0.re+ sf_in[i].e0.e0.im 
+      +sf_in[i].e0.e1.re+ sf_in[i].e0.e1.im 
+      +sf_in[i].e0.e2.re+ sf_in[i].e0.e2.im 
+      +sf_in[i].e1.e0.re+ sf_in[i].e1.e0.im 
+      +sf_in[i].e1.e1.re+ sf_in[i].e1.e1.im 
+      +sf_in[i].e1.e2.re+ sf_in[i].e1.e2.im 
+      +sf_in[i].e2.e0.re+ sf_in[i].e2.e0.im 
+      +sf_in[i].e2.e1.re+ sf_in[i].e2.e1.im 
+      +sf_in[i].e2.e2.re+ sf_in[i].e2.e2.im 
+      +sf_in[i].e3.e0.re+ sf_in[i].e3.e0.im 
+      +sf_in[i].e3.e1.re+ sf_in[i].e3.e1.im 
+      +sf_in[i].e3.e2.re+ sf_in[i].e3.e2.im;
+  }
+  return sum;
+}
+
+hmc_float calc_var(hmc_float in, hmc_float mean){
+  return (in - mean) * (in - mean);
+}
+
+hmc_float calc_var_sf(spinor * sf_in, int size, hmc_float sum){
+  hmc_float var = 0.;
+  for(int k = 0; k<size; k++){
+    var +=
+      calc_var( sf_in[k].e0.e0.re , sum) 
+      + calc_var( sf_in[k].e0.e0.im , sum) 
+      + calc_var( sf_in[k].e0.e1.re , sum)
+      + calc_var( sf_in[k].e0.e1.im , sum) 
+      + calc_var( sf_in[k].e0.e2.re , sum) 
+      + calc_var( sf_in[k].e0.e2.im , sum) 
+      + calc_var( sf_in[k].e1.e0.re , sum) 
+      + calc_var( sf_in[k].e1.e0.im , sum) 
+      + calc_var( sf_in[k].e1.e1.re , sum) 
+      + calc_var( sf_in[k].e1.e1.im , sum) 
+      + calc_var( sf_in[k].e1.e2.re , sum) 
+      + calc_var( sf_in[k].e1.e2.im , sum) 
+      + calc_var( sf_in[k].e2.e0.re , sum)
+      + calc_var( sf_in[k].e2.e0.im , sum) 
+      + calc_var( sf_in[k].e2.e1.re , sum)
+      + calc_var( sf_in[k].e2.e1.im , sum) 
+      + calc_var( sf_in[k].e2.e2.re , sum)
+      + calc_var( sf_in[k].e2.e2.im , sum) 
+      + calc_var( sf_in[k].e3.e0.re , sum)
+      + calc_var( sf_in[k].e3.e0.im , sum) 
+      + calc_var( sf_in[k].e3.e1.re , sum)
+      + calc_var( sf_in[k].e3.e1.im , sum) 
+      + calc_var( sf_in[k].e3.e2.re , sum)
+      + calc_var( sf_in[k].e3.e2.im , sum);
+  }
+  return var;
+}
+
+
 void fill_sf_with_random(spinor * sf_in, int size, int seed)
 {
 	prng_init(seed);
@@ -212,6 +271,10 @@ void fill_sf_with_random(spinor * sf_in, int size)
 hardware::code::Spinors* TestGaugefield::get_device()
 {
 	return static_cast<hardware::code::Spinors*>(opencl_modules[0]);
+}
+physics::PRNG* TestGaugefield::get_prng()
+{
+	return &prng;
 }
 
 void test_build(std::string inputfile)
@@ -1106,6 +1169,72 @@ void test_sf_convert_from_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_gaussian(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "generate_gaussian_spinorfield";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+
+	physics::PRNG * prng = cpu.get_prng();
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	//CP: run the kernel a couple of times times
+	int iterations = params.get_integrationsteps(0);
+
+	spinor * sf_out;
+	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
+	BOOST_REQUIRE(sf_out);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto prng_buf = prng->get_buffers().at(0);
+
+	hmc_float sum = 0;
+	for (int i = 0; i< iterations; i++){
+	  logger.info() << "Run kernel";
+	  device->generate_gaussian_spinorfield_device(&out, prng_buf);
+	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
+	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
+	}
+	logger.info() << "result: mean";
+	hmc_float cpu_res = 0.;
+	sum = sum/iterations/NUM_ELEMENTS_SF/24;	
+	cpu_res= sum;
+	logger.info() << cpu_res;
+
+	if(params.get_read_multiple_configs()  == false){
+	  //CP: calc std derivation
+	  hmc_float var=0.;
+	  for (int i=0; i<iterations; i++){
+	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
+	  }
+	  var=var/iterations/NUM_ELEMENTS_SF/24;
+	  
+	  cpu_res = sqrt(var);
+	  logger.info() << "result: variance";
+	  logger.info() << cpu_res;
+	}
+
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatSizeAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+
+}
+
 BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -1788,6 +1917,20 @@ BOOST_AUTO_TEST_CASE( SF_CONVERT_EO_3 )
 BOOST_AUTO_TEST_CASE( SF_CONVERT_EO_4 )
 {
   test_sf_convert_from_eo("/sf_convert_eo_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN)
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_1 )
+{
+  test_sf_gaussian("/sf_gaussian_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_2 )
+{
+  test_sf_gaussian("/sf_gaussian_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
