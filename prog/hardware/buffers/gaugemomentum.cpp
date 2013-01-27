@@ -66,7 +66,9 @@ void hardware::buffers::Gaugemomentum::load(const ae * ptr) const
 void hardware::buffers::Gaugemomentum::dump(ae * ptr) const
 {
 	if(is_soa()) {
-		throw std::logic_error("Data cannot be dumped from SOA buffers.");
+		auto device = get_device();
+		auto gm_code = device->get_gaugemomentum_code();
+		gm_code->exportGaugemomentumBuffer(ptr, this);
 	} else {
 		Buffer::dump(ptr);
 	}
