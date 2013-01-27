@@ -1,0 +1,12 @@
+NS=4
+NT=4
+
+# this specifies if the even or odd sites are filled
+read_multiple_configs=true
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=1536.
+
+use_eo=true

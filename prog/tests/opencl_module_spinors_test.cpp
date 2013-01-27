@@ -58,6 +58,119 @@ void fill_sf_with_one(spinor * sf_in, int size)
 	return;
 }
 
+void fill_sf_with_zero(spinor * sf_in, int size)
+{
+	for(int i = 0; i < size; ++i) {
+		sf_in[i].e0.e0 = hmc_complex_zero;
+		sf_in[i].e0.e1 = hmc_complex_zero;
+		sf_in[i].e0.e2 = hmc_complex_zero;
+		sf_in[i].e1.e0 = hmc_complex_zero;
+		sf_in[i].e1.e1 = hmc_complex_zero;
+		sf_in[i].e1.e2 = hmc_complex_zero;
+		sf_in[i].e2.e0 = hmc_complex_zero;
+		sf_in[i].e2.e1 = hmc_complex_zero;
+		sf_in[i].e2.e2 = hmc_complex_zero;
+		sf_in[i].e3.e0 = hmc_complex_zero;
+		sf_in[i].e3.e1 = hmc_complex_zero;
+		sf_in[i].e3.e2 = hmc_complex_zero;
+	}
+	return;
+}
+
+void fill_sf_with_one_eo(spinor * sf_in, int size, bool eo, meta::Inputparameters &params)
+{
+  int ns = params.get_nspace();
+  int nt = params.get_ntime();
+  int x,y,z,t;
+  for (x = 0; x<ns;x++){
+    for (y = 0; y<ns;y++){
+      for (z = 0; z<ns;z++){
+	for (t = 0; t<nt;t++){
+	  int coord[4];
+	  coord[0] = t;
+	  coord[1] = x;
+	  coord[2] = y;
+	  coord[3] = z;
+	  int nspace =  get_nspace(coord, params);
+	  int global_pos = get_global_pos(nspace, t, params);
+	  if (global_pos > size)
+	    break;
+	  hmc_complex content;
+	  if ((x+y+z+t) %2 == 0){
+	    if (eo)
+	      content = hmc_complex_one;
+	    else
+	      content = hmc_complex_zero;
+	  }
+	  else{
+	    if (eo)
+	      content = hmc_complex_zero;
+	    else
+	      content = hmc_complex_one;
+	  }
+	  
+	  sf_in[global_pos].e0.e0 = content;
+	  sf_in[global_pos].e0.e1 = content;
+	  sf_in[global_pos].e0.e2 = content;
+	  sf_in[global_pos].e1.e0 = content;
+	  sf_in[global_pos].e1.e1 = content;
+	  sf_in[global_pos].e1.e2 = content;
+	  sf_in[global_pos].e2.e0 = content;
+	  sf_in[global_pos].e2.e1 = content;
+	  sf_in[global_pos].e2.e2 = content;
+	  sf_in[global_pos].e3.e0 = content;
+	  sf_in[global_pos].e3.e1 = content;
+	  sf_in[global_pos].e3.e2 = content;
+	}}}}
+  return;
+}
+
+hmc_float count_sf_eo(spinor * sf_in, int size, bool eo, meta::Inputparameters &params)
+{
+  int ns = params.get_nspace();
+  int nt = params.get_ntime();
+  int x,y,z,t;
+  hmc_float sum = 0.;
+  for (x = 0; x<ns;x++){
+    for (y = 0; y<ns;y++){
+      for (z = 0; z<ns;z++){
+	for (t = 0; t<nt;t++){
+	  int coord[4];
+	  coord[0] = t;
+	  coord[1] = x;
+	  coord[2] = y;
+	  coord[3] = z;
+	  int nspace =  get_nspace(coord, params);
+	  int global_pos = get_global_pos(nspace, t, params);
+	  if (global_pos > size)
+	    break;
+	  if (
+	      ( eo ==true && (x+y+z+t) %2 == 0) ||
+	      ( eo ==false &&  (x+y+z+t) %2 == 1 )
+	      )
+	    {
+	      int i = global_pos;
+	      sum +=
+		sf_in[i].e0.e0.re+ sf_in[i].e0.e0.im 
+		+sf_in[i].e0.e1.re+ sf_in[i].e0.e1.im 
+		+sf_in[i].e0.e2.re+ sf_in[i].e0.e2.im 
+		+sf_in[i].e1.e0.re+ sf_in[i].e0.e0.im 
+		+sf_in[i].e1.e1.re+ sf_in[i].e0.e1.im 
+		+sf_in[i].e1.e2.re+ sf_in[i].e0.e2.im 
+		+sf_in[i].e2.e0.re+ sf_in[i].e0.e0.im 
+		+sf_in[i].e2.e1.re+ sf_in[i].e0.e1.im 
+		+sf_in[i].e2.e2.re+ sf_in[i].e0.e1.im 
+		+sf_in[i].e3.e0.re+ sf_in[i].e0.e0.im 
+		+sf_in[i].e3.e1.re+ sf_in[i].e0.e1.im 
+		+sf_in[i].e3.e2.re+ sf_in[i].e0.e1.im;
+	    }
+	  else{
+	    continue;
+	  }
+	}}}}
+  return sum;
+}
+
 void fill_sf_with_random(spinor * sf_in, int size, int seed)
 {
 	prng_init(seed);
@@ -859,6 +972,139 @@ void test_cplx(std::string inputfile, int switcher)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_convert_to_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "convert_to_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor in2(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor in3(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	spinor * sf_in;
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	if(params.get_read_multiple_configs() )
+	  fill_sf_with_one_eo(sf_in, NUM_ELEMENTS_SF, true, params);
+	else
+	  fill_sf_with_one_eo(sf_in, NUM_ELEMENTS_SF, false, params);
+	BOOST_REQUIRE(sf_in);
+
+	in.load(sf_in);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+
+	logger.info() << "Run kernel";
+	device->convert_to_eoprec_device(&in2, &in3, &in);
+
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	if(params.get_read_multiple_configs() ){
+	  spinor_code->set_float_to_global_squarenorm_eoprec_device(&in3, &sqnorm);
+	  sqnorm.dump(&cpu_res);
+	  logger.info() << cpu_res;
+	  //CP: this must be zero since only the even sites should be filled!
+	  BOOST_REQUIRE_CLOSE(cpu_res, 0., params.get_solver_prec());
+	  spinor_code->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
+	  sqnorm.dump(&cpu_res);
+	  logger.info() << cpu_res;
+	}
+	else{
+	  spinor_code->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
+	  sqnorm.dump(&cpu_res);
+	  logger.info() << cpu_res;
+	  //CP: this must be zero since only the odd sites should be filled!
+	  BOOST_REQUIRE_CLOSE(cpu_res, 0., params.get_solver_prec());
+	  spinor_code->set_float_to_global_squarenorm_eoprec_device(&in3, &sqnorm);
+	  sqnorm.dump(&cpu_res);
+	  logger.info() << cpu_res;
+	}
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_sf_convert_from_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "convert_from_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	hardware::code::Spinors * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	const Spinor in2(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor in3(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	spinor * sf_eo1;
+	spinor * sf_eo2;
+	spinor * sf_out;
+	sf_eo1 = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_eo2 = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+	if(params.get_read_multiple_configs() ){
+	  fill_sf_with_one(sf_eo1, NUM_ELEMENTS_SF_EO);
+	  fill_sf_with_zero(sf_eo2, NUM_ELEMENTS_SF_EO);
+	}else{
+	  fill_sf_with_zero(sf_eo1, NUM_ELEMENTS_SF_EO);
+	  fill_sf_with_one(sf_eo2, NUM_ELEMENTS_SF_EO);
+	}
+	BOOST_REQUIRE(sf_eo1);
+	BOOST_REQUIRE(sf_eo2);
+
+	in2.load(sf_eo1);
+	in3.load(sf_eo2);
+
+	auto spinor_code = device->get_device()->get_spinor_code();
+
+	logger.info() << "Run kernel";
+	device->convert_from_eoprec_device(&in2, &in3, &out);
+
+	out.dump(sf_out);
+
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	if(params.get_read_multiple_configs() ){
+	  cpu_res= count_sf_eo(sf_out, NUM_ELEMENTS_SF, true, params);	
+	  logger.info() << cpu_res;
+	}
+	else{
+	  cpu_res= count_sf_eo(sf_out, NUM_ELEMENTS_SF, false, params);	
+	  logger.info() << cpu_res;
+	}
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
@@ -1518,6 +1764,30 @@ BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_9 )
 BOOST_AUTO_TEST_CASE( SF_SAXSBYPZ_EO_10 )
 {
   test_sf_saxsbypz_eo("/sf_saxsbypz_eo_input_10");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_CONVERT_EO)
+
+BOOST_AUTO_TEST_CASE( SF_CONVERT_EO_1 )
+{
+  test_sf_convert_to_eo("/sf_convert_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_CONVERT_EO_2 )
+{
+  test_sf_convert_to_eo("/sf_convert_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_CONVERT_EO_3 )
+{
+  test_sf_convert_from_eo("/sf_convert_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_CONVERT_EO_4 )
+{
+  test_sf_convert_from_eo("/sf_convert_eo_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
