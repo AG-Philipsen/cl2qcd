@@ -200,16 +200,6 @@ void test_build(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_generate_gaussian_spinorfield(std::string inputfile)
-{
-
-}
-
-void test_generate_gaussian_spinorfield_eo(std::string inputfile)
-{
-
-}
-
 void test_stout_smear_fermion_force(std::string inputfile)
 {
 
@@ -589,26 +579,6 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
 	test_build("/opencl_module_molecular_dynamics_build_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD  )
-
-BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!! TO BE MOVED INTO SPINOR TEST!!");
-	test_generate_gaussian_spinorfield("/generate_gaussian_spinorfield_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD_EO  )
-
-BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_EO_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!! TO BE MOVED INTO SPINOR TEST!!");
-	test_generate_gaussian_spinorfield_eo("/generate_gaussian_spinorfield_eo_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
