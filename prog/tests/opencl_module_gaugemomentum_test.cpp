@@ -27,6 +27,7 @@ public:
 	virtual void finalize_opencl();
 
 	hardware::code::Gaugemomentum * get_device();
+  physics::PRNG* get_prng();
 private:
 	physics::PRNG prng;
 };
@@ -79,6 +80,48 @@ void fill_with_zero(ae * ae, int size)
 	return;
 }
 
+hmc_float count_gm(ae * ae_in, int size)
+{
+  hmc_float sum = 0.;
+  for (int i = 0; i<size;i++){
+    sum +=
+       ae_in[i].e0
+      + ae_in[i].e1
+      + ae_in[i].e2
+      + ae_in[i].e3
+      + ae_in[i].e4
+      + ae_in[i].e5
+      + ae_in[i].e6
+      + ae_in[i].e7;
+  }
+  return sum;
+}
+
+hmc_float calc_var(hmc_float in, hmc_float mean){
+  return (in - mean) * (in - mean);
+}
+
+hmc_float calc_var_gm(ae * ae_in, int size, hmc_float sum){
+  hmc_float var = 0.;
+  for(int k = 0; k<size; k++){
+    var +=
+      calc_var(   ae_in[k].e0 , sum) 
+      + calc_var( ae_in[k].e1 , sum) 
+      + calc_var( ae_in[k].e2 , sum)
+      + calc_var( ae_in[k].e3 , sum) 
+      + calc_var( ae_in[k].e4 , sum) 
+      + calc_var( ae_in[k].e5 , sum) 
+      + calc_var( ae_in[k].e6 , sum) 
+      + calc_var( ae_in[k].e7 , sum) ;
+  }
+  return var;
+}
+
+physics::PRNG* TestGaugefield::get_prng()
+{
+	return &prng;
+}
+
 void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_gaugemomentum";
@@ -93,7 +136,69 @@ void test_build(std::string inputfile)
 
 void test_generate_gaussian_gaugemomenta(std::string inputfile)
 {
+	using namespace hardware::buffers;
 
+	std::string kernelName;
+	kernelName = "generate_gaussian_gaugemomentum";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+
+	physics::PRNG * prng = cpu.get_prng();
+	cl_int err = CL_SUCCESS;
+	hardware::code::Gaugemomentum * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+	size_t NUM_ELEMENTS_GM = meta::get_vol4d(params) * NDIM;
+	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	//CP: run the kernel a couple of times times
+	int iterations = params.get_integrationsteps(0);
+
+	ae * gm_out;
+	gm_out = new ae[NUM_ELEMENTS_GM * iterations];
+	BOOST_REQUIRE(gm_out);
+
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
+	auto prng_buf = prng->get_buffers().at(0);
+
+	hmc_float sum = 0;
+	for (int i = 0; i< iterations; i++){
+	  logger.info() << "Run kernel";
+	  device->generate_gaussian_gaugemomenta_device(&out, prng_buf);
+	  out.dump(&gm_out[i*NUM_ELEMENTS_GM]);
+	  sum += count_gm(&gm_out[i*NUM_ELEMENTS_GM], NUM_ELEMENTS_GM);
+	}
+	logger.info() << "result: mean";
+	hmc_float cpu_res = 0.;
+	sum = sum/iterations/NUM_ELEMENTS_GM/8;	
+	cpu_res= sum;
+	logger.info() << cpu_res;
+
+	if(params.get_read_multiple_configs()  == false){
+	  //CP: calc std derivation
+	  hmc_float var=0.;
+	  for (int i=0; i<iterations; i++){
+	    var += calc_var_gm(&gm_out[i*NUM_ELEMENTS_GM], NUM_ELEMENTS_GM, sum);
+	  }
+	  var=var/iterations/NUM_ELEMENTS_GM/8;
+	  
+	  cpu_res = sqrt(var);
+	  logger.info() << "result: variance";
+	  logger.info() << cpu_res;
+	}
+
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	testFloatSizeAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
 }
 
 void test_set_zero_gm(std::string inputfile)
@@ -212,8 +317,12 @@ BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
 
 BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_generate_gaussian_gaugemomenta("/generate_gaussian_gaugemomenta_input_1");
+	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_2 )
+{
+	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
