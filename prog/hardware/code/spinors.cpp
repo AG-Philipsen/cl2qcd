@@ -66,7 +66,7 @@ void hardware::code::Spinors::fill_kernels()
 		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		//merged kernels
-		if (get_parameters().get_use_merge_kernels_fermion() == true) {
+		if (get_parameters().get_use_merge_kernels_spinor() == true) {
 			saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
 		}
 	}
