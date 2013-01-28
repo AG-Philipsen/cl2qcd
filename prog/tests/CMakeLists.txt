@@ -108,6 +108,14 @@ target_link_libraries(opencl_module_spinors_test_merged_kernels
 add_test(Opencl_module_spinors_merged_kernels_CPU       opencl_module_spinors_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(Opencl_module_spinors_merged_kernels_GPU       opencl_module_spinors_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
+add_executable(opencl_module_correlators_test opencl_module_correlators_test.cpp)
+target_link_libraries(opencl_module_correlators_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_correlators_CPU       opencl_module_correlators_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_correlators_GPU       opencl_module_correlators_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 add_executable(opencl_module_fermions_test opencl_module_fermions_test.cpp)
 target_link_libraries(opencl_module_fermions_test
 	optimal
