@@ -128,3 +128,14 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 {
 	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
 }
+
+void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system, const hmc_float eps)
+{
+	const physics::lattices::Gaugemomenta force(system);
+	force.zero();
+	calc_gauge_force(&force, gf, system);
+	trace_squarenorm("\tHMC [UP]:\tFORCE [GAUGE]:\t", force);
+
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	md_update_gaugemomenta(gm, force, -1.*eps);
+}
