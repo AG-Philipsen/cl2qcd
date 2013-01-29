@@ -208,7 +208,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	return squarenorm(phi_inv);
 }
 
-template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const SPINORFIELD& phi, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
+template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const SPINORFIELD& phi, const hmc_float spinor_energy_init, const SPINORFIELD * const phi_mp, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
 	using namespace physics::algorithms;
 
@@ -289,7 +289,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 
 			// det(m_light/m_heavy)
 			//initial energy has been computed in the beginning...
-			hmc_float s_fermion_mp_final = calc_s_fermion_mp(new_u, phi, system);
+			hmc_float s_fermion_mp_final = calc_s_fermion_mp(new_u, *phi_mp, system);
 			deltaH += spinor_energy_mp_init - s_fermion_mp_final;
 
 			logger.debug() << "\tHMC [DH]:\tS[DETRAT]_0:\t" << std::setprecision(10) <<  spinor_energy_mp_init;
@@ -345,12 +345,12 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	return tmp;
 }
 
-hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield& phi, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
+hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield& phi, const hmc_float spinor_energy_init, const physics::lattices::Spinorfield * const phi_mp, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
-	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, spinor_energy_mp_init, system);
+	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp, spinor_energy_mp_init, system);
 }
 
-hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield_eo& phi, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
+hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield_eo& phi, const hmc_float spinor_energy_init, const physics::lattices::Spinorfield_eo * const phi_mp, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
-	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, spinor_energy_mp_init, system);
+	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp, spinor_energy_mp_init, system);
 }

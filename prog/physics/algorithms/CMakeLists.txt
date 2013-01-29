@@ -17,6 +17,7 @@ add_library(algorithms
 	fermion_force.cpp
 	forces.cpp
 	integrator.cpp
+	hmc.cpp
 )
 target_link_libraries(algorithms
 		lattices

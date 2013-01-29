@@ -34,7 +34,7 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
 
-physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source() 
 {
 	auto parameters = system.get_inputparameters();
@@ -51,7 +51,7 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 	}
 }
 
-physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, bool hot)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, bool hot)
 	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
 {
 	if(hot) {
@@ -61,7 +61,7 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 	}
 }
 
-physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, std::string ildgfile)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, std::string ildgfile)
 	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
 {
 	auto parameters = system.get_inputparameters();

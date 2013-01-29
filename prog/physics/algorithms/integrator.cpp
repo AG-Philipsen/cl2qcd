@@ -10,16 +10,22 @@
 #include "../../meta/util.hpp"
 
 template<class SPINORFIELD> static void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
+template<class SPINORFIELD> static void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system);
 
 template<class SPINORFIELD> static void leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
+template<class SPINORFIELD> static void leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system);
 template<class SPINORFIELD> static void leapfrog_1ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
 template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
-template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
+template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system);
 
 template<class SPINORFIELD> static void twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
+template<class SPINORFIELD> static void twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system);
 template<class SPINORFIELD> static void twomn_1ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
 template<class SPINORFIELD> static void twomn_2ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
-template<class SPINORFIELD> static void twomn_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
+template<class SPINORFIELD> static void twomn_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system);
+
+static void check_integrator_params(const meta::Inputparameters& params);
+
 
 void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
 {
@@ -28,6 +34,14 @@ void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const
 void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
 {
 	::leapfrog(gm, gf, phi, system);
+}
+void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
+{
+	::leapfrog(gm, gf, phi, phi_mp, system);
+}
+void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system)
+{
+	::leapfrog(gm, gf, phi, phi_mp, system);
 }
 
 template<class SPINORFIELD> void leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
@@ -41,7 +55,23 @@ template<class SPINORFIELD> void leapfrog(const physics::lattices::Gaugemomenta 
 	} else if (params.get_num_timescales() == 2) {
 		leapfrog_2ts(gm, gf, phi, system);
 	} else if (params.get_num_timescales() == 3) {
-		leapfrog_3ts(gm, gf, phi, system);
+		throw Print_Error_Message("3 timescales require mass prec.");
+	} else {
+		throw Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
+	}
+	logger.trace() << "\tHMC [INT]:\t...finished leapfrog";
+}
+
+template<class SPINORFIELD> void leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
+{
+	auto params = system.get_inputparameters();
+
+	logger.trace() << "\tHMC [INT]:\tstart leapfrog...";
+	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
+	if(params.get_num_timescales() == 1 || params.get_num_timescales() == 2) {
+		throw Print_Error_Message("1 or 2 timescales cannot be used with mass prec.");
+	} else if (params.get_num_timescales() == 3) {
+		leapfrog_3ts(gm, gf, phi, phi_mp, system);
 	} else {
 		Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
 	}
@@ -107,7 +137,7 @@ template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Ga
 	md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system);
 }
 
-template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
+template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
 	using namespace physics::algorithms;
 
@@ -127,7 +157,7 @@ template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Ga
 	const hmc_float kappa_tmp = params.get_kappa_mp();
 	const hmc_float mubar_tmp = meta::get_mubar_mp(params);
 
-	md_update_gaugemomentum_detratio(gm, deltaTau2_half, *gf, phi, system);
+	md_update_gaugemomentum_detratio(gm, deltaTau2_half, *gf, phi_mp, system);
 	//now, n1 steps "more" are performed for the fermion-part
 	for(int l = 0; l < n1; l++) {
 		if(l == 0) md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, kappa_tmp, mubar_tmp);
@@ -143,7 +173,7 @@ template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Ga
 	}
 	//perform n2 - 1 intermediate steps
 	for(int k = 1; k < n2; k++) {
-		md_update_gaugemomentum_detratio(gm, deltaTau2, *gf, phi, system);
+		md_update_gaugemomentum_detratio(gm, deltaTau2, *gf, phi_mp, system);
 		for(int l = 0; l < n1; l++) {
 			for(int j = 0; j < n0; j++) {
 				md_update_gaugefield(gf, *gm, deltaTau0);
@@ -154,7 +184,7 @@ template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Ga
 			else md_update_gaugemomentum_fermion(gm, deltaTau1, *gf, phi, system, kappa_tmp, mubar_tmp);
 		}
 	}
-	md_update_gaugemomentum_detratio(gm, deltaTau2_half, *gf, phi, system);
+	md_update_gaugemomentum_detratio(gm, deltaTau2_half, *gf, phi_mp, system);
 }
 
 void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
@@ -164,6 +194,14 @@ void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm
 void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
 {
 	::twomn(gm, gf, phi, system);
+}
+void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
+{
+	::twomn(gm, gf, phi, phi_mp, system);
+}
+void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system)
+{
+	::twomn(gm, gf, phi, phi_mp, system);
 }
 
 template<class SPINORFIELD> void twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
@@ -177,9 +215,25 @@ template<class SPINORFIELD> void twomn(const physics::lattices::Gaugemomenta * c
 	} else if (params.get_num_timescales() == 2) {
 		twomn_2ts(gm, gf, phi, system);
 	} else if (params.get_num_timescales() == 3) {
-		twomn_3ts(gm, gf, phi, system);
+		throw Print_Error_Message("3 timescales require mass prec.");
 	} else {
-		Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
+		throw Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
+	}
+	logger.debug() << "\tHMC [INT]:\tfinished 2MN";
+}
+
+template<class SPINORFIELD> void twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
+{
+	auto params = system.get_inputparameters();
+
+	logger.trace() << "\tHMC [INT]\tstarting 2MN...";
+	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
+	if(params.get_num_timescales() == 1 || params.get_num_timescales() == 2) {
+		throw Print_Error_Message("1 or 2 timescales cannot be used with mass prec.");
+	} else if (params.get_num_timescales() == 3) {
+		twomn_3ts(gm, gf, phi, phi_mp, system);
+	} else {
+		throw Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
 	}
 	logger.debug() << "\tHMC [INT]:\tfinished 2MN";
 }
@@ -279,7 +333,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
 	md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system);
 }
 
-template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
+template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
 	using namespace physics::algorithms;
 
@@ -310,7 +364,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 	const hmc_float kappa = params.get_kappa_mp();
 	const hmc_float mubar = meta::get_mubar_mp(params);
 
-	md_update_gaugemomentum_detratio(gm, lambda2_times_deltaTau2, *gf, phi, system);
+	md_update_gaugemomentum_detratio(gm, lambda2_times_deltaTau2, *gf, phi_mp, system);
 	for(int l = 0; l < n1; l++) {
 		if(l == 0) md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, kappa, mubar);
 		for(int j = 0; j < n0; j++) {
@@ -329,7 +383,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 		}
 		md_update_gaugemomentum_fermion(gm, 2.*lambda1_times_deltaTau1, *gf, phi, system, kappa, mubar);
 	}
-	md_update_gaugemomentum_detratio(gm, one_minus_2_lambda2_times_deltaTau2, *gf, phi, system);
+	md_update_gaugemomentum_detratio(gm, one_minus_2_lambda2_times_deltaTau2, *gf, phi_mp, system);
 	for(int l = 0; l < n1; l++) {
 		for(int j = 0; j < n0; j++) {
 			md_update_gaugefield(gf, *gm, deltaTau0_half);
@@ -350,7 +404,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 	}
 	for(int k = 1; k < n2; k++) {
 		//this corresponds to V_s2(deltaTau)
-		md_update_gaugemomentum_detratio(gm, 2.*lambda2_times_deltaTau2, *gf, phi, system);
+		md_update_gaugemomentum_detratio(gm, 2.*lambda2_times_deltaTau2, *gf, phi_mp, system);
 		for(int l = 0; l < n1; l++) {
 			for(int j = 0; j < n0; j++) {
 				md_update_gaugefield(gf, *gm, deltaTau0_half);
@@ -367,7 +421,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 			}
 			md_update_gaugemomentum_fermion(gm, 2.*lambda1_times_deltaTau1, *gf, phi, system, kappa, mubar);
 		}
-		md_update_gaugemomentum_detratio(gm, one_minus_2_lambda2_times_deltaTau2, *gf, phi, system);
+		md_update_gaugemomentum_detratio(gm, one_minus_2_lambda2_times_deltaTau2, *gf, phi_mp, system);
 		for(int l = 0; l < n1; l++) {
 			for(int j = 0; j < n0; j++) {
 				md_update_gaugefield(gf, *gm, deltaTau0_half);
@@ -387,7 +441,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 			else md_update_gaugemomentum_fermion(gm, 2.*lambda1_times_deltaTau1, *gf, phi, system, kappa, mubar);
 		}
 	}
-	md_update_gaugemomentum_detratio(gm, lambda2_times_deltaTau2, *gf, phi, system);
+	md_update_gaugemomentum_detratio(gm, lambda2_times_deltaTau2, *gf, phi_mp, system);
 }
 
 void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
@@ -402,51 +456,8 @@ void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * con
 template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
 {
 	auto const params = system.get_inputparameters();
-	auto const timescales = params.get_num_timescales();
 
-	//CP: at the moment, one can only use the same type of integrator if one uses more then one timescale...
-	if (timescales == 2) {
-		if(( params.get_integrator(0) != params.get_integrator(1)  )) {
-			logger.fatal() << "\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...";
-			exit(1);
-		}
-	}
-	if (timescales == 3) {
-		if(( params.get_integrator(0) != params.get_integrator(1) || params.get_integrator(0) != params.get_integrator(2) )) {
-			logger.fatal() << "\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...";
-			exit(1);
-		}
-	}
-	//CP: check if one of the integrationsteps is 0. This would lead to a divison by zero!
-	logger.info() << timescales;
-	switch(timescales ) {
-		case 1:
-			if( params.get_integrationsteps(0) == 0 ) {
-				logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
-				exit(1);
-			}
-			break;
-		case 2:
-			if( params.get_integrationsteps(0) == 0 || params.get_integrationsteps(1) == 0) {
-				logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
-				exit(1);
-			}
-			break;
-		case 3:
-			if( params.get_integrationsteps(0) == 0 || params.get_integrationsteps(1) == 0 || params.get_integrationsteps(2) == 0 ) {
-				logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
-				exit(1);
-			}
-			break;
-	}
-	//CP: check if 2 ts are used with mass-preconditioning or 3 ts without mass-preconditioning. In these cases the program does not behave well defined, since this is all
-	//    hardcoded
-	///@todo This will not be needed if the integration is restructured!
-	if ( (  timescales == 3 && params.get_use_mp() == false  ) ||
-	     (  timescales == 2 && params.get_use_mp() == true  ) ) {
-		logger.fatal() << "\tHMC [INT]:\tSetting for mass-preconditioning and number of timescales do not fit!\nUse either mass-preconditioning and 3 timescales or no mass-preonditioning and 2 timescales!\nAborting...";
-		exit(1);
-	}
+	check_integrator_params(params);
 
 	//CP: actual integrator calling
 	switch(params.get_integrator(0)) {
@@ -458,4 +469,74 @@ template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemoment
 			break;
 	}
 	return;
+}
+
+void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
+{
+	::integrator(gm, gf, phi, phi_mp, system);
+}
+void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system)
+{
+	::integrator(gm, gf, phi, phi_mp, system);
+}
+
+template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
+{
+	auto const params = system.get_inputparameters();
+
+	check_integrator_params(params);
+
+	//CP: actual integrator calling
+	switch(params.get_integrator(0)) {
+		case meta::Inputparameters::leapfrog:
+			leapfrog(gm, gf, phi, phi_mp, system);
+			break;
+		case meta::Inputparameters::twomn:
+			twomn(gm, gf, phi, phi_mp, system);
+			break;
+	}
+	return;
+}
+
+static void check_integrator_params(const meta::Inputparameters& params)
+{
+	auto const timescales = params.get_num_timescales();
+
+	//CP: at the moment, one can only use the same type of integrator if one uses more then one timescale...
+	if (timescales == 2) {
+		if(( params.get_integrator(0) != params.get_integrator(1)  )) {
+			throw Print_Error_Message("\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...");
+		}
+	}
+	if (timescales == 3) {
+		if(( params.get_integrator(0) != params.get_integrator(1) || params.get_integrator(0) != params.get_integrator(2) )) {
+			throw Print_Error_Message("\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...");
+		}
+	}
+	//CP: check if one of the integrationsteps is 0. This would lead to a divison by zero!
+	logger.info() << timescales;
+	switch(timescales ) {
+		case 1:
+			if( params.get_integrationsteps(0) == 0 ) {
+				throw Print_Error_Message("\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...");
+			}
+			break;
+		case 2:
+			if( params.get_integrationsteps(0) == 0 || params.get_integrationsteps(1) == 0) {
+				throw Print_Error_Message("\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...");
+			}
+			break;
+		case 3:
+			if( params.get_integrationsteps(0) == 0 || params.get_integrationsteps(1) == 0 || params.get_integrationsteps(2) == 0 ) {
+				throw Print_Error_Message("\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...");
+			}
+			break;
+	}
+	//CP: check if 2 ts are used with mass-preconditioning or 3 ts without mass-preconditioning. In these cases the program does not behave well defined, since this is all
+	//    hardcoded
+	///@todo This will not be needed if the integration is restructured!
+	if ( (  timescales == 3 && params.get_use_mp() == false  ) ||
+	     (  timescales == 2 && params.get_use_mp() == true  ) ) {
+		throw Print_Error_Message("\tHMC [INT]:\tSetting for mass-preconditioning and number of timescales do not fit!\nUse either mass-preconditioning and 3 timescales or no mass-preonditioning and 2 timescales!\nAborting...");
+	}
 }

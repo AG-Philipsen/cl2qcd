@@ -161,13 +161,13 @@ void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattice
 	::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, kappa, mubar);
 }
 
-template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system)
+template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
 	using namespace physics::algorithms;
 
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
-	calc_detratio_forces(&force, gf, phi, system);
+	calc_detratio_forces(&force, gf, phi_mp, system);
 	trace_squarenorm("\tHMC [UP]:\tFORCE [DETRAT]:\t", force);
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";

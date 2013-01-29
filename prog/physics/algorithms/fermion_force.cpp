@@ -691,7 +691,7 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
 }
 
-template<class SPINORFIELD> static void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system)
+template<class SPINORFIELD> static void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
@@ -704,7 +704,7 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
-	calc_fermion_force_detratio(force, gf, phi, system);
+	calc_fermion_force_detratio(force, gf, phi_mp, system);
 	if(params.get_use_smearing() == true) {
 		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
 		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
@@ -712,11 +712,11 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	}
 }
 
-void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
+void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
 {
-	::calc_detratio_forces(force, gf, phi, system);
+	::calc_detratio_forces(force, gf, phi_mp, system);
 }
-void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
+void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system)
 {
-	::calc_detratio_forces(force, gf, phi, system);
+	::calc_detratio_forces(force, gf, phi_mp, system);
 }
