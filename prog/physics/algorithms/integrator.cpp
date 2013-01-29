@@ -9,6 +9,8 @@
 #include "molecular_dynamics.hpp"
 #include "../../meta/util.hpp"
 
+template<class SPINORFIELD> static void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
+
 template<class SPINORFIELD> static void leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
 template<class SPINORFIELD> static void leapfrog_1ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
 template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system);
@@ -386,4 +388,74 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 		}
 	}
 	md_update_gaugemomentum_detratio(gm, lambda2_times_deltaTau2, *gf, phi, system);
+}
+
+void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
+{
+	::integrator(gm, gf, phi, system);
+}
+void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
+{
+	::integrator(gm, gf, phi, system);
+}
+
+template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
+{
+	auto const params = system.get_inputparameters();
+	auto const timescales = params.get_num_timescales();
+
+	//CP: at the moment, one can only use the same type of integrator if one uses more then one timescale...
+	if (timescales == 2) {
+		if(( params.get_integrator(0) != params.get_integrator(1)  )) {
+			logger.fatal() << "\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...";
+			exit(1);
+		}
+	}
+	if (timescales == 3) {
+		if(( params.get_integrator(0) != params.get_integrator(1) || params.get_integrator(0) != params.get_integrator(2) )) {
+			logger.fatal() << "\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...";
+			exit(1);
+		}
+	}
+	//CP: check if one of the integrationsteps is 0. This would lead to a divison by zero!
+	logger.info() << timescales;
+	switch(timescales ) {
+		case 1:
+			if( params.get_integrationsteps(0) == 0 ) {
+				logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
+				exit(1);
+			}
+			break;
+		case 2:
+			if( params.get_integrationsteps(0) == 0 || params.get_integrationsteps(1) == 0) {
+				logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
+				exit(1);
+			}
+			break;
+		case 3:
+			if( params.get_integrationsteps(0) == 0 || params.get_integrationsteps(1) == 0 || params.get_integrationsteps(2) == 0 ) {
+				logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
+				exit(1);
+			}
+			break;
+	}
+	//CP: check if 2 ts are used with mass-preconditioning or 3 ts without mass-preconditioning. In these cases the program does not behave well defined, since this is all
+	//    hardcoded
+	///@todo This will not be needed if the integration is restructured!
+	if ( (  timescales == 3 && params.get_use_mp() == false  ) ||
+	     (  timescales == 2 && params.get_use_mp() == true  ) ) {
+		logger.fatal() << "\tHMC [INT]:\tSetting for mass-preconditioning and number of timescales do not fit!\nUse either mass-preconditioning and 3 timescales or no mass-preonditioning and 2 timescales!\nAborting...";
+		exit(1);
+	}
+
+	//CP: actual integrator calling
+	switch(params.get_integrator(0)) {
+		case meta::Inputparameters::leapfrog:
+			leapfrog(gm, gf, phi, system);
+			break;
+		case meta::Inputparameters::twomn:
+			twomn(gm, gf, phi, system);
+			break;
+	}
+	return;
 }
