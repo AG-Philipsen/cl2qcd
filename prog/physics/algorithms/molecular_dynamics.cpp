@@ -11,8 +11,17 @@
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "../../meta/util.hpp"
 #include "solver.hpp"
+#include "fermion_force.hpp"
 
-void physics::algorithms::md_update_gaugemomenta(const physics::lattices::Gaugemomenta * const dest, const physics::lattices::Gaugemomenta& src, const hmc_float eps)
+static void md_update_gaugemomenta(const physics::lattices::Gaugemomenta * dest, const physics::lattices::Gaugemomenta& src, hmc_float eps);
+static void md_update_gaugefield(const physics::lattices::Gaugefield * gf, const physics::lattices::Gaugemomenta& , hmc_float eps);
+static void md_update_spinorfield(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+static void md_update_spinorfield(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+static void md_update_spinorfield_mp(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+static void md_update_spinorfield_mp(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+
+
+static void md_update_gaugemomenta(const physics::lattices::Gaugemomenta * const dest, const physics::lattices::Gaugemomenta& src, const hmc_float eps)
 {
 	auto dest_bufs = dest->get_buffers();
 	auto src_bufs = src.get_buffers();
@@ -29,7 +38,7 @@ void physics::algorithms::md_update_gaugemomenta(const physics::lattices::Gaugem
 	}
 }
 
-void physics::algorithms::md_update_gaugefield(const physics::lattices::Gaugefield * const gf, const physics::lattices::Gaugemomenta& gm, const hmc_float eps)
+static void md_update_gaugefield(const physics::lattices::Gaugefield * const gf, const physics::lattices::Gaugemomenta& gm, const hmc_float eps)
 {
 	auto gf_bufs = gf->get_buffers();
 	auto gm_bufs = gm.get_buffers();
@@ -114,14 +123,14 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
 }
 
-void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+static void md_update_spinorfield(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	physics::fermionmatrix::Qplus qplus(kappa, mubar, system);
 	qplus(out, gf, orig);
 	trace_squarenorm("Spinorfield after update", *out);
 }
 
-void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+static void md_update_spinorfield(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system);
 	qplus(out, gf, orig);
@@ -160,16 +169,93 @@ template<class FERMIONMATRIX, class SPINORFIELD> static void md_update_spinorfie
 	trace_squarenorm("\tinv. field after inversion ", *out);
 }
 
-void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+static void md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::fermionmatrix::Qplus;
 
 	::md_update_spinorfield_mp<Qplus>(out, gf, orig, system, kappa, mubar);
 }
 
-void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+static void md_update_spinorfield_mp(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::fermionmatrix::Qplus_eo;
 
 	::md_update_spinorfield_mp<Qplus_eo>(out, gf, orig, system, kappa, mubar);
+}
+
+template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	using namespace physics::algorithms;
+
+	physics::lattices::Gaugemomenta delta_p(system);
+	delta_p.zero();
+	calc_total_force(&delta_p, gf, phi, system, kappa, mubar);
+
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	md_update_gaugemomenta(inout, delta_p, -1.*eps);
+}
+void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
+}
+void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
+}
+
+template<class SPINORFIELD> static void calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	using physics::lattices::Gaugefield;
+	using namespace physics::algorithms;
+
+	auto params = system.get_inputparameters();
+	//in case of stout-smearing we need every intermediate field for the force calculation
+	//NOTE: if smearing is not used, this is just 0
+	const int rho_iter = params.get_rho_iter();
+	//array to save the intermediate fields
+	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
+	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
+	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
+	calc_fermion_force(force, gf, phi, system, kappa, mubar);
+	if(params.get_use_smearing() == true) {
+		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
+		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
+		//  gf_code->unsmear_gaugefield(hmc_code->get_new_u());
+	}
+}
+
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+}
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+}
+
+void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system)
+{
+	gauge_force(gm, gf);
+	if(meta::get_use_rectangles(system.get_inputparameters())) {
+		gauge_force_tlsym(gm, gf);
+	}
+}
+
+template<class SPINORFIELD> static void calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	using namespace physics::algorithms;
+
+	force->zero();
+	if(!system.get_inputparameters().get_use_gauge_only() )
+		calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+	calc_gauge_force(force, gf, system);
+}
+
+void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::calc_total_force(force, gf, phi, system, kappa, mubar);
+}
+void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::calc_total_force(force, gf, phi, system, kappa, mubar);
 }
