@@ -91,16 +91,6 @@ const hardware::buffers::Spinor * hardware::code::Hmc::get_clmem_phi_inv_eo()
 	return &clmem_phi_inv_eo;
 }
 
-const hardware::buffers::Plain<spinor> * hardware::code::Hmc::get_clmem_phi_mp()
-{
-	return &clmem_phi_mp;
-}
-
-const hardware::buffers::Spinor * hardware::code::Hmc::get_clmem_phi_mp_eo()
-{
-	return &clmem_phi_mp_eo;
-}
-
 hardware::buffers::Plain<hmc_float> * hardware::code::Hmc::get_clmem_s_fermion_init()
 {
 	return &clmem_s_fermion_init;
@@ -162,19 +152,19 @@ void hardware::code::Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const
 		/** @todo at the moment, we can only put in a cold spinorfield
 		 * or a point-source spinorfield as trial-solution
 		 */
-		spinor_code->set_zero_spinorfield_eoprec_device(get_clmem_phi_mp_eo());
+		spinor_code->set_zero_spinorfield_eoprec_device(&clmem_phi_mp_eo);
 
-		fermion_code->gamma5_eo_device(get_clmem_phi_mp_eo());
+		fermion_code->gamma5_eo_device(&clmem_phi_mp_eo);
 
 		int converged = -1;
-		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field before inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp_eo, true, "\tinv. field before inversion ");
 		if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
-		converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), this->get_clmem_phi_mp_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
+		converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), &clmem_phi_mp_eo, &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 		} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field after inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp_eo, true, "\tinv. field after inversion ");
 		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp_eo, true, "\tinit field after update ");
 	} else {
 		//CP: Init tmp spinorfield
@@ -190,18 +180,18 @@ void hardware::code::Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const
 		/** @todo at the moment, we can only put in a cold spinorfield
 		 * or a point-source spinorfield as trial-solution
 		 */
-		spinor_code->set_zero_spinorfield_device(get_clmem_phi_mp());
-		fermion_code->gamma5_device(get_clmem_phi_mp());
+		spinor_code->set_zero_spinorfield_device(&clmem_phi_mp);
+		fermion_code->gamma5_device(&clmem_phi_mp);
 
 		int converged = -1;
-		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field before inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp, false, "\tinv. field before inversion ");
 		if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_tmp, false, "\tsource before inversion ");
-		converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), this->get_clmem_phi_mp(), &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(get_parameters()));
+		converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), &clmem_phi_mp, &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 		} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field after inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp, false, "\tinv. field after inversion ");
 		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp, false, "\tinit field after update ");
 	}
 }
@@ -476,7 +466,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		//CP: Init tmp spinorfield
 		hardware::buffers::Spinor sf_eo_tmp(clmem_phi_eo.get_elements(), get_device());
 		//the source is now Q_2^+ phi = sf_eo_tmp
-		fermion_code->Qplus_eo (get_clmem_phi_mp_eo(), &sf_eo_tmp , gaugefield, kappa2, mubar2);
+		fermion_code->Qplus_eo (&clmem_phi_mp_eo, &sf_eo_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -614,7 +604,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		spinor_code->sax_eoprec_device(get_clmem_phi_mp_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
+		spinor_code->sax_eoprec_device(&clmem_phi_mp_eo, fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
 
 		//(re-) calculate X_odd (with other masses)
 		//therefore, sf_eo_tmp is used as intermediate state. 
@@ -651,7 +641,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi.get_elements(), get_device());
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		//the source is now Q_2^+ phi = sf_tmp
-		fermion_code->Qplus (get_clmem_phi_mp(), &sf_tmp , gaugefield, kappa2, mubar2);
+		fermion_code->Qplus (&clmem_phi_mp, &sf_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -755,7 +745,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		spinor_code->sax_device(get_clmem_phi_mp(), fermion_code->get_clmem_minusone(), &clmem_phi_inv);
+		spinor_code->sax_device(&clmem_phi_mp, fermion_code->get_clmem_minusone(), &clmem_phi_inv);
 
 		fermion_force_device(&clmem_phi_inv, fermion_code->get_inout(), kappa2);
 	}
@@ -882,7 +872,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 		hardware::buffers::Spinor sf_eo_tmp(clmem_phi_mp_eo.get_elements(), get_device());
 
 		//sf_eo_tmp = Qplus_eo(heavy_mass) phi_mp_eo
-		fermion_code->Qplus_eo (get_clmem_phi_mp_eo(), &sf_eo_tmp , gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
+		fermion_code->Qplus_eo (&clmem_phi_mp_eo, &sf_eo_tmp , gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
@@ -922,7 +912,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi_mp.get_elements(), get_device());
 
 		//sf_eo_tmp = Qplus(light_mass) phi_mp
-		fermion_code->Qplus (get_clmem_phi_mp(), &sf_tmp , gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
+		fermion_code->Qplus (&clmem_phi_mp, &sf_tmp , gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 

@@ -45,8 +45,6 @@ public:
 	const hardware::buffers::Plain<spinor> * get_clmem_phi_inv();
 	const hardware::buffers::Spinor * get_clmem_phi_eo();
 	const hardware::buffers::Spinor * get_clmem_phi_inv_eo();
-	const hardware::buffers::Plain<spinor> * get_clmem_phi_mp();
-	const hardware::buffers::Spinor * get_clmem_phi_mp_eo();
 	hardware::buffers::Plain<hmc_float> * get_clmem_s_fermion_init();
 	hardware::buffers::Plain<hmc_float> * get_clmem_s_fermion_mp_init();
 
