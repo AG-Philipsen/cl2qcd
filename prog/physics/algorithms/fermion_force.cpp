@@ -622,3 +622,79 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
 	fermion_force(force, tmp1, solution, ODD, gf, kappa2);
 }
+
+template<class SPINORFIELD> static void calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	using physics::lattices::Gaugefield;
+	using namespace physics::algorithms;
+
+	auto params = system.get_inputparameters();
+	//in case of stout-smearing we need every intermediate field for the force calculation
+	//NOTE: if smearing is not used, this is just 0
+	const int rho_iter = params.get_rho_iter();
+	//array to save the intermediate fields
+	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
+	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
+	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
+	calc_fermion_force(force, gf, phi, system, kappa, mubar);
+	if(params.get_use_smearing() == true) {
+		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
+		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
+		//  gf_code->unsmear_gaugefield(hmc_code->get_new_u());
+	}
+}
+
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+}
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+}
+
+void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system)
+{
+	gauge_force(gm, gf);
+	if(meta::get_use_rectangles(system.get_inputparameters())) {
+		gauge_force_tlsym(gm, gf);
+	}
+}
+
+void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
+{
+	auto gm_bufs = gm->get_buffers();
+	auto Y_bufs = Y.get_buffers();
+	auto X_bufs = X.get_buffers();
+	auto gf_bufs = gf.get_buffers();
+	size_t num_bufs = gm_bufs.size();
+	if(num_bufs != 1 || num_bufs != Y_bufs.size() || num_bufs != X_bufs.size() || num_bufs != gf_bufs.size()) {
+		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
+	}
+
+	auto gm_buf = gm_bufs[0];
+	auto Y_buf = Y_bufs[0];
+	auto X_buf = X_bufs[0];
+	auto gf_buf = gf_bufs[0];
+	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+	code->fermion_force_device(Y_buf, X_buf, gf_buf, gm_buf, kappa);
+}
+
+void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield_eo& Y, const physics::lattices::Spinorfield_eo& X, const int evenodd, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
+{
+	auto gm_bufs = gm->get_buffers();
+	auto Y_bufs = Y.get_buffers();
+	auto X_bufs = X.get_buffers();
+	auto gf_bufs = gf.get_buffers();
+	size_t num_bufs = gm_bufs.size();
+	if(num_bufs != 1 || num_bufs != Y_bufs.size() || num_bufs != X_bufs.size() || num_bufs != gf_bufs.size()) {
+		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
+	}
+
+	auto gm_buf = gm_bufs[0];
+	auto Y_buf = Y_bufs[0];
+	auto X_buf = X_bufs[0];
+	auto gf_buf = gf_bufs[0];
+	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
+}
