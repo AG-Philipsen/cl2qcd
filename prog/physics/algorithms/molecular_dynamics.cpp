@@ -129,7 +129,7 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
 }
 
-void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf, const hardware::System& system, const hmc_float eps)
+void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * const gm, const hmc_float eps, const physics::lattices::Gaugefield& gf, const hardware::System& system)
 {
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();

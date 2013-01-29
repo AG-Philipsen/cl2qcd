@@ -16,6 +16,7 @@ add_library(algorithms
 	metropolis.cpp
 	fermion_force.cpp
 	forces.cpp
+	integrator.cpp
 )
 target_link_libraries(algorithms
 		lattices
