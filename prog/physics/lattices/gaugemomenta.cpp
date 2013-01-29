@@ -86,3 +86,11 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Gaugemome
 
 	code->set_float_to_gaugemomentum_squarenorm_device(field_buf, res_buf);
 }
+
+void physics::lattices::trace_squarenorm(const std::string& msg, const physics::lattices::Gaugemomenta& x)
+{
+	if(logger.beTrace()) {
+		hmc_float tmp = squarenorm(x);
+		logger.trace() << msg << std::scientific << std::setprecision(10) << tmp;
+	}
+}

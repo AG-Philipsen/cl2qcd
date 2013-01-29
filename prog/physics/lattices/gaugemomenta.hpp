@@ -68,6 +68,7 @@ private:
 hmc_float squarenorm(const Gaugemomenta& field);
 void squarenorm(const Scalar<hmc_float>* res, const Gaugemomenta& field);
 
+void trace_squarenorm(const std::string& msg, const physics::lattices::Gaugemomenta& x);
 }
 }
 
