@@ -690,3 +690,33 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
 	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
 }
+
+template<class SPINORFIELD> static void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system)
+{
+	using physics::lattices::Gaugefield;
+	using namespace physics::algorithms;
+
+	auto params = system.get_inputparameters();
+	//in case of stout-smearing we need every intermediate field for the force calculation
+	//NOTE: if smearing is not used, this is just 0
+	const int rho_iter = params.get_rho_iter();
+	//array to save the intermediate fields
+	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
+	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
+	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
+	calc_fermion_force_detratio(force, gf, phi, system);
+	if(params.get_use_smearing() == true) {
+		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
+		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
+		//  gf_code->unsmear_gaugefield(hmc_code->get_new_u());
+	}
+}
+
+void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
+{
+	::calc_detratio_forces(force, gf, phi, system);
+}
+void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
+{
+	::calc_detratio_forces(force, gf, phi, system);
+}
