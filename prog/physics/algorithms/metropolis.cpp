@@ -12,13 +12,15 @@
 #include "../../meta/util.hpp"
 #include <cmath>
 
-hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfield * const phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::lattices::Spinorfield;
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
 	auto params = system.get_inputparameters();
+
+	const Spinorfield phi_inv(system);
 
 	logger.debug() << "\t\t\tstart solver";
 
@@ -37,7 +39,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfie
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus qminus(kappa, mubar, system);
-		qminus(phi_inv, gf, solution);
+		qminus(&phi_inv, gf, solution);
 
 	} else  {
 		const Qplus fm(kappa, mubar, system);
@@ -46,18 +48,20 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfie
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
-		copyData(phi_inv, solution);
+		copyData(&phi_inv, solution);
 	}
-	return squarenorm(*phi_inv);
+	return squarenorm(phi_inv);
 }
 
-hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfield_eo * const phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::lattices::Spinorfield_eo;
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
 	auto params = system.get_inputparameters();
+
+	const Spinorfield_eo phi_inv(system);
 
 	logger.debug() << "\t\t\tstart solver";
 
@@ -80,7 +84,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfie
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus_eo qminus(kappa, mubar, system);
-		qminus(phi_inv, gf, solution);
+		qminus(&phi_inv, gf, solution);
 	} else {
 		solution.zero();
 		solution.gamma5();
@@ -93,12 +97,12 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Spinorfie
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
-		copyData(phi_inv, solution);
+		copyData(&phi_inv, solution);
 	}
-	return squarenorm(*phi_inv);
+	return squarenorm(phi_inv);
 }
 
-hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinorfield * const phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
+hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
 {
 	//this function essentially performs the same steps as in the non mass-prec case, however, one has to apply one more matrix multiplication
 	//  therefore, comments are deleted here...
@@ -109,6 +113,8 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 	using namespace physics::fermionmatrix;
 
 	logger.trace() << "\tHMC [DH]:\tcalc final fermion energy...";
+
+	const Spinorfield phi_inv(system);
 
 	auto params = system.get_inputparameters();
 	const hmc_float kappa = params.get_kappa();
@@ -132,7 +138,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus qminus(kappa, mubar, system);
-		qminus(phi_inv, gf, solution);
+		qminus(&phi_inv, gf, solution);
 	} else  {
 		const Qplus fm(kappa, mubar, system);
 		const int iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec());
@@ -140,12 +146,12 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
-		copyData(phi_inv, solution);
+		copyData(&phi_inv, solution);
 	}
-	return squarenorm(*phi_inv);
+	return squarenorm(phi_inv);
 }
 
-hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinorfield_eo * const phi_inv, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
+hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
 {
 	//this function essentially performs the same steps as in the non mass-prec case, however, one has to apply one more matrix multiplication
 	//  therefore, comments are deleted here...
@@ -159,6 +165,8 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 	auto params = system.get_inputparameters();
 	const hmc_float kappa = params.get_kappa();
 	const hmc_float mubar = meta::get_mubar(params);
+
+	const Spinorfield_eo phi_inv(system);
 
 	logger.debug() << "\t\t\tstart solver";
 
@@ -182,7 +190,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus_eo qminus(kappa, mubar, system);
-		qminus(phi_inv, gf, solution);
+		qminus(&phi_inv, gf, solution);
 	} else {
 		solution.zero();
 		solution.gamma5();
@@ -195,12 +203,12 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Spinor
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 		trace_squarenorm("\tinv. field after inversion ", solution);
 
-		copyData(phi_inv, solution);
+		copyData(&phi_inv, solution);
 	}
-	return squarenorm(*phi_inv);
+	return squarenorm(phi_inv);
 }
 
-template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const SPINORFIELD& phi, const SPINORFIELD * const phi_inv, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
+template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const SPINORFIELD& phi, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
 	using namespace physics::algorithms;
 
@@ -268,7 +276,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 			// det(m_heavy)
 			hmc_float s_fermion_final;
 			//initial energy has been computed in the beginning...
-			s_fermion_final = calc_s_fermion(phi_inv, new_u, phi, system, params.get_kappa_mp(),  meta::get_mubar_mp(params));
+			s_fermion_final = calc_s_fermion(new_u, phi, system, params.get_kappa_mp(),  meta::get_mubar_mp(params));
 			deltaH += spinor_energy_init - s_fermion_final;
 
 			logger.debug() << "\tHMC [DH]:\tS[DET]_0:\t" << std::setprecision(10) <<  spinor_energy_init;
@@ -281,7 +289,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 
 			// det(m_light/m_heavy)
 			//initial energy has been computed in the beginning...
-			hmc_float s_fermion_mp_final = calc_s_fermion_mp(phi_inv, new_u, phi, system);
+			hmc_float s_fermion_mp_final = calc_s_fermion_mp(new_u, phi, system);
 			deltaH += spinor_energy_mp_init - s_fermion_mp_final;
 
 			logger.debug() << "\tHMC [DH]:\tS[DETRAT]_0:\t" << std::setprecision(10) <<  spinor_energy_mp_init;
@@ -292,7 +300,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 				throw Print_Error_Message("NAN occured in HMC! Aborting!", __FILE__, __LINE__);
 			}
 		} else {
-			hmc_float s_fermion_final = calc_s_fermion(phi_inv, new_u, phi, system);
+			hmc_float s_fermion_final = calc_s_fermion(new_u, phi, system);
 			deltaH += spinor_energy_init - s_fermion_final;
 
 			logger.debug() << "\tHMC [DH]:\tS[DET]_0:\t" << std::setprecision(10) <<  spinor_energy_init;
@@ -337,12 +345,12 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	return tmp;
 }
 
-hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield& phi, const physics::lattices::Spinorfield * const phi_inv, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
+hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield& phi, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
-	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, phi_inv, spinor_energy_init, spinor_energy_mp_init, system);
+	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, spinor_energy_mp_init, system);
 }
 
-hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield_eo& phi, const physics::lattices::Spinorfield_eo * const phi_inv, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
+hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield_eo& phi, const hmc_float spinor_energy_init, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
-	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, phi_inv, spinor_energy_init, spinor_energy_mp_init, system);
+	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, spinor_energy_mp_init, system);
 }
