@@ -142,9 +142,11 @@ void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices:
 
 template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
 {
+	using namespace physics::algorithms;
+
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
-	calc_fermion_forces(&force, gf, phi, system, kappa, mubar);
+	calc_fermion_force(&force, gf, phi, system, kappa, mubar);
 	trace_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
@@ -152,9 +154,30 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const ph
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
 {
-	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
+	::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, kappa, mubar);
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
 {
-	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
+	::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, kappa, mubar);
+}
+
+template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system)
+{
+	using namespace physics::algorithms;
+
+	const physics::lattices::Gaugemomenta force(system);
+	force.zero();
+	calc_detratio_forces(&force, gf, phi, system);
+	trace_squarenorm("\tHMC [UP]:\tFORCE [DETRAT]:\t", force);
+
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	md_update_gaugemomenta(inout, force, -1.*eps);
+}
+void physics::algorithms::md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
+{
+	::md_update_gaugemomentum_detratio(inout, eps, gf, phi, system);
+}
+void physics::algorithms::md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
+{
+	::md_update_gaugemomentum_detratio(inout, eps, gf, phi, system);
 }
