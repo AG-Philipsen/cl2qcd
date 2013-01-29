@@ -653,14 +653,6 @@ void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemome
 	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
 }
 
-void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system)
-{
-	gauge_force(gm, gf);
-	if(meta::get_use_rectangles(system.get_inputparameters())) {
-		gauge_force_tlsym(gm, gf);
-	}
-}
-
 void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
 {
 	auto gm_bufs = gm->get_buffers();

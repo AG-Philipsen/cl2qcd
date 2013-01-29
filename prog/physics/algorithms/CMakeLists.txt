@@ -15,6 +15,7 @@ add_library(algorithms
 	molecular_dynamics.cpp
 	metropolis.cpp
 	fermion_force.cpp
+	forces.cpp
 )
 target_link_libraries(algorithms
 		lattices

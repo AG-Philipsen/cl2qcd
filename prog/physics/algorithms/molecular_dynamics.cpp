@@ -11,7 +11,7 @@
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "../../meta/util.hpp"
 #include "solver.hpp"
-#include "fermion_force.hpp"
+#include "forces.hpp"
 
 static void md_update_gaugemomenta(const physics::lattices::Gaugemomenta * dest, const physics::lattices::Gaugemomenta& src, hmc_float eps);
 static void md_update_gaugefield(const physics::lattices::Gaugefield * gf, const physics::lattices::Gaugemomenta& , hmc_float eps);
@@ -53,36 +53,6 @@ static void md_update_gaugefield(const physics::lattices::Gaugefield * const gf,
 		auto code = gf_buf->get_device()->get_molecular_dynamics_code();
 		code->md_update_gaugefield_device(gm_buf, gf_buf, eps);
 	}
-}
-
-void physics::algorithms::gauge_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf)
-{
-	auto gm_bufs = gm->get_buffers();
-	auto gf_bufs = gf.get_buffers();
-	size_t num_bufs = gm_bufs.size();
-	if(num_bufs != 1 || num_bufs != gf_bufs.size()) {
-		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
-	}
-
-	auto gm_buf = gm_bufs[0];
-	auto gf_buf = gf_bufs[0];
-	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-	code->gauge_force_device(gf_buf, gm_buf);
-}
-
-void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf)
-{
-	auto gm_bufs = gm->get_buffers();
-	auto gf_bufs = gf.get_buffers();
-	size_t num_bufs = gm_bufs.size();
-	if(num_bufs != 1 || num_bufs != gf_bufs.size()) {
-		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
-	}
-
-	auto gm_buf = gm_bufs[0];
-	auto gf_buf = gf_bufs[0];
-	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-	code->gauge_force_tlsym_device(gf_buf, gm_buf);
 }
 
 static void md_update_spinorfield(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
@@ -163,23 +133,4 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
 {
 	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
-}
-
-template<class SPINORFIELD> static void calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
-{
-	using namespace physics::algorithms;
-
-	force->zero();
-	if(!system.get_inputparameters().get_use_gauge_only() )
-		calc_fermion_forces(force, gf, phi, system, kappa, mubar);
-	calc_gauge_force(force, gf, system);
-}
-
-void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
-{
-	::calc_total_force(force, gf, phi, system, kappa, mubar);
-}
-void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
-{
-	::calc_total_force(force, gf, phi, system, kappa, mubar);
 }
