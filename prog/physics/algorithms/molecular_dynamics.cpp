@@ -129,7 +129,7 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
 }
 
-void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system, const hmc_float eps)
+void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf, const hardware::System& system, const hmc_float eps)
 {
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
@@ -138,4 +138,23 @@ void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices:
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	md_update_gaugemomenta(gm, force, -1.*eps);
+}
+
+template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	const physics::lattices::Gaugemomenta force(system);
+	force.zero();
+	calc_fermion_forces(&force, gf, phi, system, kappa, mubar);
+	trace_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
+
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	md_update_gaugemomenta(inout, force, -1.*eps);
+}
+void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
+}
+void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+{
+	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
 }
