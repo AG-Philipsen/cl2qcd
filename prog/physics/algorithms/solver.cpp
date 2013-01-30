@@ -584,7 +584,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 		if(std::abs(test.re) < 1e-25 && std::abs(test.im) < 1e-25 ) {
 			//print the last residuum
 			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
-			SolverStuck(iter, __FILE__, __LINE__);
+			throw SolverStuck(iter, __FILE__, __LINE__);
 		}
 
 		//tmp1 = rho_next/rho = (rhat, rn)/..
