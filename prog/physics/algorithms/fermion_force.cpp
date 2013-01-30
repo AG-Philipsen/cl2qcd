@@ -593,7 +593,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		dslash(&tmp1, gf, solution, ODD, kappa2);
 		sax(&tmp, mone, tmp1);
 	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
-		dslash(&tmp2, gf, solution, ODD, kappa2);
+		dslash(&tmp1, gf, solution, ODD, kappa2);
 		M_tm_inverse_sitediagonal_minus(&tmp2, tmp1, mubar2);
 		sax(&tmp, mone, tmp2);
 	} else {
