@@ -259,10 +259,10 @@ void physics::lattices::saxsbypz(const Spinorfield* out, const Scalar<hmc_comple
 	}
 }
 
-void physics::lattices::trace_squarenorm(const std::string& msg, const physics::lattices::Spinorfield& x)
+void physics::lattices::log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield& x)
 {
-	if(logger.beTrace()) {
+	if(logger.beDebug()) {
 		hmc_float tmp = squarenorm(x);
-		logger.trace() << msg << std::scientific << std::setprecision(10) << tmp;
+		logger.debug() << msg << std::scientific << std::setprecision(10) << tmp;
 	}
 }

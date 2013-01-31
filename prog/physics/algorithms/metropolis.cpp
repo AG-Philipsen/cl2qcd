@@ -29,14 +29,14 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	 */
 	const Spinorfield solution(system);
 	solution.cold();
-	trace_squarenorm("\tinv. field before inversion ", solution);
+	log_squarenorm("\tinv. field before inversion ", solution);
 
 	if(params.get_solver() == meta::Inputparameters::cg) {
 		const QplusQminus fm(kappa, mubar, system);
 		const int iterations = cg(&solution, fm, gf, phi, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
@@ -46,7 +46,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 		const int iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		copyData(&phi_inv, solution);
 	}
@@ -75,27 +75,27 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	if(params.get_solver() == meta::Inputparameters::cg) {
 		solution.cold();
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 
 		const QplusQminus_eo fm(kappa, mubar, system);
 		const int iterations = cg(&solution, fm, gf, phi, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus_eo qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
 	} else {
 		solution.zero();
 		solution.gamma5();
-		trace_squarenorm("\tinv. field before inversion ", solution);
-		trace_squarenorm("\tsource before inversion ", phi);
+		log_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tsource before inversion ", phi);
 
 		const Qplus_eo fm(kappa, mubar, system);
 		const int iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		copyData(&phi_inv, solution);
 	}
@@ -126,7 +126,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 
 	const Spinorfield solution(system);
 	solution.cold();
-	trace_squarenorm("\tinv. field before inversion ", solution);
+	log_squarenorm("\tinv. field before inversion ", solution);
 
 	logger.debug() << "\t\t\tstart solver";
 
@@ -135,7 +135,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
@@ -144,7 +144,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 		const int iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		copyData(&phi_inv, solution);
 	}
@@ -181,27 +181,27 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 
 	if(params.get_solver() == meta::Inputparameters::cg) {
 		solution.cold();
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 
 		const QplusQminus_eo fm(kappa, mubar, system);
 		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		const Qminus_eo qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
 	} else {
 		solution.zero();
 		solution.gamma5();
-		trace_squarenorm("\tinv. field before inversion ", solution);
-		trace_squarenorm("\tsource before inversion ", tmp);
+		log_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tsource before inversion ", tmp);
 
 		const Qplus_eo fm(kappa, mubar, system);
 		const int iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		copyData(&phi_inv, solution);
 	}

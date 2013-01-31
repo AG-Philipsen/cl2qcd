@@ -53,14 +53,14 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
 {
 	physics::fermionmatrix::Qplus qplus(kappa, mubar, system);
 	qplus(out, gf, orig);
-	trace_squarenorm("Spinorfield after update", *out);
+	log_squarenorm("Spinorfield after update", *out);
 }
 
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system);
 	qplus(out, gf, orig);
-	trace_squarenorm("Spinorfield after update", *out);
+	log_squarenorm("Spinorfield after update", *out);
 }
 
 template<class FERMIONMATRIX, class SPINORFIELD> static void md_update_spinorfield_mp(const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
@@ -70,7 +70,7 @@ template<class FERMIONMATRIX, class SPINORFIELD> static void md_update_spinorfie
 	SPINORFIELD tmp(system);
 	FERMIONMATRIX qplus(kappa, mubar, system);
 
-	trace_squarenorm("Spinorfield before update", orig);
+	log_squarenorm("Spinorfield before update", orig);
 
 	qplus(&tmp, gf, orig);
 
@@ -84,15 +84,15 @@ template<class FERMIONMATRIX, class SPINORFIELD> static void md_update_spinorfie
 	out->zero();
 	out->gamma5();
 
-	trace_squarenorm("\tinv. field before inversion.", *out);
-	trace_squarenorm("\tsource before inversion.", tmp);
+	log_squarenorm("\tinv. field before inversion.", *out);
+	log_squarenorm("\tsource before inversion.", tmp);
 
 	auto params = system.get_inputparameters();
 	FERMIONMATRIX qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
 	const int iterations = bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
 	logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 
-	trace_squarenorm("\tinv. field after inversion ", *out);
+	log_squarenorm("\tinv. field after inversion ", *out);
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
@@ -134,7 +134,7 @@ void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices:
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
 	calc_gauge_force(&force, gf, system);
-	trace_squarenorm("\tHMC [UP]:\tFORCE [GAUGE]:\t", force);
+	log_squarenorm("\tHMC [UP]:\tFORCE [GAUGE]:\t", force);
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	md_update_gaugemomenta(gm, force, -1.*eps);
@@ -147,7 +147,7 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const ph
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
 	calc_fermion_force(&force, gf, phi, system, kappa, mubar);
-	trace_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
+	log_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	md_update_gaugemomenta(inout, force, -1.*eps);
@@ -168,7 +168,7 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const p
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
 	calc_detratio_forces(&force, gf, phi_mp, system);
-	trace_squarenorm("\tHMC [UP]:\tFORCE [DETRAT]:\t", force);
+	log_squarenorm("\tHMC [UP]:\tFORCE [DETRAT]:\t", force);
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	md_update_gaugemomenta(inout, force, -1.*eps);

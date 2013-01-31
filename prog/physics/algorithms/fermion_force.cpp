@@ -42,13 +42,13 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 * Trial solution for the spinorfield
 		 */
 		solution.cold();
-		trace_squarenorm("\t\t\tinv. field before inversion ", solution);
+		log_squarenorm("\t\t\tinv. field before inversion ", solution);
 
 		const QplusQminus_eo fm(kappa, mubar, system);
 		const int iterations = cg(&solution, fm, gf, phi, system, params.get_force_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\t\t\tinv. field after inversion ", solution);
+		log_squarenorm("\t\t\tinv. field after inversion ", solution);
 
 		/**
 		 * Y_even is now just
@@ -79,14 +79,14 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.zero();
 		solution.gamma5();
 
-		trace_squarenorm("\t\t\tinv. field before inversion ", solution);
-		trace_squarenorm("\t\t\tsource before inversion ", phi);
+		log_squarenorm("\t\t\tinv. field before inversion ", solution);
+		log_squarenorm("\t\t\tsource before inversion ", phi);
 
 		const Qplus_eo qplus(kappa, mubar, system);
 		int iterations = bicgstab(&solution, qplus, gf, phi, system, params.get_force_prec());
 
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\t\t\tinv. field after inversion ", solution);
+		log_squarenorm("\t\t\tinv. field after inversion ", solution);
 
 		copyData(&phi_inv, solution);
 
@@ -107,12 +107,12 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		//this sets clmem_inout cold as trial-solution
 		solution.cold();
 
-		trace_squarenorm("\t\t\tinv. field before inversion ", solution);
-		trace_squarenorm("\t\t\tsource before inversion ", source_even);
+		log_squarenorm("\t\t\tinv. field before inversion ", solution);
+		log_squarenorm("\t\t\tsource before inversion ", source_even);
 		const Qminus_eo qminus(kappa, mubar, system);
 		iterations = bicgstab(&solution, qminus, gf, source_even, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\t\t\tinv. field after inversion ", solution);
+		log_squarenorm("\t\t\tinv. field after inversion ", solution);
 	}
 	/**
 	 * At this point, one has calculated X_odd and Y_odd.
@@ -192,14 +192,14 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 */
 		solution.cold();
 
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const QplusQminus fm(kappa, mubar, system);
 		const int iterations = cg(&solution, fm, gf, phi, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		/**
 		 * Y is now just
@@ -229,14 +229,14 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 */
 		solution.cold();
 
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const Qplus q_plus(kappa, mubar, system);
 		int iterations = bicgstab(&solution, q_plus, gf, phi, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		//store this result in clmem_phi_inv
 		copyData(&phi_inv, solution);
@@ -258,15 +258,15 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		solution.cold();
 
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 		const Qminus q_minus(kappa, mubar, system);
 		iterations = bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 	}
-	trace_squarenorm("\tY ", phi_inv);
-	trace_squarenorm("\tX ", solution);
+	log_squarenorm("\tY ", phi_inv);
+	log_squarenorm("\tX ", solution);
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	fermion_force(force, phi_inv, solution, gf, kappa);
@@ -326,13 +326,13 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 */
 		solution.cold();
 
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const QplusQminus fm(kappa, mubar, system);
 		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
 
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		/**
 		 * Y is now just
@@ -362,12 +362,12 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 */
 		solution.cold();
 
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		Qplus q_plus(kappa, mubar, system);
 		int iterations = bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 
 		copyData(&phi_inv, solution);
 
@@ -388,15 +388,15 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		//this sets clmem_inout cold as trial-solution
 		solution.cold();
 
-		trace_squarenorm("\tinv. field before inversion ", solution);
+		log_squarenorm("\tinv. field before inversion ", solution);
 		Qminus q_minus(kappa, mubar, system);
 		iterations = bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\tinv. field after inversion ", solution);
+		log_squarenorm("\tinv. field after inversion ", solution);
 	}
 
-	trace_squarenorm("\tY ", phi_inv);
-	trace_squarenorm("\tX ", solution);
+	log_squarenorm("\tY ", phi_inv);
+	log_squarenorm("\tX ", solution);
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	fermion_force(force, phi_inv, solution, gf, kappa);
@@ -466,11 +466,11 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 */
 		solution.cold();
 
-		trace_squarenorm("\t\t\tinv. field before inversion ", solution);
+		log_squarenorm("\t\t\tinv. field before inversion ", solution);
 		const QplusQminus_eo fm(kappa, mubar, system);
 		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_force_prec());
 		logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-		trace_squarenorm("\t\t\tinv. field after inversion ", solution);
+		log_squarenorm("\t\t\tinv. field after inversion ", solution);
 
 		/**
 		 * Y_even is now just

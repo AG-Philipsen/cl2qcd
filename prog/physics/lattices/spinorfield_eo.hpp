@@ -151,7 +151,7 @@ void convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, 
  *
  * It only evaluates in case the squarenorm will actually be printed.
  */
-void trace_squarenorm(const std::string& msg, const physics::lattices::Spinorfield_eo& x);
+void log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield_eo& x);
 }
 }
 
