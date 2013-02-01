@@ -152,7 +152,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
 		Spinorfield_eo tmp_2(system);
 		dslash(&tmp_1, gf, phi_inv, ODD, kappa);
-		M_tm_inverse_sitediagonal_minus(&tmp_2, tmp_1, mubar);
+		M_tm_inverse_sitediagonal(&tmp_2, tmp_1, mubar);
 		sax(&tmp_1, { -1., 0.}, tmp_2);
 	} else {
 		throw Print_Error_Message("The selected fermion force has not been implemented.", __FILE__, __LINE__);
