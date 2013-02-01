@@ -153,12 +153,19 @@ namespace hardware {
 			 * Will thorw an invalid_argument exception if the source buffer is of a different size.
 			 */
 			void copyDataBlock(const Buffer* orig, const size_t dest_offset, const size_t src_offset, const size_t bytes) const;
+
+			friend std::string md5(const Buffer* buf);
 		};
 
 		template<class T> inline void copyData(const T* dest, const T* orig)
 		{
 			dest->copyData(orig);
 		}
+
+		/**
+		 * Get the md5 sum of the given buffer
+		 */
+		std::string md5(const Buffer* buf);
 	}
 }
 
