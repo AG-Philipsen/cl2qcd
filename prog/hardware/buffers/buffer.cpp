@@ -8,6 +8,7 @@
 
 #include "../system.hpp"
 #include "../../logger.hpp"
+#include "../../crypto/md5.h"
 
 static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host);
 
@@ -140,4 +141,25 @@ void hardware::buffers::Buffer::clear() const
 #else
 	device->get_buffer_code()->clear(this);
 #endif
+}
+
+std::string hardware::buffers::md5(const Buffer* buf)
+{
+	md5_t md5_state;
+	md5_init(&md5_state);
+
+	char* data = new char[buf->bytes];
+	buf->dump(data);
+
+	md5_process(&md5_state, data, buf->bytes);
+
+	delete[] data;
+
+	char sig[MD5_SIZE];
+	md5_finish(&md5_state, sig);
+
+	char res[33];
+	md5_sig_to_string(sig, res, 33);
+
+	return std::string(res);
 }

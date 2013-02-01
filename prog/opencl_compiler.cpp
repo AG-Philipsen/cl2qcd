@@ -523,7 +523,7 @@ std::string TmpClKernel::generateMD5() const
 	logger.trace() << "Adding " << build_options << " to MD5";
 	md5_process(&md5_state, build_options.c_str(), build_options.length());
 
-	char sig[16];
+	char sig[MD5_SIZE];
 	md5_finish(&md5_state, sig);
 
 	char res[33];
