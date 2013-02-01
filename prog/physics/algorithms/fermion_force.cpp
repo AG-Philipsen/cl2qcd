@@ -552,7 +552,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		sax(&tmp, mone, tmp1);
 	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
 		dslash(&tmp1, gf, solution, ODD);
-		M_tm_inverse_sitediagonal(&tmp2, tmp1);
+		M_tm_inverse_sitediagonal_minus(&tmp2, tmp1);
 		sax(&tmp, mone, tmp2);
 	} else {
 		throw Print_Error_Message("Selected fermion action is not implemented", __FILE__, __LINE__);
@@ -612,7 +612,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		sax(&tmp1, mone, tmp1);
 	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
 		dslash(&tmp1, gf, phi_inv, ODD, kappa2);
-		M_tm_inverse_sitediagonal(&tmp2, tmp1, mubar);
+		M_tm_inverse_sitediagonal(&tmp2, tmp1, mubar2);
 		sax(&tmp1, mone, tmp2);
 	} else {
 		throw Print_Error_Message("Selected fermion action is not implemented", __FILE__, __LINE__);
