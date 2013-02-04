@@ -162,6 +162,12 @@ void hardware::code::Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls
 		*gs = 1;
 		*num_groups = 1;
 	}
+	if(kernel == scalar_product_eoprec || kernel == scalar_product || kernel == global_squarenorm || kernel == global_squarenorm_eoprec) {
+		if(*ls > 64) {
+			*ls = 64;
+		}
+		return;
+	}
 }
 
 void hardware::code::Spinors::convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::Plain<spinor> * out)
@@ -516,6 +522,9 @@ void hardware::code::Spinors::set_complex_to_scalar_product_device(const hardwar
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(scalar_product_reduction, 2, sizeof(cl_uint), &num_groups);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	get_device()->enqueue_kernel( scalar_product_reduction, gs2, ls2);
 }
 
@@ -543,11 +552,13 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 
 	get_device()->enqueue_kernel( scalar_product_eoprec, gs2, ls2);
 
-
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), scalar_product_buf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(scalar_product_reduction, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(scalar_product_reduction, gs2, ls2);

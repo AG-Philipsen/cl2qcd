@@ -1,5 +1,5 @@
 // alpha*x
-__kernel void sax_eoprec(__global const spinorStorageType * const restrict x, __global const hmc_complex * const restrict alpha, __global spinorStorageType * const restrict out)
+__kernel void sax_eoprec(__global const spinorStorageType * const x, __global const hmc_complex * const alpha, __global spinorStorageType * const out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
