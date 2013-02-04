@@ -1,6 +1,6 @@
 // -alpha*x + y
 //CP: defined with a minus!!!
-__kernel void saxpy_eoprec(__global const spinorStorageType * const restrict x, __global const spinorStorageType * const restrict y, __global const hmc_complex * const restrict alpha, __global spinorStorageType * const restrict out)
+__kernel void saxpy_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, __global const hmc_complex * const alpha, __global spinorStorageType * const out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -15,7 +15,7 @@ __kernel void saxpy_eoprec(__global const spinorStorageType * const restrict x, 
 	}
 }
 
-__kernel void saxpy_arg_eoprec(__global const spinorStorageType * const restrict x, __global const spinorStorageType * const restrict y, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const restrict out)
+__kernel void saxpy_arg_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const out)
 {
 	const int id = get_global_id(0);
 	const int global_size = get_global_size(0);

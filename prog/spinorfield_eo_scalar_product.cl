@@ -1,6 +1,6 @@
 // complex (!!!) scalarproduct, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
-__kernel void scalar_product_eoprec( __global const spinorStorageType  * const restrict x, __global const spinorStorageType * const restrict y, __global hmc_complex * const restrict result, __local hmc_complex * const restrict result_local )
+__kernel void scalar_product_eoprec( __global const spinorStorageType  * const x, __global const spinorStorageType * const y, __global hmc_complex * const result, __local hmc_complex * const result_local )
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
