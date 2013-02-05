@@ -20,8 +20,8 @@ for(auto device: system.get_devices()) {
 		hardware::buffers::SU3 buffer(NUM_ELEMENTS, device);
 
 		auto code = device->get_gaugefield_code();
-		code->importGaugefield(in);
-		code->exportGaugefield(out);
+		code->importGaugefield(&buffer, in);
+		code->exportGaugefield(out, &buffer);
 
 		BOOST_CHECK_EQUAL_COLLECTIONS(in, in + NUM_ELEMENTS, out, out + NUM_ELEMENTS);
 

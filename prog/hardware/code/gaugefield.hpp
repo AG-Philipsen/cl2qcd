@@ -32,24 +32,7 @@ public:
 	 */
 	virtual ~Gaugefield();
 
-	/**
-	 * Get a pointer to the gaugefield buffer
-	 * @return ocl_gaugefield OpenCL buffer with gaugefield
-	 */
-	const hardware::buffers::SU3 * get_gaugefield();
-
 	// methods which actually calculate something
-	/**
-	 * Calculate plaquette and polyakov of a specific gaugefield (on device).
-	 *
-	 * @deprecated
-	 *
-	 * @param[out] plaq Storage for result of plaquette calculation
-	 * @param[out] tplaq Storage for result of plaquette calculation
-	 * @param[out] splaq Storage for result of plaquette calculation
-	 * @param[out] pol Storage for result of polyakov calculation
-	 */
-	void gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 	/**
 	 * Calculate plaquette and polyakov of a specific gaugefield (on device).
 	 *
@@ -103,22 +86,7 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield
 	 */
-	void smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
 	void stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out);
-
-	/**
-	 * This replaces the stout smeared gaugefield with the unsmeared one
-	 */
-	void unsmear_gaugefield(const hardware::buffers::SU3 * gf);
-
-	/**
-	 * Import the gaugefield data into the OpenCL buffer using the device
-	 * specific storage format.
-	 *
-	 * @param[in]  data       The gaugefield data to import into the OpenCL buffer
-	 * @param[out] gaugefield The OpenCL buffer to writ the gaugefield data to in the device specific format
-	 */
-	void importGaugefield(const Matrixsu3 * const data);
 
 	/**
 	 * Import the gaugefield data into the OpenCL buffer using the device
@@ -130,15 +98,6 @@ public:
 	 * @todo should not be public
 	 */
 	void importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data);
-
-	/**
-	 * Export the gaugefield from the OpenCL buffer, that uses a device
-	 * specific storage format, into the given pointer using the generic
-	 * storage format.
-	 *
-	 * @param[out] dest The array to store the gaugefield in
-	 */
-	void exportGaugefield(Matrixsu3 * const dest);
 
 	/**
 	 * Export the gaugefield from the OpenCL buffer, that uses a device
@@ -191,11 +150,6 @@ private:
 	 * A set of source files used by all kernels.
 	 */
 	ClSourcePackage basic_opencl_code;
-
-	const hardware::buffers::SU3 gaugefield;
-
-	//this is used to save the unsmeared gaugefield if smearing is used
-	const hardware::buffers::SU3 gf_unsmeared;
 
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
