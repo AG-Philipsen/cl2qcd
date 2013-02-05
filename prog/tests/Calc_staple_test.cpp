@@ -1,5 +1,3 @@
-#include "../gaugefield_hybrid.h"
-
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 
