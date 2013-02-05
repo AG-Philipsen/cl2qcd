@@ -119,7 +119,7 @@ hardware::OpenclException::OpenclException(int err)
 {
 	std::stringstream msg;
 	msg << "OpenCL reported an error, error code: " << err;
-	error_message = "OpenCL reported an error, error code: " + err;
+	error_message = msg.str();
 	logger.error() << error_message;
 }
 
