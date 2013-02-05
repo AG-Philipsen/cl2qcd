@@ -10,6 +10,7 @@
 
 #include "../lattices/gaugefield.hpp"
 #include "../prng.hpp"
+#include "../../types_hmc.h"
 
 namespace physics {
 namespace algorithms {

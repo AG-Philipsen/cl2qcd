@@ -2,6 +2,7 @@
 
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../physics/algorithms/hmc.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;

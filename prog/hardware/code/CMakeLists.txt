@@ -15,7 +15,6 @@ add_library(code
 		correlator.cpp
 		spinors.cpp
 		fermions.cpp
-		hmc.cpp
 		gaugemomentum.cpp
 		molecular_dynamics.cpp
 		buffer.cpp

@@ -34,7 +34,6 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  fermion_code(nullptr),
 	  gaugemomentum_code(nullptr),
 	  molecular_dynamics_code(nullptr),
-	  hmc_code(nullptr),
 	  correlator_code(nullptr),
 	  heatbath_code(nullptr),
 	  kappa_code(nullptr),
@@ -70,9 +69,6 @@ hardware::Device::~Device()
 	}
 	if(gaugemomentum_code) {
 		delete gaugemomentum_code;
-	}
-	if(hmc_code) {
-		delete hmc_code;
 	}
 	if(fermion_code) {
 		delete fermion_code;
@@ -455,14 +451,6 @@ hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynamics_co
 	return molecular_dynamics_code;
 }
 
-hardware::code::Hmc * hardware::Device::get_hmc_code()
-{
-	if(!hmc_code) {
-		hmc_code = new hardware::code::Hmc(params, this);
-	}
-	return hmc_code;
-}
-
 hardware::code::Correlator * hardware::Device::get_correlator_code()
 {
 	if(!correlator_code) {
@@ -505,9 +493,6 @@ void hardware::print_profiling(Device * device, const std::string& filename, int
 	}
 	if(device->correlator_code) {
 		device->correlator_code->print_profiling(filename, id);
-	}
-	if(device->hmc_code) {
-		device->hmc_code->print_profiling(filename, id);
 	}
 	if(device->fermion_code) {
 		device->fermion_code->print_profiling(filename, id);
