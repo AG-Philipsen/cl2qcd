@@ -1,5 +1,6 @@
-#include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
+#include "../hardware/system.hpp"
+#include "../physics/lattices/gaugefield.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -30,48 +31,36 @@ public:
 	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls);
 };
 
-class Dummyfield : public Gaugefield_hybrid {
+class Dummyfield {
 public:
-	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
-		init(1, system->get_inputparameters().get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
+	Dummyfield(const hardware::System& system) : params(system.get_inputparameters()), device(params, system.get_devices().at(0)), prng(system), gf(system, prng) {
+		fill_buffers();
 	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-
+	~Dummyfield() {
+		clear_buffers();
+	}
 	hmc_float runTestKernel();
-
 private:
 	void fill_buffers();
 	void clear_buffers();
 	const hardware::buffers::Plain<hmc_float> * out;
 	hmc_float * host_out;
+	const meta::Inputparameters& params;
+	Device device;
 	physics::PRNG prng;
+public:
+	physics::lattices::Gaugefield gf;
 };
-
-void Dummyfield::init_tasks()
-{
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
-
-	fill_buffers();
-}
-
-void Dummyfield::finalize_opencl()
-{
-	clear_buffers();
-	Gaugefield_hybrid::finalize_opencl();
-}
 
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
+	int NUM_ELEMENTS = meta::get_vol4d(params);
 
 	host_out = new hmc_float[NUM_ELEMENTS];
 	BOOST_REQUIRE(host_out);
 
-	out = new hardware::buffers::Plain<hmc_float>(NUM_ELEMENTS, opencl_modules[0]->get_device());
+	out = new hardware::buffers::Plain<hmc_float>(NUM_ELEMENTS, device.get_device());
 }
 
 void Device::fill_kernels()
@@ -106,21 +95,20 @@ hmc_float Dummyfield::runTestKernel()
 {
 	hmc_float res = 0;
 	int gs = 0, ls = 0;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_vol4d(get_parameters());
+	if(device.get_device()->get_device_type() == CL_DEVICE_TYPE_GPU) {
+		gs = meta::get_vol4d(params);
 		ls = 64;
 	} else {
-		gs = get_device_for_task(0)->get_num_compute_units();
+		gs = device.get_device()->get_num_compute_units();
 		ls = 1;
 	}
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(device->get_device()->get_gaugefield_code()->get_gaugefield(), out, gs, ls);
+	device.runTestKernel(gf.get_buffers()[0], out, gs, ls);
 
 	//copy the result of the kernel to host
 	out->dump(host_out);
 
 	//sum up all elements in the result buffer
-	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
+	int NUM_ELEMENTS = meta::get_vol4d(params);
 	for(int i = 0; i < NUM_ELEMENTS; i++) {
 		res += host_out[i];
 	}
@@ -154,12 +142,12 @@ BOOST_AUTO_TEST_CASE( LOCAL_Q )
 	logger.info() << "rec12 usage: " << rec12_opt;
 
 	logger.info() << "Init device";
-	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-	meta::Inputparameters params(param_expect, _params_cpu);
+	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt, "--device=0"};
+	meta::Inputparameters params(param_expect + 1, _params_cpu);
 	hardware::System system(params);
-	Dummyfield cpu(&system);
+	Dummyfield cpu(system);
 	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
+	print_gaugeobservables(cpu.gf, 0);
 	logger.info() << "Run kernel";
 	hmc_float cpu_res;
 	cpu_res = cpu.runTestKernel();
