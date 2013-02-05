@@ -66,7 +66,7 @@ int main(int argc, const char* argv[])
 		if(parameters.get_read_multiple_configs()) {
 			//main loop
 			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
-			  std::string config_name = meta::create_configuration_name(parameters, iter);
+				std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure gaugeobservables of configuration: " << config_name;
 				gaugefield.init_gaugefield(config_name.c_str(), prng);
 				gaugefield.synchronize(0);
