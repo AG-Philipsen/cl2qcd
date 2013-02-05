@@ -1,6 +1,5 @@
-#include "../gaugefield_hybrid.h"
-
 #include "../meta/util.hpp"
+#include "../physics/lattices/gaugefield.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -10,38 +9,36 @@
 #include "test_util.h"
 #include "../host_random.h"
 
-class TestGaugefield : public Gaugefield_hybrid {
+class TestGaugefield {
 
 public:
-	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
+	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
+		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
 		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
 		meta::print_info_hmc("test program", inputfile);
-		print_gaugeobservables(0);
 	};
 
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-
 	hardware::code::Molecular_Dynamics * get_device();
+	const hardware::buffers::SU3 * get_gaugefield();
+
+	void print_gaugeobservables() {
+		physics::lattices::print_gaugeobservables(gf, 0);
+	}
+
 private:
+	const hardware::System * const system;
 	physics::PRNG prng;
+	const physics::lattices::Gaugefield gf;
 };
-
-void TestGaugefield::init_tasks()
-{
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = get_device_for_task(0)->get_molecular_dynamics_code();
-}
-
-void TestGaugefield::finalize_opencl()
-{
-	Gaugefield_hybrid::finalize_opencl();
-}
 
 hardware::code::Molecular_Dynamics* TestGaugefield::get_device()
 {
-	return static_cast<hardware::code::Molecular_Dynamics*>(opencl_modules[0]);
+	return system->get_devices()[0]->get_molecular_dynamics_code();
+}
+
+const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
+{
+	return gf.get_buffers().at(0);
 }
 
 void fill_sf_with_one(spinor * sf_in, int size)
@@ -195,8 +192,6 @@ void test_build(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	logger.info() << "Finalize device";
-	cpu.finalize();
 	BOOST_MESSAGE("Test done");
 }
 
@@ -254,15 +249,13 @@ void test_gf_update(std::string inputfile)
 
 	logger.info() << "Run kernel";
 	hmc_float eps = params.get_tau();
-	device->md_update_gaugefield_device(&in, gf_code->get_gaugefield(), eps);
+	device->md_update_gaugefield_device(&in, cpu.get_gaugefield(), eps);
 	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
+	cpu.print_gaugeobservables();
 
 	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
 	hmc_complex pol_cpu;
-	gf_code->gaugeobservables(&plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-	logger.info() << "Finalize device";
-	cpu.finalize();
+	gf_code->gaugeobservables(cpu.get_gaugefield(), &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
 
 	logger.info() << "Free buffers";
 	delete[] gm_in;
@@ -327,8 +320,6 @@ void test_f_update(std::string inputfile)
 	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	logger.info() << "Free buffers";
 	delete[] gm_in;
@@ -366,7 +357,7 @@ void test_f_gauge(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	device->gauge_force_device( device->get_device()->get_gaugefield_code()->get_gaugefield(), &out);
+	device->gauge_force_device( cpu.get_gaugefield(), &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -379,7 +370,6 @@ void test_f_gauge(std::string inputfile)
 
 	logger.info() << "Finalize device";
 	delete[] gm_out;
-	cpu.finalize();
 }
 
 void test_f_gauge_tlsym(std::string inputfile)
@@ -410,15 +400,13 @@ void test_f_gauge_tlsym(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	device->gauge_force_tlsym_device( device->get_device()->get_gaugefield_code()->get_gaugefield(), &out);
+	device->gauge_force_tlsym_device( cpu.get_gaugefield(), &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -484,14 +472,12 @@ void test_f_fermion(std::string inputfile)
 	sqnorm.dump(&cpu_back2);
 	logger.info() << cpu_back2;
 	logger.info() << "Run kernel";
-	device->fermion_force_device( &in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, params.get_kappa());
+	device->fermion_force_device( &in1, &in2, cpu.get_gaugefield(), &out, params.get_kappa());
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	logger.info() << "Clear buffers";
 	delete[] sf_in1;
@@ -563,17 +549,15 @@ void test_f_fermion_eo(std::string inputfile)
 	//switch according to "use_pointsource"
 	if(params.get_use_pointsource()) {
 		int tmp = EVEN;
-		device->fermion_force_eo_device(&in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in1, &in2, cpu.get_gaugefield(), &out, tmp, params.get_kappa() );
 	} else {
 		int tmp = ODD;
-		device->fermion_force_eo_device(&in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in1, &in2, cpu.get_gaugefield(), &out, tmp, params.get_kappa() );
 	}
 	logger.info() << "|force|^2:";
 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	logger.info() << "Clear buffers";
 	delete[] sf_in1;
@@ -972,8 +956,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	logger.info() << cpu_back_eo4;
 
 	logger.info() << "run eo force on EVEN and ODD sites...";
-	device->fermion_force_eo_device(&in1_eo, &in4_eo, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out_eo, ODD, params.get_kappa() );
-	device->fermion_force_eo_device(&in2_eo, &in3_eo, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out_eo, EVEN, params.get_kappa() );
+	device->fermion_force_eo_device(&in1_eo, &in4_eo, cpu.get_gaugefield(), &out_eo, ODD, params.get_kappa() );
+	device->fermion_force_eo_device(&in2_eo, &in3_eo, cpu.get_gaugefield(), &out_eo, EVEN, params.get_kappa() );
 
 	logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
 	hmc_float cpu_res_eo;
@@ -992,7 +976,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	sqnorm.dump(&cpu_back2_noneo);
 	logger.info() << cpu_back2_noneo;
 	logger.info() << "run noneo force with noneo input...";
-	device->fermion_force_device( &in1_noneo, &in2_noneo, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out_noneo, params.get_kappa());
+	device->fermion_force_device( &in1_noneo, &in2_noneo, cpu.get_gaugefield(), &out_noneo, params.get_kappa());
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo;
 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out_noneo, &sqnorm);
