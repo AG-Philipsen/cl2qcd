@@ -1,6 +1,7 @@
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
+#include "../physics/lattices/gaugefield.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -9,7 +10,7 @@
 
 std::string const exec_name = "staple_test";
 
-class Device : public hardware::code::Opencl_Module {
+class Code : public hardware::code::Opencl_Module {
 
 	cl_kernel testKernel;
 protected:
@@ -20,10 +21,10 @@ protected:
 		return 0;
 	};
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+	Code(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
 	};
-	~Device() {
+	~Code() {
 		clear_kernels();
 	};
 
@@ -33,16 +34,15 @@ public:
 };
 
 
-class Dummyfield : public Gaugefield_hybrid {
+class Dummyfield {
 public:
-	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
-		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
-		meta::print_info_hmc(exec_name.c_str(), inputfile);
+	Dummyfield(const hardware::System& system) : device(system.get_devices().at(0)), params(system.get_inputparameters()), code(params, device), prng(system), gf(system, prng) {
+		meta::print_info_hmc(exec_name.c_str(), system.get_inputparameters());
+		fill_buffers();
 	};
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-
+	~Dummyfield() {
+		clear_buffers();
+	}
 	hmc_float get_squarenorm();
 	hmc_float runTestKernel();
 
@@ -51,34 +51,25 @@ private:
 	void clear_buffers();
 	const hardware::buffers::Plain<hmc_float> * out;
 	hmc_float * host_out;
+	hardware::Device * const device;
+	const meta::Inputparameters& params;
+	Code code;
 	physics::PRNG prng;
+public:
+	const physics::lattices::Gaugefield gf;
 };
-
-void Dummyfield::init_tasks()
-{
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
-
-	fill_buffers();
-}
-
-void Dummyfield::finalize_opencl()
-{
-	clear_buffers();
-	Gaugefield_hybrid::finalize_opencl();
-}
 
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
+	int NUM_ELEMENTS = meta::get_vol4d(params);
 	host_out = new hmc_float[NUM_ELEMENTS];
 	BOOST_REQUIRE(host_out);
 
-	out = new hardware::buffers::Plain<hmc_float>(NUM_ELEMENTS, opencl_modules[0]->get_device());
+	out = new hardware::buffers::Plain<hmc_float>(NUM_ELEMENTS, device);
 }
 
-void Device::fill_kernels()
+void Code::fill_kernels()
 {
 	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "/tests/staple_test.cl";
 }
@@ -90,12 +81,12 @@ void Dummyfield::clear_buffers()
 	delete[] host_out;
 }
 
-void Device::clear_kernels()
+void Code::clear_kernels()
 {
 	clReleaseKernel(testKernel);
 }
 
-void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls)
+void Code::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
@@ -110,17 +101,16 @@ hmc_float Dummyfield::runTestKernel()
 {
 	hmc_float res = 0;
 	int gs, ls;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_vol4d(get_parameters());
+	if(device->get_device_type() == CL_DEVICE_TYPE_GPU) {
+		gs = meta::get_vol4d(params);
 		ls = 64;
 	} else {
-		gs = get_device_for_task(0)->get_num_compute_units();
+		gs = device->get_num_compute_units();
 		ls = 1;
 	}
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(device->get_device()->get_gaugefield_code()->get_gaugefield(), out, gs, ls);
+	code.runTestKernel(gf.get_buffers()[0], out, gs, ls);
 
-	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
+	int NUM_ELEMENTS = meta::get_vol4d(params);
 	//copy the result of the kernel to host
 	out->dump(host_out);
 
@@ -159,12 +149,12 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	logger.info() << "rec12 usage: " << rec12_opt;
 
 	logger.info() << "Init device";
-	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-	meta::Inputparameters params(param_expect, _params_cpu);
+	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt, "--device=0"};
+	meta::Inputparameters params(param_expect + 1, _params_cpu);
 	hardware::System system(params);
-	Dummyfield cpu(&system);
+	Dummyfield cpu(system);
 	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
+	print_gaugeobservables(cpu.gf, 0);
 	logger.info() << "Run kernel";
 	logger.info() << "running test kernel";
 	hmc_float cpu_res = cpu.runTestKernel();
