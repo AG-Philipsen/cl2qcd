@@ -3,122 +3,51 @@
 #define BOOST_TEST_MODULE gaugefield_convert
 #include <boost/test/unit_test.hpp>
 
-#include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 #include "../meta/type_ops.hpp"
+#include "../hardware/device.hpp"
+#include "../hardware/system.hpp"
 
-class Dummyfield : public Gaugefield_hybrid {
+void test(const hardware::System& system, const int seed)
+{
+	auto params = system.get_inputparameters();
+	const size_t NUM_ELEMENTS = meta::get_vol4d(params) * NDIM;
+for(auto device: system.get_devices()) {
+		Matrixsu3 * const in = new Matrixsu3[NUM_ELEMENTS];
+		Matrixsu3 * const out = new Matrixsu3[NUM_ELEMENTS];
+		fill(in, NUM_ELEMENTS, seed);
+		fill(out, NUM_ELEMENTS, seed + NUM_ELEMENTS);
+		hardware::buffers::SU3 buffer(NUM_ELEMENTS, device);
 
-public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system, physics::PRNG& prng) : Gaugefield_hybrid(system) {
-		init(1, device_type, prng);
-		fill_buffers();
-	};
+		auto code = device->get_gaugefield_code();
+		code->importGaugefield(in);
+		code->exportGaugefield(out);
 
-	virtual void finalize_opencl() override;
+		BOOST_CHECK_EQUAL_COLLECTIONS(in, in + NUM_ELEMENTS, out, out + NUM_ELEMENTS);
 
-	void verify();
+		delete[] in;
+		delete[] out;
+	}
+}
 
-	void send();
-	void recieve();
-
-	Matrixsu3 * in, * out;
-private:
-	void fill_buffers();
-	void clear_buffers();
-};
-
-BOOST_AUTO_TEST_CASE(CPU_cold)
+BOOST_AUTO_TEST_CASE(CPU)
 {
 	const char* _params[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system, prng);
-	dummy.set_gaugefield_cold(dummy.in);
 
-	dummy.send();
-	dummy.recieve();
-
-	dummy.verify();
+	test(system, 1);
+	test(system, 14);
+	test(system, 21);
 }
 
-BOOST_AUTO_TEST_CASE(CPU_hot)
+BOOST_AUTO_TEST_CASE(GPU)
 {
-	const char* _params[] = {"foo", "--use_gpu=false"};
+	const char* _params[] = {"foo", "--use_cpu=false"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system, prng);
-	dummy.set_gaugefield_hot(dummy.in, prng);
 
-	dummy.send();
-	dummy.recieve();
-
-	dummy.verify();
-}
-
-BOOST_AUTO_TEST_CASE(GPU_cold)
-{
-	const char* _params[] = {"foo", "--use_gpu=true"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system, prng);
-	dummy.set_gaugefield_cold(dummy.in);
-
-	dummy.send();
-	dummy.recieve();
-
-	dummy.verify();
-}
-
-BOOST_AUTO_TEST_CASE(GPU_hot)
-{
-	const char* _params[] = {"foo", "--use_gpu=true"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system, prng);
-	dummy.set_gaugefield_hot(dummy.in, prng);
-
-	dummy.send();
-	dummy.recieve();
-
-	dummy.verify();
-}
-
-void Dummyfield::finalize_opencl()
-{
-	clear_buffers();
-	Gaugefield_hybrid::finalize_opencl();
-}
-
-void Dummyfield::fill_buffers()
-{
-	size_t NUM_ELEMENTS = meta::get_vol4d(get_parameters()) * NDIM;
-	in = new Matrixsu3[NUM_ELEMENTS];
-	out = new Matrixsu3[NUM_ELEMENTS];
-}
-
-void Dummyfield::clear_buffers()
-{
-	delete[] in;
-	delete[] out;
-}
-
-void Dummyfield::verify()
-{
-	size_t NUM_ELEMENTS = meta::get_vol4d(get_parameters()) * NDIM;
-	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + NUM_ELEMENTS, out, out + NUM_ELEMENTS);
-}
-
-void Dummyfield::send()
-{
-	static_cast<hardware::code::Gaugefield*>(opencl_modules[0])->importGaugefield(in);
-}
-
-void Dummyfield::recieve()
-{
-	static_cast<hardware::code::Gaugefield*>(opencl_modules[0])->exportGaugefield(out);
+	test(system, 1);
+	test(system, 14);
+	test(system, 21);
 }
