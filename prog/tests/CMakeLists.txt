@@ -26,13 +26,6 @@ add_executable(cryptoLibTest crypto.cpp)
 target_link_libraries(cryptoLibTest ${Boost_LIBRARIES} crypto)
 add_test(Crypto cryptoLibTest)
 
-add_executable(complex_mem_access complex_mem_access.cpp)
-target_link_libraries(complex_mem_access
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(MemoryAccessViaComplex complex_mem_access)
-
 add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend
 	optimal
