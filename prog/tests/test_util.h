@@ -72,8 +72,8 @@ meta::Inputparameters create_parameters(std::string inputfile)
     break;
   }
 #endif
-	const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str()};
-  meta::Inputparameters params(num_par, _params_cpu);
+	const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str(), "--device=0"};
+  meta::Inputparameters params(num_par + 1, _params_cpu);
   return params;
 }
 
