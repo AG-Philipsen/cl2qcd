@@ -1,4 +1,5 @@
-#include "../gaugefield_hybrid.h"
+#include "../hardware/system.hpp"
+#include "../hardware/device.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -32,16 +33,16 @@ public:
 	void runExtendKernel(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::Plain<Matrixsu2> * in, const hardware::buffers::Plain<cl_int> * d_rand, cl_ulong elems);
 };
 
-class Dummyfield : public Gaugefield_hybrid {
+class Test {
 
 public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system)
-		: Gaugefield_hybrid(system), prng(*system) {
-		init(1, device_type, prng);
+	Test(const meta::Inputparameters& params, hardware::Device* device)
+		: params(params), code(params, device) {
+		fill_buffers();
 	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
+	~Test() {
+		clear_buffers();
+	}
 
 	void verify();
 	void runExtendKernel();
@@ -56,8 +57,9 @@ private:
 	hardware::buffers::Plain<Matrixsu2> * d_in;
 	hardware::buffers::Plain<Matrixsu3> * d_out;
 	hardware::buffers::Plain<cl_int> * d_rand;
-	physics::PRNG prng;
 
+	const meta::Inputparameters& params;
+	Device code;
 };
 
 BOOST_AUTO_TEST_CASE( CPU )
@@ -65,9 +67,11 @@ BOOST_AUTO_TEST_CASE( CPU )
 	const char* _params_cpu[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params_cpu(2, _params_cpu);
 	hardware::System system(params_cpu);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
-	dummy.runExtendKernel();
-	dummy.verify();
+for(auto device: system.get_devices()) {
+		Test dummy(params_cpu, device);
+		dummy.runExtendKernel();
+		dummy.verify();
+	}
 	BOOST_MESSAGE("Tested CPU");
 }
 
@@ -76,31 +80,19 @@ BOOST_AUTO_TEST_CASE( GPU )
 	const char* _params_gpu[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params_gpu(2, _params_gpu);
 	hardware::System system(params_gpu);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
-	dummy.runExtendKernel();
-	dummy.verify();
+for(auto device: system.get_devices()) {
+		Test dummy(params_gpu, device);
+		dummy.runExtendKernel();
+		dummy.verify();
+	}
 	BOOST_MESSAGE("Tested GPU");
 }
 
-void Dummyfield::init_tasks()
-{
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
-
-	fill_buffers();
-}
-
-void Dummyfield::finalize_opencl()
-{
-	clear_buffers();
-	Gaugefield_hybrid::finalize_opencl();
-}
-
-void Dummyfield::fill_buffers()
+void Test::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
-	hardware::Device * device = opencl_modules[0]->get_device();
+	hardware::Device * device = code.get_device();
 
 	h_in = new Matrixsu2[NUM_ELEMENTS];
 	BOOST_REQUIRE(h_in);
@@ -134,7 +126,7 @@ void Device::fill_kernels()
 	extendKernel = createKernel("extendKernel") << get_device()->get_gaugefield_code()->get_sources() << "tests/su2su3extend.cl";
 }
 
-void Dummyfield::clear_buffers()
+void Test::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
@@ -166,14 +158,14 @@ void Device::runExtendKernel(const hardware::buffers::Plain<Matrixsu3> * out, co
 	get_device()->enqueue_kernel(extendKernel, NUM_ELEMENTS);
 }
 
-void Dummyfield::verify(hmc_complex left, hmc_complex right)
+void Test::verify(hmc_complex left, hmc_complex right)
 {
 	BOOST_REQUIRE_EQUAL(left.re, right.re);
 	BOOST_REQUIRE_EQUAL(left.im, right.im);
 }
 
 
-void Dummyfield::verify()
+void Test::verify()
 {
 	// get stuff from device
 	d_out->dump(h_out);
@@ -194,7 +186,7 @@ void Dummyfield::verify()
 	}
 }
 
-void Dummyfield::runExtendKernel()
+void Test::runExtendKernel()
 {
-	static_cast<Device*>(opencl_modules[0])->runExtendKernel(d_out, d_in, d_rand, NUM_ELEMENTS);
+	code.runExtendKernel(d_out, d_in, d_rand, NUM_ELEMENTS);
 }
