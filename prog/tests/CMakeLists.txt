@@ -40,13 +40,6 @@ target_link_libraries(geometry
 )
 add_test(geometry geometry)
 
-add_executable(saxsbypz saxsbypz.cpp)
-target_link_libraries(saxsbypz
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Saxsbypz saxsbypz)
-
 add_executable(gaugefield_convert gaugefield_convert.cpp)
 target_link_libraries(gaugefield_convert
 	optimal
