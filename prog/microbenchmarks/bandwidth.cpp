@@ -8,9 +8,9 @@
 
 #include <boost/program_options.hpp>
 
-#include "../host_random.h"
+#include "../hardware/system.hpp"
+#include "../hardware/device.hpp"
 #include "../hardware/code/gaugefield.hpp"
-#include "../gaugefield_hybrid.h"
 #include "../logger.hpp"
 #include "../exceptions.h"
 
@@ -74,26 +74,24 @@ public:
 	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, const hardware::buffers::Plain<cl_char> * in, const hardware::buffers::Plain<cl_char> * out);
 };
 
-class Dummyfield : public Gaugefield_hybrid {
+class Test {
 
 public:
-	Dummyfield(const hardware::System * system, cl_device_type device_type, size_t maxMemSize)
-		: Gaugefield_hybrid(system), maxMemSize(maxMemSize), prng(*system) {
-		init(1, device_type, prng);
+	Test(const hardware::System& system, size_t maxMemSize)
+		: maxMemSize(maxMemSize), device(system.get_devices().at(0)), code(system.get_inputparameters(), device) {
+		fill_buffers();
 	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
 
 	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems);
 
+	~Test();
 private:
 	void verify(hmc_complex, hmc_complex);
 	void fill_buffers();
-	void clear_buffers();
 	const hardware::buffers::Plain<cl_char> * in, * out;
 	size_t maxMemSize;
-	physics::PRNG prng;
+	hardware::Device * const device;
+	Device code;
 };
 
 int main(int argc, char** argv)
@@ -159,7 +157,7 @@ int main(int argc, char** argv)
 		if(vm.count("single")) {
 			logger.fatal() << "Single element per thread mode has not been implemented in element count sweeping mod";
 		} else {
-			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, max_elements * getTypeSize(copy_type));
+			Test dev(system, max_elements * getTypeSize(copy_type));
 			size_t elements = 1;
 			dev.runKernel(copy_type, groups, threads, elements);
 			for(elements = step_elements; elements <= max_elements; elements += step_elements) {
@@ -181,7 +179,7 @@ int main(int argc, char** argv)
 		}
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
-			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, groups * max_threads * getTypeSize(copy_type));
+			Test dev(system, groups * max_threads * getTypeSize(copy_type));
 			if(step_threads <= max_threads) {
 				size_t threads = 1;
 				dev.runKernel(copy_type, groups, threads, groups * threads);
@@ -192,7 +190,7 @@ int main(int argc, char** argv)
 		} else {
 			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
-			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
+			Test dev(system, elems * getTypeSize(copy_type));
 			if(step_threads <= max_threads) {
 				size_t threads = 1;
 				dev.runKernel(copy_type, groups, threads, groups * threads);
@@ -208,14 +206,14 @@ int main(int argc, char** argv)
 
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
-			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, max_groups * threads * getTypeSize(copy_type));
+			Test dev(system, max_groups * threads * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
 				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
 			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
-			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
+			Test dev(system, elems * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
 				dev.runKernel(copy_type, groups, threads, elems);
 			}
@@ -227,7 +225,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void Dummyfield::fill_buffers()
+void Test::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
@@ -238,8 +236,8 @@ void Dummyfield::fill_buffers()
 
 	logger.info() << "Allocating buffers of " << allocMemSize << " bytes.";
 
-	in = new hardware::buffers::Plain<cl_char>(allocMemSize, opencl_modules[0]->get_device());
-	out = new hardware::buffers::Plain<cl_char>(allocMemSize, opencl_modules[0]->get_device());
+	in = new hardware::buffers::Plain<cl_char>(allocMemSize, device);
+	out = new hardware::buffers::Plain<cl_char>(allocMemSize, device);
 }
 
 void Device::fill_kernels()
@@ -256,7 +254,7 @@ void Device::fill_kernels()
 	spinorLocalKernel = createKernel("copySpinorLocal") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 }
 
-void Dummyfield::clear_buffers()
+Test::~Test()
 {
 	// don't invoke parent function as we don't require the original buffers
 	delete in;
@@ -363,23 +361,9 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	std::cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << elems << ' ' << elems * sizeof(T) << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / eventTime)   << ' ' << eventTime << std::endl;
 }
 
-void Dummyfield::init_tasks()
+void Test::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems)
 {
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
-
-	fill_buffers();
-}
-
-void Dummyfield::finalize_opencl()
-{
-	clear_buffers();
-	Gaugefield_hybrid::finalize_opencl();
-}
-
-void Dummyfield::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems)
-{
-	static_cast<Device*>(opencl_modules[0])->runKernel(copy_type, groups, threads_per_group, elems, in, out);
+	code.runKernel(copy_type, groups, threads_per_group, elems, in, out);
 }
 
 size_t getTypeSize(copyType type)
