@@ -68,7 +68,6 @@ public:
 	int get_ntime() const noexcept;
 
 	startcondition get_startcondition() const noexcept;
-	bool get_saveconfigs() const noexcept;
 	int get_writefrequency() const noexcept;
 	int get_savefrequency() const noexcept;
 	std::string get_sourcefile() const noexcept;
@@ -109,7 +108,6 @@ public:
 	//at the moment, only 2 solvers are implemented..
 	solver get_solver() const noexcept;
 	solver get_solver_mp() const noexcept;
-	bool get_use_pointsource() const noexcept;
 	bool get_use_gauge_only() const noexcept;
 	int get_num_sources() const noexcept;
 	int get_source_x() const noexcept;
@@ -194,7 +192,6 @@ private:
 	int ntime;
 
 	startcondition _startcondition;
-	bool saveconfigs;
 	int writefrequency;
 	int savefrequency;
 	std::string sourcefile;
@@ -235,7 +232,6 @@ private:
 	//at the moment, only 2 solvers are implemented..
 	solver _solver;
 	solver _solver_mp;
-	bool use_pointsource;
 	bool use_gauge_only;
 	int num_sources;
 	int source_x;

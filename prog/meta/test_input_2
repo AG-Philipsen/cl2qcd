@@ -12,7 +12,6 @@ nspace = 32
 ntime = 12
 
 startcondition = continue
-saveconfigs = true
 writefrequency = 10
 savefrequency = 10
 sourcefile = conf.11111
@@ -50,7 +49,6 @@ chem_pot_im = 0.12
 use_eo = false
 # at the moment, only 2 solvers are implemented..
 solver = cg
-use_pointsource = false
 use_gauge_only = true
 num_sources = 3
 source_x = 1

@@ -93,3 +93,12 @@ void testFloatAgainstInputparameters(hmc_float cpu_res, meta::Inputparameters pa
 	logger.info() << "Compare result to reference value";
 	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
 }
+
+void testFloatSizeAgainstInputparameters(hmc_float cpu_res, meta::Inputparameters params)
+{
+	logger.info() << "Choosing reference value and acceptance precision";
+	hmc_float ref_val = params.get_test_ref_value();
+
+	logger.info() << "Compare result to reference value";
+	BOOST_REQUIRE_SMALL(cpu_res, ref_val);
+}

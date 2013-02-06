@@ -62,9 +62,8 @@ static void print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## PRNG SEED:\t" << params.get_host_seed();
 	logger.info() << "## **********************************************************";
 	logger.info() << "## I/O parameters:";
-	logger.info() << "## SvConf:  " << params.get_saveconfigs();
-	logger.info() << "## WrFreq:  " << params.get_writefrequency();
-	logger.info() << "## SvFreq:  " << params.get_savefrequency();
+	logger.info() << "## Writefrequency:  " << params.get_writefrequency();
+	logger.info() << "## Savefrequency:  " << params.get_savefrequency();
 	switch(params.get_startcondition()) {
 		case Inputparameters::start_from_source: {
 			std::string sf = params.get_sourcefile();
@@ -120,9 +119,8 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 	*os  << "## PRNG SEED:\t" << params.get_host_seed() << endl;
 	*os  << "## **********************************************************" << endl;
 	*os  << "## I/O parameters:" << endl;
-	*os  << "## SvConf:  " << params.get_saveconfigs() << endl;
-	*os  << "## WrFreq:  " << params.get_writefrequency() << endl;
-	*os  << "## SvFreq:  " << params.get_savefrequency() << endl;
+	*os  << "## Writefrequency:  " << params.get_writefrequency() << endl;
+	*os  << "## Savefrequency:  " << params.get_savefrequency() << endl;
 	switch(params.get_startcondition()) {
 		case Inputparameters::start_from_source: {
 			std::string sf = params.get_sourcefile();

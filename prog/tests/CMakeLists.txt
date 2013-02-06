@@ -78,6 +78,30 @@ add_test(Opencl_module_CPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} 
 add_test(Opencl_module_GPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(Opencl_module_GPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
+add_executable(opencl_module_spinors_test opencl_module_spinors_test.cpp)
+target_link_libraries(opencl_module_spinors_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_spinors_CPU       opencl_module_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_spinors_GPU       opencl_module_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+add_executable(opencl_module_spinors_test_merged_kernels opencl_module_spinors_test_merged_kernels.cpp)
+target_link_libraries(opencl_module_spinors_test_merged_kernels
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_spinors_merged_kernels_CPU       opencl_module_spinors_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_spinors_merged_kernels_GPU       opencl_module_spinors_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+add_executable(opencl_module_correlators_test opencl_module_correlators_test.cpp)
+target_link_libraries(opencl_module_correlators_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_correlators_CPU       opencl_module_correlators_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_correlators_GPU       opencl_module_correlators_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 add_executable(opencl_module_fermions_test opencl_module_fermions_test.cpp)
 target_link_libraries(opencl_module_fermions_test
 	optimal
@@ -87,6 +111,16 @@ add_test(Opencl_module_fermions_CPU       opencl_module_fermions_test ${CMAKE_CU
 add_test(Opencl_module_fermions_CPU_REC12 opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(Opencl_module_fermions_GPU       opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(Opencl_module_fermions_GPU_REC12 opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+
+add_executable(opencl_module_fermions_test_merged_kernels opencl_module_fermions_test_merged_kernels.cpp)
+target_link_libraries(opencl_module_fermions_test_merged_kernels
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_fermions_merged_kernels_CPU       opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_fermions_merged_kernels_CPU_REC12 opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(Opencl_module_fermions_merged_kernels_GPU       opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(Opencl_module_fermions_merged_kernels_GPU_REC12 opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(opencl_module_gaugemomentum_test opencl_module_gaugemomentum_test.cpp)
 target_link_libraries(opencl_module_gaugemomentum_test

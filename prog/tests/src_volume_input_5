@@ -1,0 +1,16 @@
+NS=4
+NT=4
+
+# this specifies the number a gaussian spinorfield is created
+integrationsteps0=100
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=1.2
+
+use_eo=false
+read_multiple_configs=false
+
+sourcetype=volume
+sourcecontent=gaussian

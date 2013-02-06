@@ -55,8 +55,6 @@ public:
 	void saxpy_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hmc_complex alpha, const hardware::buffers::Spinor * out);
 	void sax_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out);
 	void saxsbypz_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Spinor * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Spinor * out);
-	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
-	void create_point_source_eoprec_device(const hardware::buffers::Spinor * inout_even, const hardware::buffers::Spinor * inout_odd, cl_mem gf, int i, int spacepos, int timepos);
 	void set_spinorfield_cold_device(const hardware::buffers::Plain<spinor> * inout);
 	void set_eoprec_spinorfield_cold_device(const hardware::buffers::Spinor * inout);
 

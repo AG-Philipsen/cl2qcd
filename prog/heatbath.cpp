@@ -63,8 +63,8 @@ int main(int argc, const char* argv[])
 				std::string gaugeout_name = meta::get_gauge_obs_file_name(parameters, "");
 				print_gaugeobservables(gaugefield, i, gaugeout_name);
 			}
-			if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {
-				gaugefield.save(i);
+			if( savefreq != 0 && ( (i + 1) % savefreq ) == 0 ) {
+				gaugefield.save(i+1);
 			}
 		}
 

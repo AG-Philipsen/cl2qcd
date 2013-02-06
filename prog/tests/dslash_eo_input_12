@@ -9,9 +9,9 @@ sourcefile=conf.00200
 
 ThetaT=1.
 
-#with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
+#with read_multiple_configs one can switch between "EVEN" and "ODD" as parameter for the kernel
 # true = EVEN, false = ODD
-use_pointsource=false
+read_multiple_configs=false
 
 #this specifies the acceptance precision
 solver_prec=1e-8

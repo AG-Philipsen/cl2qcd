@@ -104,10 +104,6 @@ Inputparameters::startcondition Inputparameters::get_startcondition() const noex
 {
   return _startcondition;
 }
-bool Inputparameters::get_saveconfigs() const noexcept
-{
-  return saveconfigs;
-}
 int Inputparameters::get_writefrequency() const noexcept
 {
   return writefrequency;
@@ -233,10 +229,6 @@ double Inputparameters::get_chem_pot_im() const noexcept
 bool Inputparameters::get_use_eo() const noexcept
 {
   return use_eo;
-}
-bool Inputparameters::get_use_pointsource() const noexcept
-{
-  return use_pointsource;
 }
 bool Inputparameters::get_use_gauge_only() const noexcept
 {
@@ -525,7 +517,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("ntime", po::value<int>(&ntime)->default_value(8))
 
 	("startcondition", po::value<std::string>()->default_value("cold_start"))
-	("saveconfigs", po::value<bool>(&saveconfigs)->default_value(false))
 	("writefrequency", po::value<int>(&writefrequency)->default_value(1))
 	("savefrequency", po::value<int>(&savefrequency)->default_value(100))
 	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
@@ -564,7 +555,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("use_eo", po::value<bool>(&use_eo)->default_value(true))
 	("solver", po::value<std::string>()->default_value("bicgstab"))
 	("solver_mp", po::value<std::string>()->default_value("bicgstab"))
-	("use_pointsource", po::value<bool>(&use_pointsource)->default_value(true))
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
 	("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
 	("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")

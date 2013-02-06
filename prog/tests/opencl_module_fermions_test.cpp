@@ -365,7 +365,6 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	//switch according to "use_pointsource"
 	hmc_float cpu_res;
 	if(switcher) {
 		device->M_tm_sitediagonal_device( &in, &out);
@@ -439,7 +438,6 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	//switch according to "use_pointsource"
 	hmc_float cpu_res;
 	if(switcher) {
 		device->M_tm_inverse_sitediagonal_device( &in, &out);
@@ -499,9 +497,8 @@ void test_dslash_eo(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	//switch according to "use_pointsource"
 	hmc_float cpu_res;
-	if(params.get_use_pointsource()) {
+	if(params.get_read_multiple_configs()) {
 		device->dslash_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), EVEN, params.get_kappa() );
 	} else {
 		device->dslash_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), ODD, params.get_kappa() );
@@ -516,223 +513,6 @@ void test_dslash_eo(std::string inputfile)
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
-}
-
-void test_dslash_and_gamma5_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName = "dslash_AND_gamma5_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Fermions * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	out.load(sf_in);
-
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(params.get_use_pointsource()) {
-		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa() );
-	} else {
-		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa() );
-	}
-	in.dump(sf_out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher)
-		kernelName = "dslash_AND_m_tm_inverse_sitediagonal";
-	else
-		kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Fermions * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	out.load(sf_in);
-
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(params.get_use_pointsource()) {
-		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
-		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
-	} else {
-		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
-		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
-	}
-	out.dump(sf_out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_dslash_and_m_tm_inverse_sitediagonal(std::string inputfile)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
-}
-
-void test_dslash_and_m_tm_inverse_sitediagonal_minus(std::string inputfile)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
-}
-
-void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool switcher)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher) kernelName = "m_tm_sitedigaonal_AND_gamma5_eo";
-	else kernelName = "m_tm_sitediagonal_minus_AND_gamma5_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Fermions * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	out.load(sf_in);
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(switcher)
-		device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
-	else
-		device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
-	out.dump(sf_out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_m_tm_sitediagonal_and_gamma5_eo(std::string inputfile)
-{
-	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, true);
-}
-
-void test_m_tm_sitediagonal_minus_and_gamma5_eo(std::string inputfile)
-{
-	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, false);
 }
 
 BOOST_AUTO_TEST_SUITE(BUILD)
@@ -1050,106 +830,6 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO_20)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_GAMMA5_EO )
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_1)
-{
-	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_2)
-{
-	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO )
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_2)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_3)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_4)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_4");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO )
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_2)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_3)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_4)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_4");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO )
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_1)
-{
-	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_2)
-{
-	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_3)
-{
-	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO )
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_1)
-{
-	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_2)
-{
-	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
-{
-	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 {
 	//switcher switches between similar functions
@@ -1226,8 +906,8 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	auto spinor_code = device->get_device()->get_spinor_code();
 
 	if(params.get_solver() != meta::Inputparameters::cg) {
-		//use use_pointsource to choose whether to copy the eo rnd vectors to noneo or vise versa
-		if(params.get_use_pointsource())
+		//use read_multiple_configs to choose whether to copy the eo rnd vectors to noneo or vise versa
+	  if(params.get_read_multiple_configs())
 			spinor_code->convert_from_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
 		else
 			spinor_code->convert_to_eoprec_device(&in_eo1, &in_eo2, &in_noneo);

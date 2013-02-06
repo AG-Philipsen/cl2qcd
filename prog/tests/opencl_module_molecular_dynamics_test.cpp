@@ -195,16 +195,6 @@ void test_build(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_generate_gaussian_spinorfield(std::string inputfile)
-{
-
-}
-
-void test_generate_gaussian_spinorfield_eo(std::string inputfile)
-{
-
-}
-
 void test_stout_smear_fermion_force(std::string inputfile)
 {
 
@@ -546,8 +536,8 @@ void test_f_fermion_eo(std::string inputfile)
 	logger.info() << cpu_back2;
 	logger.info() << "Run kernel";
 
-	//switch according to "use_pointsource"
-	if(params.get_use_pointsource()) {
+	//switch according to "read_multiple_configs"
+	if(params.get_read_multiple_configs()) {
 		int tmp = EVEN;
 		device->fermion_force_eo_device(&in1, &in2, cpu.get_gaugefield(), &out, tmp, params.get_kappa() );
 	} else {
@@ -573,26 +563,6 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
 	test_build("/opencl_module_molecular_dynamics_build_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD  )
-
-BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!! TO BE MOVED INTO SPINOR TEST!!");
-	test_generate_gaussian_spinorfield("/generate_gaussian_spinorfield_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD_EO  )
-
-BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_EO_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!! TO BE MOVED INTO SPINOR TEST!!");
-	test_generate_gaussian_spinorfield_eo("/generate_gaussian_spinorfield_eo_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -918,9 +888,9 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 		in1_noneo.load(sf_in1_noneo);
 		in2_noneo.load(sf_in2_noneo);
 	} else {
-		//one can either convert to or from eoprec, use use_pointsource for that
+		//one can either convert to or from eoprec, use read_multiple_configs for that
 		//NOTE: there is machinery to compare vectors in the old executable
-		if(params.get_use_pointsource()) {
+		if(params.get_read_multiple_configs()) {
 			spinor_code->copy_to_eoprec_spinorfield_buffer(&in1_eo, sf_in1_eo);
 			spinor_code->copy_to_eoprec_spinorfield_buffer(&in2_eo, sf_in2_eo);
 			spinor_code->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
