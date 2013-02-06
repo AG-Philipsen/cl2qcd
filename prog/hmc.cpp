@@ -1,9 +1,16 @@
 #include "hmc.h"
 
 #include "meta/util.hpp"
+#include "physics/algorithms/hmc.hpp"
+#include <cmath>
+
+static void print_hmcobservables(const hmc_observables& obs, int iter, const std::string& filename, const meta::Inputparameters& params);
+static void print_hmcobservables(const hmc_observables& obs, int iter);
 
 int main(int argc, const char* argv[])
 {
+	using physics::algorithms::perform_hmc_step;
+
 	try {
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
@@ -28,21 +35,12 @@ int main(int argc, const char* argv[])
 
 		hardware::System system(parameters);
 		physics::PRNG prng(system);
-		Gaugefield_hmc gaugefield(&system);
-
-		//use 1 task: the hmc-algorithm
-		int numtasks = 1;
-		if(parameters.get_device_count() == 2 )
-			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
-
-		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device, prng);
-
+		physics::lattices::Gaugefield gaugefield(system, prng);
 
 		logger.info() << "Gaugeobservables:";
-		gaugefield.print_gaugeobservables(0);
+		print_gaugeobservables(gaugefield, 0);
 		init_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,34 +48,34 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		perform_timer.reset();
-		/** @todo usage of solver_timer has to be checked. No output yet */
-		usetimer solver_timer;
 
 		//start from the iterationnumber from sourcefile
 		//NOTE: this is 0 in case of cold or hot start
 		int iter = gaugefield.get_parameters_source().trajectorynr_source;
-		int hmc_iter = iter + parameters.get_hmcsteps();
+		const int hmc_iter = iter + parameters.get_hmcsteps();
 		hmc_float acc_rate = 0.;
-		int writefreq = parameters.get_writefrequency();
-		int savefreq = parameters.get_savefrequency();
+		const int writefreq = parameters.get_writefrequency();
+		const int savefreq = parameters.get_savefrequency();
 
 		logger.info() << "perform HMC on device(s)... ";
 
 		//main hmc-loop
 		for(; iter < hmc_iter; iter ++) {
 			//generate new random-number for Metropolis step
-			hmc_float rnd_number = prng.get_double();
-			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer, prng);
+			const hmc_float rnd_number = prng.get_double();
+
+			obs = perform_hmc_step(&gaugefield, iter, rnd_number, prng, system);
+
 			acc_rate += obs.accept;
 			if( ( (iter + 1) % writefreq ) == 0 ) {
 				std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
-				gaugefield.print_hmcobservables(obs, iter, gaugeout_name);
-			} else if(parameters.get_print_to_screen() )
-				gaugefield.print_hmcobservables(obs, iter);
+				print_hmcobservables(obs, iter, gaugeout_name, parameters);
+			} else if(parameters.get_print_to_screen() ) {
+				print_hmcobservables(obs, iter);
+			}
 
 			if( savefreq != 0 && ( (iter + 1) % savefreq ) == 0 ) {
 				// save gaugefield
-				gaugefield.synchronize(0);
 				gaugefield.save(iter + 1);
 
 				// save prng
@@ -91,7 +89,6 @@ int main(int argc, const char* argv[])
 		}
 
 		//always save the config on the last iteration
-		gaugefield.synchronize(0);
 		std::string outputfile = "conf.save";
 		logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
 		gaugefield.save(outputfile, iter);
@@ -109,12 +106,6 @@ int main(int argc, const char* argv[])
 
 		total_timer.add();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// free variables
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		gaugefield.finalize();
 
 	} //try
 	//exceptions from Opencl classes
@@ -135,4 +126,47 @@ int main(int argc, const char* argv[])
 
 	return 0;
 
+}
+
+static void print_hmcobservables(const hmc_observables& obs, const int iter, const std::string& filename, const meta::Inputparameters& params)
+{
+	const hmc_float exp_deltaH = std::exp(obs.deltaH);
+	std::fstream hmcout(filename.c_str(), std::ios::out | std::ios::app);
+	if(!hmcout.is_open()) throw File_Exception(filename);
+	hmcout << iter << "\t";
+	hmcout.width(8);
+	hmcout.precision(15);
+	//print plaquette (plaq, tplaq, splaq)
+	hmcout << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq;
+	//print polyakov loop (re, im, abs)
+	hmcout << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im);
+	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
+	hmcout <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
+	//print number of iterations used in inversions with full and force precision
+	/**
+	 * @todo: The counters should be implemented once the solver class is used!"
+	 * until then, only write "0"!
+	 */
+	int iter0 = 0;
+	int iter1 = 0;
+	hmcout << "\t" << iter0 << "\t" << iter1;
+	if(params.get_use_mp() ) {
+		hmcout << "\t" << iter0 << "\t" << iter1;
+	}
+	if(meta::get_use_rectangles(params) ) {
+		//print rectangle value
+		hmcout << "\t" << obs.rectangles;
+	}
+	hmcout << std::endl;
+	hmcout.close();
+
+	//print to screen
+	print_hmcobservables(obs, iter);
+}
+
+static void print_hmcobservables(const hmc_observables& obs, const int iter)
+{
+	using namespace std;
+	//short version of output, all obs are collected in the output file anyways...
+	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
 }

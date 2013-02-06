@@ -1,9 +1,12 @@
 #include "gaugeobservables.h"
 
 #include "meta/util.hpp"
+#include "physics/lattices/gaugefield.hpp"
 
 int main(int argc, const char* argv[])
 {
+	using physics::lattices::Gaugefield;
+
 	try {
 		logger.info() << "This executable requires the following parameter value(s) to work properly:";
 		logger.info() << "startcondition:\tcontinue";
@@ -19,8 +22,7 @@ int main(int argc, const char* argv[])
 
 		meta::print_info_gaugeobservables(argv[0], parameters);
 
-		ofstream ofile;
-		ofile.open("gaugeobservables.log");
+		ofstream ofile("gaugeobservables.log");
 		if(ofile.is_open()) {
 			meta::print_info_gaugeobservables(argv[0], &ofile, parameters);
 			ofile.close();
@@ -34,19 +36,8 @@ int main(int argc, const char* argv[])
 
 		init_timer.reset();
 
-		hardware::System system(parameters);
+		const hardware::System system(parameters);
 		physics::PRNG prng(system);
-		Gaugefield_hybrid gaugefield(&system);
-
-		//use 1 task:
-		int numtasks = 1;
-		if(parameters.get_device_count() == 2 )
-			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
-
-		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
-
-		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device, prng);
 
 		init_timer.add();
 
@@ -56,9 +47,9 @@ int main(int argc, const char* argv[])
 
 		perform_timer.reset();
 
-		int iter_end = parameters.get_config_read_end();
-		int iter_start = parameters.get_config_read_start();
-		int iter_incr = parameters.get_config_read_incr();
+		const int iter_end = parameters.get_config_read_end();
+		const int iter_start = parameters.get_config_read_start();
+		const int iter_incr = parameters.get_config_read_incr();
 		int iter = 0;
 
 		logger.info() << "Measure gaugeobservables on device(s)... ";
@@ -66,25 +57,26 @@ int main(int argc, const char* argv[])
 		if(parameters.get_read_multiple_configs()) {
 			//main loop
 			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
-			  std::string config_name = meta::create_configuration_name(parameters, iter);
+				const std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure gaugeobservables of configuration: " << config_name;
-				gaugefield.init_gaugefield(config_name.c_str(), prng);
-				gaugefield.synchronize(0);
+				const Gaugefield gaugefield(system, prng, config_name);
 				if(parameters.get_print_to_screen() ) {
-					gaugefield.print_gaugeobservables(iter);
+					print_gaugeobservables(gaugefield, iter);
 				}
-				std::string gaugeout_name = get_gauge_obs_file_name(parameters, config_name);
-				gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name);
+				const std::string gaugeout_name = get_gauge_obs_file_name(parameters, config_name);
+				print_gaugeobservables(gaugefield, iter, gaugeout_name);
 			}
 		} else {
 			//in this case only the config from the initialization is taken into account
-			logger.info() << "Measure gaugeobservables of configuration: " << parameters.get_sourcefile();
+			const std::string config_name = parameters.get_sourcefile();
+			logger.info() << "Measure gaugeobservables of configuration: " << config_name;
+			const Gaugefield gaugefield(system, prng, config_name);
 			//@todo: adjust the "iter" here to be the number from the sourcefile!!
 			if(parameters.get_print_to_screen() ) {
-				gaugefield.print_gaugeobservables(iter);
+				print_gaugeobservables(gaugefield, iter);
 			}
-			std::string gaugeout_name = get_gauge_obs_file_name(parameters, "");
-			gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name);
+			const std::string gaugeout_name = get_gauge_obs_file_name(parameters, "");
+			print_gaugeobservables(gaugefield, iter, gaugeout_name);
 		}
 		logger.info() << "... done";
 		perform_timer.add();
@@ -95,12 +87,6 @@ int main(int argc, const char* argv[])
 
 		total_timer.add();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// free variables
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		gaugefield.finalize();
 
 	} //try
 	//exceptions from Opencl classes

@@ -52,10 +52,6 @@ public:
 	 */
 	cl_kernel get_correlator_kernel(std::string which);
 
-	/////////////////////////////////////////////////
-	//functions to get private variables
-	cl_mem get_clmem_corr();
-
 	/**
 	 * Print the profiling information to a file.
 	 *

@@ -74,6 +74,10 @@ void hardware::code::Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_
 		if(*gs > hardware::buffers::get_prng_buffer_size(get_device())) {
 			*gs = hardware::buffers::get_prng_buffer_size(get_device());
 		}
+	} else if(kernel == gaugemomentum_squarenorm) {
+		if(*ls != 1) { // avoid potential reduction error on AMD platform
+			*ls = 128;
+		}
 	}
 
 	return;

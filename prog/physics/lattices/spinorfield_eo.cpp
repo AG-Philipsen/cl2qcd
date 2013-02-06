@@ -315,3 +315,11 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 	auto spinor_code = devices[0]->get_spinor_code();
 	return spinor_code->get_flop_size("saxsbypz_eoprec");
 }
+
+void physics::lattices::log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield_eo& x)
+{
+	if(logger.beDebug()) {
+		hmc_float tmp = squarenorm(x);
+		logger.debug() << msg << std::scientific << std::setprecision(10) << tmp;
+	}
+}

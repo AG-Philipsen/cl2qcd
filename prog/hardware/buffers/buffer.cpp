@@ -126,6 +126,7 @@ void hardware::buffers::Buffer::copyDataBlock(const Buffer* orig, const size_t d
 void hardware::buffers::Buffer::clear() const
 {
 #ifdef CL_VERSION_1_2
+	device->synchronize();
 	if(sizeof(hmc_complex_zero) % bytes) {
 		cl_char foo = 0;
 		cl_int err = clEnqueueFillBuffer(*device, cl_buffer, &foo, sizeof(foo), 0, bytes, 0, nullptr, nullptr);

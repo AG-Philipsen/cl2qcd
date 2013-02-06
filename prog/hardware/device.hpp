@@ -21,7 +21,6 @@
 #include "code/prng.hpp"
 #include "code/spinors.hpp"
 #include "code/fermions.hpp"
-#include "code/hmc.hpp"
 #include "code/correlator.hpp"
 #include "code/heatbath.hpp"
 #include "code/kappa.hpp"
@@ -213,11 +212,6 @@ public:
 	hardware::code::Molecular_Dynamics * get_molecular_dynamics_code();
 
 	/**
-	 * Get access to the hmc kernels on this device.
-	 */
-	hardware::code::Hmc * get_hmc_code();
-
-	/**
 	 * Get access to the correlator kernels on this device.
 	 */
 	hardware::code::Correlator * get_correlator_code();
@@ -357,12 +351,6 @@ private:
 	 * Initialized on demand.
 	 */
 	hardware::code::Molecular_Dynamics * molecular_dynamics_code;
-
-	/**
-	 * Pointer to the hmc code.
-	 * Initialized on demand.
-	 */
-	hardware::code::Hmc * hmc_code;
 
 	/**
 	 * Pointer to the correlator code.

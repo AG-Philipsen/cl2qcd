@@ -11,11 +11,6 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-const hardware::buffers::SU3 * hardware::code::Gaugefield::get_gaugefield()
-{
-	return &gaugefield;
-}
-
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
@@ -281,11 +276,6 @@ void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * 
 
 }
 
-void hardware::code::Gaugefield::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
-{
-	gaugeobservables(get_gaugefield(), plaq_out, tplaq_out, splaq_out, pol_out);
-}
-
 void hardware::code::Gaugefield::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
 	const hardware::buffers::Plain<hmc_float> plaq(1, get_device());
@@ -466,46 +456,6 @@ void hardware::code::Gaugefield::print_profiling(const std::string& filename, in
 	Opencl_Module::print_profiling(filename, convertGaugefieldFromSOA);
 }
 
-void hardware::code::Gaugefield::smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3*>& gf_intermediate)
-{
-	logger.debug() << "\t\tsave unsmeared gaugefield...";
-	// TODO what if called before
-	// FIXME memory leak if not unsmeared
-	hardware::buffers::copyData(&gf_unsmeared, gf);
-	logger.debug() << "\t\tperform " << get_parameters().get_rho_iter() << " steps of stout-smearing to the gaugefield...";
-	if(gf_intermediate.size() == get_parameters().get_rho_iter()) {
-		//the first step is applied to the original gf
-		stout_smear_device(gf, gf_intermediate[0]);
-		//perform rho_iter -2 intermediate steps
-		for(int i = 1; i < get_parameters().get_rho_iter() - 1; i++) {
-			stout_smear_device(gf_intermediate[i - 1], gf_intermediate[i]);
-		}
-		//the last step results in the smeared gf
-		stout_smear_device(gf_intermediate[get_parameters().get_rho_iter() - 1 ], gf);
-	} else {
-		//one needs a temporary gf to apply the smearing to
-		hardware::buffers::SU3 gf_tmp(gf->get_elements(), get_device());
-		for(int i = 0; i < get_parameters().get_rho_iter(); i++) {
-			if(i / 2) stout_smear_device(gf, &gf_tmp);
-			else stout_smear_device(&gf_tmp, gf);
-		}
-		//if rho_iter is odd one has to copy ones more
-		if(get_parameters().get_rho_iter() / 2 == 1) {
-			hardware::buffers::copyData(gf, &gf_tmp);
-		}
-	}
-}
-
-void hardware::code::Gaugefield::unsmear_gaugefield(const hardware::buffers::SU3 * gf)
-{
-	logger.debug() << "\t\trestore unsmeared gaugefield...";
-	hardware::buffers::copyData(gf, &gf_unsmeared);
-}
-
-void hardware::code::Gaugefield::importGaugefield(const Matrixsu3 * const data)
-{
-	importGaugefield(get_gaugefield(), data);
-}
 void hardware::code::Gaugefield::importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data)
 {
 	using namespace hardware::buffers;
@@ -518,11 +468,6 @@ void hardware::code::Gaugefield::importGaugefield(const hardware::buffers::SU3 *
 	} else {
 		gaugefield->load(data);
 	}
-}
-
-void hardware::code::Gaugefield::exportGaugefield(Matrixsu3 * const dest)
-{
-	exportGaugefield(dest, &gaugefield);
 }
 
 void hardware::code::Gaugefield::exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield)
@@ -580,8 +525,7 @@ void hardware::code::Gaugefield::convertGaugefieldFromSOA_device(const hardware:
 }
 
 hardware::code::Gaugefield::Gaugefield(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), gaugefield(NDIM * meta::get_vol4d(params), device),
-	  gf_unsmeared(gaugefield.get_elements(), device),
+	: Opencl_Module(params, device),
 	  stout_smear(0), rectangles(0), rectangles_reduction(0)
 {
 	fill_kernels();

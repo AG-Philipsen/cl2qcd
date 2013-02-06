@@ -1,6 +1,6 @@
-#include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 #include "../host_random.h"
+#include "../physics/prng.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -9,36 +9,6 @@
 
 //some functionality
 #include "test_util.h"
-
-class TestGaugefield : public Gaugefield_hybrid {
-
-public:
-	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
-		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
-		meta::print_info_hmc("test program", inputfile);
-	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-
-	hardware::code::Spinors * get_device();
-  physics::PRNG* get_prng();
-
-private:
-	physics::PRNG prng;
-};
-
-void TestGaugefield::init_tasks()
-{
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = get_device_for_task(0)->get_spinor_code();
-}
-
-void TestGaugefield::finalize_opencl()
-{
-	Gaugefield_hybrid::finalize_opencl();
-}
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
@@ -268,24 +238,15 @@ void fill_sf_with_random(spinor * sf_in, int size)
 	fill_sf_with_random(sf_in, size, 123456);
 }
 
-hardware::code::Spinors* TestGaugefield::get_device()
-{
-	return static_cast<hardware::code::Spinors*>(opencl_modules[0]);
-}
-physics::PRNG* TestGaugefield::get_prng()
-{
-	return &prng;
-}
-
 void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_spinors";
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	logger.info() << "Finalize device";
-	cpu.finalize();
+	for(auto device: system.get_devices()) {
+		device->get_spinor_code();
+	}
 	BOOST_MESSAGE("Test done");
 }
 
@@ -299,15 +260,12 @@ void test_sf_squarenorm(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
 	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	spinor * sf_in;
 	sf_in = new spinor[NUM_ELEMENTS_SF];
@@ -326,8 +284,6 @@ void test_sf_squarenorm(std::string inputfile)
 	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -344,15 +300,12 @@ void test_sf_squarenorm_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
 	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	spinor * sf_in;
 	sf_in = new spinor[NUM_ELEMENTS_SF];
@@ -371,8 +324,6 @@ void test_sf_squarenorm_eo(std::string inputfile)
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -388,16 +339,13 @@ void test_sf_scalar_product(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
 	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
 	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	spinor * sf_in;
 	sf_in = new spinor[NUM_ELEMENTS_SF];
@@ -427,8 +375,6 @@ void test_sf_scalar_product(std::string inputfile)
 	sqnorm.dump(&cpu_res_tmp);
 	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -444,16 +390,13 @@ void test_sf_scalar_product_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
 	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	spinor * sf_in;
 	sf_in = new spinor[NUM_ELEMENTS_SF];
@@ -483,8 +426,6 @@ void test_sf_scalar_product_eo(std::string inputfile)
 	sqnorm.dump(&cpu_res_tmp);
 	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -504,15 +445,12 @@ void test_sf_cold(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
 	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
 
@@ -527,8 +465,6 @@ void test_sf_cold(std::string inputfile, bool switcher)
 	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -548,15 +484,12 @@ void test_sf_cold_eo(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
 	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
 
@@ -570,8 +503,6 @@ void test_sf_cold_eo(std::string inputfile, bool switcher)
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -587,9 +518,7 @@ void test_sf_sax(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -597,7 +526,6 @@ void test_sf_sax(std::string inputfile)
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
@@ -626,8 +554,6 @@ void test_sf_sax(std::string inputfile)
 	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -647,9 +573,7 @@ void test_sf_saxpy(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -658,7 +582,6 @@ void test_sf_saxpy(std::string inputfile, bool switcher)
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
@@ -696,8 +619,6 @@ void test_sf_saxpy(std::string inputfile, bool switcher)
 	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -713,9 +634,7 @@ void test_sf_saxsbypz(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -726,7 +645,6 @@ void test_sf_saxsbypz(std::string inputfile)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
@@ -770,8 +688,6 @@ void test_sf_saxsbypz(std::string inputfile)
 	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -787,9 +703,7 @@ void test_sf_sax_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -797,7 +711,6 @@ void test_sf_sax_eo(std::string inputfile)
 	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
@@ -826,8 +739,6 @@ void test_sf_sax_eo(std::string inputfile)
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -847,9 +758,7 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -858,7 +767,6 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
@@ -896,8 +804,6 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -913,9 +819,7 @@ void test_sf_saxsbypz_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -926,7 +830,6 @@ void test_sf_saxsbypz_eo(std::string inputfile)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
@@ -970,8 +873,6 @@ void test_sf_saxsbypz_eo(std::string inputfile)
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -993,15 +894,12 @@ void test_cplx(std::string inputfile, int switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
@@ -1028,8 +926,6 @@ void test_cplx(std::string inputfile, int switcher)
 	sqnorm.dump(&tmp);
 	cpu_res = tmp.re + tmp.im;
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -1045,9 +941,7 @@ void test_sf_convert_to_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
@@ -1057,7 +951,6 @@ void test_sf_convert_to_eo(std::string inputfile)
 	const Spinor in3(NUM_ELEMENTS_SF_EO, device->get_device());
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	spinor * sf_in;
 	sf_in = new spinor[NUM_ELEMENTS_SF];
@@ -1096,8 +989,6 @@ void test_sf_convert_to_eo(std::string inputfile)
 	  sqnorm.dump(&cpu_res);
 	  logger.info() << cpu_res;
 	}
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -1113,9 +1004,7 @@ void test_sf_convert_from_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
@@ -1124,7 +1013,6 @@ void test_sf_convert_from_eo(std::string inputfile)
 	const Spinor in3(NUM_ELEMENTS_SF_EO, device->get_device());
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	spinor * sf_eo1;
 	spinor * sf_eo2;
@@ -1162,8 +1050,6 @@ void test_sf_convert_from_eo(std::string inputfile)
 	  cpu_res= count_sf_eo(sf_out, NUM_ELEMENTS_SF, false, params);	
 	  logger.info() << cpu_res;
 	}
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -1179,17 +1065,14 @@ void test_sf_gaussian(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
 
-	physics::PRNG * prng = cpu.get_prng();
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	physics::PRNG prng(system);
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	//CP: run the kernel a couple of times times
 	int iterations = params.get_integrationsteps(0);
@@ -1199,7 +1082,7 @@ void test_sf_gaussian(std::string inputfile)
 	BOOST_REQUIRE(sf_out);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng->get_buffers().at(0);
+	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
@@ -1227,8 +1110,6 @@ void test_sf_gaussian(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatSizeAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -1245,16 +1126,13 @@ void test_sf_gaussian_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
 
-	physics::PRNG * prng = cpu.get_prng();
-	cl_int err = CL_SUCCESS;
-	hardware::code::Spinors * device = cpu.get_device();
+	physics::PRNG prng(system);
+	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
 	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	//CP: run the kernel a couple of times times
 	int iterations = params.get_integrationsteps(0);
@@ -1264,7 +1142,7 @@ void test_sf_gaussian_eo(std::string inputfile)
 	BOOST_REQUIRE(sf_out);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng->get_buffers().at(0);
+	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
@@ -1291,9 +1169,6 @@ void test_sf_gaussian_eo(std::string inputfile)
 	  logger.info() << "result: variance";
 	  logger.info() << cpu_res;
 	}
-
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatSizeAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");

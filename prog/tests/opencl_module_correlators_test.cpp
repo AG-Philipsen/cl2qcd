@@ -1,6 +1,6 @@
-#include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 #include "../host_random.h"
+#include "../physics/prng.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -9,36 +9,6 @@
 
 //some functionality
 #include "test_util.h"
-
-class TestGaugefield : public Gaugefield_hybrid {
-
-public:
-	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
-		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
-		meta::print_info_inverter("test program", inputfile);
-	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-
-  hardware::code::Correlator * get_device();
-  physics::PRNG* get_prng();
-
-private:
-	physics::PRNG prng;
-};
-
-void TestGaugefield::init_tasks()
-{
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = get_device_for_task(0)->get_correlator_code();
-}
-
-void TestGaugefield::finalize_opencl()
-{
-	Gaugefield_hybrid::finalize_opencl();
-}
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
@@ -268,24 +238,15 @@ void fill_sf_with_random(spinor * sf_in, int size)
 	fill_sf_with_random(sf_in, size, 123456);
 }
 
-hardware::code::Correlator* TestGaugefield::get_device()
-{
-  return static_cast<hardware::code::Correlator*>(opencl_modules[0]);
-}
-physics::PRNG* TestGaugefield::get_prng()
-{
-	return &prng;
-}
-
 void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_correlators";
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	logger.info() << "Finalize device";
-	cpu.finalize();
+	for(auto device: system.get_devices()) {
+		device->get_correlator_code();
+	}
 	BOOST_MESSAGE("Test done");
 }
 
@@ -299,11 +260,10 @@ void test_src_volume(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
 
-	physics::PRNG * prng = cpu.get_prng();
+	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Correlator * device = cpu.get_device();
+	auto * device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -319,7 +279,7 @@ void test_src_volume(std::string inputfile)
 	BOOST_REQUIRE(sf_out);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng->get_buffers().at(0);
+	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
@@ -347,9 +307,6 @@ void test_src_volume(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	logger.info() << "Finalize device";
-	cpu.finalize();
-	
 	if(params.get_sourcecontent() == meta::Inputparameters::one){
 	  testFloatAgainstInputparameters(cpu_res, params);
 	} else{
@@ -368,11 +325,10 @@ void test_src_zslice(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
 
-	physics::PRNG * prng = cpu.get_prng();
+	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Correlator * device = cpu.get_device();
+	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -390,7 +346,7 @@ void test_src_zslice(std::string inputfile)
 	BOOST_REQUIRE(sf_out);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng->get_buffers().at(0);
+	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
@@ -418,9 +374,6 @@ void test_src_zslice(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	logger.info() << "Finalize device";
-	cpu.finalize();
-	
 	if(params.get_sourcecontent() == meta::Inputparameters::one){
 	  testFloatAgainstInputparameters(cpu_res, params);
 	} else{
@@ -439,11 +392,10 @@ void test_src_tslice(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
 
-	physics::PRNG * prng = cpu.get_prng();
+	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Correlator * device = cpu.get_device();
+	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -461,7 +413,7 @@ void test_src_tslice(std::string inputfile)
 	BOOST_REQUIRE(sf_out);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng->get_buffers().at(0);
+	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
@@ -489,9 +441,6 @@ void test_src_tslice(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	logger.info() << "Finalize device";
-	cpu.finalize();
-	
 	if(params.get_sourcecontent() == meta::Inputparameters::one){
 	  testFloatAgainstInputparameters(cpu_res, params);
 	} else{
@@ -510,11 +459,10 @@ void test_src_point(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
 
-	physics::PRNG * prng = cpu.get_prng();
+	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Correlator * device = cpu.get_device();
+	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -532,7 +480,7 @@ void test_src_point(std::string inputfile)
 	BOOST_REQUIRE(sf_out);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng->get_buffers().at(0);
+	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
@@ -561,9 +509,6 @@ void test_src_point(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	logger.info() << "Finalize device";
-	cpu.finalize();
-	
 	if(params.get_sourcecontent() == meta::Inputparameters::one){
 	  testFloatAgainstInputparameters(cpu_res, params);
 	} else{

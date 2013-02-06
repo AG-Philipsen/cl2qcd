@@ -1,6 +1,6 @@
-#include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 #include "../host_random.h"
+#include "../physics/lattices/gaugefield.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -10,34 +10,23 @@
 //some functionality
 #include "test_util.h"
 
-class TestGaugefield : public Gaugefield_hybrid {
+class TestGaugefield {
 
 public:
-	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
+	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
+		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
 		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
 		meta::print_info_hmc("test program", inputfile);
 	};
 
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-
 	hardware::code::Fermions * get_device();
+	const hardware::buffers::SU3 * get_gaugefield();
 
 private:
+	const hardware::System * const system;
 	physics::PRNG prng;
+	const physics::lattices::Gaugefield gf;
 };
-
-void TestGaugefield::init_tasks()
-{
-	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = get_device_for_task(0)->get_fermion_code();
-}
-
-void TestGaugefield::finalize_opencl()
-{
-	Gaugefield_hybrid::finalize_opencl();
-}
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
@@ -96,11 +85,6 @@ void fill_sf_with_random(spinor * sf_in, int size)
 	fill_sf_with_random(sf_in, size, 123456);
 }
 
-hardware::code::Fermions* TestGaugefield::get_device()
-{
-	return static_cast<hardware::code::Fermions*>(opencl_modules[0]);
-}
-
 void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_hmc";
@@ -108,8 +92,6 @@ void test_build(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	logger.info() << "Finalize device";
-	cpu.finalize();
 	BOOST_MESSAGE("Test done");
 }
 
@@ -134,6 +116,17 @@ hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
 	}
 	return res;
 }
+
+hardware::code::Fermions* TestGaugefield::get_device()
+{
+	return system->get_devices()[0]->get_fermion_code();
+}
+
+const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
+{
+	return gf.get_buffers().at(0);
+}
+
 
 void test_dslash_and_gamma5_eo(std::string inputfile)
 {
@@ -180,17 +173,15 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(params.get_read_multiple_configs()) {
-		device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa() );
+		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa() );
 	} else {
-		device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa() );
+		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa() );
 	}
 	in.dump(sf_out);
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	logger.info() << "Clear buffers";
 	delete[] sf_in;
@@ -250,14 +241,14 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	logger.info() << "Run kernel";
 	if(params.get_read_multiple_configs()) {
 		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 	} else {
 		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
 		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
 	}
 	out.dump(sf_out);
 	logger.info() << "result:";
@@ -265,8 +256,6 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	logger.info() << "Clear buffers";
 	delete[] sf_in;
@@ -339,8 +328,6 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	hmc_float cpu_res;
 	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	logger.info() << "Clear buffers";
 	delete[] sf_in;

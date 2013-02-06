@@ -1,6 +1,8 @@
 #include "../hmc.h"
 
 #include "../meta/util.hpp"
+#include "../physics/lattices/gaugefield.hpp"
+#include "../physics/algorithms/hmc.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -38,15 +40,13 @@ int main(int argc, const char* argv[])
 
 	hardware::System system(parameters, true);
 	physics::PRNG prng(system);
-	Gaugefield_hmc gaugefield(&system);
-
-	int numtasks = 1;
-	cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 	logger.trace() << "init gaugefield" ;
-	gaugefield.init(numtasks, primary_device, prng);
+	physics::lattices::Gaugefield gaugefield(system, prng);
+
 	logger.trace() << "initial gaugeobservables:";
-	gaugefield.print_gaugeobservables(0);
+	print_gaugeobservables(gaugefield, 0);
+
 	init_timer.add();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,33 +55,34 @@ int main(int argc, const char* argv[])
 
 	perform_timer.reset();
 	//CP: this is taken from gaugefield_hmc. However, I took out all parts out of the loop that have to do with changing the fields in order to always perform the same HMC step.
-	int hmc_iter = parameters.get_hmcsteps();
+	const int hmc_iter = parameters.get_hmcsteps();
 	int iter;
 	//This is the random-number generator for the metropolis-step
-	hmc_float rnd_number = prng.get_double();
-	usetimer solver_timer;
+	const hmc_float rnd_number = prng.get_double();
 	hmc_observables obs;
 
-	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
-	gaugefield.init_gaugemomentum_spinorfield(&solver_timer, prng);
+	throw Print_Error_Message("Not implemented");
 
-	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
-	//copy u->u' p->p' for the integrator
-	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_new_u(), gaugefield.get_task_hmc(0)->get_device()->get_gaugefield_code()->get_gaugefield());
-	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_clmem_new_p(), gaugefield.get_task_hmc(0)->get_clmem_p());
-	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
-	for(iter = 0; iter < hmc_iter; iter ++) {
-		//here, clmem_phi is inverted several times and stored in clmem_phi_inv
-		gaugefield.integrator(&solver_timer);
-		//metropolis step: afterwards, the updated config is again in gaugefield and p
-		logger.debug() << "\tperform Metropolis step: " ;
-		//this call calculates also the HMC-Observables
-		obs = gaugefield.get_task_hmc(0)->metropolis(rnd_number, gaugefield.get_parameters().get_beta(), gaugefield.get_task_hmc(0)->get_device()->get_gaugefield_code()->get_gaugefield());
-		//CP: just reject the outcome of the metropolis step
-		logger.trace() << "\tfinished HMC trajectory " << iter ;
-	}
-	logger.trace() << "HMC-benchmarking done";
-	perform_timer.add();
+//	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
+//	gaugefield.init_gaugemomentum_spinorfield(&solver_timer, prng);
+//
+//	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
+//	//copy u->u' p->p' for the integrator
+//	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_new_u(), gaugefield.get_task_hmc(0)->get_device()->get_gaugefield_code()->get_gaugefield());
+//	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_clmem_new_p(), gaugefield.get_task_hmc(0)->get_clmem_p());
+//	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
+//	for(iter = 0; iter < hmc_iter; iter ++) {
+//		//here, clmem_phi is inverted several times and stored in clmem_phi_inv
+//		gaugefield.integrator(&solver_timer);
+//		//metropolis step: afterwards, the updated config is again in gaugefield and p
+//		logger.debug() << "\tperform Metropolis step: " ;
+//		//this call calculates also the HMC-Observables
+//		obs = gaugefield.get_task_hmc(0)->metropolis(rnd_number, gaugefield.get_parameters().get_beta(), gaugefield.get_task_hmc(0)->get_device()->get_gaugefield_code()->get_gaugefield());
+//		//CP: just reject the outcome of the metropolis step
+//		logger.trace() << "\tfinished HMC trajectory " << iter ;
+//	}
+//	logger.trace() << "HMC-benchmarking done";
+//	perform_timer.add();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
@@ -102,13 +103,7 @@ int main(int argc, const char* argv[])
 	} else {
 		logger.warn() << "Could not open " << profiling_out;
 	}
-	gaugefield.print_profiling(profiling_out);
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// free variables
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	gaugefield.finalize();
+	print_profiling(system, profiling_out);
 
 	return 0;
 }

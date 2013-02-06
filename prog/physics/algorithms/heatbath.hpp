@@ -2,6 +2,9 @@
  * Declaration of the heatbath algorithm
  */
 
+#ifndef _PHYSICS_ALGORITHMS_HEATBATH_
+#define _PHYSICS_ALGORITHMS_HEATBATH_
+
 #include "../prng.hpp"
 #include "../lattices/gaugefield.hpp"
 
@@ -32,3 +35,5 @@ void overrelax(physics::lattices::Gaugefield& gf, physics::PRNG& prng, int steps
 }
 
 }
+
+#endif /* _PHYSICS_ALGORITHMS_HEATBATH_ */

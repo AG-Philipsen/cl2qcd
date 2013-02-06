@@ -2,6 +2,9 @@
  * Declaration of the inversion algorithms
  */
 
+#ifndef _PHYSICS_ALGORITHMS_INVERSION_
+#define _PHYSICS_ALGORITHMS_INVERSION_
+
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/spinorfield.hpp"
 
@@ -24,3 +27,5 @@ void perform_inversion(const std::vector<physics::lattices::Spinorfield*> * resu
 }
 
 }
+
+#endif /* _PHYSICS_ALGORITHMS_INVERSION_ */
