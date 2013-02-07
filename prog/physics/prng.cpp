@@ -8,6 +8,7 @@
 #include "../hardware/buffers/prng_buffer.hpp"
 #include <fstream>
 #include <stdexcept>
+#include "../hardware/code/prng.hpp"
 
 physics::PRNG::~PRNG()
 {

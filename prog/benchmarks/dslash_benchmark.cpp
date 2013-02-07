@@ -1,6 +1,7 @@
 #include <fstream>
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/code/fermions.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;

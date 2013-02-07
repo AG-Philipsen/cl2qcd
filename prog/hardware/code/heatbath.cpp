@@ -3,6 +3,8 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "gaugefield.hpp"
+#include "prng.hpp"
 
 using namespace std;
 

@@ -1,6 +1,8 @@
 #include "../meta/util.hpp"
 #include "../host_random.h"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/code/spinors_staggered.hpp"
+#include "../hardware/code/fermions_staggered.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -19,7 +21,7 @@ public:
 		meta::print_info_hmc("test program", inputfile);
 	};
 
-	hardware::code::Fermions_staggered * get_device();
+	const hardware::code::Fermions_staggered * get_device();
 	const hardware::buffers::SU3 * get_gaugefield();
 
 private:
@@ -58,7 +60,7 @@ void fill_sf_with_random(su3vec * sf_in, int size)
 	fill_sf_with_random(sf_in, size, 123456);
 }
 
-hardware::code::Fermions_staggered* TestGaugefield::get_device()
+const hardware::code::Fermions_staggered* TestGaugefield::get_device()
 {
 	return system->get_devices()[0]->get_fermion_staggered_code();
 }
@@ -90,7 +92,7 @@ void test_m_staggered(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Fermions_staggered * device = cpu.get_device();
+	const hardware::code::Fermions_staggered * device = cpu.get_device();
 	su3vec * sf_in;
 	su3vec * sf_out;
 
@@ -109,7 +111,7 @@ void test_m_staggered(std::string inputfile)
 	in.load(sf_in);
 	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
 	out.load(sf_in);
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	const hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_staggered_code();

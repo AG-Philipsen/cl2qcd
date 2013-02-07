@@ -1,5 +1,8 @@
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/code/molecular_dynamics.hpp"
+#include "../hardware/code/spinors.hpp"
+#include "../hardware/code/gaugemomentum.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -18,7 +21,7 @@ public:
 		meta::print_info_hmc("test program", inputfile);
 	};
 
-	hardware::code::Molecular_Dynamics * get_device();
+	const hardware::code::Molecular_Dynamics * get_device();
 	const hardware::buffers::SU3 * get_gaugefield();
 
 	void print_gaugeobservables() {
@@ -31,7 +34,7 @@ private:
 	const physics::lattices::Gaugefield gf;
 };
 
-hardware::code::Molecular_Dynamics* TestGaugefield::get_device()
+const hardware::code::Molecular_Dynamics* TestGaugefield::get_device()
 {
 	return system->get_devices()[0]->get_molecular_dynamics_code();
 }
@@ -209,7 +212,7 @@ void test_gf_update(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Molecular_Dynamics * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	hmc_float * gm_in;
 
 	logger.info() << "create buffers";
@@ -263,7 +266,7 @@ void test_f_update(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Molecular_Dynamics * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	hmc_float * gm_in;
 	hmc_float * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
@@ -327,7 +330,7 @@ void test_f_gauge(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Molecular_Dynamics * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	ae * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
@@ -370,7 +373,7 @@ void test_f_gauge_tlsym(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Molecular_Dynamics * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	ae * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
@@ -414,7 +417,7 @@ void test_f_fermion(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Molecular_Dynamics * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -488,7 +491,7 @@ void test_f_fermion_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Molecular_Dynamics * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -812,7 +815,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Molecular_Dynamics * device = cpu.get_device();
+	auto * device = cpu.get_device();
 
 	spinor * sf_in1_noneo;
 	spinor * sf_in2_noneo;

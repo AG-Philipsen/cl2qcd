@@ -7,6 +7,18 @@
 #include "device.hpp"
 #include "system.hpp"
 #include "../logger.hpp"
+#include "code/gaugefield.hpp"
+#include "code/prng.hpp"
+#include "code/spinors.hpp"
+#include "code/spinors_staggered.hpp"
+#include "code/fermions.hpp"
+#include "code/fermions_staggered.hpp"
+#include "code/correlator.hpp"
+#include "code/heatbath.hpp"
+#include "code/kappa.hpp"
+#include "code/gaugemomentum.hpp"
+#include "code/molecular_dynamics.hpp"
+#include "code/buffer.hpp"
 
 static std::string retrieve_device_name(cl_device_id device_id);
 static bool retrieve_device_availability(cl_device_id device_id);
@@ -405,7 +417,7 @@ hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& ke
 	return profiling_data[kernel];
 }
 
-hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
+const hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 {
 	if(!gaugefield_code) {
 		gaugefield_code = new hardware::code::Gaugefield(params, this);
@@ -413,7 +425,7 @@ hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 	return gaugefield_code;
 }
 
-hardware::code::PRNG * hardware::Device::get_prng_code()
+const hardware::code::PRNG * hardware::Device::get_prng_code()
 {
 	if(!prng_code) {
 		prng_code = new hardware::code::PRNG(params, this);
@@ -421,7 +433,7 @@ hardware::code::PRNG * hardware::Device::get_prng_code()
 	return prng_code;
 }
 
-hardware::code::Spinors * hardware::Device::get_spinor_code()
+const hardware::code::Spinors * hardware::Device::get_spinor_code()
 {
 	if(!spinor_code) {
 		spinor_code = new hardware::code::Spinors(params, this);
@@ -429,7 +441,7 @@ hardware::code::Spinors * hardware::Device::get_spinor_code()
 	return spinor_code;
 }
 
-hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered_code()
+const hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered_code()
 {
 	if(!spinor_staggered_code) {
 		spinor_staggered_code = new hardware::code::Spinors_staggered(params, this);
@@ -437,7 +449,7 @@ hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered_code(
 	return spinor_staggered_code;
 }
 
-hardware::code::Fermions * hardware::Device::get_fermion_code()
+const hardware::code::Fermions * hardware::Device::get_fermion_code()
 {
 	if(!fermion_code) {
 		fermion_code = new hardware::code::Fermions(params, this);
@@ -445,7 +457,7 @@ hardware::code::Fermions * hardware::Device::get_fermion_code()
 	return fermion_code;
 }
 
-hardware::code::Fermions_staggered * hardware::Device::get_fermion_staggered_code()
+const hardware::code::Fermions_staggered * hardware::Device::get_fermion_staggered_code()
 {
 	if(!fermion_staggered_code) {
 		fermion_staggered_code = new hardware::code::Fermions_staggered(params, this);
@@ -453,7 +465,7 @@ hardware::code::Fermions_staggered * hardware::Device::get_fermion_staggered_cod
 	return fermion_staggered_code;
 }
 
-hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
+const hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
 {
 	if(!gaugemomentum_code) {
 		gaugemomentum_code = new hardware::code::Gaugemomentum(params, this);
@@ -461,7 +473,7 @@ hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
 	return gaugemomentum_code;
 }
 
-hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynamics_code()
+const hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynamics_code()
 {
 	if(!molecular_dynamics_code) {
 		molecular_dynamics_code = new hardware::code::Molecular_Dynamics(params, this);
@@ -469,7 +481,7 @@ hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynamics_co
 	return molecular_dynamics_code;
 }
 
-hardware::code::Correlator * hardware::Device::get_correlator_code()
+const hardware::code::Correlator * hardware::Device::get_correlator_code()
 {
 	if(!correlator_code) {
 		correlator_code = new hardware::code::Correlator(params, this);
@@ -477,7 +489,7 @@ hardware::code::Correlator * hardware::Device::get_correlator_code()
 	return correlator_code;
 }
 
-hardware::code::Heatbath * hardware::Device::get_heatbath_code()
+const hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 {
 	if(!heatbath_code) {
 		heatbath_code = new hardware::code::Heatbath(params, this);
@@ -485,7 +497,7 @@ hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 	return heatbath_code;
 }
 
-hardware::code::Kappa * hardware::Device::get_kappa_code()
+const hardware::code::Kappa * hardware::Device::get_kappa_code()
 {
 	if(!kappa_code) {
 		kappa_code = new hardware::code::Kappa(params, this);
@@ -493,7 +505,7 @@ hardware::code::Kappa * hardware::Device::get_kappa_code()
 	return kappa_code;
 }
 
-hardware::code::Buffer * hardware::Device::get_buffer_code()
+const hardware::code::Buffer * hardware::Device::get_buffer_code()
 {
 	if(!buffer_code) {
 		buffer_code = new hardware::code::Buffer(params, this);

@@ -31,18 +31,18 @@ public:
 	 * Run the calculation of kappa clover. No OpenCL barrier.
 	 * @TODO remove beta
 	 */
-	void run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta);
+	void run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const;
 	/**
 	 * Run the calculation of kappa clover. No OpenCL barrier.
 	 * @TODO remove beta
 	 */
-	void run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta);
+	void run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const;
 
 	/**
 	 * Copy kappa_clover from device to host and return it
 	 * @return kappa_clover
 	 */
-	hmc_float get_kappa_clover();
+	hmc_float get_kappa_clover() const;
 
 protected:
 	/**
@@ -51,14 +51,18 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const std::string&) const { return 0; };
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const std::string&) const { return 0; };
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
 
 
 private:

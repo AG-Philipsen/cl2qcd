@@ -31,7 +31,7 @@ public:
 	/**
 	 * Initialize the state of the PRNG with the given seed.
 	 */
-	void initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed);
+	void initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed) const;
 #endif /* USE_PRNG_RANLUX */
 
 protected:
@@ -41,14 +41,18 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const std::string&) const { return 0; };
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const std::string&) const { return 0; };
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
 
 private:
 

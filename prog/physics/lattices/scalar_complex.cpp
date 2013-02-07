@@ -4,8 +4,10 @@
  * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
 
-#include <stdexcept>
 #include "scalar_complex.hpp"
+
+#include <stdexcept>
+#include "../../hardware/code/spinors.hpp"
 
 //void physics::lattices::add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)
 //{

@@ -1,5 +1,7 @@
 #include "../hardware/system.hpp"
 #include "../hardware/device.hpp"
+#include "../hardware/code/opencl_module.hpp"
+#include "../hardware/code/gaugefield.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

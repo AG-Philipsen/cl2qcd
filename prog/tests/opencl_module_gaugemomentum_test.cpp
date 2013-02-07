@@ -3,6 +3,7 @@
 #include "../hardware/device.hpp"
 #include "../hardware/system.hpp"
 #include "../physics/prng.hpp"
+#include "../hardware/code/gaugemomentum.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

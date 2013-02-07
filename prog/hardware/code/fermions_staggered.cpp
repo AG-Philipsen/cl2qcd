@@ -3,6 +3,7 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "spinors_staggered.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -62,7 +63,7 @@ void hardware::code::Fermions_staggered::get_work_sizes(const cl_kernel kernel, 
 }
 
 //explicit fermionmatrix-kernel calling functions
-void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3 * gf, hmc_float mass)
+void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3 * gf, hmc_float mass) const
 {
 	//get mass
 	hmc_float kappa_tmp;

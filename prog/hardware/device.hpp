@@ -17,23 +17,28 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
-#include "code/gaugefield.hpp"
-#include "code/prng.hpp"
-#include "code/spinors.hpp"
-#include "code/spinors_staggered.hpp"
-#include "code/fermions.hpp"
-#include "code/fermions_staggered.hpp"
-#include "code/correlator.hpp"
-#include "code/heatbath.hpp"
-#include "code/kappa.hpp"
-#include "code/gaugemomentum.hpp"
-#include "code/molecular_dynamics.hpp"
-#include "code/buffer.hpp"
+#include "../types.h"
 
 namespace hardware {
 
 namespace buffers {
 // forward declaration for friend relation
+class Buffer;
+}
+  
+namespace code {
+// forward decleration to improve decoupling and speed up compilation
+class Gaugefield;
+class PRNG;
+class Spinors;
+class Spinors_staggered;
+class Fermions;
+class Fermions_staggered;
+class Correlator;
+class Heatbath;
+class Kappa;
+class Gaugemomentum;
+class Molecular_Dynamics;
 class Buffer;
 }
 
@@ -186,64 +191,64 @@ public:
 	/**
 	 * Get access to the gaugefield kernels on this device.
 	 */
-	hardware::code::Gaugefield * get_gaugefield_code();
+	const hardware::code::Gaugefield * get_gaugefield_code();
 
 	/**
 	 * Get access to the prng kernels on this device.
 	 */
-	hardware::code::PRNG * get_prng_code();
+	const hardware::code::PRNG * get_prng_code();
 
 	/**
 	 * Get access to the spinor kernels on this device.
 	 */
-	hardware::code::Spinors * get_spinor_code();
+	const hardware::code::Spinors * get_spinor_code();
 
 	/**
 	 * Get access to the staggered spinor kernels on this device.
 	 */
-	hardware::code::Spinors_staggered * get_spinor_staggered_code();
+	const hardware::code::Spinors_staggered * get_spinor_staggered_code();
 
 	/**
 	 * Get access to the fermion kernels on this device.
 	 */
-	hardware::code::Fermions * get_fermion_code();
+	const hardware::code::Fermions * get_fermion_code();
 
 	/**
 	 * Get access to the staggered fermion kernels on this device.
 	 */
-	hardware::code::Fermions_staggered * get_fermion_staggered_code();
+	const hardware::code::Fermions_staggered * get_fermion_staggered_code();
 
 	/**
 	 * Get access to the gaugemomentum kernels on this device.
 	 */
-	hardware::code::Gaugemomentum * get_gaugemomentum_code();
+	const hardware::code::Gaugemomentum * get_gaugemomentum_code();
 
 	/**
 	 * Get access to the molecular dynamics kernels on this device.
 	 */
-	hardware::code::Molecular_Dynamics * get_molecular_dynamics_code();
+	const hardware::code::Molecular_Dynamics * get_molecular_dynamics_code();
 
 	/**
 	 * Get access to the correlator kernels on this device.
 	 */
-	hardware::code::Correlator * get_correlator_code();
+	const hardware::code::Correlator * get_correlator_code();
 
 	/**
 	 * Get access to the heatbath kernels on this device.
 	 */
-	hardware::code::Heatbath * get_heatbath_code();
+	const hardware::code::Heatbath * get_heatbath_code();
 
 	/**
 	 * Get access to the kappa kernels on this device.
 	 */
-	hardware::code::Kappa * get_kappa_code();
+	const hardware::code::Kappa * get_kappa_code();
 
 	/**
 	 * Get access to the buffer kernels on this device.
 	 *
 	 * TODO technicall this should only be used by stuff in the buffers package
 	 */
-	hardware::code::Buffer * get_buffer_code();
+	const hardware::code::Buffer * get_buffer_code();
 
 private:
 	/**
@@ -332,19 +337,19 @@ private:
 	 * Pointer to the gaugefield code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Gaugefield * gaugefield_code;
+	const hardware::code::Gaugefield * gaugefield_code;
 
 	/**
 	 * Pointer to the prng code.
 	 * Initialized on demand.
 	 */
-	hardware::code::PRNG * prng_code;
+	const hardware::code::PRNG * prng_code;
 
 	/**
 	 * Pointer to the spinor code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Spinors * spinor_code;
+	const hardware::code::Spinors * spinor_code;
 
 	/**
 	 * Pointer to the staggered spinor code.
@@ -356,7 +361,7 @@ private:
 	 * Pointer to the fermion code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Fermions * fermion_code;
+	const hardware::code::Fermions * fermion_code;
 
 	/**
 	 * Pointer to the staggered fermion code.
@@ -368,37 +373,37 @@ private:
 	 * Pointer to the gaugemomentum code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Gaugemomentum * gaugemomentum_code;
+	const hardware::code::Gaugemomentum * gaugemomentum_code;
 
   	/**
 	 * Pointer to the molecular dynamics code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Molecular_Dynamics * molecular_dynamics_code;
+	const hardware::code::Molecular_Dynamics * molecular_dynamics_code;
 
 	/**
 	 * Pointer to the correlator code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Correlator * correlator_code;
+	const hardware::code::Correlator * correlator_code;
 
 	/**
 	 * Pointer to the heatbath code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Heatbath * heatbath_code;
+	const hardware::code::Heatbath * heatbath_code;
 
 	/**
 	 * Pointer to the kappa code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Kappa * kappa_code;
+	const hardware::code::Kappa * kappa_code;
 
 	/**
 	 * Pointer to the buffer code
 	 * Initialized on demand.
 	 */
-	hardware::code::Buffer * buffer_code;
+	const hardware::code::Buffer * buffer_code;
 
 };
 

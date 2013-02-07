@@ -33,7 +33,7 @@ public:
 	//    fermionmatrix operations
 	//    non-eo
 	//        explicit
-	void M_staggered_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3 * gf, hmc_float mass = ARG_DEF);
+	void M_staggered_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3 * gf, hmc_float mass = ARG_DEF) const;
 
 	/**
 	 * Print the profiling information to a file.

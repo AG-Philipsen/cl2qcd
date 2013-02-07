@@ -9,6 +9,7 @@
 #include "../../hardware/buffers/plain.hpp"
 #include "../prng.hpp"
 #include "scalar.hpp"
+#include "../types_fermions.h"
 
 /**
  * This namespace contains the lattices of the various kind,

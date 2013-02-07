@@ -4,6 +4,8 @@
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <cassert>
+#include "gaugefield.hpp"
+#include "prng.hpp"
 
 using namespace std;
 
@@ -55,7 +57,7 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 }
 
 
-void hardware::code::Spinors_staggered::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf)
+void hardware::code::Spinors_staggered::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf) const
 {
 	cl_int clerr = clSetKernelArg(_global_squarenorm_reduction, 0, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -70,7 +72,7 @@ void hardware::code::Spinors_staggered::global_squarenorm_reduction(const hardwa
 	get_device()->enqueue_kernel(_global_squarenorm_reduction, 1, 1);
 }
 
-void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<hmc_float> * out)
+void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<hmc_float> * out) const
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;

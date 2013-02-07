@@ -29,28 +29,28 @@ public:
 
 	virtual ~Correlator();
 
-	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
+	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos) const;
 
-	void create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng);
+	void create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng) const;
 
-	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice);
+	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice) const;
 
-	void create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice);
+	void create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice) const;
 
 	/**
 	 * Calculate the correlator on the device.
 	 * This function is overloaded depending on whether one needs the source for the calculation or not.
 	 */
-	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = nullptr);
-	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * in4);
-	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * source1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * source2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * source3, const hardware::buffers::Plain<spinor> * in4, const hardware::buffers::Plain<spinor> * source4);
+	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source = nullptr) const;
+	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * in4) const;
+	void correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * source1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * source2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * source3, const hardware::buffers::Plain<spinor> * in4, const hardware::buffers::Plain<spinor> * source4) const;
 
 	/**
 	 * Get kernel for correlator indicated by which
 	 * @param[in] which string that identifies the correlator (ps or sc, vx, vy, vz, ax, ay, az)
 	 * @return correlator_kernel
 	 */
-	cl_kernel get_correlator_kernel(std::string which);
+	cl_kernel get_correlator_kernel(std::string which) const;
 
 	/**
 	 * Print the profiling information to a file.
