@@ -158,7 +158,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);

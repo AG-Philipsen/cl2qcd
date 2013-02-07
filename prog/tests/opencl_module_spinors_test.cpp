@@ -260,7 +260,7 @@ void test_sf_squarenorm(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -300,7 +300,7 @@ void test_sf_squarenorm_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -339,7 +339,7 @@ void test_sf_scalar_product(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -390,7 +390,7 @@ void test_sf_scalar_product_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -445,7 +445,7 @@ void test_sf_cold(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -484,7 +484,7 @@ void test_sf_cold_eo(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -518,7 +518,7 @@ void test_sf_sax(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -573,7 +573,7 @@ void test_sf_saxpy(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -634,7 +634,7 @@ void test_sf_saxsbypz(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -703,7 +703,7 @@ void test_sf_sax_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -758,7 +758,7 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -819,7 +819,7 @@ void test_sf_saxsbypz_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
@@ -894,7 +894,7 @@ void test_cplx(std::string inputfile, int switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
@@ -941,7 +941,7 @@ void test_sf_convert_to_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
@@ -1004,7 +1004,7 @@ void test_sf_convert_from_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
@@ -1067,7 +1067,7 @@ void test_sf_gaussian(std::string inputfile)
 	hardware::System system(params);
 
 	physics::PRNG prng(system);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
@@ -1128,7 +1128,7 @@ void test_sf_gaussian_eo(std::string inputfile)
 	hardware::System system(params);
 
 	physics::PRNG prng(system);
-	hardware::code::Spinors * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
