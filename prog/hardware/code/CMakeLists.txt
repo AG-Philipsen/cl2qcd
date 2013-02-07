@@ -14,6 +14,7 @@ add_library(code
 		kappa.cpp
 		correlator.cpp
 		spinors.cpp
+		spinors_staggered.cpp
 		fermions.cpp
 		fermions_staggered.cpp
 		gaugemomentum.cpp
