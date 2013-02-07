@@ -317,7 +317,8 @@ void hardware::code::Molecular_Dynamics::gauge_force_tlsym_device(const hardware
 {
 	if(gauge_force_tlsym_tmp) {
 		// run multipass
-		size_t foo, ls; cl_uint bla;
+		size_t foo, ls;
+		cl_uint bla;
 		size_t global_size = gauge_force_tlsym_tmp->get_elements();
 
 		this->get_work_sizes(gauge_force_tlsym_1, &ls, &foo, &bla);

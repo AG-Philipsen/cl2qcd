@@ -295,7 +295,7 @@ void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, c
 {
 	cl_int clerr;
 	if(buf->is_soa()) {
- 		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, buf->get_device());
+		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, buf->get_device());
 
 		size_t ls2, gs2;
 		cl_uint num_groups;
