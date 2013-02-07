@@ -58,7 +58,7 @@ namespace meta {
 			 *
 			 * \todo add case normalization
 			 */
-			std::string operator() (std::string file);
+			std::string operator() (std::string file) const;
 
 			/**
 			 * Get the normalized contents of the given file.
@@ -68,7 +68,7 @@ namespace meta {
 			 *
 			 * \todo add case normalization
 			 */
-			std::string operator() (std::istream& input);
+			std::string operator() (std::istream& input) const;
 
 		private:
 			/**

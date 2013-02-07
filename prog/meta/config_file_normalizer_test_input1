@@ -1,0 +1,8 @@
+foo
+bla=blub
+foo=bla
+old=new
+new=old
+  old=new
+  new=old
+other = more

@@ -26,7 +26,7 @@ void meta::ConfigFileNormalizer::add_alias(std::string alias, std::string mapped
 	aliases[alias] = mapped;
 }
 
-std::string meta::ConfigFileNormalizer::operator() (std::string file)
+std::string meta::ConfigFileNormalizer::operator() (std::string file) const
 {
 	std::ifstream config_file(file.c_str());
 	if(!config_file.is_open()) {
@@ -35,9 +35,8 @@ std::string meta::ConfigFileNormalizer::operator() (std::string file)
 	return this->operator()(config_file);
 }
 
-std::string meta::ConfigFileNormalizer::operator() (std::istream& input)
+std::string meta::ConfigFileNormalizer::operator() (std::istream& input) const
 {
-
 	std::string orig_config_file = load_stream(input);
 
 	std::ostringstream normalized_file;
