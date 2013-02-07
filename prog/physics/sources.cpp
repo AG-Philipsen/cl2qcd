@@ -6,6 +6,7 @@
 #include <cassert>
 #include <stdexcept>
 #include "../host_geometry.h"
+#include "../hardware/code/correlator.hpp"
 
 void physics::set_point_source(const physics::lattices::Spinorfield * spinorfield, int k, const meta::Inputparameters& params)
 {

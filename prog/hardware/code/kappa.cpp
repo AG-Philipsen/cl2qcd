@@ -3,6 +3,7 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "gaugefield.hpp"
 
 using namespace std;
 
@@ -26,7 +27,7 @@ void hardware::code::Kappa::fill_kernels()
 	kappa_clover_gpu = createKernel("kappa_clover_gpu") << sources << "opencl_tk_kappa.cl";
 }
 
-void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
+void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const
 {
 	//variables
 	cl_int clerr = CL_SUCCESS;
@@ -53,12 +54,12 @@ void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::Plain<hmc_
 	// @fixme
 }
 
-void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
+void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const
 {
 	run_kappa_clover(&clmem_kappa_clover, gaugefield, beta);
 }
 
-hmc_float hardware::code::Kappa::get_kappa_clover()
+hmc_float hardware::code::Kappa::get_kappa_clover() const
 {
 	hmc_float kappa_clover;
 	clmem_kappa_clover.dump(&kappa_clover);

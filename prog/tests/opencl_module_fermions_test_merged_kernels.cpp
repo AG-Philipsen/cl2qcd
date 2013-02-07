@@ -1,6 +1,8 @@
 #include "../meta/util.hpp"
 #include "../host_random.h"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/code/spinors.hpp"
+#include "../hardware/code/fermions.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -19,7 +21,7 @@ public:
 		meta::print_info_hmc("test program", inputfile);
 	};
 
-	hardware::code::Fermions * get_device();
+	const hardware::code::Fermions * get_device();
 	const hardware::buffers::SU3 * get_gaugefield();
 
 private:
@@ -117,7 +119,7 @@ hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
 	return res;
 }
 
-hardware::code::Fermions* TestGaugefield::get_device()
+const hardware::code::Fermions* TestGaugefield::get_device()
 {
 	return system->get_devices()[0]->get_fermion_code();
 }
@@ -139,7 +141,7 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Fermions * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -206,7 +208,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Fermions * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -288,7 +290,7 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	hardware::code::Fermions * device = cpu.get_device();
+	auto * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 

@@ -3,6 +3,7 @@
 #include "../../logger.hpp"
 #include "../device.hpp"
 #include <sstream>
+#include "../hardware/code/gaugefield.hpp"
 
 using namespace std;
 
@@ -66,7 +67,7 @@ ClSourcePackage hardware::code::PRNG::get_sources() const noexcept
 }
 
 #ifdef USE_PRNG_RANLUX
-void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed)
+void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed) const
 {
 	cl_int clerr;
 	size_t ls, gs;

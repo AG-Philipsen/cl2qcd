@@ -13,6 +13,7 @@
 #include "../hardware/code/gaugefield.hpp"
 #include "../logger.hpp"
 #include "../exceptions.h"
+#include "../klepsydra/klepsydra.hpp"
 
 #include "../types_fermions.h"
 

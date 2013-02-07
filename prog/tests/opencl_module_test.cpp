@@ -28,14 +28,14 @@ public:
 		return gf.get_buffers()[0];
 	}
 
-	hardware::code::Gaugefield * get_device();
+	const hardware::code::Gaugefield * get_device();
 private:
 	const hardware::System * const system;
 	physics::PRNG prng;
 	physics::lattices::Gaugefield gf;
 };
 
-hardware::code::Gaugefield* TestGaugefield::get_device()
+const hardware::code::Gaugefield* TestGaugefield::get_device()
 {
 	return system->get_devices()[0]->get_gaugefield_code();
 }
@@ -50,7 +50,7 @@ void test_rectangles(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	hardware::code::Gaugefield * device = cpu.get_device();
+	auto * device = cpu.get_device();
 
 	logger.info() << "calc rectangles value:";
 	hmc_float cpu_rect;
@@ -73,7 +73,7 @@ void test_plaquette(std::string inputfile, hmc_float ref_plaq, hmc_float ref_tpl
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	hardware::code::Gaugefield * device = dummy.get_device();
+	auto * device = dummy.get_device();
 	device->gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	logger.info() << "reference value:\t" << "values obtained from host functionality";
@@ -98,7 +98,7 @@ void test_polyakov(std::string inputfile, hmc_complex ref_pol)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	hardware::code::Gaugefield * device = dummy.get_device();
+	auto * device = dummy.get_device();
 	device->gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	logger.info() << "reference value:\t" << "values obtained from host functionality";
@@ -119,7 +119,7 @@ void test_stout_smear(std::string inputfile)
 	hardware::System system(params);
 
 	TestGaugefield dummy2(&system);
-	hardware::code::Gaugefield * device = dummy2.get_device();
+	auto * device = dummy2.get_device();
 	auto gf_code = device->get_device()->get_gaugefield_code();
 	//out buffer
 	const hardware::buffers::SU3 out(dummy2.get_gaugefield()->get_elements(), device->get_device());

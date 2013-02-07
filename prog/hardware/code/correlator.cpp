@@ -3,6 +3,8 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "spinors.hpp"
+#include "prng.hpp"
 
 using namespace std;
 
@@ -170,7 +172,7 @@ void hardware::code::Correlator::get_work_sizes(const cl_kernel kernel, size_t *
 	return;
 }
 
-cl_kernel hardware::code::Correlator::get_correlator_kernel(string which)
+cl_kernel hardware::code::Correlator::get_correlator_kernel(string which) const
 {
 	if( which.compare("ps") == 0 ) {
 		return correlator_ps;
@@ -200,7 +202,7 @@ cl_kernel hardware::code::Correlator::get_correlator_kernel(string which)
 	return 0;
 }
 
-void hardware::code::Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos)
+void hardware::code::Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos) const
 {
 	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
@@ -235,7 +237,7 @@ void hardware::code::Correlator::create_point_source_device(const hardware::buff
 
 }
 
-void hardware::code::Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng) const
 {
 	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
@@ -263,7 +265,7 @@ void hardware::code::Correlator::create_volume_source_device(const hardware::buf
 	}
 }
 
-void hardware::code::Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice)
+void hardware::code::Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice) const
 {
 	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 
@@ -296,7 +298,7 @@ void hardware::code::Correlator::create_timeslice_source_device(const hardware::
 	}
 }
 
-void hardware::code::Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice)
+void hardware::code::Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice) const
 {
 	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 
@@ -330,7 +332,7 @@ void hardware::code::Correlator::create_zslice_source_device(const hardware::buf
 	}
 }
 
-void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source)
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source) const
 {
 	int clerr;
 	//query work-sizes for kernel
@@ -350,7 +352,7 @@ void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, c
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * in4)
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * in4) const
 {
 	int clerr;
 	//query work-sizes for kernel
@@ -372,7 +374,7 @@ void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, c
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * source1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * source2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * source3, const hardware::buffers::Plain<spinor> * in4, const hardware::buffers::Plain<spinor> * source4)
+void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * source1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::Plain<spinor> * source2, const hardware::buffers::Plain<spinor> * in3, const hardware::buffers::Plain<spinor> * source3, const hardware::buffers::Plain<spinor> * in4, const hardware::buffers::Plain<spinor> * source4) const
 {
 	int clerr;
 	//query work-sizes for kernel

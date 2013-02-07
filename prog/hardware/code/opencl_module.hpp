@@ -13,7 +13,7 @@
 
 // predeclaration as headers only use pointers and friend to this
 namespace hardware {
-	class Device;
+class Device;
 
 namespace code {
 

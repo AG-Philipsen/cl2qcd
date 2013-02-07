@@ -99,7 +99,6 @@ static void print_profiling(const std::string& filename, const std::string& kern
 	*/
 	out << kernelName << "\t" << data.get_total_time() << "\t" << data.get_num_values() << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
 	out.close();
-	return;
 }
 
 static void print_profile_header(const std::string& filename, int number)
@@ -112,7 +111,6 @@ static void print_profile_header(const std::string& filename, int number)
 	out.width(32);
 	out.precision(15);
 	out << "#device " << number << "\tTime [mus]\tCalls\tAvg Time [mus]\tAvg Time/Site [mus]\tBW [GB/s]\tFLOPS [GFLOP/s]\tRe/Wr [MB]\tFLOP" << std::endl;
-	return;
 }
 
 void hardware::code::Opencl_Module::print_profiling(const std::string& filename, const cl_kernel& kernel) const

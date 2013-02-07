@@ -46,7 +46,7 @@ public:
 	 *
 	 * @todo Should not be public
 	 */
-	void gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
+	void gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const;
 	/**
 	 * Calculate rectangles of a specific gaugefield (on device).
 	 *
@@ -55,25 +55,25 @@ public:
 	 * @param[in] gf gaugefield to measure on
 	 * @param[out] plaq Storage for result of rectangles calculation
 	 */
-	void gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * const rect);
+	void gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * const rect) const;
 	/**
 	 * Calculate plaquette for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq);
+	void plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq) const;
 	/**
 	 * Calculate rectangles for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> *);
+	void rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> *) const;
 	/**
 	 * Calculate Polyakov loop for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> *);
+	void polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> *) const;
 
 	/**
 	 * Print the profiling information to a file.
@@ -86,7 +86,7 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield
 	 */
-	void stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out);
+	void stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out) const;
 
 	/**
 	 * Import the gaugefield data into the OpenCL buffer using the device
@@ -97,7 +97,7 @@ public:
 	 *
 	 * @todo should not be public
 	 */
-	void importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data);
+	void importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data) const;
 
 	/**
 	 * Export the gaugefield from the OpenCL buffer, that uses a device
@@ -106,7 +106,7 @@ public:
 	 *
 	 * @param[out] dest The array to store the gaugefield in
 	 */
-	void exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield);
+	void exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield) const;
 
 	/**
 	 * Get the code required to use the gaugefield from kernels.
@@ -163,8 +163,8 @@ private:
 	cl_kernel convertGaugefieldToSOA;
 	cl_kernel convertGaugefieldFromSOA;
 
-	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in);
-	void convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in);
+	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in) const;
+	void convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in) const;
 
 	/**
 	 * Collect the kernels for OpenCL.

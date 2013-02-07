@@ -9,6 +9,7 @@
 #include "../system.hpp"
 #include "../../logger.hpp"
 #include "../../crypto/md5.h"
+#include "../code/buffer.hpp"
 
 static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host);
 

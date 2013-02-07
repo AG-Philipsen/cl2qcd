@@ -7,6 +7,7 @@
 #include "gaugemomenta.hpp"
 #include "../../meta/util.hpp"
 #include <stdexcept>
+#include "../../hardware/code/gaugemomentum.hpp"
 
 static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);
 
