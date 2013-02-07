@@ -2,7 +2,8 @@
  * @file M normal staggered fermionmatrix
  */
 
-__kernel void M_staggered(__global const spinor * const restrict in, __global const Matrixsu3StorageType * const restrict field, __global spinor * const restrict out, hmc_float kappa_in)
+
+__kernel void M_staggered(__global const su3vec * const restrict in, __global const Matrixsu3StorageType * const restrict field, __global su3vec * const restrict out, hmc_float mass_in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -11,25 +12,31 @@ __kernel void M_staggered(__global const spinor * const restrict in, __global co
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int n, t;
-	spinor out_tmp, out_tmp2;
+	su3vec out_tmp, out_tmp2;
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 
 		/** @todo this must be done more efficient */
 		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
 
-		//Diagonalpart: (this is simple here)
-		out_tmp = get_spinor_from_field(in, pos.space, pos.time);
-		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time, kappa_in);
-		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time, kappa_in);
-		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time, kappa_in);
-		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time, kappa_in);
-		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		//this assumes the form: M = m - dslash
 
-		put_spinor_to_field(out_tmp, out, pos.space, pos.time);
+		//Diagonalpart: m * chi(n)
+		out_tmp = get_su3vec_from_field(in, pos.space, pos.time);
+		out_tmp = su3vec_times_real(out_tmp, mass_in);
+		//calc dslash
+		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time);
+		out_tmp = su3vec_dim(out_tmp, out_tmp2);
+		// these are not yet implemented...
+		/*
+		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time);
+		out_tmp = su3vec_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time);
+		out_tmp = su3vec_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time);
+		out_tmp = su3vec_dim(out_tmp, out_tmp2);
+		*/
+		
+		put_su3vec_to_field(out_tmp, out, pos.space, pos.time);
 	}
 }

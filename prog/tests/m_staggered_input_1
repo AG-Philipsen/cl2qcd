@@ -12,5 +12,6 @@ solver=CG
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=3072
+test_ref_val=768
+
 
