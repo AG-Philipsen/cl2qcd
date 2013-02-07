@@ -29,8 +29,7 @@ BOOST_AUTO_TEST_CASE(test_noop)
 	const ConfigFileNormalizer cand;
 
 	check(cand, "config_file_normalizer_test_empty", "");
-	check(cand, "config_file_normalizer_test_input1", "foo\n"
-                                                      "bla=blub\n"
+	check(cand, "config_file_normalizer_test_input1", "bla=blub\n"
                                                       "foo=bla\n"
                                                       "old=new\n"
                                                       "new=old\n"
@@ -46,14 +45,13 @@ BOOST_AUTO_TEST_CASE(simple)
 	cand.add_alias("other", "another");
 
 	check(cand, "config_file_normalizer_test_empty", "");
-	check(cand, "config_file_normalizer_test_input1", "blubber\n"
-                                                      "bla=blub\n"
+	check(cand, "config_file_normalizer_test_input1", "bla=blub\n"
                                                       "blubber=bla\n"
                                                       "old=new\n"
                                                       "new=old\n"
                                                       "  old=new\n"
                                                       "  new=old\n"
-                                                      "another = more\n");
+                                                      "another= more\n");
 }
 
 BOOST_AUTO_TEST_CASE(match_as_val)
@@ -62,12 +60,11 @@ BOOST_AUTO_TEST_CASE(match_as_val)
 	cand.add_alias("old", "legacy");
 
 	check(cand, "config_file_normalizer_test_empty", "");
-	check(cand, "config_file_normalizer_test_input1", "foo\n"
-                                                      "bla=blub\n"
+	check(cand, "config_file_normalizer_test_input1", "bla=blub\n"
                                                       "foo=bla\n"
                                                       "legacy=new\n"
                                                       "new=old\n"
-                                                      "  legacy=new\n"
+                                                      "legacy=new\n"
                                                       "  new=old\n"
                                                       "other = more\n");
 }
@@ -78,8 +75,7 @@ BOOST_AUTO_TEST_CASE(dont_match_partial)
 	cand.add_alias("ol", "ups");
 
 	check(cand, "config_file_normalizer_test_empty", "");
-	check(cand, "config_file_normalizer_test_input1", "foo\n"
-                                                      "bla=blub\n"
+	check(cand, "config_file_normalizer_test_input1", "bla=blub\n"
                                                       "foo=bla\n"
                                                       "old=new\n"
                                                       "new=old\n"

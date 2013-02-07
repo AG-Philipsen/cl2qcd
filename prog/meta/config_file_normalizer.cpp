@@ -73,8 +73,8 @@ for(auto alias: aliases) {
 			regex << '|';
 		}
 
-		regex << '(' << alias.first << ')';
-		replacements << "(?" << index << alias.second << ')';
+		regex << "(^\\s*" << alias.first << "\\s*=)";
+		replacements << "(?" << index << alias.second << "=)";
 	}
 	return std::make_pair<>(boost::regex(regex.str()), replacements.str());
 }
