@@ -1,5 +1,5 @@
 /**
- @file fermionmatrix-functions that are called from within kernels
+ @file staggered fermionmatrix-functions that are called from within kernels
 */
 
 //local twisted-mass Diagonalmatrix:

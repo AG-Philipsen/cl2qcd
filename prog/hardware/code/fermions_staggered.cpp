@@ -34,7 +34,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void hardware::code::Fermions_staggered::fill_kernels()
 {
-	sources = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	sources = get_device()->get_spinor_staggered_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	M_staggered = 0;
 
@@ -62,7 +62,7 @@ void hardware::code::Fermions_staggered::get_work_sizes(const cl_kernel kernel, 
 }
 
 //explicit fermionmatrix-kernel calling functions
-void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float mass)
+void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3 * gf, hmc_float mass)
 {
 	//get mass
 	hmc_float kappa_tmp;

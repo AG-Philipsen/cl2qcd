@@ -28,59 +28,32 @@ private:
 	const physics::lattices::Gaugefield gf;
 };
 
-void fill_sf_with_one(spinor * sf_in, int size)
+void fill_sf_with_one(su3vec * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0 = hmc_complex_one;
-		sf_in[i].e0.e1 = hmc_complex_one;
-		sf_in[i].e0.e2 = hmc_complex_one;
-		sf_in[i].e1.e0 = hmc_complex_one;
-		sf_in[i].e1.e1 = hmc_complex_one;
-		sf_in[i].e1.e2 = hmc_complex_one;
-		sf_in[i].e2.e0 = hmc_complex_one;
-		sf_in[i].e2.e1 = hmc_complex_one;
-		sf_in[i].e2.e2 = hmc_complex_one;
-		sf_in[i].e3.e0 = hmc_complex_one;
-		sf_in[i].e3.e1 = hmc_complex_one;
-		sf_in[i].e3.e2 = hmc_complex_one;
+		sf_in[i].e0 = hmc_complex_one;
+		sf_in[i].e1 = hmc_complex_one;
+		sf_in[i].e2 = hmc_complex_one;
 	}
 	return;
 }
 
-void fill_sf_with_random(spinor * sf_in, int size, int seed)
+void fill_sf_with_random(su3vec * sf_in, int size, int seed)
 {
 	prng_init(seed);
 	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0.re = prng_double();
-		sf_in[i].e0.e1.re = prng_double();
-		sf_in[i].e0.e2.re = prng_double();
-		sf_in[i].e1.e0.re = prng_double();
-		sf_in[i].e1.e1.re = prng_double();
-		sf_in[i].e1.e2.re = prng_double();
-		sf_in[i].e2.e0.re = prng_double();
-		sf_in[i].e2.e1.re = prng_double();
-		sf_in[i].e2.e2.re = prng_double();
-		sf_in[i].e3.e0.re = prng_double();
-		sf_in[i].e3.e1.re = prng_double();
-		sf_in[i].e3.e2.re = prng_double();
+		sf_in[i].e0.re = prng_double();
+		sf_in[i].e1.re = prng_double();
+		sf_in[i].e2.re = prng_double();
 
-		sf_in[i].e0.e0.im = prng_double();
-		sf_in[i].e0.e1.im = prng_double();
-		sf_in[i].e0.e2.im = prng_double();
-		sf_in[i].e1.e0.im = prng_double();
-		sf_in[i].e1.e1.im = prng_double();
-		sf_in[i].e1.e2.im = prng_double();
-		sf_in[i].e2.e0.im = prng_double();
-		sf_in[i].e2.e1.im = prng_double();
-		sf_in[i].e2.e2.im = prng_double();
-		sf_in[i].e3.e0.im = prng_double();
-		sf_in[i].e3.e1.im = prng_double();
-		sf_in[i].e3.e2.im = prng_double();
+		sf_in[i].e0.im = prng_double();
+		sf_in[i].e1.im = prng_double();
+		sf_in[i].e2.im = prng_double();
 	}
 	return;
 }
 
-void fill_sf_with_random(spinor * sf_in, int size)
+void fill_sf_with_random(su3vec * sf_in, int size)
 {
 	fill_sf_with_random(sf_in, size, 123456);
 }
@@ -118,29 +91,29 @@ void test_m_staggered(std::string inputfile)
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
 	hardware::code::Fermions_staggered * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
+	su3vec * sf_in;
+	su3vec * sf_out;
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
 
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
+	sf_in = new su3vec[NUM_ELEMENTS_SF];
+	sf_out = new su3vec[NUM_ELEMENTS_SF];
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
 	in.load(sf_in);
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
 	out.load(sf_in);
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
-
+	auto spinor_code = device->get_device()->get_spinor_staggered_code();
+	
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
 	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
@@ -153,7 +126,7 @@ void test_m_staggered(std::string inputfile)
 	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
-
+	
 	logger.info() << "Clear buffers";
 	delete[] sf_in;
 	delete[] sf_out;
