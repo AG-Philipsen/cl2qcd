@@ -29,9 +29,9 @@ public:
 
 	///////////////////////////////////////////////////
 	//Methods on device
-	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out);
-	void generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng);
-	void set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum *);
+	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out) const;
+	void generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng) const;
+	void set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum *) const;
 	/**
 	 * Import data from the gaugemomenta array into the given buffer.
 	 *
@@ -40,7 +40,7 @@ public:
 	 * @param[out] dest The buffer to write to in the device specific format
 	 * @param[in] data The data to write to the buffer
 	 */
-	void importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data);
+	void importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data) const;
 	/**
 	 * Export data from the given buffer into a normal gaugemomentum array.
 	 *
@@ -49,7 +49,7 @@ public:
 	 * @param[out] dest An array that the buffer data can be written to.
 	 * @param[in] data A buffer containing the data in the device specific format.
 	 */
-	void exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf);
+	void exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const;
 
 protected:
 

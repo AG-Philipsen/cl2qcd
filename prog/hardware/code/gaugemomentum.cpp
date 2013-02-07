@@ -154,7 +154,7 @@ void hardware::code::Gaugemomentum::print_profiling(const std::string& filename,
 /////////////////////////////////////////////////
 // Methods on device
 
-void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng) const
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -229,7 +229,7 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(const 
 
 }
 
-void hardware::code::Gaugemomentum::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
+void hardware::code::Gaugemomentum::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf) const
 {
 #ifdef CL_VERSION_1_2
 	buf->clear();
@@ -248,7 +248,7 @@ void hardware::code::Gaugemomentum::set_zero_gaugemomentum(const hardware::buffe
 }
 
 
-void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out)
+void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out) const
 {
 	auto spinor_code = get_device()->get_spinor_code();
 
@@ -271,7 +271,7 @@ void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device
 	spinor_code->global_squarenorm_reduction(out, &clmem_global_squarenorm_buf_glob);
 }
 
-void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)
+void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data) const
 {
 	cl_int clerr;
 	if(dest->is_soa()) {
@@ -291,7 +291,7 @@ void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::bu
 	}
 }
 
-void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf)
+void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const
 {
 	cl_int clerr;
 	if(buf->is_soa()) {
