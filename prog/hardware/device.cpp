@@ -90,6 +90,12 @@ hardware::Device::~Device()
 	if(spinor_code) {
 		delete spinor_code;
 	}
+	if(fermion_staggered_code) {
+		delete fermion_staggered_code;
+	}
+	if(spinor_staggered_code) {
+		delete spinor_staggered_code;
+	}
 	if(prng_code) {
 		delete prng_code;
 	}
@@ -527,8 +533,14 @@ void hardware::print_profiling(Device * device, const std::string& filename, int
 	if(device->fermion_code) {
 		device->fermion_code->print_profiling(filename, id);
 	}
+	if(device->fermion_staggered_code) {
+		device->fermion_staggered_code->print_profiling(filename, id);
+	}
 	if(device->spinor_code) {
 		device->spinor_code->print_profiling(filename, id);
+	}
+	if(device->spinor_staggered_code) {
+		device->spinor_staggered_code->print_profiling(filename, id);
 	}
 	if(device->prng_code) {
 		device->prng_code->print_profiling(filename, id);
