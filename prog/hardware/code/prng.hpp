@@ -31,7 +31,7 @@ public:
 	/**
 	 * Initialize the state of the PRNG with the given seed.
 	 */
-	void initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed);
+	void initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed) const;
 #endif /* USE_PRNG_RANLUX */
 
 protected:
