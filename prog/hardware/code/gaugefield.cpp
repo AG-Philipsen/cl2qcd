@@ -127,7 +127,7 @@ void hardware::code::Gaugefield::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-void hardware::code::Gaugefield::plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq)
+void hardware::code::Gaugefield::plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq) const
 {
 	using namespace hardware::buffers;
 
@@ -193,7 +193,7 @@ void hardware::code::Gaugefield::plaquette_device(const hardware::buffers::SU3 *
 	get_device()->enqueue_kernel(plaquette_reduction, gs, ls);
 }
 
-void hardware::code::Gaugefield::rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * rect)
+void hardware::code::Gaugefield::rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * rect) const
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -234,7 +234,7 @@ void hardware::code::Gaugefield::rectangles_device(const hardware::buffers::SU3 
 
 }
 
-void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> * pol)
+void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> * pol) const
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -276,7 +276,7 @@ void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * 
 
 }
 
-void hardware::code::Gaugefield::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
+void hardware::code::Gaugefield::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out) const
 {
 	const hardware::buffers::Plain<hmc_float> plaq(1, get_device());
 	const hardware::buffers::Plain<hmc_float> splaq(1, get_device());
@@ -318,7 +318,7 @@ void hardware::code::Gaugefield::gaugeobservables(const hardware::buffers::SU3 *
 	pol_out->im = tmp_pol.im;
 }
 
-void hardware::code::Gaugefield::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out)
+void hardware::code::Gaugefield::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out) const
 {
 	const hardware::buffers::Plain<hmc_float> rect(1, get_device());
 
@@ -331,7 +331,7 @@ void hardware::code::Gaugefield::gaugeobservables_rectangles(const hardware::buf
 	//NOTE: the rectangle value has not been normalized since it is mostly used for the HMC where one needs the absolute value
 }
 
-void hardware::code::Gaugefield::stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out)
+void hardware::code::Gaugefield::stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out) const
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -456,7 +456,7 @@ void hardware::code::Gaugefield::print_profiling(const std::string& filename, in
 	Opencl_Module::print_profiling(filename, convertGaugefieldFromSOA);
 }
 
-void hardware::code::Gaugefield::importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data)
+void hardware::code::Gaugefield::importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data) const
 {
 	using namespace hardware::buffers;
 
@@ -470,7 +470,7 @@ void hardware::code::Gaugefield::importGaugefield(const hardware::buffers::SU3 *
 	}
 }
 
-void hardware::code::Gaugefield::exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield)
+void hardware::code::Gaugefield::exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield) const
 {
 	using namespace hardware::buffers;
 
@@ -484,7 +484,7 @@ void hardware::code::Gaugefield::exportGaugefield(Matrixsu3 * const dest, const 
 	}
 }
 
-void hardware::code::Gaugefield::convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in)
+void hardware::code::Gaugefield::convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in) const
 {
 	if(!out->is_soa()) {
 		throw std::invalid_argument("Destination buffer must be a SOA buffer");
@@ -504,7 +504,7 @@ void hardware::code::Gaugefield::convertGaugefieldToSOA_device(const hardware::b
 	get_device()->enqueue_kernel(convertGaugefieldToSOA, gs2, ls2);
 }
 
-void hardware::code::Gaugefield::convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in)
+void hardware::code::Gaugefield::convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in) const
 {
 	if(!in->is_soa()) {
 		throw std::invalid_argument("Source buffer must be a SOA buffer");
