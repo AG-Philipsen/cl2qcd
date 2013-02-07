@@ -23,13 +23,12 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-
 void hardware::code::Spinors_staggered::fill_kernels()
 {
 	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
-	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	global_squarenorm = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
+	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
 }
 
 void hardware::code::Spinors_staggered::clear_kernels()
@@ -71,7 +70,7 @@ void hardware::code::Spinors_staggered::global_squarenorm_reduction(const hardwa
 	get_device()->enqueue_kernel(_global_squarenorm_reduction, 1, 1);
 }
 
-void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<hmc_float> * out)
+void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<hmc_float> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;

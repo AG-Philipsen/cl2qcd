@@ -20,6 +20,7 @@
 #include "code/gaugefield.hpp"
 #include "code/prng.hpp"
 #include "code/spinors.hpp"
+#include "code/spinors_staggered.hpp"
 #include "code/fermions.hpp"
 #include "code/fermions_staggered.hpp"
 #include "code/correlator.hpp"
@@ -198,6 +199,11 @@ public:
 	hardware::code::Spinors * get_spinor_code();
 
 	/**
+	 * Get access to the staggered spinor kernels on this device.
+	 */
+	hardware::code::Spinors_staggered * get_spinor_staggered_code();
+
+	/**
 	 * Get access to the fermion kernels on this device.
 	 */
 	hardware::code::Fermions * get_fermion_code();
@@ -339,6 +345,12 @@ private:
 	 * Initialized on demand.
 	 */
 	hardware::code::Spinors * spinor_code;
+
+	/**
+	 * Pointer to the staggered spinor code.
+	 * Initialized on demand.
+	 */
+	hardware::code::Spinors_staggered * spinor_staggered_code;
 
 	/**
 	 * Pointer to the fermion code.

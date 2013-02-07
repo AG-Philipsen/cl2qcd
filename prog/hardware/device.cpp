@@ -31,6 +31,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  gaugefield_code(nullptr),
 	  prng_code(nullptr),
 	  spinor_code(nullptr),
+	  spinor_staggered_code(nullptr),
 	  fermion_code(nullptr),
 	  fermion_staggered_code(nullptr),
 	  gaugemomentum_code(nullptr),
@@ -426,6 +427,14 @@ hardware::code::Spinors * hardware::Device::get_spinor_code()
 		spinor_code = new hardware::code::Spinors(params, this);
 	}
 	return spinor_code;
+}
+
+hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered_code()
+{
+	if(!spinor_staggered_code) {
+		spinor_staggered_code = new hardware::code::Spinors_staggered(params, this);
+	}
+	return spinor_staggered_code;
 }
 
 hardware::code::Fermions * hardware::Device::get_fermion_code()
