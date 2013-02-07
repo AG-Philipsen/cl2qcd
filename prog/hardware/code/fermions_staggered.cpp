@@ -39,14 +39,15 @@ void hardware::code::Fermions_staggered::fill_kernels()
 	M_staggered = 0;
 
 	logger.debug() << "Create staggered fermion kernels...";
-	M_staggered = createKernel("M_wilson") << sources << "fermionmatrix.cl" << "fermionmatrix_m.cl";
+
+	M_staggered = createKernel("M_staggered") << sources << "fermionmatrix_staggered.cl" << "fermionmatrix_m_staggered.cl";
 
 	return;
 }
 
 void hardware::code::Fermions_staggered::clear_kernels()
 {
-	logger.trace() << "clearing fermion kernels...";
+	logger.trace() << "clearing staggered fermion kernels...";
 	cl_uint clerr = CL_SUCCESS;
 
 	if(M_staggered) {
@@ -60,11 +61,10 @@ void hardware::code::Fermions_staggered::get_work_sizes(const cl_kernel kernel, 
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 }
 
-
 //explicit fermionmatrix-kernel calling functions
 void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float mass)
 {
-	//get kappa
+	//get mass
 	hmc_float kappa_tmp;
 	if(mass == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = mass;
