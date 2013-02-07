@@ -21,6 +21,7 @@
 #include "code/prng.hpp"
 #include "code/spinors.hpp"
 #include "code/fermions.hpp"
+#include "code/fermions_staggered.hpp"
 #include "code/correlator.hpp"
 #include "code/heatbath.hpp"
 #include "code/kappa.hpp"
@@ -202,6 +203,11 @@ public:
 	hardware::code::Fermions * get_fermion_code();
 
 	/**
+	 * Get access to the staggered fermion kernels on this device.
+	 */
+	hardware::code::Fermions_staggered * get_fermion_staggered_code();
+
+	/**
 	 * Get access to the gaugemomentum kernels on this device.
 	 */
 	hardware::code::Gaugemomentum * get_gaugemomentum_code();
@@ -339,6 +345,12 @@ private:
 	 * Initialized on demand.
 	 */
 	hardware::code::Fermions * fermion_code;
+
+	/**
+	 * Pointer to the staggered fermion code.
+	 * Initialized on demand.
+	 */
+	hardware::code::Fermions_staggered * fermion_staggered_code;
 
 	/**
 	 * Pointer to the gaugemomentum code.

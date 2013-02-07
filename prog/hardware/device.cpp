@@ -32,6 +32,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  prng_code(nullptr),
 	  spinor_code(nullptr),
 	  fermion_code(nullptr),
+	  fermion_staggered_code(nullptr),
 	  gaugemomentum_code(nullptr),
 	  molecular_dynamics_code(nullptr),
 	  correlator_code(nullptr),
@@ -433,6 +434,14 @@ hardware::code::Fermions * hardware::Device::get_fermion_code()
 		fermion_code = new hardware::code::Fermions(params, this);
 	}
 	return fermion_code;
+}
+
+hardware::code::Fermions_staggered * hardware::Device::get_fermion_staggered_code()
+{
+	if(!fermion_staggered_code) {
+		fermion_staggered_code = new hardware::code::Fermions_staggered(params, this);
+	}
+	return fermion_staggered_code;
 }
 
 hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
