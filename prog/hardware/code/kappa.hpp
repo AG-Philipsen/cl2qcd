@@ -31,18 +31,18 @@ public:
 	 * Run the calculation of kappa clover. No OpenCL barrier.
 	 * @TODO remove beta
 	 */
-	void run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta);
+	void run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const;
 	/**
 	 * Run the calculation of kappa clover. No OpenCL barrier.
 	 * @TODO remove beta
 	 */
-	void run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta);
+	void run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const;
 
 	/**
 	 * Copy kappa_clover from device to host and return it
 	 * @return kappa_clover
 	 */
-	hmc_float get_kappa_clover();
+	hmc_float get_kappa_clover() const;
 
 protected:
 	/**
