@@ -1,6 +1,8 @@
 #include "../meta/util.hpp"
 #include "../host_random.h"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/code/spinors.hpp"
+#include "../hardware/code/fermions.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

@@ -7,6 +7,7 @@
 #include "../meta/type_ops.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/system.hpp"
+#include "../hardware/code/gaugefield.hpp"
 
 void test(const hardware::System& system, const int seed)
 {

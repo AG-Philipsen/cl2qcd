@@ -5,6 +5,9 @@
 #include "../device.hpp"
 #include <fstream>
 #include <cmath>
+#include "fermions.hpp"
+#include "spinors.hpp"
+#include "prng.hpp"
 
 using namespace std;
 

@@ -17,21 +17,26 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
-#include "code/gaugefield.hpp"
-#include "code/prng.hpp"
-#include "code/spinors.hpp"
-#include "code/fermions.hpp"
-#include "code/correlator.hpp"
-#include "code/heatbath.hpp"
-#include "code/kappa.hpp"
-#include "code/gaugemomentum.hpp"
-#include "code/molecular_dynamics.hpp"
-#include "code/buffer.hpp"
+#include "../types.h"
 
 namespace hardware {
 
 namespace buffers {
 // forward declaration for friend relation
+class Buffer;
+}
+
+namespace code {
+// forward decleration to improve decoupling and speed up compilation
+class Gaugefield;
+class PRNG;
+class Spinors;
+class Fermions;
+class Correlator;
+class Heatbath;
+class Kappa;
+class Gaugemomentum;
+class Molecular_Dynamics;
 class Buffer;
 }
 

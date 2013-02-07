@@ -1,6 +1,7 @@
 #include "../meta/util.hpp"
 #include "../host_random.h"
 #include "../physics/prng.hpp"
+#include "../hardware/code/spinors.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

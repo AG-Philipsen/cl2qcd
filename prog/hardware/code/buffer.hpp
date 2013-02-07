@@ -7,6 +7,7 @@
 #include "opencl_module.hpp"
 
 #include "../buffers/buffer.hpp"
+#include "gaugefield.hpp"
 
 namespace hardware {
 

@@ -4,6 +4,8 @@
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <cassert>
+#include "gaugefield.hpp"
+#include "prng.hpp"
 
 using namespace std;
 

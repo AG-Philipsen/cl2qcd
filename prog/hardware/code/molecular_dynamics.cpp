@@ -3,6 +3,9 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "fermions.hpp"
+#include "prng.hpp"
+#include "gaugemomentum.hpp"
 
 using namespace std;
 

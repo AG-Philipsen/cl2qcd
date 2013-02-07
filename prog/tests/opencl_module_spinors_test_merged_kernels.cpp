@@ -2,6 +2,7 @@
 #include "../host_random.h"
 #include "../hardware/system.hpp"
 #include "../hardware/device.hpp"
+#include "../hardware/code/spinors.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

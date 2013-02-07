@@ -9,6 +9,7 @@
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
 #include "../../host_readgauge.h"
+#include "../../hardware/code/gaugefield.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,

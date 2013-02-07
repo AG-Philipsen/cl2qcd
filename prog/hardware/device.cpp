@@ -7,6 +7,16 @@
 #include "device.hpp"
 #include "system.hpp"
 #include "../logger.hpp"
+#include "code/gaugefield.hpp"
+#include "code/prng.hpp"
+#include "code/spinors.hpp"
+#include "code/fermions.hpp"
+#include "code/correlator.hpp"
+#include "code/heatbath.hpp"
+#include "code/kappa.hpp"
+#include "code/gaugemomentum.hpp"
+#include "code/molecular_dynamics.hpp"
+#include "code/buffer.hpp"
 
 static std::string retrieve_device_name(cl_device_id device_id);
 static bool retrieve_device_availability(cl_device_id device_id);

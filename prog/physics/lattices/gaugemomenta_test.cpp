@@ -13,6 +13,7 @@
 
 #include "../../logger.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../../hardware/code/gaugemomentum.hpp"
 
 static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed);
 

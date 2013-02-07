@@ -7,6 +7,7 @@
 #include "spinor.hpp"
 #include "../device.hpp"
 #include "plain.hpp"
+#include "../code/spinors.hpp"
 
 #include <stdexcept>
 

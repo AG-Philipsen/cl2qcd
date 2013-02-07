@@ -1,5 +1,8 @@
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/code/molecular_dynamics.hpp"
+#include "../hardware/code/spinors.hpp"
+#include "../hardware/code/gaugemomentum.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

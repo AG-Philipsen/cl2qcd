@@ -11,6 +11,7 @@
 #include "../lattices/util.hpp"
 #include "molecular_dynamics.hpp"
 #include "../../meta/util.hpp"
+#include "../hardware/code/molecular_dynamics.hpp"
 
 //this function takes to args kappa and mubar because one has to use it with different masses when mass-prec is used and when not
 

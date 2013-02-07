@@ -3,6 +3,8 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "spinors.hpp"
+#include "prng.hpp"
 
 using namespace std;
 
