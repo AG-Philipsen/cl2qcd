@@ -136,7 +136,7 @@ void hardware::code::Fermions::get_work_sizes(const cl_kernel kernel, size_t * l
 
 
 //explicit fermionmatrix-kernel calling functions
-void hardware::code::Fermions::M_wilson_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa)
+void hardware::code::Fermions::M_wilson_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa) const
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -163,7 +163,7 @@ void hardware::code::Fermions::M_wilson_device(const hardware::buffers::Plain<sp
 	get_device()->enqueue_kernel( M_wilson, gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_plus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void hardware::code::Fermions::M_tm_plus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar ) const
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -198,7 +198,7 @@ void hardware::code::Fermions::M_tm_plus_device(const hardware::buffers::Plain<s
 	get_device()->enqueue_kernel( M_tm_plus, gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_minus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void hardware::code::Fermions::M_tm_minus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar ) const
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -233,7 +233,7 @@ void hardware::code::Fermions::M_tm_minus_device(const hardware::buffers::Plain<
 	get_device()->enqueue_kernel( M_tm_minus, gs2, ls2);
 }
 
-void hardware::code::Fermions::gamma5_device(const hardware::buffers::Plain<spinor> * inout)
+void hardware::code::Fermions::gamma5_device(const hardware::buffers::Plain<spinor> * inout) const
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -340,7 +340,7 @@ void hardware::code::Fermions::gamma5_device(const hardware::buffers::Plain<spin
 
 
 //explicit eoprec fermionmatrix functions
-void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor * inout)
+void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor * inout) const
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -353,7 +353,7 @@ void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor 
 	get_device()->enqueue_kernel( gamma5_eo, gs2, ls2);
 }
 
-void hardware::code::Fermions::dslash_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa)
+void hardware::code::Fermions::dslash_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -384,7 +384,7 @@ void hardware::code::Fermions::dslash_eo_device(const hardware::buffers::Spinor 
 	get_device()->enqueue_kernel(dslash_eo , gs2, ls2);
 }
 
-void hardware::code::Fermions::dslash_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa)
+void hardware::code::Fermions::dslash_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -415,7 +415,7 @@ void hardware::code::Fermions::dslash_AND_gamma5_eo_device(const hardware::buffe
 	get_device()->enqueue_kernel(dslash_AND_gamma5_eo , gs2, ls2);
 }
 
-void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar)
+void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar) const
 {
 	//get kappa
 	hmc_float kappa_tmp, mubar_tmp;
@@ -451,7 +451,7 @@ void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(co
 	get_device()->enqueue_kernel(dslash_AND_M_tm_inverse_sitediagonal_eo , gs2, ls2);
 }
 
-void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar)
+void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar) const
 {
 	//get kappa
 	hmc_float kappa_tmp, mubar_tmp;
@@ -487,7 +487,7 @@ void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_dev
 	get_device()->enqueue_kernel(dslash_AND_M_tm_inverse_sitediagonal_minus_eo , gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_inverse_sitediagonal_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar)
+void hardware::code::Fermions::M_tm_inverse_sitediagonal_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar) const
 {
 	//get mu
 	hmc_float mubar_tmp;
@@ -511,7 +511,7 @@ void hardware::code::Fermions::M_tm_inverse_sitediagonal_device(const hardware::
 	get_device()->enqueue_kernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_sitediagonal_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar)
+void hardware::code::Fermions::M_tm_sitediagonal_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar) const
 {
 	//get mu
 	hmc_float mubar_tmp;
@@ -535,7 +535,7 @@ void hardware::code::Fermions::M_tm_sitediagonal_device(const hardware::buffers:
 	get_device()->enqueue_kernel(M_tm_sitediagonal , gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar)
+void hardware::code::Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar) const
 {
 	//get mu
 	hmc_float mubar_tmp;
@@ -559,7 +559,7 @@ void hardware::code::Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(const hard
 	get_device()->enqueue_kernel(M_tm_sitediagonal_AND_gamma5_eo , gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar)
+void hardware::code::Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar) const
 {
 	//get mu
 	hmc_float mubar_tmp;
@@ -583,7 +583,7 @@ void hardware::code::Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(cons
 	get_device()->enqueue_kernel(M_tm_sitediagonal_minus_AND_gamma5_eo , gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_inverse_sitediagonal_minus_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar)
+void hardware::code::Fermions::M_tm_inverse_sitediagonal_minus_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar) const
 {
 	//get mu
 	hmc_float mubar_tmp;
@@ -607,7 +607,7 @@ void hardware::code::Fermions::M_tm_inverse_sitediagonal_minus_device(const hard
 	get_device()->enqueue_kernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
 }
 
-void hardware::code::Fermions::M_tm_sitediagonal_minus_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar)
+void hardware::code::Fermions::M_tm_sitediagonal_minus_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar) const
 {
 	//get mu
 	hmc_float mubar_tmp;
