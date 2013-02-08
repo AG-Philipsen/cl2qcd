@@ -145,11 +145,6 @@ std::string hardware::OpenclException::what()
 	return error_message;
 }
 
-hardware::System::operator const cl_platform_id&() const noexcept
-{
-	return platform;
-}
-
 hardware::System::operator const cl_context&() const noexcept
 {
 	return context;

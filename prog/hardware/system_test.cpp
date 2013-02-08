@@ -33,7 +33,6 @@ BOOST_AUTO_TEST_CASE(devices)
 	meta::Inputparameters params(1, _params);
 	System system(params);
 
-	BOOST_REQUIRE(static_cast<const cl_platform_id>(system));
 	BOOST_REQUIRE(static_cast<const cl_context>(system));
 
 	// there should always be at least one device
@@ -60,9 +59,13 @@ for(Device * device : devices) {
 	// check that only device 0 is returned
 	const char * _params4[] = {"foo", "--device=0"};
 	meta::Inputparameters params4(2, _params4);
-	System system4(params4);
-	const std::vector<Device*>& devices4 = system4.get_devices();
-	BOOST_REQUIRE_EQUAL(devices4.size(), 1);
+	try {
+		System system4(params4);
+		const std::vector<Device*>& devices4 = system4.get_devices();
+		BOOST_REQUIRE_EQUAL(devices4.size(), 1);
+	} catch(std::invalid_argument) {
+		// device might not support double-precision
+	}
 
 	// check whether GPUs/CPUs can be disabled
 	const char * _params5[] = {"foo", "--use_gpu=false"};
@@ -83,5 +86,16 @@ for(Device * device : devices6) {
 
 BOOST_AUTO_TEST_CASE(dump_source_if_debugging)
 {
-	BOOST_FAIL("not implemented");
+	using namespace hardware;
+	using std::string;
+
+	const char * _params[] = {"foo", "--log-level=debug"};
+	meta::Inputparameters params(2, _params);
+	System system(params);
+
+	if(logger.beDebug()) {
+		// check on proper environment variables
+		BOOST_REQUIRE_EQUAL(string("3"), string(getenv("GPU_DUMP_DEVICE_KERNEL")));
+		BOOST_REQUIRE_NE(string(getenv("AMD_OCL_BUILD_OPTIONS_APPEND")).find("-save-temps"), -1);
+	}
 }
