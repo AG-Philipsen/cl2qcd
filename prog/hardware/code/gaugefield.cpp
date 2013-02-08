@@ -195,6 +195,10 @@ void hardware::code::Gaugefield::plaquette_device(const hardware::buffers::SU3 *
 
 void hardware::code::Gaugefield::rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * rect) const
 {
+	if(rectangles == nullptr) {
+		throw std::logic_error("Rectangles are not enabled.");
+	}
+
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
