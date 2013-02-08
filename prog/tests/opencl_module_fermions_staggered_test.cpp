@@ -1,6 +1,7 @@
 #include "../meta/util.hpp"
 #include "../host_random.h"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/device.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
 

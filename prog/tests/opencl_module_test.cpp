@@ -1,5 +1,6 @@
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/device.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

@@ -7,6 +7,7 @@
 #include "buffer.hpp"
 #include "plain.hpp"
 #include "../system.hpp"
+#include "../device.hpp"
 #include "../../meta/type_ops.hpp"
 #include <stdexcept>
 

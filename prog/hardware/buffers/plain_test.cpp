@@ -6,6 +6,7 @@
 
 #include "plain.hpp"
 #include "../system.hpp"
+#include "../device.hpp"
 #include "../../types.h"
 #include "../../meta/type_ops.hpp"
 

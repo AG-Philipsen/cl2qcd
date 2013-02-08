@@ -6,6 +6,7 @@
 #define _PHYSICS_LATTICES_SPINORFIELD_
 
 #include "../../hardware/system.hpp"
+#include "../../hardware/device.hpp"
 #include "../../hardware/buffers/plain.hpp"
 #include "../prng.hpp"
 #include "scalar.hpp"

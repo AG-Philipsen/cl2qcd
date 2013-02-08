@@ -12,6 +12,7 @@
 #include <cassert>
 #include "../../checksum.h"
 #include <fstream>
+#include "../../hardware/device.hpp"
 
 /**
  * Version number.

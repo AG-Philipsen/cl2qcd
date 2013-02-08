@@ -7,6 +7,7 @@
 #include "buffer.hpp"
 
 #include "../system.hpp"
+#include "../device.hpp"
 #include "../../logger.hpp"
 #include "../../crypto/md5.h"
 #include "../code/buffer.hpp"

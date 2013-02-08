@@ -10,6 +10,7 @@
 #include <sstream>
 #include "../logger.hpp"
 #include <stdexcept>
+#include "device.hpp"
 
 static std::vector<hardware::Device*> filter_cpus(const std::vector<hardware::Device*>& devices);
 

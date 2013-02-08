@@ -7,6 +7,7 @@
 #include "scalar_complex.hpp"
 
 #include <stdexcept>
+#include "../../hardware/device.hpp"
 #include "../../hardware/code/spinors.hpp"
 
 //void physics::lattices::add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)

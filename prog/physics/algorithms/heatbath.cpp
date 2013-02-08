@@ -5,6 +5,7 @@
 #include "heatbath.hpp"
 
 #include <cassert>
+#include "../hardware/device.hpp"
 #include "../hardware/code/heatbath.hpp"
 
 void physics::algorithms::heatbath(physics::lattices::Gaugefield& gf, physics::PRNG& prng, int overrelax)

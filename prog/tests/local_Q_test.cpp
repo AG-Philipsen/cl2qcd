@@ -1,5 +1,6 @@
 #include "../meta/util.hpp"
 #include "../hardware/system.hpp"
+#include "../hardware/device.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 
 // use the boost test framework

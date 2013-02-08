@@ -8,7 +8,7 @@
 #define _HARDWARE_SYSTEM_HPP_
 
 #include "../meta/inputparameters.hpp"
-#include "device.hpp"
+#include "../types.h"
 
 /**
  * This namespace contains potentially hardware specific code managing the system,
@@ -31,6 +31,9 @@ namespace hardware {
 		private:
 			std::string error_message;
 	};
+
+	// forward decleartion of used class
+	class Device;
 
 	/**
 	 * Representation of the system we are working on.

@@ -1,5 +1,6 @@
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/device.hpp"
 #include "../hardware/code/molecular_dynamics.hpp"
 #include "../hardware/code/spinors.hpp"
 #include "../hardware/code/gaugemomentum.hpp"

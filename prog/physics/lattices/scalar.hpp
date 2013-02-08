@@ -10,6 +10,7 @@
 #include <vector>
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/plain.hpp"
+#include "../../exceptions.h"
 
 namespace physics {
 	namespace lattices {

@@ -1,6 +1,7 @@
 #include "../meta/util.hpp"
 #include "../host_random.h"
 #include "../physics/prng.hpp"
+#include "../hardware/device.hpp"
 #include "../hardware/code/correlator.hpp"
 
 // use the boost test framework
