@@ -107,7 +107,7 @@ hardware::Device::~Device()
 	clReleaseCommandQueue(command_queue);
 }
 
-bool hardware::Device::is_double_supported()
+bool hardware::Device::is_double_supported() const noexcept
 {
 	return supports_double;
 }

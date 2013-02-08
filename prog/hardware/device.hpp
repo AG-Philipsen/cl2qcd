@@ -73,7 +73,7 @@ public:
 	/**
 	 * Checks whether the device supports double precision.
 	 */
-	bool is_double_supported();
+	bool is_double_supported() const noexcept;
 
 	// non-copyable
 	Device& operator=(const Device&) = delete;
