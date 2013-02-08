@@ -56,6 +56,7 @@ class Device {
 
 	friend hardware::buffers::Buffer;
 	friend void print_profiling(Device *, const std::string&, int);
+	friend cl_command_queue profiling_data_test_command_queue_helper(const Device * device);
 
 public:
 	/**
