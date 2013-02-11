@@ -185,6 +185,12 @@ BOOST_AUTO_TEST_CASE(sax)
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 4 * physics::lattices::squarenorm(orig_sf), .1);
 	physics::lattices::sax(&sf, {0., 0.}, orig_sf);
 	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0.);
+
+	orig_sf.cold();
+	physics::lattices::sax(&sf, { -.8, .7}, orig_sf);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 1.1299999999999968);
+	physics::lattices::sax(&sf, {.65, .3}, orig_sf);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0.51250000000000162);
 }
 
 BOOST_AUTO_TEST_CASE(saxpy)
