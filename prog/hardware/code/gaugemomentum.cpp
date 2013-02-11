@@ -276,9 +276,14 @@ void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device
 
 void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data) const
 {
+	size_t const REQUIRED_BUFFER_SIZE = meta::get_vol4d(get_parameters()) * NDIM;
+	if(dest->get_elements() != REQUIRED_BUFFER_SIZE) {
+		throw std::invalid_argument("Destination buffer is not of proper size");
+	}
+
 	cl_int clerr;
 	if(dest->is_soa()) {
-		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, dest->get_device());
+		hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, dest->get_device());
 		tmp.load(data);
 
 		size_t ls2, gs2;
@@ -296,9 +301,14 @@ void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::bu
 
 void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const
 {
+	size_t const REQUIRED_BUFFER_SIZE = meta::get_vol4d(get_parameters()) * NDIM;
+	if(buf->get_elements() != REQUIRED_BUFFER_SIZE) {
+		throw std::invalid_argument("Source buffer is not of proper size");
+	}
+
 	cl_int clerr;
 	if(buf->is_soa()) {
-		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, buf->get_device());
+		hardware::buffers::Plain<ae> tmp(REQUIRED_BUFFER_SIZE, buf->get_device());
 
 		size_t ls2, gs2;
 		cl_uint num_groups;
