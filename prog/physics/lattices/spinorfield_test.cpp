@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	Spinorfield gaussian(system);
 	gaussian.gaussian(prng);
 	Spinorfield cold(system);
-	cold.gaussian(prng);
+	cold.cold();
 	Spinorfield zero(system);
 	zero.zero();
 	Spinorfield sf(system);
@@ -214,8 +214,8 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
 	physics::lattices::saxpy(&sf, {0., 0.}, gaussian, gaussian);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
-	physics::lattices::saxpy(&sf, {.3, .1}, cold, cold);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 3121.566404351164, .1);
+	physics::lattices::saxpy(&sf, {.3, .1}, cold, zero);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .1, .1);
 }
 
 BOOST_AUTO_TEST_CASE(saxsbypz)
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(saxsbypz)
 	Spinorfield gaussian(system);
 	gaussian.gaussian(prng);
 	Spinorfield cold(system);
-	cold.gaussian(prng);
+	cold.cold();
 	Spinorfield zero(system);
 	zero.zero();
 	Spinorfield sf(system);
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(saxsbypz)
 	physics::lattices::saxsbypz(&sf, {0., 0.}, gaussian, {0., 0.}, gaussian, gaussian);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
 	physics::lattices::saxsbypz(&sf, {.3, .7}, cold, {1., 0.}, zero, cold);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 13610.02952297107, .1);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 2.18, .1);
 	physics::lattices::saxsbypz(&sf, {.1, .3}, zero, {.7, .3}, cold, cold);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 18604.535769932936, .1);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 2.98, .1);
 }
