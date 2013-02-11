@@ -173,9 +173,9 @@ BOOST_AUTO_TEST_CASE(sax)
 
 	orig_sf.cold();
 	physics::lattices::sax(&sf, { -.8, .7}, orig_sf);
-	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0.56499999999999906);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.56499999999999906, .1);
 	physics::lattices::sax(&sf, {.65, .3}, orig_sf);
-	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0.25625000000000059);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.25625000000000059, .1);
 
 }
 
