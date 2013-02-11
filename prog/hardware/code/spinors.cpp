@@ -36,9 +36,8 @@ void hardware::code::Spinors::fill_kernels()
 
 	if(get_parameters().get_use_eo() == true) {
 		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";
-	} else {
-		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_fermion_code << prng_code << "spinorfield_gaussian.cl";
 	}
+	generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_fermion_code << prng_code << "spinorfield_gaussian.cl";
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
 	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
 	saxpy_arg = createKernel("saxpy_arg") << basic_fermion_code << "spinorfield_saxpy.cl";
@@ -81,10 +80,9 @@ void hardware::code::Spinors::clear_kernels()
 	if(get_parameters().get_use_eo() == true) {
 		clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	} else {
-		clerr = clReleaseKernel(generate_gaussian_spinorfield);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
+	clerr = clReleaseKernel(generate_gaussian_spinorfield);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
 	clerr = clReleaseKernel(set_spinorfield_cold);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
