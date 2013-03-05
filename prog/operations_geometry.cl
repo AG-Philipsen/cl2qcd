@@ -463,7 +463,7 @@ uint spinor_element(uint alpha, uint color)
 // CP: I simply directed them back to the newer functions
 //////////////////////////////////////////////////////////////////
 
-int inline get_global_pos(int spacepos, int t)
+int inline get_pos(int spacepos, int t)
 {
 	st_idx tmp = {spacepos, t};
 	return get_site_idx(tmp);

@@ -8,7 +8,7 @@ __kernel void set_spinorfield_cold(__global spinor * const restrict out)
 		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp /   2) : get_odd_site(id_tmp / 2);
 
 		hmc_float norm = 1. / sqrt((hmc_float)(12.f * VOL4D));
-		out[get_global_pos(pos.space, pos.time)] = real_multiply_spinor(set_spinor_cold(), norm);
+		out[get_site_idx(pos)] = real_multiply_spinor(set_spinor_cold(), norm);
 	}
 
 }

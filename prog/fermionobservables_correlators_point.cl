@@ -21,7 +21,7 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_global_pos(nspace, t)];
+					spinor tmp = phi[get_pos(nspace, t)];
 					correlator += spinor_squarenorm(tmp);
 				}
 			}
@@ -63,7 +63,7 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_global_pos(nspace, t)];
+					spinor tmp = phi[get_pos(nspace, t)];
 					correlator += spinor_squarenorm(tmp);
 				}
 			}
@@ -105,16 +105,16 @@ __kernel void correlator_sc_z(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 				}
 			}
@@ -155,16 +155,16 @@ __kernel void correlator_sc_t(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 				}
 			}
@@ -211,8 +211,8 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -231,8 +231,8 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -292,8 +292,8 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -312,8 +312,8 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -374,8 +374,8 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -394,8 +394,8 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -456,8 +456,8 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -476,8 +476,8 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -536,16 +536,16 @@ __kernel void correlator_vz_z(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 				}
 			}
@@ -586,16 +586,16 @@ __kernel void correlator_vz_t(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
 				}
@@ -644,8 +644,8 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -664,8 +664,8 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -726,8 +726,8 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -746,8 +746,8 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -809,8 +809,8 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -829,8 +829,8 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -891,8 +891,8 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -911,8 +911,8 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -970,16 +970,16 @@ __kernel void correlator_az_z(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 				}
 			}
@@ -1020,16 +1020,16 @@ __kernel void correlator_az_t(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 				}
 			}

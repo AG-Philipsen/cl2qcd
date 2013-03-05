@@ -6,9 +6,9 @@ __kernel void convert_to_eoprec(__global spinor * const restrict even, __global 
 
 	for(int n = id; n < EOPREC_SPINORFIELDSIZE; n += global_size) {
 		st_index pos = get_even_site(n);
-		even[n] = in[get_global_pos(pos.space, pos.time)];
+		even[n] = in[get_site_idx(pos)];
 		pos = get_odd_site(n);
-		odd[n] = in[get_global_pos(pos.space, pos.time)];
+		odd[n] = in[get_site_idx(pos)];
 	}
 	return;
 }
@@ -20,9 +20,9 @@ __kernel void convert_from_eoprec(__global spinor const * const restrict even, _
 
 	for(int n = id; n < EOPREC_SPINORFIELDSIZE; n += global_size) {
 		st_index pos = get_even_site(n);
-		out[get_global_pos(pos.space, pos.time)] = even[n];
+		out[get_site_idx(pos)] = even[n];
 		pos = get_odd_site(n);
-		out[get_global_pos(pos.space, pos.time)] = odd[n];
+		out[get_site_idx(pos)] = odd[n];
 	}
 	return;
 }

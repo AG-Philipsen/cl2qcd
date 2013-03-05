@@ -25,7 +25,7 @@ void print_spinor(spinor in)
 
 spinor get_spinor_from_field(__global const spinor * const restrict in, const int n, const int t)
 {
-	int pos = get_global_pos(n, t);
+	int pos = get_pos(n, t);
 	spinor out;
 	out = in[pos];
 	return out;
@@ -33,6 +33,6 @@ spinor get_spinor_from_field(__global const spinor * const restrict in, const in
 
 void put_spinor_to_field(const spinor in, __global spinor * const restrict out, const int n, const int t)
 {
-	int pos = get_global_pos(n, t);
+	int pos = get_pos(n, t);
 	out[pos] = in;
 }
