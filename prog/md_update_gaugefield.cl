@@ -19,7 +19,7 @@ __kernel void md_update_gaugefield(const hmc_float eps, __global const aeStorage
 		/** @todo this must be done more efficient */
 		st_index pos = (id_tmp < VOLSPACE * NTIME / 2) ? get_even_site(id_tmp) : get_odd_site(id_tmp - (VOLSPACE * NTIME / 2));
 		for(int mu = 0; mu < NDIM; mu++) {
-			index = get_global_link_pos(mu, pos.space, pos.time);
+			index = get_link_idx(mu, pos);
 			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries
 			// &(p_in[index*8]) should point to the right position for the pos-th element of the long gaugemomentum vector p_in
 			tmp2 = build_su3matrix_by_exponentiation(getAe(p_in, index), eps);

@@ -8,7 +8,7 @@ inline void gauge_force_per_link(__global const Matrixsu3StorageType * const res
 #ifdef _USE_RECT_
 	factor = factor * C0;
 #endif
-	int global_link_pos = get_global_link_pos(dir, pos.space, pos.time);
+	int global_link_pos = get_link_idx(dir, pos);
 	update_gaugemomentum(out_tmp, factor , global_link_pos, out);
 }
 

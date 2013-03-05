@@ -469,7 +469,7 @@ int inline get_global_pos(int spacepos, int t)
 	return get_site_idx(tmp);
 }
 
-int inline get_global_link_pos(int mu, int spacepos, int t)
+int inline get_link_pos(int mu, int spacepos, int t)
 {
 	st_idx tmp = {spacepos, t};
 	return get_link_idx(mu, tmp);

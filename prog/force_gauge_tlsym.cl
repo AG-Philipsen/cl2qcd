@@ -5,7 +5,7 @@ inline void gauge_force_tlsym_per_link(__global const Matrixsu3StorageType * con
 		ae out_tmp = tr_lambda_u(V);
 
 		hmc_float factor = -C1 * BETA / 3.;
-		int global_link_pos = get_global_link_pos(dir, pos.space, pos.time);
+		int global_link_pos = get_link_idx(dir, pos);
 		update_gaugemomentum(out_tmp, factor , global_link_pos, out);
 }
 
@@ -167,7 +167,7 @@ __kernel void gauge_force_tlsym_multipass6_tpe(__global const Matrixsu3StorageTy
 		ae out_tmp = tr_lambda_u(staple);
 
 		hmc_float factor = -C1 * BETA / 3.;
-		int global_link_pos = get_global_link_pos(dir, pos.space, pos.time);
+		int global_link_pos = get_link_idx(dir, pos);
 		update_gaugemomentum(out_tmp, factor , global_link_pos, out);
 	}
 }
