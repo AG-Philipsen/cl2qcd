@@ -202,15 +202,11 @@ public:
 
 	/**
 	 * Get the position of the device inside the device grid.
-	 *
-	 * The t-direction is stored in the w.
 	 */
 	size_4 get_grid_pos();
 
 	/**
 	 * Get the size of the device grid.
-	 *
-	 * The t-direction is stored in the w.
 	 */
 	size_4 get_grid_size();
 
@@ -324,15 +320,11 @@ private:
 
 	/**
 	 * The position of the device in the device grid.
-	 *
-	 * The t-position ist stored int the w.
 	 */
 	const size_4 grid_pos;
 
 	/**
 	 * The size of the device grid.
-	 *
-	 * The t-position is stored in the w.
 	 */
 	const size_4 grid_size;
 };

@@ -80,8 +80,6 @@ namespace hardware {
 
 		/**
 		 * Get the size of the device grid.
-		 *
-		 * The t-direction is stored in the w.
 		 */
 		size_4 get_grid_size();
 
@@ -109,8 +107,6 @@ namespace hardware {
 
 		/**
 		 * The size of the device grid.
-		 *
-		 * The t-position is stored in the w.
 		 */
 		size_4 grid_size;
 	};
