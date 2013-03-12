@@ -203,12 +203,17 @@ public:
 	/**
 	 * Get the position of the device inside the device grid.
 	 */
-	size_4 get_grid_pos();
+	size_4 get_grid_pos() const;
 
 	/**
 	 * Get the size of the device grid.
 	 */
-	size_4 get_grid_size();
+	size_4 get_grid_size() const;
+
+	/**
+	 * Get the size of the local lattice.
+	 */
+	size_4 get_local_lattice_size() const;
 
 private:
 	/**
@@ -327,6 +332,11 @@ private:
 	 * The size of the device grid.
 	 */
 	const size_4 grid_size;
+
+	/**
+	 * The size of the local lattice.
+	 */
+	const size_4 local_lattice_size;
 };
 
 	/**

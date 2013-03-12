@@ -21,6 +21,7 @@
 #include "code/buffer.hpp"
 
 static bool retrieve_device_availability(cl_device_id device_id);
+static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputparameters& params);
 
 hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
 	: DeviceInfo(device_id),
@@ -40,10 +41,12 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  kappa_code(nullptr),
 	  buffer_code(nullptr),
 	  grid_pos(grid_pos),
-	  grid_size(grid_size)
+	  grid_size(grid_size),
+	  local_lattice_size(calculate_local_lattice_size(grid_size, params))
 {
 	logger.debug() << "Initializing " << get_name();
 	logger.debug() << "Device position: " << grid_pos;
+	logger.debug() << "Local lattice size: " << local_lattice_size;
 
 	bool available = retrieve_device_availability(device_id);
 	if(!available) {
@@ -412,12 +415,34 @@ static bool retrieve_device_availability(cl_device_id device_id)
 	return available;
 }
 
-size_4 hardware::Device::get_grid_pos()
+size_4 hardware::Device::get_grid_pos() const
 {
 	return grid_pos;
 }
 
-size_4 hardware::Device::get_grid_size()
+size_4 hardware::Device::get_grid_size() const
 {
 	return grid_size;
+}
+
+static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputparameters& params)
+{
+	const unsigned NSPACE = params.get_nspace();
+	const unsigned NTIME = params.get_ntime();
+
+	const size_4 local_size(NSPACE / grid_size.x, NSPACE / grid_size.y, NSPACE / grid_size.z, NTIME / grid_size.t);
+
+	if(local_size.x * grid_size.x != NSPACE
+	   || local_size.y * grid_size.y != NSPACE
+	   || local_size.z * grid_size.z != NSPACE
+	   || local_size.t * grid_size.t != NTIME) {
+		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
+	}
+
+	return local_size;
+}
+
+size_4 hardware::Device::get_local_lattice_size() const
+{
+	return local_lattice_size;
 }
