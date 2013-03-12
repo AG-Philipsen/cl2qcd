@@ -22,7 +22,7 @@
 
 static bool retrieve_device_availability(cl_device_id device_id);
 
-hardware::Device::Device(cl_context context, cl_device_id device_id, const meta::Inputparameters& params, bool enable_profiling)
+hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
 	: DeviceInfo(device_id),
 	  context(context), params(params),
 	  profiling_enabled(enable_profiling),
@@ -38,9 +38,13 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  correlator_code(nullptr),
 	  heatbath_code(nullptr),
 	  kappa_code(nullptr),
-	  buffer_code(nullptr)
+	  buffer_code(nullptr),
+	  grid_pos(grid_pos),
+	  grid_size(grid_size)
 {
 	logger.debug() << "Initializing " << get_name();
+	logger.debug() << "Device position: " << grid_pos;
+
 	bool available = retrieve_device_availability(device_id);
 	if(!available) {
 		logger.error() << "Device is not available!";
@@ -408,3 +412,12 @@ static bool retrieve_device_availability(cl_device_id device_id)
 	return available;
 }
 
+size_4 hardware::Device::get_grid_pos()
+{
+	return grid_pos;
+}
+
+size_4 hardware::Device::get_grid_size()
+{
+	return grid_size;
+}

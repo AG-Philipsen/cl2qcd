@@ -13,10 +13,11 @@
 #include "device.hpp"
 
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, const meta::Inputparameters& params, bool enable_profiling);
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling);
+static size_4 calculate_grid_size(size_t num_devices);
 
 hardware::System::System(const meta::Inputparameters& params, bool enable_profiling)
-	: params(params)
+	: params(params), grid_size(0, 0, 0, 0)
 {
 	using namespace hardware;
 
@@ -86,7 +87,7 @@ for(auto device: device_infos) {
 		}
 	} else {
 for(int i: selection) {
-			if(i < 0 || i > num_devices) {
+			if(i < 0 || i > (int) num_devices) {
 				throw std::invalid_argument("Selected device does not exist");
 			}
 			DeviceInfo dev(device_ids[i]);
@@ -99,7 +100,10 @@ for(int i: selection) {
 		}
 	}
 
-	devices = init_devices(device_infos, context, params, enable_profiling);
+	grid_size = calculate_grid_size(device_infos.size());
+	logger.info() << "Device grid layout: " << grid_size;
+
+	devices = init_devices(device_infos, context, grid_size, params, enable_profiling);
 
 	delete[] device_ids;
 }
@@ -182,14 +186,30 @@ for(auto device: devices) {
 	return filtered;
 }
 
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, const meta::Inputparameters& params, bool enable_profiling)
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
 {
 	std::vector<hardware::Device *> devices;
 	devices.reserve(infos.size());
 
+	unsigned tpos = 0;
 for(auto const info: infos) {
-		devices.push_back(new hardware::Device(context, info.get_id(), params, enable_profiling));
+		size_4 const grid_pos(0, 0, 0, tpos++);
+		if(grid_pos.t >= grid_size.t) {
+			throw std::logic_error("Failed to place devices on the grid.");
+		}
+		devices.push_back(new hardware::Device(context, info.get_id(), grid_pos, grid_size, params, enable_profiling));
 	}
 
 	return devices;
+}
+
+static size_4 calculate_grid_size(size_t num_devices)
+{
+	// for now only parallelize in t-direction
+	return size_4(1, 1, 1, num_devices);
+}
+
+size_4 hardware::System::get_grid_size()
+{
+	return grid_size;
 }

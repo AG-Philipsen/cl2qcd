@@ -13,6 +13,7 @@
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
 #include "../types.h"
+#include "../meta/size_4.hpp"
 
 namespace hardware {
 
@@ -62,7 +63,7 @@ public:
 	 * \param inputparams the input parameters of the application
 	 * \param enable_profiling enable profiling on this device
 	 */
-	Device(cl_context, cl_device_id, const meta::Inputparameters&, bool enable_profiling = false);
+	Device(cl_context, cl_device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters&, bool enable_profiling = false);
 
 	~Device();
 
@@ -199,6 +200,20 @@ public:
 	 */
 	const hardware::code::Buffer * get_buffer_code();
 
+	/**
+	 * Get the position of the device inside the device grid.
+	 *
+	 * The t-direction is stored in the w.
+	 */
+	size_4 get_grid_pos();
+
+	/**
+	 * Get the size of the device grid.
+	 *
+	 * The t-direction is stored in the w.
+	 */
+	size_4 get_grid_size();
+
 private:
 	/**
 	 * The OpenCL context to be used by this device.
@@ -307,6 +322,19 @@ private:
 	 */
 	const hardware::code::Buffer * buffer_code;
 
+	/**
+	 * The position of the device in the device grid.
+	 *
+	 * The t-position ist stored int the w.
+	 */
+	const size_4 grid_pos;
+
+	/**
+	 * The size of the device grid.
+	 *
+	 * The t-position is stored in the w.
+	 */
+	const size_4 grid_size;
 };
 
 	/**
