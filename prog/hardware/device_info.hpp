@@ -30,6 +30,13 @@ public:
 	DeviceInfo(const cl_device_id device_id);
 
 	/**
+	 * Initialize the info object.
+	 *
+	 * \param device_id id of the device to initialize
+	 */
+	DeviceInfo(const DeviceInfo& other);
+
+	/**
 	 * Get the number of compute units of the device
 	 */
 	size_t get_num_compute_units() const noexcept;
@@ -80,49 +87,49 @@ private:
 	/**
 	 * The OpenCL device id of the device
 	 */
-	const cl_device_id device_id;
+	 cl_device_id device_id;
 
 	/**
 	 * The prefered local work size of this device
 	 */
-	const size_t preferred_local_thread_num;
+	 size_t preferred_local_thread_num;
 
 	/**
 	 * The preferred global work size of this device
 	 */
-	const size_t preferred_global_thread_num;
+	 size_t preferred_global_thread_num;
 
 	/**
 	 * The number of compute units of the device
 	 */
-	const size_t num_compute_units;
+	 size_t num_compute_units;
 
 	/**
 	 * The type of the device
 	 */
-	const cl_device_type device_type;
+	 cl_device_type device_type;
 
 	/**
 	 * Whether this device supports double precsion
 	 */
-	const bool supports_double;
+	 bool supports_double;
 
 	/**
 	 * Whether this device prefers blocked loops
 	 */
-	const bool prefers_blocked_loops;
+	 bool prefers_blocked_loops;
 
 	/**
 	 * Whether this device prefers SOA storage
 	 *
 	 * @todo This should be datatype specific
 	 */
-	const bool prefers_soa;
+	 bool prefers_soa;
 
 	/**
 	 * The name of this device
 	 */
-	const std::string name;
+	 std::string name;
 };
 
 } /* namespace hardware */

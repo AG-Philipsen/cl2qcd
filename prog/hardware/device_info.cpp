@@ -29,6 +29,20 @@ hardware::DeviceInfo::DeviceInfo(const cl_device_id device_id)
 
 }
 
+hardware::DeviceInfo::DeviceInfo(const DeviceInfo& other)
+	: device_id(other.device_id),
+	  preferred_local_thread_num(other.preferred_local_thread_num),
+	  preferred_global_thread_num(other.preferred_global_thread_num),
+	  num_compute_units(other.num_compute_units),
+	  device_type(other.device_type),
+	  supports_double(other.supports_double),
+	  prefers_blocked_loops(other.prefers_blocked_loops),
+	  prefers_soa(other.prefers_soa),
+	  name(other.name)
+{
+
+}
+
 bool hardware::DeviceInfo::is_double_supported() const noexcept
 {
 	return supports_double;
