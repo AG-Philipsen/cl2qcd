@@ -215,6 +215,16 @@ public:
 	 */
 	size_4 get_local_lattice_size() const;
 
+	/**
+	 * Get the size of the halo
+	 */
+	unsigned get_halo_size() const;
+
+	/**
+	 * Get the size of the lattice in device memory.
+	 */
+	size_4 get_mem_lattice_size() const;
+
 private:
 	/**
 	 * The OpenCL context to be used by this device.
@@ -337,6 +347,16 @@ private:
 	 * The size of the local lattice.
 	 */
 	const size_4 local_lattice_size;
+
+	/**
+	 * Get the size of the halo
+	 */
+	const unsigned halo_size;
+
+	/**
+	 * The size of the lattice in device memory.
+	 */
+	const size_4 mem_lattice_size;
 };
 
 	/**

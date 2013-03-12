@@ -22,6 +22,7 @@
 
 static bool retrieve_device_availability(cl_device_id device_id);
 static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputparameters& params);
+static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
 hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
 	: DeviceInfo(device_id),
@@ -42,11 +43,14 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  buffer_code(nullptr),
 	  grid_pos(grid_pos),
 	  grid_size(grid_size),
-	  local_lattice_size(calculate_local_lattice_size(grid_size, params))
+	  local_lattice_size(calculate_local_lattice_size(grid_size, params)),
+	  halo_size(2),
+	  mem_lattice_size(calculate_mem_lattice_size(grid_size, local_lattice_size, halo_size))
 {
 	logger.debug() << "Initializing " << get_name();
 	logger.debug() << "Device position: " << grid_pos;
 	logger.debug() << "Local lattice size: " << local_lattice_size;
+	logger.debug() << "Memory lattice size: " << mem_lattice_size;
 
 	bool available = retrieve_device_availability(device_id);
 	if(!available) {
@@ -445,4 +449,14 @@ static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputpa
 size_4 hardware::Device::get_local_lattice_size() const
 {
 	return local_lattice_size;
+}
+
+static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size)
+{
+	return size_4(
+	         local_lattice_size.x + (grid_size.x > 1 ? 2 * halo_size : 0),
+	         local_lattice_size.y + (grid_size.y > 1 ? 2 * halo_size : 0),
+	         local_lattice_size.z + (grid_size.z > 1 ? 2 * halo_size : 0),
+	         local_lattice_size.t + (grid_size.t > 1 ? 2 * halo_size : 0)
+	       );
 }
