@@ -3,7 +3,7 @@
  */
 
 #include "inversion.hpp"
-#include "../meta/util.hpp"
+#include "../../meta/util.hpp"
 #include "solver.hpp"
 #include <cassert>
 #include "../lattices/util.hpp"

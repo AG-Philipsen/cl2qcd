@@ -8,8 +8,8 @@
 #include "forces.hpp"
 
 #include "../../meta/util.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/molecular_dynamics.hpp"
+#include "../../hardware/device.hpp"
+#include "../../hardware/code/molecular_dynamics.hpp"
 
 void physics::algorithms::gauge_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf)
 {

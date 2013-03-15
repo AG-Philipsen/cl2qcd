@@ -3,7 +3,7 @@
 #include "../../logger.hpp"
 #include "../device.hpp"
 #include <sstream>
-#include "../hardware/code/gaugefield.hpp"
+#include "gaugefield.hpp"
 
 using namespace std;
 

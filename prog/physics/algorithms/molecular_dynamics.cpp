@@ -12,7 +12,7 @@
 #include "../../meta/util.hpp"
 #include "solver.hpp"
 #include "forces.hpp"
-#include "../hardware/code/molecular_dynamics.hpp"
+#include "../../hardware/code/molecular_dynamics.hpp"
 
 static void md_update_gaugemomenta(const physics::lattices::Gaugemomenta * dest, const physics::lattices::Gaugemomenta& src, hmc_float eps);
 
