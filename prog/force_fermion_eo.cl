@@ -12,9 +12,9 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		//caculate (pos,time) out of id_tmp depending on evenodd
-		st_index pos = (evenodd == ODD) ? get_even_site(id_tmp) : get_odd_site(id_tmp);
+	for(int id_local = id; id_local < EOPREC_SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+		//caculate (pos,time) out of id_local depending on evenodd
+		st_index pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
 
 		Matrixsu3 U;
 		Matrix3x3 v1, v2, tmp;
@@ -31,7 +31,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		int t = pos.time;
 		int nn_eo;
 
-		y = getSpinor_eo(Y, id_tmp);
+		y = getSpinor_eo(Y, get_eo_site_idx_from_st_idx(pos));
 		///////////////////////////////////
 		// Calculate gamma_5 y
 		///////////////////////////////////

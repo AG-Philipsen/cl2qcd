@@ -8,7 +8,7 @@ __kernel void md_update_gaugemomenta(const hmc_float eps, __global aeStorageType
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {
-		update_gaugemomentum(getAe(force_in, id_tmp), eps, id_tmp, p_inout);
+	for(int id_mem = id; id_mem < GAUGEMOMENTASIZE_MEM; id_mem += global_size) {
+		update_gaugemomentum(getAe(force_in, id_mem), eps, id_mem, p_inout);
 	}
 }

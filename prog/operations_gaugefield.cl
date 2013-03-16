@@ -354,7 +354,7 @@ inline Matrixsu3 local_polyakov(__global const Matrixsu3StorageType * const rest
 {
 	Matrixsu3 out;
 	out = unit_matrixsu3();
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < NTIME_LOCAL; t++) {
 		Matrixsu3 tmp;
 		tmp = get_matrixsu3(field, n, t, 0);
 		out = multiply_matrixsu3 (out, tmp);

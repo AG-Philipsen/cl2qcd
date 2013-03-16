@@ -27,15 +27,21 @@ hardware::code::Gaugemomentum::~Gaugemomentum()
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
+	using namespace hardware::code;
+
+	const size_4 mem_size = device->get_mem_lattice_size();
+	const size_4 local_size = device->get_local_lattice_size();
 
 	std::ostringstream options;
-	options <<  " -D GAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
+	options <<  " -D GAUGEMOMENTASIZE_GLOBAL=" << meta::get_vol4d(params) * NDIM;
+	options <<  " -D GAUGEMOMENTASIZE_LOCAL=" << get_vol4d(local_size) * NDIM;
+	options <<  " -D GAUGEMOMENTASIZE_MEM=" << get_vol4d(mem_size) * NDIM;
 	//in case of tlsym gauge action
 	if(meta::get_use_rectangles(params) == true) {
 		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
 	}
 	if(check_Gaugemomentum_for_SOA(device)) {
-		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
+		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(get_vol4d(mem_size) * NDIM, device);
 	}
 	return options.str();
 }
@@ -325,3 +331,8 @@ void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, c
 	}
 }
 
+
+ClSourcePackage hardware::code::Gaugemomentum::get_sources() const noexcept
+{
+	return basic_gaugemomentum_code;
+}

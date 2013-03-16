@@ -17,7 +17,7 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 		hmc_float correlator = 0.;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -29,7 +29,7 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 		//now, this should finally be the correct normalisation for the physical fields
 		//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
 
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2.* KAPPA * correlator / fac;
 	}
 
@@ -55,7 +55,7 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NTIME threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.;
 		uint3 coord;
 		int t = id_tmp;
@@ -99,7 +99,7 @@ __kernel void correlator_sc_z(__global hmc_float * const restrict out, __global 
 		hmc_float correlator = 0.;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -119,7 +119,7 @@ __kernel void correlator_sc_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
@@ -145,7 +145,7 @@ __kernel void correlator_sc_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NTIME threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.;
 		uint3 coord;
 		int t = id_tmp;
@@ -203,7 +203,7 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 		uint3 coord;
 		coord.z = id_tmp;
 
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -252,7 +252,7 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -278,7 +278,7 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -366,7 +366,7 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 		correlator.im = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -416,7 +416,7 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -442,7 +442,7 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -530,7 +530,7 @@ __kernel void correlator_vz_z(__global hmc_float * const restrict out, __global 
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -550,7 +550,7 @@ __kernel void correlator_vz_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
@@ -576,7 +576,7 @@ __kernel void correlator_vz_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		int t = id_tmp;
@@ -636,7 +636,7 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 		correlator.im = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -686,7 +686,7 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -712,7 +712,7 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -801,7 +801,7 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 		correlator.im = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -851,7 +851,7 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -877,7 +877,7 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -964,7 +964,7 @@ __kernel void correlator_az_z(__global hmc_float * const restrict out, __global 
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -984,7 +984,7 @@ __kernel void correlator_az_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
@@ -1010,7 +1010,7 @@ __kernel void correlator_az_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NTIME threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		int t = id_tmp;

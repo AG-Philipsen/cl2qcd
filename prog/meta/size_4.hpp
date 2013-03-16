@@ -21,4 +21,8 @@ inline std::ostream& operator<<(std::ostream& os, const size_4& data)
 	return os << '(' << data.x << ", " << data.y << ", " << data.z << ", " << data.t << ')';
 }
 
+inline unsigned get_vol4d(size_4 data) {
+	return data.x * data.y * data.z * data.t;
+}
+
 #endif /* _META_SIZE_4_HPP */

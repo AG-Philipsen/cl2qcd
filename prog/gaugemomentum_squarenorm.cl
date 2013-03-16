@@ -2,8 +2,9 @@
 __kernel void gaugemomentum_squarenorm(__global const aeStorageType * const restrict in, __global hmc_float * const restrict out, __local hmc_float * const restrict result_local)
 {
 	hmc_float sum = 0.f;
-	PARALLEL_FOR(i, GAUGEMOMENTASIZE) {
-		sum += ae_squarenorm(getAe(in, i));
+	PARALLEL_FOR(id_local, GAUGEMOMENTASIZE_LOCAL) {
+		site_idx id_mem = get_site_idx((id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2));
+		sum += ae_squarenorm(getAe(in, id_mem));
 	}
 
 	const size_t group_id = get_group_id(0);

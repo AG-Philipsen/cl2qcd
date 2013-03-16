@@ -7,7 +7,7 @@
 __kernel void rectangles(__global Matrixsu3StorageType * field, __global hmc_float * rect_out, __local hmc_float * rect_loc)
 {
 
-	int id;
+	int id_local;
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id_tmp = get_global_id(0);
@@ -24,8 +24,8 @@ __kernel void rectangles(__global Matrixsu3StorageType * field, __global hmc_flo
 
 	Matrixsu3 prod;
 
-	for(id = id_tmp; id < VOLSPACE * NTIME; id += global_size) {
-		st_index pos = (id < VOLSPACE * NTIME / 2) ? get_even_site(id) : get_odd_site(id - (VOLSPACE * NTIME / 2));
+	for(id_local = id_tmp; id_local < VOL4D_LOCAL; id_local += global_size) {
+		st_index pos = (id_local < VOL4D_LOCAL / 2) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local - (VOL4D_LOCAL / 2));
 
 		for(int mu = 0; mu < NDIM; mu++) {
 			for(int nu = 0; nu < NDIM; nu++) {

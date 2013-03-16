@@ -4,6 +4,7 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
+#include "../hardware/code/spinors.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -98,7 +99,7 @@ void test_m_staggered(std::string inputfile)
 	su3vec * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 
 	sf_in = new su3vec[NUM_ELEMENTS_SF];
 	sf_out = new su3vec[NUM_ELEMENTS_SF];

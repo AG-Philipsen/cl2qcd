@@ -24,7 +24,7 @@ static  std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(c
 	// only use device 0 for now
 	hardware::Device * device = system.get_devices().at(0);
 	std::vector<const Gaugemomentum*> buffers;
-	buffers.push_back(new Gaugemomentum(NDIM * meta::get_vol4d(system.get_inputparameters()), device));
+	buffers.push_back(new Gaugemomentum(NDIM * get_vol4d(device->get_mem_lattice_size()), device));
 	return buffers;
 }
 

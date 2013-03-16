@@ -9,13 +9,13 @@ __kernel void M_tm_sitediagonal_AND_gamma5_eo(__global const spinorStorageType *
 	hmc_complex twistfactor = {1., mubar_in};
 	hmc_complex twistfactor_minus = {-1., 1.*mubar_in};
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
 		out_tmp = set_spinor_zero();
 		//get input spinor
-		plus = getSpinor_eo(in, id_tmp);
+		plus = getSpinor_eo(in, id_mem);
 		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 
-		putSpinor_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_mem, out_tmp);
 	}
 }
 
@@ -30,12 +30,12 @@ __kernel void M_tm_sitediagonal_minus_AND_gamma5_eo(__global const spinorStorage
 	hmc_complex twistfactor = {1., -mubar_in};
 	hmc_complex twistfactor_minus = {-1., -1.*mubar_in};
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
 		out_tmp = set_spinor_zero();
 		//get input spinor
-		plus = getSpinor_eo(in, id_tmp);
+		plus = getSpinor_eo(in, id_mem);
 		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 
-		putSpinor_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_mem, out_tmp);
 	}
 }

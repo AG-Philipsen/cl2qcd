@@ -40,6 +40,9 @@ __kernel void polyakov(__global Matrixsu3StorageType * field, __global hmc_compl
 
 	for(id = id_tmp; id < VOLSPACE; id += global_size) {
 		Matrixsu3 prod;
+#if NTIME_GLOBAL != NTIME_LOCAL
+#error local_polyakov only provides local result, therefore does not support multi-gpu
+#endif
 		prod = local_polyakov(field, id);
 		tmpcomplex = trace_matrixsu3(prod);
 		(tmp_pol).re += tmpcomplex.re / NC;

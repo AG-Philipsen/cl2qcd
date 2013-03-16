@@ -12,15 +12,15 @@ __kernel void stout_smear( __global Matrixsu3StorageType * in, __global Matrixsu
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	for(int id_tmp = id; id_tmp < VOL4D * NDIM; id_tmp += global_size) {
+	PARALLEL_FOR(id_local, VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
 		int2 pos_tmp;
-		pos_tmp.x = id_tmp % VOL4D;
+		pos_tmp.x = id_local % VOL4D_LOCAL;
 		//this is mu
-		pos_tmp.y = id_tmp / VOL4D;
+		pos_tmp.y = id_local / VOL4D_LOCAL;
 
-		st_index pos = (pos_tmp.x % 2 == 0) ? get_even_site(pos_tmp.x / 2) : get_odd_site(pos_tmp.x / 2);
+		st_index pos = (pos_tmp.x % 2 == 0) ? get_even_st_idx_local(pos_tmp.x / 2) : get_odd_st_idx_local(pos_tmp.x / 2);
 
 		//calc staple
 		Matrix3x3 staple;

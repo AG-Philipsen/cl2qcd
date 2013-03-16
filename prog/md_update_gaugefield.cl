@@ -15,9 +15,9 @@ __kernel void md_update_gaugefield(const hmc_float eps, __global const aeStorage
 	Matrixsu3 tmp2;
 
 	//CP: it is GAUGEMOMENTASIZE = NDIM * SPINORFIELDSIZE
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_local = id; id_local < VOL4D_LOCAL; id_local += global_size) {
 		/** @todo this must be done more efficient */
-		st_index pos = (id_tmp < VOLSPACE * NTIME / 2) ? get_even_site(id_tmp) : get_odd_site(id_tmp - (VOLSPACE * NTIME / 2));
+		st_index pos = (id_local < VOL4D_LOCAL / 2) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local - (VOL4D_LOCAL / 2));
 		for(int mu = 0; mu < NDIM; mu++) {
 			index = get_link_idx(mu, pos);
 			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries

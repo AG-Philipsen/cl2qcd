@@ -19,12 +19,12 @@ __kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const rest
 	//tlSym improved Gauge force is factor*Im(i Tr(T_i U V))
 	//   with T_i being the SU3-Generator in i-th direction and V the staplematrix
 	//   and the factor being 0 (for standard Wilson-action) and -c1 * beta / NC (for tlSym)
-	PARALLEL_FOR(id_tmp, VOL4D * NDIM) {
+	PARALLEL_FOR(id_local, VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const size_t pos_tmp = id_tmp % VOL4D;
-		const size_t dir     = id_tmp / VOL4D;
-		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
+		const size_t pos_local = id_local % VOL4D_LOCAL;
+		const size_t dir     = id_local / VOL4D_LOCAL;
+		const st_index pos = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(pos_local);
 		gauge_force_tlsym_per_link(field, out, pos, dir);
 	}
 }
@@ -35,13 +35,13 @@ __kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const rest
 
 __kernel void gauge_force_tlsym_multipass1_tpe(__global const Matrixsu3StorageType * const restrict field, __global Matrix3x3StorageType * const restrict tmp)
 {
-	const size_t id_tmp = get_global_id(0);
-	if(id_tmp < VOL4D * NDIM) {
+	const size_t id_local = get_global_id(0);
+	if(id_local < VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const size_t pos_tmp = id_tmp % VOL4D;
-		const size_t dir     = id_tmp / VOL4D;
-		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
+		const size_t pos_local = id_local % VOL4D_LOCAL;
+		const size_t dir     = id_local / VOL4D_LOCAL;
+		const st_index pos = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(pos_local);
 
 		Matrix3x3 staple = zero_matrix3x3();
 #ifdef _USEGPU_
@@ -57,13 +57,13 @@ __kernel void gauge_force_tlsym_multipass1_tpe(__global const Matrixsu3StorageTy
 
 __kernel void gauge_force_tlsym_multipass2_tpe(__global const Matrixsu3StorageType * const restrict field, __global Matrix3x3StorageType * const restrict tmp)
 {
-	const size_t id_tmp = get_global_id(0);
-	if(id_tmp < VOL4D * NDIM) {
+	const size_t id_local = get_global_id(0);
+	if(id_local < VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const size_t pos_tmp = id_tmp % VOL4D;
-		const size_t dir     = id_tmp / VOL4D;
-		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
+		const size_t pos_local = id_local % VOL4D_LOCAL;
+		const size_t dir     = id_local / VOL4D_LOCAL;
+		const st_index pos = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(pos_local);
 
 		Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -79,13 +79,13 @@ __kernel void gauge_force_tlsym_multipass2_tpe(__global const Matrixsu3StorageTy
 
 __kernel void gauge_force_tlsym_multipass3_tpe(__global const Matrixsu3StorageType * const restrict field, __global Matrix3x3StorageType * const restrict tmp)
 {
-	const size_t id_tmp = get_global_id(0);
-	if(id_tmp < VOL4D * NDIM) {
+	const size_t id_local = get_global_id(0);
+	if(id_local < VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const size_t pos_tmp = id_tmp % VOL4D;
-		const size_t dir     = id_tmp / VOL4D;
-		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
+		const size_t pos_local = id_local % VOL4D_LOCAL;
+		const size_t dir     = id_local / VOL4D_LOCAL;
+		const st_index pos = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(pos_local);
 
 		Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -101,13 +101,13 @@ __kernel void gauge_force_tlsym_multipass3_tpe(__global const Matrixsu3StorageTy
 
 __kernel void gauge_force_tlsym_multipass4_tpe(__global const Matrixsu3StorageType * const restrict field, __global Matrix3x3StorageType * const restrict tmp)
 {
-	const size_t id_tmp = get_global_id(0);
-	if(id_tmp < VOL4D * NDIM) {
+	const size_t id_local = get_global_id(0);
+	if(id_local < VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const size_t pos_tmp = id_tmp % VOL4D;
-		const size_t dir     = id_tmp / VOL4D;
-		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
+		const size_t pos_local = id_local % VOL4D_LOCAL;
+		const size_t dir     = id_local / VOL4D_LOCAL;
+		const st_index pos = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(pos_local);
 
 		Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -123,13 +123,13 @@ __kernel void gauge_force_tlsym_multipass4_tpe(__global const Matrixsu3StorageTy
 
 __kernel void gauge_force_tlsym_multipass5_tpe(__global const Matrixsu3StorageType * const restrict field, __global Matrix3x3StorageType * const restrict tmp)
 {
-	const size_t id_tmp = get_global_id(0);
-	if(id_tmp < VOL4D * NDIM) {
+	const size_t id_local = get_global_id(0);
+	if(id_local < VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const size_t pos_tmp = id_tmp % VOL4D;
-		const size_t dir     = id_tmp / VOL4D;
-		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
+		const size_t pos_local = id_local % VOL4D_LOCAL;
+		const size_t dir     = id_local / VOL4D_LOCAL;
+		const st_index pos = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(pos_local);
 
 		Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_
@@ -145,13 +145,13 @@ __kernel void gauge_force_tlsym_multipass5_tpe(__global const Matrixsu3StorageTy
 
 __kernel void gauge_force_tlsym_multipass6_tpe(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out, __global Matrix3x3StorageType * const restrict tmp)
 {
-	const size_t id_tmp = get_global_id(0);
-	if(id_tmp < VOL4D * NDIM) {
+	const size_t id_local = get_global_id(0);
+	if(id_local < VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const size_t pos_tmp = id_tmp % VOL4D;
-		const size_t dir     = id_tmp / VOL4D;
-		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
+		const size_t pos_local = id_local % VOL4D_LOCAL;
+		const size_t dir     = id_local / VOL4D_LOCAL;
+		const st_index pos = (pos_local >= VOL4D_LOCAL / 2) ? get_even_st_idx_local(pos_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(pos_local);
 
 		Matrix3x3 staple = get_matrix3x3(tmp, pos.space, pos.time, dir);
 #ifdef _USEGPU_

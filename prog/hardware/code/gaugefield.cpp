@@ -15,8 +15,22 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 {
 	using namespace hardware::buffers;
 
+	const size_4 local_size = device->get_local_lattice_size();
+	const size_4 mem_size = device->get_mem_lattice_size();
+
 	std::ostringstream options;
-	options << "-D _INKERNEL_ -D NSPACE=" << params.get_nspace() << " -D NTIME=" << params.get_ntime() << " -D VOLSPACE=" << meta::get_volspace(params) << " -D VOL4D=" << meta::get_vol4d(params);
+	options << "-D _INKERNEL_";
+	options << " -D NSPACE=" << params.get_nspace();
+
+	options << " -D NTIME_GLOBAL=" << params.get_ntime();
+	options << " -D NTIME_LOCAL=" << local_size.t;
+	options << " -D NTIME_MEM=" << mem_size.t;
+
+	options << " -D VOLSPACE=" << meta::get_volspace(params);
+
+	options << " -D VOL4D_GLOBAL=" << meta::get_vol4d(params);
+	options << " -D VOL4D_LOCAL=" << get_vol4d(local_size);
+	options << " -D VOL4D_MEM=" << get_vol4d(mem_size);
 
 	//this is needed for hmc_ocl_su3matrix
 	options << " -D SU3SIZE=" << NC*NC << " -D STAPLEMATRIXSIZE=" << NC*NC;
@@ -54,10 +68,10 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 		options << " -D _USE_SOA_";
 	}
 	if(check_SU3_for_SOA(device)) {
-		options << " -D GAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(meta::get_vol4d(params) * NDIM, device);
+		options << " -D GAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(get_vol4d(mem_size) * NDIM, device);
 	}
 	if(check_Matrix3x3_for_SOA(device)) {
-		options << " -D GAUGEFIELD_3X3_STRIDE=" << get_Matrix3x3_buffer_stride(meta::get_vol4d(params) * NDIM, device);
+		options << " -D GAUGEFIELD_3X3_STRIDE=" << get_Matrix3x3_buffer_stride(get_vol4d(mem_size) * NDIM, device);
 	}
 	options << " -I " << SOURCEDIR;
 

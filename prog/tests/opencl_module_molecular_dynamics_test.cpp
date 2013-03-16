@@ -424,7 +424,7 @@ void test_f_fermion(std::string inputfile)
 	ae * ae_out;
 
 	logger.info() << "Fill buffers...";
-	int NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	int NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 	int NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
 
 	sf_in1 = new spinor[NUM_ELEMENTS_SF];
@@ -498,7 +498,7 @@ void test_f_fermion_eo(std::string inputfile)
 	ae * ae_out;
 
 	logger.info() << "fill buffers";
-	size_t NUM_ELEMENTS_SF =  meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF =  hardware::code::get_eoprec_spinorfieldsize(params);
 	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
 
 	sf_in1 = new spinor[NUM_ELEMENTS_SF];
@@ -827,8 +827,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	spinor * sf_in3_eo;
 	spinor * sf_in4_eo;
 
-	size_t NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(params);
-	size_t NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF_EO =  hardware::code::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF =  hardware::code::get_spinorfieldsize(params);
 	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM;
 
 	sf_in1_eo = new spinor[NUM_ELEMENTS_SF_EO];

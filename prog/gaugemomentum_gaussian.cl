@@ -12,7 +12,7 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 	if(id > 0) return;
 	global_size = 1;
 #endif
-	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE_MEM; id_tmp += global_size) {
 		//CP: THERE ARE 8 ELEMENTS IN AE
 		ae new_ae;
 

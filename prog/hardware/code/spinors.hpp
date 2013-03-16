@@ -9,10 +9,16 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/spinor.hpp"
 #include "../buffers/prng_buffer.hpp"
+#include "../meta/size_4.hpp"
 
 namespace hardware {
 
 namespace code {
+
+size_t get_spinorfieldsize(const meta::Inputparameters& params);
+size_t get_spinorfieldsize(const size_4& params);
+size_t get_eoprec_spinorfieldsize(const meta::Inputparameters& params);
+size_t get_eoprec_spinorfieldsize(const size_4& params);
 
 /**
  * An OpenCL device

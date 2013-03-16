@@ -5,6 +5,10 @@
 
 //operations_kappa.cl
 
+#if VOL4D_GLOBAL != VOL4D_LOCAL
+#error the kernel does not support multi-gpu
+#endif
+
 __kernel void T_clover_diag_partial(__global Matrixsu3StorageType * gaugefield, __global hmc_float * v_tau, __global hmc_float * v_spatial,
                                     __global hmc_float * w_tau,  __global hmc_float * w_spatial,
                                     const int mom_dir)
@@ -26,10 +30,10 @@ __kernel void T_clover_diag_partial(__global Matrixsu3StorageType * gaugefield, 
 
 
 
-			for(int id_tmp = id; id_tmp < VOL4D / NS; id_tmp += global_size) {
+			for(int id_tmp = id; id_tmp < VOL4D_GLOBAL / NS; id_tmp += global_size) {
 
 				//chose pos only on 3d subset, that means excluce z-direction
-				st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
+				st_index pos = (id_tmp % 2 == 0) ? get_even_st_idx_local(id_tmp / 2) : get_odd_st_idx_local(id_tmp / 2);
 
 				Matrix3x3 tmp;
 				tmp = local_Q_plaquette(field, pos.space, pos.time, 2, 0);

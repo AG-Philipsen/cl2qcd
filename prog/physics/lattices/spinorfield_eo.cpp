@@ -22,7 +22,7 @@ static  std::vector<const hardware::buffers::Spinor *> allocate_buffers(const ha
 	// only use device 0 for now
 	hardware::Device * device = system.get_devices().at(0);
 	std::vector<const Spinor*> buffers;
-	buffers.push_back(new Spinor(meta::get_eoprec_spinorfieldsize(system.get_inputparameters()), device));
+	buffers.push_back(new Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device));
 	return buffers;
 }
 

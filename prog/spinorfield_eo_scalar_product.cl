@@ -12,9 +12,10 @@ __kernel void scalar_product_eoprec( __global const spinorStorageType  * const x
 	sum.re = 0.;
 	sum.im = 0.;
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		spinor x_tmp = getSpinor_eo(x, id_tmp);
-		spinor y_tmp = getSpinor_eo(y, id_tmp);
+	for(int id_local = id; id_local < EOPREC_SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+		site_idx id_mem = get_eo_site_idx_from_st_idx(get_even_st_idx_local(id_local));
+		spinor x_tmp = getSpinor_eo(x, id_mem);
+		spinor y_tmp = getSpinor_eo(y, id_mem);
 		hmc_complex tmp = spinor_scalarproduct(x_tmp, y_tmp);
 		sum.re += tmp.re;
 		sum.im += tmp.im;

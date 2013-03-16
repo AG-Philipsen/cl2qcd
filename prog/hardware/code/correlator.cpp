@@ -409,8 +409,8 @@ size_t hardware::code::Correlator::get_read_write_size(const std::string& in) co
 	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
 	size_t R = meta::get_mat_size(get_parameters());
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = hardware::code::get_spinorfieldsize(get_parameters());
+	size_t Seo = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -497,8 +497,8 @@ size_t hardware::code::Correlator::get_read_write_size(const std::string& in) co
 
 uint64_t hardware::code::Correlator::get_flop_size(const std::string& in) const
 {
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = hardware::code::get_spinorfieldsize(get_parameters());
+	size_t Seo = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (in == "create_point_source") {
 		return 1000000000000000000000000;

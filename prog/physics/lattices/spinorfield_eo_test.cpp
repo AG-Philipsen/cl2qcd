@@ -255,9 +255,13 @@ BOOST_AUTO_TEST_CASE(conversion)
 		odd.gaussian(prng);
 
 		convert_to_eoprec(&even, &odd, orig);
+		log_squarenorm("even: ", even);
+		log_squarenorm("odd: ", odd);
+		log_squarenorm("orig: ", orig);
 		BOOST_CHECK_CLOSE(squarenorm(even) + squarenorm(odd), squarenorm(orig), .1);
 
 		convert_from_eoprec(&recreated, even, odd);
+		log_squarenorm("recreated: ", recreated);
 		BOOST_CHECK_CLOSE(squarenorm(recreated), squarenorm(orig), .1);
 	}
 }

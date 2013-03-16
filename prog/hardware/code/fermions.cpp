@@ -639,8 +639,8 @@ size_t hardware::code::Fermions::get_read_write_size(const std::string& in) cons
 	//this returns the number of entries in an su3-matrix
 	size_t R = meta::get_mat_size(get_parameters());
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -734,8 +734,8 @@ static int flop_dslash_per_site(const meta::Inputparameters & parameters)
 
 uint64_t hardware::code::Fermions::get_flop_size(const std::string& in) const
 {
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	if (in == "M_wilson") {
 		//this kernel performs one dslash on each site and adds this to a spinor
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );

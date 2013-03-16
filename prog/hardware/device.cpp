@@ -451,6 +451,16 @@ size_4 hardware::Device::get_local_lattice_size() const
 	return local_lattice_size;
 }
 
+size_4 hardware::Device::get_mem_lattice_size() const
+{
+	return mem_lattice_size;
+}
+
+unsigned hardware::Device::get_halo_size() const
+{
+	return halo_size;
+}
+
 static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size)
 {
 	return size_4(

@@ -5,8 +5,8 @@
 __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict field, __global const spinor * const restrict Y, __global const spinor * const restrict X, __global aeStorageType * const restrict out, const hmc_float kappa_in)
 {
 	for(dir_idx dir = 0; dir < NDIM; ++dir) {
-		PARALLEL_FOR(id_tmp, VOL4D) {
-			st_index pos = get_st_idx_from_site_idx(id_tmp);
+		PARALLEL_FOR(id_local, VOL4D_LOCAL) {
+			st_index pos = get_st_idx_from_site_idx(id_local);
 			link_idx global_link_pos = get_link_idx(dir, pos);
 
 			Matrixsu3 U;

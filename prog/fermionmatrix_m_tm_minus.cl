@@ -15,10 +15,10 @@ __kernel void M_tm_minus(__global const spinor * const restrict in, __global con
 	hmc_complex twistfactor = {1., mubar_in};
 	hmc_complex twistfactor_minus = {1., -1.*mubar_in};
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
 
 		/** @todo this must be done more efficient */
-		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
+		st_index pos = (id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2);
 
 		out_tmp = set_spinor_zero();
 		out_tmp2 = set_spinor_zero();
