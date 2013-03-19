@@ -253,6 +253,7 @@ void test_gf_update(std::string inputfile)
 	hardware::buffers::Plain<hmc_float> foo2_buf(1, device->get_device());
 	gf_code->plaquette_device(cpu.get_gaugefield(), &plaq_buf, &foo1_buf, &foo2_buf);
 	plaq_buf.dump(&plaq_cpu);
+	plaq_cpu /= static_cast<hmc_float>(meta::get_plaq_norm(params));
 
 	logger.info() << "Free buffers";
 	delete[] gm_in;
