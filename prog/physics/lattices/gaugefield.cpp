@@ -458,23 +458,55 @@ void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc
 
 hmc_complex physics::lattices::Gaugefield::polyakov() const
 {
-	assert(buffers.size() == 1);
+	using hardware::buffers::Plain;
 
-	auto gf_buf = buffers[0];
-	auto device = gf_buf->get_device();
-	auto gf_code = device->get_gaugefield_code();
-	auto params = system.get_inputparameters();
-
-	const hardware::buffers::Plain<hmc_complex> pol_buf(1, device);
-
-	//measure polyakovloop
-	gf_code->polyakov_device(gf_buf, &pol_buf);
-
-	//read out values
 	hmc_complex tmp_pol = hmc_complex_zero;
-	//NOTE: this is a blocking call!
-	pol_buf.dump(&tmp_pol);
 
+	if(buffers.size() == 1) {
+		auto gf_buf = buffers[0];
+		auto device = gf_buf->get_device();
+		auto gf_code = device->get_gaugefield_code();
+
+		const Plain<hmc_complex> pol_buf(1, device);
+
+		//measure polyakovloop
+		gf_code->polyakov_device(gf_buf, &pol_buf);
+
+		//NOTE: this is a blocking call!
+		pol_buf.dump(&tmp_pol);
+
+	} else {
+		const size_t volspace = meta::get_volspace(system.get_inputparameters());
+		// calculate local part per device
+		std::vector<Plain<Matrixsu3>*> local_results;
+		local_results.reserve(buffers.size());
+		for(auto buffer: buffers) {
+			auto dev = buffer->get_device();
+			auto res_buf = new Plain<Matrixsu3>(volspace, dev);
+			dev->get_gaugefield_code()->polyakov_md_local_device(res_buf, buffer);
+			local_results.push_back(res_buf);
+		}
+
+		// merge results
+		auto main_dev = buffers.at(0)->get_device();
+		Plain<Matrixsu3> merged_buf(volspace * local_results.size(), main_dev);
+		{
+			Matrixsu3* merged_host = new Matrixsu3[merged_buf.get_elements()];
+			size_t offset = 0;
+			for(auto local_res: local_results) {
+				local_res->dump(&merged_host[offset]);
+				offset += volspace;
+			}
+			merged_buf.load(merged_host);
+			delete[] merged_host;
+		}
+
+		const Plain<hmc_complex> pol_buf(1, main_dev);
+		main_dev->get_gaugefield_code()->polyakov_md_merge_device(&merged_buf, &pol_buf);
+		pol_buf.dump(&tmp_pol);
+	}
+
+	auto params = system.get_inputparameters();
 	tmp_pol.re /= static_cast<hmc_float>(meta::get_poly_norm(params));
 	tmp_pol.im /= static_cast<hmc_float>(meta::get_poly_norm(params));
 

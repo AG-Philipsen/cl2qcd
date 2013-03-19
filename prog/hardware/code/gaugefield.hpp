@@ -61,6 +61,10 @@ public:
 	 */
 	void polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> *) const;
 
+	void polyakov_md_local_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::SU3* gf) const;
+
+	void polyakov_md_merge_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::Plain<hmc_complex> * pol) const;
+
 	/**
 	 * Print the profiling information to a file.
 	 *
@@ -145,6 +149,8 @@ private:
 	cl_kernel rectangles;
 	cl_kernel rectangles_reduction;
 	cl_kernel polyakov;
+	cl_kernel polyakov_md_local;
+	cl_kernel polyakov_md_merge;
 	cl_kernel polyakov_reduction;
 	cl_kernel convertGaugefieldToSOA;
 	cl_kernel convertGaugefieldFromSOA;

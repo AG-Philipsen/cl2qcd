@@ -102,7 +102,15 @@ void hardware::code::Gaugefield::fill_kernels()
 		rectangles = createKernel("rectangles") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 		rectangles_reduction = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 	}
-	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
+	if(get_device()->get_grid_size().t == 1) {
+		polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
+		polyakov_md_local = nullptr;
+		polyakov_md_merge = nullptr;
+	} else {
+		polyakov = nullptr;
+		polyakov_md_local = createKernel("polyakov_md_local") << basic_opencl_code << "gaugeobservables_polyakov.cl";
+		polyakov_md_merge = createKernel("polyakov_md_merge") << basic_opencl_code << "gaugeobservables_polyakov.cl";
+	}
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	if(get_parameters().get_use_smearing() == true) {
 		stout_smear = createKernel("stout_smear") << basic_opencl_code << "operations_gaugemomentum.cl" << "stout_smear.cl";
@@ -254,6 +262,9 @@ void hardware::code::Gaugefield::rectangles_device(const hardware::buffers::SU3 
 
 void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> * pol) const
 {
+	if(!polyakov) {
+		throw std::logic_error("This function cannot be called in multi-device environments.");
+	}
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
@@ -294,47 +305,70 @@ void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * 
 
 }
 
-//void hardware::code::Gaugefield::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out) const
-//{
-//	const hardware::buffers::Plain<hmc_float> plaq(1, get_device());
-//	const hardware::buffers::Plain<hmc_float> splaq(1, get_device());
-//	const hardware::buffers::Plain<hmc_float> tplaq(1, get_device());
-//	const hardware::buffers::Plain<hmc_complex> pol(1, get_device());
-//
-//	//measure plaquette
-//	plaquette_device(gf, &plaq, &tplaq, &splaq);
-//
-//	//read out values
-//	hmc_float tmp_plaq = 0.;
-//	hmc_float tmp_splaq = 0.;
-//	hmc_float tmp_tplaq = 0.;
-//	//NOTE: these are blocking calls!
-//	plaq.dump(&tmp_plaq);
-//	splaq.dump(&tmp_splaq);
-//	tplaq.dump(&tmp_tplaq);
-//
-//	tmp_tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(get_parameters()));
-//	tmp_splaq /= static_cast<hmc_float>(meta::get_splaq_norm(get_parameters()));
-//	tmp_plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(get_parameters()));
-//
-//	(*plaq_out) = tmp_plaq;
-//	(*splaq_out) = tmp_splaq;
-//	(*tplaq_out) = tmp_tplaq;
-//
-//	//measure polyakovloop
-//	polyakov_device(gf, &pol);
-//
-//	//read out values
-//	hmc_complex tmp_pol = hmc_complex_zero;
-//	//NOTE: this is a blocking call!
-//	pol.dump(&tmp_pol);
-//
-//	tmp_pol.re /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
-//	tmp_pol.im /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
-//
-//	pol_out->re = tmp_pol.re;
-//	pol_out->im = tmp_pol.im;
-//}
+void hardware::code::Gaugefield::polyakov_md_local_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::SU3* gf) const
+{
+	if(!polyakov_md_local) {
+		throw std::logic_error("This function can only called in multi-device environments.");
+	}
+
+	//query work-sizes for kernel
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes(polyakov_md_local, &ls, &gs, &num_groups);
+
+	// local polyakov compuation and first part of reduction
+	int clerr = clSetKernelArg(polyakov_md_local, 0, sizeof(cl_mem), partial_results->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(polyakov_md_local, 1, sizeof(cl_mem), gf->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(polyakov_md_local, gs, ls);
+}
+
+void hardware::code::Gaugefield::polyakov_md_merge_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::Plain<hmc_complex> * pol) const
+{
+	if(!polyakov_md_merge) {
+		throw std::logic_error("This function can only called in multi-device environments.");
+	}
+	//query work-sizes for kernel
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes(polyakov_md_merge, &ls, &gs, &num_groups);
+	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
+
+	const hardware::buffers::Plain<hmc_complex> clmem_polyakov_buf_glob(num_groups, get_device());
+
+	// local polyakov compuation and first part of reduction
+	int clerr = clSetKernelArg(polyakov_md_merge, 0, sizeof(cl_mem), clmem_polyakov_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(polyakov_md_merge, 1, sizeof(cl_mem), partial_results->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(polyakov_md_merge, 2, buf_loc_size_complex, static_cast<void*>(nullptr));
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(polyakov_md_merge, gs, ls);
+
+	// second part of polyakov reduction
+
+	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups);
+
+	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), clmem_polyakov_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), pol->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	///@todo improve
+	ls = 1;
+	gs = 1;
+	get_device()->enqueue_kernel(polyakov_reduction, gs, ls);
+}
 
 void hardware::code::Gaugefield::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out) const
 {
