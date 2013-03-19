@@ -432,7 +432,6 @@ void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc
 	const hardware::buffers::Plain<hmc_float> plaq_buf(1, device);
 	const hardware::buffers::Plain<hmc_float> splaq_buf(1, device);
 	const hardware::buffers::Plain<hmc_float> tplaq_buf(1, device);
-	const hardware::buffers::Plain<hmc_complex> pol_buf(1, device);
 
 	//measure plaquette
 	gf_code->plaquette_device(gf_buf, &plaq_buf, &tplaq_buf, &splaq_buf);
@@ -454,6 +453,20 @@ void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc
 	(*splaq) = tmp_splaq;
 	(*tplaq) = tmp_tplaq;
 
+	*pol = polyakov();
+}
+
+hmc_complex physics::lattices::Gaugefield::polyakov() const
+{
+	assert(buffers.size() == 1);
+
+	auto gf_buf = buffers[0];
+	auto device = gf_buf->get_device();
+	auto gf_code = device->get_gaugefield_code();
+	auto params = system.get_inputparameters();
+
+	const hardware::buffers::Plain<hmc_complex> pol_buf(1, device);
+
 	//measure polyakovloop
 	gf_code->polyakov_device(gf_buf, &pol_buf);
 
@@ -465,8 +478,7 @@ void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc
 	tmp_pol.re /= static_cast<hmc_float>(meta::get_poly_norm(params));
 	tmp_pol.im /= static_cast<hmc_float>(meta::get_poly_norm(params));
 
-	pol->re = tmp_pol.re;
-	pol->im = tmp_pol.im;
+	return tmp_pol;
 }
 
 hmc_float physics::lattices::Gaugefield::rectangles() const

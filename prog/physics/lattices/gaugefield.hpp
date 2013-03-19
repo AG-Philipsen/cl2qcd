@@ -69,6 +69,11 @@ namespace physics {
 			hmc_float plaquette() const;
 
 			/**
+			 * Return polyakov value
+			 */
+			hmc_complex polyakov() const;
+
+			/**
 			 * Calculate plaquette and polyakov of this gaugefield.
 			 *
 			 * @param[out] plaq Storage for result of plaquette calculation
