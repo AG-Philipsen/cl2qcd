@@ -16,7 +16,7 @@
 #include "metropolis.hpp"
 #include "molecular_dynamics.hpp"
 #include <memory>
-#include "../klepsydra/klepsydra.hpp"
+#include "../../klepsydra/klepsydra.hpp"
 
 template <class SPINORFIELD> static hmc_observables perform_hmc_step(const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system);
 

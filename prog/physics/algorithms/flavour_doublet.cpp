@@ -7,11 +7,11 @@
 #include <stdexcept>
 #include <cassert>
 #include <fstream>
-#include "../meta/util.hpp"
+#include "../../meta/util.hpp"
 #include "../lattices/util.hpp"
 #include "../lattices/swappable.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/correlator.hpp"
+#include "../../hardware/device.hpp"
+#include "../../hardware/code/correlator.hpp"
 
 static void flavour_doublet_chiral_condensate_std(const std::vector<physics::lattices::Spinorfield*>& solved_fields, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system);
 static void flavour_doublet_chiral_condensate_tm(const std::vector<physics::lattices::Spinorfield*>& solved_fields, std::string pbp_fn, int number, const hardware::System& system);

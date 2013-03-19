@@ -5,14 +5,14 @@
 #ifndef _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_
 #define _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_
 
-#include "../hardware/code/fermions.hpp"
+#include "../../hardware/code/fermions.hpp"
 
-#include "../host_use_timer.h"
+#include "../../host_use_timer.h"
 #include "../lattices/spinorfield.hpp"
 #include "../lattices/spinorfield_eo.hpp"
 #include "../lattices/gaugefield.hpp"
 
-#include "../hardware/device.hpp"
+#include "../../hardware/device.hpp"
 /**
  * this is the definition of the class "Fermionmatrix"
  */

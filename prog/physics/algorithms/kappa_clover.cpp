@@ -5,8 +5,8 @@
 #include "kappa_clover.hpp"
 
 #include <cassert>
-#include "../hardware/device.hpp"
-#include "../hardware/code/kappa.hpp"
+#include "../../hardware/device.hpp"
+#include "../../hardware/code/kappa.hpp"
 
 hmc_float physics::algorithms::kappa_clover(physics::lattices::Gaugefield& gf, hmc_float beta)
 {

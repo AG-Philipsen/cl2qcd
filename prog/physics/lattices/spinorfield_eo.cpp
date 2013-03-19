@@ -5,8 +5,8 @@
 #include "spinorfield_eo.hpp"
 #include "../../meta/util.hpp"
 #include <cassert>
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/fermions.hpp"
+#include "../../hardware/code/spinors.hpp"
+#include "../../hardware/code/fermions.hpp"
 
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
 
