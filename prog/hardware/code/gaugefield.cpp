@@ -127,8 +127,18 @@ void hardware::code::Gaugefield::clear_kernels()
 
 	clerr = clReleaseKernel(plaquette);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(polyakov);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	if(polyakov) {
+		clerr = clReleaseKernel(polyakov);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(polyakov_md_local) {
+		clerr = clReleaseKernel(polyakov_md_local);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(polyakov_md_merge) {
+		clerr = clReleaseKernel(polyakov_md_merge);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 	clerr = clReleaseKernel(plaquette_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(polyakov_reduction);
