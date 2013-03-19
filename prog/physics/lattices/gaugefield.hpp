@@ -69,6 +69,11 @@ namespace physics {
 			hmc_float plaquette() const;
 
 			/**
+			 * Return plaquette values
+			 */
+			void plaquette(hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq) const;
+
+			/**
 			 * Return polyakov value
 			 */
 			hmc_complex polyakov() const;
