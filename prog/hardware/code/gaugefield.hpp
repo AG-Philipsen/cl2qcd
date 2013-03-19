@@ -34,20 +34,6 @@ public:
 
 	// methods which actually calculate something
 	/**
-	 * Calculate plaquette and polyakov of a specific gaugefield (on device).
-	 *
-	 * @param[in]  gf    The gaugefield on which to compute the observables
-	 * @param[out] plaq  Storage for result of plaquette calculation
-	 * @param[out] tplaq Storage for result of plaquette calculation
-	 * @param[out] splaq Storage for result of plaquette calculation
-	 * @param[out] pol   Storage for result of polyakov calculation
-	 *
-	 * @deprecated
-	 *
-	 * @todo Should not be public
-	 */
-	void gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const;
-	/**
 	 * Calculate rectangles of a specific gaugefield (on device).
 	 *
 	 * @deprecated

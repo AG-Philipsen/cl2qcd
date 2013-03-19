@@ -424,8 +424,49 @@ void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc
 {
 	assert(buffers.size() == 1);
 
-	auto gf_dev = buffers[0];
-	gf_dev->get_device()->get_gaugefield_code()->gaugeobservables(gf_dev, plaq, tplaq, splaq, pol);
+	auto gf_buf = buffers[0];
+	auto device = gf_buf->get_device();
+	auto gf_code = device->get_gaugefield_code();
+	auto params = system.get_inputparameters();
+
+	const hardware::buffers::Plain<hmc_float> plaq_buf(1, device);
+	const hardware::buffers::Plain<hmc_float> splaq_buf(1, device);
+	const hardware::buffers::Plain<hmc_float> tplaq_buf(1, device);
+	const hardware::buffers::Plain<hmc_complex> pol_buf(1, device);
+
+	//measure plaquette
+	gf_code->plaquette_device(gf_buf, &plaq_buf, &tplaq_buf, &splaq_buf);
+
+	//read out values
+	hmc_float tmp_plaq = 0.;
+	hmc_float tmp_splaq = 0.;
+	hmc_float tmp_tplaq = 0.;
+	//NOTE: these are blocking calls!
+	plaq_buf.dump(&tmp_plaq);
+	splaq_buf.dump(&tmp_splaq);
+	tplaq_buf.dump(&tmp_tplaq);
+
+	tmp_tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(params));
+	tmp_splaq /= static_cast<hmc_float>(meta::get_splaq_norm(params));
+	tmp_plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(params));
+
+	(*plaq) = tmp_plaq;
+	(*splaq) = tmp_splaq;
+	(*tplaq) = tmp_tplaq;
+
+	//measure polyakovloop
+	gf_code->polyakov_device(gf_buf, &pol_buf);
+
+	//read out values
+	hmc_complex tmp_pol = hmc_complex_zero;
+	//NOTE: this is a blocking call!
+	pol_buf.dump(&tmp_pol);
+
+	tmp_pol.re /= static_cast<hmc_float>(meta::get_poly_norm(params));
+	tmp_pol.im /= static_cast<hmc_float>(meta::get_poly_norm(params));
+
+	pol->re = tmp_pol.re;
+	pol->im = tmp_pol.im;
 }
 
 hmc_float physics::lattices::Gaugefield::rectangles() const
