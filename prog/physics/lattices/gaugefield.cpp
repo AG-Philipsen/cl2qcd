@@ -34,6 +34,8 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params);
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source() 
@@ -84,7 +86,7 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	assert(buffers.size() == 1);
 
 	auto parameters = system.get_inputparameters();
-	Matrixsu3 * gf_host = new Matrixsu3[buffers[0]->get_elements()];
+	Matrixsu3 * gf_host = new Matrixsu3[meta::get_vol4d(parameters) * 4];
 
 	char * gf_ildg; // filled by readsourcefile
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters.get_precision(), &gf_ildg);
@@ -103,9 +105,7 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
 
-	auto device = buffers[0]->get_device();
-	device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
-	device->synchronize();
+	send_gaugefield_to_buffers(buffers, gf_host, parameters);
 
 	delete[] gf_ildg;
 	delete[] gf_host;
@@ -204,14 +204,9 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
 
 	{
-		auto dev_buf = buffers[0];
-		Matrixsu3 * host_buf = new Matrixsu3[dev_buf->get_elements()];
-		auto device = dev_buf->get_device();
-		device->get_gaugefield_code()->exportGaugefield(host_buf, dev_buf);
-		device->synchronize();
-
+		Matrixsu3 * host_buf = new Matrixsu3[meta::get_vol4d(parameters) * NDIM];
+		fetch_gaugefield_from_buffers(host_buf, buffers, parameters);
 		copy_gaugefield_to_ildg_format(gaugefield_buf, host_buf, parameters);
-
 		delete host_buf;
 	}
 
@@ -591,4 +586,67 @@ void physics::lattices::Gaugefield::unsmear()
 sourcefileparameters physics::lattices::Gaugefield::get_parameters_source()
 {
   return parameters_source;
+}
+
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params) {
+	if(buffers.size() == 1) {
+		auto device = buffers[0]->get_device();
+		device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
+		device->synchronize();
+	} else {
+		auto const _device = buffers.at(0)->get_device();
+		auto const local_size = _device->get_local_lattice_size();
+		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
+		auto const grid_size = _device->get_grid_size();
+		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
+		}
+		for(auto const buffer: buffers) {
+			auto device = buffer->get_device();
+			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
+
+			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			const size_t local_volume = get_vol4d(local_size) * NDIM;
+			memcpy(mem_host, &gf_host[get_global_link_pos(0, offset, params)], local_volume * sizeof(Matrixsu3));
+
+			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
+			size_4 halo_offset(0, 0, 0, (offset.t + halo_size.t) % params.get_ntime());
+			memcpy(&mem_host[local_volume], &gf_host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(Matrixsu3));
+
+			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
+			memcpy(&mem_host[local_volume + halo_volume], &gf_host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(Matrixsu3));
+
+			device->get_gaugefield_code()->importGaugefield(buffer, mem_host);
+
+			delete[] mem_host;
+		}
+	}
+}
+
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+{
+	if(buffers.size() == 1) {
+		auto device = buffers[0]->get_device();
+		device->get_gaugefield_code()->exportGaugefield(gf_host, buffers[0]);
+		device->synchronize();
+	} else {
+		auto const _device = buffers.at(0)->get_device();
+		auto const local_size = _device->get_local_lattice_size();
+		auto const grid_size = _device->get_grid_size();
+		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
+		}
+		for(auto const buffer: buffers) {
+			// fetch local part for each device
+			auto device = buffer->get_device();
+			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
+
+			device->get_gaugefield_code()->exportGaugefield(mem_host, buffer);
+			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			const size_t local_volume = get_vol4d(local_size) * NDIM;
+			memcpy(&gf_host[get_global_link_pos(0, offset, params)], mem_host, local_volume * sizeof(Matrixsu3));
+
+			delete[] mem_host;
+		}
+	}
 }
