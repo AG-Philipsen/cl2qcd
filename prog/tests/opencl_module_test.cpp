@@ -73,9 +73,15 @@ void test_plaquette(std::string inputfile, hmc_float ref_plaq, hmc_float ref_tpl
 
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
-	hmc_complex dev_pol;
 	auto * device = dummy.get_device();
-	device->gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+	hmc_float plaq_cpu;
+	hardware::buffers::Plain<hmc_float> plaq_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> tplaq_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> splaq_buf(1, device->get_device());
+	device->plaquette_device(dummy.get_gaugefield(), &plaq_buf, &tplaq_buf, &splaq_buf);
+	plaq_buf.dump(&dev_plaq);
+	tplaq_buf.dump(&dev_tplaq);
+	splaq_buf.dump(&dev_splaq);
 
 	logger.info() << "reference value:\t" << "values obtained from host functionality";
 	hmc_float prec = params.get_solver_prec();
@@ -97,10 +103,11 @@ void test_polyakov(std::string inputfile, hmc_complex ref_pol)
 	TestGaugefield dummy(&system);
 
 	// get device colutions
-	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
 	auto * device = dummy.get_device();
-	device->gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+	hardware::buffers::Plain<hmc_complex> pol_buf(1, device->get_device());
+	device->polyakov_device(dummy.get_gaugefield(), &pol_buf);
+	pol_buf.dump(&dev_pol);
 
 	logger.info() << "reference value:\t" << "values obtained from host functionality";
 	hmc_float prec = params.get_solver_prec();
@@ -124,25 +131,38 @@ void test_stout_smear(std::string inputfile)
 	auto gf_code = device->get_device()->get_gaugefield_code();
 	//out buffer
 	const hardware::buffers::SU3 out(dummy2.get_gaugefield()->get_elements(), device->get_device());
-	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
-	hmc_complex pol_cpu;
 
 	logger.info() << "gaugeobservables of in field before: ";
 	dummy2.print_gaugeobservables();
 	logger.info() << "gaugeobservables of out field before: ";
-	gf_code->gaugeobservables(&out , &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-	logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
+	hmc_float dev_plaq, dev_tplaq, dev_splaq;
+	hardware::buffers::Plain<hmc_float> plaq_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> tplaq_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> splaq_buf(1, device->get_device());
+	device->plaquette_device(&out, &plaq_buf, &tplaq_buf, &splaq_buf);
+	plaq_buf.dump(&dev_plaq);
+	tplaq_buf.dump(&dev_tplaq);
+	splaq_buf.dump(&dev_splaq);
+	hmc_complex dev_pol;
+	hardware::buffers::Plain<hmc_complex> pol_buf(1, device->get_device());
+	device->polyakov_device(&out, &pol_buf);
+	pol_buf.dump(&dev_pol);
+	logger.info() << "plaq: " << dev_plaq << "\t" << dev_tplaq  << "\t" << dev_splaq  << "\t" << dev_pol.re  << "\t" << dev_pol.im ;
 
 	gf_code->stout_smear_device( dummy2.get_gaugefield(), &out);
 
 	logger.info() << "gaugeobservables of in field after: ";
 	dummy2.print_gaugeobservables();
 	logger.info() << "gaugeobservables of out field after: ";
+	device->plaquette_device(&out, &plaq_buf, &tplaq_buf, &splaq_buf);
+	plaq_buf.dump(&dev_plaq);
+	tplaq_buf.dump(&dev_tplaq);
+	splaq_buf.dump(&dev_splaq);
+	device->polyakov_device(&out, &pol_buf);
+	pol_buf.dump(&dev_pol);
+	logger.info() << "plaq: " << dev_plaq << "\t" << dev_tplaq  << "\t" << dev_splaq  << "\t" << dev_pol.re  << "\t" << dev_pol.im ;
 
-	gf_code->gaugeobservables(&out , &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-	logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
-
-	testFloatAgainstInputparameters(plaq_cpu, params);
+	testFloatAgainstInputparameters(dev_plaq, params);
 	BOOST_MESSAGE("Test done");
 
 }

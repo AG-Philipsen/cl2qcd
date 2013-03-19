@@ -247,9 +247,12 @@ void test_gf_update(std::string inputfile)
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables();
 
-	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
-	hmc_complex pol_cpu;
-	gf_code->gaugeobservables(cpu.get_gaugefield(), &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+	hmc_float plaq_cpu;
+	hardware::buffers::Plain<hmc_float> plaq_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> foo1_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> foo2_buf(1, device->get_device());
+	gf_code->plaquette_device(cpu.get_gaugefield(), &plaq_buf, &foo1_buf, &foo2_buf);
+	plaq_buf.dump(&plaq_cpu);
 
 	logger.info() << "Free buffers";
 	delete[] gm_in;
