@@ -72,8 +72,6 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 
 void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 {
-	assert(buffers.size() == 1);
-
 	auto parameters = system.get_inputparameters();
 	Matrixsu3 * gf_host = new Matrixsu3[meta::get_vol4d(parameters) * 4];
 
@@ -182,8 +180,6 @@ void physics::lattices::Gaugefield::save(int number)
 
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
-	assert(buffers.size() == 1);
-
 	auto parameters = system.get_inputparameters();
 	const size_t NTIME = parameters.get_ntime();
 	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME * sizeof(hmc_float);
