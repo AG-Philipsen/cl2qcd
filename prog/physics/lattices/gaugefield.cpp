@@ -313,21 +313,63 @@ static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, c
 
 hmc_float physics::lattices::Gaugefield::plaquette() const
 {
-	assert(buffers.size() == 1);
+	// the plaquette is local to each side and then summed up
+	// for multi-device simply calculate the plaquette for each device and then sum up the devices
 
-	auto gf_dev = buffers[0];
-	auto device = gf_dev->get_device();
+	using hardware::buffers::Plain;
 
-	const hardware::buffers::Plain<hmc_float> plaq_dev(1, device);
-	const hardware::buffers::Plain<hmc_float> tplaq_dev(1, device);
-	const hardware::buffers::Plain<hmc_float> splaq_dev(1, device);
-	device->get_gaugefield_code()->plaquette_device(gf_dev, &plaq_dev, &tplaq_dev, &splaq_dev);
+	size_t num_devs = buffers.size();
 
-	hmc_float plaq_host;
-	plaq_dev.dump(&plaq_host);
-	device->synchronize();
-	plaq_host /= static_cast<hmc_float>(meta::get_plaq_norm(system.get_inputparameters()));
-	return plaq_host;
+	if(num_devs == 1) {
+		auto gf_dev = buffers[0];
+		auto device = gf_dev->get_device();
+
+		const Plain<hmc_float> plaq_dev(1, device);
+		const Plain<hmc_float> tplaq_dev(1, device);
+		const Plain<hmc_float> splaq_dev(1, device);
+		device->get_gaugefield_code()->plaquette_device(gf_dev, &plaq_dev, &tplaq_dev, &splaq_dev);
+
+		hmc_float plaq_host;
+		plaq_dev.dump(&plaq_host);
+		device->synchronize();
+		plaq_host /= static_cast<hmc_float>(meta::get_plaq_norm(system.get_inputparameters()));
+		return plaq_host;
+	} else {
+		// trigger calculation
+		std::vector<const Plain<hmc_float>*> plaqs; plaqs.reserve(num_devs);
+		std::vector<const Plain<hmc_float>*> tplaqs; tplaqs.reserve(num_devs);
+		std::vector<const Plain<hmc_float>*> splaqs; splaqs.reserve(num_devs);
+		for(size_t i = 0; i < num_devs; ++i) {
+			auto device = buffers[i]->get_device();
+			const Plain<hmc_float>* plaq_dev = new Plain<hmc_float>(1, device);
+			const Plain<hmc_float>* tplaq_dev = new Plain<hmc_float>(1, device);
+			const Plain<hmc_float>* splaq_dev = new Plain<hmc_float>(1, device);
+			device->get_gaugefield_code()->plaquette_device(buffers[i], plaq_dev, tplaq_dev, splaq_dev);
+			plaqs.push_back(plaq_dev);
+			tplaqs.push_back(tplaq_dev);
+			splaqs.push_back(splaq_dev);
+		}
+		// collect results
+		hmc_float plaq = 0.0, splaq = 0.0, tplaq = 0.0;
+		for(size_t i = 0; i < num_devs; ++i) {
+			hmc_float tmp;
+
+			plaqs[i]->dump(&tmp);
+			plaq += tmp;
+
+			tplaqs[i]->dump(&tmp);
+			tplaq += tmp;
+
+			splaqs[i]->dump(&tmp);
+			splaq += tmp;
+
+			delete plaqs[i];
+			delete tplaqs[i];
+			delete splaqs[i];
+		}
+		plaq /= static_cast<hmc_float>(meta::get_plaq_norm(system.get_inputparameters()));
+		return plaq;
+	}
 }
 
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float plaquette, sourcefileparameters& parameters_source)
