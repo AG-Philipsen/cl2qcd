@@ -489,6 +489,10 @@ hmc_complex physics::lattices::Gaugefield::polyakov() const
 		const Plain<hmc_complex> pol_buf(1, main_dev);
 		main_dev->get_gaugefield_code()->polyakov_md_merge_device(&merged_buf, &pol_buf);
 		pol_buf.dump(&tmp_pol);
+
+		for(auto buffer: local_results) {
+			delete buffer;
+		}
 	}
 
 	auto params = system.get_inputparameters();
