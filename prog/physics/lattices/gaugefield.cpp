@@ -118,10 +118,12 @@ static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardwa
 {
 	using hardware::buffers::SU3;
 
-	// only use device 0 for now
-	hardware::Device * device = system.get_devices().at(0);
 	std::vector<const SU3 *> buffers;
-	buffers.push_back(new SU3(get_vol4d(device->get_mem_lattice_size()) * 4, device));
+
+	auto const devices = system.get_devices();
+	for(auto device: devices) {
+		buffers.push_back(new SU3(get_vol4d(device->get_mem_lattice_size()) * 4, device));
+	}
 	return buffers;
 }
 
