@@ -17,15 +17,15 @@ BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace physics::lattices;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--ntime=4"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	logger.debug() << "Devices: " << system.get_devices().size();
 	physics::PRNG prng(system);
 
 	// init from file
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-	BOOST_CHECK_CLOSE(gf.plaquette(), 1., 0.1);
+	BOOST_CHECK_CLOSE(gf.plaquette(), 0.57107711169452713, 0.1);
 
 	// init hot
 	Gaugefield gf2(system, prng, true);
@@ -67,19 +67,19 @@ BOOST_AUTO_TEST_CASE(rectangles)
 {
 	using namespace physics::lattices;
 
-	const char * _params[] = {"foo", "--gaugeact=wilson"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--gaugeact=wilson", "--ntime=4"};
+	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 	BOOST_CHECK_THROW(gf.rectangles(), std::logic_error);
 
-	const char * _params2[] = {"foo", "--gaugeact=tlsym"};
-	meta::Inputparameters params2(2, _params2);
+	const char * _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
+	meta::Inputparameters params2(3, _params2);
 	hardware::System system2(params2);
 	physics::PRNG prng2(system2);
 
 	Gaugefield gf2(system2, prng2, std::string(SOURCEDIR) + "/tests/conf.00200");
-	BOOST_CHECK_CLOSE(gf2.rectangles(), 6144, 0.1);
+	BOOST_CHECK_CLOSE(gf2.rectangles(), 1103.2398401620451, 0.1);
 }
