@@ -68,8 +68,9 @@ hardware::System::System(const meta::Inputparameters& params, bool enable_profil
 	auto selection = params.get_selected_devices();
 	std::list<DeviceInfo> device_infos;
 	if(selection.empty()) {
-		// use all
-		for(cl_uint i = 0; i < num_devices; ++i) {
+		// use all (or up to max)
+		size_t max_devices = params.get_device_count();
+		for(cl_uint i = 0; i < num_devices && (!max_devices || device_infos.size() < max_devices); ++i) {
 			DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
 			if(!dev.is_double_supported()) {
