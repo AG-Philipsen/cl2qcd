@@ -336,7 +336,7 @@ void hardware::code::Gaugefield::polyakov_md_local_device(const hardware::buffer
 	get_device()->enqueue_kernel(polyakov_md_local, gs, ls);
 }
 
-void hardware::code::Gaugefield::polyakov_md_merge_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::Plain<hmc_complex> * pol) const
+void hardware::code::Gaugefield::polyakov_md_merge_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const cl_uint num_slices, const hardware::buffers::Plain<hmc_complex> * pol) const
 {
 	if(!polyakov_md_merge) {
 		throw std::logic_error("This function can only called in multi-device environments.");
@@ -356,7 +356,10 @@ void hardware::code::Gaugefield::polyakov_md_merge_device(const hardware::buffer
 	clerr = clSetKernelArg(polyakov_md_merge, 1, sizeof(cl_mem), partial_results->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(polyakov_md_merge, 2, buf_loc_size_complex, static_cast<void*>(nullptr));
+	clerr = clSetKernelArg(polyakov_md_merge, 2, sizeof(cl_uint), &num_slices);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(polyakov_md_merge, 3, buf_loc_size_complex, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(polyakov_md_merge, gs, ls);

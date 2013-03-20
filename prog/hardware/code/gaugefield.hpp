@@ -63,7 +63,7 @@ public:
 
 	void polyakov_md_local_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::SU3* gf) const;
 
-	void polyakov_md_merge_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::Plain<hmc_complex> * pol) const;
+	void polyakov_md_merge_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const cl_uint num_slices, const hardware::buffers::Plain<hmc_complex> * pol) const;
 
 	/**
 	 * Print the profiling information to a file.
