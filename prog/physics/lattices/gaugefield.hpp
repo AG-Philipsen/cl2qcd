@@ -118,6 +118,13 @@ namespace physics {
 		   */
 		  sourcefileparameters get_parameters_source();
 
+			/**
+			 * Update the halo cells of each buffer from its neighbours.
+			 *
+			 * On a single device this will be a no-op.
+			 */
+			void update_halo() const;
+
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;

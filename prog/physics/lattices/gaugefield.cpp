@@ -774,3 +774,10 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 		}
 	}
 }
+
+void physics::lattices::Gaugefield::update_halo() const
+{
+	if(buffers.size() != 1) { // for a single device this will be a noop
+		throw Print_Error_Message("Halo update is not yet implemented.", __FILE__, __LINE__);
+	}
+}

@@ -98,3 +98,76 @@ BOOST_AUTO_TEST_CASE(polyakov)
 	BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
 	BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
 }
+
+BOOST_AUTO_TEST_CASE(halo_update)
+{
+	using namespace physics::lattices;
+
+	hmc_float orig_plaq, new_plaq;
+	hmc_float orig_tplaq, new_tplaq;
+	hmc_float orig_splaq, new_splaq;
+	hmc_complex orig_pol, new_pol;
+
+	// simple test, gaugeobservables should not get changed by halo exchange
+	// if the original gaugefield is given
+	{
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+		gf.update_halo();
+		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
+		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
+		BOOST_CHECK_EQUAL(orig_pol, new_pol);
+	}
+
+	{
+		const char * _params[] = {"foo"};
+		meta::Inputparameters params(1, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, false);
+		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+		gf.update_halo();
+		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
+		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
+		BOOST_CHECK_EQUAL(orig_pol, new_pol);
+	}
+
+	// in a hot initialization halo cells will have wrong values until they are exchanged,
+	// but only if there is more than one device
+	// TODO hot initalization should automatically make sure the halo get's updated
+	{
+		const char * _params[] = {"foo"};
+		meta::Inputparameters params(1, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, false);
+		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+		gf.update_halo();
+		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		if(system.get_devices().size() > 1) {
+			BOOST_CHECK_NE(orig_plaq, new_plaq);
+			BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+			BOOST_CHECK_NE(orig_tplaq, new_tplaq);
+		} else {
+			BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
+			BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+			BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
+			BOOST_CHECK_EQUAL(orig_pol, new_pol);
+		}
+	}
+	
+}
