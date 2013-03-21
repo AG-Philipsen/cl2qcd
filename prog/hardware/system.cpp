@@ -86,6 +86,29 @@ for(auto device: device_infos) {
 				break;
 			}
 		}
+
+		// if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA domains (primarily makes testing easier)
+#ifdef CL_VERSION_1_2
+		if(device_infos.size() == 1 && device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
+			cl_device_id original_device = device_infos.front().get_id();
+			cl_device_partition_property partition_props[] = { CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN, CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE, 0};
+			cl_uint num_sub_devs;
+			err = clCreateSubDevices(original_device, partition_props, 0, nullptr, &num_sub_devs);
+			if(err) {
+				throw OpenclException(err, "clCreateSubDevices", __FILE__, __LINE__);
+			}
+			cl_device_id * sub_devices = new cl_device_id[num_sub_devs];
+			err = clCreateSubDevices(original_device, partition_props, num_sub_devs, sub_devices, &num_sub_devs);
+			if(err) {
+				throw OpenclException(err, "clCreateSubDevices", __FILE__, __LINE__);
+			}
+			device_infos.clear();
+			for(cl_uint i = 0; i < num_sub_devs; ++i) {
+				device_infos.push_back(DeviceInfo(sub_devices[i]));
+			}
+			delete[] sub_devices;
+		}
+#endif
 	} else {
 for(int i: selection) {
 			if(i < 0 || i > (int) num_devices) {
