@@ -50,16 +50,22 @@ public:
 	 *
 	 * This only works for AoS-Buffers. If the buffer is a SoA buffer
 	 * an std::logic_error will be thrown.
+	 *
+	 * \param elems Allows to limit the number of elements loaded to the given number
+	 * \param offset Allows to store the elements at the given offset into the buffer
 	 */
-	void load(const Matrixsu3 *) const;
+	void load(const Matrixsu3 *, size_t elems = 0, size_t offset = 0) const;
 
 	/**
 	 * Store data from the buffer into the given pointer.
 	 *
 	 * This only works for AoS-Buffers. If the buffer is a SoA buffer
 	 * an std::logic_error will be thrown.
+	 *
+	 * \param elems Allows to limit the number of elements dumped to the given number
+	 * \param offset Allows to read the elements at the given offset into the buffer
 	 */
-	void dump(Matrixsu3 *) const;
+	void dump(Matrixsu3 *, size_t elems = 0, size_t offset = 0) const;
 
 	/**
 	 * Get the size of the buffer in elements
