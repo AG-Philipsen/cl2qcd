@@ -58,7 +58,7 @@ void hardware::buffers::SU3::load(const Matrixsu3 * ptr, size_t elems, size_t of
 	if(is_soa()) {
 		throw std::logic_error("Data cannot be loaded into SOA buffers.");
 	} else {
-		Buffer::load(ptr, elems * sizeof(Matrixsu3), offset);
+		Buffer::load(ptr, elems * sizeof(Matrixsu3), offset * sizeof(Matrixsu3));
 	}
 }
 
@@ -67,6 +67,6 @@ void hardware::buffers::SU3::dump(Matrixsu3 * ptr, size_t elems, size_t offset) 
 	if(is_soa()) {
 		throw std::logic_error("Data cannot be dumped from SOA buffers.");
 	} else {
-		Buffer::dump(ptr, elems * sizeof(Matrixsu3), offset);
+		Buffer::dump(ptr, elems * sizeof(Matrixsu3), offset * sizeof(Matrixsu3));
 	}
 }
