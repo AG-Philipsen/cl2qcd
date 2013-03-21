@@ -116,14 +116,14 @@ __kernel void polyakov_md_merge(__global hmc_complex * const restrict out, __glo
 			prod = multiply_matrixsu3(prod, tmp);
 		}
 		tmpcomplex = trace_matrixsu3(prod);
-		(tmp_pol).re += tmpcomplex.re / NC;
-		(tmp_pol).im += tmpcomplex.im / NC;
+		tmp_pol.re += tmpcomplex.re / NC;
+		tmp_pol.im += tmpcomplex.im / NC;
 	}
 
 	//reduction
 	if(local_size == 1) {
-		((out))[group_id].re += tmp_pol.re;
-		((out))[group_id].im += tmp_pol.im;
+		out[group_id].re += tmp_pol.re;
+		out[group_id].im += tmp_pol.im;
 	} else {
 		//wait for all threads to end calculations
 		barrier(CLK_LOCAL_MEM_FENCE);

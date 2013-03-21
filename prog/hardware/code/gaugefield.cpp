@@ -277,11 +277,11 @@ void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * 
 	}
 	//query work-sizes for kernel
 	size_t ls, gs;
-	cl_uint num_groups;
-	this->get_work_sizes(polyakov, &ls, &gs, &num_groups);
+	cl_uint num_groups_pol;
+	this->get_work_sizes(polyakov, &ls, &gs, &num_groups_pol);
 	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
 
-	const hardware::buffers::Plain<hmc_complex> clmem_polyakov_buf_glob(num_groups, get_device());
+	const hardware::buffers::Plain<hmc_complex> clmem_polyakov_buf_glob(num_groups_pol, get_device());
 
 	// local polyakov compuation and first part of reduction
 	int clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), gf->get_cl_buffer());
@@ -296,8 +296,8 @@ void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * 
 	get_device()->enqueue_kernel(polyakov, gs, ls);
 
 	// second part of polyakov reduction
-
-	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups);
+	cl_uint num_groups_reduce;
+	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups_reduce);
 
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -305,7 +305,7 @@ void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * 
 	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), pol->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups);
+	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups_pol);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	///@todo improve
@@ -343,11 +343,11 @@ void hardware::code::Gaugefield::polyakov_md_merge_device(const hardware::buffer
 	}
 	//query work-sizes for kernel
 	size_t ls, gs;
-	cl_uint num_groups;
-	this->get_work_sizes(polyakov_md_merge, &ls, &gs, &num_groups);
+	cl_uint num_groups_merge;
+	this->get_work_sizes(polyakov_md_merge, &ls, &gs, &num_groups_merge);
 	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
 
-	const hardware::buffers::Plain<hmc_complex> clmem_polyakov_buf_glob(num_groups, get_device());
+	const hardware::buffers::Plain<hmc_complex> clmem_polyakov_buf_glob(num_groups_merge, get_device());
 
 	// local polyakov compuation and first part of reduction
 	int clerr = clSetKernelArg(polyakov_md_merge, 0, sizeof(cl_mem), clmem_polyakov_buf_glob);
@@ -365,8 +365,8 @@ void hardware::code::Gaugefield::polyakov_md_merge_device(const hardware::buffer
 	get_device()->enqueue_kernel(polyakov_md_merge, gs, ls);
 
 	// second part of polyakov reduction
-
-	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups);
+	cl_uint num_groups_reduce;
+	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups_reduce);
 
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -374,13 +374,15 @@ void hardware::code::Gaugefield::polyakov_md_merge_device(const hardware::buffer
 	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), pol->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups);
+	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups_merge);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	///@todo improve
 	ls = 1;
 	gs = 1;
 	get_device()->enqueue_kernel(polyakov_reduction, gs, ls);
+
+	get_device()->synchronize();
 }
 
 void hardware::code::Gaugefield::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out) const
