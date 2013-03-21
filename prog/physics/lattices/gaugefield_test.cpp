@@ -98,15 +98,29 @@ BOOST_AUTO_TEST_CASE(polyakov)
 {
 	using namespace physics::lattices;
 
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
+	{
+		const char * _params[] = {"foo", "--ntime=16"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
 
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-	hmc_complex pol = gf.polyakov();
-	BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
-	BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
+		Gaugefield gf(system, prng, false);
+		hmc_complex pol = gf.polyakov();
+		BOOST_CHECK_CLOSE(pol.re, 1., 0.1);
+		BOOST_CHECK_CLOSE(pol.im, 0., 0.1);
+	}
+
+	{
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		hmc_complex pol = gf.polyakov();
+		BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
+		BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
+	}
 }
 
 BOOST_AUTO_TEST_CASE(halo_update)
