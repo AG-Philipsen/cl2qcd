@@ -46,17 +46,31 @@ size_t hardware::buffers::Buffer::get_bytes() const noexcept
 	return bytes;
 }
 
-void hardware::buffers::Buffer::load(const void * array) const
+void hardware::buffers::Buffer::load(const void * array, size_t bytes, size_t offset) const
 {
-	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, nullptr, nullptr);
+	if(bytes == 0) {
+		bytes = this->bytes;
+	} else {
+		if(bytes + offset > this->bytes) {
+			throw std::out_of_range("You are loading to memory outside of the buffer.");
+		}
+	}
+	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_TRUE, offset, bytes, array, 0, nullptr, nullptr);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 	}
 }
 
-void hardware::buffers::Buffer::dump(void * array) const
+void hardware::buffers::Buffer::dump(void * array, size_t bytes, size_t offset) const
 {
-	cl_int err = clEnqueueReadBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, nullptr, nullptr);
+	if(bytes == 0) {
+		bytes = this->bytes;
+	} else {
+		if(bytes + offset > this->bytes) {
+			throw std::out_of_range("You are dumping from outside of the buffer.");
+		}
+	}
+	cl_int err = clEnqueueReadBuffer(*device, cl_buffer, CL_TRUE, offset, bytes, array, 0, nullptr, nullptr);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueReadBuffer", __FILE__, __LINE__);
 	}
