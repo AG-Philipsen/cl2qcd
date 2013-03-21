@@ -36,6 +36,9 @@ static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
 static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params);
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static unsigned upper_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
+static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source() 
@@ -777,7 +780,75 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 
 void physics::lattices::Gaugefield::update_halo() const
 {
-	if(buffers.size() != 1) { // for a single device this will be a noop
-		throw Print_Error_Message("Halo update is not yet implemented.", __FILE__, __LINE__);
+	if(buffers.size() > 1) { // for a single device this will be a noop
+		// currently either all or none of the buffers must be SOA
+		if(buffers[0]->is_soa()) {
+			throw Print_Error_Message("Halo update is not yet implemented for SoA buffers.", __FILE__, __LINE__);
+		} else {
+			update_halo_aos(buffers, system.get_inputparameters());
+		}
 	}
+}
+
+static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+{
+	// check all buffers are non-soa
+	for(auto const buffer: buffers) {
+		if(buffer->is_soa()) {
+			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
+		}
+	}
+
+	const auto main_device = buffers[0]->get_device();
+	const size_4 grid_dims = main_device->get_grid_size();
+	if(grid_dims.x != 1 || grid_dims.y != 1 || grid_dims.z != 1) {
+		throw Print_Error_Message("Only the time-direction can be parallelized");
+	}
+	const unsigned GRID_SIZE = grid_dims.t;
+	const unsigned HALO_SIZE = main_device->get_halo_size();
+	const unsigned VOLSPACE = meta::get_volspace(params);
+	const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE * NDIM;
+	const unsigned VOL4D_LOCAL = get_vol4d(main_device->get_local_lattice_size());
+	const size_t num_buffers = buffers.size();
+
+	// host buffers for intermediate data storage (no direct device to device copy)
+	std::vector<Matrixsu3*> upper_boundaries; upper_boundaries.reserve(num_buffers);
+	std::vector<Matrixsu3*> lower_boundaries; lower_boundaries.reserve(num_buffers);
+	for(size_t i = 0; i < num_buffers; ++i) {
+		upper_boundaries.push_back(new Matrixsu3[HALO_ELEMS]);
+		lower_boundaries.push_back(new Matrixsu3[HALO_ELEMS]);
+	}
+
+	// copy inside of boundaries to host
+	for(size_t i = 0; i < num_buffers; ++i) {
+		const auto buffer = buffers[i];
+		buffer->dump(upper_boundaries[i], HALO_ELEMS, VOL4D_LOCAL * NDIM - HALO_ELEMS);
+		buffer->dump(lower_boundaries[i], HALO_ELEMS, 0);
+	}
+
+	// copy data from host to halo (of coure getting what the neighbour stored
+	for(size_t i = 0; i < num_buffers; ++i) {
+		const auto buffer = buffers[i];
+		// our lower halo is the upper bounary of our lower neighbour
+		// its storage location is wrapped around to be the last chunk of data in our buffer, that is after local data and upper halo
+		buffer->load(upper_boundaries[lower_grid_neighbour(i, GRID_SIZE)], HALO_ELEMS, VOL4D_LOCAL * NDIM + HALO_ELEMS);
+		// our upper halo is the lower bounary of our upper neighbour, it's stored right after our local data
+		buffer->load(lower_boundaries[upper_grid_neighbour(i, GRID_SIZE)], HALO_ELEMS, VOL4D_LOCAL * NDIM);
+	}
+
+	// clean up host
+	for(size_t i = 0; i < num_buffers; ++i) {
+		delete[] upper_boundaries[i];
+		delete[] lower_boundaries[i];
+	}
+}
+
+static unsigned upper_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE)
+{
+	return (idx + 1) % GRID_SIZE;
+}
+
+static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE)
+{
+	return (idx + GRID_SIZE - 1) % GRID_SIZE;
 }
