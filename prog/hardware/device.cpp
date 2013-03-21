@@ -463,6 +463,9 @@ unsigned hardware::Device::get_halo_size() const
 
 static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size)
 {
+	if(local_lattice_size.t < halo_size) {
+		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
+	}
 	return size_4(
 	         local_lattice_size.x + (grid_size.x > 1 ? 2 * halo_size : 0),
 	         local_lattice_size.y + (grid_size.y > 1 ? 2 * halo_size : 0),
