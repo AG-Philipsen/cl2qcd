@@ -89,7 +89,7 @@ for(auto device: device_infos) {
 
 		// if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA domains (primarily makes testing easier)
 #ifdef CL_VERSION_1_2
-		if(device_infos.size() == 1 && device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
+		if(params.get_split_cpu() && device_infos.size() == 1 && device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
 			cl_device_id original_device = device_infos.front().get_id();
 			cl_device_partition_property partition_props[] = { CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN, CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE, 0};
 			cl_uint num_sub_devs;
