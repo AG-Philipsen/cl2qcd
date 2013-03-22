@@ -13,6 +13,15 @@
 
 #include <ostream>
 
+inline hmc_complex operator+(const hmc_complex& left, const hmc_complex& right)
+{
+	return complexadd(left, right);
+}
+inline hmc_complex operator+=(hmc_complex& left, const hmc_complex& right)
+{
+	left = complexadd(left, right);
+	return left;
+}
 inline bool operator==(const hmc_complex& left, const hmc_complex& right)
 {
 	return (left.re == right.re && left.im == right.im);

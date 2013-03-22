@@ -67,6 +67,11 @@ public:
 	 */
 	void gaussian(const physics::PRNG& prng) const;
 
+	/**
+	 * Update the halos of the spinorfield buffers.
+	 */
+	void update_halo() const;
+
 protected:
 	/**
 	 * Allow (re-)creation of buffers by children
