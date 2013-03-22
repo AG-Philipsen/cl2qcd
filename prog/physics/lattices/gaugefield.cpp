@@ -13,6 +13,7 @@
 #include "../../checksum.h"
 #include <fstream>
 #include "../../hardware/device.hpp"
+#include "../../hardware/buffers/halo_update.hpp"
 
 /**
  * Version number.
@@ -38,8 +39,6 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
-static unsigned upper_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
-static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
 static void extract_boundary(char* host, const hardware::buffers::SU3 * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 static void send_halo(const hardware::buffers::SU3 * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 
@@ -807,58 +806,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> bu
 		}
 	}
 
-	const auto main_device = buffers[0]->get_device();
-	const size_4 grid_dims = main_device->get_grid_size();
-	if(grid_dims.x != 1 || grid_dims.y != 1 || grid_dims.z != 1) {
-		throw Print_Error_Message("Only the time-direction can be parallelized");
-	}
-	const unsigned GRID_SIZE = grid_dims.t;
-	const unsigned HALO_SIZE = main_device->get_halo_size();
-	const unsigned VOLSPACE = meta::get_volspace(params);
-	const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE * NDIM;
-	const unsigned VOL4D_LOCAL = get_vol4d(main_device->get_local_lattice_size());
-	const size_t num_buffers = buffers.size();
-
-	// host buffers for intermediate data storage (no direct device to device copy)
-	std::vector<Matrixsu3*> upper_boundaries; upper_boundaries.reserve(num_buffers);
-	std::vector<Matrixsu3*> lower_boundaries; lower_boundaries.reserve(num_buffers);
-	for(size_t i = 0; i < num_buffers; ++i) {
-		upper_boundaries.push_back(new Matrixsu3[HALO_ELEMS]);
-		lower_boundaries.push_back(new Matrixsu3[HALO_ELEMS]);
-	}
-
-	// copy inside of boundaries to host
-	for(size_t i = 0; i < num_buffers; ++i) {
-		const auto buffer = buffers[i];
-		buffer->dump(upper_boundaries[i], HALO_ELEMS, VOL4D_LOCAL * NDIM - HALO_ELEMS);
-		buffer->dump(lower_boundaries[i], HALO_ELEMS, 0);
-	}
-
-	// copy data from host to halo (of coure getting what the neighbour stored
-	for(size_t i = 0; i < num_buffers; ++i) {
-		const auto buffer = buffers[i];
-		// our lower halo is the upper bounary of our lower neighbour
-		// its storage location is wrapped around to be the last chunk of data in our buffer, that is after local data and upper halo
-		buffer->load(upper_boundaries[lower_grid_neighbour(i, GRID_SIZE)], HALO_ELEMS, VOL4D_LOCAL * NDIM + HALO_ELEMS);
-		// our upper halo is the lower bounary of our upper neighbour, it's stored right after our local data
-		buffer->load(lower_boundaries[upper_grid_neighbour(i, GRID_SIZE)], HALO_ELEMS, VOL4D_LOCAL * NDIM);
-	}
-
-	// clean up host
-	for(size_t i = 0; i < num_buffers; ++i) {
-		delete[] upper_boundaries[i];
-		delete[] lower_boundaries[i];
-	}
-}
-
-static unsigned upper_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE)
-{
-	return (idx + 1) % GRID_SIZE;
-}
-
-static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE)
-{
-	return (idx + GRID_SIZE - 1) % GRID_SIZE;
+	hardware::buffers::update_halo<Matrixsu3>(buffers, params, NDIM);
 }
 
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
