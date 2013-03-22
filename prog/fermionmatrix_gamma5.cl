@@ -8,7 +8,7 @@ __kernel void gamma5(__global spinor * const restrict inout)
 	int group_id = get_group_id (0);
 	spinor out_tmp;
 
-	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+	for(int id_local = id; id_local < SPINORFIELDSIZE_MEM; id_local += global_size) {
 		/** @todo this must be done more efficient */
 		st_index pos = (id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2);
 
