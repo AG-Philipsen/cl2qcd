@@ -8,6 +8,7 @@
 #define _PHYSICS_LATTICES_SCALAR_
 
 #include <vector>
+#include <functional>
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/plain.hpp"
 #include "../../exceptions.h"
@@ -49,6 +50,13 @@ namespace physics {
 			SCALAR get() const;
 
 			/**
+			 * Sum up the data of all buffers, getting the scalar into a consistent state again.
+			 *
+			 * On single-device systems this is a noop.
+			 */
+			void sum() const;
+
+			/**
 			 * Store a value
 			 */
 			void store(const SCALAR& val) const;
@@ -82,14 +90,13 @@ template<typename SCALAR> static std::vector<const hardware::buffers::Plain<SCAL
 {
 	using hardware::buffers::Plain;
 
-	// only support a single device for now
-	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("Scalar is only implemented for a single device.", __FILE__, __LINE__);
-	}
-	hardware::Device * device = devices[0];
 	std::vector<const Plain<SCALAR> *> buffers;
-	buffers.push_back(new Plain<SCALAR>(1, device));
+
+	auto const devices = system.get_devices();
+	for(auto device: devices) {
+		buffers.push_back(new Plain<SCALAR>(1, device));
+	}
+
 	return buffers;
 }
 
@@ -102,15 +109,29 @@ for(auto buffer: buffers) {
 
 template<typename SCALAR> SCALAR physics::lattices::Scalar<SCALAR>::get() const
 {
-	// only support a single device for now
-	if(buffers.size() != 1) {
-		throw Print_Error_Message("Scalar is only implemented for a single device.", __FILE__, __LINE__);
-	}
-
+	// if this is a scalar we can read from any buffer
 	auto buffer = buffers[0];
 	SCALAR host_val;
 	buffer->dump(&host_val);
 	return host_val;
+}
+
+template<typename SCALAR> void physics::lattices::Scalar<SCALAR>::sum() const
+{
+	// TODO make this run async
+	size_t num_buffers = buffers.size();
+	if(num_buffers > 1) {
+		std::vector<SCALAR> tmp;
+		tmp.resize(num_buffers);
+		for(size_t i = 0; i < num_buffers; ++i) {
+			buffers[i]->dump(&tmp[i]);
+		}
+		SCALAR res = tmp[0] + tmp[1];
+		for(size_t i = 2; i < num_buffers; ++i) {
+			res += tmp[i];
+		}
+		store(res);
+	}
 }
 
 template<typename SCALAR> void physics::lattices::Scalar<SCALAR>::store(const SCALAR& val) const
