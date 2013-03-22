@@ -56,6 +56,7 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 			break;
 		case meta::Inputparameters::hot_start:
 			set_hot(buffers, prng);
+			update_halo();
 			break;
 	}
 }
@@ -65,6 +66,7 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 {
 	if(hot) {
 		set_hot(buffers, prng);
+		update_halo();
 	} else {
 		set_cold(buffers);
 	}

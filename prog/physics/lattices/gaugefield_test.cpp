@@ -45,8 +45,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(save)
-{
+void test_save(bool hot) {
 	using namespace physics::lattices;
 
 	const char * _params[] = {"foo"};
@@ -54,7 +53,7 @@ BOOST_AUTO_TEST_CASE(save)
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	Gaugefield gf(system, prng, false);
+	Gaugefield gf(system, prng, hot);
 	gf.save("conf.test", 0);
 
 	Gaugefield reread(system, prng, "conf.test");
@@ -71,6 +70,12 @@ BOOST_AUTO_TEST_CASE(save)
 	BOOST_CHECK_EQUAL(orig_splaq, reread_splaq);
 	BOOST_CHECK_EQUAL(orig_tplaq, reread_tplaq);
 	BOOST_CHECK_EQUAL(orig_pol, reread_pol);
+}
+
+BOOST_AUTO_TEST_CASE(save)
+{
+	test_save(false);
+	test_save(true);
 }
 
 BOOST_AUTO_TEST_CASE(rectangles)
@@ -151,9 +156,6 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);
 	}
 
-	// in a hot initialization halo cells will have wrong values until they are exchanged,
-	// but only if there is more than one device
-	// TODO hot initalization should automatically make sure the halo get's updated
 	{
 		const char * _params[] = {"foo"};
 		meta::Inputparameters params(1, _params);
@@ -165,16 +167,10 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		gf.update_halo();
 		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
 
-		if(system.get_devices().size() > 1) {
-			BOOST_CHECK_NE(orig_plaq, new_plaq);
-			BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
-			BOOST_CHECK_NE(orig_tplaq, new_tplaq);
-		} else {
-			BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
-			BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
-			BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
-			BOOST_CHECK_EQUAL(orig_pol, new_pol);
-		}
+		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
+		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
+		BOOST_CHECK_EQUAL(orig_pol, new_pol);
 	}
 
 	{
@@ -193,5 +189,4 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);
 	}
-
 }
