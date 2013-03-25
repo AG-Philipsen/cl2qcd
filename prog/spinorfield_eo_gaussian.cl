@@ -16,8 +16,8 @@ __kernel void generate_gaussian_spinorfield_eo(__global spinorStorageType * cons
 	prng_state rnd;
 	prng_loadState(&rnd, rngStates);
 
-	// TODO only update local
-	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
+	for(int id_local = id; id_local < EOPREC_SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+		site_idx id_mem = get_eo_site_idx_from_st_idx(get_even_st_idx_local(id_local));
 		//CP: there are 12 complex elements in the spinor
 		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e0.e0.re = tmp.re;

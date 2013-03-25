@@ -7,6 +7,7 @@
 #include <cassert>
 #include "../../hardware/code/spinors.hpp"
 #include "../../hardware/code/fermions.hpp"
+#include "../../meta/type_ops.hpp"
 
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
 
@@ -19,10 +20,12 @@ static  std::vector<const hardware::buffers::Spinor *> allocate_buffers(const ha
 {
 	using hardware::buffers::Spinor;
 
-	// only use device 0 for now
-	hardware::Device * device = system.get_devices().at(0);
+	auto devices = system.get_devices();
 	std::vector<const Spinor*> buffers;
-	buffers.push_back(new Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device));
+	buffers.reserve(devices.size());
+	for(auto device: devices) {
+		buffers.push_back(new Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device));
+	}
 	return buffers;
 }
 
@@ -52,21 +55,20 @@ void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spi
 	auto right_buffers = right.get_buffers();
 	size_t num_buffers = res_buffers.size();
 
-	// TODO implemente for more than one device
-	if(num_buffers != 1) {
-		throw Print_Error_Message("physics::lattices::scalar_product(const Spinorfield_eo&, const Spinorfield_eo&) is not implemented for multiple devices", __FILE__, __LINE__);
-	}
 	if(num_buffers != left_buffers.size() || num_buffers != right_buffers.size()) {
 		throw std::invalid_argument("The given lattices do not use the same number of devices.");
 	}
 
-	auto res_buf = res_buffers[0];
-	auto left_buf = left_buffers[0];
-	auto right_buf = right_buffers[0];
-	auto device = res_buf->get_device();
-	auto spinor_code = device->get_spinor_code();
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto res_buf = res_buffers[i];
+		auto left_buf = left_buffers[i];
+		auto right_buf = right_buffers[i];
+		auto device = res_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
 
-	spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
+		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
+	}
+	res->sum();
 }
 
 hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field)
@@ -82,20 +84,19 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 	auto res_buffers = res->get_buffers();
 	size_t num_buffers = field_buffers.size();
 
-	// TODO implemente for more than one device
-	if(num_buffers != 1) {
-		throw Print_Error_Message("physics::lattices::squarenorm(const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
-	}
 	if(num_buffers != res_buffers.size()) {
 		throw std::invalid_argument("The given lattices do not use the same number of devices.");
 	}
 
-	auto field_buf = field_buffers[0];
-	auto res_buf = res_buffers[0];
-	auto device = field_buf->get_device();
-	auto spinor_code = device->get_spinor_code();
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto field_buf = field_buffers[i];
+		auto res_buf = res_buffers[i];
+		auto device = field_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
 
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
+		spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
+	}
+	res->sum();
 }
 
 void physics::lattices::Spinorfield_eo::zero() const
@@ -127,6 +128,7 @@ void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) cons
 		auto prng_buf = prng_bufs[i];
 		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_eo_device(spin_buf, prng_buf);
 	}
+	update_halo();
 }
 
 void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
@@ -324,4 +326,9 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 		hmc_float tmp = squarenorm(x);
 		logger.debug() << msg << std::scientific << std::setprecision(10) << tmp;
 	}
+}
+
+void physics::lattices::Spinorfield_eo::update_halo() const
+{
+	throw Print_Error_Message("Not implemented.");
 }
