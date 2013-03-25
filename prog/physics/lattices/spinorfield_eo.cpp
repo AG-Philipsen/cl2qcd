@@ -87,7 +87,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 		throw Print_Error_Message("physics::lattices::squarenorm(const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
 	}
 	if(num_buffers != res_buffers.size()) {
-		throw std::invalid_argument("The given lattices do not sue the same number of devices.");
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
 	}
 
 	auto field_buf = field_buffers[0];
