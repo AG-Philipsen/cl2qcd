@@ -8,8 +8,13 @@
 #include "../../hardware/code/spinors.hpp"
 #include "../../hardware/code/fermions.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../../hardware/buffers/halo_update.hpp"
 
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
+static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
+static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
+static void extract_boundary(char* host, const hardware::buffers::Spinor * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
+static void send_halo(const hardware::buffers::Spinor * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 
 physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
@@ -330,5 +335,119 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Spinorfield_eo::update_halo() const
 {
-	throw Print_Error_Message("Not implemented.");
+	if(buffers.size() > 1) { // for a single device this will be a noop
+		// currently either all or none of the buffers must be SOA
+		if(buffers[0]->is_soa()) {
+			update_halo_soa(buffers, system.get_inputparameters());
+		} else {
+			update_halo_aos(buffers, system.get_inputparameters());
+		}
+	}
+}
+
+static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
+{
+	// check all buffers are non-soa
+	for(auto const buffer: buffers) {
+		if(buffer->is_soa()) {
+			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
+		}
+	}
+
+	hardware::buffers::update_halo<spinor>(buffers, params, .5 /* only even or odd sites */ );
+}
+
+static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
+{
+	// check all buffers are non-soa
+	for(auto const buffer: buffers) {
+		if(!buffer->is_soa()) {
+			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
+		}
+	}
+
+	const auto main_device = buffers[0]->get_device();
+	const size_4 grid_dims = main_device->get_grid_size();
+	if(grid_dims.x != 1 || grid_dims.y != 1 || grid_dims.z != 1) {
+		throw Print_Error_Message("Only the time-direction can be parallelized");
+	}
+	const unsigned GRID_SIZE = grid_dims.t;
+	const unsigned HALO_SIZE = main_device->get_halo_size();
+	const unsigned VOLSPACE = meta::get_volspace(params) / 2;
+	const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE;
+	const unsigned HALO_CHUNK_ELEMS = HALO_SIZE * VOLSPACE;
+	const unsigned VOL4D_LOCAL = get_vol4d(main_device->get_local_lattice_size()) / 2;
+	const size_t num_buffers = buffers.size();
+
+	std::vector<char*> upper_boundaries; upper_boundaries.reserve(num_buffers);
+	std::vector<char*> lower_boundaries; lower_boundaries.reserve(num_buffers);
+	for(size_t i = 0; i < num_buffers; ++i) {
+		upper_boundaries.push_back(new char[HALO_ELEMS * sizeof(spinor)]);
+		lower_boundaries.push_back(new char[HALO_ELEMS * sizeof(spinor)]);
+	}
+
+	// copy inside of boundaries to host
+	for(size_t i = 0; i < num_buffers; ++i) {
+		const auto buffer = buffers[i];
+		logger.debug() << "Extracting data from buffer " << i;
+		extract_boundary(upper_boundaries[i], buffer, VOL4D_LOCAL - HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS);
+		extract_boundary(lower_boundaries[i], buffer, 0, HALO_CHUNK_ELEMS);
+	}
+
+	// copy data from host to halo (of coure getting what the neighbour stored
+	for(size_t i = 0; i < num_buffers; ++i) {
+		const auto buffer = buffers[i];
+		logger.debug() << "Sending data to buffer " << i;
+		// our lower halo is the upper bounary of our lower neighbour
+		// its storage location is wrapped around to be the last chunk of data in our buffer, that is after local data and upper halo
+		send_halo(buffer, upper_boundaries[lower_grid_neighbour(i, GRID_SIZE)], VOL4D_LOCAL  + HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS);
+		// our upper halo is the lower bounary of our upper neighbour, it's stored right after our local data
+		send_halo(buffer, lower_boundaries[upper_grid_neighbour(i, GRID_SIZE)], VOL4D_LOCAL, HALO_CHUNK_ELEMS);
+	}
+
+	// clean up host
+	for(size_t i = 0; i < num_buffers; ++i) {
+		delete[] upper_boundaries[i];
+		delete[] lower_boundaries[i];
+	}
+}
+
+static void extract_boundary(char* host, const hardware::buffers::Spinor * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS)
+{
+	logger.debug() << "Extracting boundary. Offset: " << in_lane_offset << " - Elements per chunk: " << HALO_CHUNK_ELEMS;
+	const unsigned NUM_LANES = buffer->get_lane_count();
+	const unsigned STORAGE_TYPE_SIZE = buffer->get_storage_type_size();
+	const unsigned VOL4D_MEM = get_vol4d(buffer->get_device()->get_mem_lattice_size()) / 2;
+	const unsigned CHUNKS_PER_LANE = 1;
+	const unsigned CHUNK_STRIDE = VOL4D_MEM;
+
+	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
+		logger.trace() << "Reading lane " << lane;
+		size_t lane_offset = lane * buffer->get_lane_stride();
+		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
+			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
+			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+			buffer->dump_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
+		}
+	}
+}
+
+static void send_halo(const hardware::buffers::Spinor * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS)
+{
+	logger.debug() << "Sending Halo. Offset: " << in_lane_offset << " - Elements per chunk: " << HALO_CHUNK_ELEMS;
+	const unsigned NUM_LANES = buffer->get_lane_count();
+	const unsigned STORAGE_TYPE_SIZE = buffer->get_storage_type_size();
+	const unsigned VOL4D_MEM = get_vol4d(buffer->get_device()->get_mem_lattice_size()) / 2;
+	const unsigned CHUNKS_PER_LANE = 1;
+	const unsigned CHUNK_STRIDE = VOL4D_MEM;
+
+	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
+		logger.trace() << "Sending lane " << lane;
+		size_t lane_offset = lane * buffer->get_lane_stride();
+		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
+			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
+			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+			buffer->load_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
+		}
+	}
 }

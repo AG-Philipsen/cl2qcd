@@ -265,3 +265,36 @@ BOOST_AUTO_TEST_CASE(conversion)
 		BOOST_CHECK_CLOSE(squarenorm(recreated), squarenorm(orig), .1);
 	}
 }
+
+BOOST_AUTO_TEST_CASE(halo_update)
+{
+	using namespace physics::lattices;
+
+	hmc_float orig_squarenorm, new_squarenorm;
+
+	// simple test, squarenorm should not get changed by halo exchange
+	const char * _params[] = {"foo", "--ntime=16"};
+	meta::Inputparameters params(2, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	const Spinorfield_eo sf(system);
+
+	sf.gaussian(prng);
+	orig_squarenorm = physics::lattices::squarenorm(sf);
+	sf.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(sf);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	sf.zero();
+	orig_squarenorm = physics::lattices::squarenorm(sf);
+	sf.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(sf);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	sf.cold();
+	orig_squarenorm = physics::lattices::squarenorm(sf);
+	sf.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(sf);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+}

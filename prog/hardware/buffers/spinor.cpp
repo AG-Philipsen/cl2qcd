@@ -55,27 +55,54 @@ bool hardware::buffers::Spinor::is_soa() const noexcept
 	return soa;
 }
 
-void hardware::buffers::Spinor::load(const spinor * ptr) const
+void hardware::buffers::Spinor::load(const spinor * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
 		Plain<spinor> plain(get_elements(), device);
-		plain.load(ptr);
+		plain.load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
 		device->get_spinor_code()->convertSpinorfieldToSOA_eo_device(this, &plain);
 		device->synchronize();
 	} else {
-		Buffer::load(ptr);
+		Buffer::load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
 	}
 }
 
-void hardware::buffers::Spinor::dump(spinor * ptr) const
+void hardware::buffers::Spinor::dump(spinor * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
 		Plain<spinor> plain(get_elements(), device);
 		device->get_spinor_code()->convertSpinorfieldFromSOA_eo_device(&plain, this);
-		plain.dump(ptr);
+		plain.dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
 	} else {
-		Buffer::dump(ptr);
+		Buffer::dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
 	}
+}
+
+void hardware::buffers::Spinor::load_raw(const void * ptr, size_t bytes, size_t offset) const
+{
+	logger.trace() << "Loading raw data into Spinor buffer.";
+	Buffer::load(ptr, bytes, offset);
+}
+
+void hardware::buffers::Spinor::dump_raw(void * ptr, size_t bytes, size_t offset) const
+{
+	logger.trace() << "Dumping raw data from Spinor buffer.";
+	Buffer::dump(ptr, bytes, offset);
+}
+
+size_t hardware::buffers::Spinor::get_storage_type_size() const noexcept
+{
+	return soa ? sizeof(soa_storage_t) : sizeof(spinor);
+}
+
+size_t hardware::buffers::Spinor::get_lane_stride() const noexcept
+{
+	return soa ? (get_bytes() / sizeof(soa_storage_t) / soa_storage_lanes) : 0;
+}
+
+size_t hardware::buffers::Spinor::get_lane_count() const noexcept
+{
+	return soa ? soa_storage_lanes : 1;
 }
