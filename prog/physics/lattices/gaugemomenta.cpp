@@ -22,9 +22,12 @@ static  std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(c
 	using hardware::buffers::Gaugemomentum;
 
 	// only use device 0 for now
-	hardware::Device * device = system.get_devices().at(0);
+	auto devices = system.get_devices();
 	std::vector<const Gaugemomentum*> buffers;
-	buffers.push_back(new Gaugemomentum(NDIM * get_vol4d(device->get_mem_lattice_size()), device));
+	buffers.reserve(devices.size());
+	for(auto device: devices) {
+		buffers.push_back(new Gaugemomentum(NDIM * get_vol4d(device->get_mem_lattice_size()), device));
+	}
 	return buffers;
 }
 
@@ -58,6 +61,7 @@ void physics::lattices::Gaugemomenta::gaussian(const physics::PRNG& prng) const
 		auto buf = buffers[i];
 		buf->get_device()->get_gaugemomentum_code()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
 	}
+	update_halo();
 }
 
 hmc_float physics::lattices::squarenorm(const Gaugemomenta& field)
@@ -73,20 +77,20 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Gaugemome
 	auto res_buffers = res->get_buffers();
 	size_t num_buffers = field_buffers.size();
 
-	// TODO implemente for more than one device
-	if(num_buffers != 1) {
-		throw Print_Error_Message("physics::lattices::squarenorm(const Gaugemomenta&) is not implemented for multiple devices", __FILE__, __LINE__);
-	}
 	if(num_buffers != res_buffers.size()) {
 		throw std::invalid_argument("The given lattices do not sue the same number of devices.");
 	}
 
-	auto field_buf = field_buffers[0];
-	auto res_buf = res_buffers[0];
-	auto device = field_buf->get_device();
-	auto code = device->get_gaugemomentum_code();
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto field_buf = field_buffers[i];
+		auto res_buf = res_buffers[i];
+		auto device = field_buf->get_device();
+		auto code = device->get_gaugemomentum_code();
 
-	code->set_float_to_gaugemomentum_squarenorm_device(field_buf, res_buf);
+		code->set_float_to_gaugemomentum_squarenorm_device(field_buf, res_buf);
+	}
+
+	res->sum();
 }
 
 void physics::lattices::log_squarenorm(const std::string& msg, const physics::lattices::Gaugemomenta& x)
@@ -94,5 +98,12 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 	if(logger.beDebug()) {
 		hmc_float tmp = squarenorm(x);
 		logger.debug() << msg << std::scientific << std::setprecision(10) << tmp;
+	}
+}
+
+void physics::lattices::Gaugemomenta::update_halo() const
+{
+	if(buffers.size() > 1) {
+		throw Print_Error_Message("Not implemented");
 	}
 }

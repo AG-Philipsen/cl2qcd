@@ -55,6 +55,13 @@ public:
 	 */
 	void gaussian(const physics::PRNG& prng) const;
 
+	/**
+	 * Update the halo cells of each buffer from its neighbours.
+	 *
+	 * On a single device this will be a no-op.
+	 */
+	void update_halo() const;
+
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
