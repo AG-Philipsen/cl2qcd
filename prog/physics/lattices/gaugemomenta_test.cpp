@@ -129,3 +129,35 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	BOOST_REQUIRE_NE(res.get(), 0.);
 }
 
+BOOST_AUTO_TEST_CASE(halo_update)
+{
+	using namespace physics::lattices;
+
+	hmc_float orig_squarenorm, new_squarenorm;
+
+	// simple test, squarenorm should not get changed by halo exchange
+	const char * _params[] = {"foo", "--ntime=16"};
+	meta::Inputparameters params(2, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	const Gaugemomenta gf(system);
+
+	gf.gaussian(prng);
+	orig_squarenorm = physics::lattices::squarenorm(gf);
+	gf.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gf);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	gf.zero();
+	orig_squarenorm = physics::lattices::squarenorm(gf);
+	gf.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gf);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	gf.gaussian(prng);
+	orig_squarenorm = physics::lattices::squarenorm(gf);
+	gf.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gf);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+}
