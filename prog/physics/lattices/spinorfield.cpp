@@ -10,6 +10,7 @@
 #include "../../hardware/code/fermions.hpp"
 #include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
+#include "../../host_geometry.h"
 
 static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
 
@@ -277,4 +278,43 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 void physics::lattices::Spinorfield::update_halo() const
 {
 	hardware::buffers::update_halo<spinor>(buffers, system.get_inputparameters());
+}
+
+void physics::lattices::Spinorfield::import(const spinor * const host) const
+{
+	if(buffers.size() == 1) {
+		buffers[0]->load(host);
+	} else {
+		auto params = system.get_inputparameters();
+		auto const _device = buffers.at(0)->get_device();
+		auto const local_size = _device->get_local_lattice_size();
+		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
+		auto const grid_size = _device->get_grid_size();
+		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
+		}
+		for(auto const buffer: buffers) {
+			auto device = buffer->get_device();
+
+			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			logger.debug() << offset;
+			const size_t local_volume = get_vol4d(local_size);
+			buffer->load(&host[get_global_pos(offset, params)], local_volume);
+
+			const size_t halo_volume = get_vol4d(halo_size);
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			buffer->load(&host[get_global_pos(offset, params)], halo_volume);
+
+			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			buffer->load(&host[get_global_pos(offset, params)], halo_volume);
+
+		}
+	}
+}
+
+unsigned physics::lattices::Spinorfield::get_elements() const noexcept
+{
+	return hardware::code::get_spinorfieldsize(system.get_inputparameters());
 }

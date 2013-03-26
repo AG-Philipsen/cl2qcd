@@ -35,7 +35,7 @@ template<class T> void copyData(const T* to, const T& from);
  *
  * @todo implement for multi-buffer
  */
-template <class T> void pseudo_randomize(int seed);
+template <class Lattice, typename Basetype> void pseudo_randomize(const Lattice* to, int seed);
 
 
 
@@ -62,16 +62,11 @@ template<class T> void copyData(const T* to, const T* from)
 
 template <class Lattice, typename Basetype> void pseudo_randomize(const Lattice* to, int seed)
 {
-	auto buffers = to->get_buffers();
-	if(buffers.size() != 1) {
-		throw Print_Error_Message("Pseudo-randomization of multi-buffer lattices is not yet implemented.");
-	}
-	auto buffer = buffers[0];
-	size_t elems = buffer->get_elements();
+	unsigned elems = to->get_elements();
 	std::vector<Basetype> host_vals(elems);
 	Basetype * host_vals_p = host_vals.data();
 	fill(host_vals_p, elems, seed);
-	buffer->load(host_vals_p);
+	to->import(host_vals_p);
 }
 
 }

@@ -60,3 +60,8 @@ int get_global_link_pos(int mu, size_4 cart, const meta::Inputparameters& params
 	auto const spatial = get_nspace(space_coords, params);
 	return get_global_link_pos(mu, spatial, cart.t, params);
 }
+
+int get_global_pos(size_4 cart, const meta::Inputparameters& params)
+{
+	return get_global_link_pos(0, cart, params);
+}
