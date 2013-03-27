@@ -25,6 +25,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D NTIME_GLOBAL=" << params.get_ntime();
 	options << " -D NTIME_LOCAL=" << local_size.t;
 	options << " -D NTIME_MEM=" << mem_size.t;
+	options << " -D NTIME_OFFSET=" << device->get_grid_pos().t * local_size.t;
 
 	options << " -D VOLSPACE=" << meta::get_volspace(params);
 

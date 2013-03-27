@@ -153,6 +153,10 @@ void test_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref
 		pseudo_randomize<Spinorfield, spinor>(solved[i], i + num_sources);
 	}
 
+	for(auto source: sources) {
+		log_squarenorm("Source: ", *source);
+	}
+
 	check_correlator("ps", solved, sources, params, ps_ref);
 	check_correlator("sc", solved, sources, params, sc_ref);
 	check_correlator("vx", solved, sources, params, vx_ref);
@@ -161,4 +165,7 @@ void test_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref
 	check_correlator("ax", solved, sources, params, ax_ref);
 	check_correlator("ay", solved, sources, params, ay_ref);
 	check_correlator("az", solved, sources, params, az_ref);
+
+	release_spinorfields(solved);
+	release_spinorfields(sources);
 }

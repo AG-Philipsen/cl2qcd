@@ -69,7 +69,7 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
 
