@@ -282,6 +282,7 @@ void physics::lattices::Spinorfield::update_halo() const
 
 void physics::lattices::Spinorfield::import(const spinor * const host) const
 {
+	logger.trace() << "importing spinorfield";
 	if(buffers.size() == 1) {
 		buffers[0]->load(host);
 	} else {
@@ -304,14 +305,20 @@ void physics::lattices::Spinorfield::import(const spinor * const host) const
 			const size_t halo_volume = get_vol4d(halo_size);
 			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
 			logger.debug() << halo_offset;
-			buffer->load(&host[get_global_pos(offset, params)], halo_volume);
+			logger.trace() << get_global_pos(halo_offset, params);
+			logger.trace() << halo_volume;
+			logger.trace() << get_elements();
+			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume);
 
 			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
 			logger.debug() << halo_offset;
-			buffer->load(&host[get_global_pos(offset, params)], halo_volume);
+			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume + halo_volume);
 
 		}
 	}
+	logger.trace() << "import complete";
 }
 
 unsigned physics::lattices::Spinorfield::get_elements() const noexcept
