@@ -170,7 +170,7 @@ __kernel void correlator_sc_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
 
@@ -334,7 +334,7 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -499,7 +499,7 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -602,7 +602,7 @@ __kernel void correlator_vz_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
 
@@ -769,7 +769,7 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -933,7 +933,7 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -1035,7 +1035,7 @@ __kernel void correlator_az_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.* KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.* KAPPA * correlator / fac;
 	}
 
 
