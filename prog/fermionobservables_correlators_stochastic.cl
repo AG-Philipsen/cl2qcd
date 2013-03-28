@@ -55,6 +55,7 @@ void load_spinor_to_complex_array(spinor in, hmc_complex * out)
 }
 
 
+#if NTIME_LOCAL == NTIME_GLOBAL
 __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global const spinor * const restrict phi, __global const spinor * const restrict b)
 {
 	int local_size = get_local_size(0);
@@ -79,9 +80,6 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 					hmc_complex phi_arr[12];
 					load_spinor_to_complex_array(phi_tmp, phi_arr);
 					//loop over second coordinate
-#if NTIME_LOCAL != NTIME_GLOBAL
-#error kernel does not yet support multi-gpu
-#endif
 					for(int t2   = 0; t2 < NTIME_GLOBAL;  t2++) { // TODO needs to be worked around for Multi-GPU
 						for(coord2.x = 0; coord2.x < NSPACE; coord2.x++) {
 							for(coord2.y = 0; coord2.y < NSPACE; coord2.y++) {
@@ -123,6 +121,9 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 	//#endif
 
 }
+#else
+//#error kernel does not yet support multi-gpu
+#endif
 
 // //this is the pseudoscalar pion correlator in t-direction from pointsources
 __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi, __global const spinor * const restrict b)
@@ -149,7 +150,7 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
 
@@ -250,7 +251,7 @@ __kernel void correlator_sc_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
 
@@ -414,7 +415,7 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -577,7 +578,7 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -679,7 +680,7 @@ __kernel void correlator_vz_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
 
@@ -844,7 +845,7 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -1007,7 +1008,7 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -1109,7 +1110,7 @@ __kernel void correlator_az_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.* KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.* KAPPA * correlator / fac;
 	}
 
 
