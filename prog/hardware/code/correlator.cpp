@@ -204,7 +204,6 @@ cl_kernel hardware::code::Correlator::get_correlator_kernel(string which) const
 
 void hardware::code::Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -239,7 +238,6 @@ void hardware::code::Correlator::create_point_source_device(const hardware::buff
 
 void hardware::code::Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -267,8 +265,6 @@ void hardware::code::Correlator::create_volume_source_device(const hardware::buf
 
 void hardware::code::Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -300,8 +296,6 @@ void hardware::code::Correlator::create_timeslice_source_device(const hardware::
 
 void hardware::code::Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;

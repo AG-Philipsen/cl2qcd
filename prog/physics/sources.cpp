@@ -14,6 +14,8 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 		throw std::invalid_argument("k must be within 0..11");
 	}
 
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
 	// only execute on the buffer were the given position results.
@@ -30,6 +32,8 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 
 void physics::set_volume_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng)
 {
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
 	for(size_t i = 0; i < buffers.size(); ++i) {
@@ -44,6 +48,8 @@ void physics::set_volume_source(const physics::lattices::Spinorfield * spinorfie
 
 void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng, int t_pos)
 {
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
 	unsigned local_lattice_size = buffers[0]->get_device()->get_local_lattice_size().t;
@@ -60,6 +66,8 @@ void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinor
 
 void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng, int z)
 {
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
 	for(size_t i = 0; i < buffers.size(); ++i) {
