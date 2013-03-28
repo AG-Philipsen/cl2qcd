@@ -120,11 +120,11 @@ BOOST_AUTO_TEST_CASE(stochastic_source_3)
 	test_correlator(params, ps, sc, vx, vy, vz, ax, ay, az);
 }
 
-void check_correlator(std::string which, const std::vector<physics::lattices::Spinorfield*>& solved, const std::vector<physics::lattices::Spinorfield*>& sources, const meta::Inputparameters& params, const std::vector<hmc_float>& ref)
+void check_correlator(std::string which, const std::vector<physics::lattices::Spinorfield*>& solved, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system, const std::vector<hmc_float>& ref)
 {
 	using namespace std;
 
-	auto result = physics::algorithms::calculate_correlator(which, solved, sources, params);
+	auto result = physics::algorithms::calculate_correlator(which, solved, sources, system);
 	logger.debug() << which;
 for(auto val: result) {
 		logger.debug() << scientific << setprecision(14) << val;
@@ -157,14 +157,14 @@ void test_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref
 		log_squarenorm("Source: ", *source);
 	}
 
-	check_correlator("ps", solved, sources, params, ps_ref);
-	check_correlator("sc", solved, sources, params, sc_ref);
-	check_correlator("vx", solved, sources, params, vx_ref);
-	check_correlator("vy", solved, sources, params, vy_ref);
-	check_correlator("vz", solved, sources, params, vz_ref);
-	check_correlator("ax", solved, sources, params, ax_ref);
-	check_correlator("ay", solved, sources, params, ay_ref);
-	check_correlator("az", solved, sources, params, az_ref);
+	check_correlator("ps", solved, sources, system, ps_ref);
+	check_correlator("sc", solved, sources, system, sc_ref);
+	check_correlator("vx", solved, sources, system, vx_ref);
+	check_correlator("vy", solved, sources, system, vy_ref);
+	check_correlator("vz", solved, sources, system, vz_ref);
+	check_correlator("ax", solved, sources, system, ax_ref);
+	check_correlator("ay", solved, sources, system, ay_ref);
+	check_correlator("az", solved, sources, system, az_ref);
 
 	release_spinorfields(solved);
 	release_spinorfields(sources);

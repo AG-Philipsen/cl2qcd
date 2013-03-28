@@ -325,3 +325,17 @@ unsigned physics::lattices::Spinorfield::get_elements() const noexcept
 {
 	return hardware::code::get_spinorfieldsize(system.get_inputparameters());
 }
+
+void physics::lattices::fill_window(const physics::lattices::Spinorfield* out, const physics::lattices::Spinorfield& src, const size_t idx)
+{
+	auto src_buf = src.get_buffers()[idx];
+	spinor * const tmp = new spinor[src_buf->get_elements()];
+
+	src_buf->dump(tmp);
+
+	for(auto out_buf: out->get_buffers()) {
+		out_buf->load(tmp);
+	}
+
+	delete[] tmp;
+}

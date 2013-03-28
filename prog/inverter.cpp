@@ -141,7 +141,7 @@ void perform_measurements(hardware::System& system, physics::lattices::Gaugefiel
 
 		//get name for file to which correlators are to be stored
 		std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
-		flavour_doublet_correlators(result, sources, corr_fn, parameters);
+		flavour_doublet_correlators(result, sources, corr_fn, system);
 		release_spinorfields(result);
 		release_spinorfields(sources);
 	}

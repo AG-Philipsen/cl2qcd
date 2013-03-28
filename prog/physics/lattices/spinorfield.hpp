@@ -154,6 +154,14 @@ void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield
 void saxsbypz(const Spinorfield* out, const Scalar<hmc_complex>& alpha, const Spinorfield& x, const Scalar<hmc_complex>& beta, const Spinorfield& y, const Spinorfield& z);
 
 void log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield& x);
+
+/**
+ * Fill the given field with a window of the other field.
+ *
+ * A window means all buffers of the first field will be filled with the same content of one buffer of the second field.
+ */
+void fill_window(const Spinorfield* out, const Spinorfield& src, const size_t idx);
+
 }
 }
 

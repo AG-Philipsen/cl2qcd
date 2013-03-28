@@ -55,19 +55,22 @@ void load_spinor_to_complex_array(spinor in, hmc_complex * out)
 }
 
 
-#if NTIME_LOCAL == NTIME_GLOBAL
 __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global const spinor * const restrict phi, __global const spinor * const restrict b)
 {
-	int local_size = get_local_size(0);
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
+	const int local_size = get_local_size(0);
+	const int global_size = get_global_size(0);
+	const int id = get_global_id(0);
+	const int loc_idx = get_local_id(0);
+	const int num_groups = get_num_groups(0);
+	const int group_id = get_group_id (0);
+
+	//now, this should finally be the correct normalisation for the physical fields
+	//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
+	const hmc_float fac = 2. * KAPPA * 2.* KAPPA / (NSPACE * NSPACE * NTIME_GLOBAL);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
-		hmc_float correlator = 0.;
+		hmc_float correlator = out[id_tmp];
 		uint3 coord;
 		uint3 coord2;
 		//loop over first coordinate
@@ -80,7 +83,7 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 					hmc_complex phi_arr[12];
 					load_spinor_to_complex_array(phi_tmp, phi_arr);
 					//loop over second coordinate
-					for(int t2   = 0; t2 < NTIME_GLOBAL;  t2++) { // TODO needs to be worked around for Multi-GPU
+					for(int t2   = 0; t2 < NTIME_LOCAL;  t2++) { // TODO needs to be worked around for Multi-GPU
 						for(coord2.x = 0; coord2.x < NSPACE; coord2.x++) {
 							for(coord2.y = 0; coord2.y < NSPACE; coord2.y++) {
 								for(coord2.z = 0; coord2.z < NSPACE; coord2.z++) {
@@ -94,7 +97,7 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 									for(int a = 0; a < 12; a++) {
 										for(int b = 0; b < 12; b++) {
 											Dminus =  complexmult(phi_arr[a], complexconj(b_arr[b]));
-											correlator += complex_squarenorm(Dminus);
+											correlator += complex_squarenorm(Dminus) * fac;
 										}
 									}
 								}
@@ -104,11 +107,8 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		//now, this should finally be the correct normalisation for the physical fields
-		//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
 
-		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
-		out[id_tmp] += 2. * KAPPA * 2.* KAPPA * correlator / fac;
+		out[id_tmp] = correlator;
 	}
 
 
@@ -121,9 +121,6 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 	//#endif
 
 }
-#else
-//#error kernel does not yet support multi-gpu
-#endif
 
 // //this is the pseudoscalar pion correlator in t-direction from pointsources
 __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi, __global const spinor * const restrict b)
