@@ -30,3 +30,4 @@ target_link_libraries(algorithms
 
 add_unit_test(physics::algorithms::flavour_doublet flavour_doublet_test)
 add_unit_test(physics::algorithms::<fermion_force> fermion_force_test)
+add_unit_test(physics::algorithms::<forces> forces_test)
