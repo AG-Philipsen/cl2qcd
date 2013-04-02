@@ -6,7 +6,7 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE physics::lattice::Gaugefield
+#define BOOST_TEST_MODULE physics::lattice::flavour_doublet
 #include <boost/test/unit_test.hpp>
 
 #include "../lattices/util.hpp"

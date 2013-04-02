@@ -15,3 +15,5 @@ target_link_libraries(fermionmatrix
 	hardware
 	lattices
 )
+
+add_unit_test(physics::fermionmatrix::<explicit> explicit_test)
