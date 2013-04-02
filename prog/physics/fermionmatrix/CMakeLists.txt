@@ -17,3 +17,4 @@ target_link_libraries(fermionmatrix
 )
 
 add_unit_test(physics::fermionmatrix::<explicit> explicit_test)
+add_unit_test(physics::fermionmatrix::<fermionmatrix> fermionmatrix_test)
