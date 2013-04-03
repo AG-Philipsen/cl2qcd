@@ -24,6 +24,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 
 		Gaugefield gf(system, prng, false);
 		Gaugemomenta gm(system);
+		gm.zero();
 
 		hmc_float ref = gf.plaquette();
 		gauge_force(&gm, gf);
@@ -39,6 +40,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 		Gaugemomenta gm(system);
+		gm.zero();
 
 		gauge_force(&gm, gf);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
@@ -161,6 +163,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 23);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 24);
+		gm.zero();
 
 		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2658.5475465525888, 0.01);
@@ -234,6 +237,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 		Gaugemomenta gm(system);
+		gm.zero();
 
 		physics::algorithms::md_update_gaugemomentum_gauge(&gm, .5, gf, system);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 13180.824966859615, 0.01);
