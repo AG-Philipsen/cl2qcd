@@ -27,6 +27,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 11);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 12);
+		gm.zero();
 
 		physics::algorithms::fermion_force(&gm, sf1, sf2, gf);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 18550.897680606064, 0.01);
@@ -46,6 +47,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 13);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 14);
+		gm.zero();
 
 		physics::algorithms::fermion_force(&gm, sf1, sf2, gf);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 3561.5546616746424, 0.01);
@@ -69,6 +71,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 15);
 		convert_to_eoprec(&sf1, &sf2, src);
+		gm.zero();
 
 		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN, gf);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 6180.0548464319563, 0.01);
@@ -91,6 +94,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 16);
 		convert_to_eoprec(&sf1, &sf2, src);
+		gm.zero();
 
 		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN, gf);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1294.880037707632, 0.01);
@@ -113,6 +117,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces)
 		Gaugemomenta gm(system);
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 21);
+		gm.zero();
 
 		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 42199.514415107173, 0.01);
@@ -136,6 +141,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces_eo)
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 22);
 		convert_to_eoprec(&sf1, &sf2, src);
+		gm.zero();
 
 		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 3441.344988280136, 0.01);
@@ -156,6 +162,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces)
 		Gaugemomenta gm(system);
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 21);
+		gm.zero();
 
 		physics::algorithms::calc_detratio_forces(&gm, gf, sf1, system);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 2.8236650583738432e-12, 0.01);
@@ -179,6 +186,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces_eo)
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 22);
 		convert_to_eoprec(&sf1, &sf2, src);
+		gm.zero();
 
 		physics::algorithms::calc_detratio_forces(&gm, gf, sf1, system);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 3.2577363488458202e-12, 0.01);
