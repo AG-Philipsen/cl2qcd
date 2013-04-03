@@ -152,8 +152,8 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces)
 {
 	{
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces)
 		gm.zero();
 
 		physics::algorithms::calc_detratio_forces(&gm, gf, sf1, system);
-		BOOST_CHECK_CLOSE(squarenorm(gm), 2.8236650583738432e-12, 0.01);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 12480.139807156647, 0.01);
 	}
 }
 
@@ -173,8 +173,8 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces_eo)
 {
 	{
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
@@ -189,6 +189,6 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces_eo)
 		gm.zero();
 
 		physics::algorithms::calc_detratio_forces(&gm, gf, sf1, system);
-		BOOST_CHECK_CLOSE(squarenorm(gm), 3.2577363488458202e-12, 0.01);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 33313.511647643441, 0.01);
 	}
 }

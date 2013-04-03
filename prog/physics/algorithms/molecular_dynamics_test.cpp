@@ -293,8 +293,8 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio)
 {
 	{
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio)
 		gm.zero();
 
 		physics::algorithms::md_update_gaugemomentum_detratio(&gm, .4, gf, sf1, system);
-		BOOST_CHECK_CLOSE(squarenorm(gm), 2.8065441263959463e-12, 0.01);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 2070.2139029781247, 0.01);
 	}
 }
 
@@ -314,8 +314,8 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio_eo)
 {
 	{
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
@@ -329,8 +329,8 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio_eo)
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .4, gf, sf1, system);
-		BOOST_CHECK_CLOSE(squarenorm(gm), 561.82056232890591, 0.01);
+		physics::algorithms::md_update_gaugemomentum_detratio(&gm, .4, gf, sf1, system);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 5835.9232744740457, 0.01);
 	}
 }
 
