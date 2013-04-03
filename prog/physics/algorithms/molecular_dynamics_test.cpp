@@ -45,6 +45,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		gauge_force(&gm, gf);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
 		BOOST_CHECK_CLOSE(gf.plaquette(), 0.0060440132434446334, 0.01);
+		gauge_force(&gm, gf);
+		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
+		BOOST_CHECK_CLOSE(gf.plaquette(), -0.0076685322051177783, 0.01);
 	}
 }
 
