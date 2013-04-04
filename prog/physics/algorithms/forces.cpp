@@ -44,6 +44,7 @@ void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemoment
 		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
 		code->gauge_force_tlsym_device(gf_buf, gm_buf);
 	}
+	gm->update_halo();
 }
 
 void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system)
