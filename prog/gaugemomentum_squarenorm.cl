@@ -2,9 +2,12 @@
 __kernel void gaugemomentum_squarenorm(__global const aeStorageType * const restrict in, __global hmc_float * const restrict out, __local hmc_float * const restrict result_local)
 {
 	hmc_float sum = 0.f;
-	PARALLEL_FOR(id_local, GAUGEMOMENTASIZE_LOCAL) {
-		site_idx id_mem = get_site_idx((id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2));
-		sum += ae_squarenorm(getAe(in, id_mem));
+	PARALLEL_FOR(id_local, VOL4D_LOCAL) {
+		site_idx site = get_site_idx((id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2));
+		for(uint d = 0; d < 4; ++d) {
+			const link_idx id_mem = get_link_idx(d, get_st_idx_from_site_idx(site));
+			sum += ae_squarenorm(getAe(in, id_mem));
+		}
 	}
 
 	const size_t group_id = get_group_id(0);
