@@ -236,10 +236,10 @@ coord_full get_coord_full(const site_idx in)
  * 2|3
  * 5|4
  * 7|6
- * 9|8
- * 11|10
- * 12|13
- * 14|15
+ * 8|9
+ * 10|11
+ * 13|12
+ * 15|14
  *
  * One can see a regular pattern, which can be described by the functions
  * f_even:2*w + int(2w/4)
@@ -318,7 +318,7 @@ site_idx calc_odd_spatial_idx(coord_full in)
  *= x + y * NS + z * NS^2
  *
  * Then one can "dissect" the site_idx i according to
- * t= i/VOLSPACE/2
+ * t= i/(VOLSPACE/2)
  * z = (i-t*VOLSPACE/2)/(NS*NS/2)
  * y = (i-t*VOLSPACE/2 - z*NS*NS/2) / NS
  * x = (i-t*VOLSPACE/2 - z*NS*NS/2 - y*NS)
@@ -348,7 +348,7 @@ coord_full dissect_eo_site_idx(const site_idx idx)
 	return tmp;
 }
 
-/** given an eo site_idx (0..VOL4D/2), returns corresponding even site_idx */
+/** given an eo site_idx (0..VOL4D/2), returns corresponding even st_idx */
 st_idx get_even_st_idx(const site_idx idx)
 {
 	coord_full tmp = dissect_eo_site_idx(idx);
@@ -358,7 +358,7 @@ st_idx get_even_st_idx(const site_idx idx)
 	return res;
 }
 
-/** given an eo site_idx (0..VOL4D/2), returns corresponding odd site_idx */
+/** given an eo site_idx (0..VOL4D/2), returns corresponding odd st_idx */
 st_idx get_odd_st_idx(const site_idx idx)
 {
 	coord_full tmp = dissect_eo_site_idx(idx);
