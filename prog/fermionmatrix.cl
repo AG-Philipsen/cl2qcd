@@ -66,8 +66,8 @@ spinor dslash_local_0(__global const spinor * const restrict in, __global const 
 	// with 1 - gamma_0:
 	// | 1  0  1  0 |        | psi.e0 + psi.e2 |
 	// | 0  1  0  1 |  psi = | psi.e1 + psi.e3 |
-	// | 1  0  1  0 |        | psi.e1 + psi.e3 |
-	// | 0  1  0  1 |        | psi.e0 + psi.e2 |
+	// | 1  0  1  0 |        | psi.e0 + psi.e2 |
+	// | 0  1  0  1 |        | psi.e1 + psi.e3 |
 	///////////////////////////////////
 	// psi = 0. component of (1-gamma_0)y
 	psi = su3vec_acc(plus.e0, plus.e2);
@@ -109,8 +109,8 @@ spinor dslash_local_0(__global const spinor * const restrict in, __global const 
 	// with 1 + gamma_0:
 	// | 1  0 -1  0 |       | psi.e0 - psi.e2 |
 	// | 0  1  0 -1 | psi = | psi.e1 - psi.e3 |
-	// |-1  0  1  0 |       | psi.e1 - psi.e2 |
-	// | 0 -1  0  1 |       | psi.e0 - psi.e3 |
+	// |-1  0  1  0 |       | psi.e2 - psi.e0 |
+	// | 0 -1  0  1 |       | psi.e3 - psi.e1 |
 	///////////////////////////////////
 	// psi = 0. component of (1+gamma_0)y
 	psi = su3vec_dim(plus.e0, plus.e2);
@@ -156,10 +156,10 @@ spinor dslash_local_1(__global const spinor * const restrict in, __global const 
 	/////////////////////////////////
 	//Calculate (1 - gamma_1) y
 	//with 1 - gamma_1:
-	//| 1  0  0  i |       |       psi.e0 + i*psi.e3  |
-	//| 0  1  i  0 | psi = |       psi.e1 + i*psi.e2  |
-	//| 0  i  1  0 |       |(-i)*( psi.e1 + i*psi.e2) |
-	//| i  0  0  1 |       |(-i)*( psi.e0 + i*psi.e3) |
+	//|  1  0  0  i |       |       psi.e0 + i*psi.e3  |
+	//|  0  1  i  0 | psi = |       psi.e1 + i*psi.e2  |
+	//|  0 -i  1  0 |       |(-i)*( psi.e1 + i*psi.e2) |
+	//| -i  0  0  1 |       |(-i)*( psi.e0 + i*psi.e3) |
 	/////////////////////////////////
 	psi = su3vec_acc_i(plus.e0, plus.e3);
 	phi = su3matrix_times_su3vec(U, psi);
@@ -186,8 +186,8 @@ spinor dslash_local_1(__global const spinor * const restrict in, __global const 
 	// with 1 + gamma_1:
 	// | 1  0  0 -i |       |       psi.e0 - i*psi.e3  |
 	// | 0  1 -i  0 | psi = |       psi.e1 - i*psi.e2  |
-	// | 0  i  1  0 |       |(-i)*( psi.e1 - i*psi.e2) |
-	// | i  0  0  1 |       |(-i)*( psi.e0 - i*psi.e3) |
+	// | 0  i  1  0 |       | (i)*( psi.e1 - i*psi.e2) |
+	// | i  0  0  1 |       | (i)*( psi.e0 - i*psi.e3) |
 	///////////////////////////////////
 	psi = su3vec_dim_i(plus.e0, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
@@ -232,7 +232,7 @@ spinor dslash_local_2(__global const spinor * const restrict in, __global const 
 	// with 1 - gamma_2:
 	// | 1  0  0  1 |       |       psi.e0 + psi.e3  |
 	// | 0  1 -1  0 | psi = |       psi.e1 - psi.e2  |
-	// | 0 -1  1  0 |       |(-1)*( psi.e1 + psi.e2) |
+	// | 0 -1  1  0 |       |(-1)*( psi.e1 - psi.e2) |
 	// | 1  0  0  1 |       |     ( psi.e0 + psi.e3) |
 	///////////////////////////////////
 	psi = su3vec_acc(plus.e0, plus.e3);
@@ -305,8 +305,8 @@ spinor dslash_local_3(__global const spinor * const restrict in, __global const 
 	// with 1 - gamma_3:
 	// | 1  0  i  0 |        |       psi.e0 + i*psi.e2  |
 	// | 0  1  0 -i |  psi = |       psi.e1 - i*psi.e3  |
-	// |-i  0  1  0 |        |   i *(psi.e0 + i*psi.e2) |
-	// | 0  i  0  1 |        | (-i)*(psi.e1 - i*psi.e3) |
+	// |-i  0  1  0 |        | (-i)*(psi.e0 + i*psi.e2) |
+	// | 0  i  0  1 |        | ( i)*(psi.e1 - i*psi.e3) |
 	///////////////////////////////////
 	psi = su3vec_acc_i(plus.e0, plus.e2);
 	phi = su3matrix_times_su3vec(U, psi);
@@ -333,8 +333,8 @@ spinor dslash_local_3(__global const spinor * const restrict in, __global const 
 	// with 1 + gamma_3:
 	// | 1  0 -i  0 |       |       psi.e0 - i*psi.e2  |
 	// | 0  1  0  i | psi = |       psi.e1 + i*psi.e3  |
-	// | i  0  1  0 |       | (-i)*(psi.e0 - i*psi.e2) |
-	// | 0 -i  0  1 |       |   i *(psi.e1 + i*psi.e3) |
+	// | i  0  1  0 |       | ( i)*(psi.e0 - i*psi.e2) |
+	// | 0 -i  0  1 |       | (-i)*(psi.e1 + i*psi.e3) |
 	///////////////////////////////////
 	psi = su3vec_dim_i(plus.e0, plus.e2);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
