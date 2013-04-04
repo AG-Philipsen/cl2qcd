@@ -1,6 +1,6 @@
 #include "fermionmatrix.hpp"
 
-#include "../hardware/code/spinors.hpp"
+#include "../../hardware/code/spinors.hpp"
 
 /**
 * Implementations of fermion matrices

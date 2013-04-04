@@ -6,8 +6,8 @@
 #include "../../meta/util.hpp"
 #include <cassert>
 #include <stdexcept>
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/fermions.hpp"
+#include "../../hardware/code/spinors.hpp"
+#include "../../hardware/code/fermions.hpp"
 
 static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
 
