@@ -121,15 +121,16 @@ template<typename SCALAR> void physics::lattices::Scalar<SCALAR>::sum() const
 	// TODO make this run async
 	size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
-		std::vector<SCALAR> tmp;
-		tmp.resize(num_buffers);
+		std::vector<SCALAR> tmp(num_buffers);
 		for(size_t i = 0; i < num_buffers; ++i) {
 			buffers[i]->dump(&tmp[i]);
+			logger.trace() << "Scalar on device " << i << ": " << std::setprecision(16) << tmp[i];
 		}
 		SCALAR res = tmp[0] + tmp[1];
 		for(size_t i = 2; i < num_buffers; ++i) {
 			res += tmp[i];
 		}
+		logger.trace() << "Summed scalar: " << std::setprecision(16) << res;
 		store(res);
 	}
 }
