@@ -170,4 +170,16 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	gm.update_halo();
 	new_squarenorm = physics::lattices::squarenorm(gm);
 	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	pseudo_randomize<Gaugemomenta, ae>(&gm, 5);
+	orig_squarenorm = physics::lattices::squarenorm(gm);
+	gm.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gm);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	pseudo_randomize<Gaugemomenta, ae>(&gm, 51);
+	orig_squarenorm = physics::lattices::squarenorm(gm);
+	gm.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gm);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
 }
