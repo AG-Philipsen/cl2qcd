@@ -282,7 +282,7 @@ void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device
 
 void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data) const
 {
-	size_t const REQUIRED_BUFFER_SIZE = meta::get_vol4d(get_parameters()) * NDIM;
+	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->get_mem_lattice_size()) * NDIM;
 	if(dest->get_elements() != REQUIRED_BUFFER_SIZE) {
 		throw std::invalid_argument("Destination buffer is not of proper size");
 	}
@@ -307,7 +307,7 @@ void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::bu
 
 void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const
 {
-	size_t const REQUIRED_BUFFER_SIZE = meta::get_vol4d(get_parameters()) * NDIM;
+	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->get_mem_lattice_size()) * NDIM;
 	if(buf->get_elements() != REQUIRED_BUFFER_SIZE) {
 		throw std::invalid_argument("Source buffer is not of proper size");
 	}
