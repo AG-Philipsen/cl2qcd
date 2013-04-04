@@ -1,11 +1,13 @@
-/**
- @file staggered fermionmatrix-functions that are called from within kernels
+/** @file
+* Staggered fermionmatrix functions that are called from within kernels
+* \internal (for exemple, see fermionmatrix_m_staggered.cl)
 */
 
-/*
- * These should go into an own file...
+/**
+ * This functions returns the value of the field "in" at the site (n,t)
+ *
+ * @todo This function should go into an own file...
  */
-
 su3vec get_su3vec_from_field(__global const su3vec * const restrict in, const int n, const int t)
 {
 	int pos = get_global_pos(n, t);
@@ -14,25 +16,45 @@ su3vec get_su3vec_from_field(__global const su3vec * const restrict in, const in
 	return out;
 }
 
+/**
+ * This functions uploads the value of the field "out" at the site (n,t) with the value "in"
+ *
+ * @todo This function should go into an own file...
+ */
 void put_su3vec_to_field(const su3vec in, __global su3vec * const restrict out, const int n, const int t)
 {
 	int pos = get_global_pos(n, t);
 	out[pos] = in;
 }
 
-//"local" dslash working on a particular link (n,t) in a specific direction
+/** \e Local D_KS working on a particular link (n,t) in a specific direction. The expression of D_KS
+ *  for a specific (couple of) site(s) and a specific direction is
+ *  \f[
+     (D_{KS})_{n,m,\mu}=\frac{1}{2} \eta_\mu(n)\Bigl[U_\mu(n)\,\delta_{n+\hat\mu,m} - U^\dag_\mu(n-\hat\mu)\,\delta_{n-\hat\mu,m}\Bigr]
+ *  \f]
+ *  and, hence, this function returns the value of the field (D_KS*in) at the site (n,t) [so in the
+ *  function only values of the field "in" in the nextneighbour of (n,t) will be needed]: 
+ *  \f[
+     \bigl[(D_{KS})_\mu\cdot \text{\texttt{in}}\bigr]_n=\frac{1}{2}\eta_\mu(n) \Bigl[U_\mu(n) \cdot\text{\texttt{in}}_{n+\hat\mu} - U^\dag_\mu(n-\hat\mu)\cdot\text{\texttt{in}}_{n-\hat\mu}\Bigr]
+ *  \f]
+ *
+ * @note Again, the staggered phases are not included in this function, since they will be put into the links.
+ * 
+ * @todo Here there are some #ifdef about the chemical potential: they have been copied from the
+ *       Wilson code. Therefore they MUST be checked when a chemical potential will be introduced.
+ */
+
 //spinor dslash_local_0(__global const spinorfield * const restrict in,__global const ocl_s_gaugefield * const restrict field, const int n, const int t){
+
 su3vec dslash_local_0(__global const su3vec * const restrict in, __global const Matrixsu3StorageType * const restrict field, int n, int t)
 {
-	su3vec out_tmp, plus;
+	su3vec out_tmp, plus, chi;
 	int dir, nn;
 	Matrixsu3 U;
 	//this is used to save the BC-conditions...
 	hmc_complex bc_tmp;
 	out_tmp = set_su3vec_zero();
-	//this is used to save the staggered phase...
-	hmc_float st_phase = 1.;
-
+	
 	//go through the different directions
 	///////////////////////////////////
 	// mu = 0
@@ -55,9 +77,10 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	bc_tmp.im = TEMPORAL_IM;
 	///////////////////////////////////
 	// chi = U*plus
-	out_tmp =  su3matrix_times_su3vec(U, plus);
-	out_tmp = su3vec_times_complex(out_tmp, bc_tmp);
-
+	chi = su3matrix_times_su3vec(U, plus);
+	chi = su3vec_times_complex(out_tmp, bc_tmp);
+	out_tmp = su3vec_acc(out_tmp, chi);
+	
 	/////////////////////////////////////
 	//mu = -0
 	nn = get_lower_neighbor_temporal(t);
@@ -79,11 +102,12 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	bc_tmp.re = TEMPORAL_RE;
 	bc_tmp.im = MTEMPORAL_IM;
 	// chi = U^dagger*plus
-	out_tmp = su3matrix_dagger_times_su3vec(U, plus);
-	out_tmp = su3vec_times_complex(out_tmp, bc_tmp);
-
-	//multiply with staggered phase
-	out_tmp = su3vec_times_real(out_tmp, st_phase);
+	chi = su3matrix_dagger_times_su3vec(U, plus);
+	chi = su3vec_times_complex(out_tmp, bc_tmp);
+	out_tmp = su3vec_dim(out_tmp, chi);
+	
+	//multiply by the factor 1/2 that appears at the beginning of D_KS
+	out_tmp = su3vec_times_real(out_tmp, F_1_2); //AS: I do not know if here F_1_2 is an hmc_float
 
 	return out_tmp;
 }

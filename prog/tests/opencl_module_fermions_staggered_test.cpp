@@ -71,6 +71,7 @@ const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 	return gf.get_buffers().at(0);
 }
 
+
 void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_fermions_staggered";
@@ -116,7 +117,7 @@ void test_m_staggered(std::string inputfile)
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_staggered_code();
-	
+		
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
 	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
