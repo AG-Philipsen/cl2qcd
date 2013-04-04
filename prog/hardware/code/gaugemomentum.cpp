@@ -191,7 +191,7 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(const 
 			bool writeout = false;
 			if(writeout) {
 				//create buffer to store ae-field
-				int ae_num = meta::get_vol4d(get_parameters()) * NDIM;
+				int ae_num = in->get_elements();
 
 				ae * ae_tmp = new ae[ae_num];
 
