@@ -51,12 +51,28 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 		Gaugemomenta gm(system);
+		pseudo_randomize<Gaugemomenta, ae>(&gm, 123);
+
+		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.57107711169452713, 0.0001);
+		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
+		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.32089465123266286, 0.01);
+	}
+
+	{
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugemomenta gm(system);
 		gm.zero();
 
 		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
 		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.57107711169452713, 0.0001);
 		gauge_force(&gm, gf);
+
 		BOOST_REQUIRE_CLOSE(squarenorm(gm), 52723.299867438494, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
 		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.0060440132434446334, 0.01);
