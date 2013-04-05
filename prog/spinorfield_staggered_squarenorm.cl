@@ -1,5 +1,16 @@
 // hmc_float squarenorm, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
+
+// Description of variables of global_squarenorm_staggered kernel:
+//  - x: The staggered field (an su3vec per each site => vector of VOL4D components that are su3vec varibles)
+//  - result: Vector of hmc_float that will contain the sums of the components of the result_local vectors.
+//            In other words, each component of this vector will contain the sum of all squarenorms that have
+//            been mapped to the threads within a group. Therefore result is a vector with num_groups components.
+//  - result_local: Vector with local_size components. At the end of the local reduction, the sum of its first
+//                  components will be the sum of all its components (and will be put in result[group_id]).
+//                  Observe that some components of result_local can include the sum of squarenorms of
+//                  several fields (if SPINORFIELDSIZE>global_size).
+
 __kernel void global_squarenorm_staggered(__global const su3vec * const restrict x, __global hmc_float * const restrict result, __local hmc_float * const restrict result_local)
 {
 	int local_size = get_local_size(0);
@@ -52,6 +63,11 @@ __kernel void global_squarenorm_staggered(__global const su3vec * const restrict
 	return;
 }
 
+// Description of variables of global_squarenorm_reduction kernel:
+//  - dest: The final result, namely the sum of the squarenorms of all staggered fields.
+//  - result_tmp: This is the vector result filled by the kernel global_squarenorm_staggered.
+//  - elems: It is the number of components of the vector result_tmp, namely the variable "num_groups"
+//            of the kernel global_squarenorm_staggered.
 
 __kernel void global_squarenorm_reduction(__global hmc_float* dest, __global hmc_float* result_tmp, const uint elems)
 {
