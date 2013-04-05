@@ -7,11 +7,15 @@ import numpy as np
 import re
 from collections import namedtuple
 
-linestyles = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 'k*']
+linestyles_color = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 'k*']
+#linestyles_gray = ['ko', 'k*', 'kd', 'kh', 'k^', 'kv', 'kx', 'k+']
+linestyles_gray = ['k+', 'kx', 'k1', 'k2', 'k3', 'k4', 'kd', 'k.']
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
-def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None, legend_pos = None, offset_lines = False):
+def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None, legend_pos = None, offset_lines = False, grayscale=False):
+
+	linestyles = linestyles_gray if grayscale else linestyles_color;
 
 	filedatas = []
 
