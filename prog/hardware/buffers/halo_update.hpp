@@ -95,6 +95,7 @@ template<class BUFFER> static void extract_boundary(char* host, const BUFFER * b
 		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
 			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
 			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " << dev_offset;
 			buffer->dump_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
 		}
 	}
@@ -113,6 +114,7 @@ template<class BUFFER> static void send_halo(const BUFFER * buffer, const char* 
 		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
 			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
 			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " << dev_offset;
 			buffer->load_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
 		}
 	}
@@ -135,6 +137,14 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 		const unsigned HALO_CHUNK_ELEMS = HALO_SIZE * VOLSPACE;
 		const unsigned VOL4D_LOCAL = get_vol4d(main_device->get_local_lattice_size()) * ELEMS_PER_SITE;
 
+		logger.trace() << "GRID_SIZE: " << GRID_SIZE;
+		logger.trace() << "HALO_SIZE: " << HALO_SIZE;
+		logger.trace() << "eff. VOLSPACE: " << VOLSPACE;
+		logger.trace() << "HALO ELEMS: " << HALO_ELEMS;
+		logger.trace() << "HALO ELEMS per CHUNK: " << HALO_CHUNK_ELEMS;
+		logger.trace() << "eff. VOL4D_LOCAL: " << VOL4D_LOCAL;
+		logger.trace() << "CHUNKS_PER_LANE: " << CHUNKS_PER_LANE;
+
 		std::vector<char*> upper_boundaries;
 		upper_boundaries.reserve(num_buffers);
 		std::vector<char*> lower_boundaries;
@@ -148,8 +158,8 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 		for(size_t i = 0; i < num_buffers; ++i) {
 			const auto buffer = buffers[i];
 			logger.debug() << "Extracting data from buffer " << i;
-			extract_boundary(upper_boundaries[i], buffer, VOL4D_LOCAL - HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS);
-			extract_boundary(lower_boundaries[i], buffer, 0, HALO_CHUNK_ELEMS);
+			extract_boundary(upper_boundaries[i], buffer, VOL4D_LOCAL - HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE);
+			extract_boundary(lower_boundaries[i], buffer, 0, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE);
 		}
 
 		// copy data from host to halo (of coure getting what the neighbour stored
@@ -158,9 +168,9 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 			logger.debug() << "Sending data to buffer " << i;
 			// our lower halo is the upper bounary of our lower neighbour
 			// its storage location is wrapped around to be the last chunk of data in our buffer, that is after local data and upper halo
-			send_halo(buffer, upper_boundaries[lower_grid_neighbour(i, GRID_SIZE)], VOL4D_LOCAL + HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS);
+			send_halo(buffer, upper_boundaries[lower_grid_neighbour(i, GRID_SIZE)], VOL4D_LOCAL + HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE);
 			// our upper halo is the lower bounary of our upper neighbour, it's stored right after our local data
-			send_halo(buffer, lower_boundaries[upper_grid_neighbour(i, GRID_SIZE)], VOL4D_LOCAL, HALO_CHUNK_ELEMS);
+			send_halo(buffer, lower_boundaries[upper_grid_neighbour(i, GRID_SIZE)], VOL4D_LOCAL, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE);
 		}
 
 		// clean up host
