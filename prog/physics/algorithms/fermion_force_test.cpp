@@ -73,6 +73,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
+		BOOST_REQUIRE_SMALL(squarenorm(gm), 0.001);
 		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN, gf);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 6180.0548464319563, 0.01);
 		physics::algorithms::fermion_force(&gm, sf1, sf2, ODD, gf);
