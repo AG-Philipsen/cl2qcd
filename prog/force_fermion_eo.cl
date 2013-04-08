@@ -9,9 +9,12 @@
 //The difference to the non-eo kernel is that one has to calculate the eo position of the "plus" spinor out of the neighbour coordinates on each occasion. This is done just like in the dslash_eo kernel!
 __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
 {
-	PARALLEL_FOR(id_local, EOPREC_SPINORFIELDSIZE_LOCAL) {
+	// must include HALO, as we are updating neighbouring sites
+	// -> not all local sites will fully updated if we don't calculate on halo indices, too
+	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
 		//caculate (pos,time) out of id_local depending on evenodd
-		st_index pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
+		//st_index pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
+		st_index pos = (evenodd == ODD) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
 
 		Matrixsu3 U;
 		Matrix3x3 v1, v2, tmp;
