@@ -42,10 +42,10 @@ __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict
 				plus = get_spinor_from_field(X, n, nn);
 				U = get_matrixsu3(field, n, t, dir);
 				//if chemical potential is activated, U has to be multiplied by appropiate factor
-#ifdef _  CP_REAL_
+#ifdef _CP_REAL_
 				U = multiply_matrixsu3_by_real (U, EXPCPR);
 #endif
-#ifdef _  CP_IMAG_
+#ifdef _CP_IMAG_
 				hmc_complex cpi_tmp = {COSCPI, SINCPI};
 				U = multiply_matrixsu3_by_complex (U, cpi_tmp);
 #endif
