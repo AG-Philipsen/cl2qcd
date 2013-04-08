@@ -84,6 +84,9 @@ __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict
 				//  (exp(iq)U)^+ = exp(-iq)U^+
 				//as it should be
 				//in the real case, one has to take exp(q) -> exp(-q)
+#if defined(_CP_REAL_) || defined(_CP_IMAG_)
+				U = get_matrixsu3(field, n, t, dir);
+#endif
 #ifdef _CP_REAL_
 				U = multiply_matrixsu3_by_real (U, MEXPCPR);
 #endif
