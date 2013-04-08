@@ -13,7 +13,7 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 	global_size = 1;
 #endif
 	PARALLEL_FOR(id_local, VOL4D_LOCAL) {
-		site_idx site = get_site_idx(id_local > (VOL4D_LOCAL / 2) ? get_even_st_idx_local(id_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(id_local));
+		site_idx site = get_site_idx(id_local >= (VOL4D_LOCAL / 2) ? get_even_st_idx_local(id_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(id_local));
 		for(uint d = 0; d < 4; ++d) {
 			const link_idx id_mem = get_link_idx(d, get_st_idx_from_site_idx(site));
 			//CP: THERE ARE 8 ELEMENTS IN AE
