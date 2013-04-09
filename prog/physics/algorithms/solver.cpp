@@ -52,23 +52,23 @@ static std::string create_solver_stuck_message(int iterations)
 }
 
 static std::string create_log_prefix_solver(std::string name, int number) noexcept;
-
 static std::string create_log_prefix_cg(int number) noexcept;
+static std::string create_log_prefix_bicgstab(int number) noexcept;
 
 int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec)
 {
 	auto params = system.get_inputparameters();
 
-	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (params.get_solver() == meta::Inputparameters::bicgstab_save) {
 		return bicgstab_save(x, A, gf, b, system, prec);
-	} else { /*if (get_parameters().get_solver() == meta::Inputparameters::bicgstab)*/
-		// NOTE: I commented out the if, since one runs into trouble if one uses CG in the HMC.
-		// Then, no bicgstab type is chosen, however, one still uses it "hardcoded".
-		// Then one gets a fatal, which is not really meaningful. In this way, it is like in the eo case.
+	} else {
 		return bicgstab_fast(x, A, gf, b, system, prec);
 	}
 }
+
+/**
+ * @todo add comment of differences between save and fast bicgstab version
+ */
 
 static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
 {
@@ -193,39 +193,55 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 	const Spinorfield s(system);
 	const Spinorfield t(system);
 
-	int iter;
+	int iter=0;
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "b: ", b);
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
 	for(iter = 0; iter < params.get_cgmax(); iter++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//initial r_n, saved in p
 			f(&rn, gf, *x);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 			saxpy(&p, {1.0, 0}, rn, b);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
 			//rhat = p
 			copyData(&rhat, p);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rhat: ", rhat);
 			//r_n = p
 			copyData(&rn, p);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 			//rho = (rhat, rn)
 			rho = scalar_product(rhat, rn);
 		}
 		//resid = (rn,rn)
 		resid = squarenorm(rn);
+		logger.debug() << create_log_prefix_bicgstab(iter) << "resid: " << resid;
+
 		//test if resid is NAN
 		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in bicgstab!";
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "NAN occured!";
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
 		if(resid < prec) {
-			return iter;
+		  log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
+		  return iter;
 		}
 		//v = A*p
 		f(&v, gf, p);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
+
 		//tmp1 = (rhat, v)
 		hmc_complex tmp1 = scalar_product(rhat, v);
 		//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
 		hmc_complex alpha = complexdivide(rho, tmp1);
+
 		//s = - alpha * v - r_n
 		saxpy(&s, alpha, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
+
 		//t = A s
 		f(&t, gf, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
+
 		//tmp1 = (t, s)
 		tmp1 = scalar_product(t, s);
 		//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -233,19 +249,26 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 		hmc_complex tmp2 = scalar_product(t, t);
 		//omega = tmp1/tmp2 = (t,s)/(t,t)
 		hmc_complex omega = complexdivide(tmp1, tmp2);
+
 		//inout = alpha*p + omega * s + inout
 		saxsbypz(x, alpha, p, omega, s, *x);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "x: ", *x);
+
 		//r_n = - omega*t - s
 		saxpy(&rn, omega, t, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
+
 		//rho_next = (rhat, rn)
 		hmc_complex rho_next = scalar_product(rhat, rn);
+
 		//check if algorithm is stuck
 		//if rho is too small the algorithm will get stuck and will never converge!!
 		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
-			//print the last residuum
-			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  //print the last residuum
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "solver stuck at resid:" << resid;
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
+
 		//tmp1 = rho_next/rho = (rhat, rn)/..
 		tmp1 = complexdivide(rho_next, rho);
 		//tmp2 = alpha/omega = ...
@@ -256,11 +279,16 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 		tmp1 = complexmult(beta, omega);
 		//tmp2 = -tmp1
 		tmp2 = complexsubtract( {0., 0.}, tmp1);
+
 		//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
 		saxsbypz(&p, beta, p, tmp2, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
+
 		//rho_next = rho
 		rho = rho_next;
 	}
+
+	logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -326,10 +354,6 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 		rho_next = scalar_product(rn, rn);
 		hmc_float resid = rho_next.re;
-		//delete
-		//this is the orig. call
-		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 		logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
 		//test if resid is NAN
@@ -837,4 +861,9 @@ static std::string create_log_prefix_solver(std::string name, int number) noexce
 static std::string create_log_prefix_cg(int number) noexcept
 {
   return create_log_prefix_solver("CG", number);
+}
+
+static std::string create_log_prefix_bicgstab(int number) noexcept
+{
+  return create_log_prefix_solver("BICGSTAB", number);
 }
