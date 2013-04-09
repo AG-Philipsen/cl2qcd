@@ -19,7 +19,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 	//CP: These are the BCs in spatial and temporal direction
 	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
 	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
-	//BC: on the corners in each direction: exp(i theta) -> on each site
+	//BC: on the corners in each direction: exp(i theta*PI) -> on each site
 	//    exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
 	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
 	options << " -D MSPATIAL_RE=" << -cos(tmp_spatial);
