@@ -272,24 +272,33 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 
 	auto params = system.get_inputparameters();
 
+	/// @todo start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+
 	const Spinorfield rn(system);
 	const Spinorfield p(system);
 	const Spinorfield v(system);
 
 	hmc_complex rho_next;
+	int iter = 0;
+
+	log_squarenorm(create_log_prefix_cg(iter) + "b: ", b);
+	log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
 
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-	int iter;
 	for(iter = 0; iter < params.get_cgmax(); iter ++) {
 		hmc_complex omega;
 		if(iter % params.get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(&rn, gf, *x);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 			//rn = source - A*inout
 			saxpy(&rn, {1., 0.}, rn, b);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 			//p = rn
 			copyData(&p, rn);
+			log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 			//omega = (rn,rn)
 			omega = scalar_product(rn, rn);
 		} else {
@@ -298,6 +307,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		}
 		//v = A pn
 		f(&v, gf, p);
+		log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
+
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		hmc_complex rho = scalar_product(p, v);
 		hmc_complex alpha = complexdivide(omega, rho);
@@ -305,25 +316,62 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		saxpy(x, tmp1, p, *x);
+		log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
+
 		//rn+1 = rn - alpha*v -> rhat
 		saxpy(&rn, alpha, v, rn);
+		log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 
 		//calc residuum
 		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 		rho_next = scalar_product(rn, rn);
 		hmc_float resid = rho_next.re;
+		//delete
 		//this is the orig. call
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		logger.debug() << "resid: " << resid;
+		logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
 		//test if resid is NAN
+
 		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in cg!";
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
-		if(resid < prec)
-			return iter;
+		if(resid < prec){
+		  // report on performance
+		  if(logger.beInfo()) {
+		    // we are always synchroneous here, as we had to recieve the residium from the device
+		    const uint64_t duration = timer.getTime();
+		    
+		    // calculate flops
+		    /**
+		     * @todo this is not implemented since for non-eo this should not be of interest
+		     */
+		    /*
+		    const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+		    const cl_ulong mf_flops = f.get_flops();
+		    logger.trace() << "mf_flops: " << mf_flops;
+		    
+		    cl_ulong total_flops = 1000;//mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
+		    //+ 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
+			//+ 3 * get_flops<Spinorfield_eo, saxpy>(system);
+		    total_flops *= iter;
+		    logger.trace() << "total_flops: " << total_flops;
+		    total_flops += 1000;//refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
+		    logger.trace() << "total_flops: " << total_flops;
+		    // report performance
+		    logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+		    */
+		    // report performance
+		    logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms. Performed " << iter << " iterations";
+
+		  }
+		  
+		  //report on solution
+		  log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
+		  return iter;
+		}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 		hmc_complex beta = complexdivide(rho_next, omega);
@@ -331,6 +379,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		//pn+1 = rn+1 + beta*pn
 		hmc_complex tmp2 = complexsubtract( {0., 0.}, beta);
 		saxpy(&p, tmp2, p, rn);
+		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
