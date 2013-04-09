@@ -183,7 +183,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 			//trueresid = (aux, aux)
 			hmc_float trueresid = squarenorm(aux);
 			if(trueresid < prec){
-			  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged! true resid:\t" << trueresid;
+			  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged in " << iter << " iterations! true resid:\t" << trueresid;
 
 			  // report on performance
 			  if(logger.beInfo()) {
@@ -263,6 +263,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
 		if(resid < prec) {
+		  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
 		  log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
 
 		  // report on performance
@@ -420,6 +421,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		}
 
 		if(resid < prec){
+		  logger.debug() << create_log_prefix_cg(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
+
 		  // report on performance
 		  if(logger.beInfo()) {
 		    // we are always synchroneous here, as we had to recieve the residium from the device
@@ -582,32 +585,32 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 
 			hmc_float trueresid = squarenorm(aux);
 			if(trueresid < prec) {
-			  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged! true resid:\t" << trueresid;
+			  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged in " << iter << " iterations! true resid:\t" << trueresid;
 
-				// report on performance
-				if(logger.beInfo()) {
-					// we are always synchroneous here, as we had to recieve the residium from the device
-					const uint64_t duration = timer.getTime();
-
-					// calculate flops
-					const unsigned refreshs = iter / params.get_iter_refresh() + 1;
-					const size_t mf_flops = f.get_flops();
-
-					cl_ulong total_flops = 4 * get_flops<Spinorfield_eo, scalar_product>(system) + 4 * get_flops<hmc_complex, complexdivide>()
-					                       + 3 * get_flops<hmc_complex, complexmult>() + 2 * get_flops<Spinorfield_eo, saxsbypz>(system)
-					                       + 2 * mf_flops + 2 * get_flops<Spinorfield_eo, saxpy>(system)
-					                       + get_flops<Spinorfield_eo, squarenorm>(system);
-					total_flops *= iter;
-
-					total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system));
-					total_flops += retests * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, squarenorm>(system));
-
-					// report performanc
-					logger.info() << create_log_prefix_bicgstab(iter) << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
-				}
-
-				log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
-				return iter;
+			  // report on performance
+			  if(logger.beInfo()) {
+			    // we are always synchroneous here, as we had to recieve the residium from the device
+			    const uint64_t duration = timer.getTime();
+			    
+			    // calculate flops
+			    const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+			    const size_t mf_flops = f.get_flops();
+			    
+			    cl_ulong total_flops = 4 * get_flops<Spinorfield_eo, scalar_product>(system) + 4 * get_flops<hmc_complex, complexdivide>()
+			      + 3 * get_flops<hmc_complex, complexmult>() + 2 * get_flops<Spinorfield_eo, saxsbypz>(system)
+			      + 2 * mf_flops + 2 * get_flops<Spinorfield_eo, saxpy>(system)
+			      + get_flops<Spinorfield_eo, squarenorm>(system);
+			    total_flops *= iter;
+			    
+			    total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system));
+			    total_flops += retests * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, squarenorm>(system));
+			    
+			    // report performanc
+			    logger.info() << create_log_prefix_bicgstab(iter) << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+			  }
+			  
+			  log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
+			  return iter;
 			}
 		}
 	}
@@ -683,6 +686,8 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 		}
 
 		if(resid < prec) {
+		  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
+
 			// report on performance
 			if(logger.beInfo()) {
 				// we are always synchroneous here, as we had to recieve the residium from the device
@@ -893,6 +898,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 				//  // make sure everything using our event is completed
 				//  resid_event.wait();
 				//}
+			  logger.debug() << create_log_prefix_cg(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
+
 				// report on performance
 				if(logger.beInfo()) {
 					// we are always synchroneous here, as we had to recieve the residium from the device

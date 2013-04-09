@@ -79,7 +79,7 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
 	FERMIONMATRIX qplus(kappa, mubar, system);
 	auto params = system.get_inputparameters();
 
-	log_squarenorm("Spinorfield before update", orig);
+	log_squarenorm("Spinorfield before update: ", orig);
 
 	qplus(&tmp, gf, orig);
 
@@ -100,13 +100,8 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
 	  out->zero();
 	  out->gamma5();
 	  
-	  log_squarenorm("\tinv. field before inversion.", *out);
-	  log_squarenorm("\tsource before inversion.", tmp);
-
 	  FERMIONMATRIX qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
 	  const int iterations = physics::algorithms::solvers::bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
-	  logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-	  log_squarenorm("\tinv. field after inversion ", *out);
 	} //try
 	catch (physics::algorithms::solvers::SolverException& e ) {
 	  logger.fatal() << e.what();
@@ -119,13 +114,10 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
 	  tmp2.zero();
 	  tmp2.gamma5();
 
-	  log_squarenorm("\tinv. field before inversion ", tmp2);
 	  FERMIONMATRIX_HERM fm_herm(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
 	  const int iterations_cg = physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, tmp, system, params.get_solver_prec());
 	  FERMIONMATRIX_CONJ fm_conj(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
 	  fm_conj(out, gf, tmp2);
-	  logger.debug() << "\t\t\tsolver solved in " << iterations_cg << " iterations!";
-	  log_squarenorm("\tinv. field after inversion ", *out);
 	}
 }
 
