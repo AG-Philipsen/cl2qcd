@@ -51,6 +51,10 @@ static std::string create_solver_stuck_message(int iterations)
 	return tmp.str();
 }
 
+static std::string create_log_prefix_solver(std::string name, int number) noexcept;
+
+static std::string create_log_prefix_cg(int number) noexcept;
+
 int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec)
 {
 	auto params = system.get_inputparameters();
@@ -611,11 +615,10 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	// TODO start timer synchronized with device(s)
-	klepsydra::Monotonic timer;
-
 	auto params = system.get_inputparameters();
 
+	/// @todo start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
 	/// @todo make configurable from outside
 	const int RESID_CHECK_FREQUENCY = params.get_cg_iteration_block_size();
 	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
@@ -639,23 +642,24 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 	const Scalar<hmc_complex> minus_one(system);
 	minus_one.store(hmc_complex_minusone);
 
-	log_squarenorm("CG: b: ", b);
-	log_squarenorm("CG: x: ", *x);
+	int iter = 0;
+	log_squarenorm(create_log_prefix_cg(iter) + "b: ", b);
+	log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
 
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-	int iter;
+
 	for(iter = 0; iter < params.get_cgmax(); iter ++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(&rn, gf, *x);
-			log_squarenorm("CG: rn: ", rn);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 			//rn = source - A*inout
 			saxpy(&rn, one, rn, b);
-			log_squarenorm("CG: rn: ", rn);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 			//p = rn
 			copyData(&p, rn);
-			log_squarenorm("CG: p: ", p);
+			log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 			//omega = (rn,rn)
 			scalar_product(&omega, rn, rn);
 		} else {
@@ -664,7 +668,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		}
 		//v = A pn
 		f(&v, gf, p);
-		log_squarenorm("CG: v: ", v);
+		log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
+
 
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		scalar_product(&rho, p, v);
@@ -673,7 +678,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		saxpy(x, tmp1, p, *x);
-		log_squarenorm("CG: x: ", *x);
+		log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
 		//switch between original version and kernel merged one
 		if(params.get_use_merge_kernels_spinor()) {
 			//merge two calls:
@@ -686,7 +691,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		} else {
 			//rn+1 = rn - alpha*v -> rhat
 			saxpy(&rn, alpha, v, rn);
-			log_squarenorm("CG: rn: ", rn);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 
 			//calc residuum
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
@@ -711,7 +716,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			//  //get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 			//}
 
-			logger.debug() << "resid: " << resid;
+			logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
 			//test if resid is NAN
 			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in cg_eo!";
@@ -754,7 +759,30 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		//pn+1 = rn+1 + beta*pn
 		multiply(&tmp2, minus_one, beta);
 		saxpy(&p, tmp2, p, rn);
-		log_squarenorm("CG: p: ", p);
+		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 	}
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+}
+
+static std::string create_log_prefix_solver(std::string name, int number) noexcept
+{
+  using namespace std;
+  string separator_big = "\t";
+  string separator_small = " ";
+  string label = "SOLVER";
+
+  stringstream strnumber;
+  strnumber.fill('0');
+  /// @todo this should be length(cgmax)
+  strnumber.width(6);
+  strnumber << right << number;
+  stringstream outfilename;
+  outfilename << separator_big << label << separator_small << "[" << name << "]" << separator_small << "[" << strnumber.str() << "]:" << separator_big;
+  string outputfile = outfilename.str();
+  return outputfile;
+}
+
+static std::string create_log_prefix_cg(int number) noexcept
+{
+  return create_log_prefix_solver("CG", number);
 }
