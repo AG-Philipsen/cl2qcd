@@ -159,6 +159,12 @@ BOOST_AUTO_TEST_CASE( M_STAGGERED_1)
 {
 	test_m_staggered("/m_staggered_input_1");
 }
+
+BOOST_AUTO_TEST_CASE( M_STAGGERED_2)
+{
+	test_m_staggered("/m_staggered_input_2");
+}
+
 /**
  * to be added...
  */
