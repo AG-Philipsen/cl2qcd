@@ -364,12 +364,13 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 	const Spinorfield v(system);
 
 	hmc_complex rho_next;
+	hmc_float resid;
 	int iter = 0;
 
 	log_squarenorm(create_log_prefix_cg(iter) + "b: ", b);
 	log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
 
-	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	// NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(iter = 0; iter < params.get_cgmax(); iter ++) {
 		hmc_complex omega;
 		if(iter % params.get_iter_refresh() == 0) {
@@ -408,7 +409,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		//calc residuum
 		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 		rho_next = scalar_product(rn, rn);
-		hmc_float resid = rho_next.re;
+		resid = rho_next.re;
 
 		logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
 
@@ -445,6 +446,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		saxpy(&p, tmp2, p, rn);
 		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 	}
+
+	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -452,14 +455,10 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_
 {
 	auto params = system.get_inputparameters();
 
-	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (params.get_solver() == meta::Inputparameters::bicgstab_save) {
-		return bicgstab_save(x, A, gf, b, system, prec);
-	} else { /*if (get_parameters().get_solver() == meta::Inputparameters::bicgstab)*/
-		// NOTE: I commented out the if, since one runs into trouble if one uses CG in the HMC.
-		// Then, no bicgstab type is chosen, however, one still uses it "hardcoded".
-		// Then one gets a fatal, which is not really meaningful. In this way, it is like in the eo case.
-		return bicgstab_fast(x, A, gf, b, system, prec);
+	  return bicgstab_save(x, A, gf, b, system, prec);
+	} else { 
+	  return bicgstab_fast(x, A, gf, b, system, prec);
 	}
 }
 
@@ -482,9 +481,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 	const Spinorfield_eo rhat(system);
 	const Spinorfield_eo aux(system);
 
-	//CP: these have to be on the host
 	unsigned retests = 0;
-
 	int cgmax = params.get_cgmax();
 
 	const Scalar<hmc_complex> alpha(system);
@@ -499,30 +496,40 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 	const Scalar<hmc_complex> minus_one(system);
 	minus_one.store(hmc_complex_minusone);
 	hmc_float resid = 1.;
+	int iter =  0;
 
-	int iter;
+	// report source and initial solution
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "b (initial): ", b);
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
+
+	// comments correspond to the bicgstab_fast version
 	for(iter = 0; iter < cgmax; iter++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			v.zero();
 			p.zero();
 
 			f(&rn, gf, *x);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 			saxpy(&rn, one, rn, b);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 
 			copyData(&rhat, rn);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rhat: ", rhat);
 
 			copyData(&alpha, one);
 			copyData(&omega, one);
 			copyData(&rho, one);
 		}
 		scalar_product(&rho_next, rhat, rn);
+
 		//check if algorithm is stuck
 		const hmc_complex test = rho_next.get();
 		if(std::abs(test.re) < 1e-25 && std::abs(test.im) < 1e-25 ) {
-			//print the last residuum
-			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  //print the last residuum
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver stuck at resid:\t" << resid;
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
+
 		divide(&tmp1, rho_next, rho);
 		copyData(&rho, rho_next);
 		divide(&tmp2, alpha, omega);
@@ -531,15 +538,19 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 		multiply(&tmp1, beta, omega);
 		multiply(&tmp2, minus_one, tmp1);
 		saxsbypz(&p, beta, p, tmp2, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
 
 		f(&v, gf, p);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
 
 		scalar_product(&tmp1, rhat, v);
 		divide(&alpha, rho, tmp1);
 
 		saxpy(&s, alpha, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
 
 		f(&t, gf, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
 
 		scalar_product(&tmp1, t, s);
 		//!!CP: can this also be global_squarenorm??
@@ -547,25 +558,32 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 		divide(&omega, tmp1, tmp2);
 
 		saxpy(&rn, omega, t, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 
 		saxsbypz(x, alpha, p, omega, s, *x);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "x: ", *x);
 
 		resid = squarenorm(rn);
+		logger.debug() << create_log_prefix_bicgstab(iter) << "resid: " << resid;
 
-		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
 		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in bicgstab_eo!";
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "NAN occured in bicgstab_eo!";
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
+
 		if(resid < prec) {
 			++retests;
 
 			f(&aux, gf, *x);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "aux: ", aux);
 			saxpy(&aux, one, aux, b);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "aux: ", aux);
 
 			hmc_float trueresid = squarenorm(aux);
 			if(trueresid < prec) {
+			  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged! true resid:\t" << trueresid;
+
 				// report on performance
 				if(logger.beInfo()) {
 					// we are always synchroneous here, as we had to recieve the residium from the device
@@ -585,14 +603,16 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 					total_flops += retests * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, squarenorm>(system));
 
 					// report performanc
-					logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+					logger.info() << create_log_prefix_bicgstab(iter) << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
 				}
 
-				// we are done here
+				log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
 				return iter;
 			}
 		}
 	}
+
+	logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -626,28 +646,42 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 	const Scalar<hmc_complex> minus_one(system);
 	minus_one.store(hmc_complex_minusone);
 
-	int iter;
+	hmc_float resid;
+	int iter = 0;
+
+	// report source and initial solution
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "b (initial): ", b);
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
+
 	for(iter = 0; iter < params.get_cgmax(); iter++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//initial r_n, saved in p
 			f(&rn, gf, *x);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 			saxpy(&p, one, rn, b);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
+
 			//rhat = p
 			copyData(&rhat, p);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rhat: ", rhat);
+
 			//r_n = p
 			copyData(&rn, p);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
+
 			//rho = (rhat, rn)
 			scalar_product(&rho, rhat, rn);
 		}
 		//resid = (rn,rn)
-		hmc_float resid = squarenorm(rn);
+		resid = squarenorm(rn);
+		logger.debug() << create_log_prefix_bicgstab(iter) << "resid: " << resid;
 
-		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
 		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in bicgstab_eo!";
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "\tNAN occured!";
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
+
 		if(resid < prec) {
 			// report on performance
 			if(logger.beInfo()) {
@@ -667,22 +701,28 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
 
 				// report performanc
-				logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+				logger.info() << create_log_prefix_bicgstab(iter) << "Solver completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
 			}
 
-			// we are done here
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
 			return iter;
 		}
 		//v = A*p
 		f(&v, gf, p);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
+
 		//tmp1 = (rhat, v)
 		scalar_product(&tmp1, rhat, v);
 		//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
 		divide(&alpha, rho, tmp1);
 		//s = - alpha * v - r_n
 		saxpy(&s, alpha, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
+
 		//t = A s
 		f(&t, gf, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
+
 		//tmp1 = (t, s)
 		scalar_product(&tmp1, t, s);
 		//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -690,18 +730,23 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 		scalar_product(&tmp2, t, t);
 		//omega = tmp1/tmp2 = (t,s)/(t,t)
 		divide(&omega, tmp1, tmp2);
+
 		//inout = alpha*p + omega * s + inout
 		saxsbypz(x, alpha, p, omega, s, *x);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "x: ", *x);
+
 		//r_n = - omega*t - s
 		saxpy(&rn, omega, t, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
+
 		//rho_next = (rhat, rn)
 		scalar_product(&rho_next, rhat, rn);
 		const hmc_complex test = rho_next.get();
 		//check if algorithm is stuck
 		if(std::abs(test.re) < 1e-25 && std::abs(test.im) < 1e-25 ) {
-			//print the last residuum
-			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  //print the last residuum
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver stuck at resid:\t" << resid;
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
 
 		//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -714,11 +759,16 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 		multiply(&tmp1, beta, omega);
 		//tmp2 = -tmp1
 		multiply(&tmp2, minus_one, tmp1);
+
 		//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
 		saxsbypz(&p, beta, p, tmp2, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
+
 		//rho_next = rho
 		copyData(&rho, rho_next);
 	}
+
+	logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -755,6 +805,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 	const Scalar<hmc_complex> minus_one(system);
 	minus_one.store(hmc_complex_minusone);
 
+	hmc_float resid;
 	int iter = 0;
 
 	// report source and initial solution
@@ -813,7 +864,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			scalar_product(&rho_next, rn, rn);
 		}
 		if(iter % RESID_CHECK_FREQUENCY == 0) {
-			hmc_float resid = rho_next.get().re;
+			resid = rho_next.get().re;
 			//if(USE_ASYNC_COPY) {
 			//  if(iter) {
 			//    resid_event.wait();
@@ -877,6 +928,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		saxpy(&p, tmp2, p, rn);
 		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 	}
+
+	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
