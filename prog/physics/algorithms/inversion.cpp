@@ -74,22 +74,14 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			copyData(&tmp, source);
 			tmp.gamma5();
 			QplusQminus f_neo(params.get_kappa(), meta::get_mubar(params), system);
-			print_debug_inv_field(result, "\tinv. field before inversion ");
-			print_debug_inv_field(source, "\tsource before inversion ");
 			converged = cg(result, f_neo, gf, tmp, system, params.get_solver_prec());
-			print_debug_inv_field(result, "\tinv. field after inversion ");
-			print_debug_inv_field(source, "\tsource after inversion ");
 			copyData(&tmp, result);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
 			Qminus qminus(params.get_kappa(), meta::get_mubar(params), system);
 			qminus(result, gf, tmp);
 		} else {
 			M f_neo(params.get_kappa(), meta::get_mubar(params), system);
-			print_debug_inv_field(result, "\tinv. field before inversion ");
-			print_debug_inv_field(source, "\tsource before inversion ");
 			converged = bicgstab(result, f_neo, gf, *source, system, params.get_solver_prec());
-			print_debug_inv_field(result, "\tinv. field after inversion ");
-			print_debug_inv_field(source, "\tsource after inversion ");
 		}
 	} else {
 		/**
@@ -117,6 +109,7 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 */
 		convert_to_eoprec(&source_odd, &source_even, *source);
 
+		///@todo: work over these debug outputs once the above issue is settled
 		print_debug_inv_field(source, "\tsource before inversion ");
 		print_debug_inv_field(&source_even, "\teven source before inversion ");
 		print_debug_inv_field(&source_odd, "\todd source before inversion ");
@@ -146,11 +139,7 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			source_even.gamma5();
 			QplusQminus_eo f_eo(params.get_kappa(), meta::get_mubar(params), system);
-			print_debug_inv_field(&result_eo, "\tinv field before inversion ");
-			print_debug_inv_field(&source_even, "\tsource before inversion ");
 			converged = cg(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec());
-			print_debug_inv_field(&result_eo, "\tinv field after inversion ");
-			print_debug_inv_field(&source_even, "\tsource after inversion ");
 			//now, calc Qminus result_buf_eo to obtain x = A^⁻1 b
 			//therefore, use source as an intermediate buffer
 			Qminus_eo qminus(params.get_kappa(), meta::get_mubar(params), system);
@@ -159,11 +148,7 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			copyData(&result_eo, source_even);
 		} else {
 			Aee f_eo(params.get_kappa(), meta::get_mubar(params), system);
-			print_debug_inv_field(&result_eo, "\tinv field before inversion ");
-			print_debug_inv_field(&source_even, "\tsource before inversion ");
 			converged = bicgstab(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec());
-			print_debug_inv_field(&result_eo, "\tinv field after inversion ");
-			print_debug_inv_field(&source_even, "\tsource after inversion ");
 		}
 
 		//odd solution
