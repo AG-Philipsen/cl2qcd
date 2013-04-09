@@ -8,14 +8,15 @@ import re
 from collections import namedtuple
 
 linestyles_color = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 'k*']
-#linestyles_gray = ['ko', 'k*', 'kd', 'kh', 'k^', 'kv', 'kx', 'k+']
-linestyles_gray = ['k+', 'kx', 'k1', 'k2', 'k3', 'k4', 'kd', 'k.']
+linestyles_gray = ['kd', 'kh', 'ko', 'k*', 'k^', 'kv', 'kx', 'k+']
+#linestyles_gray = ['k+', 'kx', 'k1', 'k2', 'k3', 'k4', 'kd', 'k.']
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
 def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None, legend_pos = None, offset_lines = False, grayscale=False):
 
 	linestyles = linestyles_gray if grayscale else linestyles_color;
+	markersize = 10 if grayscale else 15
 
 	filedatas = []
 
@@ -84,18 +85,18 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 	for data in filedatas:
 		xpos = [pos + offset for pos in data.xpos]
 		if metric == 'gflops':
-			lines.append(ax1.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label)
 			linestyle += 1
 		elif metric == 'gbytes':
-			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label)
 			linestyle += 1
 		else:
-			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label + ' Bandwidth')
 			linestyle += 1
-			lines.append(ax2.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
+			lines.append(ax2.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label + ' Gflops')
 			linestyle += 1
 		offset += offset_per_line
