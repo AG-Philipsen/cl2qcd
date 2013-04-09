@@ -72,12 +72,16 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield 
 
 static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
 {
-	// TODO this function often contains -1 in the comment but 1 in the code...
+	// @todo this function often contains -1 in the comment but 1 in the code...
 	using physics::lattices::Spinorfield;
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
 	auto params = system.get_inputparameters();
+
+	/// @todo start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+
 	hmc_float resid;
 	hmc_complex alpha, omega, rho;
 
@@ -89,7 +93,10 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 	const Spinorfield t(system);
 	const Spinorfield aux(system);
 
-	int iter;
+	int iter=0;
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "b: ", b);
+	log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
+
 	for(iter = 0; iter < params.get_cgmax(); iter++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			v.zero();
@@ -97,9 +104,14 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 
 			//initial r_n
 			f(&rn, gf, *x);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 			saxpy(&rn, {1., 0}, rn, b);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
+
 			//rhat = r_n
 			copyData(&rhat, rn);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "rhat: ", rhat);
+			
 			//set some constants to 1
 			alpha = {1., 0.};
 			omega = {1., 0.};
@@ -111,10 +123,11 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 		//check if algorithm is stuck
 		//if rho is too small the algorithm will get stuck and will never converge!!
 		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
-			//print the last residuum
-			logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  //print the last residuum
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "solver stuck at resid:\t" << resid;
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
+
 		//tmp1 = rho_next/rho = (rhat, rn)/..
 		hmc_complex tmp1 = complexdivide(rho_next, rho);
 		//rho_next = rho
@@ -129,17 +142,24 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 		tmp2 = complexsubtract( {0., 0.}, tmp1);
 		//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
 		saxsbypz(&p, beta, p, tmp2, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
 
 		//v = A*p
 		f(&v, gf, p);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
+
 		//tmp1 = (rhat, v)
 		tmp1 = scalar_product(rhat, v);
 		//alpha = rho/tmp1 = (..)/(rhat, v)
 		alpha = complexdivide(rho, tmp1);
 		//s = - alpha * v - r_n
 		saxpy(&s, alpha, v, rn);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
+
 		//t = A s
 		f(&t, gf, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
+
 		//tmp1 = (t, s)
 		tmp1 = scalar_product(t, s);
 		//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -147,32 +167,59 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 		tmp2 = scalar_product(t, t);
 		//omega = tmp1/tmp2 = (t,s)/(t,t)
 		omega = complexdivide(tmp1, tmp2);
+
 		//r_n = - omega*t - s
 		saxpy(&rn, omega, t, s);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
+
 		//inout = alpha*p + omega * s + inout
 		saxsbypz(x, alpha, p, omega, s, *x);
+		log_squarenorm(create_log_prefix_bicgstab(iter) + "x: ", *x);
+
 		//resid = (rn,rn)
 		resid = squarenorm(rn);
+		logger.debug() << create_log_prefix_bicgstab(iter) <<  "resid: " << resid;
 
-		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
 		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in bicgstab!";
-			// TODO throw a NAN exception
-			throw SolverStuck(iter, __FILE__, __LINE__);
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "\tNAN occured!";
+		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
+
 		if(resid < prec) {
 			//aux = A inout
 			f(&aux, gf, *x);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "aux: ", aux);
+		
 			//aux = -aux + source
 			saxpy(&aux, {1., 0.}, aux, b);
+			log_squarenorm(create_log_prefix_bicgstab(iter) + "aux: ", aux);
+
 			//trueresid = (aux, aux)
 			hmc_float trueresid = squarenorm(aux);
-			logger.debug() << "\tsolver converged! true resid:\t" << trueresid;
-			if(trueresid < prec)
-				return iter;
+			if(trueresid < prec){
+			  logger.debug() << create_log_prefix_bicgstab(iter) << "Solver converged! true resid:\t" << trueresid;
+
+			  // report on performance
+			  if(logger.beInfo()) {
+			    // we are always synchroneous here, as we had to recieve the residium from the device
+			    const uint64_t duration = timer.getTime();
+		    
+			    // calculate flops
+			    /**
+			     * @note this is not implemented since for non-eo this should not be of interest
+			     */
+			    // report performance
+			    logger.info() << create_log_prefix_bicgstab(iter) << "Solver completed in " << duration / 1000 << " ms. Performed " << iter << " iterations";
+			  }
+			  
+			  log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
+			  return iter;
+			}
 		}
 	}
+
+	logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -183,6 +230,10 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
 	auto params = system.get_inputparameters();
+
+	/// @todo start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+
 	hmc_float resid;
 	hmc_complex rho;
 
@@ -196,6 +247,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 	int iter=0;
 	log_squarenorm(create_log_prefix_bicgstab(iter) + "b: ", b);
 	log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
+
 	for(iter = 0; iter < params.get_cgmax(); iter++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//initial r_n, saved in p
@@ -203,15 +255,19 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
 			saxpy(&p, {1.0, 0}, rn, b);
 			log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
+
 			//rhat = p
 			copyData(&rhat, p);
 			log_squarenorm(create_log_prefix_bicgstab(iter) + "rhat: ", rhat);
+
 			//r_n = p
 			copyData(&rn, p);
 			log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
+
 			//rho = (rhat, rn)
 			rho = scalar_product(rhat, rn);
 		}
+
 		//resid = (rn,rn)
 		resid = squarenorm(rn);
 		logger.debug() << create_log_prefix_bicgstab(iter) << "resid: " << resid;
@@ -223,8 +279,23 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 		}
 		if(resid < prec) {
 		  log_squarenorm(create_log_prefix_bicgstab(iter) + "x (final): ", *x);
+
+		  // report on performance
+		  if(logger.beInfo()) {
+		    // we are always synchroneous here, as we had to recieve the residium from the device
+		    const uint64_t duration = timer.getTime();
+		    
+		    // calculate flops
+		    /**
+		     * @note this is not implemented since for non-eo this should not be of interest
+		     */
+		    // report performance
+		    logger.info() << create_log_prefix_bicgstab(iter) << "Solver completed in " << duration / 1000 << " ms. Performed " << iter << " iterations";
+		  }
+		  
 		  return iter;
 		}
+
 		//v = A*p
 		f(&v, gf, p);
 		log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
@@ -265,7 +336,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 		//if rho is too small the algorithm will get stuck and will never converge!!
 		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
 		  //print the last residuum
-		  logger.fatal() << create_log_prefix_bicgstab(iter) << "solver stuck at resid:" << resid;
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver stuck at resid:" << resid;
 		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
 
