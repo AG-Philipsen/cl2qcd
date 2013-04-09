@@ -643,12 +643,12 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 	minus_one.store(hmc_complex_minusone);
 
 	int iter = 0;
-	log_squarenorm(create_log_prefix_cg(iter) + "b: ", b);
-	log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
 
-	//this corresponds to the above function
+	// report source and initial solution
+	log_squarenorm(create_log_prefix_cg(iter) + "b (initial): ", b);
+	log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
+
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-
 	for(iter = 0; iter < params.get_cgmax(); iter ++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//rn = A*inout
@@ -679,6 +679,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		saxpy(x, tmp1, p, *x);
 		log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
+
 		//switch between original version and kernel merged one
 		if(params.get_use_merge_kernels_spinor()) {
 			//merge two calls:
@@ -688,6 +689,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			//rho_next is a complex number, set its imag to zero
 			//spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
 			throw Print_Error_Message("Kernel merging currently not implemented", __FILE__, __LINE__);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		} else {
 			//rn+1 = rn - alpha*v -> rhat
 			saxpy(&rn, alpha, v, rn);
@@ -719,7 +721,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 			logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
 			//test if resid is NAN
 			if(resid != resid) {
-				logger.fatal() << "\tNAN occured in cg_eo!";
+				logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
 				throw SolverStuck(iter, __FILE__, __LINE__);
 			}
 			if(resid < prec) {
@@ -745,10 +747,11 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 					total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
 					logger.trace() << "total_flops: " << total_flops;
 
-					// report performanc
-					logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+					// report performance
+					logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
 				}
-
+				// report on solution
+				log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
 				return iter;
 			}
 		}
