@@ -18,28 +18,17 @@
 static std::string create_solver_stuck_message(int iterations);
 /**
  * A "save" version of the bicgstab algorithm.
- *
- * This is chosen if "bicgstab_save" is selected in the inputfile
+ * It is explicitely checked if the true residuum also fullfills the break condition.
+ * This is chosen if "bicgstab_save" is selected.
  */
 static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
-
-/**
- * BICGstab implementation with a different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
- * In particular this version does not perform the check if the "real" residuum is sufficiently small!
- */
-static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
-
-/**
- * A "save" version of the bicgstab algorithm.
- *
- * This is chosen if "bicgstab_save" is selected in the inputfile
- */
 static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
 
 /**
  * BICGstab implementation with a different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
  * In particular this version does not perform the check if the "real" residuum is sufficiently small!
  */
+static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
 static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
 
 physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { }
@@ -65,10 +54,6 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield 
 		return bicgstab_fast(x, A, gf, b, system, prec);
 	}
 }
-
-/**
- * @todo add comment of differences between save and fast bicgstab version
- */
 
 static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
 {
@@ -124,7 +109,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 		//if rho is too small the algorithm will get stuck and will never converge!!
 		if(std::abs(rho_next.re) < 1e-25 && std::abs(rho_next.im) < 1e-25 ) {
 		  //print the last residuum
-		  logger.fatal() << create_log_prefix_bicgstab(iter) << "solver stuck at resid:\t" << resid;
+		  logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver stuck at resid:\t" << resid;
 		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
 
@@ -384,7 +369,6 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 	log_squarenorm(create_log_prefix_cg(iter) + "b: ", b);
 	log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
 
-	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(iter = 0; iter < params.get_cgmax(); iter ++) {
 		hmc_complex omega;
@@ -427,12 +411,13 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		hmc_float resid = rho_next.re;
 
 		logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
-		//test if resid is NAN
 
+		//test if resid is NAN
 		if(resid != resid) {
 		  logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
 		  throw SolverStuck(iter, __FILE__, __LINE__);
 		}
+
 		if(resid < prec){
 		  // report on performance
 		  if(logger.beInfo()) {
@@ -443,24 +428,8 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 		    /**
 		     * @todo this is not implemented since for non-eo this should not be of interest
 		     */
-		    /*
-		    const unsigned refreshs = iter / params.get_iter_refresh() + 1;
-		    const cl_ulong mf_flops = f.get_flops();
-		    logger.trace() << "mf_flops: " << mf_flops;
-		    
-		    cl_ulong total_flops = 1000;//mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
-		    //+ 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
-			//+ 3 * get_flops<Spinorfield_eo, saxpy>(system);
-		    total_flops *= iter;
-		    logger.trace() << "total_flops: " << total_flops;
-		    total_flops += 1000;//refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
-		    logger.trace() << "total_flops: " << total_flops;
 		    // report performance
-		    logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
-		    */
-		    // report performance
-		    logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms. Performed " << iter << " iterations";
-
+		    logger.info() << create_log_prefix_cg(iter) << "Solver completed in " << duration / 1000 << " ms. Performed " << iter << " iterations";
 		  }
 		  
 		  //report on solution
