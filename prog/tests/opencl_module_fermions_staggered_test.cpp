@@ -4,6 +4,7 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
+#include </usr/include/c++/4.7/fstream>
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -24,6 +25,7 @@ public:
 
 	const hardware::code::Fermions_staggered * get_device();
 	const hardware::buffers::SU3 * get_gaugefield();
+	const hardware::code::Gaugefield* get_gf_code();
 
 private:
 	const hardware::System * const system;
@@ -66,9 +68,115 @@ const hardware::code::Fermions_staggered* TestGaugefield::get_device()
 	return system->get_devices()[0]->get_fermion_staggered_code();
 }
 
+const hardware::code::Gaugefield* TestGaugefield::get_gf_code()
+{
+	return system->get_devices()[0]->get_gaugefield_code();
+}
+
 const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 {
 	return gf.get_buffers().at(0);
+}
+
+/**
+ * Fuction that "convert" a matrix to a string with a proper structure to be
+ * written to the text file that will be later used for the reference code
+ */
+std::string matrix_to_string(Matrixsu3 m)
+{
+       std::ostringstream os;
+       os.precision(16);
+       os << "(" << m.e00.re << "," << m.e00.im << ") (" << m.e01.re << "," << m.e01.im << ") (" << m.e02.re << "," << m.e02.im << ")\n";
+       os << "(" << m.e10.re << "," << m.e10.im << ") (" << m.e11.re << "," << m.e11.im << ") (" << m.e12.re << "," << m.e12.im << ")\n";
+       os << "(" << m.e20.re << "," << m.e20.im << ") (" << m.e21.re << "," << m.e21.im << ") (" << m.e22.re << "," << m.e22.im << ")\n\n";
+       return os.str();
+}
+
+//Tool to be used in the function print_gaugefield_to_textfile
+void get_full_coord_from_site_idx(int site_idx, int &x, int &y, int &z, int &t, const int ns)
+{
+  int volspace=ns*ns*ns;
+  int space=site_idx%volspace;
+  t=site_idx/volspace;
+  z=space/ns/ns;
+  int acc=z;
+  y=space/ns-ns*acc;
+  acc=ns*acc+y;
+  x=space-ns*acc;
+}
+
+//Tool to be used in the function print_gaugefield_to_textfile
+void copy_Matrixsu3(Matrixsu3 &a, const Matrixsu3 b)
+{
+  //a=b
+  a.e00.re=b.e00.re;
+  a.e00.im=b.e00.im;
+  a.e01.re=b.e01.re;
+  a.e01.im=b.e01.im;
+  a.e02.re=b.e02.re;
+  a.e02.im=b.e02.im;
+  a.e10.re=b.e10.re;
+  a.e10.im=b.e10.im;
+  a.e11.re=b.e11.re;
+  a.e11.im=b.e11.im;
+  a.e12.re=b.e12.re;
+  a.e12.im=b.e12.im;
+  a.e20.re=b.e20.re;
+  a.e20.im=b.e20.im;
+  a.e21.re=b.e21.re;
+  a.e21.im=b.e21.im;
+  a.e22.re=b.e22.re;
+  a.e22.im=b.e22.im;
+}
+
+/**
+ *  In the reference code the lattice is reorganized in the following way:
+ * 
+ *  links used according to this scheme
+ *   0            size         size2         size3         no_links
+ *   |------|------|------|------|------|------|------|------|
+ *      e      o      e       o     e      o      e      o
+ *        x-dir         y-dir         z-dir         t-dir
+ * 
+ *  where e=even and o=odd. Hence, in order to use the same random configuration in tests
+ *  I have to print all links to a text file according this scheme. 
+ * 
+ */
+void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, meta::Inputparameters params)
+{
+	int nt=params.get_ntime();
+	int ns=params.get_nspace();
+	if(ns!=nt){
+	  logger.fatal() << "The lattice must be isotropic!";
+	  abort();
+	}
+	//conf_old is the Matrixsu3 array with the links in the standard order (standard for this code)
+	//conf_new is the Matrixsu3 array in the right order (ref. code scheme) to be written to the file
+	Matrixsu3 *conf_old=new Matrixsu3[ns*ns*ns*nt*4];
+	Matrixsu3 *conf_new=new Matrixsu3[ns*ns*ns*nt*4];
+	cpu->get_gf_code()->exportGaugefield(conf_old,cpu->get_gaugefield());
+	//Now I have conf_old and I have to fill properly conf_new
+	int x,y,z,t,num,even;
+	for(int i=0; i<ns*ns*ns*nt; i++){
+	  get_full_coord_from_site_idx(i,x,y,z,t,ns);
+	  even = (x+y+z+t)%2;
+	  // even=0 for even sites
+	  // even=1 for odd sites
+	  num = even*(ns/2) + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
+	  // num is where, in conf_new, conf_old[...] is to be written
+	  copy_Matrixsu3(conf_new[num         ],conf_old[4*i  ]);
+	  copy_Matrixsu3(conf_new[num+ns      ],conf_old[4*i+1]);
+	  copy_Matrixsu3(conf_new[num+ns*ns   ],conf_old[4*i+2]);
+	  copy_Matrixsu3(conf_new[num+ns*ns*ns],conf_old[4*i+3]);
+	}
+	//Now we can write conf_new to the file
+	std::ofstream file(outputfile.c_str());
+	file.precision(16);
+	file << ns << " " << ns << " " << ns << " " << nt << " ";
+	file << params.get_beta() << " " << params.get_kappa() << " #" << std::endl;
+	for(int i=0; i<ns*ns*ns*nt*4; i++)
+	  file << matrix_to_string(conf_new[i]);
+	file.close();
 }
 
 
@@ -79,6 +187,7 @@ void test_build(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
+	print_gaugefield_to_textfile("prova.dat",&cpu,params);
 	BOOST_MESSAGE("Test done");
 }
 
