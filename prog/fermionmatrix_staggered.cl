@@ -27,7 +27,63 @@ void put_su3vec_to_field(const su3vec in, __global su3vec * const restrict out, 
 	out[pos] = in;
 }
 
-
+/**
+ * This function calculates the staggered phase lying at the site with spatial super-index
+ * n and in direction dir.
+ *
+ * @note The whole site superindex is not needed because to calculate the staggered phase one
+ *       never needs the time coordinate:
+ *       \f[
+             \left\{
+             \begin{aligned}
+                \eta_1(n)&=1 \\
+                \eta_\mu(n)&=(-1)^{\sum_{\nu<\mu}n_\nu} \quad\mbox{if}\quad \mu\neq1
+             \end{aligned}
+             \right.
+ *       \f]
+ *       where is CRUCIAL to emphasize that
+ *       \f[
+             \begin{aligned}
+               \mu=1 &\quad\mbox{means}\quad x=n_1 \\
+               \mu=2 &\quad\mbox{means}\quad y=n_2 \\
+               \mu=3 &\quad\mbox{means}\quad z=n_3 \\
+               \mu=4 &\quad\mbox{means}\quad t=n_4 
+             \end{aligned}
+ *       \f]
+ *
+ * \internal
+ * 
+ * Strictly speaking we have:
+ *
+ *  In x direction --> eta_x=1
+ *  In y direction --> eta_y=(-1)^(x)
+ *  In z direction --> eta_z=(-1)^(x+y)
+ *  In t direction --> eta_t=(-1)^(x+y+z)
+ *
+ * \endinternal
+ *
+ * @param n this is the spacial superindex of the site (see st_idx.space in operation_geometry.cl)
+ * @param dir this is the direction of the staggered phase. To be automatically coherent with
+ *             the choice of labels made in operation_geometry.cl, it can be YDIR, ZDIR or TDIR.
+ *      
+ * @todo This function must be moved to a file containing all staggered utilities.
+ */
+ 
+int get_staggered_phase(const int n, const int dir)
+{
+	coord_spatial coord;
+	coord=get_coord_spatial(n);
+	switch(dir) {
+		case YDIR:
+			return 1-2*((coord.x)%2);
+		case ZDIR:
+			return 1-2*((coord.x+coord.y)%2);
+		case TDIR:
+			return 1-2*((coord.x+coord.y+coord.z)%2);
+		default:
+			printf("Something bad happened: get_staggered_phase(...) was called without any proper value for dir variable");
+	}
+}
 
 /** \e Local D_KS working on a particular link (n,t) in a specific direction. The expression of D_KS
  *  for a specific (couple of) site(s) and a specific direction is
@@ -40,7 +96,8 @@ void put_su3vec_to_field(const su3vec in, __global su3vec * const restrict out, 
      \bigl[(D_{KS})_\mu\cdot \text{\texttt{in}}\bigr]_n=\frac{1}{2}\eta_\mu(n) \Bigl[U_\mu(n) \cdot\text{\texttt{in}}_{n+\hat\mu} - U^\dag_\mu(n-\hat\mu)\cdot\text{\texttt{in}}_{n-\hat\mu}\Bigr]
  *  \f]
  *
- * @note Again, the staggered phases are not included in this function, since they will be put into the links.
+ * @note Again, the staggered phases are included in this function with the help of the function
+ *       get_staggered_phase.
  * 
  * @todo Here there are some #ifdef about the chemical potential: they have been copied from the
  *       Wilson code. Therefore they MUST be checked when a chemical potential will be introduced.
