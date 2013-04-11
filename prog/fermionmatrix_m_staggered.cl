@@ -32,8 +32,13 @@
  * field "out". Note that the field "field" is the gauge field (i.e. the link variables) that
  * are needed in the functions dslash_local_x.
  *
- * @note This kernel does not take into account the staggered phases eta_mu(n), since they
- *       will be included in links (see the phi-algorithm from Gottlieb and Toussaint).
+ * @note This kernel takes into account the staggered phases eta_mu(n), since they
+ *       will be NOT included in links (as in the phi-algorithm from Gottlieb and Toussaint).
+ *       The reason why we make such a choice is that, on GPU, it should be more efficient to
+ *       calculate staggered phases whenever we need them, instead of including them in
+ *       links and hence projecting links to SU(3) group sometimes (one should do such
+ *       a projection because if eta_mu is -1 then you go out from SU(3) group).
+ *       Observe that, avoiding such projection, we get rid of this approximation.
  * \par
  * @note In this kernel \em no \em even-odd \em preconditioning is assumed: vectors "in" and "out" have
  *       VOL4D components.
