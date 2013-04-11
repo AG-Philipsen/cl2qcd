@@ -113,6 +113,8 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	//this is used to save the BC-conditions...
 	hmc_complex bc_tmp;
 	out_tmp = set_su3vec_zero();
+	//this is used to take into account the staggered phase
+	hmc_float eta;
 	
 	//go through the different directions
 	///////////////////////////////////
@@ -171,9 +173,10 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	out_tmp=su3vec_dim(out_tmp,chi);
 	
 	///////////////////////////////////
-	//multiply by the factor 1/2 that appears at the beginning of D_KS
+	//multiply by the factor 1/2*eta_t that appears at the beginning of D_KS
 	///////////////////////////////////
-	out_tmp = su3vec_times_real(out_tmp, F_1_2); //AS: I'm not sure that here F_1_2 is an hmc_float
+	eta=0.5*get_staggered_phase(n,dir);
+	out_tmp = su3vec_times_real(out_tmp, eta); 
 
 	return out_tmp;
 }
@@ -225,6 +228,7 @@ su3vec dslash_local_1(__global const spinor * const restrict in, __global const 
 	
 	///////////////////////////////////
 	//multiply by the factor 1/2 that appears at the beginning of D_KS
+	//Observe that in the x direction ALL staggered phases are +1 => no need to multiply
 	///////////////////////////////////
 	out_tmp = su3vec_times_real(out_tmp, F_1_2); //AS: I'm not sure that here F_1_2 is an hmc_float
 		
@@ -238,7 +242,9 @@ su3vec dslash_local_2(__global const spinor * const restrict in, __global const 
 	Matrixsu3 U;
 	//this is used to save the BC-conditions...
 	hmc_complex bc_tmp;
-	out_tmp = set_su3vec_zero();;
+	out_tmp = set_su3vec_zero();
+	//this is used to take into account the staggered phase
+	hmc_float eta;
 
 	///////////////////////////////////
 	//mu = 2
@@ -276,9 +282,10 @@ su3vec dslash_local_2(__global const spinor * const restrict in, __global const 
 	out_tmp=su3vec_dim(out_tmp,chi);
 	
 	///////////////////////////////////
-	//multiply by the factor 1/2 that appears at the beginning of D_KS
+	//multiply by the factor 1/2*eta_y that appears at the beginning of D_KS
 	///////////////////////////////////
-	out_tmp = su3vec_times_real(out_tmp, F_1_2); //AS: I'm not sure that here F_1_2 is an hmc_float
+	eta=0.5*get_staggered_phase(n,dir);
+	out_tmp = su3vec_times_real(out_tmp, eta);
 	
 	return out_tmp;
 }
@@ -291,6 +298,8 @@ su3vec dslash_local_3(__global const spinor * const restrict in, __global const 
 	//this is used to save the BC-conditions...
 	hmc_complex bc_tmp;
 	out_tmp = set_su3vec_zero();
+	//this is used to take into account the staggered phase
+	hmc_float eta;
 
 	///////////////////////////////////
 	//mu = 3
@@ -328,9 +337,10 @@ su3vec dslash_local_3(__global const spinor * const restrict in, __global const 
 	out_tmp=su3vec_dim(out_tmp,chi);
 	
 	///////////////////////////////////
-	//multiply by the factor 1/2 that appears at the beginning of D_KS
+	//multiply by the factor 1/2*eta_z that appears at the beginning of D_KS
 	///////////////////////////////////
-	out_tmp = su3vec_times_real(out_tmp, F_1_2); //AS: I'm not sure that here F_1_2 is an hmc_float
+	eta=0.5*get_staggered_phase(n,dir);
+	out_tmp = su3vec_times_real(out_tmp, eta); 
 	
 	return out_tmp;
 }
