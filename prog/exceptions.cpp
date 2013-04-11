@@ -3,13 +3,13 @@
 #include "meta/inputparameters.hpp"
 #include <sstream>
 
-File_Exception::File_Exception(const char* name)
+File_Exception::File_Exception(const char* name) : std::runtime_error(name)
 {
 	filename = name;
 	return;
 }
 
-File_Exception::File_Exception(std::string name)
+File_Exception::File_Exception(std::string name) : std::runtime_error(name)
 {
 	filename = name.c_str();
 	return;
@@ -19,9 +19,12 @@ std::string File_Exception::get_filename()
 {
 	return filename;
 }
+const char* File_Exception::what() const noexcept
+{
+	return filename.c_str();
+}
 
-
-Invalid_Fermact::Invalid_Fermact(int fermact, bool muset, bool cswset)
+Invalid_Fermact::Invalid_Fermact(int fermact, bool muset, bool cswset) : std::invalid_argument("Invalid fermion action.")
 {
 
 	error_message = "Invalid setting for fermionic sector: ";
@@ -38,7 +41,13 @@ Invalid_Fermact::Invalid_Fermact(int fermact, bool muset, bool cswset)
 	return;
 }
 
-Invalid_Gaugeact::Invalid_Gaugeact()
+const char* Invalid_Fermact::what() const noexcept
+{
+	return error_message.c_str();
+}
+
+
+Invalid_Gaugeact::Invalid_Gaugeact() : std::invalid_argument("Invalid gauge action.")
 {
 
 	error_message = "Invalid setting for gauge sector: ";
@@ -46,20 +55,12 @@ Invalid_Gaugeact::Invalid_Gaugeact()
 	return;
 }
 
-std::string Invalid_Fermact::what()
+const char* Invalid_Gaugeact::what() const noexcept
 {
-	return error_message;
+	return error_message.c_str();
 }
 
-Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, std::string found)
-{
-	std::stringstream msg;
-	msg << descr << " Expected: " << expected << " But found: " << found;
-	error_message = msg.str();
-	return;
-}
-
-Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, int found)
+Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, std::string found) : std::invalid_argument(descr)
 {
 	std::stringstream msg;
 	msg << descr << " Expected: " << expected << " But found: " << found;
@@ -67,7 +68,7 @@ Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, 
 	return;
 }
 
-Invalid_Parameters::Invalid_Parameters(std::string descr, int expected, int found)
+Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, int found) : std::invalid_argument(descr)
 {
 	std::stringstream msg;
 	msg << descr << " Expected: " << expected << " But found: " << found;
@@ -75,13 +76,21 @@ Invalid_Parameters::Invalid_Parameters(std::string descr, int expected, int foun
 	return;
 }
 
-std::string Invalid_Parameters::what()
+Invalid_Parameters::Invalid_Parameters(std::string descr, int expected, int found) : std::invalid_argument(descr)
 {
-	return error_message;
+	std::stringstream msg;
+	msg << descr << " Expected: " << expected << " But found: " << found;
+	error_message = msg.str();
+	return;
+}
+
+const char* Invalid_Parameters::what() const noexcept
+{
+	return error_message.c_str();
 }
 
 
-Opencl_Error::Opencl_Error(int clerr)
+Opencl_Error::Opencl_Error(int clerr) : std::runtime_error("OpenCL Error")
 {
 	std::stringstream msg;
 	msg << "OpenCL reported an error, error code: " << clerr;
@@ -89,7 +98,7 @@ Opencl_Error::Opencl_Error(int clerr)
 	return;
 }
 
-Opencl_Error::Opencl_Error(int clerr, std::string clname)
+Opencl_Error::Opencl_Error(int clerr, std::string clname) : std::runtime_error("OpenCL Error")
 {
 	std::stringstream msg;
 	msg << "OpenCL reported an error in " << clname << ", error code: " << clerr;
@@ -97,7 +106,7 @@ Opencl_Error::Opencl_Error(int clerr, std::string clname)
 	return;
 }
 
-Opencl_Error::Opencl_Error(int clerr, std::string clname, std::string filename, int linenumber)
+Opencl_Error::Opencl_Error(int clerr, std::string clname, std::string filename, int linenumber) : std::runtime_error("OpenCL Error")
 {
 	std::stringstream msg;
 	msg << "OpenCL failed. Error code " << clerr << " in " << clname << " at " << filename << ":" << linenumber;
@@ -105,9 +114,9 @@ Opencl_Error::Opencl_Error(int clerr, std::string clname, std::string filename, 
 	return;
 }
 
-std::string Opencl_Error::what()
+const char* Opencl_Error::what() const noexcept
 {
-	return error_message;
+	return error_message.c_str();
 }
 
 
@@ -125,9 +134,9 @@ Print_Error_Message::Print_Error_Message(std::string msg, std::string filename, 
 	return;
 }
 
-std::string Print_Error_Message::what()
+const char* Print_Error_Message::what() const noexcept
 {
-	return error_message;
+	return error_message.c_str();
 }
 
 

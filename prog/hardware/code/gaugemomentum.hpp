@@ -51,6 +51,8 @@ public:
 	 */
 	void exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const;
 
+	ClSourcePackage get_sources() const noexcept;
+
 protected:
 
 	/**

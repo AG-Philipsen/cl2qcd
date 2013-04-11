@@ -69,6 +69,16 @@ namespace physics {
 			hmc_float plaquette() const;
 
 			/**
+			 * Return plaquette values
+			 */
+			void plaquette(hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq) const;
+
+			/**
+			 * Return polyakov value
+			 */
+			hmc_complex polyakov() const;
+
+			/**
 			 * Calculate plaquette and polyakov of this gaugefield.
 			 *
 			 * @param[out] plaq Storage for result of plaquette calculation
@@ -107,6 +117,13 @@ namespace physics {
 		   * Get sourcefileparameters
 		   */
 		  sourcefileparameters get_parameters_source();
+
+			/**
+			 * Update the halo cells of each buffer from its neighbours.
+			 *
+			 * On a single device this will be a no-op.
+			 */
+			void update_halo() const;
 
 		private:
 			hardware::System const& system;

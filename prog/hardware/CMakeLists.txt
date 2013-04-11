@@ -9,6 +9,7 @@
 add_library(hardware
 	system.cpp
 	device.cpp
+	device_info.cpp
 	profiling_data.cpp
 	synchronization_event.cpp
 )

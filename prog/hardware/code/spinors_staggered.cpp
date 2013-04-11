@@ -6,6 +6,7 @@
 #include <cassert>
 #include "gaugefield.hpp"
 #include "prng.hpp"
+#include "spinors.hpp"
 
 using namespace std;
 
@@ -14,12 +15,18 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
+	using namespace hardware::code;
+
+	const size_4 mem_size = device->get_mem_lattice_size();
+	const size_4 local_size = device->get_local_lattice_size();
 
 	std::ostringstream options;
-	options << "-D _FERMIONS_"
-	        << " -D SPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
+	options << "-D _FERMIONS_";
+	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
+	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(local_size);
+	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
 	if(check_Spinor_for_SOA(device)) {
-		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
+		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
 	}
 
 	return options.str();
@@ -102,8 +109,8 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -118,8 +125,8 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 
 uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in) const
 {
-	uint64_t S = meta::get_spinorfieldsize(get_parameters());
-	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	uint64_t S = get_spinorfieldsize(get_parameters());
+	uint64_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (in == "global_squarenorm") {
 		return 1000000000000000000000000;

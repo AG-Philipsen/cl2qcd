@@ -9,6 +9,7 @@
 
 #include "../meta/inputparameters.hpp"
 #include "../types.h"
+#include "../meta/size_4.hpp"
 
 /**
  * This namespace contains potentially hardware specific code managing the system,
@@ -77,6 +78,11 @@ namespace hardware {
 		 */
 		operator const cl_context&() const noexcept;
 
+		/**
+		 * Get the size of the device grid.
+		 */
+		size_4 get_grid_size();
+
 	private:
 
 		/**
@@ -98,6 +104,11 @@ namespace hardware {
 		 * The platform used by this system.
 		 */
 		cl_platform_id platform;
+
+		/**
+		 * The size of the device grid.
+		 */
+		size_4 grid_size;
 	};
 
 	/**

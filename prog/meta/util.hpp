@@ -17,14 +17,6 @@ namespace meta {
 	bool get_use_rectangles(const Inputparameters& params);
 	hmc_float get_mubar(const Inputparameters& params);
 	hmc_float get_mubar_mp(const Inputparameters& params);
-	/**
-	 * @deprecated should be done by the spinorfield class
-	 */
-	size_t get_spinorfieldsize(const Inputparameters& params);
-	/**
-	 * @deprecated should be done by the spinorfield class
-	 */
-	size_t get_eoprec_spinorfieldsize(const Inputparameters& params);
 	size_t get_float_size(const Inputparameters& params);
 	size_t get_mat_size(const Inputparameters& params);
 	size_t get_plaq_norm(const Inputparameters& params);

@@ -34,20 +34,6 @@ public:
 
 	// methods which actually calculate something
 	/**
-	 * Calculate plaquette and polyakov of a specific gaugefield (on device).
-	 *
-	 * @param[in]  gf    The gaugefield on which to compute the observables
-	 * @param[out] plaq  Storage for result of plaquette calculation
-	 * @param[out] tplaq Storage for result of plaquette calculation
-	 * @param[out] splaq Storage for result of plaquette calculation
-	 * @param[out] pol   Storage for result of polyakov calculation
-	 *
-	 * @deprecated
-	 *
-	 * @todo Should not be public
-	 */
-	void gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const;
-	/**
 	 * Calculate rectangles of a specific gaugefield (on device).
 	 *
 	 * @deprecated
@@ -74,6 +60,10 @@ public:
 	 * @param[in] gf gaugefield to measure on
 	 */
 	void polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> *) const;
+
+	void polyakov_md_local_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const hardware::buffers::SU3* gf) const;
+
+	void polyakov_md_merge_device(const hardware::buffers::Plain<Matrixsu3> * partial_results, const cl_uint num_slices, const hardware::buffers::Plain<hmc_complex> * pol) const;
 
 	/**
 	 * Print the profiling information to a file.
@@ -159,6 +149,8 @@ private:
 	cl_kernel rectangles;
 	cl_kernel rectangles_reduction;
 	cl_kernel polyakov;
+	cl_kernel polyakov_md_local;
+	cl_kernel polyakov_md_merge;
 	cl_kernel polyakov_reduction;
 	cl_kernel convertGaugefieldToSOA;
 	cl_kernel convertGaugefieldFromSOA;

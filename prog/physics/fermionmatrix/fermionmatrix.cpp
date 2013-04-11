@@ -44,9 +44,6 @@ cl_ulong physics::fermionmatrix::M::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
-	}
 	auto fermion_code = devices[0]->get_fermion_code();
 	switch(system.get_inputparameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
@@ -77,9 +74,6 @@ cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
-	}
 	auto fermion_code = devices[0]->get_fermion_code();
 
 	cl_ulong res;
@@ -115,9 +109,6 @@ cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
-	}
 	auto fermion_code = devices[0]->get_fermion_code();
 
 	cl_ulong res;
@@ -182,9 +173,6 @@ cl_ulong physics::fermionmatrix::Aee::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
-	}
 	auto spinor_code = devices[0]->get_spinor_code();
 	auto fermion_code = devices[0]->get_fermion_code();
 
@@ -245,9 +233,6 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
-	}
 	auto spinor_code = devices[0]->get_spinor_code();
 	auto fermion_code = devices[0]->get_fermion_code();
 
@@ -283,9 +268,6 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
-	}
 	auto fermion_code = devices[0]->get_fermion_code();
 
 	cl_ulong res = aee.get_flops();
@@ -307,9 +289,6 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	if(devices.size() != 1) {
-		throw Print_Error_Message("get_flops is currently only implemented for a single device.");
-	}
 	auto fermion_code = devices[0]->get_fermion_code();
 
 	cl_ulong res = aee_minus.get_flops();

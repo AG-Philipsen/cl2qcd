@@ -19,6 +19,8 @@
 namespace physics {
 namespace lattices {
 
+template <class Lattice, typename Basetype> void pseudo_randomize(const Lattice* to, int seed);
+
 /**
  * Representation of a gaugefield.
  */
@@ -67,6 +69,16 @@ public:
 	 */
 	void gaussian(const physics::PRNG& prng) const;
 
+	/**
+	 * Update the halos of the spinorfield buffers.
+	 */
+	void update_halo() const;
+
+	/**
+	 * Get the number of elements.
+	 */
+	unsigned get_elements() const noexcept;
+
 protected:
 	/**
 	 * Allow (re-)creation of buffers by children
@@ -82,12 +94,14 @@ private:
 	hardware::System const& system;
 	std::vector<const hardware::buffers::Plain<spinor> *> buffers;
 	const bool place_on_host;
+	void import(const spinor * const host) const;
 
 	friend hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
 	friend hmc_float squarenorm(const Spinorfield& field);
 	friend void saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y);
 	friend void sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x);
 	friend void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z);
+	friend void pseudo_randomize<Spinorfield, spinor>(const Spinorfield* to, int seed);
 };
 
 /**
@@ -140,6 +154,14 @@ void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield
 void saxsbypz(const Spinorfield* out, const Scalar<hmc_complex>& alpha, const Spinorfield& x, const Scalar<hmc_complex>& beta, const Spinorfield& y, const Spinorfield& z);
 
 void log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield& x);
+
+/**
+ * Fill the given field with a window of the other field.
+ *
+ * A window means all buffers of the first field will be filled with the same content of one buffer of the second field.
+ */
+void fill_window(const Spinorfield* out, const Spinorfield& src, const size_t idx);
+
 }
 }
 

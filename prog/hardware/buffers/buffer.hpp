@@ -124,17 +124,26 @@ protected:
 	/**
 	 * Utility function for creation of custom load functions.
 	 *
-	 * Loads as many bytes as the buffer contains from the given pointer
-	 * into the buffer.
+	 * Load the given number of bytes from the given buffer.
+	 *
+	 * \param src, The memory area to read from
+	 * \param bytes The number of bytes to rea, will be the buffer size if 0d
+	 * \param offset Offset into the buffer, at which to store the bytes
+	 * \throws out_of_range if bytes + offset exceeds the buffer size
 	 */
-	void load(const void*) const;
+	void load(const void* src, size_t bytes = 0, size_t offset = 0) const;
 
 	/**
 	 * Utility function for creation of custom dump functions.
 	 *
-	 * Stores the whole buffer into the given pointer
+	 * Store the given number of bytes into the given pointer.
+	 *
+	 * \param dest The memory area to store to
+	 * \param bytes The number of bytes to write, will be the buffer size if 0
+	 * \param offset Offset into the buffer, at which to store the bytes
+	 * \throws out_of_range if bytes + offset exceeds the buffer size
 	 */
-	void dump(void*) const;
+	void dump(void* dest, size_t bytes = 0, size_t offset = 0) const;
 
 	/**
 	 * Utility function for creation of custom dump functions.

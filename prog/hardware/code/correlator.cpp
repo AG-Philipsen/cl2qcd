@@ -204,7 +204,6 @@ cl_kernel hardware::code::Correlator::get_correlator_kernel(string which) const
 
 void hardware::code::Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -239,7 +238,6 @@ void hardware::code::Correlator::create_point_source_device(const hardware::buff
 
 void hardware::code::Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -267,8 +265,6 @@ void hardware::code::Correlator::create_volume_source_device(const hardware::buf
 
 void hardware::code::Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -300,8 +296,6 @@ void hardware::code::Correlator::create_timeslice_source_device(const hardware::
 
 void hardware::code::Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice) const
 {
-	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -409,8 +403,8 @@ size_t hardware::code::Correlator::get_read_write_size(const std::string& in) co
 	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
 	size_t R = meta::get_mat_size(get_parameters());
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = hardware::code::get_spinorfieldsize(get_parameters());
+	size_t Seo = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -497,8 +491,8 @@ size_t hardware::code::Correlator::get_read_write_size(const std::string& in) co
 
 uint64_t hardware::code::Correlator::get_flop_size(const std::string& in) const
 {
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = hardware::code::get_spinorfieldsize(get_parameters());
+	size_t Seo = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (in == "create_point_source") {
 		return 1000000000000000000000000;

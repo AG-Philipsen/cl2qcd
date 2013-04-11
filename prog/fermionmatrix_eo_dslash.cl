@@ -6,8 +6,8 @@
 
 __kernel void dslash_eo(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, __global const Matrixsu3StorageType * const restrict field, const int evenodd, hmc_float kappa_in)
 {
-	PARALLEL_FOR(id_tmp, EOPREC_SPINORFIELDSIZE) {
-		st_idx pos = (evenodd == ODD) ? get_even_st_idx(id_tmp) : get_odd_st_idx(id_tmp);
+	PARALLEL_FOR(id_local, EOPREC_SPINORFIELDSIZE_LOCAL) {
+		st_idx pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
 
 		spinor out_tmp = set_spinor_zero();
 		spinor out_tmp2;
@@ -23,6 +23,6 @@ __kernel void dslash_eo(__global const spinorStorageType * const restrict in, __
 		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, ZDIR, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
-		putSpinor_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, get_eo_site_idx_from_st_idx(pos), out_tmp);
 	}
 }

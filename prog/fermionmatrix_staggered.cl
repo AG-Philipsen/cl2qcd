@@ -10,7 +10,7 @@
  */
 su3vec get_su3vec_from_field(__global const su3vec * const restrict in, const int n, const int t)
 {
-	int pos = get_global_pos(n, t);
+	int pos = get_pos(n, t);
 	su3vec out;
 	out = in[pos];
 	return out;
@@ -23,7 +23,7 @@ su3vec get_su3vec_from_field(__global const su3vec * const restrict in, const in
  */
 void put_su3vec_to_field(const su3vec in, __global su3vec * const restrict out, const int n, const int t)
 {
-	int pos = get_global_pos(n, t);
+	int pos = get_pos(n, t);
 	out[pos] = in;
 }
 
@@ -67,7 +67,7 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	/////////////
 	nn = get_neighbor_temporal(t);
 	plus = get_su3vec_from_field(in, n, nn);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
 	U = multiply_matrixsu3_by_real (U, EXPCPR);
@@ -90,7 +90,7 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	//////////////
 	nn = get_lower_neighbor_temporal(t);
 	plus = get_su3vec_from_field(in, n, nn);
-	U = getSU3(field, get_global_link_pos(dir, n, nn));
+	U = getSU3(field, get_link_pos(dir, n, nn));
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 	//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
 	//  (exp(iq)U)^+ = exp(-iq)U^+
@@ -140,7 +140,7 @@ su3vec dslash_local_1(__global const spinor * const restrict in, __global const 
 	//////////////
 	nn = get_neighbor_spatial(n, dir);
 	plus = get_su3vec_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	bc_tmp.re = SPATIAL_RE;
 	bc_tmp.im = SPATIAL_IM;
 	/////////////////////////////////
@@ -155,7 +155,7 @@ su3vec dslash_local_1(__global const spinor * const restrict in, __global const 
 	/////////////
 	nn = get_lower_neighbor_spatial(n, dir);
 	plus = get_su3vec_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, nn, t));
+	U = getSU3(field, get_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = SPATIAL_RE;
 	bc_tmp.im = MSPATIAL_IM;
@@ -192,7 +192,7 @@ su3vec dslash_local_2(__global const spinor * const restrict in, __global const 
 	////////////
 	nn = get_neighbor_spatial(n, dir);
 	plus = get_su3vec_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	bc_tmp.re = SPATIAL_RE;
 	bc_tmp.im = SPATIAL_IM;
 	///////////////////////////////////
@@ -207,7 +207,7 @@ su3vec dslash_local_2(__global const spinor * const restrict in, __global const 
 	//////////////
 	nn = get_lower_neighbor_spatial(n, dir);
 	plus = get_su3vec_from_field(in,  nn, t);
-	U = getSU3(field, get_global_link_pos(dir, nn, t));
+	U = getSU3(field, get_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = SPATIAL_RE;
 	bc_tmp.im = MSPATIAL_IM;
@@ -244,7 +244,7 @@ su3vec dslash_local_3(__global const spinor * const restrict in, __global const 
 	///////////////
 	nn = get_neighbor_spatial(n, dir);
 	plus = get_su3vec_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	bc_tmp.re = SPATIAL_RE;
 	bc_tmp.im = SPATIAL_IM;
 	///////////////////////////////////
@@ -259,7 +259,7 @@ su3vec dslash_local_3(__global const spinor * const restrict in, __global const 
 	//////////////
 	nn = get_lower_neighbor_spatial(n, dir);
 	plus = get_su3vec_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, nn, t));
+	U = getSU3(field, get_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = SPATIAL_RE;
 	bc_tmp.im = MSPATIAL_IM;

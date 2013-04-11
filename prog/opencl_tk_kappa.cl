@@ -4,21 +4,25 @@
 
 //opencl_tk_kappa.cl
 
+#if NTIME_GLOBAL != NTIME_LOCAL
+#error these kernels don't support multi-gpu
+#endif
+
 __kernel void kappa_karsch_gpu(__global Matrixsu3StorageType * gaugefield, const hmc_float beta, __global hmc_float * kappa_karsch_val)
 {
 
 	//Compute diagonal spatial components of the energy-momentum-tensor
-	hmc_float tdiag_11 [VOL4D];
-	hmc_float tdiag_22 [VOL4D];
-	hmc_float tdiag_33 [VOL4D];
+	hmc_float tdiag_11 [VOL4D_GLOBAL];
+	hmc_float tdiag_22 [VOL4D_GLOBAL];
+	hmc_float tdiag_33 [VOL4D_GLOBAL];
 	//a = 2T_11 - T_22 _ T_33
-	hmc_float a [VOL4D];
+	hmc_float a [VOL4D_GLOBAL];
 	//b = 2T_22 - T_11 _ T_33
-	hmc_float b [VOL4D];
+	hmc_float b [VOL4D_GLOBAL];
 	//c = 2T_33 - T_22 _ T_11
-	hmc_float c [VOL4D];
+	hmc_float c [VOL4D_GLOBAL];
 
-	for (int t = 0; t < NTIME; t++) {
+	for (int t = 0; t < NTIME_GLOBAL; t++) {
 		for (int n = 0; n < VOLSPACE; n++) {
 			//Compute required plaquettes
 			Matrixsu3 temp;
@@ -55,8 +59,8 @@ __kernel void kappa_karsch_gpu(__global Matrixsu3StorageType * gaugefield, const
 	for (int x_3 = 0; x_3 < NSPACE; x_3++) {
 		for (int y_3 = 0; y_3 < x_3; y_3++) {
 			hmc_float factor = 1.0 - cos(deltak * (hmc_float) (x_3 - y_3));
-			for (int x_t = 0; x_t < NTIME; x_t++) {
-				for (int y_t = 0; y_t < NTIME; y_t++) {
+			for (int x_t = 0; x_t < NTIME_GLOBAL; x_t++) {
+				for (int y_t = 0; y_t < NTIME_GLOBAL; y_t++) {
 					uint3 coord_y, coord_y;
 					for (int coord_x.x = 0; coord_x.x < NSPACE; coord_x.x++) {
 						for (int coord_y.x = 0; coord_y.x < NSPACE; coord_y.x++) {
@@ -82,9 +86,9 @@ __kernel void kappa_karsch_gpu(__global Matrixsu3StorageType * gaugefield, const
 	}
 
 	//Correlator, 2 by Def, 2 by T_12+T_21  3 by T_12+T_13+T_23 -->/12,
-	//Volume for y /VOL4D, /2/pi^2*L_z^2 for derivation, *beta^2 / Nc^2 for T_munu, *2 for y_3<x_3
+	//Volume for y /VOL4D_GLOBAL, /2/pi^2*L_z^2 for derivation, *beta^2 / Nc^2 for T_munu, *2 for y_3<x_3
 
-	hmc_float norm = (hmc_float) (NSPACE * NSPACE) / (hmc_float) (VOL4D) / (hmc_float) (NC * NC) / 12.0 / PI / PI  * beta * beta;
+	hmc_float norm = (hmc_float) (NSPACE * NSPACE) / (hmc_float) (VOL4D_GLOBAL) / (hmc_float) (NC * NC) / 12.0 / PI / PI  * beta * beta;
 
 	*kappa_karsch_val = norm * result;
 }
@@ -95,11 +99,11 @@ __kernel void kappa_clover_gpu (__global Matrixsu3StorageType * gaugefield, cons
 {
 
 	//Energy-momentum-tensor in clover-discretization
-	hmc_float t_12 [VOL4D];
-	hmc_float t_13 [VOL4D];
-	hmc_float t_23 [VOL4D];
+	hmc_float t_12 [VOL4D_GLOBAL];
+	hmc_float t_13 [VOL4D_GLOBAL];
+	hmc_float t_23 [VOL4D_GLOBAL];
 
-	for (int t = 0; t < NTIME; t++) {
+	for (int t = 0; t < NTIME_GLOBAL; t++) {
 		for (int n = 0; n < VOLSPACE; n++) {
 			//Compute required plaquettes
 			Matrix3x3 Q_22;
@@ -211,8 +215,8 @@ __kernel void kappa_clover_gpu (__global Matrixsu3StorageType * gaugefield, cons
 	for (int x_3 = 0; x_3 < NSPACE; x_3++) {
 		for (int y_3 = 0; y_3 < x_3; y_3++) {
 			hmc_float factor = 1.0 - cos(deltak * (hmc_float) (x_3 - y_3));
-			for (int x_t = 0; x_t < NTIME; x_t++) {
-				for (int y_t = 0; y_t < NTIME; y_t++) {
+			for (int x_t = 0; x_t < NTIME_GLOBAL; x_t++) {
+				for (int y_t = 0; y_t < NTIME_GLOBAL; y_t++) {
 					uint3 coord_y, coord_y;
 					for (int coord_x.x = 0; coord_x.x < NSPACE; coord_x.x++) {
 						for (int coord_y.x = 0; coord_y.x < NSPACE; coord_y.x++) {
@@ -242,7 +246,7 @@ __kernel void kappa_clover_gpu (__global Matrixsu3StorageType * gaugefield, cons
 	// 1/3 for averaging T_ij, 1/V/Nt for averaging y, L^2/2/pi^2 for derivation, (-1/64)^2 for Clover and T_munu^2, beta^2/Nc^2 for T_munu^2
 	// *2 for temp + conj (temp) *2 for for-loop
 	// = beta^2 * L^2/ (55296 * V * Nt * pi^2)
-	hmc_float norm = (hmc_float) (NSPACE * NSPACE) / (hmc_float) (VOL4D) / PI / PI * beta * beta / 55296. ;
+	hmc_float norm = (hmc_float) (NSPACE * NSPACE) / (hmc_float) (VOL4D_GLOBAL) / PI / PI * beta * beta / 55296. ;
 
 	* kappa_clover_val = norm * result;
 

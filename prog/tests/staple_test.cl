@@ -15,8 +15,8 @@ hmc_float sum_up_matrix3x3(const Matrix3x3 in)
 
 __kernel void staple_test(__global const Matrixsu3StorageType * const restrict field, __global hmc_float * const restrict out)
 {
-	PARALLEL_FOR(id, VOL4D) {
-		st_index pos = (id % 2 == 0) ? get_even_site(id / 2) : get_odd_site(id / 2);
+	PARALLEL_FOR(id, VOL4D_LOCAL) {
+		st_index pos = (id % 2 == 0) ? get_even_st_idx_local(id / 2) : get_odd_st_idx_local(id / 2);
 		Matrix3x3 V;
 		hmc_float res = 0;
 		hmc_float res2;
@@ -25,7 +25,7 @@ __kernel void staple_test(__global const Matrixsu3StorageType * const restrict f
 			res2 = sum_up_matrix3x3(V);
 			res += res2;
 		}
-		int global_pos = get_global_pos(pos.space, pos.time);
+		int global_pos = get_pos(pos.space, pos.time);
 		out[global_pos] = res;
 	}
 

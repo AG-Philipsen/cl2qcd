@@ -49,15 +49,41 @@ public:
 	 * Load data from the given pointer into the buffer.
 	 *
 	 * Note that this requires creation of a temporary buffer in case the buffer uses a SOA layout!
+	 *
+	 * \param elems Allows to limit the number of elements loaded from the given pointer
+	 * \param offset Allows to store the elements at the given offset into the buffer
 	 */
-	void load(const spinor *) const;
+	void load(const spinor *, size_t elems = 0, size_t offset = 0) const;
 
 	/**
 	 * Store data from the buffer into the given pointer.
 	 *
 	 * Note that this requires creation of a temporary buffer in case the buffer uses a SOA layout!
+	 *
+	 * \param elems Allows to limit the number of elements dumped to the given pointer
+	 * \param offset Allows to read the elements at the given offset into the buffer
 	 */
-	void dump(spinor *) const;
+	void dump(spinor *, size_t elems = 0, size_t offset = 0) const;
+
+	/**
+	 * Load raw data from the given pointer into the buffer.
+	 *
+	 * This also works for SoA buffer, but use with care, as this method does not ensure correct data format.
+	 *
+	 * \param elems Allows to limit the number of bytes loaded from the given memory
+	 * \param offset Allows to store the bytes at the given offset into the buffer
+	 */
+	void load_raw(const void *, size_t bytes = 0, size_t offset = 0) const;
+
+	/**
+	 * Store the raw data from the buffer into the given pointer.
+	 *
+	 * This also works for SoA buffer, but use with care, as this method does not ensure correct data format.
+	 *
+	 * \param elems Allows to limit the number of bytes dumped to the given memory
+	 * \param offset Allows to read the bytes at the given offset into the buffer
+	 */
+	void dump_raw(void *, size_t bytes = 0, size_t offset = 0) const;
 
 	/**
 	 * Get the size of the buffer in elements
@@ -68,6 +94,25 @@ public:
 	 * Check whether this Buffer uses soa layout
 	 */
 	bool is_soa() const noexcept;
+
+	/**
+	 * Get the size of the type used for storage.
+	 */
+	size_t get_storage_type_size() const noexcept;
+
+	/**
+	 * Get the stride between two lanes (in elements).
+	 *
+	 * 0 if not a SOA buffer
+	 */
+	size_t get_lane_stride() const noexcept;
+
+	/**
+	 * Get the number of lanes.
+	 *
+	 * 1 if not a SOA buffer
+	 */
+	size_t get_lane_count() const noexcept;
 
 private:
 

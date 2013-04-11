@@ -55,22 +55,49 @@ bool hardware::buffers::Gaugemomentum::is_soa() const noexcept
 	return soa;
 }
 
-void hardware::buffers::Gaugemomentum::load(const ae * ptr) const
+void hardware::buffers::Gaugemomentum::load(const ae * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		throw std::logic_error("Data cannot be loaded into SOA buffers.");
 	} else {
-		Buffer::load(ptr);
+		Buffer::load(ptr, elems * sizeof(ae), offset * sizeof(ae));
 	}
 }
 
-void hardware::buffers::Gaugemomentum::dump(ae * ptr) const
+void hardware::buffers::Gaugemomentum::dump(ae * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
 		auto gm_code = device->get_gaugemomentum_code();
 		gm_code->exportGaugemomentumBuffer(ptr, this);
 	} else {
-		Buffer::dump(ptr);
+		Buffer::dump(ptr, elems * sizeof(ae), offset * sizeof(ae));
 	}
+}
+
+void hardware::buffers::Gaugemomentum::load_raw(const void * ptr, size_t bytes, size_t offset) const
+{
+	logger.trace() << "Loading raw data into Gaugemomentum buffer.";
+	Buffer::load(ptr, bytes, offset);
+}
+
+void hardware::buffers::Gaugemomentum::dump_raw(void * ptr, size_t bytes, size_t offset) const
+{
+	logger.trace() << "Dumping raw data from Gaugemomentum buffer.";
+	Buffer::dump(ptr, bytes, offset);
+}
+
+size_t hardware::buffers::Gaugemomentum::get_storage_type_size() const noexcept
+{
+	return soa ? sizeof(soa_storage_t) : sizeof(ae);
+}
+
+size_t hardware::buffers::Gaugemomentum::get_lane_stride() const noexcept
+{
+	return soa ? (get_bytes() / sizeof(soa_storage_t) / soa_storage_lanes) : 0;
+}
+
+size_t hardware::buffers::Gaugemomentum::get_lane_count() const noexcept
+{
+	return soa ? soa_storage_lanes : 1;
 }

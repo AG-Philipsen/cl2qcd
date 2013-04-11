@@ -15,12 +15,11 @@ void physics::fermionmatrix::M_wilson(const physics::lattices::Spinorfield * out
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("M_wilson is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->M_wilson_device(in_bufs[i], out_bufs[i], gf_bufs[i], kappa);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->M_wilson_device(in_bufs[0], out_bufs[0], gf_bufs[0], kappa);
+	out->update_halo();
 }
 
 void physics::fermionmatrix::M_tm_plus(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar)
@@ -34,12 +33,11 @@ void physics::fermionmatrix::M_tm_plus(const physics::lattices::Spinorfield * ou
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("M_tm_plus is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->M_tm_plus_device(in_bufs[i], out_bufs[i], gf_bufs[i], kappa, mubar);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->M_tm_plus_device(in_bufs[0], out_bufs[0], gf_bufs[0], kappa, mubar);
+	out->update_halo();
 }
 
 void physics::fermionmatrix::M_tm_minus(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar)
@@ -53,12 +51,11 @@ void physics::fermionmatrix::M_tm_minus(const physics::lattices::Spinorfield * o
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("M_tm_minus is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->M_tm_minus_device(in_bufs[i], out_bufs[i], gf_bufs[i], kappa, mubar);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->M_tm_minus_device(in_bufs[0], out_bufs[0], gf_bufs[0], kappa, mubar);
+	out->update_halo();
 }
 
 void physics::fermionmatrix::M_tm_inverse_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
@@ -71,12 +68,10 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal(const physics::lattices::
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("M_tm_inverse_sitediagonal is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->M_tm_inverse_sitediagonal_device(in_bufs[i], out_bufs[i], mubar);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->M_tm_inverse_sitediagonal_device(in_bufs[0], out_bufs[0], mubar);
 }
 
 void physics::fermionmatrix::M_tm_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
@@ -89,12 +84,10 @@ void physics::fermionmatrix::M_tm_sitediagonal(const physics::lattices::Spinorfi
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("M_tm_sitediagonal is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->M_tm_sitediagonal_device(in_bufs[i], out_bufs[i], mubar);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->M_tm_sitediagonal_device(in_bufs[0], out_bufs[0], mubar);
 }
 
 void physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
@@ -107,12 +100,10 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(const physics::latt
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("M_tm_inverse_sitediagonal_minus is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->M_tm_inverse_sitediagonal_minus_device(in_bufs[i], out_bufs[i], mubar);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->M_tm_inverse_sitediagonal_minus_device(in_bufs[0], out_bufs[0], mubar);
 }
 
 void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
@@ -125,12 +116,10 @@ void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Sp
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("M_tm_sitediagonal_minus is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->M_tm_sitediagonal_minus_device(in_bufs[i], out_bufs[i], mubar);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->M_tm_sitediagonal_minus_device(in_bufs[0], out_bufs[0], mubar);
 }
 
 void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, int evenodd, hmc_float kappa)
@@ -144,10 +133,9 @@ void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * ou
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
-	if(num_bufs != 1) {
-		throw Print_Error_Message("dslash is only implemented for a single device.", __FILE__, __LINE__);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->dslash_eo_device(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd, kappa);
 	}
-
-	auto fermion_code = out_bufs[0]->get_device()->get_fermion_code();
-	fermion_code->dslash_eo_device(in_bufs[0], out_bufs[0], gf_bufs[0], evenodd, kappa);
+	out->update_halo();
 }

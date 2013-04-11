@@ -9,7 +9,7 @@ __kernel void create_point_source(__global spinor * const restrict b, int i, int
 		hmc_float tmp = 1.;
 		int color = spinor_color(i);
 		int spin = spinor_spin(i, color);
-		int pos = get_global_pos(spacepos, timepos);
+		int pos = get_pos(spacepos, timepos);
 		b[pos] = set_spinor_zero();
 		switch (color) {
 

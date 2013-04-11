@@ -13,6 +13,7 @@
 #include "../../checksum.h"
 #include <fstream>
 #include "../../hardware/device.hpp"
+#include "../../hardware/buffers/halo_update.hpp"
 
 /**
  * Version number.
@@ -34,6 +35,12 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params);
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static void extract_boundary(char* host, const hardware::buffers::SU3 * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
+static void send_halo(const hardware::buffers::SU3 * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source() 
@@ -48,6 +55,7 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 			break;
 		case meta::Inputparameters::hot_start:
 			set_hot(buffers, prng);
+			update_halo();
 			break;
 	}
 }
@@ -57,6 +65,7 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 {
 	if(hot) {
 		set_hot(buffers, prng);
+		update_halo();
 	} else {
 		set_cold(buffers);
 	}
@@ -70,10 +79,8 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 
 void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 {
-	assert(buffers.size() == 1);
-
 	auto parameters = system.get_inputparameters();
-	Matrixsu3 * gf_host = new Matrixsu3[buffers[0]->get_elements()];
+	Matrixsu3 * gf_host = new Matrixsu3[meta::get_vol4d(parameters) * 4];
 
 	char * gf_ildg; // filled by readsourcefile
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters.get_precision(), &gf_ildg);
@@ -92,9 +99,7 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
 
-	auto device = buffers[0]->get_device();
-	device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
-	device->synchronize();
+	send_gaugefield_to_buffers(buffers, gf_host, parameters);
 
 	delete[] gf_ildg;
 	delete[] gf_host;
@@ -107,10 +112,12 @@ static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardwa
 {
 	using hardware::buffers::SU3;
 
-	// only use device 0 for now
-	hardware::Device * device = system.get_devices().at(0);
 	std::vector<const SU3 *> buffers;
-	buffers.push_back(new SU3(meta::get_vol4d(system.get_inputparameters()) * 4, device));
+
+	auto const devices = system.get_devices();
+	for(auto device: devices) {
+		buffers.push_back(new SU3(get_vol4d(device->get_mem_lattice_size()) * 4, device));
+	}
 	return buffers;
 }
 
@@ -180,8 +187,6 @@ void physics::lattices::Gaugefield::save(int number)
 
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
-	assert(buffers.size() == 1);
-
 	auto parameters = system.get_inputparameters();
 	const size_t NTIME = parameters.get_ntime();
 	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME * sizeof(hmc_float);
@@ -191,14 +196,9 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
 
 	{
-		auto dev_buf = buffers[0];
-		Matrixsu3 * host_buf = new Matrixsu3[dev_buf->get_elements()];
-		auto device = dev_buf->get_device();
-		device->get_gaugefield_code()->exportGaugefield(host_buf, dev_buf);
-		device->synchronize();
-
+		Matrixsu3 * host_buf = new Matrixsu3[meta::get_vol4d(parameters) * NDIM];
+		fetch_gaugefield_from_buffers(host_buf, buffers, parameters);
 		copy_gaugefield_to_ildg_format(gaugefield_buf, host_buf, parameters);
-
 		delete host_buf;
 	}
 
@@ -320,21 +320,75 @@ static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, c
 
 hmc_float physics::lattices::Gaugefield::plaquette() const
 {
-	assert(buffers.size() == 1);
+	hmc_float plaq, tplaq, splaq;
+	plaquette(&plaq, &tplaq, &splaq);
+	return plaq;
+}
 
-	auto gf_dev = buffers[0];
-	auto device = gf_dev->get_device();
+void physics::lattices::Gaugefield::plaquette(hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq) const
+{
+	// the plaquette is local to each side and then summed up
+	// for multi-device simply calculate the plaquette for each device and then sum up the devices
 
-	const hardware::buffers::Plain<hmc_float> plaq_dev(1, device);
-	const hardware::buffers::Plain<hmc_float> tplaq_dev(1, device);
-	const hardware::buffers::Plain<hmc_float> splaq_dev(1, device);
-	device->get_gaugefield_code()->plaquette_device(gf_dev, &plaq_dev, &tplaq_dev, &splaq_dev);
+	using hardware::buffers::Plain;
 
-	hmc_float plaq_host;
-	plaq_dev.dump(&plaq_host);
-	device->synchronize();
-	plaq_host /= static_cast<hmc_float>(meta::get_plaq_norm(system.get_inputparameters()));
-	return plaq_host;
+	size_t num_devs = buffers.size();
+	auto params = system.get_inputparameters();
+
+	if(num_devs == 1) {
+		auto gf_dev = buffers[0];
+		auto device = gf_dev->get_device();
+
+		const Plain<hmc_float> plaq_dev(1, device);
+		const Plain<hmc_float> tplaq_dev(1, device);
+		const Plain<hmc_float> splaq_dev(1, device);
+		device->get_gaugefield_code()->plaquette_device(gf_dev, &plaq_dev, &tplaq_dev, &splaq_dev);
+
+		plaq_dev.dump(plaq);
+		tplaq_dev.dump(tplaq);
+		splaq_dev.dump(splaq);
+		*tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(params));
+		*splaq /= static_cast<hmc_float>(meta::get_splaq_norm(params));
+		*plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(params));
+	} else {
+		// trigger calculation
+		std::vector<const Plain<hmc_float>*> plaqs; plaqs.reserve(num_devs);
+		std::vector<const Plain<hmc_float>*> tplaqs; tplaqs.reserve(num_devs);
+		std::vector<const Plain<hmc_float>*> splaqs; splaqs.reserve(num_devs);
+		for(size_t i = 0; i < num_devs; ++i) {
+			auto device = buffers[i]->get_device();
+			const Plain<hmc_float>* plaq_dev = new Plain<hmc_float>(1, device);
+			const Plain<hmc_float>* tplaq_dev = new Plain<hmc_float>(1, device);
+			const Plain<hmc_float>* splaq_dev = new Plain<hmc_float>(1, device);
+			device->get_gaugefield_code()->plaquette_device(buffers[i], plaq_dev, tplaq_dev, splaq_dev);
+			plaqs.push_back(plaq_dev);
+			tplaqs.push_back(tplaq_dev);
+			splaqs.push_back(splaq_dev);
+		}
+		// collect results
+		*plaq = 0.0;
+		*splaq = 0.0;
+		*tplaq = 0.0;
+		for(size_t i = 0; i < num_devs; ++i) {
+			hmc_float tmp;
+
+			plaqs[i]->dump(&tmp);
+			*plaq += tmp;
+
+			tplaqs[i]->dump(&tmp);
+			*tplaq += tmp;
+
+			splaqs[i]->dump(&tmp);
+			*splaq += tmp;
+
+			delete plaqs[i];
+			delete tplaqs[i];
+			delete splaqs[i];
+		}
+		*plaq /= static_cast<hmc_float>(meta::get_plaq_norm(params));
+		*tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(params));
+		*splaq /= static_cast<hmc_float>(meta::get_splaq_norm(params));
+	}
 }
 
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float plaquette, sourcefileparameters& parameters_source)
@@ -414,20 +468,105 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 
 void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const
 {
-	assert(buffers.size() == 1);
+	plaquette(plaq, tplaq, splaq);
+	*pol = polyakov();
+}
 
-	auto gf_dev = buffers[0];
-	gf_dev->get_device()->get_gaugefield_code()->gaugeobservables(gf_dev, plaq, tplaq, splaq, pol);
+hmc_complex physics::lattices::Gaugefield::polyakov() const
+{
+	using hardware::buffers::Plain;
+
+	hmc_complex tmp_pol = hmc_complex_zero;
+
+	if(buffers.size() == 1) {
+		auto gf_buf = buffers[0];
+		auto device = gf_buf->get_device();
+		auto gf_code = device->get_gaugefield_code();
+
+		const Plain<hmc_complex> pol_buf(1, device);
+
+		//measure polyakovloop
+		gf_code->polyakov_device(gf_buf, &pol_buf);
+
+		//NOTE: this is a blocking call!
+		pol_buf.dump(&tmp_pol);
+
+	} else {
+		const size_t volspace = meta::get_volspace(system.get_inputparameters());
+		// calculate local part per device
+		std::vector<Plain<Matrixsu3>*> local_results;
+		local_results.reserve(buffers.size());
+		for(auto buffer: buffers) {
+			auto dev = buffer->get_device();
+			auto res_buf = new Plain<Matrixsu3>(volspace, dev);
+			dev->get_gaugefield_code()->polyakov_md_local_device(res_buf, buffer);
+			local_results.push_back(res_buf);
+		}
+
+		// merge results
+		auto main_dev = buffers.at(0)->get_device();
+		Plain<Matrixsu3> merged_buf(volspace * local_results.size(), main_dev);
+		{
+			Matrixsu3* merged_host = new Matrixsu3[merged_buf.get_elements()];
+			size_t offset = 0;
+			for(auto local_res: local_results) {
+				local_res->dump(&merged_host[offset]);
+				offset += volspace;
+			}
+			merged_buf.load(merged_host);
+			delete[] merged_host;
+		}
+
+		const Plain<hmc_complex> pol_buf(1, main_dev);
+		main_dev->get_gaugefield_code()->polyakov_md_merge_device(&merged_buf, buffers.size(), &pol_buf);
+		pol_buf.dump(&tmp_pol);
+
+		for(auto buffer: local_results) {
+			delete buffer;
+		}
+	}
+
+	auto params = system.get_inputparameters();
+	tmp_pol.re /= static_cast<hmc_float>(meta::get_poly_norm(params));
+	tmp_pol.im /= static_cast<hmc_float>(meta::get_poly_norm(params));
+
+	return tmp_pol;
 }
 
 hmc_float physics::lattices::Gaugefield::rectangles() const
 {
-	assert(buffers.size() == 1);
+	// the rectangles are local to each site and then summed up
+	// for multi-device simply calculate the plaquette for each device and then sum up the devices
+
+	using hardware::buffers::Plain;
+
+	size_t num_devs = buffers.size();
+	auto params = system.get_inputparameters();
 
 	hmc_float rect;
 
-	auto gf_dev = buffers[0];
-	gf_dev->get_device()->get_gaugefield_code()->gaugeobservables_rectangles(gf_dev, &rect);
+	if(num_devs == 1) {
+		auto gf_dev = buffers[0];
+		gf_dev->get_device()->get_gaugefield_code()->gaugeobservables_rectangles(gf_dev, &rect);
+	} else {
+		// trigger calculation
+		std::vector<const Plain<hmc_float>*> rects; rects.reserve(num_devs);
+		for(size_t i = 0; i < num_devs; ++i) {
+			auto device = buffers[i]->get_device();
+			const Plain<hmc_float>* rect_dev = new Plain<hmc_float>(1, device);
+			device->get_gaugefield_code()->rectangles_device(buffers[i], rect_dev);
+			rects.push_back(rect_dev);
+		}
+		// collect results
+		rect = 0.0;
+		for(size_t i = 0; i < num_devs; ++i) {
+			hmc_float tmp;
+			rects[i]->dump(&tmp);
+			rect += tmp;
+
+			delete rects[i];
+		}
+	}
 
 	return rect;
 }
@@ -578,4 +717,106 @@ void physics::lattices::Gaugefield::unsmear()
 sourcefileparameters physics::lattices::Gaugefield::get_parameters_source()
 {
   return parameters_source;
+}
+
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params) {
+	if(buffers.size() == 1) {
+		auto device = buffers[0]->get_device();
+		device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
+		device->synchronize();
+	} else {
+		auto const _device = buffers.at(0)->get_device();
+		auto const local_size = _device->get_local_lattice_size();
+		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
+		auto const grid_size = _device->get_grid_size();
+		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
+		}
+		for(auto const buffer: buffers) {
+			auto device = buffer->get_device();
+			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
+
+			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			logger.debug() << offset;
+			const size_t local_volume = get_vol4d(local_size) * NDIM;
+			memcpy(mem_host, &gf_host[get_global_link_pos(0, offset, params)], local_volume * sizeof(Matrixsu3));
+
+			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			memcpy(&mem_host[local_volume], &gf_host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(Matrixsu3));
+
+			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			memcpy(&mem_host[local_volume + halo_volume], &gf_host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(Matrixsu3));
+
+			device->get_gaugefield_code()->importGaugefield(buffer, mem_host);
+
+			delete[] mem_host;
+		}
+	}
+}
+
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+{
+	if(buffers.size() == 1) {
+		auto device = buffers[0]->get_device();
+		device->get_gaugefield_code()->exportGaugefield(gf_host, buffers[0]);
+		device->synchronize();
+	} else {
+		auto const _device = buffers.at(0)->get_device();
+		auto const local_size = _device->get_local_lattice_size();
+		auto const grid_size = _device->get_grid_size();
+		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
+		}
+		for(auto const buffer: buffers) {
+			// fetch local part for each device
+			auto device = buffer->get_device();
+			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
+
+			device->get_gaugefield_code()->exportGaugefield(mem_host, buffer);
+			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			const size_t local_volume = get_vol4d(local_size) * NDIM;
+			memcpy(&gf_host[get_global_link_pos(0, offset, params)], mem_host, local_volume * sizeof(Matrixsu3));
+
+			delete[] mem_host;
+		}
+	}
+}
+
+void physics::lattices::Gaugefield::update_halo() const
+{
+	if(buffers.size() > 1) { // for a single device this will be a noop
+		// currently either all or none of the buffers must be SOA
+		if(buffers[0]->is_soa()) {
+			update_halo_soa(buffers, system.get_inputparameters());
+		} else {
+			update_halo_aos(buffers, system.get_inputparameters());
+		}
+	}
+}
+
+static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+{
+	// check all buffers are non-soa
+	for(auto const buffer: buffers) {
+		if(buffer->is_soa()) {
+			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
+		}
+	}
+
+	hardware::buffers::update_halo<Matrixsu3>(buffers, params, NDIM);
+}
+
+static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+{
+	// check all buffers are non-soa
+	for(auto const buffer: buffers) {
+		if(!buffer->is_soa()) {
+			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
+		}
+	}
+
+	hardware::buffers::update_halo_soa<Matrixsu3>(buffers, params, .5, 2 * NDIM);
 }

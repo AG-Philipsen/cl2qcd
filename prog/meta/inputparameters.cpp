@@ -631,7 +631,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
 
 	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
-	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.");
+	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
+
+	("split_cpu", po::value<bool>(&split_cpu)->default_value(false), "Split the CPU into multiple devices to avoid numa issues. (Requires OpenCL 1.2 at least)");
 
 
 	po::options_description desc;
@@ -808,4 +810,9 @@ static void add_option_aliases(meta::ConfigFileNormalizer * const normalizer)
 	normalizer->add_alias("test_ref_value", "test_ref_val");
 	normalizer->add_alias("ThetaT", "theta_fermion_temporal");
 	normalizer->add_alias("ThetaS", "theta_fermion_spatial");
+}
+
+bool meta::Inputparameters::get_split_cpu() const noexcept
+{
+	return split_cpu;
 }

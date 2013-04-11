@@ -21,7 +21,7 @@ __kernel void create_zslice_source(__global spinor * const restrict b, __global 
 
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 	  for(int y = 0; y<NSPACE; y++) {
-	    for (int t = 0; t < NTIME; t++){
+	    for (int t = 0; t < NTIME_LOCAL; t++){
 	      coord.x = id_tmp;
 	      coord.y = y;
 	      pos.space = get_nspace(coord);

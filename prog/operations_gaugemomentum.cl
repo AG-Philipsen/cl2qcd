@@ -82,7 +82,7 @@ ae ae_times_factor(ae in, hmc_float factor)
 	return tmp;
 }
 
-#ifdef GAUGEMOMENTASIZE // we only need the ifdef so we can use the non-field functions without having the field defined
+#ifdef GAUGEMOMENTASIZE_MEM // we only need the ifdef so we can use the non-field functions without having the field defined
 ae getAe(__global const aeStorageType * const restrict in, const size_t idx)
 {
 #ifdef _USE_SOA_
