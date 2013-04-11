@@ -13,6 +13,7 @@
 #include "solver.hpp"
 #include "forces.hpp"
 #include "../../hardware/code/molecular_dynamics.hpp"
+#include "../lattices/util.hpp"
 
 static void md_update_gaugemomenta(const physics::lattices::Gaugemomenta * dest, const physics::lattices::Gaugemomenta& src, hmc_float eps);
 
@@ -54,6 +55,7 @@ void physics::algorithms::md_update_gaugefield(const physics::lattices::Gaugefie
 
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
+	logger.debug() << "\tHMC [UP]:\tupdate SF";
 	physics::fermionmatrix::Qplus qplus(kappa, mubar, system);
 	qplus(out, gf, orig);
 	log_squarenorm("Spinorfield after update", *out);
@@ -61,55 +63,82 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
 
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
+	logger.debug() << "\tHMC [UP]:\tupdate SF";
 	physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system);
 	qplus(out, gf, orig);
 	log_squarenorm("Spinorfield after update", *out);
 }
 
-template<class FERMIONMATRIX, class SPINORFIELD> static void md_update_spinorfield_mp(const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+/**
+ * template for md_update_spinorfield_mp
+ * this needs 3 fermionmatrices in order to use cg as default solver (because for the cg one needs a hermitian matrix)
+ */
+template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM, class SPINORFIELD> static void md_update_spinorfield_mp(const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
-	using physics::algorithms::solvers::bicgstab;
-
-	SPINORFIELD tmp(system);
+        SPINORFIELD tmp(system);
 	FERMIONMATRIX qplus(kappa, mubar, system);
+	auto params = system.get_inputparameters();
 
-	log_squarenorm("Spinorfield before update", orig);
+	log_squarenorm("Spinorfield before update: ", orig);
 
 	qplus(&tmp, gf, orig);
 
-	//Now one needs ( Qplus )^-1 (heavy_mass) using tmp as source to get phi_mp
-	//use always bicgstab here
-	logger.debug() << "\t\t\tstart solver";
-
-	/** @todo at the moment, we can only put in a cold spinorfield
-	 * or a point-source spinorfield as trial-solution
+	/**
+	 * Now one needs ( Qplus )^-1 (heavy_mass) using tmp as source to get phi_mp
 	 */
-	out->zero();
-	out->gamma5();
+	try {
+	  /**
+	   * Use BiCGStab as default here
+	   * an exception will be thrown if the solver cannot solve
+	   */
+	  logger.debug() << "\t\t\tstart solver";
+	  
+	  /** 
+	   * @todo at the moment, we can only put in a cold spinorfield
+	   * or a point-source spinorfield as trial-solution
+	   */
+	  out->zero();
+	  out->gamma5();
+	  
+	  FERMIONMATRIX qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
+	  const int iterations = physics::algorithms::solvers::bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
+	} //try
+	catch (physics::algorithms::solvers::SolverException& e ) {
+	  logger.fatal() << e.what();
+	  logger.info() << "Retry with CG...";
+	  SPINORFIELD tmp2(system);
+	  /** 
+	   * @todo at the moment, we can only put in a cold spinorfield
+	   * or a point-source spinorfield as trial-solution
+	   */
+	  tmp2.zero();
+	  tmp2.gamma5();
 
-	log_squarenorm("\tinv. field before inversion.", *out);
-	log_squarenorm("\tsource before inversion.", tmp);
-
-	auto params = system.get_inputparameters();
-	FERMIONMATRIX qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-	const int iterations = bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
-	logger.debug() << "\t\t\tsolver solved in " << iterations << " iterations!";
-
-	log_squarenorm("\tinv. field after inversion ", *out);
+	  FERMIONMATRIX_HERM fm_herm(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
+	  const int iterations_cg = physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, tmp, system, params.get_solver_prec());
+	  FERMIONMATRIX_CONJ fm_conj(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
+	  fm_conj(out, gf, tmp2);
+	}
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
-	using physics::fermionmatrix::Qplus;
+  logger.debug() << "\tHMC [UP]:\tupdate SF_MP";
+	  using physics::fermionmatrix::Qplus;
+	  using physics::fermionmatrix::Qminus;
+	  using physics::fermionmatrix::QplusQminus;
 
-	::md_update_spinorfield_mp<Qplus>(out, gf, orig, system, kappa, mubar);
+	  ::md_update_spinorfield_mp<Qplus, Qminus, QplusQminus>(out, gf, orig, system, kappa, mubar);
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
-	using physics::fermionmatrix::Qplus_eo;
+	logger.debug() << "\tHMC [UP]:\tupdate SF_MP";
+	  using physics::fermionmatrix::Qplus_eo;
+	  using physics::fermionmatrix::Qminus_eo;
+	  using physics::fermionmatrix::QplusQminus_eo;
 
-	::md_update_spinorfield_mp<Qplus_eo>(out, gf, orig, system, kappa, mubar);
+	  ::md_update_spinorfield_mp<Qplus_eo, Qminus_eo, QplusQminus_eo>(out, gf, orig, system, kappa, mubar);
 }
 
 template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)

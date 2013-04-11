@@ -28,10 +28,27 @@ public:
 	virtual ~Spinors_staggered();
 
 	/////////////////////////////////////////
-	//    linear Algebra operations
+	//    linear Algebra operations        //
+	/////////////////////////////////////////
+	/**
+	 * This function completes the reduction to calculate the sum
+	 * of squarenorms of the staggered field. It should be called
+	 * after that the kernel "global_squarenorm_staggered" ended.
+	 * 
+	 * @param out The result of the reduction
+	 * @param tmp_buf The vector containing the results of the local (i.e. within each group)
+	 *                reductions.
+	 */
 	void global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf) const;
+	/**
+	 * This function performs a complete reduction, calculating the sum of squarenorms
+	 * of the staggered field. It uses the "global_squarenorm_reduction" function.
+	 * @param a The staggered field (one su3vec per site)
+	 * @param out The result of the reduction
+	 */
 	void set_float_to_global_squarenorm_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<hmc_float> * out) const;
 
+	///////////////////////////////////////////
 	/**
 	 * Print the profiling information to a file.
 	 *
