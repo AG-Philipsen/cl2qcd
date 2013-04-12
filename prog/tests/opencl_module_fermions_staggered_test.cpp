@@ -138,7 +138,8 @@ void copy_Matrixsu3(Matrixsu3 &a, const Matrixsu3 b)
  *      e      o      e       o     e      o      e      o
  *        x-dir         y-dir         z-dir         t-dir
  * 
- *  where e=even and o=odd. Hence, in order to use the same random configuration in tests
+ *  where e=even, o=odd, whereas size=VOL4D.
+ *  Hence, in order to use the same random configuration in tests
  *  I have to print all links to a text file according this scheme. 
  * 
  */
@@ -147,7 +148,7 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, 
 	int nt=params.get_ntime();
 	int ns=params.get_nspace();
 	if(ns!=nt){
-	  logger.fatal() << "The lattice must be isotropic!";
+	  logger.fatal() << "The lattice must be isotropic to call the function print_gaugefield_to_textfile(...)!";
 	  abort();
 	}
 	//conf_old is the Matrixsu3 array with the links in the standard order (standard for this code)
@@ -156,18 +157,58 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, 
 	Matrixsu3 *conf_new=new Matrixsu3[ns*ns*ns*nt*4];
 	cpu->get_gf_code()->exportGaugefield(conf_old,cpu->get_gaugefield());
 	//Now I have conf_old and I have to fill properly conf_new
-	int x,y,z,t,num,even;
+	int x,y,z,t,num,even,size;
+	size=ns*ns*ns*nt;
 	for(int i=0; i<ns*ns*ns*nt; i++){
 	  get_full_coord_from_site_idx(i,x,y,z,t,ns);
 	  even = (x+y+z+t)%2;
 	  // even=0 for even sites
 	  // even=1 for odd sites
-	  num = even*(ns/2) + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
+	  num = even*size/2 + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
 	  // num is where, in conf_new, conf_old[...] is to be written
-	  copy_Matrixsu3(conf_new[num         ],conf_old[4*i  ]);
-	  copy_Matrixsu3(conf_new[num+ns      ],conf_old[4*i+1]);
-	  copy_Matrixsu3(conf_new[num+ns*ns   ],conf_old[4*i+2]);
-	  copy_Matrixsu3(conf_new[num+ns*ns*ns],conf_old[4*i+3]);
+	  copy_Matrixsu3(conf_new[num       ],conf_old[4*i  ]);
+	  copy_Matrixsu3(conf_new[num+size  ],conf_old[4*i+1]);
+	  copy_Matrixsu3(conf_new[num+size*2],conf_old[4*i+2]);
+	  copy_Matrixsu3(conf_new[num+size*3],conf_old[4*i+3]);
+	  //Only to check if the function works correctly ---> Comment out these line if all is fine
+	  /*
+	  conf_new[num].e00={x,0.};
+	  conf_new[num].e01={y,0.};
+	  conf_new[num].e02={z,0.};
+	  conf_new[num].e10={t,0.};
+	  conf_new[num].e11={0.,0.};
+	  conf_new[num].e12={0.,0.};
+	  conf_new[num].e20={0.,0.};
+	  conf_new[num].e21={num,0.};
+	  conf_new[num].e22={even,0.};
+	  conf_new[num+size].e00={x,0.};
+	  conf_new[num+size].e01={y,0.};
+	  conf_new[num+size].e02={z,0.};
+	  conf_new[num+size].e10={t,0.};
+	  conf_new[num+size].e11={0.,0.};
+	  conf_new[num+size].e12={0.,0.};
+	  conf_new[num+size].e20={0.,0.};
+	  conf_new[num+size].e21={num,0.};
+	  conf_new[num+size].e22={even,0.};
+	  conf_new[num+size*2].e00={x,0.};
+	  conf_new[num+size*2].e01={y,0.};
+	  conf_new[num+size*2].e02={z,0.};
+	  conf_new[num+size*2].e10={t,0.};
+	  conf_new[num+size*2].e11={0.,0.};
+	  conf_new[num+size*2].e12={0.,0.};
+	  conf_new[num+size*2].e20={0.,0.};
+	  conf_new[num+size*2].e21={num,0.};
+	  conf_new[num+size*2].e22={even,0.};
+	  conf_new[num+size*3].e00={x,0.};
+	  conf_new[num+size*3].e01={y,0.};
+	  conf_new[num+size*3].e02={z,0.};
+	  conf_new[num+size*3].e10={t,0.};
+	  conf_new[num+size*3].e11={0.,0.};
+	  conf_new[num+size*3].e12={0.,0.};
+	  conf_new[num+size*3].e20={0.,0.};
+	  conf_new[num+size*3].e21={num,0.};
+	  conf_new[num+size*3].e22={even,0.};
+	  */
 	}
 	//Now we can write conf_new to the file
 	std::ofstream file(outputfile.c_str());
