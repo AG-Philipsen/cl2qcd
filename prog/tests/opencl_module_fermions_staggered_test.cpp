@@ -433,10 +433,6 @@ BOOST_AUTO_TEST_CASE( M_STAGGERED_3)
 	test_m_staggered("/m_staggered_input_3");
 }
 
-/**
- * to be added...
- */
-/*
 BOOST_AUTO_TEST_CASE( M_STAGGERED_4)
 {
 	test_m_staggered("/m_staggered_input_4");
@@ -451,6 +447,6 @@ BOOST_AUTO_TEST_CASE( M_STAGGERED_6)
 {
 	test_m_staggered("/m_staggered_input_6");
 }
-*/
+
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -1,6 +1,6 @@
 startcondition=cold
 
-kappa=0.
+kappa=0.1
 
 use_eo=false
 NS=4
@@ -12,11 +12,11 @@ ThetaS=0.
 
 #BICGSTAB sets the init-spinorfield to random values
 #      CG sets the init-spinorfield to (1,1,1)
-solver=CG
+solver=BICGSTAB
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0
+test_ref_val=258.37750764658210301
 
 #This imput file must not be modified!
