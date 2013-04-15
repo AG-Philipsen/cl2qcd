@@ -145,6 +145,10 @@ protected:
 	 */
 	void dump(void* dest, size_t bytes = 0, size_t offset = 0) const;
 
+	void load_rect(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
+
+	void dump_rect(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
+
 	/**
 	 * Utility function for creation of custom dump functions.
 	 *

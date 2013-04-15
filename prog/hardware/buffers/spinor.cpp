@@ -92,6 +92,19 @@ void hardware::buffers::Spinor::dump_raw(void * ptr, size_t bytes, size_t offset
 	Buffer::dump(ptr, bytes, offset);
 }
 
+void hardware::buffers::Spinor::loadRect_raw(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	logger.trace() << "Loading raw data into Spinor buffer.";
+	Buffer::load_rect(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+}
+
+void hardware::buffers::Spinor::dumpRect_raw(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	logger.trace() << "Dumping raw data from Spinor buffer.";
+	Buffer::dump_rect(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+}
+
+
 size_t hardware::buffers::Spinor::get_storage_type_size() const noexcept
 {
 	return soa ? sizeof(soa_storage_t) : sizeof(spinor);

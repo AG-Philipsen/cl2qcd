@@ -89,16 +89,29 @@ template<class BUFFER> static void extract_boundary(char* host, const BUFFER * b
 	const unsigned STORAGE_TYPE_SIZE = buffer->get_storage_type_size();
 	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->get_mem_lattice_size()) * ELEMS_PER_SITE;
 
-	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
-		logger.trace() << "Reading lane " << lane;
-		size_t lane_offset = lane * buffer->get_lane_stride();
-		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
-			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
-			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
-			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " << dev_offset;
-			buffer->dump_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
-		}
-	}
+	const size_t buffer_origin[] = { in_lane_offset * STORAGE_TYPE_SIZE, 0, 0 };
+	const size_t host_origin[] = { 0, 0, 0 };
+
+	const size_t region[] = { HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, CHUNKS_PER_LANE, NUM_LANES };
+
+	const size_t buffer_row_pitch = CHUNK_STRIDE * STORAGE_TYPE_SIZE;
+	const size_t host_row_pitch = 0; // automatically consecutive
+	const size_t buffer_slice_pitch = buffer->get_lane_stride() * STORAGE_TYPE_SIZE;
+	const size_t host_slice_pitch = 0; // automatically consecutive
+
+	buffer->dumpRect_raw(host, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+
+// Original code kept for documentation purposes:
+//	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
+//		logger.trace() << "Reading lane " << lane;
+//		size_t lane_offset = lane * buffer->get_lane_stride();
+//		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
+//			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
+//			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+//			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " << dev_offset;
+//			buffer->dump_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
+//		}
+//	}
 }
 
 template<class BUFFER> static void send_halo(const BUFFER * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE)
@@ -108,16 +121,29 @@ template<class BUFFER> static void send_halo(const BUFFER * buffer, const char* 
 	const unsigned STORAGE_TYPE_SIZE = buffer->get_storage_type_size();
 	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->get_mem_lattice_size()) * ELEMS_PER_SITE;
 
-	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
-		logger.trace() << "Sending lane " << lane;
-		size_t lane_offset = lane * buffer->get_lane_stride();
-		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
-			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
-			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
-			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " << dev_offset;
-			buffer->load_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
-		}
-	}
+	const size_t buffer_origin[] = { in_lane_offset * STORAGE_TYPE_SIZE, 0, 0 };
+	const size_t host_origin[] = { 0, 0, 0 };
+
+	const size_t region[] = { HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, CHUNKS_PER_LANE, NUM_LANES };
+
+	const size_t buffer_row_pitch = CHUNK_STRIDE * STORAGE_TYPE_SIZE;
+	const size_t host_row_pitch = 0; // automatically consecutive
+	const size_t buffer_slice_pitch = buffer->get_lane_stride() * STORAGE_TYPE_SIZE;
+	const size_t host_slice_pitch = 0; // automatically consecutive
+
+	buffer->loadRect_raw(host, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+
+// Original code kept for documentation purposes:
+//	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
+//		logger.trace() << "Sending lane " << lane;
+//		size_t lane_offset = lane * buffer->get_lane_stride();
+//		for(size_t chunk = 0; chunk < CHUNKS_PER_LANE; ++chunk) {
+//			size_t host_offset = (lane * CHUNKS_PER_LANE + chunk) * HALO_CHUNK_ELEMS;
+//			size_t dev_offset = lane_offset + in_lane_offset + chunk * CHUNK_STRIDE;
+//			logger.trace() << "Chunk " << chunk << " - host offset: " << host_offset << " - device offset: " << dev_offset;
+//			buffer->load_raw(&host[host_offset * STORAGE_TYPE_SIZE], HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, dev_offset * STORAGE_TYPE_SIZE);
+//		}
+//	}
 }
 
 template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE)

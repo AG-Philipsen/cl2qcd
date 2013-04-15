@@ -81,6 +81,9 @@ public:
 	 */
 	void dump_raw(void *, size_t bytes = 0, size_t offset = 0) const;
 
+	void loadRect_raw(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
+	void dumpRect_raw(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
+
 	/**
 	 * Get the size of the buffer in elements
 	 */

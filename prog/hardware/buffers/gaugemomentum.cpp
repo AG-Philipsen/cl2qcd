@@ -87,6 +87,19 @@ void hardware::buffers::Gaugemomentum::dump_raw(void * ptr, size_t bytes, size_t
 	Buffer::dump(ptr, bytes, offset);
 }
 
+void hardware::buffers::Gaugemomentum::loadRect_raw(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	logger.trace() << "Loading raw data into Gaugemomentum buffer.";
+	Buffer::load_rect(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+}
+
+void hardware::buffers::Gaugemomentum::dumpRect_raw(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	logger.trace() << "Dumping raw data from Gaugemomentum buffer.";
+	Buffer::dump_rect(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+}
+
+
 size_t hardware::buffers::Gaugemomentum::get_storage_type_size() const noexcept
 {
 	return soa ? sizeof(soa_storage_t) : sizeof(ae);
