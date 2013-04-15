@@ -26,11 +26,12 @@ public:
 	const hardware::code::Fermions_staggered * get_device();
 	const hardware::buffers::SU3 * get_gaugefield();
 	const hardware::code::Gaugefield* get_gf_code();
+        void save_conf();
 
 private:
 	const hardware::System * const system;
 	physics::PRNG prng;
-	const physics::lattices::Gaugefield gf;
+        physics::lattices::Gaugefield gf; //I changed this variable from const to not const to be able to save the conf to a lime file!
 };
 
 void fill_sf_with_one(su3vec * sf_in, int size)
@@ -77,6 +78,11 @@ const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 {
 	return gf.get_buffers().at(0);
 }
+
+void TestGaugefield::save_conf()
+{
+        gf.save("conf_lime",13);
+}  
 
 /**
  * Fuction that "convert" a matrix to a string with a proper structure to be
@@ -142,6 +148,8 @@ void copy_Matrixsu3(Matrixsu3 &a, const Matrixsu3 b)
  *  Hence, in order to use the same random configuration in tests
  *  I have to print all links to a text file according this scheme. 
  * 
+ *  @note: In our program mu=0 is the TIME direction and mu=1,2,3 are the x,y,z direction!!! 
+ * 
  */
 void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, meta::Inputparameters params)
 {
@@ -166,10 +174,10 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, 
 	  // even=1 for odd sites
 	  num = even*size/2 + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
 	  // num is where, in conf_new, conf_old[...] is to be written
-	  copy_Matrixsu3(conf_new[num       ],conf_old[4*i  ]);
-	  copy_Matrixsu3(conf_new[num+size  ],conf_old[4*i+1]);
-	  copy_Matrixsu3(conf_new[num+size*2],conf_old[4*i+2]);
-	  copy_Matrixsu3(conf_new[num+size*3],conf_old[4*i+3]);
+	  copy_Matrixsu3(conf_new[num       ],conf_old[4*i+1]); //x-dir
+	  copy_Matrixsu3(conf_new[num+size  ],conf_old[4*i+2]); //y-dir
+	  copy_Matrixsu3(conf_new[num+size*2],conf_old[4*i+3]); //z-dir
+	  copy_Matrixsu3(conf_new[num+size*3],conf_old[4*i  ]); //t-dir
 	  //Only to check if the function works correctly ---> Comment out these line if all is fine
 	  /*
 	  conf_new[num].e00={x,0.};
@@ -212,12 +220,39 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, 
 	}
 	//Now we can write conf_new to the file
 	std::ofstream file(outputfile.c_str());
-	file.precision(16);
 	file << ns << " " << ns << " " << ns << " " << nt << " ";
-	file << params.get_beta() << " " << params.get_kappa() << " #" << std::endl;
+	file << params.get_beta() << " " << params.get_kappa() << " 12345" << std::endl;
+	//The last number that I set to 12345 should be the hmc iteration; here it is not relevant
 	for(int i=0; i<ns*ns*ns*nt*4; i++)
 	  file << matrix_to_string(conf_new[i]);
 	file.close();
+	/*
+        //To keep only links in one direction: it is usefull only for debugging
+	for(int i=0; i<ns*ns*ns*nt*4; i++){
+	  if((i%4)!=0){
+	    conf_old[i].e00.re=0.;
+	    conf_old[i].e00.im=0.;
+	    conf_old[i].e01.re=0.;
+	    conf_old[i].e01.im=0.;
+	    conf_old[i].e02.re=0.;
+	    conf_old[i].e02.im=0.;
+	    conf_old[i].e10.re=0.;
+	    conf_old[i].e10.im=0.;
+	    conf_old[i].e11.re=0.;
+	    conf_old[i].e11.im=0.;
+	    conf_old[i].e12.re=0.;
+	    conf_old[i].e12.im=0.;
+	    conf_old[i].e20.re=0.;
+	    conf_old[i].e20.im=0.;
+	    conf_old[i].e21.re=0.;
+	    conf_old[i].e21.im=0.;
+	    conf_old[i].e22.re=0.;
+	    conf_old[i].e22.im=0.;
+	  }
+	}
+	cpu->get_gf_code()->importGaugefield(cpu->get_gaugefield(),conf_old);
+	cpu->save_conf();
+	*/
 }
 
 
@@ -228,7 +263,6 @@ void test_build(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	print_gaugefield_to_textfile("prova.dat",&cpu,params);
 	BOOST_MESSAGE("Test done");
 }
 
@@ -243,6 +277,14 @@ void test_m_staggered(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
+	//The following three lines are to be used to produce the ref_conf file needed to get the ref_value
+	//---> Comment them out when the reference values has been obtained!
+	/*
+	print_gaugefield_to_textfile("ref_conf",&cpu,params);
+	logger.info() << "Produced the ref_conf text file with the links for the ref. code. Returning...";
+	return;
+	*/
+
 	cl_int err = CL_SUCCESS;
 	const hardware::code::Fermions_staggered * device = cpu.get_device();
 	su3vec * sf_in;
@@ -315,20 +357,15 @@ BOOST_AUTO_TEST_CASE( M_STAGGERED_2)
 	test_m_staggered("/m_staggered_input_2");
 }
 
-/**
- * to be added...
- */
-/*
-BOOST_AUTO_TEST_CASE( M_STAGGERED_2)
-{
-	test_m_staggered("/m_staggered_input_2");
-}
-
 BOOST_AUTO_TEST_CASE( M_STAGGERED_3)
 {
 	test_m_staggered("/m_staggered_input_3");
 }
 
+/**
+ * to be added...
+ */
+/*
 BOOST_AUTO_TEST_CASE( M_STAGGERED_4)
 {
 	test_m_staggered("/m_staggered_input_4");
