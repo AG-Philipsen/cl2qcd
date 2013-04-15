@@ -98,6 +98,18 @@ std::string matrix_to_string(Matrixsu3 m)
        return os.str();
 }
 
+/**
+ * Fuction that "convert" a su3vec to a string with a proper structure to be
+ * written to the text file that will be later used for the reference code
+ */
+std::string su3vec_to_string(su3vec m)
+{
+       std::ostringstream os;
+       os.precision(16);
+       os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im << ")\n\n";
+       return os.str();
+}
+
 //Tool to be used in the function print_gaugefield_to_textfile
 void get_full_coord_from_site_idx(int site_idx, int &x, int &y, int &z, int &t, const int ns)
 {
@@ -133,6 +145,17 @@ void copy_Matrixsu3(Matrixsu3 &a, const Matrixsu3 b)
   a.e21.im=b.e21.im;
   a.e22.re=b.e22.re;
   a.e22.im=b.e22.im;
+}
+
+void copy_su3vec(su3vec &a, const su3vec b)
+{
+  //a=b
+  a.e0.re=b.e0.re;
+  a.e0.im=b.e0.im;
+  a.e1.re=b.e1.re;
+  a.e1.im=b.e1.im;
+  a.e2.re=b.e2.re;
+  a.e2.im=b.e2.im;
 }
 
 /**
@@ -255,6 +278,48 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, 
 	*/
 }
 
+/**
+ *  In the reference code the lattice is reorganized in the following way:
+ * 
+ *   0            size
+ *   |------|------|
+ *      e      o    
+ * 
+ *  where e=even, o=odd, whereas size=VOL4D.
+ *  Hence, in order to use the same random staggered field in tests
+ *  I have to print it to a text file according this scheme. 
+ * 
+ */
+void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta::Inputparameters params)
+{
+	int nt=params.get_ntime();
+	int ns=params.get_nspace();
+	if(ns!=nt){
+	  logger.fatal() << "The lattice must be isotropic to call the function print_staggeredfield_to_textfile(...)!";
+	  abort();
+	}
+	//sf     is the su3vec array ordered with the "superindex scheme"
+	//sf_new is the su3vec array in the right order (ref. code scheme) to be written to the file
+	su3vec *sf_new = new su3vec[ns*ns*ns*nt];
+	//Now I have conf_old and I have to fill properly conf_new
+	int x,y,z,t,num,even,size;
+	size=ns*ns*ns*nt;
+	for(int i=0; i<ns*ns*ns*nt; i++){
+	  get_full_coord_from_site_idx(i,x,y,z,t,ns);
+	  even = (x+y+z+t)%2;
+	  // even=0 for even sites
+	  // even=1 for odd sites
+	  num = even*size/2 + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
+	  // num is where, in conf_new, conf_old[...] is to be written
+	  copy_su3vec(sf_new[num],sf[i]);
+	}	
+	//Now we can write sf_new to the file
+	std::ofstream file(outputfile.c_str());
+	file << ns << " " << ns << " " << ns << " " << nt << std::endl;
+	for(int i=0; i<ns*ns*ns*nt; i++)
+	  file << su3vec_to_string(sf_new[i]);
+	file.close();
+}
 
 void test_build(std::string inputfile)
 {
@@ -278,13 +343,12 @@ void test_m_staggered(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	//The following three lines are to be used to produce the ref_conf file needed to get the ref_value
-	//---> Comment them out when the reference values has been obtained!
+	//---> Comment them out when the reference values have been obtained!
 	/*
 	print_gaugefield_to_textfile("ref_conf",&cpu,params);
 	logger.info() << "Produced the ref_conf text file with the links for the ref. code. Returning...";
 	return;
 	*/
-
 	cl_int err = CL_SUCCESS;
 	const hardware::code::Fermions_staggered * device = cpu.get_device();
 	su3vec * sf_in;
@@ -300,6 +364,13 @@ void test_m_staggered(std::string inputfile)
 	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
+	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
+	//---> Comment them out when the reference values have been obtained!
+	 /*
+	print_staggeredfield_to_textfile("ref_vec",sf_in,params);
+	logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";
+	return;
+	 */
 
 	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
 	in.load(sf_in);
