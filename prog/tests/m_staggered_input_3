@@ -1,6 +1,7 @@
-startcondition=cold
+startcondition=continue
+sourcefile=conf.00200
 
-kappa=0.1
+kappa=0.
 
 use_eo=false
 NS=4
@@ -17,6 +18,6 @@ solver=CG
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=7.68
+test_ref_val=1570.1393375697302872
 
 #This imput file must not be modified!
