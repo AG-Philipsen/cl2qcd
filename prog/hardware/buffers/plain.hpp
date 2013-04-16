@@ -58,6 +58,16 @@ public:
 	}
 
 	/**
+	 * Loads the whole buffer into the given pointer
+	 *
+	 * The value must not be modified or deleted until the returned SynchronizationEvent
+	 * returns true on is_finished().
+	 */
+	hardware::SynchronizationEvent load_async(const T * ptr) const {
+		return Buffer::load_async(ptr);
+	}
+
+	/**
 	 * Stores the whole buffer into the given pointer
 	 *
 	 * The value must not be used until the returned SynchronizationEvent

@@ -96,6 +96,22 @@ void hardware::buffers::Buffer::dump_rect(void* src, const size_t *buffer_origin
 	}
 }
 
+hardware::SynchronizationEvent hardware::buffers::Buffer::load_async(const void * array) const
+{
+	cl_event event_cl;
+	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_FALSE, 0, bytes, array, 0, nullptr, &event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueReadBuffer", __FILE__, __LINE__);
+	}
+
+	const hardware::SynchronizationEvent event(event_cl);
+	err = clReleaseEvent(event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return event;
+}
+
 hardware::SynchronizationEvent hardware::buffers::Buffer::dump_async(void * array) const
 {
 	cl_event event_cl;

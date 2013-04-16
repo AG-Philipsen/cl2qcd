@@ -160,6 +160,16 @@ protected:
 	hardware::SynchronizationEvent dump_async(void * array) const;
 
 	/**
+	 * Utility function for creation of custom dump functions.
+	 *
+	 * Stores the whole buffer into the given pointer
+	 *
+	 * The value must not be modified or deleted until the returned SynchronizationEvent
+	 * returns true on is_finished().
+	 */
+	hardware::SynchronizationEvent load_async(const void * array) const;
+
+	/**
 	 * Utility function to get the data from another buffer. Should only be used using
 	 * Should be implemented by children using element instead of bytes sizes
 	 *
