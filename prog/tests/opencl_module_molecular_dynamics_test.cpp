@@ -704,6 +704,16 @@ BOOST_AUTO_TEST_CASE( F_FERMION_4 )
 	test_f_fermion("/f_fermion_input_4");
 }
 
+BOOST_AUTO_TEST_CASE( F_FERMION_5 )
+{
+	test_f_fermion("/f_fermion_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_6 )
+{
+	test_f_fermion("/f_fermion_input_6");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_FERMION_EO )
