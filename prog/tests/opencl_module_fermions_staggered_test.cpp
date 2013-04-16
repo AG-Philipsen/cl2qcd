@@ -321,6 +321,166 @@ void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta:
 	file.close();
 }
 
+//The following part has to be deleted if tests from 7 to 12 work.
+/*
+su3vec su3matrix_times_su3vec(const Matrixsu3 u, const su3vec in)
+{
+  su3vec tmp;
+
+  tmp.e0.re = u.e00.re * in.e0.re + u.e01.re * in.e1.re + u.e02.re * in.e2.re
+    - u.e00.im * in.e0.im - u.e01.im * in.e1.im - u.e02.im * in.e2.im;
+  tmp.e0.im = u.e00.re * in.e0.im + u.e01.re * in.e1.im + u.e02.re * in.e2.im
+    + u.e00.im * in.e0.re + u.e01.im * in.e1.re + u.e02.im * in.e2.re;
+
+  tmp.e1.re = u.e10.re * in.e0.re + u.e11.re * in.e1.re + u.e12.re * in.e2.re
+    - u.e10.im * in.e0.im - u.e11.im * in.e1.im - u.e12.im * in.e2.im;
+  tmp.e1.im = u.e10.re * in.e0.im + u.e11.re * in.e1.im + u.e12.re * in.e2.im
+    + u.e10.im * in.e0.re + u.e11.im * in.e1.re + u.e12.im * in.e2.re;
+
+  tmp.e2.re = u.e20.re * in.e0.re + u.e21.re * in.e1.re + u.e22.re * in.e2.re
+    - u.e20.im * in.e0.im - u.e21.im * in.e1.im - u.e22.im * in.e2.im;
+  tmp.e2.im = u.e20.re * in.e0.im + u.e21.re * in.e1.im + u.e22.re * in.e2.im
+    + u.e20.im * in.e0.re + u.e21.im * in.e1.re + u.e22.im * in.e2.re;
+
+  return tmp;
+}
+
+su3vec su3vec_acc(su3vec in1, su3vec in2)
+{
+  su3vec tmp;
+  tmp.e0.re = in1.e0.re + in2.e0.re;
+  tmp.e0.im = in1.e0.im + in2.e0.im;
+  tmp.e1.re = in1.e1.re + in2.e1.re;
+  tmp.e1.im = in1.e1.im + in2.e1.im;
+  tmp.e2.re = in1.e2.re + in2.e2.re;
+  tmp.e2.im = in1.e2.im + in2.e2.im;
+  return tmp;
+}
+
+su3vec su3vec_dim(su3vec in1, su3vec in2)
+{
+  su3vec tmp;
+  tmp.e0.re = in1.e0.re - in2.e0.re;
+  tmp.e0.im = in1.e0.im - in2.e0.im;
+  tmp.e1.re = in1.e1.re - in2.e1.re;
+  tmp.e1.im = in1.e1.im - in2.e1.im;
+  tmp.e2.re = in1.e2.re - in2.e2.re;
+  tmp.e2.im = in1.e2.im - in2.e2.im;
+  return tmp;
+}
+
+su3vec su3vec_times_complex(const su3vec in, const hmc_complex factor)
+{
+  su3vec tmp;
+  tmp.e0.re = in.e0.re * factor.re - in.e0.im * factor.im;
+  tmp.e0.im = in.e0.im * factor.re + in.e0.re * factor.im;
+  tmp.e1.re = in.e1.re * factor.re - in.e1.im * factor.im;
+  tmp.e1.im = in.e1.im * factor.re + in.e1.re * factor.im;
+  tmp.e2.re = in.e2.re * factor.re - in.e2.im * factor.im;
+  tmp.e2.im = in.e2.im * factor.re + in.e2.re * factor.im;
+  return tmp;
+}
+
+hmc_float su3vec_squarenorm(su3vec in)
+{
+  return
+      in.e0.re * in.e0.re + in.e0.im * in.e0.im +
+      in.e1.re * in.e1.re + in.e1.im * in.e1.im +
+    in.e2.re * in.e2.re + in.e2.im * in.e2.im;
+}
+
+int get_si(int x, int y, int z, int t, int ns)
+{
+  return x+y*ns+z*ns*ns+t*ns*ns*ns;
+}
+
+int get_sp(int x, int y, int z, int dir)
+{
+  switch(dir) {
+  case 2:
+    return 1-2*((x)%2);
+  case 3:
+    return 1-2*((x+y)%2);
+  case 0:
+    return 1-2*((x+y+z)%2);
+  default:
+    printf("Something bad happened: get_sp(...) was called without any proper value for dir variable");
+    abort();
+  }
+}
+
+void KernelTry(su3vec * in, meta::Inputparameters params)
+{
+	int nt=params.get_ntime();
+	int ns=params.get_nspace();
+	su3vec *out=new su3vec[ns*ns*ns*nt];
+	for(int i=0; i<ns*ns*ns*nt; i++)
+	  out[i]={{0.,0.},{0.,0.},{0.,0.}};
+	Matrixsu3 link={{1.,0.},{0.,0.},{0.,0.},{0.,0.},{1.,0.},{0.,0.},{0.,0.},{0.,0.},{1.,0.}};
+	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
+	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
+	hmc_complex phit={floor(cos(tmp_temporal)*1.e6)/1.e6,floor(sin(tmp_temporal)*1.e6)/1.e6};
+	hmc_complex phitd={phit.re,-phit.im};
+	hmc_complex phis={cos(tmp_spatial),sin(tmp_spatial)};
+	hmc_complex phisd={cos(tmp_spatial),-sin(tmp_spatial)};
+	// hmc_complex phit={cos(tmp_temporal),sin(tmp_temporal)};
+	// hmc_complex phitd={cos(tmp_temporal),-sin(tmp_temporal)};
+	su3vec chi,outx,outy,outz,outt;
+	for(int x=0; x<ns; x++){
+	  for(int y=0; y<ns; y++){
+	    for(int z=0; z<ns; z++){
+	      for(int t=0; t<nt; t++){
+		//t-dir
+		chi=su3matrix_times_su3vec(link,in[get_si(x,y,z,(t+1)%nt,ns)]);
+		chi=su3vec_times_complex(chi,phit);
+		outt=chi;
+		chi=su3matrix_times_su3vec(link,in[get_si(x,y,z,(t+nt-1)%nt,ns)]);
+		chi=su3vec_times_complex(chi,phitd);
+		outt=su3vec_dim(outt,chi);
+		outt=su3vec_times_complex(outt,{(hmc_float)get_sp(x,y,z,0),0.});
+		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outt);
+		//x-dir
+		chi=su3matrix_times_su3vec(link,in[get_si((x+1)%ns,y,z,t,ns)]);
+		chi=su3vec_times_complex(chi,phis);
+		outx=chi;
+		chi=su3matrix_times_su3vec(link,in[get_si((x+ns-1)%ns,y,z,t,ns)]);
+		chi=su3vec_times_complex(chi,phisd);
+		outx=su3vec_dim(outx,chi);
+		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outx);
+		//y-dir
+		chi=su3matrix_times_su3vec(link,in[get_si(x,(y+1)%ns,z,t,ns)]);
+		chi=su3vec_times_complex(chi,phis);
+		outy=chi;
+		chi=su3matrix_times_su3vec(link,in[get_si(x,(y+ns-1)%ns,z,t,ns)]);
+		chi=su3vec_times_complex(chi,phisd);
+		outy=su3vec_dim(outy,chi);
+		outy=su3vec_times_complex(outy,{(hmc_float)get_sp(x,y,z,2),0.});
+		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outy);
+		//z-dir
+		chi=su3matrix_times_su3vec(link,in[get_si(x,y,(z+1)%ns,t,ns)]);
+		chi=su3vec_times_complex(chi,phis);
+		outz=chi;
+		chi=su3matrix_times_su3vec(link,in[get_si(x,y,(z+ns-1)%ns,t,ns)]);
+		chi=su3vec_times_complex(chi,phisd);
+		outz=su3vec_dim(outz,chi);
+		outz=su3vec_times_complex(outz,{(hmc_float)get_sp(x,y,z,3),0.});
+		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outz);
+		
+		out[get_si(x,y,z,t,ns)]=su3vec_times_complex(out[get_si(x,y,z,t,ns)],{0.5,0.});
+		//Print out
+		//logger.warn() << "out(" << x << "," << y << "," << z << "," << t << ") = " << su3vec_to_string(out[get_si(x,y,z,t,ns)]);
+	      }
+	    }
+	  }
+	}
+	logger.warn() << "Ho il campo out...";
+	hmc_float sum=0.;
+	for(int i=0; i<ns*ns*ns*nt; i++)
+	  sum+=su3vec_squarenorm(out[i]);
+	logger.warn() << "|out|^2=" << sum;
+}
+*/
+
 void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_fermions_staggered";
@@ -349,6 +509,7 @@ void test_m_staggered(std::string inputfile)
 	logger.info() << "Produced the ref_conf text file with the links for the ref. code. Returning...";
 	return;
 	*/
+
 	cl_int err = CL_SUCCESS;
 	const hardware::code::Fermions_staggered * device = cpu.get_device();
 	su3vec * sf_in;
@@ -446,6 +607,36 @@ BOOST_AUTO_TEST_CASE( M_STAGGERED_5)
 BOOST_AUTO_TEST_CASE( M_STAGGERED_6)
 {
 	test_m_staggered("/m_staggered_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( M_STAGGERED_7)
+{
+  test_m_staggered("/m_staggered_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( M_STAGGERED_8)
+{
+  test_m_staggered("/m_staggered_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( M_STAGGERED_9)
+{
+  test_m_staggered("/m_staggered_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( M_STAGGERED_10)
+{
+  test_m_staggered("/m_staggered_input_10");
+}
+
+BOOST_AUTO_TEST_CASE( M_STAGGERED_11)
+{
+  test_m_staggered("/m_staggered_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( M_STAGGERED_12)
+{
+  test_m_staggered("/m_staggered_input_12");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
