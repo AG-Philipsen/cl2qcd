@@ -19,6 +19,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
+	options.precision(16);
 	options <<  "-D BETA=" << params.get_beta();
 	//in case of tlsym gauge action
 	if(meta::get_use_rectangles(params) == true) {

@@ -16,6 +16,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
+	options.precision(16);
 
 	//CP: These are the BCs in spatial and temporal direction
 	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());

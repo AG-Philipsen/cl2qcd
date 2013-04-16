@@ -21,6 +21,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	const size_4 local_size = device->get_local_lattice_size();
 
 	std::ostringstream options;
+	options.precision(16);
 	options << "-D _FERMIONS_";
 	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
 	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(local_size);

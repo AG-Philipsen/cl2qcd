@@ -12,6 +12,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
+	options.precision(16);
 	if(params.get_use_same_rnd_numbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
 #ifdef USE_PRNG_NR3
 	options << "-D USE_PRNG_NR3";

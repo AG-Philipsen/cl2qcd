@@ -13,6 +13,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
+	options.precision(16);
 
 	//CP: give kappa and its negative value
 	hmc_float kappa_tmp = params.get_kappa();

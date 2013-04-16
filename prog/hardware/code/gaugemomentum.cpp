@@ -33,6 +33,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	const size_4 local_size = device->get_local_lattice_size();
 
 	std::ostringstream options;
+	options.precision(16);
 	options <<  " -D GAUGEMOMENTASIZE_GLOBAL=" << meta::get_vol4d(params) * NDIM;
 	options <<  " -D GAUGEMOMENTASIZE_LOCAL=" << get_vol4d(local_size) * NDIM;
 	options <<  " -D GAUGEMOMENTASIZE_MEM=" << get_vol4d(mem_size) * NDIM;
