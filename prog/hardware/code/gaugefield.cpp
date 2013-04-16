@@ -19,6 +19,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	const size_4 mem_size = device->get_mem_lattice_size();
 
 	std::ostringstream options;
+	options.precision(16);
 	options << "-D _INKERNEL_";
 	options << " -D NSPACE=" << params.get_nspace();
 

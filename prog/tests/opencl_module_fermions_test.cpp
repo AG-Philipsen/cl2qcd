@@ -831,6 +831,26 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO_20)
 	test_dslash_eo("/dslash_eo_input_20");
 }
 
+BOOST_AUTO_TEST_CASE( DSLASH_EO_21)
+{
+	test_dslash_eo("/dslash_eo_input_21");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_22)
+{
+	test_dslash_eo("/dslash_eo_input_22");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_23)
+{
+	test_dslash_eo("/dslash_eo_input_23");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_24)
+{
+	test_dslash_eo("/dslash_eo_input_24");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)

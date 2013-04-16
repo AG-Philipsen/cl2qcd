@@ -15,6 +15,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
+	options.precision(16);
 
 	switch (params.get_fermact()) {
 		case meta::Inputparameters::twistedmass :

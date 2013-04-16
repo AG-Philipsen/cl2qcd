@@ -7,6 +7,8 @@ solver=BICGSTAB
 startcondition=continue
 sourcefile=conf.00200
 
+theta_fermion_temporal=1.
+
 use_chem_pot_re=true
 chem_pot_re=0.1234567890123456789
 
@@ -17,4 +19,4 @@ read_multiple_configs=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=275.31325812438479
+test_ref_val=274.62350872692286
