@@ -12,6 +12,7 @@
 #else
 #include <CL/cl.h>
 #endif
+#include <vector>
 
 
 namespace hardware {
@@ -21,9 +22,16 @@ namespace hardware {
  *
  * Allows to check whether a certain task has finished.
  */
+class SynchronizationEvent;
+
+/**
+ * Wait for multiple synchronization events.
+ */
+void wait(const std::vector<SynchronizationEvent>& events);
+
 class SynchronizationEvent {
 
-	public:
+public:
 
 	/**
 	 * Constructor
@@ -58,12 +66,14 @@ class SynchronizationEvent {
 	 */
 	void wait() const;
 
-	private:
+private:
 
 	/**
 	 * Reference to the wrapped OpenCL event.
 	 */
 	cl_event event;
+
+	friend void hardware::wait(const std::vector<SynchronizationEvent>& events);
 };
 
 }
