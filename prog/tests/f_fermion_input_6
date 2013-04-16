@@ -1,4 +1,7 @@
-startcondition=cold
+startcondition=continue
+sourcefile=conf.00200
+
+theta_fermion_temporal=1.
 
 kappa=0.15
 
@@ -16,4 +19,4 @@ read_multiple_configs=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.
+test_ref_val=5205.5536673142005
