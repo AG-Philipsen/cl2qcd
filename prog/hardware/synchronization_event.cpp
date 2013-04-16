@@ -83,3 +83,8 @@ void hardware::wait(const std::vector<SynchronizationEvent>& events)
 		throw OpenclException(err, "clWaitForEvents", __FILE__, __LINE__);
 	};
 }
+
+const cl_event& hardware::SynchronizationEvent::raw() const
+{
+	return event;
+}

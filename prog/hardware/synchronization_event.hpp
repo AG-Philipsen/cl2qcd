@@ -66,6 +66,11 @@ public:
 	 */
 	void wait() const;
 
+	/**
+	 * Provide a reference to the raw cl_event
+	 */
+	const cl_event& raw() const;
+
 private:
 
 	/**
