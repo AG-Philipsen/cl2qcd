@@ -172,6 +172,7 @@ void hardware::code::Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls
 	if(kernel == scalar_product_eoprec || kernel == scalar_product || kernel == global_squarenorm || kernel == global_squarenorm_eoprec) {
 		if(*ls > 64) {
 			*ls = 64;
+			*num_groups = (*gs)/(*ls);
 		}
 		return;
 	}
