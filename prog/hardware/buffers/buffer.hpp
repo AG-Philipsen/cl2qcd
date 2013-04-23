@@ -149,6 +149,10 @@ protected:
 
 	void dump_rect(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
 
+	hardware::SynchronizationEvent load_rectAsync(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const;
+
+	hardware::SynchronizationEvent dump_rectAsync(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const;
+
 	/**
 	 * Utility function for creation of custom dump functions.
 	 *
@@ -158,6 +162,16 @@ protected:
 	 * returns true on is_finished().
 	 */
 	hardware::SynchronizationEvent dump_async(void * array) const;
+
+	/**
+	 * Utility function for creation of custom dump functions.
+	 *
+	 * Stores the whole buffer into the given pointer
+	 *
+	 * The value must not be modified or deleted until the returned SynchronizationEvent
+	 * returns true on is_finished().
+	 */
+	hardware::SynchronizationEvent load_async(const void * array) const;
 
 	/**
 	 * Utility function to get the data from another buffer. Should only be used using
