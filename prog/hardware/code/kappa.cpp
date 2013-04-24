@@ -12,6 +12,8 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
+	options.precision(16);
+
 	options <<  "-D BETA=" << params.get_beta();
 	options <<  " -D XI_0=" << meta::get_xi_0(params);
 

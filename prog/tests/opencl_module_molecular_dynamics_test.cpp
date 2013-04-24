@@ -247,9 +247,13 @@ void test_gf_update(std::string inputfile)
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables();
 
-	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
-	hmc_complex pol_cpu;
-	gf_code->gaugeobservables(cpu.get_gaugefield(), &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+	hmc_float plaq_cpu;
+	hardware::buffers::Plain<hmc_float> plaq_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> foo1_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> foo2_buf(1, device->get_device());
+	gf_code->plaquette_device(cpu.get_gaugefield(), &plaq_buf, &foo1_buf, &foo2_buf);
+	plaq_buf.dump(&plaq_cpu);
+	plaq_cpu /= static_cast<hmc_float>(meta::get_plaq_norm(params));
 
 	logger.info() << "Free buffers";
 	delete[] gm_in;
@@ -424,7 +428,7 @@ void test_f_fermion(std::string inputfile)
 	ae * ae_out;
 
 	logger.info() << "Fill buffers...";
-	int NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	int NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 	int NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
 
 	sf_in1 = new spinor[NUM_ELEMENTS_SF];
@@ -498,7 +502,7 @@ void test_f_fermion_eo(std::string inputfile)
 	ae * ae_out;
 
 	logger.info() << "fill buffers";
-	size_t NUM_ELEMENTS_SF =  meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF =  hardware::code::get_eoprec_spinorfieldsize(params);
 	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
 
 	sf_in1 = new spinor[NUM_ELEMENTS_SF];
@@ -700,6 +704,16 @@ BOOST_AUTO_TEST_CASE( F_FERMION_4 )
 	test_f_fermion("/f_fermion_input_4");
 }
 
+BOOST_AUTO_TEST_CASE( F_FERMION_5 )
+{
+	test_f_fermion("/f_fermion_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_6 )
+{
+	test_f_fermion("/f_fermion_input_6");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_FERMION_EO )
@@ -827,8 +841,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	spinor * sf_in3_eo;
 	spinor * sf_in4_eo;
 
-	size_t NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(params);
-	size_t NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF_EO =  hardware::code::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF =  hardware::code::get_spinorfieldsize(params);
 	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM;
 
 	sf_in1_eo = new spinor[NUM_ELEMENTS_SF_EO];

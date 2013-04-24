@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the hardware::System class
  *
- * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2012-2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
 
 #include "system.hpp"
@@ -12,10 +12,12 @@
 #include <stdexcept>
 #include "device.hpp"
 
-static std::vector<hardware::Device*> filter_cpus(const std::vector<hardware::Device*>& devices);
+static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling);
+static size_4 calculate_grid_size(size_t num_devices);
 
 hardware::System::System(const meta::Inputparameters& params, bool enable_profiling)
-	: params(params)
+	: params(params), grid_size(0, 0, 0, 0)
 {
 	using namespace hardware;
 
@@ -64,35 +66,68 @@ hardware::System::System(const meta::Inputparameters& params, bool enable_profil
 
 	// check whether the user requested certain devices
 	auto selection = params.get_selected_devices();
+	std::list<DeviceInfo> device_infos;
 	if(selection.empty()) {
-		// use all
-		for(cl_uint i = 0; i < num_devices; ++i) {
-			Device * dev = new Device(context, device_ids[i], params, enable_profiling);
+		// use all (or up to max)
+		size_t max_devices = params.get_device_count();
+		for(cl_uint i = 0; i < num_devices && (!max_devices || device_infos.size() < max_devices); ++i) {
+			DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
-			if(!dev->is_double_supported()) {
+			if(!dev.is_double_supported()) {
 				continue;
 			}
 #endif
-			devices.push_back(dev);
+			device_infos.push_back(dev);
 		}
 		// for now, if a gpu was found then throw out cpus
-for(auto device: devices) {
-			if(device->get_device_type() == CL_DEVICE_TYPE_GPU) {
-				devices = filter_cpus(devices);
+for(auto device: device_infos) {
+			if(device.get_device_type() == CL_DEVICE_TYPE_GPU) {
+				device_infos = filter_cpus(device_infos);
 				break;
 			}
 		}
+
+		// if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA domains (primarily makes testing easier)
+#ifdef CL_VERSION_1_2
+		if(params.get_split_cpu() && device_infos.size() == 1 && device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
+			cl_device_id original_device = device_infos.front().get_id();
+			cl_device_partition_property partition_props[] = { CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN, CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE, 0};
+			cl_uint num_sub_devs;
+			err = clCreateSubDevices(original_device, partition_props, 0, nullptr, &num_sub_devs);
+			if(err) {
+				throw OpenclException(err, "clCreateSubDevices", __FILE__, __LINE__);
+			}
+			cl_device_id * sub_devices = new cl_device_id[num_sub_devs];
+			err = clCreateSubDevices(original_device, partition_props, num_sub_devs, sub_devices, &num_sub_devs);
+			if(err) {
+				throw OpenclException(err, "clCreateSubDevices", __FILE__, __LINE__);
+			}
+			device_infos.clear();
+			for(cl_uint i = 0; i < num_sub_devs; ++i) {
+				device_infos.push_back(DeviceInfo(sub_devices[i]));
+			}
+			delete[] sub_devices;
+		}
+#endif
 	} else {
 for(int i: selection) {
-			Device * dev = new Device(context, device_ids[i], params, enable_profiling);
+			if(i < 0 || i > (int) num_devices) {
+				throw std::invalid_argument("Selected device does not exist");
+			}
+			DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
-			if(!dev->is_double_supported()) {
+			if(!dev.is_double_supported()) {
 				throw std::invalid_argument("Selected device does not support double precision.");
 			}
 #endif
-			devices.push_back(dev);
+			device_infos.push_back(dev);
 		}
 	}
+
+	grid_size = calculate_grid_size(device_infos.size());
+	logger.info() << "Device grid layout: " << grid_size;
+
+	devices = init_devices(device_infos, context, grid_size, params, enable_profiling);
 
 	delete[] device_ids;
 }
@@ -164,13 +199,41 @@ void hardware::print_profiling(const System * system, const std::string& filenam
 	print_profiling(*system, filename);
 }
 
-static std::vector<hardware::Device*> filter_cpus(const std::vector<hardware::Device*>& devices)
+static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices)
 {
-	std::vector<hardware::Device*> filtered;
+	std::list<hardware::DeviceInfo> filtered;
 for(auto device: devices) {
-		if(device->get_device_type() != CL_DEVICE_TYPE_CPU) {
+		if(device.get_device_type() != CL_DEVICE_TYPE_CPU) {
 			filtered.push_back(device);
 		}
 	}
 	return filtered;
+}
+
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
+{
+	std::vector<hardware::Device *> devices;
+	devices.reserve(infos.size());
+
+	unsigned tpos = 0;
+for(auto const info: infos) {
+		size_4 const grid_pos(0, 0, 0, tpos++);
+		if(grid_pos.t >= grid_size.t) {
+			throw std::logic_error("Failed to place devices on the grid.");
+		}
+		devices.push_back(new hardware::Device(context, info.get_id(), grid_pos, grid_size, params, enable_profiling));
+	}
+
+	return devices;
+}
+
+static size_4 calculate_grid_size(size_t num_devices)
+{
+	// for now only parallelize in t-direction
+	return size_4(1, 1, 1, num_devices);
+}
+
+size_4 hardware::System::get_grid_size()
+{
+	return grid_size;
 }

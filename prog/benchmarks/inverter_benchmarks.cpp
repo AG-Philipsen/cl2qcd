@@ -76,7 +76,7 @@ int main(int argc, const char* argv[])
 			auto sources = create_sources(system, prng, parameters.get_num_sources());
 			auto result = create_spinorfields(system, sources.size());
 			perform_inversion(&result, &gaugefield, sources, system);
-			flavour_doublet_correlators(result, sources, corr_fn.c_str(), parameters);
+			flavour_doublet_correlators(result, sources, corr_fn.c_str(), system);
 
 			logger.trace() << "Inversion done" ;
 			release_spinorfields(result);

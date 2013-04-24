@@ -55,22 +55,74 @@ bool hardware::buffers::Gaugemomentum::is_soa() const noexcept
 	return soa;
 }
 
-void hardware::buffers::Gaugemomentum::load(const ae * ptr) const
+void hardware::buffers::Gaugemomentum::load(const ae * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		throw std::logic_error("Data cannot be loaded into SOA buffers.");
 	} else {
-		Buffer::load(ptr);
+		Buffer::load(ptr, elems * sizeof(ae), offset * sizeof(ae));
 	}
 }
 
-void hardware::buffers::Gaugemomentum::dump(ae * ptr) const
+void hardware::buffers::Gaugemomentum::dump(ae * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
 		auto gm_code = device->get_gaugemomentum_code();
 		gm_code->exportGaugemomentumBuffer(ptr, this);
 	} else {
-		Buffer::dump(ptr);
+		Buffer::dump(ptr, elems * sizeof(ae), offset * sizeof(ae));
 	}
+}
+
+void hardware::buffers::Gaugemomentum::load_raw(const void * ptr, size_t bytes, size_t offset) const
+{
+	logger.trace() << "Loading raw data into Gaugemomentum buffer.";
+	Buffer::load(ptr, bytes, offset);
+}
+
+void hardware::buffers::Gaugemomentum::dump_raw(void * ptr, size_t bytes, size_t offset) const
+{
+	logger.trace() << "Dumping raw data from Gaugemomentum buffer.";
+	Buffer::dump(ptr, bytes, offset);
+}
+
+void hardware::buffers::Gaugemomentum::loadRect_raw(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	logger.trace() << "Loading raw data into Gaugemomentum buffer.";
+	Buffer::load_rect(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+}
+
+void hardware::buffers::Gaugemomentum::dumpRect_raw(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	logger.trace() << "Dumping raw data from Gaugemomentum buffer.";
+	Buffer::dump_rect(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch);
+}
+
+hardware::SynchronizationEvent hardware::buffers::Gaugemomentum::loadRect_rawAsync(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const
+{
+	logger.trace() << "Loading raw data into Gaugemomentum buffer.";
+	return Buffer::load_rectAsync(src, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
+}
+
+hardware::SynchronizationEvent hardware::buffers::Gaugemomentum::dumpRect_rawAsync(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const
+{
+	logger.trace() << "Dumping raw data from Gaugemomentum buffer.";
+	return Buffer::dump_rectAsync(dest, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
+}
+
+
+size_t hardware::buffers::Gaugemomentum::get_storage_type_size() const noexcept
+{
+	return soa ? sizeof(soa_storage_t) : sizeof(ae);
+}
+
+size_t hardware::buffers::Gaugemomentum::get_lane_stride() const noexcept
+{
+	return soa ? (get_bytes() / sizeof(soa_storage_t) / soa_storage_lanes) : 0;
+}
+
+size_t hardware::buffers::Gaugemomentum::get_lane_count() const noexcept
+{
+	return soa ? soa_storage_lanes : 1;
 }

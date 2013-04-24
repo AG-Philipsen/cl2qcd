@@ -2,6 +2,7 @@
 NS=4
 NT=4
 prec=64
+use_gpu=0
 
 #fermion-parameters
 beta=5.69

@@ -34,14 +34,6 @@ hmc_float meta::get_mubar_mp(const Inputparameters& params)
 {
 	return 2. * params.get_kappa_mp() * params.get_mu_mp();
 }
-size_t meta::get_spinorfieldsize(const Inputparameters& params)
-{
-	return get_vol4d(params);
-}
-size_t meta::get_eoprec_spinorfieldsize(const Inputparameters& params)
-{
-	return get_spinorfieldsize(params) / 2;
-}
 
 size_t meta::get_float_size(const Inputparameters& params)
 {

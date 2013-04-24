@@ -55,8 +55,6 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 	 *        b == source
 	 * using a Krylov-Solver (BiCGStab or CG)
 	 */
-	// assert a single GPU
-	assert(result->get_buffers().size() == 1);
 
 	auto params = system.get_inputparameters();
 

@@ -7,8 +7,8 @@ __kernel void overrelax_even(__global Matrixsu3StorageType * const restrict gaug
 	prng_state rnd;
 	prng_loadState(&rnd, rngStates);
 
-	PARALLEL_FOR(id, VOLSPACE * NTIME / 2) {
-		st_index pos = get_even_site(id);
+	PARALLEL_FOR(id, VOL4D_LOCAL / 2) {
+		st_index pos = get_even_st_idx_local(id);
 		perform_overrelaxing(gaugefield, mu, &rnd, pos.space, pos.time);
 	}
 

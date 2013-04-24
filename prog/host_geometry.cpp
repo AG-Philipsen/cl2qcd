@@ -49,3 +49,25 @@ int get_source_pos_spatial(const meta::Inputparameters& params)
 	coord[3] = params.get_source_z();
 	return get_nspace(coord, params);
 }
+
+int get_global_link_pos(int mu, size_4 cart, const meta::Inputparameters& params)
+{
+	int space_coords[4];
+	space_coords[0] = 0;
+	space_coords[1] = cart.x;
+	space_coords[2] = cart.y;
+	space_coords[3] = cart.z;
+	auto const spatial = get_nspace(space_coords, params);
+	return get_global_link_pos(mu, spatial, cart.t, params);
+}
+
+int get_global_pos(size_4 cart, const meta::Inputparameters& params)
+{
+	int space_coords[4];
+	space_coords[0] = 0;
+	space_coords[1] = cart.x;
+	space_coords[2] = cart.y;
+	space_coords[3] = cart.z;
+	auto const spatial = get_nspace(space_coords, params);
+	return get_global_pos(spatial, cart.t, params);
+}

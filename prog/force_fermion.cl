@@ -5,8 +5,8 @@
 __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict field, __global const spinor * const restrict Y, __global const spinor * const restrict X, __global aeStorageType * const restrict out, const hmc_float kappa_in)
 {
 	for(dir_idx dir = 0; dir < NDIM; ++dir) {
-		PARALLEL_FOR(id_tmp, VOL4D) {
-			st_index pos = get_st_idx_from_site_idx(id_tmp);
+		PARALLEL_FOR(id_local, VOL4D_LOCAL) {
+			st_index pos = get_st_idx_from_site_idx(id_local);
 			link_idx global_link_pos = get_link_idx(dir, pos);
 
 			Matrixsu3 U;
@@ -42,10 +42,10 @@ __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict
 				plus = get_spinor_from_field(X, n, nn);
 				U = get_matrixsu3(field, n, t, dir);
 				//if chemical potential is activated, U has to be multiplied by appropiate factor
-#ifdef _  CP_REAL_
+#ifdef _CP_REAL_
 				U = multiply_matrixsu3_by_real (U, EXPCPR);
 #endif
-#ifdef _  CP_IMAG_
+#ifdef _CP_IMAG_
 				hmc_complex cpi_tmp = {COSCPI, SINCPI};
 				U = multiply_matrixsu3_by_complex (U, cpi_tmp);
 #endif
@@ -84,6 +84,9 @@ __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict
 				//  (exp(iq)U)^+ = exp(-iq)U^+
 				//as it should be
 				//in the real case, one has to take exp(q) -> exp(-q)
+#if defined(_CP_REAL_) || defined(_CP_IMAG_)
+				U = get_matrixsu3(field, n, t, dir);
+#endif
 #ifdef _CP_REAL_
 				U = multiply_matrixsu3_by_real (U, MEXPCPR);
 #endif

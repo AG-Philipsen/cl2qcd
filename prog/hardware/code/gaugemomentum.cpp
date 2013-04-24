@@ -27,15 +27,22 @@ hardware::code::Gaugemomentum::~Gaugemomentum()
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
+	using namespace hardware::code;
+
+	const size_4 mem_size = device->get_mem_lattice_size();
+	const size_4 local_size = device->get_local_lattice_size();
 
 	std::ostringstream options;
-	options <<  " -D GAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
+	options.precision(16);
+	options <<  " -D GAUGEMOMENTASIZE_GLOBAL=" << meta::get_vol4d(params) * NDIM;
+	options <<  " -D GAUGEMOMENTASIZE_LOCAL=" << get_vol4d(local_size) * NDIM;
+	options <<  " -D GAUGEMOMENTASIZE_MEM=" << get_vol4d(mem_size) * NDIM;
 	//in case of tlsym gauge action
 	if(meta::get_use_rectangles(params) == true) {
 		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
 	}
 	if(check_Gaugemomentum_for_SOA(device)) {
-		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
+		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(get_vol4d(mem_size) * NDIM, device);
 	}
 	return options.str();
 }
@@ -185,7 +192,7 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(const 
 			bool writeout = false;
 			if(writeout) {
 				//create buffer to store ae-field
-				int ae_num = meta::get_vol4d(get_parameters()) * NDIM;
+				int ae_num = in->get_elements();
 
 				ae * ae_tmp = new ae[ae_num];
 
@@ -276,7 +283,7 @@ void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device
 
 void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data) const
 {
-	size_t const REQUIRED_BUFFER_SIZE = meta::get_vol4d(get_parameters()) * NDIM;
+	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->get_mem_lattice_size()) * NDIM;
 	if(dest->get_elements() != REQUIRED_BUFFER_SIZE) {
 		throw std::invalid_argument("Destination buffer is not of proper size");
 	}
@@ -301,7 +308,7 @@ void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::bu
 
 void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const
 {
-	size_t const REQUIRED_BUFFER_SIZE = meta::get_vol4d(get_parameters()) * NDIM;
+	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->get_mem_lattice_size()) * NDIM;
 	if(buf->get_elements() != REQUIRED_BUFFER_SIZE) {
 		throw std::invalid_argument("Source buffer is not of proper size");
 	}
@@ -325,3 +332,8 @@ void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, c
 	}
 }
 
+
+ClSourcePackage hardware::code::Gaugemomentum::get_sources() const noexcept
+{
+	return basic_gaugemomentum_code;
+}

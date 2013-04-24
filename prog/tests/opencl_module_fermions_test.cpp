@@ -137,7 +137,7 @@ void test_m_fermion(std::string inputfile, int switcher)
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
@@ -237,7 +237,7 @@ void test_gamma5(std::string inputfile)
 	spinor * sf_in;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 
@@ -288,7 +288,7 @@ void test_gamma5_eo(std::string inputfile)
 	spinor * sf_in;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 
@@ -344,7 +344,7 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
@@ -417,7 +417,7 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
@@ -483,7 +483,7 @@ void test_dslash_eo(std::string inputfile)
 
 	logger.info() << "Fill buffers...";
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
 	spinor * sf_in_eo;
 	sf_in_eo = new spinor[NUM_ELEMENTS_SF_EO];
 	const Spinor in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
@@ -831,6 +831,26 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO_20)
 	test_dslash_eo("/dslash_eo_input_20");
 }
 
+BOOST_AUTO_TEST_CASE( DSLASH_EO_21)
+{
+	test_dslash_eo("/dslash_eo_input_21");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_22)
+{
+	test_dslash_eo("/dslash_eo_input_22");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_23)
+{
+	test_dslash_eo("/dslash_eo_input_23");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_24)
+{
+	test_dslash_eo("/dslash_eo_input_24");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
@@ -866,8 +886,8 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	spinor * sf_out_eo;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
 
 	sf_in_noneo = new spinor[NUM_ELEMENTS_SF];
 	sf_out_noneo = new spinor[NUM_ELEMENTS_SF];

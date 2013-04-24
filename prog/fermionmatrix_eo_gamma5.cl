@@ -4,10 +4,10 @@ __kernel void gamma5_eo(__global spinorStorageType * const restrict inout)
 	int id = get_global_id(0);
 	spinor out_tmp;
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
 
-		out_tmp = getSpinor_eo(inout, id_tmp);
+		out_tmp = getSpinor_eo(inout, id_mem);
 		out_tmp = gamma5_local(out_tmp);
-		putSpinor_eo(inout, id_tmp, out_tmp);
+		putSpinor_eo(inout, id_mem, out_tmp);
 	}
 }

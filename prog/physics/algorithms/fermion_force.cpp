@@ -612,16 +612,19 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 	auto X_bufs = X.get_buffers();
 	auto gf_bufs = gf.get_buffers();
 	size_t num_bufs = gm_bufs.size();
-	if(num_bufs != 1 || num_bufs != Y_bufs.size() || num_bufs != X_bufs.size() || num_bufs != gf_bufs.size()) {
+	if(num_bufs != Y_bufs.size() || num_bufs != X_bufs.size() || num_bufs != gf_bufs.size()) {
 		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
-	auto gm_buf = gm_bufs[0];
-	auto Y_buf = Y_bufs[0];
-	auto X_buf = X_bufs[0];
-	auto gf_buf = gf_bufs[0];
-	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-	code->fermion_force_device(Y_buf, X_buf, gf_buf, gm_buf, kappa);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto gm_buf = gm_bufs[i];
+		auto Y_buf = Y_bufs[i];
+		auto X_buf = X_bufs[i];
+		auto gf_buf = gf_bufs[i];
+		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		code->fermion_force_device(Y_buf, X_buf, gf_buf, gm_buf, kappa);
+	}
+	gm->update_halo();
 }
 
 void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield_eo& Y, const physics::lattices::Spinorfield_eo& X, const int evenodd, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
@@ -631,16 +634,19 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 	auto X_bufs = X.get_buffers();
 	auto gf_bufs = gf.get_buffers();
 	size_t num_bufs = gm_bufs.size();
-	if(num_bufs != 1 || num_bufs != Y_bufs.size() || num_bufs != X_bufs.size() || num_bufs != gf_bufs.size()) {
+	if(num_bufs != Y_bufs.size() || num_bufs != X_bufs.size() || num_bufs != gf_bufs.size()) {
 		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
 	}
 
-	auto gm_buf = gm_bufs[0];
-	auto Y_buf = Y_bufs[0];
-	auto X_buf = X_bufs[0];
-	auto gf_buf = gf_bufs[0];
-	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-	code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto gm_buf = gm_bufs[i];
+		auto Y_buf = Y_bufs[i];
+		auto X_buf = X_bufs[i];
+		auto gf_buf = gf_bufs[i];
+		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
+	}
+	gm->update_halo();
 }
 
 template<class SPINORFIELD> static void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system)

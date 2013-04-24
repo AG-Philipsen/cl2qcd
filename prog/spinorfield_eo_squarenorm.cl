@@ -11,8 +11,9 @@ __kernel void global_squarenorm_eoprec( __global const spinorStorageType * const
 	hmc_float sum;
 	sum = 0.;
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		spinor x_tmp = getSpinor_eo(x, id_tmp);
+	for(int id_local = id; id_local < EOPREC_SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+		site_idx id_mem = get_eo_site_idx_from_st_idx(get_even_st_idx_local(id_local));
+		spinor x_tmp = getSpinor_eo(x, id_mem);
 		hmc_float tmp = spinor_squarenorm(x_tmp);
 		sum += tmp;
 	}

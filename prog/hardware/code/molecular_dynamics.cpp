@@ -6,6 +6,7 @@
 #include "fermions.hpp"
 #include "prng.hpp"
 #include "gaugemomentum.hpp"
+#include "spinors.hpp"
 
 using namespace std;
 
@@ -18,13 +19,11 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
-	options <<  "-D BETA=" << params.get_beta() << " -D GAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
+	options.precision(16);
+	options <<  "-D BETA=" << params.get_beta();
 	//in case of tlsym gauge action
 	if(meta::get_use_rectangles(params) == true) {
 		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
-	}
-	if(check_Gaugemomentum_for_SOA(device)) {
-		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
 	return options.str();
 }
@@ -36,7 +35,7 @@ static bool use_multipass_gauge_force_tlsym(hardware::Device * device)
 
 void hardware::code::Molecular_Dynamics::fill_kernels()
 {
-	basic_molecular_dynamics_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_molecular_dynamics_code = get_device()->get_gaugemomentum_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
 	//init kernels for HMC
@@ -138,8 +137,8 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 	//this returns the number of entries in an su3-matrix
 	size_t R = meta::get_mat_size(get_parameters());
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the number of links in the system (and of gaugemomenta)
 	size_t G = meta::get_vol4d(get_parameters()) * NDIM;
 	//factor for complex numbers
@@ -183,8 +182,8 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in) const
 {
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the number of links in the system (and of gaugemomenta)
 	uint64_t G = meta::get_vol4d(get_parameters()) * NDIM;
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
@@ -505,7 +504,7 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), md_update_gaugefield (0), md_update_gaugemomenta (0), gauge_force (0), gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
-	  gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * meta::get_vol4d(params), device) : 0)
+	  gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
 {
 	fill_kernels();
 }

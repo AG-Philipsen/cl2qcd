@@ -15,6 +15,8 @@
 namespace physics {
 namespace lattices {
 
+template <class Lattice, typename Basetype> void pseudo_randomize(const Lattice* to, int seed);
+
 /**
  * Representation of a gaugefield.
  */
@@ -55,11 +57,25 @@ public:
 	 */
 	void gaussian(const physics::PRNG& prng) const;
 
+	/**
+	 * Update the halo cells of each buffer from its neighbours.
+	 *
+	 * On a single device this will be a no-op.
+	 */
+	void update_halo() const;
+
+	/**
+	 * Get the number of elements.
+	 */
+	unsigned get_elements() const noexcept;
+
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
+	void import(const ae * const host) const;
 
 	friend hmc_float squarenorm(const Gaugemomenta&);
+	friend void pseudo_randomize<Gaugemomenta, ae>(const Gaugemomenta* to, int seed);
 };
 
 /**

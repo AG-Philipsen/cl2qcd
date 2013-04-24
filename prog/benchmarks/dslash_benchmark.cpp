@@ -3,6 +3,7 @@
 #include "../physics/lattices/gaugefield.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions.hpp"
+#include "../hardware/code/spinors.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -42,8 +43,8 @@ int main(int argc, const char* argv[])
 		//these are: 2 eoprec spinorfield, 1 gaugefield
 		auto gf_buffer = gaugefield.get_buffers().at(0);
 		auto device = gf_buffer->get_device();
-		const Spinor sf1(meta::get_eoprec_spinorfieldsize(parameters), device);
-		const Spinor sf2(meta::get_eoprec_spinorfieldsize(parameters), device);
+		const Spinor sf1(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
+		const Spinor sf2(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// dslash-benchmark

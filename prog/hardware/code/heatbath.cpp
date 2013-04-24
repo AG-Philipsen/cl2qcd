@@ -5,6 +5,7 @@
 #include "../device.hpp"
 #include "gaugefield.hpp"
 #include "prng.hpp"
+#include "spinors.hpp"
 
 using namespace std;
 
@@ -13,6 +14,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
+	options.precision(16);
 
 	options <<  "-D BETA=" << params.get_beta();
 	if(params.get_use_aniso() == true) {
@@ -153,9 +155,9 @@ size_t hardware::code::Heatbath::get_read_write_size(const std::string& in) cons
 	int C = 2;
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	if(get_parameters().get_use_eo() == 1)
-		S = meta::get_eoprec_spinorfieldsize(get_parameters());
+		S = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
 	else
-		S = meta::get_spinorfieldsize(get_parameters());
+		S = hardware::code::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") || (in == "overrelax_even") || (in == "overrelax_odd")) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
@@ -169,9 +171,9 @@ uint64_t hardware::code::Heatbath::get_flop_size(const std::string& in) const
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	uint64_t S;
 	if(get_parameters().get_use_eo() == 1)
-		S = meta::get_eoprec_spinorfieldsize(get_parameters());
+		S = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
 	else
-		S = meta::get_spinorfieldsize(get_parameters());
+		S = hardware::code::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	///@NOTE: I do not distinguish between su3 and 3x3 matrices. This is a difference if one use e.g. REC12, but here one wants to have the "netto" flops for comparability.
 	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") ) {

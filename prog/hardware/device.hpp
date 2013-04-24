@@ -7,17 +7,13 @@
 #ifndef _HARDWARE_DEVICE_HPP_
 #define _HARDWARE_DEVICE_HPP_
 
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
+#include "device_info.hpp"
 #include <map>
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
 #include "../types.h"
+#include "../meta/size_4.hpp"
 
 namespace hardware {
 
@@ -25,7 +21,7 @@ namespace buffers {
 // forward declaration for friend relation
 class Buffer;
 }
-  
+
 namespace code {
 // forward decleration to improve decoupling and speed up compilation
 class Gaugefield;
@@ -52,7 +48,7 @@ class OptimizationError {
  * Allows the querying and manipulation of the system and
  * its hardware.
  */
-class Device {
+class Device : public DeviceInfo {
 
 	friend hardware::buffers::Buffer;
 	friend void print_profiling(Device *, const std::string&, int);
@@ -67,61 +63,14 @@ public:
 	 * \param inputparams the input parameters of the application
 	 * \param enable_profiling enable profiling on this device
 	 */
-	Device(cl_context, cl_device_id, const meta::Inputparameters&, bool enable_profiling = false);
+	Device(cl_context, cl_device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters&, bool enable_profiling = false);
 
 	~Device();
-
-	/**
-	 * Checks whether the device supports double precision.
-	 */
-	bool is_double_supported() const noexcept;
 
 	// non-copyable
 	Device& operator=(const Device&) = delete;
 	Device(const Device&) = delete;
 	Device() = delete;
-
-	/**
-	 * Get the prefered local work size of this device
-	 */
-	size_t get_preferred_local_thread_num() const noexcept;
-
-	/**
-	 * Get the default number of threads on this device
-	 */
-	size_t get_preferred_global_thread_num() const noexcept;
-
-	/**
-	 * Get the number of compute units of the device
-	 */
-	size_t get_num_compute_units() const noexcept;
-
-	/**
-	 * Get the type of the OpenCL device
-	 */
-	cl_device_type get_device_type() const noexcept;
-
-	/**
-	 * Whether this device prefers blocked loops
-	 */
-	bool get_prefers_blocked_loops() const noexcept;
-
-	/**
-	 * Whether this device prefers SOA storage
-	 *
-	 * @todo This should be datatype specific
-	 */
-	bool get_prefers_soa() const noexcept;
-
-	/**
-	 * Get the name of this device
-	 */
-	std::string get_name() const noexcept;
-
-	/**
-	 * Get the id of this device
-	 */
-	cl_device_id get_id() const noexcept;
 
 	/**
 	 * Create a kernel from source files.
@@ -251,16 +200,36 @@ public:
 	 */
 	const hardware::code::Buffer * get_buffer_code();
 
+	/**
+	 * Get the position of the device inside the device grid.
+	 */
+	size_4 get_grid_pos() const;
+
+	/**
+	 * Get the size of the device grid.
+	 */
+	size_4 get_grid_size() const;
+
+	/**
+	 * Get the size of the local lattice.
+	 */
+	size_4 get_local_lattice_size() const;
+
+	/**
+	 * Get the size of the halo
+	 */
+	unsigned get_halo_size() const;
+
+	/**
+	 * Get the size of the lattice in device memory.
+	 */
+	size_4 get_mem_lattice_size() const;
+
 private:
 	/**
 	 * The OpenCL context to be used by this device.
 	 */
 	const cl_context context;
-
-	/**
-	 * The OpenCL device id of the device
-	 */
-	const cl_device_id device_id;
 
 	/**
 	 * The input parameters of the application.
@@ -271,48 +240,6 @@ private:
 	 * The command queue used to perform operations on this device
 	 */
 	cl_command_queue command_queue;
-
-	/**
-	 * The prefered local work size of this device
-	 */
-	const size_t preferred_local_thread_num;
-
-	/**
-	 * The preferred global work size of this device
-	 */
-	const size_t preferred_global_thread_num;
-
-	/**
-	 * The number of compute units of the device
-	 */
-	const size_t num_compute_units;
-
-	/**
-	 * The type of the device
-	 */
-	const cl_device_type device_type;
-
-	/**
-	 * Whether this device supports double precsion
-	 */
-	const bool supports_double;
-
-	/**
-	 * Whether this device prefers blocked loops
-	 */
-	const bool prefers_blocked_loops;
-
-	/**
-	 * Whether this device prefers SOA storage
-	 *
-	 * @todo This should be datatype specific
-	 */
-	const bool prefers_soa;
-
-	/**
-	 * The name of this device
-	 */
-	const std::string name;
 
 	/**
 	 * Whether profiling is enabled
@@ -406,6 +333,30 @@ private:
 	 */
 	const hardware::code::Buffer * buffer_code;
 
+	/**
+	 * The position of the device in the device grid.
+	 */
+	const size_4 grid_pos;
+
+	/**
+	 * The size of the device grid.
+	 */
+	const size_4 grid_size;
+
+	/**
+	 * The size of the local lattice.
+	 */
+	const size_4 local_lattice_size;
+
+	/**
+	 * Get the size of the halo
+	 */
+	const unsigned halo_size;
+
+	/**
+	 * The size of the lattice in device memory.
+	 */
+	const size_4 mem_lattice_size;
 };
 
 	/**

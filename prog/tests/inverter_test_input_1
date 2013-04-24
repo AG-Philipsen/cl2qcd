@@ -1,12 +1,9 @@
 NS=4
 NT=4
 prec=64
-num_dev = 1
 
 kappa=.15
 mu=4.
 
 startcondition=cold
 fermact=TWISTEDMASS
-
-

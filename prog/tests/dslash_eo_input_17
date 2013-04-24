@@ -8,7 +8,7 @@ startcondition=continue
 sourcefile=conf.00200
 
 use_chem_pot_re=true
-chem_pot_re=0.1234
+chem_pot_re=0.1234567890123456789
 
 #with read_multiple_configs one can switch between "EVEN" and "ODD" as parameter for the kernel
 # true = EVEN, false = ODD
@@ -17,4 +17,4 @@ read_multiple_configs=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=275.30619767590161
+test_ref_val=275.31325812438479

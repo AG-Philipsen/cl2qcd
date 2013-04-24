@@ -17,26 +17,35 @@ BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace physics::lattices;
 
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	logger.debug() << "Devices: " << system.get_devices().size();
-	physics::PRNG prng(system);
+	{
+		const char * _params[] = {"foo", "--ntime=8"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		logger.debug() << "Devices: " << system.get_devices().size();
+		physics::PRNG prng(system);
 
-	// init from file
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-	BOOST_CHECK_CLOSE(gf.plaquette(), 0.57107711169452713, 0.1);
+		// init hot
+		Gaugefield gf2(system, prng, true);
 
-	// init hot
-	Gaugefield gf2(system, prng, true);
+		// init cold
+		Gaugefield gf3(system, prng, false);
+		BOOST_CHECK_CLOSE(gf3.plaquette(), 1., 0.1);
+	}
 
-	// init cold
-	Gaugefield gf3(system, prng, false);
-	BOOST_CHECK_CLOSE(gf3.plaquette(), 1., 0.1);
+	{
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		logger.debug() << "Devices: " << system.get_devices().size();
+		physics::PRNG prng(system);
+
+		// init from file
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		BOOST_CHECK_CLOSE(gf.plaquette(), 0.57107711169452713, 0.1);
+	}
 }
 
-BOOST_AUTO_TEST_CASE(save)
-{
+void test_save(bool hot) {
 	using namespace physics::lattices;
 
 	const char * _params[] = {"foo"};
@@ -44,7 +53,7 @@ BOOST_AUTO_TEST_CASE(save)
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	Gaugefield gf(system, prng, true);
+	Gaugefield gf(system, prng, hot);
 	gf.save("conf.test", 0);
 
 	Gaugefield reread(system, prng, "conf.test");
@@ -61,6 +70,12 @@ BOOST_AUTO_TEST_CASE(save)
 	BOOST_CHECK_EQUAL(orig_splaq, reread_splaq);
 	BOOST_CHECK_EQUAL(orig_tplaq, reread_tplaq);
 	BOOST_CHECK_EQUAL(orig_pol, reread_pol);
+}
+
+BOOST_AUTO_TEST_CASE(save)
+{
+	test_save(false);
+	test_save(true);
 }
 
 BOOST_AUTO_TEST_CASE(rectangles)
@@ -82,4 +97,96 @@ BOOST_AUTO_TEST_CASE(rectangles)
 
 	Gaugefield gf2(system2, prng2, std::string(SOURCEDIR) + "/tests/conf.00200");
 	BOOST_CHECK_CLOSE(gf2.rectangles(), 1103.2398401620451, 0.1);
+}
+
+BOOST_AUTO_TEST_CASE(polyakov)
+{
+	using namespace physics::lattices;
+
+	{
+		const char * _params[] = {"foo", "--ntime=16"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, false);
+		hmc_complex pol = gf.polyakov();
+		BOOST_CHECK_CLOSE(pol.re, 1., 0.1);
+		BOOST_CHECK_CLOSE(pol.im, 0., 0.1);
+	}
+
+	{
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		hmc_complex pol = gf.polyakov();
+		BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
+		BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
+	}
+}
+
+BOOST_AUTO_TEST_CASE(halo_update)
+{
+	using namespace physics::lattices;
+
+	hmc_float orig_plaq, new_plaq;
+	hmc_float orig_tplaq, new_tplaq;
+	hmc_float orig_splaq, new_splaq;
+	hmc_complex orig_pol, new_pol;
+
+	// simple test, gaugeobservables should not get changed by halo exchange
+	// if the original gaugefield is given
+	{
+		const char * _params[] = {"foo", "--ntime=16"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, false);
+		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+		gf.update_halo();
+		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
+		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
+		BOOST_CHECK_EQUAL(orig_pol, new_pol);
+	}
+
+	{
+		const char * _params[] = {"foo"};
+		meta::Inputparameters params(1, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, true);
+		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+		gf.update_halo();
+		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
+		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
+		BOOST_CHECK_EQUAL(orig_pol, new_pol);
+	}
+
+	{
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+		gf.update_halo();
+		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
+		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
+		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
+		BOOST_CHECK_EQUAL(orig_pol, new_pol);
+	}
 }

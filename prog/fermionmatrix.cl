@@ -50,7 +50,7 @@ spinor dslash_local_0(__global const spinor * const restrict in, __global const 
 	//mu = +0
 	nn = get_neighbor_temporal(t);
 	plus = get_spinor_from_field(in, n, nn);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
 	U = multiply_matrixsu3_by_real (U, EXPCPR);
@@ -88,7 +88,7 @@ spinor dslash_local_0(__global const spinor * const restrict in, __global const 
 	//mu = -0
 	nn = get_lower_neighbor_temporal(t);
 	plus = get_spinor_from_field(in, n, nn);
-	U = getSU3(field, get_global_link_pos(dir, n, nn));
+	U = getSU3(field, get_link_pos(dir, n, nn));
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 	//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
 	//  (exp(iq)U)^+ = exp(-iq)U^+
@@ -150,7 +150,7 @@ spinor dslash_local_1(__global const spinor * const restrict in, __global const 
 	// mu = +1
 	nn = get_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	bc_tmp.re = kappa_in * SPATIAL_RE;
 	bc_tmp.im = kappa_in * SPATIAL_IM;
 	/////////////////////////////////
@@ -177,7 +177,7 @@ spinor dslash_local_1(__global const spinor * const restrict in, __global const 
 	//mu = -1
 	nn = get_lower_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, nn, t));
+	U = getSU3(field, get_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = kappa_in * SPATIAL_RE;
 	bc_tmp.im = kappa_in * MSPATIAL_IM;
@@ -224,7 +224,7 @@ spinor dslash_local_2(__global const spinor * const restrict in, __global const 
 	// mu = +2
 	nn = get_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	bc_tmp.re = kappa_in * SPATIAL_RE;
 	bc_tmp.im = kappa_in * SPATIAL_IM;
 	///////////////////////////////////
@@ -251,7 +251,7 @@ spinor dslash_local_2(__global const spinor * const restrict in, __global const 
 	//mu = -2
 	nn = get_lower_neighbor(n, dir);
 	plus = get_spinor_from_field(in,  nn, t);
-	U = getSU3(field, get_global_link_pos(dir, nn, t));
+	U = getSU3(field, get_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = kappa_in * SPATIAL_RE;
 	bc_tmp.im = kappa_in * MSPATIAL_IM;
@@ -297,7 +297,7 @@ spinor dslash_local_3(__global const spinor * const restrict in, __global const 
 	// mu = +3
 	nn = get_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, n, t));
+	U = getSU3(field, get_link_pos(dir, n, t));
 	bc_tmp.re = kappa_in * SPATIAL_RE;
 	bc_tmp.im = kappa_in * SPATIAL_IM;
 	///////////////////////////////////
@@ -324,7 +324,7 @@ spinor dslash_local_3(__global const spinor * const restrict in, __global const 
 	//mu = -3
 	nn = get_lower_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
-	U = getSU3(field, get_global_link_pos(dir, nn, t));
+	U = getSU3(field, get_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = kappa_in * SPATIAL_RE;
 	bc_tmp.im = kappa_in * MSPATIAL_IM;
