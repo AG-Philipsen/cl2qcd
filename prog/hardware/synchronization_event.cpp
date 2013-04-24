@@ -70,3 +70,21 @@ void hardware::SynchronizationEvent::wait() const
 		throw OpenclException(err, "clWaitForEvents", __FILE__, __LINE__);
 	};
 }
+
+void hardware::wait(const std::vector<SynchronizationEvent>& events)
+{
+	const size_t num_events = events.size();
+	std::vector<cl_event> cl_events(num_events);
+	for(size_t i = 0; i < num_events; ++i) {
+		cl_events[i] = events[i].event;
+	}
+	cl_int err = clWaitForEvents(num_events, &cl_events[0]);
+	if(err) {
+		throw OpenclException(err, "clWaitForEvents", __FILE__, __LINE__);
+	};
+}
+
+const cl_event& hardware::SynchronizationEvent::raw() const
+{
+	return event;
+}

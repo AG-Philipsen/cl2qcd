@@ -23,8 +23,9 @@ __kernel void global_squarenorm_staggered(__global const su3vec * const restrict
 	hmc_float sum;
 	sum = 0.;
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
-		su3vec x_tmp = x[id_tmp];
+	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+		site_idx id_mem = get_site_idx((id_local % 2 == 0) ? get_even_st_idx_local(id_local /   2) : get_odd_st_idx_local(id_local / 2));
+		su3vec x_tmp = x[id_mem];
 		hmc_float tmp = su3vec_squarenorm(x_tmp);
 		sum += tmp;
 	}

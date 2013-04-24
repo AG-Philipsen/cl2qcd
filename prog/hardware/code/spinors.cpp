@@ -14,12 +14,19 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
+	using namespace hardware::code;
+
+	const size_4 mem_size = device->get_mem_lattice_size();
+	const size_4 local_size = device->get_local_lattice_size();
 
 	std::ostringstream options;
-	options << "-D _FERMIONS_"
-	        << " -D SPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
+	options.precision(16);
+	options << "-D _FERMIONS_";
+	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
+	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << get_eoprec_spinorfieldsize(local_size);
+	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
 	if(check_Spinor_for_SOA(device)) {
-		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
+		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
 	}
 
 	return options.str();
@@ -165,6 +172,7 @@ void hardware::code::Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls
 	if(kernel == scalar_product_eoprec || kernel == scalar_product || kernel == global_squarenorm || kernel == global_squarenorm_eoprec) {
 		if(*ls > 64) {
 			*ls = 64;
+			*num_groups = (*gs)/(*ls);
 		}
 		return;
 	}
@@ -174,13 +182,15 @@ void hardware::code::Spinors::convert_from_eoprec_device(const hardware::buffers
 {
 	using namespace hardware::buffers;
 
+	const size_4 mem_size = get_device()->get_mem_lattice_size();
+
 	// check buffer sizes
 	const size_t in_size = in1->get_elements();
-	if(in_size != meta::get_vol4d(get_parameters()) / 2 || in2->get_elements() != in_size) {
+	if(in_size != get_eoprec_spinorfieldsize(mem_size) || in2->get_elements() != in_size) {
 		throw std::invalid_argument("input buffers must be of size VOL4D / 2");
 	}
 	const size_t out_size = out->get_elements();
-	if(out_size != meta::get_vol4d(get_parameters())) {
+	if(out_size != get_spinorfieldsize(mem_size)) {
 		throw std::invalid_argument("output buffer must be of size VOL4D");
 	}
 
@@ -228,13 +238,15 @@ void hardware::code::Spinors::convert_to_eoprec_device(const hardware::buffers::
 {
 	using namespace hardware::buffers;
 
+	const size_4 mem_size = get_device()->get_mem_lattice_size();
+
 	// check buffer sizes
 	const size_t out_size = out1->get_elements();
-	if(out_size != meta::get_vol4d(get_parameters()) / 2 || out2->get_elements() != out_size) {
+	if(out_size != get_eoprec_spinorfieldsize(mem_size) || out2->get_elements() != out_size) {
 		throw std::invalid_argument("output buffers must be of size VOL4D / 2");
 	}
 	const size_t in_size = in->get_elements();
-	if(in_size != meta::get_vol4d(get_parameters())) {
+	if(in_size != get_spinorfieldsize(mem_size)) {
 		throw std::invalid_argument("input buffer must be of size VOL4D");
 	}
 
@@ -793,8 +805,8 @@ size_t hardware::code::Spinors::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -923,8 +935,8 @@ size_t hardware::code::Spinors::get_read_write_size(const std::string& in) const
 
 uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 {
-	uint64_t S = meta::get_spinorfieldsize(get_parameters());
-	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	uint64_t S = get_spinorfieldsize(get_parameters());
+	uint64_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (in == "generate_gaussian_spinorfield") {
 		//this kernel performs 12 multiplications per site
@@ -1149,3 +1161,22 @@ void hardware::code::Spinors::generate_gaussian_spinorfield_eo_device(const hard
 
 }
 
+size_t hardware::code::get_spinorfieldsize(const meta::Inputparameters& params)
+{
+	return get_vol4d(params);
+}
+
+size_t hardware::code::get_eoprec_spinorfieldsize(const meta::Inputparameters& params)
+{
+	return get_spinorfieldsize(params) / 2;
+}
+
+size_t hardware::code::get_spinorfieldsize(const size_4& params)
+{
+	return get_vol4d(params);
+}
+
+size_t hardware::code::get_eoprec_spinorfieldsize(const size_4& params)
+{
+	return get_spinorfieldsize(params) / 2;
+}

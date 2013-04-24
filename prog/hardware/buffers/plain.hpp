@@ -39,16 +39,32 @@ public:
 	/**
 	 * Loads as many elements as the buffer contains from the given pointer
 	 * into the buffer.
+	 *
+	 * \param elems Allows to limit the number of elements loaded from the given pointer
+	 * \param offset Allows to store the elements at the given offset into the buffer
 	 */
-	inline void load(const T* ptr) const {
-		Buffer::load(ptr);
+	inline void load(const T* ptr, size_t elems = 0, size_t offset = 0) const {
+		Buffer::load(ptr, elems * sizeof(T), offset * sizeof(T));
 	}
 
 	/**
 	 * Stores the whole buffer into the given pointer
+	 *
+	 * \param elems Allows to limit the number of elements dumped to the given pointer
+	 * \param offset Allows to read the elements at the given offset into the buffer
 	 */
-	inline void dump(T* ptr) const {
-		Buffer::dump(ptr);
+	inline void dump(T* ptr, size_t elems = 0, size_t offset = 0) const {
+		Buffer::dump(ptr, elems * sizeof(T), offset * sizeof(T));
+	}
+
+	/**
+	 * Loads the whole buffer into the given pointer
+	 *
+	 * The value must not be modified or deleted until the returned SynchronizationEvent
+	 * returns true on is_finished().
+	 */
+	hardware::SynchronizationEvent load_async(const T * ptr) const {
+		return Buffer::load_async(ptr);
 	}
 
 	/**

@@ -5,8 +5,8 @@ __kernel void sax(__global const spinor * const restrict x, __global const hmc_c
 	int global_size = get_global_size(0);
 
 	hmc_complex alpha_tmp = complexLoadHack(alpha);
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
-		spinor x_tmp = x[id_tmp];
-		out[id_tmp] = spinor_times_complex(x_tmp, alpha_tmp);
+	for(int id_mem = id; id_mem < SPINORFIELDSIZE_MEM; id_mem += global_size) {
+		spinor x_tmp = x[id_mem];
+		out[id_mem] = spinor_times_complex(x_tmp, alpha_tmp);
 	}
 }

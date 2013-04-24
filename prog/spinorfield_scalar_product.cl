@@ -15,9 +15,10 @@ __kernel void scalar_product( __global const spinor * const restrict x, __global
 	sum.im = 0.;
 
 	//!! CP: perhaps here one can first copy a whole spinor and then do the dot-prod
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
-		spinor x_tmp = x[id_tmp];
-		spinor y_tmp = y[id_tmp];
+	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+		site_idx id_mem = get_site_idx((id_local % 2 == 0) ? get_even_st_idx_local(id_local /   2) : get_odd_st_idx_local(id_local / 2));
+		spinor x_tmp = x[id_mem];
+		spinor y_tmp = y[id_mem];
 		hmc_complex tmp = spinor_scalarproduct(x_tmp, y_tmp);
 		sum.re += tmp.re;
 		sum.im += tmp.im;
@@ -86,7 +87,7 @@ __kernel void scalar_product_reduction(__global hmc_complex* result_tmp, __globa
 		hmc_complex tmp1;
 		hmc_complex tmp2;
 		tmp2 = complexLoadHack(&result_tmp[0]);
-		for (int i = 1; i < num_values; i++) {
+		for (int i = 1; i < get_num_groups(0); i++) {
 			tmp1 = complexLoadHack(&result_tmp[i]);
 			tmp2 = complexadd(tmp2, tmp1);
 		}

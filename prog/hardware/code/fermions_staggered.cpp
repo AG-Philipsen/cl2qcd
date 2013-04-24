@@ -4,6 +4,7 @@
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "spinors_staggered.hpp"
+#include "spinors.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -15,7 +16,8 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
-	options.precision(24);
+
+	options.precision(16);
 
 	//CP: These are the BCs in spatial and temporal direction
 	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
@@ -101,8 +103,8 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
 	//this returns the number of entries in an su3-matrix
 	size_t R = meta::get_mat_size(get_parameters());
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -130,8 +132,8 @@ static int flop_dslash_per_site(const meta::Inputparameters & parameters)
 
 uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in) const
 {
-	size_t S = meta::get_spinorfieldsize(get_parameters());
-	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = get_spinorfieldsize(get_parameters());
+	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	if (in == "M_staggered") {
 		//this kernel performs one dslash on each site and adds this to a spinor
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );

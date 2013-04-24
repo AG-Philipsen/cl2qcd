@@ -46,20 +46,116 @@ size_t hardware::buffers::Buffer::get_bytes() const noexcept
 	return bytes;
 }
 
-void hardware::buffers::Buffer::load(const void * array) const
+void hardware::buffers::Buffer::load(const void * array, size_t bytes, size_t offset) const
 {
-	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, nullptr, nullptr);
+	if(bytes == 0) {
+		bytes = this->bytes;
+	} else {
+		if(bytes + offset > this->bytes) {
+			logger.error() << "Writing outside buffer. Bytes: " << bytes << " Offset: " << offset << " Buffer size: " << this->bytes;
+			throw std::out_of_range("You are loading to memory outside of the buffer.");
+		}
+	}
+	logger.trace() << "clEnqueueWriteBuffer(...,...,...," << offset << ',' << bytes << ",...,0,nullptr,nullptr)";
+	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_TRUE, offset, bytes, array, 0, nullptr, nullptr);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 	}
 }
 
-void hardware::buffers::Buffer::dump(void * array) const
+void hardware::buffers::Buffer::dump(void * array, size_t bytes, size_t offset) const
 {
-	cl_int err = clEnqueueReadBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, nullptr, nullptr);
+	if(bytes == 0) {
+		bytes = this->bytes;
+	} else {
+		if(bytes + offset > this->bytes) {
+			logger.error() << "Reading outside buffer. Bytes: " << bytes << " Offset: " << offset << " Buffer size: " << this->bytes;
+			throw std::out_of_range("You are reading from outside of the buffer.");
+		}
+	}
+	logger.trace() << "clEnqueueReadBuffer(...,...,...," << offset << ',' << bytes << ",...,0,nullptr,nullptr)";
+	cl_int err = clEnqueueReadBuffer(*device, cl_buffer, CL_TRUE, offset, bytes, array, 0, nullptr, nullptr);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueReadBuffer", __FILE__, __LINE__);
 	}
+}
+
+void hardware::buffers::Buffer::load_rect(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	cl_int err = clEnqueueWriteBufferRect(*device, cl_buffer, CL_TRUE, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, src, 0, nullptr, nullptr);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueReadBufferRect", __FILE__, __LINE__);
+	}
+}
+
+void hardware::buffers::Buffer::dump_rect(void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const
+{
+	cl_int err = clEnqueueReadBufferRect(*device, cl_buffer, CL_TRUE, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, src, 0, nullptr, nullptr);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueReadBufferRect", __FILE__, __LINE__);
+	}
+}
+
+hardware::SynchronizationEvent hardware::buffers::Buffer::load_rectAsync(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const
+{
+	const cl_event * wait_event = nullptr;
+	cl_uint num_wait_events = 0;
+	if(event.raw()) {
+		wait_event = &event.raw();
+		num_wait_events = 1;
+	}
+
+	cl_event event_cl;
+	cl_int err = clEnqueueWriteBufferRect(*device, cl_buffer, CL_FALSE, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, src, num_wait_events, wait_event, &event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueReadBufferRect", __FILE__, __LINE__);
+	}
+
+	const hardware::SynchronizationEvent new_event(event_cl);
+	err = clReleaseEvent(event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return new_event;
+}
+
+hardware::SynchronizationEvent hardware::buffers::Buffer::dump_rectAsync(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch, const hardware::SynchronizationEvent& event) const
+{
+	const cl_event * wait_event = nullptr;
+	cl_uint num_wait_events = 0;
+	if(event.raw()) {
+		wait_event = &event.raw();
+		num_wait_events = 1;
+	}
+
+	cl_event event_cl;
+	cl_int err = clEnqueueReadBufferRect(*device, cl_buffer, CL_FALSE, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, dest, num_wait_events, wait_event, &event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueReadBufferRect", __FILE__, __LINE__);
+	}
+
+	const hardware::SynchronizationEvent new_event(event_cl);
+	err = clReleaseEvent(event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return new_event;
+}
+
+hardware::SynchronizationEvent hardware::buffers::Buffer::load_async(const void * array) const
+{
+	cl_event event_cl;
+	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_FALSE, 0, bytes, array, 0, nullptr, &event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueReadBuffer", __FILE__, __LINE__);
+	}
+
+	const hardware::SynchronizationEvent event(event_cl);
+	err = clReleaseEvent(event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return event;
 }
 
 hardware::SynchronizationEvent hardware::buffers::Buffer::dump_async(void * array) const

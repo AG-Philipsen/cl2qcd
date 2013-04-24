@@ -149,6 +149,17 @@ site_idx get_eo_site_idx_from_st_idx(st_idx in);
 st_idx get_odd_st_idx(const site_idx idx);
 st_idx get_even_st_idx(const site_idx idx);
 
+st_idx get_odd_st_idx_local(const site_idx idx)
+{
+	// as long as we only have local time size we are fine
+	return get_odd_st_idx(idx);
+}
+st_idx get_even_st_idx_local(const site_idx idx)
+{
+	// as long as we only have local time size we are fine
+	return get_even_st_idx(idx);
+}
+
 /**
  * (st_idx, dir_idx) -> link_idx and
  * link_idx -> st_idx, respectively.
@@ -160,8 +171,8 @@ link_idx inline get_link_idx_SOA(const dir_idx mu, const st_idx in)
 	const uint3 space = get_coord_spatial(in.space);
 	// check if the site is odd (either spacepos or t odd)
 	// if yes offset everything by half the number of sites (number of sites is always even...)
-	site_idx odd = (space.x ^ space.y ^ space.z ^ in.time) & 0x1 ? (VOL4D / 2) : 0;
-	return mu * VOL4D + odd + get_eo_site_idx_from_st_idx(in);
+	site_idx odd = (space.x ^ space.y ^ space.z ^ in.time) & 0x1 ? (VOL4D_MEM / 2) : 0;
+	return mu * VOL4D_MEM + odd + get_eo_site_idx_from_st_idx(in);
 }
 link_idx inline get_link_idx_AOS(const dir_idx mu, const st_idx in)
 {
@@ -304,7 +315,7 @@ site_idx calc_odd_spatial_idx(coord_full in)
 }
 
 /**
- * this takes a eo_site_idx (0..VOL4D/2) and returns its 4 coordinates
+ * this takes a eo_site_idx (0..VOL4D_MEM/2) and returns its 4 coordinates
  * under the assumption that even-odd preconditioning is applied in the
  * x-y-plane as described above.
  * This is moved to the z-y plane if the tmlqcd conventions are used.
@@ -348,7 +359,7 @@ coord_full dissect_eo_site_idx(const site_idx idx)
 	return tmp;
 }
 
-/** given an eo site_idx (0..VOL4D/2), returns corresponding even st_idx */
+/** given an eo site_idx (0..VOL4D_MEM/2), returns corresponding even st_idx */
 st_idx get_even_st_idx(const site_idx idx)
 {
 	coord_full tmp = dissect_eo_site_idx(idx);
@@ -358,7 +369,7 @@ st_idx get_even_st_idx(const site_idx idx)
 	return res;
 }
 
-/** given an eo site_idx (0..VOL4D/2), returns corresponding odd st_idx */
+/** given an eo site_idx (0..VOL4D_MEM/2), returns corresponding odd st_idx */
 st_idx get_odd_st_idx(const site_idx idx)
 {
 	coord_full tmp = dissect_eo_site_idx(idx);
@@ -376,13 +387,13 @@ st_idx get_odd_st_idx(const site_idx idx)
 /** returns neighbor in time direction given a temporal coordinate */
 coord_temporal get_neighbor_temporal(const coord_temporal ntime)
 {
-	return (ntime + 1) % NTIME;
+	return (ntime + 1) % NTIME_MEM;
 }
 
 /** returns neighbor in time direction given a temporal coordinate */
 coord_temporal get_lower_neighbor_temporal(const coord_temporal ntime)
 {
-	return (ntime - 1 + NTIME) % NTIME;
+	return (ntime - 1 + NTIME_MEM) % NTIME_MEM;
 }
 
 /** returns idx of neighbor in spatial direction dir given a spatial idx */
@@ -463,13 +474,13 @@ uint spinor_element(uint alpha, uint color)
 // CP: I simply directed them back to the newer functions
 //////////////////////////////////////////////////////////////////
 
-int inline get_global_pos(int spacepos, int t)
+int inline get_pos(int spacepos, int t)
 {
 	st_idx tmp = {spacepos, t};
 	return get_site_idx(tmp);
 }
 
-int inline get_global_link_pos(int mu, int spacepos, int t)
+int inline get_link_pos(int mu, int spacepos, int t)
 {
 	st_idx tmp = {spacepos, t};
 	return get_link_idx(mu, tmp);

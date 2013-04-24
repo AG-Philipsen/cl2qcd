@@ -20,9 +20,9 @@ __kernel void generate_gaussian_spinorfield(__global spinor * const restrict out
 	prng_state rnd;
 	prng_loadState(&rnd, rngStates);
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
 		/** @todo this must be done more efficient */
-		st_index pos = (id_tmp < VOLSPACE * NTIME / 2) ? get_even_site(id_tmp) : get_odd_site(id_tmp - (VOLSPACE * NTIME / 2));
+		st_index pos = (id_local < SPINORFIELDSIZE_LOCAL / 2) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local - (SPINORFIELDSIZE_LOCAL / 2));
 
 		//CP: there are 12 complex elements in the spinor
 		tmp = gaussianNormalPair(&rnd);

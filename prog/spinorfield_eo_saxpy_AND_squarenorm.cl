@@ -16,16 +16,16 @@ __kernel void saxpy_AND_squarenorm_eo(__global const spinorStorageType * const r
 	sum = 0.;
 
 	const hmc_complex alpha_tmp = complexLoadHack(alpha);
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		spinor x_tmp = getSpinor_eo(x, id_tmp);
-		spinor y_tmp = getSpinor_eo(y, id_tmp);
+	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
+		spinor x_tmp = getSpinor_eo(x, id_mem);
+		spinor y_tmp = getSpinor_eo(y, id_mem);
 		x_tmp = spinor_times_complex(x_tmp, alpha_tmp);
 		x_tmp = spinor_dim(y_tmp, x_tmp);
 		//calc squarenorm of resulting spinor
 //		hmc_float tmp = spinor_squarenorm(x_tmp);
 //		sum += tmp;
 sum +=		spinor_squarenorm(x_tmp);
-		putSpinor_eo(out, id_tmp, x_tmp);
+		putSpinor_eo(out, id_mem, x_tmp);
 	}
 
 	//perform local reduction

@@ -14,54 +14,70 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 		throw std::invalid_argument("k must be within 0..11");
 	}
 
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
-	// for now require a single device
-	assert(buffers.size() == 1);
-
-	auto buffer = buffers[0];
+	// only execute on the buffer were the given position results.
+	int t_pos = params.get_source_t();
+	unsigned local_lattice_size = buffers[0]->get_device()->get_local_lattice_size().t;
+	auto buffer = buffers[t_pos / local_lattice_size];
 	auto device = buffer->get_device();
+	int local_t = t_pos % local_lattice_size;
 
-	device->get_correlator_code()->create_point_source_device(buffer, k, get_source_pos_spatial(params), params.get_source_t());
+	device->get_correlator_code()->create_point_source_device(buffer, k, get_source_pos_spatial(params), local_t);
+
+	spinorfield->update_halo();
 }
 
 void physics::set_volume_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng)
 {
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
-	// for now require a single device
-	assert(buffers.size() == 1);
+	for(size_t i = 0; i < buffers.size(); ++i) {
+		auto buffer = buffers[i];
+		auto prng_buffer = prng.get_buffers().at(i);
 
-	auto buffer = buffers[0];
-	auto prng_buffer = prng.get_buffers().at(0);
+		buffer->get_device()->get_correlator_code()->create_volume_source_device(buffer, prng_buffer);
+	}
 
-	buffer->get_device()->get_correlator_code()->create_volume_source_device(buffer, prng_buffer);
+	spinorfield->update_halo();
 }
 
-void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng, int t)
+void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng, int t_pos)
 {
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
-	// for now require a single device
-	assert(buffers.size() == 1);
+	unsigned local_lattice_size = buffers[0]->get_device()->get_local_lattice_size().t;
+	unsigned t_buf = t_pos / local_lattice_size;
+	auto buffer = buffers[t_buf];
+	auto device = buffer->get_device();
+	int local_t = t_pos % local_lattice_size;
+	auto prng_buffer = prng.get_buffers().at(t_buf);
 
-	auto buffer = buffers[0];
-	auto prng_buffer = prng.get_buffers().at(0);
+	device->get_correlator_code()->create_timeslice_source_device(buffer, prng_buffer, local_t);
 
-	buffer->get_device()->get_correlator_code()->create_timeslice_source_device(buffer, prng_buffer, t);
+	spinorfield->update_halo();
 }
 
 void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng, int z)
 {
+	spinorfield->zero();
+
 	auto buffers = spinorfield->get_buffers();
 
-	// for now require a single device
-	assert(buffers.size() == 1);
+	for(size_t i = 0; i < buffers.size(); ++i) {
+		auto buffer = buffers[i];
+		auto prng_buffer = prng.get_buffers().at(i);
 
-	auto buffer = buffers[0];
-	auto prng_buffer = prng.get_buffers().at(0);
+		buffer->get_device()->get_correlator_code()->create_zslice_source_device(buffer, prng_buffer, z);
+	}
 
-	buffer->get_device()->get_correlator_code()->create_zslice_source_device(buffer, prng_buffer, z);
+	spinorfield->update_halo();
 }
 
 static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, physics::PRNG& prng, const meta::Inputparameters& params);
@@ -79,7 +95,7 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 {
 	using namespace physics;
 
-	for(int k = 0; k < sources.size(); k++) {
+	for(size_t k = 0; k < sources.size(); k++) {
 		auto source = sources[k];
 		try_swap_in(source);
 

@@ -9,12 +9,12 @@
 //The difference to the non-eo kernel is that one has to calculate the eo position of the "plus" spinor out of the neighbour coordinates on each occasion. This is done just like in the dslash_eo kernel!
 __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
 {
-	int id = get_global_id(0);
-	int global_size = get_global_size(0);
-
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		//caculate (pos,time) out of id_tmp depending on evenodd
-		st_index pos = (evenodd == ODD) ? get_even_site(id_tmp) : get_odd_site(id_tmp);
+	// must include HALO, as we are updating neighbouring sites
+	// -> not all local sites will fully updated if we don't calculate on halo indices, too
+	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
+		//caculate (pos,time) out of id_local depending on evenodd
+		//st_index pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
+		st_index pos = (evenodd == ODD) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
 
 		Matrixsu3 U;
 		Matrix3x3 v1, v2, tmp;
@@ -31,7 +31,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		int t = pos.time;
 		int nn_eo;
 
-		y = getSpinor_eo(Y, id_tmp);
+		y = getSpinor_eo(Y, get_eo_site_idx_from_st_idx(pos));
 		///////////////////////////////////
 		// Calculate gamma_5 y
 		///////////////////////////////////
@@ -48,7 +48,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 
 		///////////////////////////////////
 		//mu = +0
-		global_link_pos = get_global_link_pos(dir, n, t);
+		global_link_pos = get_link_pos(dir, n, t);
 		nn = get_neighbor_temporal(t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);
@@ -90,7 +90,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		/////////////////////////////////////
 		//mu = -0
 		nn = get_lower_neighbor_temporal(t);
-		global_link_pos_down = get_global_link_pos(dir, n, nn);
+		global_link_pos_down = get_link_pos(dir, n, nn);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);
 		plus = getSpinor_eo(X, nn_eo);
@@ -140,7 +140,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 
 		/////////////////////////////////
 		//mu = +1
-		global_link_pos = get_global_link_pos(dir, n, t);
+		global_link_pos = get_link_pos(dir, n, t);
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
@@ -169,7 +169,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		///////////////////////////////////
 		//mu = -1
 		nn = get_lower_neighbor(n, dir);
-		global_link_pos_down = get_global_link_pos(dir, nn, t);
+		global_link_pos_down = get_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
 		plus = getSpinor_eo(X, nn_eo);
@@ -201,7 +201,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 
 		///////////////////////////////////
 		// mu = +2
-		global_link_pos = get_global_link_pos(dir, n, t);
+		global_link_pos = get_link_pos(dir, n, t);
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
@@ -230,7 +230,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		///////////////////////////////////
 		//mu = -2
 		nn = get_lower_neighbor(n, dir);
-		global_link_pos_down = get_global_link_pos(dir, nn, t);
+		global_link_pos_down = get_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
 		plus = getSpinor_eo(X, nn_eo);
@@ -263,7 +263,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 
 		///////////////////////////////////
 		// mu = +3
-		global_link_pos = get_global_link_pos(dir, n, t);
+		global_link_pos = get_link_pos(dir, n, t);
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
@@ -293,7 +293,7 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		///////////////////////////////////
 		//mu = -3
 		nn = get_lower_neighbor(n, dir);
-		global_link_pos_down = get_global_link_pos(dir, nn, t);
+		global_link_pos_down = get_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
 		plus = getSpinor_eo(X, nn_eo);

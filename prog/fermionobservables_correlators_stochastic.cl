@@ -57,35 +57,39 @@ void load_spinor_to_complex_array(spinor in, hmc_complex * out)
 
 __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global const spinor * const restrict phi, __global const spinor * const restrict b)
 {
-	int local_size = get_local_size(0);
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
+	const int local_size = get_local_size(0);
+	const int global_size = get_global_size(0);
+	const int id = get_global_id(0);
+	const int loc_idx = get_local_id(0);
+	const int num_groups = get_num_groups(0);
+	const int group_id = get_group_id (0);
+
+	//now, this should finally be the correct normalisation for the physical fields
+	//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
+	const hmc_float fac = 2. * KAPPA * 2.* KAPPA / (NSPACE * NSPACE * NTIME_GLOBAL);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
-		hmc_float correlator = 0.;
+		hmc_float correlator = out[id_tmp];
 		uint3 coord;
 		uint3 coord2;
 		//loop over first coordinate
 		coord.z = id_tmp;
-		for(int t    = 0; t <        NTIME;  t++) {
+		for(int t    = 0; t < NTIME_LOCAL;  t++) {
 			for(coord.x  = 0; coord.x <  NSPACE; coord.x++) {
 				for(coord.y  = 0; coord.y <  NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor phi_tmp = phi[get_global_pos(nspace, t)];
+					spinor phi_tmp = phi[get_pos(nspace, t)];
 					hmc_complex phi_arr[12];
 					load_spinor_to_complex_array(phi_tmp, phi_arr);
 					//loop over second coordinate
-					for(int t2   = 0; t2 <       NTIME;  t2++) {
+					for(int t2   = 0; t2 < NTIME_LOCAL;  t2++) { // TODO needs to be worked around for Multi-GPU
 						for(coord2.x = 0; coord2.x < NSPACE; coord2.x++) {
 							for(coord2.y = 0; coord2.y < NSPACE; coord2.y++) {
 								for(coord2.z = 0; coord2.z < NSPACE; coord2.z++) {
 									//coord2.z =z;// coord.z;//(z+coord.z)%NSPACE;
 									int nspace2 = get_nspace(coord2);
-									spinor b_tmp = b[get_global_pos(nspace2, t2)];
+									spinor b_tmp = b[get_pos(nspace2, t2)];
 									hmc_complex b_arr[12];
 									load_spinor_to_complex_array(b_tmp, b_arr);
 									hmc_complex Dminus;
@@ -93,7 +97,7 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 									for(int a = 0; a < 12; a++) {
 										for(int b = 0; b < 12; b++) {
 											Dminus =  complexmult(phi_arr[a], complexconj(b_arr[b]));
-											correlator += complex_squarenorm(Dminus);
+											correlator += complex_squarenorm(Dminus) * fac;
 										}
 									}
 								}
@@ -103,11 +107,8 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		//now, this should finally be the correct normalisation for the physical fields
-		//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
 
-		hmc_float fac = NSPACE * NSPACE * NTIME;
-		out[id_tmp] += 2. * KAPPA * 2.* KAPPA * correlator / fac;
+		out[id_tmp] = correlator;
 	}
 
 
@@ -132,7 +133,7 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NTIME threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.;
 		uint3 coord;
 		int t = id_tmp;
@@ -140,13 +141,13 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_global_pos(nspace, t)];
+					spinor tmp = phi[get_pos(nspace, t)];
 					correlator += spinor_squarenorm(tmp);
 				}
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
 
@@ -176,27 +177,27 @@ __kernel void correlator_sc_z(__global hmc_float * const restrict out, __global 
 		hmc_float correlator = 0.;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
@@ -222,7 +223,7 @@ __kernel void correlator_sc_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NTIME threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.;
 		uint3 coord;
 		int t = id_tmp;
@@ -232,22 +233,22 @@ __kernel void correlator_sc_t(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 				}
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
 
@@ -280,7 +281,7 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 		uint3 coord;
 		coord.z = id_tmp;
 
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -288,8 +289,8 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -308,8 +309,8 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -329,7 +330,7 @@ __kernel void correlator_vx_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -355,7 +356,7 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -369,8 +370,8 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -389,8 +390,8 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -411,7 +412,7 @@ __kernel void correlator_vx_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -443,7 +444,7 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 		correlator.im = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -451,8 +452,8 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -471,8 +472,8 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -492,7 +493,7 @@ __kernel void correlator_vy_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -518,7 +519,7 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -532,8 +533,8 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -552,8 +553,8 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -574,7 +575,7 @@ __kernel void correlator_vy_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -605,27 +606,27 @@ __kernel void correlator_vz_z(__global hmc_float * const restrict out, __global 
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
@@ -651,7 +652,7 @@ __kernel void correlator_vz_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		int t = id_tmp;
@@ -661,22 +662,22 @@ __kernel void correlator_vz_t(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 				}
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
 
@@ -710,7 +711,7 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 		correlator.im = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -718,8 +719,8 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -738,8 +739,8 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -759,7 +760,7 @@ __kernel void correlator_ax_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -785,7 +786,7 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -799,8 +800,8 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -819,8 +820,8 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 					correlator.im -= restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -841,7 +842,7 @@ __kernel void correlator_ax_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -873,7 +874,7 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 		correlator.im = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
@@ -881,8 +882,8 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -901,8 +902,8 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -922,7 +923,7 @@ __kernel void correlator_ay_z(__global hmc_float * const restrict out, __global 
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2.*correlator.re / fac;
 	}
 
@@ -948,7 +949,7 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
@@ -962,8 +963,8 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					tmp_a = phi1[get_global_pos(nspace, t)];
-					tmp_b = phi2[get_global_pos(nspace, t)];
+					tmp_a = phi1[get_pos(nspace, t)];
+					tmp_b = phi2[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re += restmp.re;
@@ -982,8 +983,8 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 					correlator.im += restmp.im;
 
 
-					tmp_a = phi3[get_global_pos(nspace, t)];
-					tmp_b = phi4[get_global_pos(nspace, t)];
+					tmp_a = phi3[get_pos(nspace, t)];
+					tmp_b = phi4[get_pos(nspace, t)];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
 					correlator.re -= restmp.re;
@@ -1004,7 +1005,7 @@ __kernel void correlator_ay_t(__global hmc_float * const restrict out, __global 
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.*KAPPA * 2. * correlator.re / fac;
 	}
 
 
@@ -1035,27 +1036,27 @@ __kernel void correlator_az_z(__global hmc_float * const restrict out, __global 
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
-		for(int t = 0; t < NTIME; t++) {
+		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NTIME;
+		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
 		out[id_tmp] += - 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
@@ -1081,7 +1082,7 @@ __kernel void correlator_az_t(__global hmc_float * const restrict out, __global 
 	int group_id = get_group_id (0);
 
 	//suppose that there are NTIME threads (one for each entry of the correlator)
-	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
 		uint3 coord;
 		int t = id_tmp;
@@ -1091,22 +1092,22 @@ __kernel void correlator_az_t(__global hmc_float * const restrict out, __global 
 					int nspace = get_nspace(coord);
 					spinor tmp;
 
-					tmp = phi1[get_global_pos(nspace, t)];
+					tmp = phi1[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					tmp = phi2[get_global_pos(nspace, t)];
+					tmp = phi2[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi3[get_global_pos(nspace, t)];
+					tmp = phi3[get_pos(nspace, t)];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					tmp = phi4[get_global_pos(nspace, t)];
+					tmp = phi4[get_pos(nspace, t)];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 				}
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[id_tmp] += - 2. * KAPPA * 2.* KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += - 2. * KAPPA * 2.* KAPPA * correlator / fac;
 	}
 
 

@@ -20,24 +20,13 @@
 #include "code/molecular_dynamics.hpp"
 #include "code/buffer.hpp"
 
-static std::string retrieve_device_name(cl_device_id device_id);
 static bool retrieve_device_availability(cl_device_id device_id);
-static size_t retrieve_preferred_local_thread_num(cl_device_id device_id);
-static size_t retrieve_preferred_global_thread_num(cl_device_id device_id);
-static size_t retrieve_num_compute_units(cl_device_id device_id);
-static cl_device_type retrieve_device_type(cl_device_id device_id);
-static bool retrieve_supports_double(cl_device_id device_id);
+static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputparameters& params);
+static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
-hardware::Device::Device(cl_context context, cl_device_id device_id, const meta::Inputparameters& params, bool enable_profiling)
-	: context(context), device_id(device_id), params(params),
-	  preferred_local_thread_num(retrieve_preferred_local_thread_num(device_id)),
-	  preferred_global_thread_num(retrieve_preferred_global_thread_num(device_id)),
-	  num_compute_units(::retrieve_num_compute_units(device_id)),
-	  device_type(::retrieve_device_type(device_id)),
-	  supports_double(::retrieve_supports_double(device_id)),
-	  prefers_blocked_loops(device_type == CL_DEVICE_TYPE_CPU),
-	  prefers_soa(device_type == CL_DEVICE_TYPE_GPU),
-	  name(retrieve_device_name(device_id)),
+hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
+	: DeviceInfo(device_id),
+	  context(context), params(params),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
 	  gaugefield_code(nullptr),
@@ -51,9 +40,18 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  correlator_code(nullptr),
 	  heatbath_code(nullptr),
 	  kappa_code(nullptr),
-	  buffer_code(nullptr)
+	  buffer_code(nullptr),
+	  grid_pos(grid_pos),
+	  grid_size(grid_size),
+	  local_lattice_size(calculate_local_lattice_size(grid_size, params)),
+	  halo_size(2),
+	  mem_lattice_size(calculate_mem_lattice_size(grid_size, local_lattice_size, halo_size))
 {
-	logger.debug() << "Initializing " << retrieve_device_name(device_id);
+	logger.debug() << "Initializing " << get_name();
+	logger.debug() << "Device position: " << grid_pos;
+	logger.debug() << "Local lattice size: " << local_lattice_size;
+	logger.debug() << "Memory lattice size: " << mem_lattice_size;
+
 	bool available = retrieve_device_availability(device_id);
 	if(!available) {
 		logger.error() << "Device is not available!";
@@ -107,140 +105,6 @@ hardware::Device::~Device()
 	clReleaseCommandQueue(command_queue);
 }
 
-bool hardware::Device::is_double_supported() const noexcept
-{
-	return supports_double;
-}
-
-bool hardware::Device::get_prefers_blocked_loops() const noexcept
-{
-	return prefers_blocked_loops;
-}
-
-bool hardware::Device::get_prefers_soa() const noexcept
-{
-	return prefers_soa;
-}
-
-static std::string retrieve_device_name(cl_device_id device_id)
-{
-	using namespace hardware;
-	size_t bytes;
-	cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_NAME, 0, 0, &bytes);
-	if(err) {
-		throw OpenclException(err, "clGetDeviceInfo(CL_DEVICE_NAME)", __FILE__, __LINE__);
-	}
-	char * name = new char[bytes + 1];
-	err = clGetDeviceInfo(device_id, CL_DEVICE_NAME, bytes, name, 0);
-	name[bytes] = 0;
-	std::string val(name);
-	delete[] name;
-	if(err) {
-		throw OpenclException(err, "clGetDeviceInfo(CL_DEVICE_NAME)", __FILE__, __LINE__);
-	}
-	return val;
-}
-
-static bool retrieve_device_availability(cl_device_id device_id)
-{
-	using namespace hardware;
-	cl_bool available;
-	cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &available, 0);
-	if(err) {
-		throw OpenclException(err, "clGetDeviceInfo(CL_DEVICE_AVAILABLE)", __FILE__, __LINE__);
-	}
-	return available;
-}
-
-size_t hardware::Device::get_preferred_local_thread_num() const noexcept
-{
-	return preferred_local_thread_num;
-}
-
-size_t hardware::Device::get_preferred_global_thread_num() const noexcept
-{
-	return preferred_global_thread_num;
-}
-
-size_t hardware::Device::get_num_compute_units() const noexcept
-{
-	return num_compute_units;
-}
-
-cl_device_type hardware::Device::get_device_type() const noexcept
-{
-	return device_type;
-}
-
-static size_t retrieve_preferred_local_thread_num(cl_device_id device_id)
-{
-	if(retrieve_device_type(device_id) == CL_DEVICE_TYPE_GPU) {
-		return 128;
-	} else {
-		return 1;
-	}
-}
-
-static size_t retrieve_preferred_global_thread_num(cl_device_id device_id)
-{
-	size_t min_thread_num = retrieve_preferred_local_thread_num(device_id)
-	                        * retrieve_num_compute_units(device_id);
-	if(retrieve_device_type(device_id) == CL_DEVICE_TYPE_GPU) {
-		return 4 * min_thread_num;
-	} else {
-		return min_thread_num;
-	}
-}
-
-static size_t retrieve_num_compute_units(cl_device_id device_id)
-{
-	size_t num_compute_units;
-	cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &num_compute_units, 0);
-	if(err) {
-		throw hardware::OpenclException(err, "clGetDeviceInfo(MAX_COMPUTE_UNITS)", __FILE__, __LINE__);
-	}
-	return num_compute_units;
-}
-
-static cl_device_type retrieve_device_type(cl_device_id device_id)
-{
-	cl_device_type device_type;
-	cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, 0);
-	if(err) {
-		throw hardware::OpenclException(err, "clGetDeviceInfo(TYPE)", __FILE__, __LINE__);
-	}
-	return device_type;
-}
-
-static bool retrieve_supports_double(cl_device_id device_id)
-{
-	using namespace hardware;
-//  only on OpenCL 1.2
-//	cl_device_fp_config double_support;
-//	cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_DOUBLE_FP_CONFIG, sizeof(double_support), &double_support, 0);
-//	if(err) {
-//		throw OpenclException();
-//	}
-//	return (double_support & (CL_FP_FMA | CL_FP_ROUND_TO_NEAREST | CL_FP_ROUND_TO_ZERO | CL_FP_ROUND_TO_INF | CL_FP_INF_NAN | CL_FP_DENORM));
-
-	// backwards compatible query
-	cl_int err;
-	size_t value_size;
-	err = clGetDeviceInfo(device_id, CL_DEVICE_EXTENSIONS, 0, 0, &value_size);
-	if(err) {
-		throw OpenclException(err, "clGetDeviceInfo(EXTENSIONS)", __FILE__, __LINE__);
-	}
-	char* extensions_val = new char[value_size + 1];
-	err = clGetDeviceInfo(device_id, CL_DEVICE_EXTENSIONS, value_size, extensions_val, 0);
-	extensions_val[value_size] = 0;
-	std::string extensions(extensions_val);
-	delete[] extensions_val;
-	if(err) {
-		throw OpenclException(err, "clGetDeviceInfo(EXTENSIONS)", __FILE__, __LINE__);
-	}
-	return (extensions.find("cl_khr_fp64") != std::string::npos);
-}
-
 hardware::Device::operator cl_command_queue() const noexcept
 {
 	return command_queue;
@@ -255,7 +119,7 @@ TmpClKernel hardware::Device::create_kernel(const char * const kernel_name, std:
 	if(params.is_ocl_compiler_opt_disabled()) {
 		build_opts +=  " -cl-opt-disable";
 	}
-	return TmpClKernel(kernel_name, build_opts, context, device_id);
+	return TmpClKernel(kernel_name, build_opts, context, get_id());
 }
 
 void hardware::Device::enqueue_kernel(cl_kernel kernel)
@@ -365,7 +229,8 @@ static int get_cypress_stride_badness(size_t bytes, size_t lanes)
 
 size_t hardware::Device::recommend_stride(size_t elems, size_t type_size, size_t lane_count) const
 {
-	size_t MAX_ADD_STRIDE = 8 * 1024; // never add more than 8 KiB per lane
+	const size_t MAX_ADD_STRIDE = 8 * 1024; // never add more than 8 KiB per lane
+	const auto name = get_name();
 	if(name == std::string("Cypress") || name == std::string("Cayman")) {
 		logger.debug() << "Using cypress stride";
 		// apply advanced stride rules
@@ -388,11 +253,6 @@ size_t hardware::Device::recommend_stride(size_t elems, size_t type_size, size_t
 	}
 }
 
-cl_device_id hardware::Device::get_id() const noexcept
-{
-	return device_id;
-}
-
 bool hardware::Device::is_profiling_enabled() const noexcept
 {
 	return profiling_enabled;
@@ -412,11 +272,6 @@ void hardware::Device::synchronize() const
 	if(err) {
 		throw hardware::OpenclException(err, "Failed when waiting for OpenCL device to finish.", __FILE__, __LINE__);
 	}
-}
-
-std::string hardware::Device::get_name() const noexcept
-{
-	return name;
 }
 
 hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
@@ -551,4 +406,70 @@ void hardware::print_profiling(Device * device, const std::string& filename, int
 	if(device->buffer_code) {
 		device->buffer_code->print_profiling(filename, id);
 	}
+}
+
+static bool retrieve_device_availability(cl_device_id device_id)
+{
+	using namespace hardware;
+	cl_bool available;
+	cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &available, 0);
+	if(err) {
+		throw OpenclException(err, "clGetDeviceInfo(CL_DEVICE_AVAILABLE)", __FILE__, __LINE__);
+	}
+	return available;
+}
+
+size_4 hardware::Device::get_grid_pos() const
+{
+	return grid_pos;
+}
+
+size_4 hardware::Device::get_grid_size() const
+{
+	return grid_size;
+}
+
+static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputparameters& params)
+{
+	const unsigned NSPACE = params.get_nspace();
+	const unsigned NTIME = params.get_ntime();
+
+	const size_4 local_size(NSPACE / grid_size.x, NSPACE / grid_size.y, NSPACE / grid_size.z, NTIME / grid_size.t);
+
+	if(local_size.x * grid_size.x != NSPACE
+	   || local_size.y * grid_size.y != NSPACE
+	   || local_size.z * grid_size.z != NSPACE
+	   || local_size.t * grid_size.t != NTIME) {
+		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
+	}
+
+	return local_size;
+}
+
+size_4 hardware::Device::get_local_lattice_size() const
+{
+	return local_lattice_size;
+}
+
+size_4 hardware::Device::get_mem_lattice_size() const
+{
+	return mem_lattice_size;
+}
+
+unsigned hardware::Device::get_halo_size() const
+{
+	return halo_size;
+}
+
+static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size)
+{
+	if(local_lattice_size.t < halo_size) {
+		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
+	}
+	return size_4(
+	         local_lattice_size.x + (grid_size.x > 1 ? 2 * halo_size : 0),
+	         local_lattice_size.y + (grid_size.y > 1 ? 2 * halo_size : 0),
+	         local_lattice_size.z + (grid_size.z > 1 ? 2 * halo_size : 0),
+	         local_lattice_size.t + (grid_size.t > 1 ? 2 * halo_size : 0)
+	       );
 }

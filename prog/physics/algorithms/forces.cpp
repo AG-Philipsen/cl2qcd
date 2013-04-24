@@ -16,14 +16,17 @@ void physics::algorithms::gauge_force(const physics::lattices::Gaugemomenta * co
 	auto gm_bufs = gm->get_buffers();
 	auto gf_bufs = gf.get_buffers();
 	size_t num_bufs = gm_bufs.size();
-	if(num_bufs != 1 || num_bufs != gf_bufs.size()) {
-		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
+	if(num_bufs != gf_bufs.size()) {
+		throw Print_Error_Message("Input buffers seem to use different devices.", __FILE__, __LINE__);
 	}
 
-	auto gm_buf = gm_bufs[0];
-	auto gf_buf = gf_bufs[0];
-	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-	code->gauge_force_device(gf_buf, gm_buf);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto gm_buf = gm_bufs[i];
+		auto gf_buf = gf_bufs[i];
+		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		code->gauge_force_device(gf_buf, gm_buf);
+	}
+	gm->update_halo();
 }
 
 void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield& gf)
@@ -31,14 +34,17 @@ void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemoment
 	auto gm_bufs = gm->get_buffers();
 	auto gf_bufs = gf.get_buffers();
 	size_t num_bufs = gm_bufs.size();
-	if(num_bufs != 1 || num_bufs != gf_bufs.size()) {
-		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
+	if(num_bufs != gf_bufs.size()) {
+		throw Print_Error_Message("Input buffers seem to use different devices.", __FILE__, __LINE__);
 	}
 
-	auto gm_buf = gm_bufs[0];
-	auto gf_buf = gf_bufs[0];
-	auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-	code->gauge_force_tlsym_device(gf_buf, gm_buf);
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto gm_buf = gm_bufs[i];
+		auto gf_buf = gf_bufs[i];
+		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		code->gauge_force_tlsym_device(gf_buf, gm_buf);
+	}
+	gm->update_halo();
 }
 
 void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system)

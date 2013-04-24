@@ -8,11 +8,11 @@ __kernel void saxpy(__global spinor* x, __global spinor* y, __global const hmc_c
 
 	const hmc_complex alpha = complexLoadHack(alpha_p);
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
-		const spinor x_tmp = x[id_tmp];
-		const spinor y_tmp = y[id_tmp];
+	for(int id_mem = id; id_mem < SPINORFIELDSIZE_MEM; id_mem += global_size) {
+		const spinor x_tmp = x[id_mem];
+		const spinor y_tmp = y[id_mem];
 		const spinor tmp = spinor_times_complex(x_tmp, alpha);
-		out[id_tmp] = spinor_dim(y_tmp, tmp);
+		out[id_mem] = spinor_dim(y_tmp, tmp);
 	}
 }
 
@@ -26,10 +26,10 @@ __kernel void saxpy_arg(__global spinor* x, __global spinor* y, const hmc_float 
 		alpha_re, alpha_im
 	};
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
-		const spinor x_tmp = x[id_tmp];
-		const spinor y_tmp = y[id_tmp];
+	for(int id_mem = id; id_mem < SPINORFIELDSIZE_MEM; id_mem += global_size) {
+		const spinor x_tmp = x[id_mem];
+		const spinor y_tmp = y[id_mem];
 		const spinor tmp = spinor_times_complex(x_tmp, alpha);
-		out[id_tmp] = spinor_dim(y_tmp, tmp);
+		out[id_mem] = spinor_dim(y_tmp, tmp);
 	}
 }

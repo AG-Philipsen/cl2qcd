@@ -9,6 +9,7 @@
 #include "globaldefs.h"
 #include <cmath>
 #include "meta/inputparameters.hpp"
+#include "meta/size_4.hpp"
 
 /** Identify each spacetime direction */
 #define TDIR 0
@@ -36,6 +37,14 @@ int get_nspace(int* coord, const meta::Inputparameters& params);
 int get_global_pos(int spacepos, int t, const meta::Inputparameters& params);
 
 /**
+ * Get the non-even-odd-preconditioned index based on cartesian coordinates.
+ *
+ * @param cart Cartisian coordinates
+ * @return Global index
+ */
+int get_global_pos(size_4 cart, const meta::Inputparameters& params);
+
+/**
  * Get the non-even-odd-preconditioned index link based on the spatial, temporal
  * and Dirac index.
  *
@@ -44,6 +53,16 @@ int get_global_pos(int spacepos, int t, const meta::Inputparameters& params);
  * @return Global index
  */
 int get_global_link_pos(int mu, int spacepos, int t, const meta::Inputparameters& params);
+
+/**
+ * Get the non-even-odd-preconditioned link index cartesian coordinates
+ * and Dirac index.
+ *
+ * @param mu Dirac index
+ * @param cart Cartisian coordinates
+ * @return Global index
+ */
+int get_global_link_pos(int mu, size_4 cart, const meta::Inputparameters& params);
 
 /**
  * This returns the index of a single su3 matrix entry in the ildg format

@@ -11,4 +11,4 @@ beta= 5.69
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=4080.6745694080
+test_ref_val=4080.6778013042108

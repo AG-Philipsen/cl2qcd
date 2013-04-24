@@ -62,13 +62,13 @@ inline void putSU3(__global Matrixsu3StorageType * const restrict out, const uin
 
 inline Matrixsu3 get_matrixsu3(__global const Matrixsu3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
 {
-	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	uint idx = get_link_pos(mu, spacepos, timepos);
 	return getSU3(field, idx);
 }
 
 inline void put_matrixsu3(__global Matrixsu3StorageType  * const restrict field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
 {
-	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	uint idx = get_link_pos(mu, spacepos, timepos);
 	putSU3(field, idx, in);
 }
 
@@ -111,13 +111,13 @@ inline void put3x3(__global Matrix3x3StorageType * const restrict out, const uin
 
 inline Matrix3x3 get_matrix3x3(__global const Matrix3x3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
 {
-	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	uint idx = get_link_pos(mu, spacepos, timepos);
 	return get3x3(field, idx);
 }
 
 inline void put_matrix3x3(__global Matrix3x3StorageType  * const restrict field, const Matrix3x3 in, const int spacepos, const int timepos, const int mu)
 {
-	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	uint idx = get_link_pos(mu, spacepos, timepos);
 	put3x3(field, idx, in);
 }
 inline Matrixsu3 project_su3(const Matrixsu3 U)
@@ -354,7 +354,7 @@ inline Matrixsu3 local_polyakov(__global const Matrixsu3StorageType * const rest
 {
 	Matrixsu3 out;
 	out = unit_matrixsu3();
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < NTIME_LOCAL; t++) {
 		Matrixsu3 tmp;
 		tmp = get_matrixsu3(field, n, t, 0);
 		out = multiply_matrixsu3 (out, tmp);

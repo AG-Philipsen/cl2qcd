@@ -3,6 +3,7 @@
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/correlator.hpp"
+#include "../hardware/code/spinors.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -268,7 +269,7 @@ void test_src_volume(std::string inputfile)
 	auto * device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -286,6 +287,7 @@ void test_src_volume(std::string inputfile)
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
 	  logger.info() << "Run kernel";
+	  out.clear();
 	  device->create_volume_source_device(&out, prng_buf);
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
@@ -333,7 +335,7 @@ void test_src_zslice(std::string inputfile)
 	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 	//CP: this source does have a weight only on one slice
 	size_t NUM_ELEMENTS_SRC = meta::get_volspace(params);
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
@@ -353,6 +355,7 @@ void test_src_zslice(std::string inputfile)
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
 	  logger.info() << "Run kernel";
+	  out.clear();
 	  device->create_zslice_source_device(&out, prng_buf, params.get_source_z());
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
@@ -400,7 +403,7 @@ void test_src_tslice(std::string inputfile)
 	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 	//CP: this source does have a weight only on one slice
 	size_t NUM_ELEMENTS_SRC = params.get_ntime() * params.get_nspace() * params.get_nspace();
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
@@ -420,6 +423,7 @@ void test_src_tslice(std::string inputfile)
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
 	  logger.info() << "Run kernel";
+	  out.clear();
 	  device->create_timeslice_source_device(&out, prng_buf, params.get_source_t());
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
@@ -467,7 +471,7 @@ void test_src_point(std::string inputfile)
 	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 	//CP: this source does have a weight only on one site
 	size_t NUM_ELEMENTS_SRC = 1;
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
@@ -487,6 +491,7 @@ void test_src_point(std::string inputfile)
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
 	  logger.info() << "Run kernel";
+	  out.clear();
 	  device->create_point_source_device(&out,i, get_source_pos_spatial(params),params.get_source_t());
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);

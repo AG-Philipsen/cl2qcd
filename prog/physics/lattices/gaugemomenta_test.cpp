@@ -15,6 +15,8 @@
 #include "../../meta/type_ops.hpp"
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/gaugemomentum.hpp"
+#include "util.hpp"
+#include "../../meta/util.hpp"
 
 static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed);
 
@@ -110,22 +112,74 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 
 	// this must be zero...
 	gm.zero();
-	BOOST_REQUIRE_EQUAL(squarenorm(gm), 0.);
+	BOOST_CHECK_EQUAL(squarenorm(gm), 0.);
 
 	// this should never be zero
 	gm.gaussian(prng);
-	BOOST_REQUIRE_NE(squarenorm(gm), 0.);
+	BOOST_CHECK_NE(squarenorm(gm), 0.);
 
 	// and the same for the asynchroneous variant
 	Scalar<hmc_float> res(system);
 
 	gm.zero();
 	squarenorm(&res, gm);
-	BOOST_REQUIRE_EQUAL(res.get(), 0.);
+	BOOST_CHECK_EQUAL(res.get(), 0.);
 
 	// this should never be zero
 	gm.gaussian(prng);
 	squarenorm(&res, gm);
-	BOOST_REQUIRE_NE(res.get(), 0.);
+	BOOST_CHECK_NE(res.get(), 0.);
+
+	pseudo_randomize<Gaugemomenta, ae>(&gm, 5);
+	squarenorm(&res, gm);
+	BOOST_CHECK_CLOSE(res.get(), 5509.4389078650529, .01);
+
+	pseudo_randomize<Gaugemomenta, ae>(&gm, 51);
+	squarenorm(&res, gm);
+	BOOST_CHECK_CLOSE(res.get(), 5484.798507726874, .01);
 }
 
+BOOST_AUTO_TEST_CASE(halo_update)
+{
+	using namespace physics::lattices;
+
+	hmc_float orig_squarenorm, new_squarenorm;
+
+	// simple test, squarenorm should not get changed by halo exchange
+	const char * _params[] = {"foo", "--ntime=16"};
+	meta::Inputparameters params(2, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	const Gaugemomenta gm(system);
+
+	gm.gaussian(prng);
+	orig_squarenorm = physics::lattices::squarenorm(gm);
+	gm.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gm);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	gm.zero();
+	orig_squarenorm = physics::lattices::squarenorm(gm);
+	gm.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gm);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	gm.gaussian(prng);
+	orig_squarenorm = physics::lattices::squarenorm(gm);
+	gm.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gm);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	pseudo_randomize<Gaugemomenta, ae>(&gm, 5);
+	orig_squarenorm = physics::lattices::squarenorm(gm);
+	gm.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gm);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+
+	pseudo_randomize<Gaugemomenta, ae>(&gm, 51);
+	orig_squarenorm = physics::lattices::squarenorm(gm);
+	gm.update_halo();
+	new_squarenorm = physics::lattices::squarenorm(gm);
+	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
+}

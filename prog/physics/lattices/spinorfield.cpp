@@ -8,6 +8,9 @@
 #include <stdexcept>
 #include "../../hardware/code/spinors.hpp"
 #include "../../hardware/code/fermions.hpp"
+#include "../../meta/type_ops.hpp"
+#include "../../hardware/buffers/halo_update.hpp"
+#include "../../host_geometry.h"
 
 static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
 
@@ -20,10 +23,10 @@ static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(c
 {
 	using hardware::buffers::Plain;
 
-	// only use device 0 for now
-	hardware::Device * device = system.get_devices().at(0);
 	std::vector<const Plain<spinor>*> buffers;
-	buffers.push_back(new Plain<spinor>(meta::get_spinorfieldsize(system.get_inputparameters()), device, place_on_host));
+	for(auto device: system.get_devices()) {
+		buffers.push_back(new Plain<spinor>(hardware::code::get_spinorfieldsize(device->get_mem_lattice_size()), device, place_on_host));
+	}
 	return buffers;
 }
 
@@ -96,21 +99,21 @@ void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spi
 	auto right_buffers = right.get_buffers();
 	size_t num_buffers = res_buffers.size();
 
-	// TODO implemente for more than one device
-	if(num_buffers != 1) {
-		throw Print_Error_Message("physics::lattices::scalar_product(const Spinorfield&, const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
-	}
 	if(num_buffers != left_buffers.size() || num_buffers != right_buffers.size()) {
 		throw std::invalid_argument("The given lattices do not use the same number of devices.");
 	}
 
-	auto res_buf = res_buffers[0];
-	auto left_buf = left_buffers[0];
-	auto right_buf = right_buffers[0];
-	auto device = res_buf->get_device();
-	auto spinor_code = device->get_spinor_code();
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto res_buf = res_buffers[i];
+		auto left_buf = left_buffers[i];
+		auto right_buf = right_buffers[i];
+		auto device = res_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
 
-	spinor_code->set_complex_to_scalar_product_device(left_buf, right_buf, res_buf);
+		spinor_code->set_complex_to_scalar_product_device(left_buf, right_buf, res_buf);
+	}
+
+	res->sum();
 }
 
 hmc_float physics::lattices::squarenorm(const Spinorfield& field)
@@ -127,19 +130,20 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 	size_t num_buffers = field_buffers.size();
 
 	// TODO implemente for more than one device
-	if(num_buffers != 1) {
-		throw Print_Error_Message("physics::lattices::squarenorm(const Spinorfield&) is not implemented for multiple devices", __FILE__, __LINE__);
-	}
 	if(num_buffers != res_buffers.size()) {
 		throw std::invalid_argument("The given lattices do not sue the same number of devices.");
 	}
 
-	auto field_buf = field_buffers[0];
-	auto res_buf = res_buffers[0];
-	auto device = field_buf->get_device();
-	auto spinor_code = device->get_spinor_code();
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto field_buf = field_buffers[i];
+		auto res_buf = res_buffers[i];
+		auto device = field_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
 
-	spinor_code->set_float_to_global_squarenorm_device(field_buf, res_buf);
+		spinor_code->set_float_to_global_squarenorm_device(field_buf, res_buf);
+	}
+
+	res->sum();
 }
 
 void physics::lattices::Spinorfield::zero() const
@@ -171,6 +175,8 @@ void physics::lattices::Spinorfield::gaussian(const physics::PRNG& prng) const
 		auto prng_buf = prng_bufs[i];
 		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_device(spin_buf, prng_buf);
 	}
+
+	update_halo();
 }
 
 void physics::lattices::saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y)
@@ -267,4 +273,69 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 		hmc_float tmp = squarenorm(x);
 		logger.debug() << msg << std::scientific << std::setprecision(10) << tmp;
 	}
+}
+
+void physics::lattices::Spinorfield::update_halo() const
+{
+	hardware::buffers::update_halo<spinor>(buffers, system.get_inputparameters());
+}
+
+void physics::lattices::Spinorfield::import(const spinor * const host) const
+{
+	logger.trace() << "importing spinorfield";
+	if(buffers.size() == 1) {
+		buffers[0]->load(host);
+	} else {
+		auto params = system.get_inputparameters();
+		auto const _device = buffers.at(0)->get_device();
+		auto const local_size = _device->get_local_lattice_size();
+		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
+		auto const grid_size = _device->get_grid_size();
+		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
+		}
+		for(auto const buffer: buffers) {
+			auto device = buffer->get_device();
+
+			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			logger.debug() << offset;
+			const size_t local_volume = get_vol4d(local_size);
+			buffer->load(&host[get_global_pos(offset, params)], local_volume);
+
+			const size_t halo_volume = get_vol4d(halo_size);
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			logger.trace() << get_global_pos(halo_offset, params);
+			logger.trace() << halo_volume;
+			logger.trace() << get_elements();
+			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume);
+
+			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume + halo_volume);
+
+		}
+	}
+	logger.trace() << "import complete";
+}
+
+unsigned physics::lattices::Spinorfield::get_elements() const noexcept
+{
+	return hardware::code::get_spinorfieldsize(system.get_inputparameters());
+}
+
+void physics::lattices::fill_window(const physics::lattices::Spinorfield* out, const physics::lattices::Spinorfield& src, const size_t idx)
+{
+	auto src_buf = src.get_buffers()[idx];
+	spinor * const tmp = new spinor[src_buf->get_elements()];
+
+	src_buf->dump(tmp);
+
+	for(auto out_buf: out->get_buffers()) {
+		out_buf->load(tmp);
+	}
+
+	delete[] tmp;
 }

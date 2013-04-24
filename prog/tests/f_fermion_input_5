@@ -1,0 +1,18 @@
+# set startcondition to cold or hot to start with different gaugefield
+#startcondition=continue
+startcondition=cold
+#sourcefile=conf.00200
+
+theta_fermion_temporal=1.
+
+use_eo=false
+NS=4
+NT=4
+
+#with BICGSTAB, this set the init-spinorfield to random values
+solver=BICGSTAB
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=4650.0947859311364

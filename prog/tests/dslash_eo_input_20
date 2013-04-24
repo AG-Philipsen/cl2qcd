@@ -17,4 +17,4 @@ read_multiple_configs=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=255.9863780033219
+test_ref_val=255.98636374019816
