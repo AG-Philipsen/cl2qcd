@@ -1,7 +1,8 @@
 startcondition=continue
-sourcefile=conf.00200
+#sourcefile=conf.00200
+sourcefile=conf_lime
 
-kappa=0.1
+kappa=0.
 
 use_eo=false
 NS=4

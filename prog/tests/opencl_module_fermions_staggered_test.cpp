@@ -105,7 +105,7 @@ std::string matrix_to_string(Matrixsu3 m)
 std::string su3vec_to_string(su3vec m)
 {
        std::ostringstream os;
-       os.precision(16);
+       os.precision(8);
        os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im << ")\n\n";
        return os.str();
 }
@@ -156,6 +156,56 @@ void copy_su3vec(su3vec &a, const su3vec b)
   a.e1.im=b.e1.im;
   a.e2.re=b.e2.re;
   a.e2.im=b.e2.im;
+}
+
+Matrixsu3 unit_matrixsu3()
+{
+  Matrixsu3 out;
+  out.e00.re = 1.;
+  out.e00.im = 0.;
+  out.e01.re = 0.;
+  out.e01.im = 0.;
+  out.e02.re = 0.;
+  out.e02.im = 0.;
+
+  out.e10.re = 0.;
+  out.e10.im = 0.;
+  out.e11.re = 1.;
+  out.e11.im = 0.;
+  out.e12.re = 0.;
+  out.e12.im = 0.;
+
+  out.e20.re = 0.;
+  out.e20.im = 0.;
+  out.e21.re = 0.;
+  out.e21.im = 0.;
+  out.e22.re = 1.;
+  out.e22.im = 0.;
+
+  return out;
+}
+
+inline hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
+{
+  hmc_complex res;
+  res.re = a.re * b.re - a.im * b.im;
+  res.im = a.im * b.re + a.re * b.im;
+  return res;
+}
+
+inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor)
+{
+  Matrixsu3 out;
+  out.e00 = complexmult(in.e00, factor);
+  out.e01 = complexmult(in.e01, factor);
+  out.e02 = complexmult(in.e02, factor);
+  out.e10 = complexmult(in.e10, factor);
+  out.e11 = complexmult(in.e11, factor);
+  out.e12 = complexmult(in.e12, factor);
+  out.e20 = complexmult(in.e20, factor);
+  out.e21 = complexmult(in.e21, factor);
+  out.e22 = complexmult(in.e22, factor);
+  return out;
 }
 
 /**
@@ -252,30 +302,36 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, 
 	/*
         //To keep only links in one direction: it is usefull only for debugging
 	for(int i=0; i<ns*ns*ns*nt*4; i++){
-	  if((i%4)!=0){
-	    conf_old[i].e00.re=0.;
-	    conf_old[i].e00.im=0.;
-	    conf_old[i].e01.re=0.;
-	    conf_old[i].e01.im=0.;
-	    conf_old[i].e02.re=0.;
-	    conf_old[i].e02.im=0.;
-	    conf_old[i].e10.re=0.;
-	    conf_old[i].e10.im=0.;
-	    conf_old[i].e11.re=0.;
-	    conf_old[i].e11.im=0.;
-	    conf_old[i].e12.re=0.;
-	    conf_old[i].e12.im=0.;
-	    conf_old[i].e20.re=0.;
-	    conf_old[i].e20.im=0.;
-	    conf_old[i].e21.re=0.;
-	    conf_old[i].e21.im=0.;
-	    conf_old[i].e22.re=0.;
-	    conf_old[i].e22.im=0.;
-	  }
+	  if(i!=0)
+	    conf_old[i]=unit_matrixsu3();
+	  
+	  //I multiply each link by the BC-phase to run the Ref.Code with periodic-BC
+	  //if((i%4)==0)
+	  //  conf_old[i]=multiply_matrixsu3_by_complex(conf_old[i],{1./sqrt(2.),1./sqrt(2.)});
+
+	    // conf_old[i].e00.re=0.;
+	    // conf_old[i].e00.im=0.;
+	    // conf_old[i].e01.re=0.;
+	    // conf_old[i].e01.im=0.;
+	    // conf_old[i].e02.re=0.;
+	    // conf_old[i].e02.im=0.;
+	    // conf_old[i].e10.re=0.;
+	    // conf_old[i].e10.im=0.;
+	    // conf_old[i].e11.re=0.;
+	    // conf_old[i].e11.im=0.;
+	    // conf_old[i].e12.re=0.;
+	    // conf_old[i].e12.im=0.;
+	    // conf_old[i].e20.re=0.;
+	    // conf_old[i].e20.im=0.;
+	    // conf_old[i].e21.re=0.;
+	    // conf_old[i].e21.im=0.;
+	    // conf_old[i].e22.re=0.;
+	    // conf_old[i].e22.im=0.;
+	    
 	}
 	cpu->get_gf_code()->importGaugefield(cpu->get_gaugefield(),conf_old);
 	cpu->save_conf();
-	*/
+	//  */
 }
 
 /**
@@ -301,28 +357,39 @@ void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta:
 	//sf     is the su3vec array ordered with the "superindex scheme"
 	//sf_new is the su3vec array in the right order (ref. code scheme) to be written to the file
 	su3vec *sf_new = new su3vec[ns*ns*ns*nt];
+	std::ostringstream *os=new std::ostringstream[ns*ns*ns*nt];
 	//Now I have conf_old and I have to fill properly conf_new
 	int x,y,z,t,num,even,size;
 	size=ns*ns*ns*nt;
 	for(int i=0; i<ns*ns*ns*nt; i++){
 	  get_full_coord_from_site_idx(i,x,y,z,t,ns);
+
+          logger.warn() << "(" << x << "," << y << "," << z << "," << t << ") => " 
+			<< "(" << sf[i].e0.re << "," << sf[i].e0.im << ") ("
+			<< sf[i].e1.re << "," << sf[i].e1.im << ") ("
+                        << sf[i].e2.re << "," << sf[i].e2.im << ")";
+
 	  even = (x+y+z+t)%2;
 	  // even=0 for even sites
 	  // even=1 for odd sites
 	  num = even*size/2 + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
 	  // num is where, in conf_new, conf_old[...] is to be written
 	  copy_su3vec(sf_new[num],sf[i]);
+	  os[num] << "(" << x << "," << y << "," << z << "," << t << ") => " << su3vec_to_string(sf_new[i]);
 	}	
 	//Now we can write sf_new to the file
 	std::ofstream file(outputfile.c_str());
 	file << ns << " " << ns << " " << ns << " " << nt << std::endl;
-	for(int i=0; i<ns*ns*ns*nt; i++)
-	  file << su3vec_to_string(sf_new[i]);
+	for(int i=0; i<ns*ns*ns*nt; i++){
+	  get_full_coord_from_site_idx(i,x,y,z,t,ns);
+	  //file << su3vec_to_string(sf_new[i]);
+	  file << os[i].str();
+	}
 	file.close();
 }
 
 //The following part has to be deleted if tests from 7 to 12 work.
-/*
+// /*
 su3vec su3matrix_times_su3vec(const Matrixsu3 u, const su3vec in)
 {
   su3vec tmp;
@@ -343,6 +410,90 @@ su3vec su3matrix_times_su3vec(const Matrixsu3 u, const su3vec in)
     + u.e20.im * in.e0.re + u.e21.im * in.e1.re + u.e22.im * in.e2.re;
 
   return tmp;
+}
+
+Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
+{
+  Matrixsu3 out;
+  out.e00.re = p.e00.re;
+  out.e00.im = - p.e00.im;
+  out.e01.re = p.e10.re;
+  out.e01.im = - p.e10.im;
+
+  out.e10.re = p.e01.re;
+  out.e10.im = - p.e01.im;
+  out.e11.re = p.e11.re;
+  out.e11.im = - p.e11.im;
+
+
+  out.e02.re = p.e20.re;
+  out.e02.im = - p.e20.im;
+
+  out.e12.re = p.e21.re;
+  out.e12.im = - p.e21.im;
+
+  out.e20.re = p.e02.re;
+  out.e20.im = - p.e02.im;
+  out.e21.re = p.e12.re;
+  out.e21.im = - p.e12.im;
+  out.e22.re = p.e22.re;
+  out.e22.im = - p.e22.im;
+
+  return out;
+}
+
+Matrixsu3 matrixsu3_dim(const Matrixsu3 p, const Matrixsu3 q)
+{
+  Matrixsu3 out;
+  out.e00.re = p.e00.re - q.e00.re;
+  out.e00.im = p.e00.im - q.e00.im;
+  out.e01.re = p.e01.re - q.e01.re;
+  out.e01.im = p.e01.im - q.e01.im;
+  out.e02.re = p.e02.re - q.e02.re;
+  out.e02.im = p.e02.im - q.e02.im;
+
+  out.e10.re = p.e10.re - q.e10.re;
+  out.e10.im = p.e10.im - q.e10.im;
+  out.e11.re = p.e11.re - q.e11.re;
+  out.e11.im = p.e11.im - q.e11.im;
+  out.e12.re = p.e12.re - q.e12.re;
+  out.e12.im = p.e12.im - q.e12.im;
+
+  out.e20.re = p.e20.re - q.e20.re;
+  out.e20.im = p.e20.im - q.e20.im;
+  out.e21.re = p.e21.re - q.e21.re;
+  out.e21.im = p.e21.im - q.e21.im;
+  out.e22.re = p.e22.re - q.e22.re;
+  out.e22.im = p.e22.im - q.e22.im;
+
+  return out;
+}
+
+Matrixsu3 matrixsu3_acc(const Matrixsu3 p, const Matrixsu3 q)
+{
+  Matrixsu3 out;
+  out.e00.re = p.e00.re + q.e00.re;
+  out.e00.im = p.e00.im + q.e00.im;
+  out.e01.re = p.e01.re + q.e01.re;
+  out.e01.im = p.e01.im + q.e01.im;
+  out.e02.re = p.e02.re + q.e02.re;
+  out.e02.im = p.e02.im + q.e02.im;
+
+  out.e10.re = p.e10.re + q.e10.re;
+  out.e10.im = p.e10.im + q.e10.im;
+  out.e11.re = p.e11.re + q.e11.re;
+  out.e11.im = p.e11.im + q.e11.im;
+  out.e12.re = p.e12.re + q.e12.re;
+  out.e12.im = p.e12.im + q.e12.im;
+
+  out.e20.re = p.e20.re + q.e20.re;
+  out.e20.im = p.e20.im + q.e20.im;
+  out.e21.re = p.e21.re + q.e21.re;
+  out.e21.im = p.e21.im + q.e21.im;
+  out.e22.re = p.e22.re + q.e22.re;
+  out.e22.im = p.e22.im + q.e22.im;
+
+  return out;
 }
 
 su3vec su3vec_acc(su3vec in1, su3vec in2)
@@ -394,6 +545,11 @@ int get_si(int x, int y, int z, int t, int ns)
   return x+y*ns+z*ns*ns+t*ns*ns*ns;
 }
 
+int get_si_link(int x, int y, int z, int t, int ns, int dir)
+{
+  return dir+4*(x+y*ns+z*ns*ns+t*ns*ns*ns);
+}
+
 int get_sp(int x, int y, int z, int dir)
 {
   switch(dir) {
@@ -409,63 +565,95 @@ int get_sp(int x, int y, int z, int dir)
   }
 }
 
-void KernelTry(su3vec * in, meta::Inputparameters params)
+
+
+void Prova()
+{
+  Matrixsu3 m={{-0.439728730761672,0.7343232638233972},{0.05214808268276137,0.1734948533164179},{-0.2957370647514789,0.383572274060428},
+               {0.2382951786905922,0.3907469731636987},{-0.5905733378206699,0.2343265112740442},{-0.1374926053264409,-0.6065824041515409},
+	       {0.0132956768362234,-0.2403402240661662},{-0.7262394413927277,0.1899226313009969},{0.1429866078140708,0.5984315328794113}};
+  Matrixsu3 md=adjoint_matrixsu3(m);
+  Matrixsu3 one=unit_matrixsu3();
+  su3vec v={{1.,0.},{1.,0.},{1.,0.}};
+  hmc_float sum=0.;
+  su3vec a,b,c;
+  a=su3matrix_times_su3vec(matrixsu3_dim(one,md),v);
+  b=su3matrix_times_su3vec(matrixsu3_acc(m,one),v);
+  logger.warn() << "(one-md).v=" << su3vec_to_string(su3vec_times_complex(a,{0.5,0.}));
+  logger.warn() << "(m+one).v="  << su3vec_to_string(su3vec_times_complex(b,{0.5,0.}));
+  c=su3matrix_times_su3vec(matrixsu3_acc(one,one),v);
+  sum+=su3vec_squarenorm(a);
+  sum+=su3vec_squarenorm(b);
+  sum+=su3vec_squarenorm(c);
+  sum*=16;
+  std::cout.precision(24);
+  std::cout << "Il risultato dovrebbe essere " << sum << "\n";
+  hmc_complex res={m.e00.re+m.e01.re+m.e02.re+m.e10.re+m.e11.re+m.e12.re+m.e20.re+m.e21.re+m.e22.re,
+                   m.e00.im+m.e01.im+m.e02.im+m.e10.im+m.e11.im+m.e12.im+m.e20.im+m.e21.im+m.e22.im};
+  std::cout << "sum{IM(U_kl)}=" << res.im << "\n\n";
+}
+
+
+void KernelTry(su3vec * in, meta::Inputparameters params,  TestGaugefield * cpu)
 {
 	int nt=params.get_ntime();
 	int ns=params.get_nspace();
+	Matrixsu3 *link=new Matrixsu3[ns*ns*ns*nt*4];
+	Matrixsu3 *linkd=new Matrixsu3[ns*ns*ns*nt*4];
+	cpu->get_gf_code()->exportGaugefield(link,cpu->get_gaugefield());
+	for(int i=0; i<ns*ns*ns*nt*4; i++)
+	  linkd[i]=adjoint_matrixsu3(link[i]);
 	su3vec *out=new su3vec[ns*ns*ns*nt];
 	for(int i=0; i<ns*ns*ns*nt; i++)
 	  out[i]={{0.,0.},{0.,0.},{0.,0.}};
-	Matrixsu3 link={{1.,0.},{0.,0.},{0.,0.},{0.,0.},{1.,0.},{0.,0.},{0.,0.},{0.,0.},{1.,0.}};
 	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
 	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
-	hmc_complex phit={floor(cos(tmp_temporal)*1.e6)/1.e6,floor(sin(tmp_temporal)*1.e6)/1.e6};
-	hmc_complex phitd={phit.re,-phit.im};
 	hmc_complex phis={cos(tmp_spatial),sin(tmp_spatial)};
 	hmc_complex phisd={cos(tmp_spatial),-sin(tmp_spatial)};
-	// hmc_complex phit={cos(tmp_temporal),sin(tmp_temporal)};
-	// hmc_complex phitd={cos(tmp_temporal),-sin(tmp_temporal)};
+	hmc_complex phit={cos(tmp_temporal),sin(tmp_temporal)};
+	hmc_complex phitd={cos(tmp_temporal),-sin(tmp_temporal)};
 	su3vec chi,outx,outy,outz,outt;
 	for(int x=0; x<ns; x++){
 	  for(int y=0; y<ns; y++){
 	    for(int z=0; z<ns; z++){
-	      for(int t=0; t<nt; t++){
+	      for(int t=0; t<nt; t++){	
 		//t-dir
-		chi=su3matrix_times_su3vec(link,in[get_si(x,y,z,(t+1)%nt,ns)]);
+		chi=su3matrix_times_su3vec(link[get_si_link(x,y,z,t,ns,0)],in[get_si(x,y,z,(t+1)%nt,ns)]);
 		chi=su3vec_times_complex(chi,phit);
 		outt=chi;
-		chi=su3matrix_times_su3vec(link,in[get_si(x,y,z,(t+nt-1)%nt,ns)]);
+		chi=su3matrix_times_su3vec(linkd[get_si_link(x,y,z,(t+nt-1)%nt,ns,0)],in[get_si(x,y,z,(t+nt-1)%nt,ns)]);
 		chi=su3vec_times_complex(chi,phitd);
 		outt=su3vec_dim(outt,chi);
 		outt=su3vec_times_complex(outt,{(hmc_float)get_sp(x,y,z,0),0.});
 		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outt);
+		/*
 		//x-dir
-		chi=su3matrix_times_su3vec(link,in[get_si((x+1)%ns,y,z,t,ns)]);
+		chi=su3matrix_times_su3vec(link[get_si_link(x,y,z,t,ns,1)],in[get_si((x+1)%ns,y,z,t,ns)]);
 		chi=su3vec_times_complex(chi,phis);
 		outx=chi;
-		chi=su3matrix_times_su3vec(link,in[get_si((x+ns-1)%ns,y,z,t,ns)]);
+		chi=su3matrix_times_su3vec(linkd[get_si_link((x+ns-1)%ns,y,z,t,ns,1)],in[get_si((x+ns-1)%ns,y,z,t,ns)]);
 		chi=su3vec_times_complex(chi,phisd);
 		outx=su3vec_dim(outx,chi);
 		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outx);
 		//y-dir
-		chi=su3matrix_times_su3vec(link,in[get_si(x,(y+1)%ns,z,t,ns)]);
+		chi=su3matrix_times_su3vec(link[get_si_link(x,y,z,t,ns,2)],in[get_si(x,(y+1)%ns,z,t,ns)]);
 		chi=su3vec_times_complex(chi,phis);
 		outy=chi;
-		chi=su3matrix_times_su3vec(link,in[get_si(x,(y+ns-1)%ns,z,t,ns)]);
+		chi=su3matrix_times_su3vec(linkd[get_si_link(x,(y+ns-1)%ns,z,t,ns,2)],in[get_si(x,(y+ns-1)%ns,z,t,ns)]);
 		chi=su3vec_times_complex(chi,phisd);
 		outy=su3vec_dim(outy,chi);
 		outy=su3vec_times_complex(outy,{(hmc_float)get_sp(x,y,z,2),0.});
 		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outy);
 		//z-dir
-		chi=su3matrix_times_su3vec(link,in[get_si(x,y,(z+1)%ns,t,ns)]);
+		chi=su3matrix_times_su3vec(link[get_si_link(x,y,z,t,ns,3)],in[get_si(x,y,(z+1)%ns,t,ns)]);
 		chi=su3vec_times_complex(chi,phis);
 		outz=chi;
-		chi=su3matrix_times_su3vec(link,in[get_si(x,y,(z+ns-1)%ns,t,ns)]);
+		chi=su3matrix_times_su3vec(linkd[get_si_link(x,y,(z+ns-1)%ns,t,ns,3)],in[get_si(x,y,(z+ns-1)%ns,t,ns)]);
 		chi=su3vec_times_complex(chi,phisd);
 		outz=su3vec_dim(outz,chi);
 		outz=su3vec_times_complex(outz,{(hmc_float)get_sp(x,y,z,3),0.});
 		out[get_si(x,y,z,t,ns)]=su3vec_acc(out[get_si(x,y,z,t,ns)],outz);
-		
+		*/
 		out[get_si(x,y,z,t,ns)]=su3vec_times_complex(out[get_si(x,y,z,t,ns)],{0.5,0.});
 		//Print out
 		//logger.warn() << "out(" << x << "," << y << "," << z << "," << t << ") = " << su3vec_to_string(out[get_si(x,y,z,t,ns)]);
@@ -477,9 +665,10 @@ void KernelTry(su3vec * in, meta::Inputparameters params)
 	hmc_float sum=0.;
 	for(int i=0; i<ns*ns*ns*nt; i++)
 	  sum+=su3vec_squarenorm(out[i]);
-	logger.warn() << "|out|^2=" << sum;
+	std::cout.precision(24);
+	std::cout << "|out|^2=" << sum << "\n";
 }
-*/
+// */
 
 void test_build(std::string inputfile)
 {
@@ -493,6 +682,9 @@ void test_build(std::string inputfile)
 
 void test_m_staggered(std::string inputfile)
 {
+  //Prova();
+  // return;
+
 	using namespace hardware::buffers;
 
 	std::string kernelName;
@@ -508,7 +700,7 @@ void test_m_staggered(std::string inputfile)
 	print_gaugefield_to_textfile("ref_conf",&cpu,params);
 	logger.info() << "Produced the ref_conf text file with the links for the ref. code. Returning...";
 	return;
-	*/
+	// */
 
 	cl_int err = CL_SUCCESS;
 	const hardware::code::Fermions_staggered * device = cpu.get_device();
@@ -527,11 +719,17 @@ void test_m_staggered(std::string inputfile)
 	BOOST_REQUIRE(sf_in);
 	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
 	//---> Comment them out when the reference values have been obtained!
-	 /*
+	/*
 	print_staggeredfield_to_textfile("ref_vec",sf_in,params);
 	logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";
 	return;
 	 */
+	
+	/*
+	KernelTry(sf_in,params,&cpu);
+	return;
+	// */
+
 
 	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
 	in.load(sf_in);
@@ -549,6 +747,20 @@ void test_m_staggered(std::string inputfile)
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	device->M_staggered_device(&in, &out,  cpu.get_gaugefield(), params.get_kappa());
+
+	// /*
+	out.dump(sf_out);
+	// for(int i=0; i<NUM_ELEMENTS_SF; i++){
+	//   logger.warn() << "(" << sf_out[i].e0.re << "," << sf_out[i].e0.im << ") (" 
+        //                        << sf_out[i].e1.re << "," << sf_out[i].e1.im << ") ("
+	// 		<< sf_out[i].e2.re << "," << sf_out[i].e2.im << ")";
+	// }
+	print_staggeredfield_to_textfile("out_vec",sf_out,params);
+	Prova();
+	logger.info() << "Produced the out_vec text file with the staggered field M*in. Returning...";
+	//return;
+	// */
+
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);

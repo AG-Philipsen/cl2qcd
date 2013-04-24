@@ -69,7 +69,7 @@ void put_su3vec_to_field(const su3vec in, __global su3vec * const restrict out, 
  * @todo This function must be moved to a file containing all staggered utilities.
  */
  
-int get_staggered_phase(const int n, const int dir)
+int get_staggered_phase(const int n, const int t, const int dir)
 {
 	coord_spatial coord;
 	coord=get_coord_spatial(n);
@@ -79,7 +79,10 @@ int get_staggered_phase(const int n, const int dir)
 		case ZDIR:
 			return 1-2*((coord.x+coord.y)%2);
 		case TDIR:
+			//if(t!=(NTIME-1))
 			return 1-2*((coord.x+coord.y+coord.z)%2);
+			//else
+			//return -(1-2*((coord.x+coord.y+coord.z)%2));
 		default:
 			printf("Something bad happened: get_staggered_phase(...) was called without any proper value for dir variable");
 	}
@@ -141,6 +144,7 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	//chi=U*plus
 	////////////////
 	chi=su3matrix_times_su3vec(U,plus);
+	//chi=su3vec_times_real(chi,0.5*get_staggered_phase(n,t,dir));
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_acc(out_tmp,chi);
 	
@@ -169,13 +173,14 @@ su3vec dslash_local_0(__global const su3vec * const restrict in, __global const 
 	//chi=U^dagger*plus
 	////////////////////////
 	chi=su3matrix_dagger_times_su3vec(U,plus);
+	//chi=su3vec_times_real(chi,0.5*get_staggered_phase(n,nn,dir));
 	chi=su3vec_times_complex(chi,bc_tmp);
 	out_tmp=su3vec_dim(out_tmp,chi);
 	
 	///////////////////////////////////
 	//multiply by the factor 1/2*eta_t that appears at the beginning of D_KS
 	///////////////////////////////////
-	eta=0.5*get_staggered_phase(n,dir);
+	eta=0.5*get_staggered_phase(n,t,dir);
 	out_tmp = su3vec_times_real(out_tmp, eta); 
 
 	return out_tmp;
@@ -284,7 +289,7 @@ su3vec dslash_local_2(__global const spinor * const restrict in, __global const 
 	///////////////////////////////////
 	//multiply by the factor 1/2*eta_y that appears at the beginning of D_KS
 	///////////////////////////////////
-	eta=0.5*get_staggered_phase(n,dir);
+	eta=0.5*get_staggered_phase(n,t,dir);
 	out_tmp = su3vec_times_real(out_tmp, eta);
 	
 	return out_tmp;
@@ -339,7 +344,7 @@ su3vec dslash_local_3(__global const spinor * const restrict in, __global const 
 	///////////////////////////////////
 	//multiply by the factor 1/2*eta_z that appears at the beginning of D_KS
 	///////////////////////////////////
-	eta=0.5*get_staggered_phase(n,dir);
+	eta=0.5*get_staggered_phase(n,t,dir);
 	out_tmp = su3vec_times_real(out_tmp, eta); 
 	
 	return out_tmp;
