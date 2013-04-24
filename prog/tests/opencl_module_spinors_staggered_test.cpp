@@ -3,6 +3,7 @@
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
+#include "../hardware/code/spinors.hpp"
 #include </usr/include/c++/4.7/fstream>
 
 // use the boost test framework
@@ -12,6 +13,7 @@
 
 //some functionality
 #include "test_util.h"
+#include "test_util_staggered.h"
 
 
 void fill_sf_with_one(su3vec * sf_in, int size)
@@ -208,88 +210,6 @@ void fill_sf_with_random(su3vec * sf_in, int size)
 }
 
 
-/**
- * Fuction that "convert" a su3vec to a string with a proper structure to be  
- * written to the text file that will be later used for the reference code 
- */
-std::string su3vec_to_string(su3vec m)
-{
-  std::ostringstream os;
-  os.precision(8);
-  os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im << ")\n\n";
-  return os.str();
-}
-
-//Tool to be used in the function print_gaugefield_to_textfile 
-void get_full_coord_from_site_idx(int site_idx, int &x, int &y, int &z, int &t, const int ns)
-{
-  int volspace=ns*ns*ns;
-  int space=site_idx%volspace;
-  t=site_idx/volspace;
-  z=space/ns/ns;
-  int acc=z;
-  y=space/ns-ns*acc;
-  acc=ns*acc+y;
-  x=space-ns*acc;
-}
-
-
-
-/**
- *  In the reference code the lattice is reorganized in the following way:
- *
- *   0            size
- *   |------|------|
- *      e      o 
- *
- *  where e=even, o=odd, whereas size=VOL4D.
- *  Hence, in order to use the same random staggered field in tests
- *  I have to print it to a text file according this scheme.
- *
- */
-void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta::Inputparameters params)
-{
-      int nt=params.get_ntime();
-      int ns=params.get_nspace();
-      if(ns!=nt){
-	logger.fatal() << "The lattice must be isotropic to call the function print_staggeredfield_to_textfile(...)!";
-	abort();
-      }
-      //sf     is the su3vec array ordered with the "superindex scheme"                                                                   
-      //sf_new is the su3vec array in the right order (ref. code scheme) to be written to the file                                        
-      su3vec *sf_new = new su3vec[ns*ns*ns*nt];
-      //Now I have conf_old and I have to fill properly conf_new                                                                          
-      int x,y,z,t,num,even,size;
-      size=ns*ns*ns*nt;
-      for(int i=0; i<ns*ns*ns*nt; i++){
-	get_full_coord_from_site_idx(i,x,y,z,t,ns);
-	
-	// logger.warn() << "(" << x << "," << y << "," << z << "," << t << ") => "
-	// 	      << "(" << sf[i].e0.re << "," << sf[i].e0.im << ") ("
-	// 	      << sf[i].e1.re << "," << sf[i].e1.im << ") ("
-	// 	      << sf[i].e2.re << "," << sf[i].e2.im << ")";
-	
-	even = (x+y+z+t)%2;
-	// even=0 for even sites                                                                                                          
-	// even=1 for odd sites                                                                                                           
-	num = even*size/2 + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
-	// num is where, in conf_new, conf_old[...] is to be written                                                                      
-	sf_new[num]=sf[i];
-      }
-      //Now we can write sf_new to the file                                                                                               
-      std::ofstream file(outputfile.c_str());
-      file << ns << " " << ns << " " << ns << " " << nt << std::endl;
-      for(int i=0; i<ns*ns*ns*nt; i++){
-	get_full_coord_from_site_idx(i,x,y,z,t,ns);
-	file << su3vec_to_string(sf_new[i]);                                                                                            
-      }
-      file.close();
-}
-
-
-
-
-
 /********************************************************************************/
 
 void test_build(std::string inputfile)
@@ -317,7 +237,7 @@ void test_sf_squarenorm_staggered(std::string inputfile)
 	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);	
 	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
 	Plain<hmc_float> sqnorm(1, device->get_device());
 
@@ -330,7 +250,7 @@ void test_sf_squarenorm_staggered(std::string inputfile)
 
         //The following three lines are to be used to produce the ref_vec file needed to get the ref_value
         //---> Comment them out when the reference values have been obtained! 
-         /*
+        /*
         print_staggeredfield_to_textfile("ref_vec_sq",sf_in,params); 
         logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";   
         return;
