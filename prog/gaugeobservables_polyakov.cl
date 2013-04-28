@@ -1,5 +1,6 @@
 /** @file
  * Polyakov calculation kernels
+ * NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
  */
 
 __kernel void polyakov_reduction(__global hmc_complex* poly_buf,  __global hmc_complex* poly, const uint bufElems)
@@ -52,32 +53,32 @@ __kernel void polyakov(__global Matrixsu3StorageType * field, __global hmc_compl
 		(tmp_pol).im += tmpcomplex.im / NC;
 	}
 
-	//reduction
 	if(local_size == 1) {
 		((out))[group_id].re += tmp_pol.re;
 		((out))[group_id].im += tmp_pol.im;
 	} else {
-		//wait for all threads to end calculations
-		barrier(CLK_LOCAL_MEM_FENCE);
-
-		//!!CP: this should be checked by someone else than me
 		//perform reduction
 		out_loc[idx].re = tmp_pol.re;
 		out_loc[idx].im = tmp_pol.im;
+		barrier(CLK_LOCAL_MEM_FENCE);
+
+		//reduction until threads 0-7 hold all partial sums
 		int cut1;
 		int cut2 = local_size;
-		for(cut1 = local_size / 2; cut1 > 0; cut1 /= 2) {
+		for(cut1 = local_size / 2; cut1 > 4; cut1 /= 2) {
 			for(int i = idx + cut1; i < cut2; i += cut1) {
 				((out_loc)[idx]).re +=  ((out_loc)[i]).re;
 				((out_loc)[idx]).im +=  ((out_loc)[i]).im;
 			}
-			//!!CP: is this dangerous inside a for-loop?
 			barrier(CLK_LOCAL_MEM_FENCE);
 			cut2 = cut1;
 		}
+		//thread 0 sums up the last 8 results and stores them in the global buffer
 		if(idx == 0) {
-			out[group_id].re = out_loc[0].re;
-			out[group_id].im = out_loc[0].im;
+			out[group_id].re = out_loc[0].re + out_loc[1].re + out_loc[2].re + out_loc[3].re +
+			  out_loc[4].re + out_loc[5].re + out_loc[6].re + out_loc[7].re;
+			out[group_id].im = out_loc[0].im + out_loc[1].im + out_loc[2].im + out_loc[3].im + 
+			  out_loc[4].im + out_loc[5].im + out_loc[6].im + out_loc[7].im;
 		}
 	}
 	return;
