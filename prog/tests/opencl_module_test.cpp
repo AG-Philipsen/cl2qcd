@@ -326,4 +326,22 @@ BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE ( RECTANGLES_REDUCTION )
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
+{
+	test_rectangles("/rectangles_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
+{
+	test_rectangles("/rectangles_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
+{
+	test_rectangles("/rectangles_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
