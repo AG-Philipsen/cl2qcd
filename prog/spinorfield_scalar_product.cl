@@ -1,5 +1,6 @@
 // complex (!!!) scalarproduct, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
+/// NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
 __kernel void scalar_product( __global const spinor * const restrict x, __global const spinor * const restrict y, __global hmc_complex * const restrict result, __local hmc_complex * const restrict result_local)
 {
 	int local_size = get_local_size(0);
@@ -24,55 +25,32 @@ __kernel void scalar_product( __global const spinor * const restrict x, __global
 		sum.im += tmp.im;
 	}
 
-
 	if(local_size == 1) {
 		result[ group_id ].re = sum.re;
 		result[ group_id ].im = sum.im;
 	} else {
+	  	(result_local[idx]).re = sum.re;
+		(result_local[idx]).im = sum.im;
 		// sync threads
 		barrier(CLK_LOCAL_MEM_FENCE);
-		//reduction
-		(result_local[idx]).re = sum.re;
-		(result_local[idx]).im = sum.im;
 
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 64) {
-			result_local[idx % 64].re += result_local[idx].re;
-			result_local[idx % 64].im += result_local[idx].im;
+		//reduction until threads 0-7 hold all partial sums
+		int cut1;
+		int cut2 = local_size;
+		for(cut1 = local_size / 2; cut1 > 4; cut1 /= 2) {
+		  for(int i = idx + cut1; i < cut2; i += cut1) {
+		    result_local[idx].re += result_local[i].re;
+		    result_local[idx].im += result_local[i].im;
+		  }
+		  barrier(CLK_LOCAL_MEM_FENCE);
+		  cut2 = cut1;
 		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 32) {
-			result_local[idx - 32].re += result_local[idx].re;
-			result_local[idx - 32].im += result_local[idx].im;
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 16) {
-			result_local[idx - 16].re += result_local[idx].re;
-			result_local[idx - 16].im += result_local[idx].im;
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 8) {
-			result_local[idx - 8].re += result_local[idx].re;
-			result_local[idx - 8].im += result_local[idx].im;
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		//thread 0 sums up the result_local and stores it in array result
+		//thread 0 sums up the last 8 results and stores them in the global buffer
 		if (idx == 0) {
-			if(local_size >= 8) {
-				for (int i = 1; i < 8; i++) {
-					result_local[idx].re += result_local[i].re;
-					result_local[idx].im += result_local[i].im;
-				}
-				result[ group_id ].re = result_local[idx].re;
-				result[ group_id ].im = result_local[idx].im;
-			} else {
-				for (int i = 1; i < local_size; i++) {
-					result_local[idx].re += result_local[i].re;
-					result_local[idx].im += result_local[i].im;
-				}
-				result[ group_id ].re = result_local[idx].re;
-				result[ group_id ].im = result_local[idx].im;
-			}
+		  result[ group_id ].re =  result_local[0].re + result_local[1].re + result_local[2].re + result_local[3].re +
+		    result_local[4].re + result_local[5].re + result_local[6].re + result_local[7].re;
+		  result[ group_id ].im =  result_local[0].im + result_local[1].im + result_local[2].im + result_local[3].im +
+		    result_local[4].im + result_local[5].im + result_local[6].im + result_local[7].im;
 		}
 	}
 	return;
