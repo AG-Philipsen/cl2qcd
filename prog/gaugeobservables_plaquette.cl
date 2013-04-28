@@ -2,8 +2,8 @@
  * Plaquette calculation kernels
  * It is:
  *  Plaquette = \sum_{sites} \sum_{mu > nu} local_plaquette (i, mu, nu)
+ * NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
  */
-/// NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
 __kernel void plaquette(__global Matrixsu3StorageType * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
 {
 	int id_local;
