@@ -1,4 +1,5 @@
 /** @todo add args for reduction... */
+/// NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
 __kernel void gaugemomentum_squarenorm(__global const aeStorageType * const restrict in, __global hmc_float * const restrict out, __local hmc_float * const restrict result_local)
 {
 	hmc_float sum = 0.f;
@@ -17,33 +18,24 @@ __kernel void gaugemomentum_squarenorm(__global const aeStorageType * const rest
 	if(local_size == 1) {
 		out[ group_id ] = sum;
 	} else {
-		// FIXME ensure local size is 128!!!
+		result_local[idx] = sum;
 		// sync threads
 		barrier(CLK_LOCAL_MEM_FENCE);
-		//reduction
-		result_local[idx] = sum;
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx < 64)
-			result_local[idx] += result_local[idx + 64];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx < 32)
-			result_local[idx] += result_local[idx + 32];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx < 16)
-			result_local[idx] += result_local[idx + 16];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx < 8)
-			result_local[idx] += result_local[idx + 8];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		//thread 0 sums up the result_local and stores it in array result
+
+		//reduction until threads 0-7 hold all partial sums
+		int cut1;
+		int cut2 = local_size;
+		for(cut1 = local_size / 2; cut1 > 4; cut1 /= 2) {
+		  for(int i = idx + cut1; i < cut2; i += cut1) {
+		    result_local[idx] +=  result_local[i];
+		  }
+		  barrier(CLK_LOCAL_MEM_FENCE);
+		  cut2 = cut1;
+		}
+		//thread 0 sums up the last 8 results and stores them in the global buffer
 		if (idx == 0) {
-			if(local_size >= 8) {
-				out[ group_id ] =  result_local[0] + result_local[1] + result_local[2] + result_local[3] +
-				                   result_local[4] + result_local[5] + result_local[6] + result_local[7];
-			} else {
-				for(size_t i = 0; i < local_size; i++)
-					out[group_id] += result_local[i];
-			}
+		  out[ group_id ] =  result_local[0] + result_local[1] + result_local[2] + result_local[3] +
+		    result_local[4] + result_local[5] + result_local[6] + result_local[7];
 		}
 	}
 }
