@@ -208,6 +208,25 @@ BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE ( PLAQUETTE_REDUCTION )
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
+{
+	test_plaquette( "/plaquette_reduction_input_1", 1, 1, 1 );
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
+{
+	test_plaquette( "/plaquette_reduction_input_2", 1, 1, 1 );
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
+{
+	test_plaquette( "/plaquette_reduction_input_3", 1, 1, 1 );
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
