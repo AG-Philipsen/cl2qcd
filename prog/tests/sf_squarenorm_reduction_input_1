@@ -1,5 +1,5 @@
-NS=4
-NT=4
+NS=8
+NT=8
 
 use_eo=true
 solver=cg
@@ -7,6 +7,6 @@ solver=cg
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=24576
+test_ref_val=49152
 
 
