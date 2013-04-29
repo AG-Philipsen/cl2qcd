@@ -8,6 +8,7 @@
 #define _HARDWARE_BUFFERS_PRN_GBUFFER_
 
 #include "buffer.hpp"
+#include "../../meta/inputparameters.hpp"
 
 #ifdef USE_PRNG_NR3
 #include "../../host_random.h"
@@ -22,7 +23,7 @@ namespace buffers {
  * \param device The device the buffer is to be used with
  * \return The size of the buffer in element
  */
-size_t get_prng_buffer_size(const Device * device);
+size_t get_prng_buffer_size(const Device * device, const meta::Inputparameters& params);
 
 /**
  * A PRNG OpenCL buffer.
@@ -46,7 +47,7 @@ public:
 	 * \param elems The size of the buffer in elements
 	 * \param device The device to locate the buffer on
 	 */
-	PRNGBuffer(Device * device);
+	PRNGBuffer(Device * device, const meta::Inputparameters& params);
 
 	/*
 	 * PRNGBuffers cannot be copied

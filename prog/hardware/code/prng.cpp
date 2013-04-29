@@ -17,7 +17,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 #ifdef USE_PRNG_NR3
 	options << "-D USE_PRNG_NR3";
 #elif defined(USE_PRNG_RANLUX)
-	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device);
+	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
