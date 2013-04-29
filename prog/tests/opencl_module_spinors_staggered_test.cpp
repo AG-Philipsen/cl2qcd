@@ -3,8 +3,9 @@
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
-#include "../hardware/code/spinors.hpp"
 #include </usr/include/c++/4.7/fstream>
+//spinors.hpp needed for get_spinorfieldsize and get_eoprec_spinorfieldsize
+#include "../hardware/code/spinors.hpp" 
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -271,6 +272,69 @@ void test_sf_squarenorm_staggered(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_scalar_product_staggered(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "scalar_product";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	auto * device = system.get_devices().at(0)->get_spinor_code();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<su3vec> in2(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
+
+	su3vec * sf_in;
+	sf_in = new su3vec[NUM_ELEMENTS_SF];
+	su3vec * sf_in2;
+	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
+	}
+	else {
+	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
+	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
+	}
+	BOOST_REQUIRE(sf_in);
+	BOOST_REQUIRE(sf_in2);
+
+        //The following five lines are to be used to produce the ref_vec file needed to get the ref_value
+        //---> Comment them out when the reference values have been obtained! 
+        /*
+        print_staggeredfield_to_textfile("ref_vec_sp1",sf_in,params); 
+        logger.info() << "Produced the ref_vec_sp1 text file with the staggered field for the ref. code. Returning...";   
+        print_staggeredfield_to_textfile("ref_vec_sp2",sf_in2,params); 
+        logger.info() << "Produced the ref_vec_sp2 text file with the staggered field for the ref. code. Returning...";   
+        return;
+	// */
+
+	in.load(sf_in);
+	in2.load(sf_in2);
+
+	auto spinor_code = device->get_device()->get_spinor_staggered_code();
+
+	logger.info() << "Run kernel";
+	logger.info() << "result:";
+	hmc_complex cpu_res_tmp;
+	spinor_code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
+	sqnorm.dump(&cpu_res_tmp);
+	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
+	logger.info() << cpu_res;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+
+
 
 /* To be added...
  *
@@ -314,56 +378,6 @@ void test_sf_squarenorm_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_scalar_product(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "scalar_product";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
-
-	spinor * sf_in;
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	spinor * sf_in2;
-	sf_in2 = new spinor[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
-	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
-
-	in.load(sf_in);
-	in2.load(sf_in2);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "Run kernel";
-	logger.info() << "result:";
-	hmc_complex cpu_res_tmp;
-	spinor_code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
-	sqnorm.dump(&cpu_res_tmp);
-	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
 
 void test_sf_scalar_product_eo(std::string inputfile)
 {
@@ -1213,6 +1227,41 @@ BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_3 )
 BOOST_AUTO_TEST_SUITE_END()
 
 
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_1 )
+{
+  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_2 )
+{
+  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_REDUCTION)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_1 )
+{
+  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_2 )
+{
+  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_3 )
+{
+  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 /* To be added...
  *
  *
@@ -1251,20 +1300,6 @@ BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_3 )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_1 )
-{
-  test_sf_scalar_product("/sf_scalar_product_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_2 )
-{
-  test_sf_scalar_product("/sf_scalar_product_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO)
 
 BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_1 )
@@ -1279,6 +1314,24 @@ BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO_REDUCTION)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_1 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_2 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_3 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_COLD)
 
