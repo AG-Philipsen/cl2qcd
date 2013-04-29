@@ -2,8 +2,8 @@
  * Plaquette calculation kernels
  * It is:
  *  Plaquette = \sum_{sites} \sum_{mu > nu} local_plaquette (i, mu, nu)
+ * NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
  */
-
 __kernel void plaquette(__global Matrixsu3StorageType * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
 {
 	int id_local;
@@ -52,52 +52,32 @@ __kernel void plaquette(__global Matrixsu3StorageType * field, __global hmc_floa
 		tplaq_out[ group_id ] += tplaq;
 		splaq_out[ group_id ] += splaq;
 	} else {
+	  	plaq_loc[idx] = plaq;
+	  	tplaq_loc[idx] = tplaq;
+	  	splaq_loc[idx] = splaq;
+		// sync threads
 		barrier(CLK_LOCAL_MEM_FENCE);
-		//reduction
-		plaq_loc[ idx ]  = plaq;
-		tplaq_loc[ idx ] = tplaq;
-		splaq_loc[ idx ] = splaq;
 
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 64) {
-			plaq_loc[ idx % 64 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx % 64 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx % 64 ] += splaq_loc[ idx ];
+		//reduction until threads 0-7 hold all partial sums
+		int cut1;
+		int cut2 = local_size;
+		for(cut1 = local_size / 2; cut1 > 4; cut1 /= 2) {
+		  for(int i = idx + cut1; i < cut2; i += cut1) {
+		     plaq_loc[idx] +=  plaq_loc[i];
+		    tplaq_loc[idx] += tplaq_loc[i];
+		    splaq_loc[idx] += splaq_loc[i];
+		  }
+		  barrier(CLK_LOCAL_MEM_FENCE);
+		  cut2 = cut1;
 		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 32) {
-			plaq_loc[ idx - 32 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx - 32 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx - 32 ] += splaq_loc[ idx ];
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 16) {
-			plaq_loc[ idx - 16 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx - 16 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx - 16 ] += splaq_loc[ idx ];
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 8) {
-			plaq_loc[ idx - 8 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx - 8 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx - 8 ] += splaq_loc[ idx ];
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		//thread 0 sums up the result_local and stores it in array result
+		//thread 0 sums up the last 8 results and stores them in the global buffer
 		if (idx == 0) {
-			if(local_size >= 8) {
-				for (int i = 0; i < 8; i++) {
-					plaq_out[ group_id ]  += plaq_loc[ i ];
-					tplaq_out[ group_id ] += tplaq_loc[ i ];
-					splaq_out[ group_id ] += splaq_loc[ i ];
-				}
-			} else {
-				for (int i = 0; i < local_size; i++) {
-					plaq_out[ group_id ]  += plaq_loc[ i ];
-					tplaq_out[ group_id ] += tplaq_loc[ i ];
-					splaq_out[ group_id ] += splaq_loc[ i ];
-				}
-			}
+		  plaq_out[ group_id ] =  plaq_loc[0] + plaq_loc[1] + plaq_loc[2] + plaq_loc[3] +
+		    plaq_loc[4] + plaq_loc[5] + plaq_loc[6] + plaq_loc[7];
+		  tplaq_out[ group_id ] =  tplaq_loc[0] + tplaq_loc[1] + tplaq_loc[2] + tplaq_loc[3] +
+		    tplaq_loc[4] + tplaq_loc[5] + tplaq_loc[6] + tplaq_loc[7];
+		  splaq_out[ group_id ] =  splaq_loc[0] + splaq_loc[1] + splaq_loc[2] + splaq_loc[3] +
+		    splaq_loc[4] + splaq_loc[5] + splaq_loc[6] + splaq_loc[7];
 		}
 	}
 	return;

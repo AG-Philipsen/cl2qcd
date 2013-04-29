@@ -61,6 +61,10 @@ int main(int argc, const char* argv[])
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
 				Gaugefield gaugefield(system, prng, config_name) ;
 				perform_measurements(system, gaugefield, prng, config_name);
+				//save current status of prng
+				std::string outputfile = "prng.inverter.save";
+				logger.info() << "saving current prng state to \"" << outputfile << "\"";
+				prng.store(outputfile);
 			}
 		} else {
 			std::string config_name = parameters.get_sourcefile();
@@ -68,6 +72,10 @@ int main(int argc, const char* argv[])
 			logger.info() << "Measure fermionic observables on configuration: " << config_name;
 			Gaugefield gaugefield(system, prng);
 			perform_measurements(system, gaugefield, prng, config_name);
+			//save current status of prng
+			std::string outputfile = "prng.inverter.save";
+			logger.info() << "saving current prng state to \"" << outputfile << "\"";
+			prng.store(outputfile);
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();

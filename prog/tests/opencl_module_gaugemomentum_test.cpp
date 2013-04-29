@@ -314,6 +314,25 @@ BOOST_AUTO_TEST_CASE(GM_SQUARENORM_2  )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( GM_SQUARENORM_REDUCTION )
+
+BOOST_AUTO_TEST_CASE(GM_SQUARENORM_REDUCTION_1  )
+{
+	test_gm_squarenorm("/gm_squarenorm_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(GM_SQUARENORM_REDUCTION_2  )
+{
+	test_gm_squarenorm("/gm_squarenorm_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE(GM_SQUARENORM_REDUCTION_3  )
+{
+	test_gm_squarenorm("/gm_squarenorm_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE( SET_ZERO_GM )
 
 BOOST_AUTO_TEST_CASE( SET_ZERO_GM_1 )

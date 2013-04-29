@@ -3,10 +3,10 @@
  * This is very similar to the Plaquette kernel.
  * It is:
  *  Rectangles = \sum_{sites} \sum_{mu \neq nu} local_rectangles (i, mu, nu)
+ * NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
  */
 __kernel void rectangles(__global Matrixsu3StorageType * field, __global hmc_float * rect_out, __local hmc_float * rect_loc)
 {
-
 	int id_local;
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -40,38 +40,24 @@ __kernel void rectangles(__global Matrixsu3StorageType * field, __global hmc_flo
 	if(local_size == 1) {
 		rect_out[ group_id ]  += rect;
 	} else {
+	  	rect_loc[idx] = rect;
+		// sync threads
 		barrier(CLK_LOCAL_MEM_FENCE);
-		//reduction
-		rect_loc[ idx ]  = rect;
 
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 64) {
-			rect_loc[ idx % 64 ]  += rect_loc[ idx ];
+		//reduction until threads 0-7 hold all partial sums
+		int cut1;
+		int cut2 = local_size;
+		for(cut1 = local_size / 2; cut1 > 4; cut1 /= 2) {
+		  for(int i = idx + cut1; i < cut2; i += cut1) {
+		    rect_loc[idx] +=  rect_loc[i];
+		  }
+		  barrier(CLK_LOCAL_MEM_FENCE);
+		  cut2 = cut1;
 		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 32) {
-			rect_loc[ idx - 32 ]  += rect_loc[ idx ];
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 16) {
-			rect_loc[ idx - 16 ]  += rect_loc[ idx ];
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 8) {
-			rect_loc[ idx - 8 ]  += rect_loc[ idx ];
-		}
-		barrier(CLK_LOCAL_MEM_FENCE);
-		//thread 0 sums up the result_local and stores it in array result
+		//thread 0 sums up the last 8 results and stores them in the global buffer
 		if (idx == 0) {
-			if(local_size >= 8) {
-				for (int i = 0; i < 8; i++) {
-					rect_out[ group_id ]  += rect_loc[ i ];
-				}
-			} else {
-				for (int i = 0; i < local_size; i++) {
-					rect_out[ group_id ]  += rect_loc[ i ];
-				}
-			}
+		  rect_out[ group_id ] =  rect_loc[0] + rect_loc[1] + rect_loc[2] + rect_loc[3] +
+		    rect_loc[4] + rect_loc[5] + rect_loc[6] + rect_loc[7];
 		}
 	}
 	return;

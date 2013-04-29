@@ -208,6 +208,25 @@ BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE ( PLAQUETTE_REDUCTION )
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
+{
+	test_plaquette( "/plaquette_reduction_input_1", 1, 1, 1 );
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
+{
+	test_plaquette( "/plaquette_reduction_input_2", 1, 1, 1 );
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
+{
+	test_plaquette( "/plaquette_reduction_input_3", 1, 1, 1 );
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
@@ -223,6 +242,25 @@ BOOST_AUTO_TEST_CASE( POLYAKOV_2)
 BOOST_AUTO_TEST_CASE( POLYAKOV_3)
 {
 	test_polyakov( "/polyakov_input_3", { -0.11349672123636854, 0.22828243566855222} );
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE ( POLYAKOV_REDUCTION )
+
+BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
+{
+	test_polyakov( "/polyakov_reduction_input_1", {1, 0} );
+}
+
+BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
+{
+	test_polyakov( "/polyakov_reduction_input_2", {1, 0} );
+}
+
+BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
+{
+	test_polyakov( "/polyakov_reduction_input_3", {1, 0} );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -288,4 +326,22 @@ BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE ( RECTANGLES_REDUCTION )
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
+{
+	test_rectangles("/rectangles_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
+{
+	test_rectangles("/rectangles_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
+{
+	test_rectangles("/rectangles_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 

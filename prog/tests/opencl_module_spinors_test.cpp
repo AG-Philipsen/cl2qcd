@@ -1205,6 +1205,25 @@ BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_EO_REDUCTION)
+
+BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_1 )
+{
+  test_sf_squarenorm_eo("/sf_squarenorm_eo_reduction_input_1");
+  //test_sf_squarenorm_eo("/sf_squarenorm_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_2 )
+{
+  test_sf_squarenorm_eo("/sf_squarenorm_eo_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_3 )
+{
+  test_sf_squarenorm_eo("/sf_squarenorm_eo_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_SQUARENORM)
 
@@ -1216,6 +1235,25 @@ BOOST_AUTO_TEST_CASE( SF_SQUARENORM_1 )
 BOOST_AUTO_TEST_CASE( SF_SQUARENORM_2 )
 {
   test_sf_squarenorm("/sf_squarenorm_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_REDUCTION)
+
+BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_1 )
+{
+  test_sf_squarenorm("/sf_squarenorm_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_2 )
+{
+  test_sf_squarenorm("/sf_squarenorm_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_3 )
+{
+  test_sf_squarenorm("/sf_squarenorm_reduction_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1234,6 +1272,25 @@ BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_REDUCTION)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_1 )
+{
+  test_sf_scalar_product("/sf_scalar_product_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_2 )
+{
+  test_sf_scalar_product("/sf_scalar_product_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_3 )
+{
+  test_sf_scalar_product("/sf_scalar_product_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO)
 
 BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_1 )
@@ -1248,6 +1305,24 @@ BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO_REDUCTION)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_1 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_2 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_3 )
+{
+  test_sf_scalar_product_eo("/sf_scalar_product_eo_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_COLD)
 
