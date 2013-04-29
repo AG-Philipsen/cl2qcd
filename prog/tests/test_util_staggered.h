@@ -67,7 +67,7 @@ std::string matrix_to_string(Matrixsu3 m)
 std::string su3vec_to_string(su3vec m)
 {
   std::ostringstream os;
-  os.precision(8);
+  os.precision(16);
   os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im << ")\n\n";
   return os.str();
 }
