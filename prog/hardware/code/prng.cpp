@@ -74,6 +74,8 @@ void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buff
 	size_t ls, gs;
 	cl_uint num_groups;
 	this->get_work_sizes(init_kernel, &ls, &gs, &num_groups);
+	// we need a custom global size
+	gs = buffer->get_elements();
 	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
 		/// @todo upgrade to newer ranluxcl to avoid this restcition
 		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", get_parameters().get_host_seed());
