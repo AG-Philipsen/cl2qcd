@@ -6,8 +6,8 @@
 //  - result: Vector of hmc_float that will contain the sums of the components of the result_local vectors.
 //            In other words, each component of this vector will contain the sum of all squarenorms that have
 //            been mapped to the threads within a group. Therefore result is a vector with num_groups components.
-//  - result_local: Vector with local_size components. At the end of the local reduction, the sum of its first
-//                  components will be the sum of all its components (and will be put in result[group_id]).
+//  - result_local: Vector with local_size components. At the end of the local reduction, its first
+//                  component will be the sum of all its components (and will be put in result[group_id]).
 //                  Observe that some components of result_local can include the sum of squarenorms of
 //                  several fields (if SPINORFIELDSIZE>global_size).
 
@@ -31,35 +31,28 @@ __kernel void global_squarenorm_staggered(__global const su3vec * const restrict
 	}
 
 	if(local_size == 1) {
-		result[ group_id ] = sum;
+	      result[ group_id ] = sum;
 	} else {
-		// sync threads
-		barrier(CLK_LOCAL_MEM_FENCE);
-		//reduction
-		(result_local[idx]) = sum;
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 64)
-			result_local[idx % 64] += result_local[idx];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 32)
-			result_local[idx - 32] += result_local[idx];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 16)
-			result_local[idx - 16] += result_local[idx];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 8)
-			result_local[idx - 8] += result_local[idx];
-		barrier(CLK_LOCAL_MEM_FENCE);
-		//thread 0 sums up the result_local and stores it in array result
-		if (idx == 0) {
-			if(local_size >= 8) {
-				result[ group_id ] =  result_local[0] + result_local[1] + result_local[2] + result_local[3] +
-				                      result_local[4] + result_local[5] + result_local[6] + result_local[7];
-			} else {
-				for(int i = 0; i < local_size; i++)
-					result[group_id] += result_local[i];
-			}
-		}
+	       result_local[idx] = sum;
+	       // sync threads
+	       barrier(CLK_LOCAL_MEM_FENCE);
+	       //reduction until threads 0-7 hold all partial sums
+	       int cut1;
+	       int cut2 = local_size;
+	       for(cut1 = local_size / 2; cut1 > 4; cut1 /= 2) {
+	         for(int i = idx + cut1; i < cut2; i += cut1) {
+		    result_local[idx] += result_local[i];
+		 }
+		 barrier(CLK_LOCAL_MEM_FENCE);
+		 cut2 = cut1;
+	       }
+	       //thread 0 sums up the last 8 results and stores them in the global buffer
+	       if (idx == 0) {
+	         result[ group_id ] = result_local[0] + result_local[1] +
+		 	 	      result_local[2] + result_local[3] +
+				      result_local[4] + result_local[5] +
+				      result_local[6] + result_local[7];
+	       }
 	}
 	return;
 }

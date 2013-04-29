@@ -56,11 +56,14 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
-	if(kernel == global_squarenorm) {
-		if(*ls > 64) {
-			*ls = 64;
-		}
-		return;
+	//Whenever ls id manually modified, it is crucial to modify num_groups accordingly!
+	if(kernel == global_squarenorm 
+           /*|| kernel == global_squarenorm_eoprec || kernel == scalar_product_eoprec || kernel == scalar_product*/) {
+	  if(*ls > 64) {
+	    *ls = 64;
+	    *num_groups = (*gs)/(*ls);
+	  }
+	  return;
 	}
 }
 
