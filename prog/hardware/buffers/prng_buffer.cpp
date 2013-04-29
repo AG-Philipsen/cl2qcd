@@ -7,6 +7,7 @@
 #include "prng_buffer.hpp"
 
 #include "../device.hpp"
+#include "../../meta/util.hpp"
 
 hardware::buffers::PRNGBuffer::PRNGBuffer(size_t elems, Device * device)
 	: Buffer(elems * sizeof(prng_state_t), device), elems(elems)
@@ -28,7 +29,7 @@ size_t hardware::buffers::PRNGBuffer::get_elements() const noexcept
 size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const meta::Inputparameters& params)
 {
 	if(params.get_use_same_rnd_numbers()) {
-		return 1;
+		return meta::get_vol4d(params) * NDIM; // sufficiently large
 	} else {
 #ifdef USE_PRNG_NR3
 		// Prepare random number arrays, for each task and device separately
