@@ -7,7 +7,7 @@ integrationsteps0=2000
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.001
+test_ref_val=0.0015
 
 use_eo=false
 read_multiple_configs=true
