@@ -48,6 +48,16 @@ public:
 	 */
 	void set_float_to_global_squarenorm_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<hmc_float> * out) const;
 
+	/**
+	 * This function calculates the complex scalarproduct of two staggered fields
+	 * that means the sum of the complex scalar product of each su3vec per site
+	 * @param a The first staggered field (one su3vec per site)
+	 * @param b The second staggered field (one su3vec per site)
+	 * @param out The result of the scalarproduct
+	 */
+	void set_complex_to_scalar_product_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<su3vec> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
+	
+	
 	///////////////////////////////////////////
 	/**
 	 * Print the profiling information to a file.
@@ -95,6 +105,8 @@ private:
 	ClSourcePackage basic_fermion_code;
 
 	//Scalar Product
+	cl_kernel scalar_product_stagg;
+	cl_kernel scalar_product_reduction_stagg;
 	cl_kernel global_squarenorm;
 	cl_kernel _global_squarenorm_reduction;
 
