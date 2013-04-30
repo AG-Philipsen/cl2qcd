@@ -1974,4 +1974,14 @@ BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_2 )
   test_sf_gaussian_eo("/sf_gaussian_eo_input_2");
 }
 
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_3 )
+{
+  test_sf_gaussian_eo("/sf_gaussian_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_4 )
+{
+  test_sf_gaussian_eo("/sf_gaussian_eo_input_4");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
