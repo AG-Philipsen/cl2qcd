@@ -118,6 +118,7 @@ void hardware::code::Spinors::clear_kernels()
 	clerr = clReleaseKernel(ratio);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(product);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
 	if(get_parameters().get_use_eo()) {
 		clerr = clReleaseKernel(saxpy_eoprec);
