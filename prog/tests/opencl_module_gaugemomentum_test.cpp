@@ -278,6 +278,16 @@ BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_2 )
 	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_2");
 }
 
+BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_3 )
+{
+	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_3");
+}
+
+BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_4 )
+{
+	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_4");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GM_CONVERT_TO_SOA )
