@@ -46,7 +46,10 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	//Setting fields
 	set_zero_spinorfield_stagg = createKernel("set_zero_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_zero.cl";
 	set_cold_spinorfield_stagg = createKernel("set_cold_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_cold.cl";
-	
+	//Complex number operations
+	convert_stagg = createKernel("convert_float_to_complex") << get_device()->get_gaugefield_code()->get_sources() << "complex_convert.cl";
+	ratio_stagg = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
+	product_stagg = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
 }
 
 void hardware::code::Spinors_staggered::clear_kernels()
@@ -67,6 +70,13 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(set_cold_spinorfield_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	//Complex numbers operations
+	clerr = clReleaseKernel(convert_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(ratio_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(product_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
 
@@ -74,6 +84,23 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
+	//Query specific sizes for kernels if needed
+	string kernelname = get_kernel_name(kernel);
+	if(kernelname.compare("convert_float_to_complex") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
+	if(kernelname.compare("ratio") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
+	if(kernelname.compare("product") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
 	//Whenever ls id manually modified, it is crucial to modify num_groups accordingly!
 	if(kernel == global_squarenorm_stagg || kernel == scalar_product_stagg
            /*|| kernel == global_squarenorm_eoprec || kernel == scalar_product_eoprec */) {
@@ -193,6 +220,61 @@ void hardware::code::Spinors_staggered::set_cold_spinorfield_device(const hardwa
 }
 
 
+void hardware::code::Spinors_staggered::set_complex_to_float_device(const hardware::buffers::Plain<hmc_float> * in, const hardware::buffers::Plain<hmc_complex> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convert_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_stagg, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convert_stagg, 1, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(convert_stagg, gs2, ls2);
+}
+
+
+void hardware::code::Spinors_staggered::set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(ratio_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(ratio_stagg, 0, sizeof(cl_mem), a->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(ratio_stagg, 1, sizeof(cl_mem), b->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(ratio_stagg, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(ratio_stagg, gs2, ls2);
+}
+
+
+void hardware::code::Spinors_staggered::set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(product_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(product_stagg, 0, sizeof(cl_mem), a->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(product_stagg, 1, sizeof(cl_mem), b->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(product_stagg, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(product_stagg, gs2, ls2);
+}
 
 
 
@@ -231,6 +313,18 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 	if (in == "set_cold_spinorfield_stagg") {
 		return 1000000000000000000000000;
 	}
+	if (in == "convert_float_to_complex") {
+		//this kernel reads 1 float and writes 1 complex number
+		return (C + 1) * D;
+	}
+	if (in == "ratio") {
+		//this kernel reads 2 complex numbers and writes 1 complex number
+		return C * D * (2 + 1);
+	}
+	if (in == "product") {
+		//this kernel reads 2 complex numbers and writes 1 complex number
+		return C * D * (2 + 1);
+	}
 	return 0;
 }
 
@@ -257,6 +351,15 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	if (in == "set_cold_spinorfield_stagg") {
 		return 1000000000000000000000000;
 	}
+	if (in == "convert_float_to_complex") {
+		return 0;
+	}
+	if (in == "ratio") {
+		return 11;
+	}
+	if (in == "product") {
+		return meta::get_flop_complex_mult();
+	}
 	return 0;
 }
 
@@ -269,6 +372,9 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, scalar_product_reduction_stagg);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg);
+	Opencl_Module::print_profiling(filename, ratio_stagg);
+	Opencl_Module::print_profiling(filename, convert_stagg);
+	Opencl_Module::print_profiling(filename, product_stagg);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)

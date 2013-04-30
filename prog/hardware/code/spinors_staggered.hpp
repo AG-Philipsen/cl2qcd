@@ -74,7 +74,35 @@ public:
 	 */
 	void set_cold_spinorfield_device(const hardware::buffers::Plain<su3vec> * x) const;
 	
-	///////////////////////////////////////////
+	//////////////////////////////////////////
+	//      Complex numbers operations      //
+	//////////////////////////////////////////
+	
+	/**
+	 * This function converts a float number into a complex one
+	 * @param in The float number to be converted
+	 * @param out The output complex number
+	 */
+	void set_complex_to_float_device(const hardware::buffers::Plain<hmc_float> * in, const hardware::buffers::Plain<hmc_complex> * out) const;
+	
+	/**
+	 * This function executes the division between two complex numbers
+	 * @param a The numerator
+	 * @param b The denominator
+	 * @param out Complex number a/b
+	 */
+	void set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
+	
+	/**
+	 * This function executes the multiplication between two complex numbers
+	 * @param a The first factor
+	 * @param b The second factor
+	 * @param out Complex number a*b
+	 */
+	void set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Print the profiling information to a file.
 	 *
@@ -129,6 +157,21 @@ private:
 	//Setting field
 	cl_kernel set_zero_spinorfield_stagg;
 	cl_kernel set_cold_spinorfield_stagg;
+	
+	//Operations between complex numbers
+	cl_kernel convert_stagg;
+	cl_kernel ratio_stagg;
+	cl_kernel product_stagg;
+	
+	/* To be added...
+	
+	cl_kernel sax;
+	cl_kernel saxpy;
+	cl_kernel saxpy_arg;
+	cl_kernel saxsbypz;
+	cl_kernel generate_gaussian_spinorfield;
+	
+	*/
 
 };
 
