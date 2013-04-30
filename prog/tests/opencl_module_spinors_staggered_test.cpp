@@ -339,8 +339,8 @@ void test_sf_cold(std::string inputfile, bool switcher)
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	if(switcher);
-	  //kernelName = "set_spinorfield_cold";
+	if(switcher)
+	  kernelName = "set_cold_spinorfield_stagg";
 	else
 	  kernelName = "set_zero_spinorfield_stagg";
 	printKernelInfo(kernelName);
@@ -355,8 +355,8 @@ void test_sf_cold(std::string inputfile, bool switcher)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, spinor_code->get_device());
 
 	logger.info() << "Run kernel";
-        if(switcher);
-	  //device->set_spinorfield_cold_device(&in);
+        if(switcher)
+	  spinor_code->set_cold_spinorfield_device(&in);
         else
           spinor_code->set_zero_spinorfield_device(&in);
 
