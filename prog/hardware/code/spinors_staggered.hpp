@@ -57,6 +57,12 @@ public:
 	 */
 	void set_complex_to_scalar_product_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<su3vec> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
 	
+	/**
+	 * This function sets to zero a staggered field (all its su3vec)
+	 * @param x The field to be set to zero 
+	 */
+	void set_zero_spinorfield_device(const hardware::buffers::Plain<su3vec> * x) const;
+	
 	
 	///////////////////////////////////////////
 	/**
@@ -107,8 +113,11 @@ private:
 	//Scalar Product
 	cl_kernel scalar_product_stagg;
 	cl_kernel scalar_product_reduction_stagg;
-	cl_kernel global_squarenorm;
-	cl_kernel _global_squarenorm_reduction;
+	cl_kernel global_squarenorm_stagg;
+	cl_kernel global_squarenorm_reduction_stagg;
+	
+	//Setting field
+	cl_kernel set_zero_spinorfield_stagg;
 
 };
 

@@ -38,11 +38,13 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	//Squarenorm
-	global_squarenorm = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
-	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
+	global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
+	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
 	//Scalar Product
 	scalar_product_stagg = createKernel("scalar_product_staggered") << basic_fermion_code << "spinorfield_staggered_scalar_product.cl";
 	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_staggered_scalar_product.cl";
+	//Setting fields
+	set_zero_spinorfield_stagg = createKernel("set_zero_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_zero.cl";
 	
 }
 
@@ -50,16 +52,18 @@ void hardware::code::Spinors_staggered::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
 	//Squarenorm
-	clerr = clReleaseKernel(global_squarenorm);
+	clerr = clReleaseKernel(global_squarenorm_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(_global_squarenorm_reduction);
+	clerr = clReleaseKernel(global_squarenorm_reduction_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	//Scalar Product
 	clerr = clReleaseKernel(scalar_product_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(scalar_product_reduction_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
+	//Setting fields
+	clerr = clReleaseKernel(set_zero_spinorfield_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
 
@@ -68,7 +72,7 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
 	//Whenever ls id manually modified, it is crucial to modify num_groups accordingly!
-	if(kernel == global_squarenorm || kernel == scalar_product_stagg
+	if(kernel == global_squarenorm_stagg || kernel == scalar_product_stagg
            /*|| kernel == global_squarenorm_eoprec || kernel == scalar_product_eoprec */) {
 	  if(*ls > 64) {
 	    *ls = 64;
@@ -81,17 +85,17 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 
 void hardware::code::Spinors_staggered::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf) const
 {
-	cl_int clerr = clSetKernelArg(_global_squarenorm_reduction, 0, sizeof(cl_mem), out->get_cl_buffer());
+	cl_int clerr = clSetKernelArg(global_squarenorm_reduction_stagg, 0, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(_global_squarenorm_reduction, 1, sizeof(cl_mem), tmp_buf->get_cl_buffer());
+	clerr = clSetKernelArg(global_squarenorm_reduction_stagg, 1, sizeof(cl_mem), tmp_buf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	cl_uint elems = tmp_buf->get_elements();
-	clerr = clSetKernelArg(_global_squarenorm_reduction, 2, sizeof(cl_uint), &elems);
+	clerr = clSetKernelArg(global_squarenorm_reduction_stagg, 2, sizeof(cl_uint), &elems);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(_global_squarenorm_reduction, 1, 1);
+	get_device()->enqueue_kernel(global_squarenorm_reduction_stagg, 1, 1);
 }
 
 void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<hmc_float> * out) const
@@ -99,22 +103,22 @@ void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_device(co
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(global_squarenorm, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(global_squarenorm_stagg, &ls2, &gs2, &num_groups);
 
 	hardware::buffers::Plain<hmc_float> tmp(num_groups, get_device());
 
 	//set arguments
-	int clerr = clSetKernelArg(global_squarenorm, 0, sizeof(cl_mem), a->get_cl_buffer());
+	int clerr = clSetKernelArg(global_squarenorm_stagg, 0, sizeof(cl_mem), a->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	//CP: these do not have to be args of the function since they are global objects to the class opencl??
-	clerr = clSetKernelArg(global_squarenorm, 1, sizeof(cl_mem), tmp);
+	clerr = clSetKernelArg(global_squarenorm_stagg, 1, sizeof(cl_mem), tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * ls2, static_cast<void*>(nullptr));
+	clerr = clSetKernelArg(global_squarenorm_stagg, 2, sizeof(hmc_float) * ls2, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(global_squarenorm , gs2, ls2);
+	get_device()->enqueue_kernel(global_squarenorm_stagg, gs2, ls2);
 
 	global_squarenorm_reduction(out, &tmp);
 }
@@ -158,7 +162,18 @@ void hardware::code::Spinors_staggered::set_complex_to_scalar_product_device(con
 }
 
 
+void hardware::code::Spinors_staggered::set_zero_spinorfield_device(const hardware::buffers::Plain<su3vec> * x) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(set_zero_spinorfield_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(set_zero_spinorfield_stagg, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	get_device()->enqueue_kernel(set_zero_spinorfield_stagg , gs2, ls2);
+}
 
 
 
@@ -183,10 +198,19 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
-	if (in == "global_squarenorm") {
+	if (in == "global_squarenorm_staggered") {
 		return 1000000000000000000000000;
 	}
 	if (in == "global_squarenorm_reduction") {
+		return 1000000000000000000000000;
+	}
+	if (in == "scalar_product_staggered") {
+		return 1000000000000000000000000;
+	}
+	if (in == "scalar_product_reduction") {
+		return 1000000000000000000000000;
+	}
+	if (in == "set_zero_spinorfield_stagg") {
 		return 1000000000000000000000000;
 	}
 	return 0;
@@ -197,10 +221,19 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	uint64_t S = get_spinorfieldsize(get_parameters());
 	uint64_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
-	if (in == "global_squarenorm") {
+	if (in == "global_squarenorm_staggered") {
 		return 1000000000000000000000000;
 	}
 	if (in == "global_squarenorm_reduction") {
+		return 1000000000000000000000000;
+	}
+	if (in == "scalar_product_staggered") {
+		return 1000000000000000000000000;
+	}
+	if (in == "scalar_product_reduction") {
+		return 1000000000000000000000000;
+	}
+	if (in == "set_zero_spinorfield_stagg") {
 		return 1000000000000000000000000;
 	}
 	return 0;
@@ -209,10 +242,11 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 void hardware::code::Spinors_staggered::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
-	Opencl_Module::print_profiling(filename, global_squarenorm);
-	Opencl_Module::print_profiling(filename, _global_squarenorm_reduction);
+	Opencl_Module::print_profiling(filename, global_squarenorm_stagg);
+	Opencl_Module::print_profiling(filename, global_squarenorm_reduction_stagg);
 	Opencl_Module::print_profiling(filename, scalar_product_stagg);
 	Opencl_Module::print_profiling(filename, scalar_product_reduction_stagg);
+	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)
@@ -223,7 +257,6 @@ hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters
 
 hardware::code::Spinors_staggered::~Spinors_staggered()
 {
-	logger.info() << "In ~Spinors_staggered";
 	clear_kernels();
 }
 
