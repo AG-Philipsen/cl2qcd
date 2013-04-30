@@ -57,12 +57,22 @@ public:
 	 */
 	void set_complex_to_scalar_product_device(const hardware::buffers::Plain<su3vec> * a, const hardware::buffers::Plain<su3vec> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
 	
+	//////////////////////////////////
+	//      Setting operations      //
+	//////////////////////////////////
+	
 	/**
 	 * This function sets to zero a staggered field (all its su3vec)
 	 * @param x The field to be set to zero 
 	 */
 	void set_zero_spinorfield_device(const hardware::buffers::Plain<su3vec> * x) const;
 	
+	/**
+	 * This function sets to 1 a staggered field and normalizes it (i.e. all its su3vec
+	 * are set to 1./(sqrt(3*VOL4D_GLOBAL))
+	 * @param x The field to be set to one and normalized 
+	 */
+	void set_cold_spinorfield_device(const hardware::buffers::Plain<su3vec> * x) const;
 	
 	///////////////////////////////////////////
 	/**
@@ -118,6 +128,7 @@ private:
 	
 	//Setting field
 	cl_kernel set_zero_spinorfield_stagg;
+	cl_kernel set_cold_spinorfield_stagg;
 
 };
 

@@ -45,6 +45,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_staggered_scalar_product.cl";
 	//Setting fields
 	set_zero_spinorfield_stagg = createKernel("set_zero_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_zero.cl";
+	set_cold_spinorfield_stagg = createKernel("set_cold_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_cold.cl";
 	
 }
 
@@ -63,6 +64,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	//Setting fields
 	clerr = clReleaseKernel(set_zero_spinorfield_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(set_cold_spinorfield_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
@@ -172,10 +175,22 @@ void hardware::code::Spinors_staggered::set_zero_spinorfield_device(const hardwa
 	int clerr = clSetKernelArg(set_zero_spinorfield_stagg, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(set_zero_spinorfield_stagg , gs2, ls2);
+	get_device()->enqueue_kernel(set_zero_spinorfield_stagg, gs2, ls2);
 }
 
 
+void hardware::code::Spinors_staggered::set_cold_spinorfield_device(const hardware::buffers::Plain<su3vec> * x) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(set_cold_spinorfield_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(set_cold_spinorfield_stagg, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(set_cold_spinorfield_stagg, gs2, ls2);
+}
 
 
 
@@ -213,6 +228,9 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 	if (in == "set_zero_spinorfield_stagg") {
 		return 1000000000000000000000000;
 	}
+	if (in == "set_cold_spinorfield_stagg") {
+		return 1000000000000000000000000;
+	}
 	return 0;
 }
 
@@ -236,6 +254,9 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	if (in == "set_zero_spinorfield_stagg") {
 		return 1000000000000000000000000;
 	}
+	if (in == "set_cold_spinorfield_stagg") {
+		return 1000000000000000000000000;
+	}
 	return 0;
 }
 
@@ -247,6 +268,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, scalar_product_stagg);
 	Opencl_Module::print_profiling(filename, scalar_product_reduction_stagg);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg);
+	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)
