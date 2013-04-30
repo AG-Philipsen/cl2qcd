@@ -21,7 +21,6 @@ fermact=TWISTEDMASS
 
 #solver-parameters
 use_evenodd=yes
-#solver=bicgstab
 solver=cg
 
 #HMC-parameters
