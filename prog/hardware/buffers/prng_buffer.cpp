@@ -29,12 +29,7 @@ size_t hardware::buffers::PRNGBuffer::get_elements() const noexcept
 size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const meta::Inputparameters& params)
 {
 	if(params.get_use_same_rnd_numbers()) {
-	  if (device->get_device_type() == CL_DEVICE_TYPE_CPU){
-	    return 1;
-	  }
-	  else{
-	    return meta::get_vol4d(params) * NDIM; // sufficiently large
-	  }
+		    return 1.;
 	} else {
 #ifdef USE_PRNG_NR3
 		// Prepare random number arrays, for each task and device separately
