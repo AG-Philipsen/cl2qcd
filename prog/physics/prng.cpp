@@ -32,7 +32,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 	// initialize devices
 for(hardware::Device * device : system.get_devices()) {
 		// create a buffer for each device
-		const PRNGBuffer * buffer = new PRNGBuffer(device);
+		const PRNGBuffer * buffer = new PRNGBuffer(device, params);
 		auto code = device->get_prng_code();
 		code->initialize(buffer, ++seed);
 		buffers.push_back(buffer);
