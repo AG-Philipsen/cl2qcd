@@ -14,10 +14,7 @@ startcondition=continue
 sourcefile=conf.00200
 savefrequency=100
 fermact=TWISTEDMASS
-
-#solver-parameters
-use_evenodd=yes
-solver=bicgstab
+solver=cg
 
 #HMC-parameters
 hmcsteps=1

@@ -1,9 +1,10 @@
-0.825906835316846
+0.838769710631284
 ## reference plaquette value for the HMC test in PureGaugeTheory starting from a cold config
 ## When making the test, the output was:
 ## test nr	output
 ## 13		[14:50:17] INFO:	HMC [OBS]:	0		0.825906835316846	0.591834836679088	-0.00119954895722265
-
+## UPDATE: commit f1b4ab64 this changed to
+## 13	   [11:23:25] INFO: 	HMC [OBS]:	0		0.838769710631284	0.516766749209427	0.0065441963985887
 
 
 

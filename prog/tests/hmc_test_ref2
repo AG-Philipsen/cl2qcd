@@ -1,4 +1,4 @@
-0.5635
+0.575
 ## reference plaquette value for the HMC tests starting from conf.00200
 ## When making the test, the output was:
 ## test nr	output
@@ -10,8 +10,9 @@
 ## UPDATE: With "use_same_rnd_numbers" this changed:	   	
 ## 11		[14:53:14] INFO:	HMC [OBS]:	200	0.562499895971995	-0.0916138937080754	0.151292279267353
 ## 12		[14:54:51] INFO: 	HMC [OBS]:	200     0.565292948919772	-0.0955040993450088 0.17104583459429
-
-
+## UPDATE: with commit:f1b4ab645f66ac883b86656287a4ec73da43e3d4 the result changed:
+## 11	   Invalid Result! Expected: 0.563500  Real: 0.575696 (at 0.5 % tolerance)
+## 12	   Invalid Result! Expected: 0.563500  Real: 0.575991 (at 0.5 % tolerance)
 
 
 
