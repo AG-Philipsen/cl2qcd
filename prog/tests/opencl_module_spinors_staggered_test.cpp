@@ -333,7 +333,42 @@ void test_sf_scalar_product_staggered(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_cold(std::string inputfile, bool switcher)
+{
+	//switcher decides if the sf is set to cold or zero   
+	using namespace hardware::buffers;
 
+	std::string kernelName;
+	if(switcher);
+	  //kernelName = "set_spinorfield_cold";
+	else
+	  kernelName = "set_zero_spinorfield_stagg";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	auto spinor_code = system.get_devices().at(0)->get_spinor_staggered_code();
+	
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	const Plain<su3vec> in(NUM_ELEMENTS_SF, spinor_code->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, spinor_code->get_device());
+
+	logger.info() << "Run kernel";
+        if(switcher);
+	  //device->set_spinorfield_cold_device(&in);
+        else
+          spinor_code->set_zero_spinorfield_device(&in);
+
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
 
 
 /* To be added...
@@ -424,45 +459,6 @@ void test_sf_scalar_product_eo(std::string inputfile)
 	spinor_code->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
 	sqnorm.dump(&cpu_res_tmp);
 	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_sf_cold(std::string inputfile, bool switcher)
-{
-  //switcher decides if the sf is set to cold or zero   
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher)
-	  kernelName = "set_spinorfield_cold";
-	else
-	  kernelName = "set_spinorfield_zero";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "Run kernel";
-        if(switcher)
-	  device->set_spinorfield_cold_device(&in);
-        else
-          device->set_zero_spinorfield_device(&in);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 
 	testFloatAgainstInputparameters(cpu_res, params);
@@ -1262,6 +1258,25 @@ BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_3 )
 BOOST_AUTO_TEST_SUITE_END()
 
 
+BOOST_AUTO_TEST_SUITE(SF_ZERO)
+
+BOOST_AUTO_TEST_CASE( SF_ZERO_1 )
+{
+  test_sf_cold("/sf_set_zero_staggered_input_1", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE(SF_COLD)
+
+BOOST_AUTO_TEST_CASE( SF_COLD_1 )
+{
+  test_sf_cold("/sf_set_cold_staggered_input_1", true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 /* To be added...
  *
  *
@@ -1333,14 +1348,6 @@ BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_3 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(SF_COLD)
-
-BOOST_AUTO_TEST_CASE( SF_COLD_1 )
-{
-  test_sf_cold("/sf_cold_input_1", true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_COLD_EO)
 
@@ -1351,14 +1358,6 @@ BOOST_AUTO_TEST_CASE( SF_COLD_EO_1 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(SF_ZERO)
-
-BOOST_AUTO_TEST_CASE( SF_ZERO_1 )
-{
-  test_sf_cold("/sf_zero_input_1", false);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_ZERO_EO)
 
