@@ -9,7 +9,7 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/spinor.hpp"
 #include "../buffers/prng_buffer.hpp"
-#include "../meta/size_4.hpp"
+#include "../../meta/size_4.hpp"
 
 namespace hardware {
 
