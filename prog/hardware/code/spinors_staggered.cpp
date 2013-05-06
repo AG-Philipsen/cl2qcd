@@ -50,6 +50,8 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	convert_stagg = createKernel("convert_float_to_complex") << get_device()->get_gaugefield_code()->get_sources() << "complex_convert.cl";
 	ratio_stagg = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
 	product_stagg = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
+	//Fields algebra operations
+	sax_stagg = createKernel("sax_staggered") << basic_fermion_code << "spinorfield_staggered_sax.cl";
 }
 
 void hardware::code::Spinors_staggered::clear_kernels()
@@ -76,6 +78,9 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	clerr = clReleaseKernel(ratio_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(product_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	//Fields algebra operations
+	clerr = clReleaseKernel(sax_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
@@ -112,6 +117,7 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	}
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void hardware::code::Spinors_staggered::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf) const
 {
@@ -277,7 +283,24 @@ void hardware::code::Spinors_staggered::set_complex_to_product_device(const hard
 }
 
 
+void hardware::code::Spinors_staggered::sax_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<su3vec> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(sax_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(sax_stagg, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(sax_stagg, 1, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(sax_stagg, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(sax_stagg, gs2, ls2);
+}
 
 
 
@@ -325,6 +348,9 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
 	}
+	if (in == "sax_staggered") {
+		return 1000000000000000000000000;
+	}
 	return 0;
 }
 
@@ -360,6 +386,9 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	if (in == "product") {
 		return meta::get_flop_complex_mult();
 	}
+	if (in == "sax_staggered") {
+		return 1000000000000000000000000;
+	}
 	return 0;
 }
 
@@ -375,6 +404,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, ratio_stagg);
 	Opencl_Module::print_profiling(filename, convert_stagg);
 	Opencl_Module::print_profiling(filename, product_stagg);
+	Opencl_Module::print_profiling(filename, sax_stagg);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)

@@ -28,13 +28,26 @@ public:
 	virtual ~Spinors_staggered();
 
 	/////////////////////////////////////////
-	//    linear Algebra operations        //
+	//    Fields algebra operations        //
 	/////////////////////////////////////////
+	/**
+	 * This function returns the input staggered field
+	 * multiplied by a complex constant alpha
+	 * @param x The input staggered field (one su3vec per site)
+	 * @param alpha The complex constant
+	 * @param out The output staggered field (one su3vec per site)
+	 */
+	void sax_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<su3vec> * out) const;
+	
+	
+	
+	//////////////////////////////////
+	//    Algebra operations        //
+	//////////////////////////////////
 	/**
 	 * This function completes the reduction to calculate the sum
 	 * of squarenorms of the staggered field. It should be called
 	 * after that the kernel "global_squarenorm_staggered" ended.
-	 * 
 	 * @param out The result of the reduction
 	 * @param tmp_buf The vector containing the results of the local (i.e. within each group)
 	 *                reductions.
@@ -151,6 +164,8 @@ private:
 	//Scalar Product
 	cl_kernel scalar_product_stagg;
 	cl_kernel scalar_product_reduction_stagg;
+	
+	//Squarenorm
 	cl_kernel global_squarenorm_stagg;
 	cl_kernel global_squarenorm_reduction_stagg;
 	
@@ -163,13 +178,15 @@ private:
 	cl_kernel ratio_stagg;
 	cl_kernel product_stagg;
 	
+	//Algebra on staggered fields
+	cl_kernel sax_stagg;
+	
 	/* To be added...
 	
-	cl_kernel sax;
-	cl_kernel saxpy;
-	cl_kernel saxpy_arg;
-	cl_kernel saxsbypz;
-	cl_kernel generate_gaussian_spinorfield;
+	cl_kernel saxpy_stagg;
+	cl_kernel saxpy_arg_stagg;
+	cl_kernel saxsbypz_stagg;
+	cl_kernel generate_gaussian_spinorfield_stagg;
 	
 	*/
 
