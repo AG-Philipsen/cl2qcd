@@ -423,6 +423,61 @@ void test_cplx(std::string inputfile, int switcher)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_sax_staggered(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "sax_staggered";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
+
+	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
+	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
+
+	su3vec * sf_in;
+	sf_in = new su3vec[NUM_ELEMENTS_SF];
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg)
+	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else
+	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
+	BOOST_REQUIRE(sf_in);
+
+	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
+        //---> Comment them out when the reference values have been obtained! 
+        /*
+        print_staggeredfield_to_textfile("ref_vec_sax",sf_in,params); 
+        logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";   
+        return;
+	// */
+	
+	in.load(sf_in);
+	alpha.load(&alpha_host);
+
+	logger.info() << "Run kernel";
+	device->sax_device(&in, &alpha, &out);
+
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	device->set_float_to_global_squarenorm_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
 /* To be added...
  *
  *
@@ -555,56 +610,6 @@ void test_sf_cold_eo(std::string inputfile, bool switcher)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_sax(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "sax";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
-
-	spinor * sf_in;
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	}
-	BOOST_REQUIRE(sf_in);
-
-	in.load(sf_in);
-	alpha.load(&alpha_host);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "Run kernel";
-	device->sax_device(&in, &alpha, &out);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
 
 void test_sf_saxpy(std::string inputfile, bool switcher)
 {
@@ -1312,6 +1317,7 @@ BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_6 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
 BOOST_AUTO_TEST_SUITE(CPLX_RATIO)
 
 BOOST_AUTO_TEST_CASE( CPLX_RATIO_1 )
@@ -1336,6 +1342,7 @@ BOOST_AUTO_TEST_CASE( CPLX_RATIO_4 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
 BOOST_AUTO_TEST_SUITE(CPLX_CONVERT)
 
 BOOST_AUTO_TEST_CASE( CPLX_CONVERT_1 )
@@ -1346,6 +1353,51 @@ BOOST_AUTO_TEST_CASE( CPLX_CONVERT_1 )
 BOOST_AUTO_TEST_CASE( CPLX_CONVERT_2 )
 {
   test_cplx("/cplx_convert_input_2", 2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE(SF_SAX)
+
+BOOST_AUTO_TEST_CASE( SF_SAX_1 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_2 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_3 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_4 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_5 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_6 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_7 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_8 )
+{
+  test_sf_sax_staggered("/sf_sax_staggered_input_8");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1441,44 +1493,6 @@ BOOST_AUTO_TEST_CASE( SF_ZERO_EO_1 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(SF_SAX)
-
-BOOST_AUTO_TEST_CASE( SF_SAX_1 )
-{
-  test_sf_sax("/sf_sax_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_2 )
-{
-  test_sf_sax("/sf_sax_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_3 )
-{
-  test_sf_sax("/sf_sax_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_4 )
-{
-  test_sf_sax("/sf_sax_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_5 )
-{
-  test_sf_sax("/sf_sax_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_6 )
-{
-  test_sf_sax("/sf_sax_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_7 )
-{
-  test_sf_sax("/sf_sax_input_7");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_SAX_EO)
 
