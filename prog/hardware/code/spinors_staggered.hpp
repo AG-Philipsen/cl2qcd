@@ -27,22 +27,29 @@ public:
 
 	virtual ~Spinors_staggered();
 
-	/////////////////////////////////////////
-	//    Fields algebra operations        //
-	/////////////////////////////////////////
+	/////////////////////////////////////////////
+	//        Fields algebra operations        //
+	/////////////////////////////////////////////
 	/**
 	 * This function returns the input staggered field
 	 * multiplied by a complex constant alpha
 	 * @param x The input staggered field (one su3vec per site)
 	 * @param alpha The complex constant
-	 * @param out The output staggered field (one su3vec per site)
+	 * @param out The output staggered field: alpha*x (one su3vec per site)
 	 */
 	void sax_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<su3vec> * out) const;
-	
-	
+	/**
+	 * This function returns the input staggered field x
+	 * multiplied by alpha and added to the other input staggered field y
+	 * @param x The first input staggered field (one su3vec per site)
+	 * @param y The second input staggered field (one su3vec per site)
+	 * @param alpha The complex constant
+	 * @param out The output staggered field alpha*x + y (one su3vec per site)
+	 */
+	void saxpy_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<su3vec> * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<su3vec> * out) const;
 	
 	//////////////////////////////////
-	//    Algebra operations        //
+	//      Algebra operations      //
 	//////////////////////////////////
 	/**
 	 * This function completes the reduction to calculate the sum
@@ -180,11 +187,11 @@ private:
 	
 	//Algebra on staggered fields
 	cl_kernel sax_stagg;
+	cl_kernel saxpy_stagg;
 	
 	/* To be added...
 	
-	cl_kernel saxpy_stagg;
-	cl_kernel saxpy_arg_stagg;
+	cl_kernel saxpy_arg_stagg; //I would not implement this at first. alpha as buffer everywhere.
 	cl_kernel saxsbypz_stagg;
 	cl_kernel generate_gaussian_spinorfield_stagg;
 	
