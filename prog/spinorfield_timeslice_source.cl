@@ -16,7 +16,7 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 
 	hmc_float sigma;
 
-	for(int id_local = id; id_local < VOLSPACE; id_local += global_size) {
+	for(int id_vol = id; id_vol < VOLSPACE; id_vol += global_size) {
 	  //CP: switch between source content
 	  switch(SOURCE_CONTENT){
 	  case 1:  //"one"
@@ -109,7 +109,7 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 	    if(id == 0) printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
 	    out_tmp = set_spinor_zero();
 	  }
-	  put_spinor_to_field(out_tmp, b, id_local, timeslice);
+	  put_spinor_to_field(out_tmp, b, id_vol, timeslice);
 	}
 
 	prng_storeState(rngStates, &rnd);

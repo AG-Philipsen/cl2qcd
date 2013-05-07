@@ -17,7 +17,7 @@ fermact=TWISTEDMASS
 
 #solver-parameters
 use_evenodd=no
-solver=bicgstab
+solver=cg
 
 #HMC-parameters
 hmcsteps=1

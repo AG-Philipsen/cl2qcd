@@ -1950,6 +1950,16 @@ BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_2 )
   test_sf_gaussian("/sf_gaussian_input_2");
 }
 
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_3 )
+{
+  test_sf_gaussian("/sf_gaussian_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_4 )
+{
+  test_sf_gaussian("/sf_gaussian_input_4");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN_EO)
@@ -1962,6 +1972,16 @@ BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_1 )
 BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_2 )
 {
   test_sf_gaussian_eo("/sf_gaussian_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_3 )
+{
+  test_sf_gaussian_eo("/sf_gaussian_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_4 )
+{
+  test_sf_gaussian_eo("/sf_gaussian_eo_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

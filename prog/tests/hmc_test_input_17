@@ -1,10 +1,5 @@
-##################################################################
-##	This is 
-##		hmc_test_input_9
-##	It performs one hmc-step with tau = 0.01 starting from
-##	a cold config
-##
-##################################################################
+theta_fermion_temporal=1.
+
 NS=4
 NT=4
 use_rec12=0

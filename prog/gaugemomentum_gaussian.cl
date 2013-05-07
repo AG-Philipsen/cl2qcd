@@ -11,8 +11,10 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 #ifdef _SAME_RND_NUMBERS_
 	if(id > 0) return;
 	global_size = 1;
-#endif
+	for(int id_local = id; id_local < VOL4D_LOCAL; id_local += global_size) {
+#else
 	PARALLEL_FOR(id_local, VOL4D_LOCAL) {
+#endif
 		site_idx site = get_site_idx(id_local >= (VOL4D_LOCAL / 2) ? get_even_st_idx_local(id_local - (VOL4D_LOCAL / 2)) : get_odd_st_idx_local(id_local));
 		for(uint d = 0; d < 4; ++d) {
 			const link_idx id_mem = get_link_idx(d, get_st_idx_from_site_idx(site));

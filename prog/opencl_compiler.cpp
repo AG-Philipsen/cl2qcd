@@ -26,8 +26,6 @@ namespace ip = boost::interprocess;
 
 const std::string CACHE_DIR_NAME("OpTiMaL/ocl_cache");
 
-const fs::path sourceDir(SOURCEDIR);
-
 /**
  * Get the path on which to store a binary with the given md5
  *
@@ -43,6 +41,11 @@ static fs::path get_binary_file_path(std::string md5);
  * The lock might be stored in an extra file next to the binary.
  */
 static ip::file_lock get_lock_file(std::string md5);
+/**
+ * Get the absolute path to a sourcefile of the given name.
+ */
+static fs::path get_source_file_path(std::string filename);
+
 
 ClSourcePackage ClSourcePackage::operator <<(const std::string& file)
 {
@@ -515,8 +518,9 @@ std::string TmpClKernel::generateMD5() const
 	md5_process(&md5_state, platform_version, platform_version_bytes);
 
 	// add source information
-	for(size_t n = 0; n < files.size(); n++) {
-		md5_process(&md5_state, files[n].c_str(), files[n].length());
+	for(auto filename: files) {
+		std::string abs_filename = get_source_file_path(filename).string();
+		md5_process(&md5_state, abs_filename.c_str(), abs_filename.length());
 	}
 
 	// build options
@@ -599,7 +603,7 @@ cl_program TmpClKernel::loadBinary(std::string md5) const
 	std::time_t binary_date = fs::last_write_time(binaryfile);
 
 	for(size_t n = 0; n < files.size(); n++) {
-		fs::path file = sourceDir / files[n];
+		fs::path file = get_source_file_path(files[n]);
 		if(fs::last_write_time(file) > binary_date) {
 			logger.debug() << "Sources have been modified since last program build. Recompilation is required.";
 			return 0; // 0 is not a valid program object
@@ -653,7 +657,7 @@ cl_program TmpClKernel::loadSources() const
 	logger.debug() << "Program not found in cache, building from source";
 	std::string sourcecode;
 	for(size_t n = 0; n < files.size(); n++) {
-		fs::path filename = sourceDir / files[n];
+		fs::path filename = get_source_file_path(files[n]);
 		logger.debug() << "Read kernel source from file: " << filename;
 
 		fs::ifstream file(filename);
@@ -769,4 +773,10 @@ static ip::file_lock get_lock_file(std::string md5)
 		ofstream dummy(lock_file_path);
 	}
 	return ip::file_lock(lock_file_name.c_str());
+}
+
+static fs::path get_source_file_path(std::string filename)
+{
+	const fs::path sourceDir(SOURCEDIR);
+	return sourceDir / filename;
 }

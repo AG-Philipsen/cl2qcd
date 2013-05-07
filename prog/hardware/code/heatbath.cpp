@@ -135,9 +135,9 @@ void hardware::code::Heatbath::get_work_sizes(const cl_kernel kernel, size_t * l
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_odd") == 0) {
 		if( get_device()->get_device_type() == CL_DEVICE_TYPE_GPU ) {
-			*gs = std::min(meta::get_volspace(get_parameters()) * get_parameters().get_ntime() / 2, hardware::buffers::get_prng_buffer_size(get_device()));
+			*gs = std::min(meta::get_volspace(get_parameters()) * get_parameters().get_ntime() / 2, hardware::buffers::get_prng_buffer_size(get_device(), get_parameters()));
 		} else {
-			*gs = std::min(get_device()->get_num_compute_units(), hardware::buffers::get_prng_buffer_size(get_device()));
+			*gs = std::min(get_device()->get_num_compute_units(), hardware::buffers::get_prng_buffer_size(get_device(), get_parameters()));
 		}
 		*ls = get_device()->get_preferred_local_thread_num();
 		*num_groups = *gs / *ls;
