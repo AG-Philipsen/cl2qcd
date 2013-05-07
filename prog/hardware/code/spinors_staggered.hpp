@@ -48,6 +48,17 @@ public:
 	 */
 	void saxpy_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<su3vec> * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<su3vec> * out) const;
 	
+	/**
+	 * This function returns a linear combination of the input staggered field
+	 * @param x The first input staggered field (one su3vec per site)
+	 * @param y The second input staggered field (one su3vec per site)
+	 * @param z The third input staggered field (one su3vec per site)
+	 * @param alpha The first complex constant
+	 * @param beta The second complex constant
+	 * @param out The output staggered field alpha*x + beta*y + z (one su3vec per site)
+	 */
+	void saxpbypz_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<su3vec> * y, const hardware::buffers::Plain<su3vec> * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Plain<su3vec> * out) const;
+	
 	//////////////////////////////////
 	//      Algebra operations      //
 	//////////////////////////////////
@@ -188,11 +199,11 @@ private:
 	//Algebra on staggered fields
 	cl_kernel sax_stagg;
 	cl_kernel saxpy_stagg;
+	cl_kernel saxpbypz_stagg;
 	
 	/* To be added...
 	
-	cl_kernel saxpy_arg_stagg; //I would not implement this at first. alpha as buffer everywhere.
-	cl_kernel saxsbypz_stagg;
+	cl_kernel saxpy_arg_stagg; //I would not implement this at first. So far, alpha as buffer everywhere.
 	cl_kernel generate_gaussian_spinorfield_stagg;
 	
 	*/

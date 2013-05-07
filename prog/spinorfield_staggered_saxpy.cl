@@ -1,10 +1,9 @@
-//out = alpha*x + y
 // Description of variables of saxpy:
 //  - x: The first input staggered field (an su3vec per each site => vector of VOL4D
 //       components that are su3vec varibles)
 //  - y: The second input staggered field (an su3vec per each site => vector of VOL4D
 //       components that are su3vec varibles)
-//  - aplha: The complex number by which x has to be multiplied
+//  - alpha: The complex number by which x has to be multiplied
 //  - out: The output staggered field: alpha*x+y (site by site)
 
 __kernel void saxpy_staggered(__global su3vec * x, __global su3vec * y, __global const hmc_complex * alpha_p, __global su3vec * out)

@@ -53,6 +53,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	//Fields algebra operations
 	sax_stagg = createKernel("sax_staggered") << basic_fermion_code << "spinorfield_staggered_sax.cl";
 	saxpy_stagg = createKernel("saxpy_staggered") << basic_fermion_code << "spinorfield_staggered_saxpy.cl";
+	saxpbypz_stagg = createKernel("saxpbypz_staggered") << basic_fermion_code << "spinorfield_staggered_saxpbypz.cl";
 }
 
 void hardware::code::Spinors_staggered::clear_kernels()
@@ -84,6 +85,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	clerr = clReleaseKernel(sax_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(saxpy_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(saxpbypz_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
@@ -329,7 +332,33 @@ void hardware::code::Spinors_staggered::saxpy_device(const hardware::buffers::Pl
 }
 
 
+void hardware::code::Spinors_staggered::saxpbypz_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<su3vec> * y, const hardware::buffers::Plain<su3vec> * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Plain<su3vec> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(saxpbypz_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpbypz_stagg, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(saxpbypz_stagg, 1, sizeof(cl_mem), y->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpbypz_stagg, 2, sizeof(cl_mem), z->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpbypz_stagg, 3, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpbypz_stagg, 4, sizeof(cl_mem), beta->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpbypz_stagg, 5, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(saxpbypz_stagg, gs2, ls2);
+}
 
 
 
@@ -383,6 +412,10 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		return 1000000000000000000000000;
 	}
 	return 0;
+	if (in == "saxpbypz_staggered") {
+		return 1000000000000000000000000;
+	}
+	return 0;
 }
 
 uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in) const
@@ -425,6 +458,10 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		return 1000000000000000000000000;
 	}
 	return 0;
+	if (in == "saxpbypz_staggered") {
+		return 1000000000000000000000000;
+	}
+	return 0;
 }
 
 void hardware::code::Spinors_staggered::print_profiling(const std::string& filename, int number) const
@@ -441,6 +478,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, product_stagg);
 	Opencl_Module::print_profiling(filename, sax_stagg);
 	Opencl_Module::print_profiling(filename, saxpy_stagg);
+	Opencl_Module::print_profiling(filename, saxpbypz_stagg);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)
