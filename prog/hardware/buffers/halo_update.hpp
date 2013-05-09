@@ -216,6 +216,10 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 			extract_events[num_buffers + i] = extract_boundary(host_buffers[num_buffers + i]->mem, buffer, 0, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, SynchronizationEvent());
 		}
 
+		for(auto buffer: buffers) {
+			buffer->get_device()->flush();
+		}
+
 		std::vector<hardware::SynchronizationEvent> send_events(2 * num_buffers);
 
 		// copy data from host to halo (of coure getting what the neighbour stored
