@@ -27,3 +27,34 @@ hardware::buffers::DeviceAccessibleMemory::~DeviceAccessibleMemory()
 		throw hardware::OpenclException(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 }
+
+hardware::buffers::HostBufferCache::HostBufferCache()
+	: cache()
+{ }
+
+hardware::buffers::HostBufferCache::~HostBufferCache()
+{
+	for(auto entry: cache) {
+		for(auto buffer: entry.second) {
+			delete buffer;
+		}
+	}
+}
+
+hardware::buffers::HostBufferCache& hardware::buffers::HostBufferCache::getInstance()
+{
+	static HostBufferCache bufferCache;
+	return bufferCache;
+}
+
+const std::vector<hardware::buffers::DeviceAccessibleMemory*>& hardware::buffers::HostBufferCache::getBuffers(size_t num, size_t bytes, const hardware::Device* primary)
+{
+	auto& buffers = this->cache[std::make_pair(num, bytes)];
+	if(buffers.size() == 0) {
+		buffers.resize(num);
+		for(size_t i = 0; i < num; ++i) {
+			buffers[i] = new DeviceAccessibleMemory(bytes, primary);
+		}
+	}
+	return buffers;
+}
