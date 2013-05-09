@@ -20,6 +20,7 @@ namespace hardware {
 namespace buffers {
 // forward declaration for friend relation
 class Buffer;
+class DeviceAccessibleMemory;
 }
 
 namespace code {
@@ -51,6 +52,7 @@ class OptimizationError {
 class Device : public DeviceInfo {
 
 	friend hardware::buffers::Buffer;
+	friend hardware::buffers::DeviceAccessibleMemory;
 	friend void print_profiling(Device *, const std::string&, int);
 	friend cl_command_queue profiling_data_test_command_queue_helper(const Device * device);
 

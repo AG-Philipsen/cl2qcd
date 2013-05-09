@@ -13,6 +13,7 @@ add_library(buffers
 	spinor.cpp
 	gaugemomentum.cpp
 	3x3.cpp
+	update_halo.cpp
 )
 target_link_libraries(buffers
 	hardware
