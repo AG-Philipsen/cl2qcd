@@ -34,11 +34,13 @@ hardware::buffers::HostBufferCache::HostBufferCache()
 
 hardware::buffers::HostBufferCache::~HostBufferCache()
 {
-	for(auto entry: cache) {
-		for(auto buffer: entry.second) {
-			delete buffer;
-		}
-	}
+// leave it to the runtime to clean up. we cannot be sure we are executed before cl-finish, and in that case we segfault
+// TODO make sure this is run before clfinish
+//	for(auto entry: cache) {
+//		for(auto buffer: entry.second) {
+//			delete buffer;
+//		}
+//	}
 }
 
 hardware::buffers::HostBufferCache& hardware::buffers::HostBufferCache::getInstance()
