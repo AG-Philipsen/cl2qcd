@@ -373,24 +373,40 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
-	//this is the same as in the function above
+	//NOTE: 1 spinor has NC*NSPIN = 3*1 = 3 complex entries
 	if (in == "global_squarenorm_staggered") {
-		return 1000000000000000000000000;
+		//this kernel reads 1 su3vec and writes 1 real number
+		/// @NOTE: here, the local reduction is not taken into account
+		return D * S * (C * NC + 1);
 	}
 	if (in == "global_squarenorm_reduction") {
-		return 1000000000000000000000000;
+		//this kernel reads NUM_GROUPS real numbers and writes 1 real number
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(global_squarenorm_stagg, &ls2, &gs2, &num_groups);
+		return D * (num_groups + 1);
 	}
 	if (in == "scalar_product_staggered") {
-		return 1000000000000000000000000;
+		//this kernel reads 2 spinors and writes 1 complex number
+		/// @NOTE: here, the local reduction is not taken into account
+		return C * D * S * (NC * 2 + 1);
 	}
 	if (in == "scalar_product_reduction") {
-		return 1000000000000000000000000;
+		//this kernel reads NUM_GROUPS complex numbers and writes 1 complex number
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(scalar_product_stagg, &ls2, &gs2, &num_groups);
+		return C * D * (num_groups + 1);
 	}
 	if (in == "set_zero_spinorfield_stagg") {
-		return 1000000000000000000000000;
+		//this kernel writes 1 su3vec
+		return C * D * S * NC;
 	}
 	if (in == "set_cold_spinorfield_stagg") {
-		return 1000000000000000000000000;
+		//this kernel writes 1 su3vec
+		return C * D * S * NC;
 	}
 	if (in == "convert_float_to_complex") {
 		//this kernel reads 1 float and writes 1 complex number
@@ -405,13 +421,16 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		return C * D * (2 + 1);
 	}
 	if (in == "sax_staggered") {
-		return 1000000000000000000000000;
+		//this kernel reads 1 su3vec, 1 complex number and writes 1 su3vec per site
+		return C * D * S * (NC * (1 + 1) + 1);
 	}
 	if (in == "saxpy_staggered") {
-		return 1000000000000000000000000;
+		//this kernel reads 2 su3vec, 2 complex number and writes 1 su3vec per site
+		return C * D * S * (NC * (2 + 1) + 2);
 	}
 	if (in == "saxpbypz_staggered") {
-		return 1000000000000000000000000;
+		//this kernel reads 3 su3vec, 2 complex number and writes 1 su3vec per site
+		return C * D * S * (NC * (3 + 1) + 2);
 	}
 	return 0;
 }
