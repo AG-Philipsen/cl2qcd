@@ -407,11 +407,9 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 	if (in == "sax_staggered") {
 		return 1000000000000000000000000;
 	}
-	return 0;
 	if (in == "saxpy_staggered") {
 		return 1000000000000000000000000;
 	}
-	return 0;
 	if (in == "saxpbypz_staggered") {
 		return 1000000000000000000000000;
 	}
@@ -424,22 +422,38 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	uint64_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (in == "global_squarenorm_staggered") {
-		return 1000000000000000000000000;
+		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
+		//Note that the sum of S numbers can be done in several way: the least efficient way is
+		//to add the first 2 numbers, then the third, then the fourth and so on, performing S-1
+		//additions. This is not what is done in the code but it is a good estimation because
+		//we know for sure that the code will be a bit faster (it is somehow a boundary estimate)
+		return S * meta::get_flop_su3vec_sqnorm() + (S - 1) * 2;
 	}
 	if (in == "global_squarenorm_reduction") {
+		//This if should not be entered since the sum of the site squarenorms
+		//has already taken into account with the (S-1)*2 term in the previous if
 		return 1000000000000000000000000;
 	}
 	if (in == "scalar_product_staggered") {
-		return 1000000000000000000000000;
+		//this kernel performs su3vec_scalarproduct on each site and then adds S-1 complex numbers
+		//Note that the sum of S numbers can be done in several way: the least efficient way is
+		//to add the first 2 numbers, then the third, then the fourth and so on, performing S-1
+		//additions. This is not what is done in the code but it is a good estimation because
+		//we know for sure that the code will be a bit faster (it is somehow a boundary estimate)
+		return S * meta::get_flop_su3vec_su3vec() + (S - 1) * 2;
 	}
 	if (in == "scalar_product_reduction") {
+		//This if should not be entered since the sum of the site squarenorms
+		//has already taken into account with the (S-1)*2 term in the previous if
 		return 1000000000000000000000000;
 	}
 	if (in == "set_zero_spinorfield_stagg") {
-		return 1000000000000000000000000;
+		//this kernel does not do any flop
+		return 0;
 	}
 	if (in == "set_cold_spinorfield_stagg") {
-		return 1000000000000000000000000;
+		//this kernel performs 1. / sqrt((3.f * VOL4D)) and su3vec_times_real for each site
+		return S * (3 + NC * 2);
 	}
 	if (in == "convert_float_to_complex") {
 		return 0;
@@ -451,15 +465,16 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		return meta::get_flop_complex_mult();
 	}
 	if (in == "sax_staggered") {
-		return 1000000000000000000000000;
+		//this kernel performs on each site su3vec_times_complex
+		return S * (NC * (meta::get_flop_complex_mult()));
 	}
-	return 0;
 	if (in == "saxpy_staggered") {
-		return 1000000000000000000000000;
+		//this kernel performs on each site su3vec_times_complex and su3vec_acc
+		return S * (NC * (meta::get_flop_complex_mult() + 2));
 	}
-	return 0;
 	if (in == "saxpbypz_staggered") {
-		return 1000000000000000000000000;
+		//this kernel performs on each 2 * site su3vec_times_complex and 2 * su3vec_acc
+		return S * (NC * 2 * ( meta::get_flop_complex_mult() + 2));
 	}
 	return 0;
 }

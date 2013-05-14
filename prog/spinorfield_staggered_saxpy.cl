@@ -22,7 +22,7 @@ __kernel void saxpy_staggered(__global su3vec * x, __global su3vec * y, __global
 }
 
 //For the moment this kernel is not needed. 
-//Comment out the region and adapt to staggered fermions (i.e. spinors <---> su3vec) if needed.
+//Uncomment out the region and adapt to staggered fermions (i.e. spinors <---> su3vec) if needed.
 /*
 // the arguments have been hacked to work on apple
 __kernel void saxpy_staggered_arg(__global spinor* x, __global spinor* y, const hmc_float alpha_re, const hmc_float alpha_im, __global spinor* out)

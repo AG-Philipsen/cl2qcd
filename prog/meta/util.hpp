@@ -28,12 +28,14 @@ namespace meta {
 	size_t get_flop_su3_su3() noexcept;
 	size_t get_flop_su3trace() noexcept;
 	size_t get_flop_su3_su3vec() noexcept;
+	size_t get_flop_su3vec_su3vec() noexcept;
 	size_t get_su3algebrasize() noexcept;
 	double get_c0(const Inputparameters& params);
 	double get_c1(const Inputparameters& params);
 	double get_xi_0(const Inputparameters& params);
 	size_t get_flop_spinor_spinor() noexcept;
 	size_t get_flop_spinor_sqnorm() noexcept;
+	size_t get_flop_su3vec_sqnorm() noexcept;
 	void print_info_gaugeobservables(const char* progname, const Inputparameters& params);
 	void print_info_gaugeobservables(const char* progname, std::ostream* os, const Inputparameters& params);
 	void print_info_heatbath(const char* progname, const Inputparameters& params);
