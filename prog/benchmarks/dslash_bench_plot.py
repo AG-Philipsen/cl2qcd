@@ -14,7 +14,7 @@ if __name__ == '__main__':
 	parser.add_argument('-o', '--output', metavar='FILE', default=None, help='File to dump the plot to')
 	parser.add_argument('--metric', default='both', help='Output gflops, gbytes or both')
 	parser.add_argument('--notitle', default=False, action='store_true', help='Suppress plot title')
-	parser.add_argument('--title', default='Overrelax Performance', help='Title to use for the plot')
+	parser.add_argument('--title', default='Dslash Performance', help='Title to use for the plot')
 	parser.add_argument('--maxSize', type=int, help='Maximum lattice size to plot')
 	parser.add_argument('--legend-pos', help='Position for the plot legend')
 	parser.add_argument('--offset-lines', action='store_true', default=False, help='Offset lines in x direction to avoid overlapping points')
