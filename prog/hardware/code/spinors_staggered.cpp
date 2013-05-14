@@ -35,7 +35,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void hardware::code::Spinors_staggered::fill_kernels()
 {
-	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield_staggered.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	//Squarenorm
 	global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
@@ -46,6 +46,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	//Setting fields
 	set_zero_spinorfield_stagg = createKernel("set_zero_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_zero.cl";
 	set_cold_spinorfield_stagg = createKernel("set_cold_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_cold.cl";
+	set_gaussian_spinorfield_stagg = createKernel("set_gaussian_spinorfield_stagg") << basic_fermion_code << prng_code << "spinorfield_staggered_gaussian.cl";
 	//Complex number operations
 	convert_stagg = createKernel("convert_float_to_complex") << get_device()->get_gaugefield_code()->get_sources() << "complex_convert.cl";
 	ratio_stagg = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
@@ -74,6 +75,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(set_cold_spinorfield_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(set_gaussian_spinorfield_stagg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	//Complex numbers operations
 	clerr = clReleaseKernel(convert_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -95,6 +98,15 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
+	// kernels that use random numbers must not exceed the size of the random state array
+	if(kernel == set_gaussian_spinorfield_stagg
+	   /*|| kernel == generate_gaussian_spinorfield_eo*/) {
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
+			logger.error() << "I changed gs without changing neither ls nor num_groups (in Spinors_staggered::get_work_sizes)!!!";
+		}
+	}
+	
 	//Query specific sizes for kernels if needed
 	string kernelname = get_kernel_name(kernel);
 	if(kernelname.compare("convert_float_to_complex") == 0) {
@@ -123,7 +135,10 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	}
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 void hardware::code::Spinors_staggered::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf) const
 {
@@ -361,8 +376,37 @@ void hardware::code::Spinors_staggered::saxpbypz_device(const hardware::buffers:
 }
 
 
+void hardware::code::Spinors_staggered::set_gaussian_spinorfield_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::PRNGBuffer * prng) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(set_gaussian_spinorfield_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(set_gaussian_spinorfield_stagg, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(set_gaussian_spinorfield_stagg, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(set_gaussian_spinorfield_stagg  , gs2, ls2);
+
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
+		hmc_float resid;
+		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_device(in, &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+}
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string& in) const
@@ -411,6 +455,10 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 	if (in == "convert_float_to_complex") {
 		//this kernel reads 1 float and writes 1 complex number
 		return (C + 1) * D;
+	}
+	if (in == "set_gaussian_spinorfield_stagg") {
+		//this kernel writes 1 su3vec per site
+		return ( NC * C ) * D * S;
 	}
 	if (in == "ratio") {
 		//this kernel reads 2 complex numbers and writes 1 complex number
@@ -483,6 +531,11 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	if (in == "product") {
 		return meta::get_flop_complex_mult();
 	}
+	if (in == "set_gaussian_spinorfield_stagg") {
+		//this kernel performs NC multiplications per site
+		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
+		return NC * S;
+	}
 	if (in == "sax_staggered") {
 		//this kernel performs on each site su3vec_times_complex
 		return S * (NC * (meta::get_flop_complex_mult()));
@@ -507,6 +560,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, scalar_product_reduction_stagg);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg);
+	Opencl_Module::print_profiling(filename, set_gaussian_spinorfield_stagg);
 	Opencl_Module::print_profiling(filename, ratio_stagg);
 	Opencl_Module::print_profiling(filename, convert_stagg);
 	Opencl_Module::print_profiling(filename, product_stagg);

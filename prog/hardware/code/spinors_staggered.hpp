@@ -105,6 +105,26 @@ public:
 	 */
 	void set_cold_spinorfield_device(const hardware::buffers::Plain<su3vec> * x) const;
 	
+	/**
+	 * This function initialize a staggered field with gaussian complex numbers
+	 * @param in The field to be initialized 
+	 * @param prng The cl_memory object
+	 * @note A complex gaussian number is a number with both real and imaginary
+	 *       part distributed in a gaussian way. In order to make the complex
+	 *       gaussian distribution be normal (mean zero and variance 1), the real
+	 *       and the imaginary parts must have mean zero and variance 0.5
+	 *       It is worth remarking that a COMPLEX gaussian distribution is 
+	 *       p(z)=1/(pi*sigma_z^2) exp(-|z|^2/sigma_z^2)
+	 *       so it is a product of two real gaussian distributions on condition that
+	 *       they have the SAME VARIANCE.
+	 *       The complex variance sigma_z^2 will be both equal to 2*sigma_x^2 and
+	 *       equal to 2*sigma_y. Hence to have sigma_z^2=1 we have to make
+	 *       sigma_x^2=sigma_y^2=0.5 (for a very detailed treatment of this aspect
+	 *       see "Statistical Signal Processing of Complex-Valued Data" from 
+	 *       PETER J. SCHREIER around page 22).
+	 */
+	void set_gaussian_spinorfield_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::PRNGBuffer * prng) const;
+	
 	//////////////////////////////////////////
 	//      Complex numbers operations      //
 	//////////////////////////////////////////
@@ -190,6 +210,7 @@ private:
 	//Setting field
 	cl_kernel set_zero_spinorfield_stagg;
 	cl_kernel set_cold_spinorfield_stagg;
+	cl_kernel set_gaussian_spinorfield_stagg;
 	
 	//Operations between complex numbers
 	cl_kernel convert_stagg;
@@ -204,7 +225,6 @@ private:
 	/* To be added...
 	
 	cl_kernel saxpy_arg_stagg; //I would not implement this at first. So far, alpha as buffer everywhere.
-	cl_kernel generate_gaussian_spinorfield_stagg;
 	
 	*/
 
