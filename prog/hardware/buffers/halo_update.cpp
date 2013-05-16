@@ -2,7 +2,7 @@
 #include "../system.hpp"
 
 hardware::buffers::DeviceAccessibleMemory::DeviceAccessibleMemory(const size_t bytes, hardware::Device * device)
- : Buffer(bytes, device, true)
+ : Buffer(bytes, device, false)
 {
 	// nothing to do
 }
