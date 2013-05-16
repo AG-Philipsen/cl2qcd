@@ -7,11 +7,11 @@ hardware::buffers::DeviceAccessibleMemory::DeviceAccessibleMemory(const size_t b
 	// nothing to do
 }
 
-hardware::buffers::HostBufferCache::HostBufferCache()
+hardware::buffers::ProxyBufferCache::ProxyBufferCache()
 	: cache()
 { }
 
-hardware::buffers::HostBufferCache::~HostBufferCache()
+hardware::buffers::ProxyBufferCache::~ProxyBufferCache()
 {
 // leave it to the runtime to clean up. we cannot be sure we are executed before cl-finish, and in that case we segfault
 // TODO make sure this is run before clfinish
@@ -22,19 +22,23 @@ hardware::buffers::HostBufferCache::~HostBufferCache()
 //	}
 }
 
-hardware::buffers::HostBufferCache& hardware::buffers::HostBufferCache::getInstance()
+hardware::buffers::ProxyBufferCache& hardware::buffers::ProxyBufferCache::getInstance()
 {
-	static HostBufferCache bufferCache;
+	static ProxyBufferCache bufferCache;
 	return bufferCache;
 }
 
-const std::vector<hardware::buffers::DeviceAccessibleMemory*>& hardware::buffers::HostBufferCache::getBuffers(size_t num, size_t bytes, hardware::Device* primary)
+const std::vector<hardware::buffers::DeviceAccessibleMemory*>& hardware::buffers::ProxyBufferCache::getBuffers(size_t rows, size_t bytes, const std::vector<hardware::Device*>& devices)
 {
-	auto& buffers = this->cache[std::make_pair(primary->context,std::make_pair(num, bytes))];
+	auto primary = devices[0];
+	auto& buffers = this->cache[std::make_pair(primary->context,std::make_pair(rows, bytes))];
 	if(buffers.size() == 0) {
-		buffers.resize(num);
-		for(size_t i = 0; i < num; ++i) {
-			buffers[i] = new DeviceAccessibleMemory(bytes, primary);
+		const size_t num_devs = devices.size();
+		buffers.resize(rows * num_devs);
+		for(size_t row = 0; row < rows; ++row) {
+			for(size_t i = 0; i < num_devs; ++i) {
+				buffers[row * num_devs + i] = new DeviceAccessibleMemory(bytes, devices[i]);
+			}
 		}
 	}
 	return buffers;

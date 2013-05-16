@@ -160,14 +160,14 @@ class DeviceAccessibleMemory : public Buffer {
 		DeviceAccessibleMemory(const size_t bytes, hardware::Device * device);
 };
 
-class HostBufferCache {
+class ProxyBufferCache {
 	private:
-		HostBufferCache();
-		~HostBufferCache();
+		ProxyBufferCache();
+		~ProxyBufferCache();
 		std::map<std::pair<cl_context,std::pair<size_t,size_t> >, std::vector<DeviceAccessibleMemory*>> cache;
 	public:
-		static HostBufferCache& getInstance();
-		const std::vector<DeviceAccessibleMemory*>& getBuffers(size_t num, size_t bytes, hardware::Device* primary);
+		static ProxyBufferCache& getInstance();
+		const std::vector<DeviceAccessibleMemory*>& getBuffers(size_t rows, size_t bytes, const std::vector<hardware::Device*>& devices);
 };
 
 }
@@ -198,8 +198,13 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 		logger.trace() << "eff. VOL4D_LOCAL: " << VOL4D_LOCAL;
 		logger.trace() << "CHUNKS_PER_LANE: " << CHUNKS_PER_LANE;
 
-		auto& cache = HostBufferCache::getInstance();
-		auto& host_buffers = cache.getBuffers(2 * num_buffers, HALO_ELEMS * sizeof(T), main_device);
+		std::vector<hardware::Device*> devices(num_buffers);
+		for(size_t i = 0; i < num_buffers; ++i) {
+			devices[i] = buffers[i]->get_device();
+		}
+
+		auto& cache = ProxyBufferCache::getInstance();
+		auto& host_buffers = cache.getBuffers(2, HALO_ELEMS * sizeof(T), devices);
 
 		std::vector<hardware::SynchronizationEvent> extract_events(2 * num_buffers);
 
@@ -211,8 +216,8 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 			extract_events[num_buffers + i] = extract_boundary(host_buffers[num_buffers + i], buffer, 0, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, SynchronizationEvent());
 		}
 
-		for(auto buffer: buffers) {
-			buffer->get_device()->flush();
+		for(auto device: devices) {
+			device->flush();
 		}
 
 		std::vector<hardware::SynchronizationEvent> send_events(2 * num_buffers);
@@ -232,7 +237,7 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 
 		// ensure that command queue are blocked until corresponding proxy buffer has been completely read by neighbouring device
 		for(size_t i = 0; i < num_buffers; ++i) {
-			auto device = buffers[i]->get_device();
+			auto device = devices[i];
 			device->enqueue_barrier(send_events[i], send_events[num_buffers + i]);
 		}
 	}
