@@ -236,10 +236,20 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 		}
 
 		// ensure that command queue are blocked until corresponding proxy buffer has been completely read by neighbouring device
+#ifdef CL_VERSION_1_2
+		// and send buffer back to the correct device while we are at it, dumping their content as we we don't need it anymore, anyways
+		std::vector<hardware::SynchronizationEvent> events(2);
+		for(size_t i = 0; i < num_buffers; ++i) {
+			events[0] = send_events[i];
+			events[1] = send_events[num_buffers + i];
+			host_buffers[i]->migrate(devices[i], events, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED);
+		}
+#else
 		for(size_t i = 0; i < num_buffers; ++i) {
 			auto device = devices[i];
 			device->enqueue_barrier(send_events[i], send_events[num_buffers + i]);
 		}
+#endif
 	}
 }
 

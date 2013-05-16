@@ -285,3 +285,23 @@ hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::D
 	}
 	return new_event;
 }
+
+#ifdef CL_VERSION_1_2
+void hardware::buffers::Buffer::migrate(hardware::Device * device, const std::vector<hardware::SynchronizationEvent>& events, cl_mem_migration_flags flags)
+{
+	size_t num_events = events.size();
+	std::vector<cl_event> cl_events(num_events);
+	for(size_t i = 0; i < num_events; ++i) {
+		cl_events[i] = events[i].raw();
+	}
+	cl_event * events_p = (num_events > 0) ? &cl_events[0] : 0;
+
+	cl_int err = clEnqueueMigrateMemObjects(*device, 1, this->get_cl_buffer(), flags, num_events, events_p, 0);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueMigrateMemoryObjects", __FILE__, __LINE__);
+	}
+
+	// update device used by this buffer
+	this->device = device;
+}
+#endif

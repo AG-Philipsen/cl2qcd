@@ -96,6 +96,13 @@ public:
 	 */
 	void clear() const;
 
+#ifdef CL_VERSION_1_2
+	/**
+	 * Migrate the bufer to a different device.
+	 */
+	void migrate(hardware::Device * device, const std::vector<hardware::SynchronizationEvent>& events, cl_mem_migration_flags flags = 0);
+#endif
+
 private:
 	/**
 	 * The size of the buffer in bytes.
@@ -110,7 +117,7 @@ private:
 	/**
 	 * The OpenCL device the buffer is located on.
 	 */
-	Device * const device;
+	Device * device;
 
 	/**
 	 * Utility function to get the data from another buffer. Should only be used using
