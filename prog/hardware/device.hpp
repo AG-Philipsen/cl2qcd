@@ -17,10 +17,14 @@
 
 namespace hardware {
 
+class SynchronizationEvent;
+class Device;
+
 namespace buffers {
 // forward declaration for friend relation
 class Buffer;
-class DeviceAccessibleMemory;
+class HostBufferCache;
+hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const Buffer* dest, const Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event);
 }
 
 namespace code {
@@ -52,9 +56,10 @@ class OptimizationError {
 class Device : public DeviceInfo {
 
 	friend hardware::buffers::Buffer;
-	friend hardware::buffers::DeviceAccessibleMemory;
+	friend hardware::buffers::HostBufferCache;
 	friend void print_profiling(Device *, const std::string&, int);
 	friend cl_command_queue profiling_data_test_command_queue_helper(const Device * device);
+	friend hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event);
 
 public:
 	/**

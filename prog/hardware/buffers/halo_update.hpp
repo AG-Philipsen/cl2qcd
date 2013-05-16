@@ -17,6 +17,9 @@ namespace buffers {
 template <typename T, class BUFFER> void update_halo(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE = 1.);
 template <typename T, class BUFFER> void update_halo_soa(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE = 1., const unsigned CHUNKS_PER_LANE = 1);
 
+template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent extract_boundary(const PROXY* proxy, const BUFFER * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event);
+template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent send_halo(const BUFFER * buffer, const PROXY* proxy, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event);
+
 }
 
 }
@@ -24,9 +27,6 @@ template <typename T, class BUFFER> void update_halo_soa(std::vector<BUFFER*> bu
 
 static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
 static unsigned upper_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
-template<class BUFFER> static hardware::SynchronizationEvent send_halo(const BUFFER * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event);
-template<class BUFFER> static hardware::SynchronizationEvent extract_boundary(char* host, const BUFFER * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event);
-
 template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE)
 {
 	// no-op on single device
@@ -89,7 +89,7 @@ static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZ
 	return (idx + GRID_SIZE - 1) % GRID_SIZE;
 }
 
-template<class BUFFER> static hardware::SynchronizationEvent extract_boundary(char* host, const BUFFER * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event)
+template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent hardware::buffers::extract_boundary(const PROXY* proxy, const BUFFER * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event)
 {
 	logger.debug() << "Extracting boundary. Offset: " << in_lane_offset << " - Elements per chunk: " << HALO_CHUNK_ELEMS;
 	const unsigned NUM_LANES = buffer->get_lane_count();
@@ -97,16 +97,16 @@ template<class BUFFER> static hardware::SynchronizationEvent extract_boundary(ch
 	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->get_mem_lattice_size()) * ELEMS_PER_SITE;
 
 	const size_t buffer_origin[] = { in_lane_offset * STORAGE_TYPE_SIZE, 0, 0 };
-	const size_t host_origin[] = { 0, 0, 0 };
+	const size_t proxy_origin[] = { 0, 0, 0 };
 
 	const size_t region[] = { HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, CHUNKS_PER_LANE, NUM_LANES };
 
 	const size_t buffer_row_pitch = CHUNK_STRIDE * STORAGE_TYPE_SIZE;
-	const size_t host_row_pitch = 0; // automatically consecutive
+	const size_t proxy_row_pitch = 0; // automatically consecutive
 	const size_t buffer_slice_pitch = buffer->get_lane_stride() * STORAGE_TYPE_SIZE;
-	const size_t host_slice_pitch = 0; // automatically consecutive
+	const size_t proxy_slice_pitch = 0; // automatically consecutive
 
-	return buffer->dumpRect_rawAsync(host, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
+	return copyDataRect(buffer->get_device(), proxy, buffer, proxy_origin, buffer_origin, region, proxy_row_pitch, proxy_slice_pitch, buffer_row_pitch, buffer_slice_pitch, event);
 
 // Original code kept for documentation purposes:
 //	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
@@ -121,7 +121,7 @@ template<class BUFFER> static hardware::SynchronizationEvent extract_boundary(ch
 //	}
 }
 
-template<class BUFFER> static hardware::SynchronizationEvent send_halo(const BUFFER * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event)
+template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent hardware::buffers::send_halo(const BUFFER * buffer, const PROXY* proxy, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event)
 {
 	logger.debug() << "Sending Halo. Offset: " << in_lane_offset << " - Elements per chunk: " << HALO_CHUNK_ELEMS;
 	const unsigned NUM_LANES = buffer->get_lane_count();
@@ -129,16 +129,16 @@ template<class BUFFER> static hardware::SynchronizationEvent send_halo(const BUF
 	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->get_mem_lattice_size()) * ELEMS_PER_SITE;
 
 	const size_t buffer_origin[] = { in_lane_offset * STORAGE_TYPE_SIZE, 0, 0 };
-	const size_t host_origin[] = { 0, 0, 0 };
+	const size_t proxy_origin[] = { 0, 0, 0 };
 
 	const size_t region[] = { HALO_CHUNK_ELEMS * STORAGE_TYPE_SIZE, CHUNKS_PER_LANE, NUM_LANES };
 
 	const size_t buffer_row_pitch = CHUNK_STRIDE * STORAGE_TYPE_SIZE;
-	const size_t host_row_pitch = 0; // automatically consecutive
+	const size_t proxy_row_pitch = 0; // automatically consecutive
 	const size_t buffer_slice_pitch = buffer->get_lane_stride() * STORAGE_TYPE_SIZE;
-	const size_t host_slice_pitch = 0; // automatically consecutive
+	const size_t proxy_slice_pitch = 0; // automatically consecutive
 
-	return buffer->loadRect_rawAsync(host, buffer_origin, host_origin, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, event);
+	return copyDataRect(buffer->get_device(), buffer, proxy, buffer_origin, proxy_origin, region, buffer_row_pitch, buffer_slice_pitch, proxy_row_pitch, proxy_slice_pitch, event);
 
 // Original code kept for documentation purposes:
 //	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
@@ -155,24 +155,19 @@ template<class BUFFER> static hardware::SynchronizationEvent send_halo(const BUF
 
 namespace hardware {
 namespace buffers {
-class DeviceAccessibleMemory {
+class DeviceAccessibleMemory : public Buffer {
 	public:
-		DeviceAccessibleMemory(const size_t bytes, const hardware::Device * device);
-		~DeviceAccessibleMemory();
-		char * mem;
-	private:
-		cl_mem buf;
-		cl_command_queue queue;
+		DeviceAccessibleMemory(const size_t bytes, hardware::Device * device);
 };
 
 class HostBufferCache {
 	private:
 		HostBufferCache();
 		~HostBufferCache();
-		std::map<std::pair<size_t,size_t>, std::vector<DeviceAccessibleMemory*>> cache;
+		std::map<std::pair<cl_context,std::pair<size_t,size_t> >, std::vector<DeviceAccessibleMemory*>> cache;
 	public:
 		static HostBufferCache& getInstance();
-		const std::vector<DeviceAccessibleMemory*>& getBuffers(size_t num, size_t bytes, const hardware::Device* primary);
+		const std::vector<DeviceAccessibleMemory*>& getBuffers(size_t num, size_t bytes, hardware::Device* primary);
 };
 
 }
@@ -212,8 +207,8 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 		for(size_t i = 0; i < num_buffers; ++i) {
 			const auto buffer = buffers[i];
 			logger.debug() << "Extracting data from buffer " << i;
-			extract_events[i] = extract_boundary(host_buffers[i]->mem, buffer, VOL4D_LOCAL - HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, SynchronizationEvent());
-			extract_events[num_buffers + i] = extract_boundary(host_buffers[num_buffers + i]->mem, buffer, 0, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, SynchronizationEvent());
+			extract_events[i] = extract_boundary(host_buffers[i], buffer, VOL4D_LOCAL - HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, SynchronizationEvent());
+			extract_events[num_buffers + i] = extract_boundary(host_buffers[num_buffers + i], buffer, 0, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, SynchronizationEvent());
 		}
 
 		for(auto buffer: buffers) {
@@ -229,10 +224,10 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 			// our lower halo is the upper bounary of our lower neighbour
 			// its storage location is wrapped around to be the last chunk of data in our buffer, that is after local data and upper halo
 			const size_t lower_i = lower_grid_neighbour(i, GRID_SIZE);
-			send_events[i] = send_halo(buffer, host_buffers[lower_i]->mem, VOL4D_LOCAL + HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[lower_i]);
+			send_events[i] = send_halo(buffer, host_buffers[lower_i], VOL4D_LOCAL + HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[lower_i]);
 			// our upper halo is the lower bounary of our upper neighbour, it's stored right after our local data
 			const size_t upper_i = upper_grid_neighbour(i, GRID_SIZE);
-			send_events[num_buffers + i] = send_halo(buffer, host_buffers[num_buffers + upper_i]->mem, VOL4D_LOCAL, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[num_buffers + upper_i]);
+			send_events[num_buffers + i] = send_halo(buffer, host_buffers[num_buffers + upper_i], VOL4D_LOCAL, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[num_buffers + upper_i]);
 		}
 
 		hardware::wait(send_events);
