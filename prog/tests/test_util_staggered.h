@@ -1,7 +1,9 @@
 #include "../physics/lattices/gaugefield.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
-#include </usr/include/c++/4.7/fstream> 
+#include </usr/include/c++/4.7/fstream>
+#include <vector>
+
 
 class TestGaugefield {
 
@@ -307,5 +309,22 @@ void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta:
   }
   file.close();
 }
+
+/**
+ * Function that returns a vector with the 6 real number contained in an su3vec
+ */
+std::vector<hmc_float> reals_from_su3vec(su3vec v){
+  std::vector<hmc_float> out;
+  out.push_back(v.e0.re);
+  out.push_back(v.e0.im);
+  out.push_back(v.e1.re);
+  out.push_back(v.e1.im);
+  out.push_back(v.e2.re);
+  out.push_back(v.e2.im);
+  return out;
+}
+
+  
+  
 
 

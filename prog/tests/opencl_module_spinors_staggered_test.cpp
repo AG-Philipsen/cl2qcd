@@ -15,7 +15,8 @@
 //some functionality
 #include "test_util.h"
 #include "test_util_staggered.h"
-
+#include "Kolmogorov_Smirnov.h"
+#include "Normal_RNG_tests.h"
 
 void fill_sf_with_one(su3vec * sf_in, int size)
 {
@@ -35,6 +36,40 @@ void fill_sf_with_zero(su3vec * sf_in, int size)
     sf_in[i].e2 = hmc_complex_zero;
   }
   return;
+}
+
+//This function sums the real and imaginary parts of all su3vec contained in sf_in
+hmc_float count_sf(su3vec * sf_in, int size)
+{
+  hmc_float sum = 0.;
+  for (int i=0; i<size; i++){
+    sum +=
+        sf_in[i].e0.re + sf_in[i].e0.im 
+      + sf_in[i].e1.re + sf_in[i].e1.im 
+      + sf_in[i].e2.re + sf_in[i].e2.im;
+  }
+  return sum;
+}
+
+//The following two function return the sum of the square deviation (frome the mean) of the numbers
+//in sf_in. To get the variance, i.e. the mean square deviation, the result
+//must be divided by the number of numbers summed (see test_sf_gaussian_staggered in this file).
+hmc_float calc_var(hmc_float in, hmc_float mean){
+  return (in - mean) * (in - mean);
+}
+
+hmc_float calc_var_sf(su3vec * sf_in, int size, hmc_float sum){
+  hmc_float var = 0.;
+  for(int k=0; k<size; k++){
+    var +=
+        calc_var(sf_in[k].e0.re, sum) 
+      + calc_var(sf_in[k].e0.im, sum) 
+      + calc_var(sf_in[k].e1.re, sum)
+      + calc_var(sf_in[k].e1.im, sum) 
+      + calc_var(sf_in[k].e2.re, sum) 
+      + calc_var(sf_in[k].e2.im, sum);
+  }
+  return var;
 }
 
 /*
@@ -132,62 +167,6 @@ hmc_float count_sf_eo(spinor * sf_in, int size, bool eo, meta::Inputparameters &
   return sum;
 }
 
-hmc_float count_sf(spinor * sf_in, int size)
-{
-  hmc_float sum = 0.;
-  for (int i = 0; i<size;i++){
-    sum +=
-       sf_in[i].e0.e0.re+ sf_in[i].e0.e0.im 
-      +sf_in[i].e0.e1.re+ sf_in[i].e0.e1.im 
-      +sf_in[i].e0.e2.re+ sf_in[i].e0.e2.im 
-      +sf_in[i].e1.e0.re+ sf_in[i].e1.e0.im 
-      +sf_in[i].e1.e1.re+ sf_in[i].e1.e1.im 
-      +sf_in[i].e1.e2.re+ sf_in[i].e1.e2.im 
-      +sf_in[i].e2.e0.re+ sf_in[i].e2.e0.im 
-      +sf_in[i].e2.e1.re+ sf_in[i].e2.e1.im 
-      +sf_in[i].e2.e2.re+ sf_in[i].e2.e2.im 
-      +sf_in[i].e3.e0.re+ sf_in[i].e3.e0.im 
-      +sf_in[i].e3.e1.re+ sf_in[i].e3.e1.im 
-      +sf_in[i].e3.e2.re+ sf_in[i].e3.e2.im;
-  }
-  return sum;
-}
-
-hmc_float calc_var(hmc_float in, hmc_float mean){
-  return (in - mean) * (in - mean);
-}
-
-hmc_float calc_var_sf(spinor * sf_in, int size, hmc_float sum){
-  hmc_float var = 0.;
-  for(int k = 0; k<size; k++){
-    var +=
-      calc_var( sf_in[k].e0.e0.re , sum) 
-      + calc_var( sf_in[k].e0.e0.im , sum) 
-      + calc_var( sf_in[k].e0.e1.re , sum)
-      + calc_var( sf_in[k].e0.e1.im , sum) 
-      + calc_var( sf_in[k].e0.e2.re , sum) 
-      + calc_var( sf_in[k].e0.e2.im , sum) 
-      + calc_var( sf_in[k].e1.e0.re , sum) 
-      + calc_var( sf_in[k].e1.e0.im , sum) 
-      + calc_var( sf_in[k].e1.e1.re , sum) 
-      + calc_var( sf_in[k].e1.e1.im , sum) 
-      + calc_var( sf_in[k].e1.e2.re , sum) 
-      + calc_var( sf_in[k].e1.e2.im , sum) 
-      + calc_var( sf_in[k].e2.e0.re , sum)
-      + calc_var( sf_in[k].e2.e0.im , sum) 
-      + calc_var( sf_in[k].e2.e1.re , sum)
-      + calc_var( sf_in[k].e2.e1.im , sum) 
-      + calc_var( sf_in[k].e2.e2.re , sum)
-      + calc_var( sf_in[k].e2.e2.im , sum) 
-      + calc_var( sf_in[k].e3.e0.re , sum)
-      + calc_var( sf_in[k].e3.e0.im , sum) 
-      + calc_var( sf_in[k].e3.e1.re , sum)
-      + calc_var( sf_in[k].e3.e1.im , sum) 
-      + calc_var( sf_in[k].e3.e2.re , sum)
-      + calc_var( sf_in[k].e3.e2.im , sum);
-  }
-  return var;
-}
 */
 
 void fill_sf_with_random(su3vec * sf_in, int size, int seed)
@@ -632,6 +611,100 @@ void test_sf_saxpbypz_staggered(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_sf_gaussian_staggered(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	kernelName = "set_gaussian_spinorfield_stagg";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+
+	physics::PRNG prng(system);
+	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
+
+	//CP: run the kernel a couple of times times
+	int iterations = params.get_integrationsteps(0);
+
+	su3vec * sf_out;
+	sf_out = new su3vec[NUM_ELEMENTS_SF * iterations];
+	BOOST_REQUIRE(sf_out);
+
+	auto prng_buf = prng.get_buffers().at(0);
+
+	hmc_float sum = 0;
+	for (int i = 0; i< iterations; i++){
+	  if(i%100==0)logger.info() << "Run kernel for the " << i << "th time";
+	  device->set_gaussian_spinorfield_device(&out, prng_buf);
+	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
+	  //Here we sum the entries to calculate the mean later
+	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
+	}
+	
+	logger.info() << "result: mean";
+	hmc_float cpu_res = 0.;
+	//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real gaussian numbers
+	sum = sum/iterations/NUM_ELEMENTS_SF/6;	
+	cpu_res= sum;
+	logger.info() << cpu_res;
+	
+	if(params.get_read_multiple_configs()  == false){
+	  //CP: calc std derivation
+	  hmc_float var=0.;
+	  for (int i=0; i<iterations; i++){
+	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
+	  }
+	  //var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
+	  var=var/iterations/NUM_ELEMENTS_SF/6;
+	  
+	  cpu_res = sqrt(var);
+	  logger.info() << "result: variance";
+	  logger.info() << cpu_res;
+	}
+	
+	//The Kolmogorov_Smirnov test requires set of n samples with n around 1000
+	//(to big n and to small n are not good choices for this test)
+	//So we can consider each kernel result as a set (NUM_ELEMENTS_SF*6=1536 for a 4^4 lattice)
+	vector<vector<hmc_float>> samples;
+	vector<hmc_float> tmp;
+	vector<hmc_float> tmp2;
+	for(int i=0; i<iterations; i++){
+	  vector<hmc_float> tmp;
+	  for(int j=0; j<NUM_ELEMENTS_SF; j++){
+	    tmp2=reals_from_su3vec(sf_out[i*NUM_ELEMENTS_SF+j]);
+	    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
+	    tmp2.clear();
+	  }
+	  samples.push_back(tmp);
+	  tmp.clear();
+	}
+	logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
+	logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
+	
+	if(params.get_read_multiple_configs()==true){
+	  //Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
+	  //Note that in the test BOOST_CHECK is used.
+	  mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
+	  mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
+	  mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
+	}else{
+	  //Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
+	  //Note that in the test BOOST_CHECK is used.
+	  variance_test_multiple_set(samples,2.,sqrt(0.5));
+	  variance_test_multiple_set(samples,3.,sqrt(0.5));
+	  variance_test_multiple_set(samples,4.,sqrt(0.5));
+	}
+	
+	//Here we test if cpu_res is smaller than ref_value: in this case the test passes
+	testFloatSizeAgainstInputparameters(fabs(cpu_res), params);
+	BOOST_MESSAGE("Test done");
+}
 
 /* To be added...
  *
@@ -1076,66 +1149,6 @@ void test_sf_convert_from_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_gaussian(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "generate_gaussian_spinorfield";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-
-	physics::PRNG prng(system);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	//CP: run the kernel a couple of times times
-	int iterations = params.get_integrationsteps(0);
-
-	spinor * sf_out;
-	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
-	BOOST_REQUIRE(sf_out);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng.get_buffers().at(0);
-
-	hmc_float sum = 0;
-	for (int i = 0; i< iterations; i++){
-	  logger.info() << "Run kernel";
-	  device->generate_gaussian_spinorfield_device(&out, prng_buf);
-	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
-	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
-	}
-	logger.info() << "result: mean";
-	hmc_float cpu_res = 0.;
-	sum = sum/iterations/NUM_ELEMENTS_SF/24;	
-	cpu_res= sum;
-	logger.info() << cpu_res;
-
-	if(params.get_read_multiple_configs()  == false){
-	  //CP: calc std derivation
-	  hmc_float var=0.;
-	  for (int i=0; i<iterations; i++){
-	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
-	  }
-	  var=var/iterations/NUM_ELEMENTS_SF/24;
-	  
-	  cpu_res = sqrt(var);
-	  logger.info() << "result: variance";
-	  logger.info() << cpu_res;
-	}
-
-
-	testFloatSizeAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-
-}
 
 void test_sf_gaussian_eo(std::string inputfile)
 {
@@ -1694,7 +1707,29 @@ BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_34 )
 BOOST_AUTO_TEST_SUITE_END()
 
 
+BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN)
 
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_1 )
+{
+  test_sf_gaussian_staggered("/sf_gaussian_staggered_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_2 )
+{
+  test_sf_gaussian_staggered("/sf_gaussian_staggered_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_3 )
+{
+  test_sf_gaussian_staggered("/sf_gaussian_staggered_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_4 )
+{
+  test_sf_gaussian_staggered("/sf_gaussian_staggered_input_4");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 /* To be added...
  *
@@ -2129,19 +2164,6 @@ BOOST_AUTO_TEST_CASE( SF_CONVERT_EO_4 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN)
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_1 )
-{
-  test_sf_gaussian("/sf_gaussian_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_2 )
-{
-  test_sf_gaussian("/sf_gaussian_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN_EO)
 
