@@ -224,13 +224,17 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std:
 			// our lower halo is the upper bounary of our lower neighbour
 			// its storage location is wrapped around to be the last chunk of data in our buffer, that is after local data and upper halo
 			const size_t lower_i = lower_grid_neighbour(i, GRID_SIZE);
-			send_events[i] = send_halo(buffer, host_buffers[lower_i], VOL4D_LOCAL + HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[lower_i]);
+			send_events[lower_i] = send_halo(buffer, host_buffers[lower_i], VOL4D_LOCAL + HALO_CHUNK_ELEMS, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[lower_i]);
 			// our upper halo is the lower bounary of our upper neighbour, it's stored right after our local data
 			const size_t upper_i = upper_grid_neighbour(i, GRID_SIZE);
-			send_events[num_buffers + i] = send_halo(buffer, host_buffers[num_buffers + upper_i], VOL4D_LOCAL, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[num_buffers + upper_i]);
+			send_events[num_buffers + upper_i] = send_halo(buffer, host_buffers[num_buffers + upper_i], VOL4D_LOCAL, HALO_CHUNK_ELEMS, ELEMS_PER_SITE, CHUNKS_PER_LANE, extract_events[num_buffers + upper_i]);
 		}
 
-		hardware::wait(send_events);
+		// ensure that command queue are blocked until corresponding proxy buffer has been completely read by neighbouring device
+		for(size_t i = 0; i < num_buffers; ++i) {
+			auto device = buffers[i]->get_device();
+			device->enqueue_barrier(send_events[i], send_events[num_buffers + i]);
+		}
 	}
 }
 

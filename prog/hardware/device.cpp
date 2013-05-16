@@ -205,6 +205,24 @@ void hardware::Device::enqueue_marker(cl_event * event) const
 	}
 }
 
+void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event) const
+{
+	cl_event cl_event = event.raw();
+	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 1, &cl_event, 0);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueBarrier()", __FILE__, __LINE__);
+	}
+}
+
+void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event1, const hardware::SynchronizationEvent& event2) const
+{
+	cl_event cl_events[] = {event1.raw(), event2.raw()};
+	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 2, cl_events, 0);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueBarrier()", __FILE__, __LINE__);
+	}
+}
+
 static int get_alignment_badness(size_t bytes)
 {
 	// this is pretty generic for all GPUs

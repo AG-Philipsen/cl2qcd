@@ -113,6 +113,12 @@ public:
 	void enqueue_marker(cl_event *) const;
 
 	/**
+	 * Enqueue a barrier, preventing new jobs starting on this device until the given event finished
+	 */
+	void enqueue_barrier(const hardware::SynchronizationEvent& event) const;
+	void enqueue_barrier(const hardware::SynchronizationEvent& event1, const hardware::SynchronizationEvent& event2) const;
+
+	/**
 	 * Recommend a stride for the given number of elements of the given type
 	 *
 	 * \param elems      The number of elements to be stored
