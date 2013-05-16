@@ -159,20 +159,3 @@ void variance_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num
   //justification."
 }
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
