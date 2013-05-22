@@ -1,5 +1,5 @@
 /** @file
- * Declaration of the hardware::buffers::Spinor class
+ * Declaration of the hardware::buffers::SU3vec class
  *
  * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
@@ -13,23 +13,20 @@
 namespace hardware {
 namespace buffers {
 
-//To be added... 
-#if 0
-  
 /**
- * Check whether Spinor should be stored SOA style on this device
+ * Check whether su3vec should be stored SOA style on this device
  */
-size_t check_Spinor_for_SOA(hardware::Device * device);
+size_t check_su3vec_for_SOA(hardware::Device * device);
 
 /**
- * Get the stride for an Spinor buffer of the given number of elements on the given device
+ * Get the stride for an su3vec buffer of the given number of elements on the given device
  */
-size_t get_Spinor_buffer_stride(size_t elems, Device * device);
+size_t get_su3vec_buffer_stride(size_t elems, Device * device);
 
 /*
- * A buffer storing Spinors on the device
+ * A buffer storing su3vec on the device
  */
-class Spinor : public Buffer {
+class SU3vec : public Buffer {
 
 public:
 	/**
@@ -39,14 +36,14 @@ public:
 	 * \param elems The size of the buffer in elements
 	 * \param device The device to locate the buffer on
 	 */
-	Spinor(size_t elems, Device * device);
+	SU3vec(size_t elems, Device * device);
 
 	/*
-	 * Spinor buffers cannot be copied
+	 * SU3vec buffers cannot be copied
 	 */
-	Spinor& operator=(const Spinor&) = delete;
-	Spinor(const Spinor&) = delete;
-	Spinor() = delete;
+	SU3vec& operator=(const SU3vec&) = delete;
+	SU3vec(const SU3vec&) = delete;
+	SU3vec() = delete;
 
 	/**
 	 * Load data from the given pointer into the buffer.
@@ -56,7 +53,7 @@ public:
 	 * \param elems Allows to limit the number of elements loaded from the given pointer
 	 * \param offset Allows to store the elements at the given offset into the buffer
 	 */
-	void load(const spinor *, size_t elems = 0, size_t offset = 0) const;
+	void load(const su3vec *, size_t elems = 0, size_t offset = 0) const;
 
 	/**
 	 * Store data from the buffer into the given pointer.
@@ -66,7 +63,7 @@ public:
 	 * \param elems Allows to limit the number of elements dumped to the given pointer
 	 * \param offset Allows to read the elements at the given offset into the buffer
 	 */
-	void dump(spinor *, size_t elems = 0, size_t offset = 0) const;
+	void dump(su3vec *, size_t elems = 0, size_t offset = 0) const;
 
 	/**
 	 * Load raw data from the given pointer into the buffer.
@@ -134,8 +131,6 @@ private:
 	 */
 	const bool soa;
 };
-
-#endif
 }
 }
 
