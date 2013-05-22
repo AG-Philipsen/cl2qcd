@@ -27,6 +27,10 @@ public:
 
 	virtual ~Spinors_staggered();
 
+	/*********************************************************************************************/
+	/**************************  NON EVEN-ODD PRECONDITIONING METHODS  ***************************/
+	/*********************************************************************************************/
+	
 	/////////////////////////////////////////////
 	//        Fields algebra operations        //
 	/////////////////////////////////////////////
@@ -125,6 +129,37 @@ public:
 	 */
 	void set_gaussian_spinorfield_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::PRNGBuffer * prng) const;
 	
+	
+	/*********************************************************************************************/
+	/****************************  EVEN-ODD PRECONDITIONING METHODS  *****************************/
+	/*********************************************************************************************/
+	
+	/////////////////////////////////////////////
+	//        Fields algebra operations        //
+	/////////////////////////////////////////////
+	
+	
+	
+	//////////////////////////////////
+	//      Algebra operations      //
+	//////////////////////////////////
+	
+	
+	
+	//////////////////////////////////
+	//      Setting operations      //
+	//////////////////////////////////
+	
+	/**
+	 * This function sets to zero a staggered field with even-odd preconditioning
+	 * @param x The field to be set to zero 
+	 */
+	//void set_zero_spinorfield_eoprec_device(const hardware::buffers::Spinor * x) const;
+	
+	/*********************************************************************************************/
+	/************************************  GENERAL METHODS  **************************************/
+	/*********************************************************************************************/
+	
 	//////////////////////////////////////////
 	//      Complex numbers operations      //
 	//////////////////////////////////////////
@@ -199,6 +234,10 @@ private:
 
 	ClSourcePackage basic_fermion_code;
 
+	/******************************************************/
+	/*******  NON EVEN-ODD PRECONDITIONING KERNELS  *******/
+	/******************************************************/
+	
 	//Scalar Product
 	cl_kernel scalar_product_stagg;
 	cl_kernel scalar_product_reduction_stagg;
@@ -212,19 +251,57 @@ private:
 	cl_kernel set_cold_spinorfield_stagg;
 	cl_kernel set_gaussian_spinorfield_stagg;
 	
-	//Operations between complex numbers
-	cl_kernel convert_stagg;
-	cl_kernel ratio_stagg;
-	cl_kernel product_stagg;
-	
 	//Algebra on staggered fields
 	cl_kernel sax_stagg;
 	cl_kernel saxpy_stagg;
 	cl_kernel saxpbypz_stagg;
 	
+	/******************************************************/
+	/*******  NON EVEN-ODD PRECONDITIONING KERNELS  *******/
+	/******************************************************/
+	
+	//Scalar Product
+	
+	
+	//Squarenorm
+	
+	
+	//Setting field
+	cl_kernel set_zero_spinorfield_stagg_eoprec;
+	
+	//Algebra on staggered fields
+	
+	
+	/******************************************************/
+	/****************  GENERAL KERNELS  *******************/
+	/******************************************************/
+	
+	//Operations between complex numbers
+	cl_kernel convert_stagg;
+	cl_kernel ratio_stagg;
+	cl_kernel product_stagg;
+	
+	
+	
+	
 	/* To be added...
 	
-	cl_kernel saxpy_arg_stagg; //I would not implement this at first. So far, alpha as buffer everywhere.
+	cl_kernel convert_from_eoprec;
+	cl_kernel convert_to_eoprec;
+	
+	cl_kernel scalar_product_stagg_eoprec;
+	cl_kernel global_squarenorm_stagg_eoprec;
+	
+	cl_kernel set_cold_spinorfield_stagg_eoprec;
+	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
+	
+	cl_kernel sax_stagg_eoprec;
+	cl_kernel saxpy_stagg_eoprec;
+	cl_kernel saxpbypz_stagg_eoprec;
+	
+	//I would not implement these at first. So far, alpha as buffer everywhere.
+	cl_kernel saxpy_arg_stagg; 
+	cl_kernel saxpy_arg_stagg_eoprec;
 	
 	*/
 
