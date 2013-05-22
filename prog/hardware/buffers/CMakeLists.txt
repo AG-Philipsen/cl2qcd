@@ -13,6 +13,7 @@ add_library(buffers
 	spinor.cpp
 	gaugemomentum.cpp
 	3x3.cpp
+	su3vec.cpp
 )
 target_link_libraries(buffers
 	hardware
@@ -31,3 +32,4 @@ add_unit_test(hardware::buffers::Plain plain_test)
 add_unit_test(hardware::buffers::Spinor spinor_test)
 add_unit_test(hardware::buffers::Gaugemomentum gaugemomentum_test)
 add_unit_test(hardware::buffers::Matrix3x3 3x3_test)
+add_unit_test(hardware::buffers::SU3vec su3vec_test)
