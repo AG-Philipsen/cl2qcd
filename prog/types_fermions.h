@@ -41,8 +41,10 @@ typedef struct {
  */
 #ifdef _USE_SOA_
 typedef hmc_complex spinorStorageType;
+typedef hmc_complex staggeredStorageType;
 #else
 typedef spinor spinorStorageType;
+typedef su3vec staggeredStorageType;
 #endif
 
 #endif /* _TYPES_FERMIONSH_ */
