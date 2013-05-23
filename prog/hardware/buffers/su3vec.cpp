@@ -73,7 +73,7 @@ void hardware::buffers::SU3vec::dump(su3vec * ptr, size_t elems, size_t offset) 
 	if(is_soa()) {
 		auto device = get_device();
 		Plain<su3vec> plain(get_elements(), device);
-		device->get_spinor_code()->convert_staggered_field_from_SoA_eo_device(&plain, this);
+		device->get_spinor_staggered_code()->convert_staggered_field_from_SoA_eo_device(&plain, this);
 		plain.dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
 	} else {
 		Buffer::dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));

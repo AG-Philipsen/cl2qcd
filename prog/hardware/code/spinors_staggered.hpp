@@ -24,6 +24,7 @@ namespace code {
 class Spinors_staggered : public Opencl_Module {
 public:
 	friend hardware::Device;
+	friend hardware::buffers::SU3vec;
 
 	virtual ~Spinors_staggered();
 
