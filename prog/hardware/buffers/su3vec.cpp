@@ -55,34 +55,34 @@ bool hardware::buffers::SU3vec::is_soa() const noexcept
 	return soa;
 }
 
-/*To be added...
-  Remark that we have to write the convertSpinorfieldFromSOA_eo_device and convertSpinorfieldToSOA_eo_device
-  functions in the Spinors_staggered class in hardware::code
-
-void hardware::buffers::Spinor::load(const spinor * ptr, size_t elems, size_t offset) const
+void hardware::buffers::SU3vec::load(const su3vec * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
-		Plain<spinor> plain(get_elements(), device);
-		plain.load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
-		device->get_spinor_code()->convertSpinorfieldToSOA_eo_device(this, &plain);
+		Plain<su3vec> plain(get_elements(), device);
+		plain.load(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
+		device->get_spinor_staggered_code()->convert_staggered_field_to_SoA_eo_device(this, &plain);
 		device->synchronize();
 	} else {
-		Buffer::load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
+		Buffer::load(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
 	}
 }
 
-void hardware::buffers::Spinor::dump(spinor * ptr, size_t elems, size_t offset) const
+void hardware::buffers::SU3vec::dump(su3vec * ptr, size_t elems, size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
-		Plain<spinor> plain(get_elements(), device);
-		device->get_spinor_code()->convertSpinorfieldFromSOA_eo_device(&plain, this);
-		plain.dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
+		Plain<su3vec> plain(get_elements(), device);
+		device->get_spinor_code()->convert_staggered_field_from_SoA_eo_device(&plain, this);
+		plain.dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
 	} else {
-		Buffer::dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
+		Buffer::dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
 	}
 }
+
+
+
+/*To be added...
 
 void hardware::buffers::Spinor::load_raw(const void * ptr, size_t bytes, size_t offset) const
 {
