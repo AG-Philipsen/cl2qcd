@@ -233,11 +233,29 @@ private:
 	void clear_kernels();
 
 	//Functionalities to switch from AoS to SoA and viceversa
-	
 	cl_kernel convert_staggered_field_to_SoA_eo;
 	cl_kernel convert_staggered_field_from_SoA_eo;
 
+	/**
+	 * This function reads a staggered field wrote in the AoS fashion
+	 * and returns the same field wrote in the SoA fashion. Of course,
+	 * in the SoA way, all first components of the su3vec are before the
+	 * second, that are before the third.
+	 * @param out The staggered field wrote in the SoA way
+	 * @param in The staggered field wrote in the AoS way
+	 * 
+	 * @NOTE The input buffer is Plain and the output buffer will be SU3vec.
+	 */
 	void convert_staggered_field_to_SoA_eo_device(const hardware::buffers::SU3vec * out, const hardware::buffers::Plain<su3vec> * in) const;
+	
+	/**
+	 * This function reads a staggered field wrote in the SoA fashion
+	 * and returns the same field wrote in the AoS fashion. 
+	 * @param out The staggered field wrote in the AoS way
+	 * @param in The staggered field wrote in the SoA way
+	 * 
+	 * @NOTE The input buffer is of SU3vec type, while the output buffer will be Plain.
+	 */
 	void convert_staggered_field_from_SoA_eo_device(const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3vec * in) const;
 	
 	//Source for kernels
