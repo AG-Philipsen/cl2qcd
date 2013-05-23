@@ -26,8 +26,8 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
 	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(local_size);
 	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
-	if(check_Spinor_for_SOA(device)) {
-		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
+	if(check_su3vec_for_SOA(device)) {
+		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_su3vec_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
 	}
 
 	return options.str();
