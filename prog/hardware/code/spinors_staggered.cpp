@@ -59,8 +59,10 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	/////////// EVEN-ODD PRECONDITIONING ////////////
 	/////////////////////////////////////////////////
 	if(get_parameters().get_use_eo()){
+	  //Include functionalities in basic_fermion_code
+	  basic_fermion_code = basic_fermion_code << "spinorfield_staggered_eo.cl";
 	  //Functionalities to switch from AoS to SoA and viceversa
-	  convert_staggered_field_to_SoA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
+	  convert_staggered_field_to_SoA_eo = createKernel("convert_staggered_field_to_SoA_eo") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
 	  convert_staggered_field_from_SoA_eo = createKernel("convert_staggered_field_from_SoA_eo") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
 	  
 	}
@@ -122,7 +124,7 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	   /*|| kernel == generate_gaussian_spinorfield_eo*/) {
 		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
 			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
-			logger.error() << "I changed gs without changing neither ls nor num_groups (in Spinors_staggered::get_work_sizes)!!!";
+			logger.debug() << "I changed gs without changing neither ls nor num_groups (in Spinors_staggered::get_work_sizes)!!!";
 		}
 	}
 	

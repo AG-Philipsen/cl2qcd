@@ -12,12 +12,10 @@ inline su3vec get_su3vec_from_field_eo(__global const staggeredStorageType * con
 {
 #ifdef _USE_SOA_
 	return (su3vec) {
-		{
-			// su3vec = 3 * cplx
-			in[ 0 * EOPREC_SPINORFIELD_STRIDE + idx],
-			in[ 1 * EOPREC_SPINORFIELD_STRIDE + idx],
-			in[ 2 * EOPREC_SPINORFIELD_STRIDE + idx]
-		}
+		// su3vec = 3 * cplx
+		in[ 0 * EOPREC_SPINORFIELD_STRIDE + idx],
+		in[ 1 * EOPREC_SPINORFIELD_STRIDE + idx],
+		in[ 2 * EOPREC_SPINORFIELD_STRIDE + idx]
 	};
 #else
 	return in[idx];
