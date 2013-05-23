@@ -7,7 +7,7 @@
 #include "opencl_module.hpp"
 
 #include "../buffers/plain.hpp"
-#include "../buffers/spinor.hpp"
+#include "../buffers/su3vec.hpp"
 #include "../buffers/prng_buffer.hpp"
 
 namespace hardware {
@@ -232,6 +232,15 @@ private:
 	 */
 	void clear_kernels();
 
+	//Functionalities to switch from AoS to SoA and viceversa
+	
+	cl_kernel convert_staggered_field_to_SoA_eo;
+	cl_kernel convert_staggered_field_from_SoA_eo;
+
+	void convert_staggered_field_to_SoA_eo_device(const hardware::buffers::SU3vec * out, const hardware::buffers::Plain<su3vec> * in) const;
+	void convert_staggered_field_from_SoA_eo_device(const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3vec * in) const;
+	
+	//Source for kernels
 	ClSourcePackage basic_fermion_code;
 
 	/******************************************************/
