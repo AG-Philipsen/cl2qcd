@@ -14,3 +14,6 @@ target_link_libraries(dslash_benchmark optimal)
 
 add_executable(hmc_benchmarks hmc_benchmarks.cpp)
 target_link_libraries(hmc_benchmarks optimal)
+
+add_executable(dslash_multidev dslash_multidev.cpp)
+target_link_libraries(dslash_multidev optimal)
