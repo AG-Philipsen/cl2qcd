@@ -24,7 +24,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options.precision(16);
 	options << "-D _FERMIONS_";
 	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
-	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(local_size);
+	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << get_eoprec_spinorfieldsize(local_size);
 	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
 	if(check_su3vec_for_SOA(device)) {
 		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_su3vec_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
@@ -453,7 +453,7 @@ void hardware::code::Spinors_staggered::convert_staggered_field_to_SoA_eo_device
 
 	clerr = clSetKernelArg(convert_staggered_field_to_SoA_eo, 1, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
+	
 	get_device()->enqueue_kernel(convert_staggered_field_to_SoA_eo, gs2, ls2);
 }
 
