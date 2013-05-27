@@ -155,7 +155,14 @@ public:
 	 * This function sets to zero a staggered field with even-odd preconditioning
 	 * @param x The field to be set to zero 
 	 */
-	//void set_zero_spinorfield_eoprec_device(const hardware::buffers::Spinor * x) const;
+	void set_zero_spinorfield_eoprec_device(const hardware::buffers::SU3vec * x) const;
+	
+	/**
+	 * This function sets to 1 a staggered field and normalizes it (i.e. all its su3vec
+	 * are set to 1./(sqrt(3*VOL4D_GLOBAL))
+	 * @param x The field to be set to one and normalized 
+	 */
+	void set_cold_spinorfield_eoprec_device(const hardware::buffers::SU3vec * x) const;
 	
 	/*********************************************************************************************/
 	/************************************  GENERAL METHODS  **************************************/
@@ -296,6 +303,7 @@ private:
 	
 	//Setting field
 	cl_kernel set_zero_spinorfield_stagg_eoprec;
+	cl_kernel set_cold_spinorfield_stagg_eoprec;
 	
 	//Algebra on staggered fields
 	
@@ -320,7 +328,6 @@ private:
 	cl_kernel scalar_product_stagg_eoprec;
 	cl_kernel global_squarenorm_stagg_eoprec;
 	
-	cl_kernel set_cold_spinorfield_stagg_eoprec;
 	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
 	
 	cl_kernel sax_stagg_eoprec;
