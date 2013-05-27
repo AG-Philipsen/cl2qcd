@@ -779,7 +779,7 @@ void test_sf_cold_staggered_eo(std::string inputfile, bool switcher)
 	  device->set_zero_spinorfield_eoprec_device(&in);
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	//device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 
@@ -1783,7 +1783,7 @@ BOOST_AUTO_TEST_SUITE(SF_COLD_EO)
 
 BOOST_AUTO_TEST_CASE( SF_COLD_EO_1 )
 {
-	test_sf_cold_staggered_eo("/sf_cold_eo_input_1", true);
+	test_sf_cold_staggered_eo("/sf_set_cold_staggered_eo_input_1", true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1793,7 +1793,7 @@ BOOST_AUTO_TEST_SUITE(SF_ZERO_EO)
 
 BOOST_AUTO_TEST_CASE( SF_ZERO_EO_1 )
 {
-  test_sf_cold_staggered_eo("/sf_zero_eo_input_1",  false);
+  test_sf_cold_staggered_eo("/sf_set_zero_staggered_eo_input_1",  false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
