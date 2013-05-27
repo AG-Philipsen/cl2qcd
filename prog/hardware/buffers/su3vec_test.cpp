@@ -15,7 +15,6 @@
 #include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
 
-/* To be added...
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -25,7 +24,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	System system(meta::Inputparameters(0, 0));
 for(Device * device : system.get_devices()) {
 
-		Spinor dummy(meta::get_vol4d(system.get_inputparameters()), device);
+		SU3vec dummy(meta::get_vol4d(system.get_inputparameters()), device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -40,9 +39,9 @@ BOOST_AUTO_TEST_CASE(import_export)
 	System system(meta::Inputparameters(0, 0));
 	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
 for(Device * device : system.get_devices()) {
-		spinor* buf = new spinor[elems];
-		spinor* buf2 = new spinor[elems];
-		Spinor dummy(elems, device);
+		su3vec* buf = new su3vec[elems];
+		su3vec* buf2 = new su3vec[elems];
+		SU3vec dummy(elems, device);
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);
 		dummy.load(buf);
@@ -61,10 +60,10 @@ BOOST_AUTO_TEST_CASE(copy)
 	System system(meta::Inputparameters(0, 0));
 	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
 for(Device * device : system.get_devices()) {
-		spinor* buf = new spinor[elems];
-		spinor* buf2 = new spinor[elems];
-		Spinor dummy(elems, device);
-		Spinor dummy2(elems, device);
+		su3vec* buf = new su3vec[elems];
+		su3vec* buf2 = new su3vec[elems];
+		SU3vec dummy(elems, device);
+		SU3vec dummy2(elems, device);
 
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);
@@ -77,6 +76,3 @@ for(Device * device : system.get_devices()) {
 		delete[] buf2;
 	}
 }
-
-
-*/
