@@ -954,7 +954,7 @@ uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 		return S * ( 3 + 24);
 	}
 	if (in == "set_eoprec_spinorfield_cold") {
-		//this kernel performs 1. / sqrt((12.f * VOL4D/2)) and real_multiply_spinor for each site
+		//this kernel performs 1. / sqrt((12.f * VOL4D)) and real_multiply_spinor for each site
 		return Seo * ( 3 + 24);
 	}
 	if (in == "convert_from_eoprec") {
