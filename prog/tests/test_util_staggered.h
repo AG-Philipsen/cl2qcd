@@ -310,6 +310,26 @@ void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta:
   file.close();
 }
 
+void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf, meta::Inputparameters params)
+{
+  int nt=params.get_ntime();
+  int ns=params.get_nspace();
+  if(ns!=nt){
+    logger.fatal() << "The lattice must be isotropic to call the function print_staggeredfield_to_textfile(...)!";
+    abort();
+  }
+  //sf     is the su3vec array ordered with the "even-odd superindex scheme"                                                                     
+  //sf_new is the su3vec array in the right order (ref. code scheme) to be written to the file
+  // ======> hence sf_new is in this case equal to sf that contain the values of the field only in
+  //         even (or odd) sites
+  //We can write sf directly to the file 
+  std::ofstream file(outputfile.c_str());
+  file << ns << " " << ns << " " << ns << " " << nt << std::endl;
+  for(int i=0; i<ns*ns*ns*nt/2; i++)
+    file << su3vec_to_string(sf[i]);
+  file.close();
+}
+
 /**
  * Function that returns a vector with the 6 real number contained in an su3vec
  */
