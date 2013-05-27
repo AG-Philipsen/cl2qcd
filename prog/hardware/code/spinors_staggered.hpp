@@ -145,21 +145,28 @@ public:
 	//      Algebra operations      //
 	//////////////////////////////////
 	
-	
+	/**
+	 * This function performs a complete reduction, calculating the sum of squarenorms
+	 * of the staggered field with EVEN-ODD preconditioning.
+	 * It uses the "global_squarenorm_reduction" function.
+	 * @param a The staggered field (one su3vec per site)
+	 * @param out The result of the reduction
+	 */
+	void set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::Plain<hmc_float> * out) const;
 	
 	//////////////////////////////////
 	//      Setting operations      //
 	//////////////////////////////////
 	
 	/**
-	 * This function sets to zero a staggered field with even-odd preconditioning
+	 * This function sets to zero a staggered field with even-odd preconditioning.
 	 * @param x The field to be set to zero 
 	 */
 	void set_zero_spinorfield_eoprec_device(const hardware::buffers::SU3vec * x) const;
 	
 	/**
 	 * This function sets to 1 a staggered field and normalizes it (i.e. all its su3vec
-	 * are set to 1./(sqrt(3*VOL4D_GLOBAL))
+	 * are set to 1./(sqrt(3*VOL4D_GLOBAL)).
 	 * @param x The field to be set to one and normalized 
 	 */
 	void set_cold_spinorfield_eoprec_device(const hardware::buffers::SU3vec * x) const;
@@ -299,7 +306,7 @@ private:
 	
 	
 	//Squarenorm
-	
+	cl_kernel global_squarenorm_stagg_eoprec;
 	
 	//Setting field
 	cl_kernel set_zero_spinorfield_stagg_eoprec;
@@ -326,7 +333,6 @@ private:
 	cl_kernel convert_to_eoprec;
 	
 	cl_kernel scalar_product_stagg_eoprec;
-	cl_kernel global_squarenorm_stagg_eoprec;
 	
 	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
 	
