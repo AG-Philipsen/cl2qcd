@@ -9,7 +9,7 @@ solver=bicgstab
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=507.95319890679621722
+test_ref_val=260.72409295932851592
 
 #This imput file must not be modified!
 

@@ -736,6 +736,14 @@ void test_sf_squarenorm_staggered_eo(std::string inputfile)
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 	
+	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
+        //---> Comment them out when the reference values have been obtained! 
+        /*
+        print_staggeredfield_eo_to_textfile("ref_vec_sq_eo",sf_in,params); 
+        logger.info() << "Produced the ref_vec_sq_eo text file with the staggered field for the ref. code. Returning...";   
+        return;
+	// */
+	
 	logger.warn() << "Before loading in SU3vec...";
 	in.load(sf_in);
 	logger.warn() << "After  loading in SU3vec...";
