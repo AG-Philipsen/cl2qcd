@@ -202,6 +202,27 @@ public:
 	 */
 	void set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
 	
+	//////////////////////////////////////////
+	//     Conversions eo to/from non eo    //
+	//////////////////////////////////////////
+	
+	/**
+	 * This function reconstructs a field on the whole lattice from
+	 * the fields on the even and on the odd sites
+	 * @param even The staggered field on even sites
+	 * @param odd The staggered field on odd sites
+	 * @param out The staggered field on the whole lattice
+	 */
+	void convert_from_eoprec_device(const hardware::buffers::SU3vec * even, const hardware::buffers::SU3vec * odd, const hardware::buffers::Plain<su3vec> * out) const;
+	
+	/**
+	 * This function splits a field on the whole lattice into
+	 * two fields on the even and on the odd sites
+	 * @param in The staggered field on the whole lattice to be splitted
+	 * @param even The staggered field on even sites
+	 * @param odd The staggered field on odd sites
+	 */
+	void convert_to_eoprec_device(const hardware::buffers::SU3vec * even, const hardware::buffers::SU3vec * odd, const hardware::buffers::Plain<su3vec> * in) const;
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 	/**
@@ -299,7 +320,7 @@ private:
 	cl_kernel saxpbypz_stagg;
 	
 	/******************************************************/
-	/*******  NON EVEN-ODD PRECONDITIONING KERNELS  *******/
+	/*******    EVEN-ODD PRECONDITIONING KERNELS    *******/
 	/******************************************************/
 	
 	//Scalar Product
@@ -324,13 +345,11 @@ private:
 	cl_kernel ratio_stagg;
 	cl_kernel product_stagg;
 	
-	
-	
+	//Conversion from even-odd preconditioning to non even-odd and viceversa
+	cl_kernel convert_from_eoprec_stagg;
+	cl_kernel convert_to_eoprec_stagg;
 	
 	/* To be added...
-	
-	cl_kernel convert_from_eoprec;
-	cl_kernel convert_to_eoprec;
 	
 	cl_kernel scalar_product_stagg_eoprec;
 	

@@ -1,6 +1,5 @@
-/*
 //eoprec operations
-__kernel void convert_to_eoprec(__global spinor * const restrict even, __global spinor * const restrict odd, __global spinor const * const restrict in)
+__kernel void convert_to_eoprec_staggered(__global su3vec * const restrict even, __global su3vec * const restrict odd, __global su3vec const * const restrict in)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -14,7 +13,7 @@ __kernel void convert_to_eoprec(__global spinor * const restrict even, __global 
 	return;
 }
 
-__kernel void convert_from_eoprec(__global spinor const * const restrict even, __global spinor const * const restrict odd, __global spinor * const restrict out)
+__kernel void convert_from_eoprec_staggered(__global su3vec const * const restrict even, __global su3vec const * const restrict odd, __global su3vec * const restrict out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -27,7 +26,6 @@ __kernel void convert_from_eoprec(__global spinor const * const restrict even, _
 	}
 	return;
 }
-*/
 
 __kernel void convert_staggered_field_to_SoA_eo(__global staggeredStorageType * const restrict out, __global const su3vec * const restrict in)
 {

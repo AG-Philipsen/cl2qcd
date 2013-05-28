@@ -59,18 +59,21 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	/////////// EVEN-ODD PRECONDITIONING ////////////
 	/////////////////////////////////////////////////
 	if(get_parameters().get_use_eo()){
-	  //Include functionalities in basic_fermion_code
-	  basic_fermion_code = basic_fermion_code << "spinorfield_staggered_eo.cl";
-	  //Functionalities to switch from AoS to SoA and viceversa
-	  convert_staggered_field_to_SoA_eo = createKernel("convert_staggered_field_to_SoA_eo") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
-	  convert_staggered_field_from_SoA_eo = createKernel("convert_staggered_field_from_SoA_eo") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
-	  //Squarenorm
-	  global_squarenorm_stagg_eoprec = createKernel("global_squarenorm_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_squarenorm.cl";
-	  //Scalar Product
-	  //Setting fields
-	  set_zero_spinorfield_stagg_eoprec = createKernel("set_zero_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_zero.cl";
-	  set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
-	  //Fields algebra operations
+		//Include functionalities in basic_fermion_code
+		basic_fermion_code = basic_fermion_code << "spinorfield_staggered_eo.cl";
+		//Functionalities to convert eo from/to non eo
+		convert_from_eoprec_stagg = createKernel("convert_from_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
+		convert_to_eoprec_stagg = createKernel("convert_to_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
+		//Functionalities to switch from AoS to SoA and viceversa
+		convert_staggered_field_to_SoA_eo = createKernel("convert_staggered_field_to_SoA_eo") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
+		convert_staggered_field_from_SoA_eo = createKernel("convert_staggered_field_from_SoA_eo") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
+		//Squarenorm
+		global_squarenorm_stagg_eoprec = createKernel("global_squarenorm_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_squarenorm.cl";
+		//Scalar Product
+		//Setting fields
+		set_zero_spinorfield_stagg_eoprec = createKernel("set_zero_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_zero.cl";
+		set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
+		//Fields algebra operations
 	}
 }
 
@@ -112,21 +115,26 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	/////////// EVEN-ODD PRECONDITIONING ////////////
 	/////////////////////////////////////////////////
 	if(get_parameters().get_use_eo()){
-	  //Functionalities to switch from AoS to SoA and viceversa
-	  clerr = clReleaseKernel(convert_staggered_field_to_SoA_eo);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	  clerr = clReleaseKernel(convert_staggered_field_from_SoA_eo);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	  //Squarenorm
-	  clerr = clReleaseKernel(global_squarenorm_stagg_eoprec);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	  //Scalar Product
-	  //Setting fields
-	  clerr = clReleaseKernel(set_zero_spinorfield_stagg_eoprec);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	  clerr = clReleaseKernel(set_cold_spinorfield_stagg_eoprec);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	  //Fields algebra operations
+		//Functionalities to convert eo from/to non eo
+		clerr = clReleaseKernel(convert_from_eoprec_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(convert_to_eoprec_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		//Functionalities to switch from AoS to SoA and viceversa
+		clerr = clReleaseKernel(convert_staggered_field_to_SoA_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(convert_staggered_field_from_SoA_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		//Squarenorm
+		clerr = clReleaseKernel(global_squarenorm_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		//Scalar Product
+		//Setting fields
+		clerr = clReleaseKernel(set_zero_spinorfield_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(set_cold_spinorfield_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		//Fields algebra operations
 	}
 }
 
@@ -480,6 +488,117 @@ void hardware::code::Spinors_staggered::convert_staggered_field_from_SoA_eo_devi
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void hardware::code::Spinors_staggered::convert_from_eoprec_device(const hardware::buffers::SU3vec * in1, const hardware::buffers::SU3vec * in2, const hardware::buffers::Plain<su3vec> * out) const
+{
+	using namespace hardware::buffers;
+
+	const size_4 mem_size = get_device()->get_mem_lattice_size();
+
+	// check buffer sizes
+	const size_t in_size = in1->get_elements();
+	if(in_size != get_eoprec_spinorfieldsize(mem_size) || in2->get_elements() != in_size) {
+		throw std::invalid_argument("input buffers must be of size VOL4D / 2");
+	}
+	const size_t out_size = out->get_elements();
+	if(out_size != get_spinorfieldsize(mem_size)) {
+		throw std::invalid_argument("output buffer must be of size VOL4D");
+	}
+
+	const hardware::buffers::Buffer * tmp1, * tmp2;
+	if(in1->is_soa()) {
+		Plain<su3vec> * tmp = new Plain<su3vec>(in_size, get_device());
+		convert_staggered_field_from_SoA_eo_device(tmp, in1);
+		tmp1 = tmp;
+	} else {
+		tmp1 = in1;
+	}
+	if(in2->is_soa()) {
+		Plain<su3vec> * tmp = new Plain<su3vec>(in_size, get_device());
+		convert_staggered_field_from_SoA_eo_device(tmp, in2);
+		tmp2 = tmp;
+	} else {
+		tmp2 = in2;
+	}
+
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convert_from_eoprec_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_from_eoprec_stagg, 0, sizeof(cl_mem), tmp1->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convert_from_eoprec_stagg, 1, sizeof(cl_mem), tmp2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convert_from_eoprec_stagg, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(convert_from_eoprec_stagg, gs2, ls2);
+
+	if(tmp1 != in1) {
+		delete tmp1;
+	}
+	if(tmp2 != in2) {
+		delete tmp2;
+	}
+}
+
+void hardware::code::Spinors_staggered::convert_to_eoprec_device(const hardware::buffers::SU3vec * out1, const hardware::buffers::SU3vec * out2, const hardware::buffers::Plain<su3vec> * in) const
+{
+	using namespace hardware::buffers;
+
+	const size_4 mem_size = get_device()->get_mem_lattice_size();
+
+	// check buffer sizes
+	const size_t out_size = out1->get_elements();
+	if(out_size != get_eoprec_spinorfieldsize(mem_size) || out2->get_elements() != out_size) {
+		throw std::invalid_argument("output buffers must be of size VOL4D / 2");
+	}
+	const size_t in_size = in->get_elements();
+	if(in_size != get_spinorfieldsize(mem_size)) {
+		throw std::invalid_argument("input buffer must be of size VOL4D");
+	}
+
+	const hardware::buffers::Buffer * tmp1, * tmp2;
+	if(out1->is_soa()) {
+		tmp1 = new Plain<su3vec>(out_size, get_device());
+	} else {
+		tmp1 = out1;
+	}
+	if(out2->is_soa()) {
+		tmp2 = new Plain<su3vec>(out_size, get_device());
+	} else {
+		tmp2 = out2;
+	}
+
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convert_to_eoprec_stagg, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_to_eoprec_stagg, 0, sizeof(cl_mem), tmp1->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convert_to_eoprec_stagg, 1, sizeof(cl_mem), tmp2->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convert_to_eoprec_stagg, 2, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(convert_to_eoprec_stagg , gs2, ls2);
+
+	if(out1->is_soa()) {
+		convert_staggered_field_to_SoA_eo_device(out1, static_cast<const Plain<su3vec> *>(tmp1));
+		delete tmp1;
+	}
+	if(out2->is_soa()) {
+		convert_staggered_field_to_SoA_eo_device(out2, static_cast<const Plain<su3vec> *>(tmp2));
+		delete tmp2;
+	}
+}
+
+
 void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::Plain<hmc_float> * out) const
 {
 	//query work-sizes for kernel
@@ -634,17 +753,27 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel reads 1 su3vec and writes 1 su3vec per site (eo)
 		return C * Seo * D * NC * (1 + 1);
 	}
+	if (in == "convert_from_eoprec_staggered") {
+		//this kernel reads 2 su3vec and writes 2 su3vec per site (eo)
+		//(actually it write 1 su3vec per site but on the whole lattice so 2*Seo)
+		return C * NC * D * Seo * (2 + 2);
+	}
+	if (in == "convert_to_eoprec_staggered") {
+		//this kernel reads 2 su3vec and writes 2 su3vec per site (eo)
+		//(actually it reads 1 su3vec per site but on the whole lattice so 2*Seo)
+		return C * NC * D * Seo * (2 + 2);
+	}
 	if (in == "global_squarenorm_eoprec") {
-		//this kernel reads 1 spinor and writes 1 real number
+		//this kernel reads 1 su3vec and writes 1 real number (eo)
 		/// @NOTE: here, the local reduction is not taken into account
 		return D * Seo * (C * NC  + 1);
 	}
 	if (in == "set_zero_spinorfield_stagg_eoprec") {
-		//this kernel writes 1 spinor per site (eo)
+		//this kernel writes 1 su3vec per site (eo)
 		return C * NC * D * Seo;
 	}
 	if (in == "set_cold_spinorfield_stagg_eoprec") {
-		//this kernel writes 1 spinor per site (eo)
+		//this kernel writes 1 su3vec per site (eo)
 		return C * NC * D * Seo;
 	}
 	
@@ -718,9 +847,19 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		return S * (NC * 2 * ( meta::get_flop_complex_mult() + 2));
 	}
 	if(in == "convert_staggered_field_to_SoA_eo") {
+		//this kernel does not perform any flop, he just copies memory
 		return 0;
 	}
 	if(in == "convert_staggered_field_from_SoA_eo") {
+		//this kernel does not perform any flop, he just copies memory
+		return 0;
+	}
+	if (in == "convert_from_eoprec_staggered") {
+		//this kernel does not perform any flop, he just copies memory
+		return 0;
+	}
+	if (in == "convert_to_eoprec_staggered") {
+		//this kernel does not perform any flop, he just copies memory
 		return 0;
 	}
 	if (in == "global_squarenorm_stagg_eoprec") {
@@ -758,6 +897,8 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, saxpbypz_stagg);
 	Opencl_Module::print_profiling(filename, convert_staggered_field_to_SoA_eo);
 	Opencl_Module::print_profiling(filename, convert_staggered_field_from_SoA_eo);
+	Opencl_Module::print_profiling(filename, convert_from_eoprec_stagg);
+	Opencl_Module::print_profiling(filename, convert_from_eoprec_stagg);
 	Opencl_Module::print_profiling(filename, global_squarenorm_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg_eoprec);
