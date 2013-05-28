@@ -1,7 +1,7 @@
 // complex (!!!) scalarproduct, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
 
-// Description of variables of global_squarenorm_staggered kernel:
+// Description of variables of scalar_product_staggered kernel:
 //  - x: The first staggered field (an su3vec per each site => vector of VOL4D
 //       components that are su3vec varibles)
 //  - y: The second staggered field (an su3vec per each site => vector of VOL4D

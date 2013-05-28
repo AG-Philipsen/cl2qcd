@@ -154,6 +154,16 @@ public:
 	 */
 	void set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::Plain<hmc_float> * out) const;
 	
+	/**
+	 * This function calculates the complex scalarproduct of two staggered fields
+	 * with even-odd preconditioning that means the sum of the complex scalar product
+	 * of each su3vec per site (even or odd)
+	 * @param a The first staggered field (one su3vec per site even or odd)
+	 * @param b The second staggered field (one su3vec per site even or odd)
+	 * @param out The result of the scalarproduct
+	 */
+	void set_complex_to_scalar_product_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::SU3vec * b, const hardware::buffers::Plain<hmc_complex> * out) const;
+	
 	//////////////////////////////////
 	//      Setting operations      //
 	//////////////////////////////////
@@ -324,7 +334,7 @@ private:
 	/******************************************************/
 	
 	//Scalar Product
-	
+	cl_kernel scalar_product_stagg_eoprec;
 	
 	//Squarenorm
 	cl_kernel global_squarenorm_stagg_eoprec;
@@ -351,7 +361,7 @@ private:
 	
 	/* To be added...
 	
-	cl_kernel scalar_product_stagg_eoprec;
+	
 	
 	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
 	

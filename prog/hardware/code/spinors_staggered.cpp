@@ -70,6 +70,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		//Squarenorm
 		global_squarenorm_stagg_eoprec = createKernel("global_squarenorm_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_squarenorm.cl";
 		//Scalar Product
+		scalar_product_stagg_eoprec = createKernel("scalar_product_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_scalar_product.cl";
 		//Setting fields
 		set_zero_spinorfield_stagg_eoprec = createKernel("set_zero_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_zero.cl";
 		set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
@@ -129,6 +130,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		clerr = clReleaseKernel(global_squarenorm_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Scalar Product
+		clerr = clReleaseKernel(scalar_product_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Setting fields
 		clerr = clReleaseKernel(set_zero_spinorfield_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -171,7 +174,7 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	}
 	//Whenever ls id manually modified, it is crucial to modify num_groups accordingly!
 	if(kernel == global_squarenorm_stagg || kernel == scalar_product_stagg
-	   || kernel == global_squarenorm_stagg_eoprec /*|| kernel == scalar_product_eoprec */) {
+	   || kernel == global_squarenorm_stagg_eoprec || kernel == scalar_product_stagg_eoprec) {
 	  if(*ls > 64) {
 	    *ls = 64;
 	    *num_groups = (*gs)/(*ls);
@@ -623,6 +626,44 @@ void hardware::code::Spinors_staggered::set_float_to_global_squarenorm_eoprec_de
 }
 
 
+void hardware::code::Spinors_staggered::set_complex_to_scalar_product_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::SU3vec * b, const hardware::buffers::Plain<hmc_complex> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(scalar_product_stagg_eoprec, &ls2, &gs2, &num_groups);
+
+	hardware::buffers::Plain<hmc_complex> scalar_product_buf(num_groups, get_device());
+	assert(scalar_product_buf.get_elements() == num_groups);
+
+	//set arguments
+	int clerr = clSetKernelArg(scalar_product_stagg_eoprec, 0, sizeof(cl_mem), a->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(scalar_product_stagg_eoprec, 1, sizeof(cl_mem), b->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(scalar_product_stagg_eoprec, 2, sizeof(cl_mem), scalar_product_buf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(scalar_product_stagg_eoprec, 3, sizeof(hmc_complex) * ls2, static_cast<void*>(nullptr));
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( scalar_product_stagg_eoprec, gs2, ls2);
+
+	clerr = clSetKernelArg(scalar_product_reduction_stagg, 0, sizeof(cl_mem), scalar_product_buf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(scalar_product_reduction_stagg, 1, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(scalar_product_reduction_stagg, 2, sizeof(cl_uint), &num_groups);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(scalar_product_reduction_stagg, gs2, ls2);
+}
+
+
 void hardware::code::Spinors_staggered::set_zero_spinorfield_eoprec_device(const hardware::buffers::SU3vec * x) const
 {
 	//query work-sizes for kernel
@@ -763,10 +804,15 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//(actually it reads 1 su3vec per site but on the whole lattice so 2*Seo)
 		return C * NC * D * Seo * (2 + 2);
 	}
-	if (in == "global_squarenorm_eoprec") {
+	if (in == "global_squarenorm_staggered_eoprec") {
 		//this kernel reads 1 su3vec and writes 1 real number (eo)
 		/// @NOTE: here, the local reduction is not taken into account
 		return D * Seo * (C * NC  + 1);
+	}
+	if (in == "scalar_product_staggered_eoprec") {
+		//this kernel reads 2 su3vec and writes 1 complex number (eo)
+		/// @NOTE: here, the local reduction is not taken into account
+		return C * D * Seo * (2 * NC  + 1);
 	}
 	if (in == "set_zero_spinorfield_stagg_eoprec") {
 		//this kernel writes 1 su3vec per site (eo)
@@ -862,9 +908,13 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//this kernel does not perform any flop, he just copies memory
 		return 0;
 	}
-	if (in == "global_squarenorm_stagg_eoprec") {
-		//this kernel performs su3vec_squarenorm on each site and then adds Seo-1 complex numbers
+	if (in == "global_squarenorm_staggered_eoprec") {
+		//this kernel performs su3vec_squarenorm on each site (eo) and then adds Seo-1 complex numbers
 		return Seo * meta::get_flop_su3vec_sqnorm() + (Seo - 1) * 2;
+	}
+	if (in == "scalar_product_staggered_eoprec") {
+		//this kernel performs su3vec*su3vec on each site (eo) and then adds Seo-1 complex numbers
+		return Seo *  meta::get_flop_su3vec_su3vec() + (Seo - 1) * 2;
 	}
 	if (in == "set_zero_spinorfield_stagg_eoprec") {
 		//this kernel does not do any flop
@@ -900,6 +950,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, convert_from_eoprec_stagg);
 	Opencl_Module::print_profiling(filename, convert_from_eoprec_stagg);
 	Opencl_Module::print_profiling(filename, global_squarenorm_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, scalar_product_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg_eoprec);
 }
