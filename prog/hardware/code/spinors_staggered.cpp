@@ -85,6 +85,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		scalar_product_stagg_eoprec = 0;
 		set_zero_spinorfield_stagg_eoprec = 0;
 		set_cold_spinorfield_stagg_eoprec = 0;
+		sax_stagg_eoprec = 0;
 	}
 }
 
