@@ -1779,7 +1779,7 @@ BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_EO)
 
 BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_1 )
 {
-  test_sf_squarenorm_staggered_eo("/sf_squarenorm_staggered_input_1");
+  test_sf_squarenorm_staggered_eo("/sf_squarenorm_staggered_eo_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_2 )
