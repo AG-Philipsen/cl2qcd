@@ -1,4 +1,4 @@
-// Description of variables of saxpy:
+// Description of variables of saxsbypz:
 //  - x: The first input staggered field (an su3vec per each site => vector of VOL4D
 //       components that are su3vec varibles)
 //  - y: The second input staggered field (an su3vec per each site => vector of VOL4D
