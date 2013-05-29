@@ -456,7 +456,8 @@ void test_sf_saxpy_staggered(std::string inputfile, bool switcher)
 	if( switcher)
 	  kernelName = "saxpy_staggered";
 	else
-	  kernelName = "saxpy__staggered_arg";
+	  ;
+	  //kernelName = "saxpy_staggered_arg";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -1019,48 +1020,39 @@ void test_sf_sax_staggered_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-
-/* To be added...
- *
- *
-
-
-
-
-
-
-
-void test_sf_saxpy_eo(std::string inputfile, bool switcher)
+void test_sf_saxpy_staggered_eo(std::string inputfile, bool switcher)
 {
   //switcher chooses between saxpy and saxpy_arg kernel, which have the same functionality
+  //Observe that so far saxpy_stagg_arg doesn't exist, so switcher==false is a meaningless test
 	using namespace hardware::buffers;
 
 	std::string kernelName;
 	if( switcher)
-	  kernelName = "saxpy_eo";
+	  kernelName = "saxpy_staggered_eoprec";
 	else
-	  kernelName = "saxpy_eo_arg";
+	  ;
+	  //kernelName = "saxpy_staggered_eoprec_arg";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
+	const SU3vec in(NUM_ELEMENTS_SF, device->get_device());
+	const SU3vec in2(NUM_ELEMENTS_SF, device->get_device());
+	const SU3vec out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
 
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
 
-	spinor * sf_in;
-	spinor * sf_in2;
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_in2 = new spinor[NUM_ELEMENTS_SF];
+	su3vec * sf_in;
+	su3vec * sf_in2;
+	sf_in = new su3vec[NUM_ELEMENTS_SF];
+	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
 	//use the variable use_cg to switch between cold and random input sf
 	if(params.get_solver() == meta::Inputparameters::cg) {
 	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
@@ -1073,27 +1065,45 @@ void test_sf_saxpy_eo(std::string inputfile, bool switcher)
 	BOOST_REQUIRE(sf_in);
 	BOOST_REQUIRE(sf_in2);
 
+	//The following five lines are to be used to produce the ref_vec file needed to get the ref_value
+        //---> Comment them out when the reference values have been obtained! 
+        /*
+        print_staggeredfield_eo_to_textfile("ref_vec_saxpy1_eo",sf_in,params); 
+        logger.info() << "Produced the ref_vec_saxpy1_eo text file with the staggered field for the ref. code.";   
+        print_staggeredfield_eo_to_textfile("ref_vec_saxpy2_eo",sf_in2,params); 
+        logger.info() << "Produced the ref_vec_saxpy2_eo text file with the staggered field for the ref. code. Returning...";   
+        return;
+	// */
+	
 	in.load(sf_in);
 	in2.load(sf_in2);
 	alpha.load(&alpha_host);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
-
 	logger.info() << "Run kernel";
 	if (switcher)
 	  device->saxpy_eoprec_device(&in, &in2, &alpha, &out);
-	else
-	  device->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
+	else{
+	  logger.error() << "The kernel saxpy_stagg_arg doesn't exist yet, this is a meaningless test!";
+	  //device->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
+	}
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
+
+
+
+/* To be added...
+ *
+ *
+
+
 
 void test_sf_saxsbypz_eo(std::string inputfile)
 {
@@ -1913,7 +1923,99 @@ BOOST_AUTO_TEST_CASE( SF_SAX_EO_8 )
 BOOST_AUTO_TEST_SUITE_END()
 
 
+BOOST_AUTO_TEST_SUITE(SF_SAXPY_EO)
 
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_1 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_1", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_2 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_2", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_3 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_3", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_4 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_4", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_5 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_5", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_6 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_6", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_7 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_7", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_8 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_8", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_9 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_9", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_10 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_10", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_11 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_11", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_12 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_12", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_13 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_13", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_14 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_14", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_15 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_15", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_16 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_16", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_17 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_17", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_18 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_18", true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 /* To be added...
  *
