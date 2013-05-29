@@ -43,6 +43,7 @@ public:
 	 * @param out The output staggered field: alpha*x (one su3vec per site)
 	 */
 	void sax_device(const hardware::buffers::Plain<su3vec> * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<su3vec> * out) const;
+	
 	/**
 	 * This function returns the input staggered field x
 	 * multiplied by alpha and added to the other input staggered field y
@@ -145,6 +146,16 @@ public:
 	 * @param out The output staggered field: alpha*x (one su3vec per site even or odd)
 	 */
 	void sax_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const;
+	
+	/**
+	 * This function returns the input staggered field x multiplied by alpha
+	 * and added to the other input staggered field y (with even-odd preconditioning)
+	 * @param x The first input staggered field (one su3vec per site even or odd)
+	 * @param y The second input staggered field (one su3vec per site even or odd)
+	 * @param alpha The complex constant
+	 * @param out The output staggered field alpha*x + y (one su3vec per site even or odd)
+	 */
+	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const;	
 	
 	//////////////////////////////////
 	//      Algebra operations      //
@@ -346,6 +357,7 @@ private:
 	
 	//Algebra on staggered fields
 	cl_kernel sax_stagg_eoprec;
+	cl_kernel saxpy_stagg_eoprec;
 	
 	/******************************************************/
 	/****************  GENERAL KERNELS  *******************/
@@ -364,7 +376,6 @@ private:
 	
 	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
 	
-	cl_kernel saxpy_stagg_eoprec;
 	cl_kernel saxpbypz_stagg_eoprec;
 	
 	//I would not implement these at first. So far, alpha as buffer everywhere.

@@ -76,6 +76,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
 		//Fields algebra operations
 		sax_stagg_eoprec = createKernel("sax_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax.cl";
+		saxpy_stagg_eoprec = createKernel("saxpy_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy.cl";
 	} else {
 		convert_from_eoprec_stagg = 0;
 		convert_to_eoprec_stagg = 0;
@@ -86,6 +87,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		set_zero_spinorfield_stagg_eoprec = 0;
 		set_cold_spinorfield_stagg_eoprec = 0;
 		sax_stagg_eoprec = 0;
+		saxpy_stagg_eoprec = 0;
 	}
 }
 
@@ -150,6 +152,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Fields algebra operations
 		clerr = clReleaseKernel(sax_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxpy_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
@@ -725,7 +729,27 @@ void hardware::code::Spinors_staggered::sax_eoprec_device(const hardware::buffer
 }
 
 
+void hardware::code::Spinors_staggered::saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(saxpy_stagg_eoprec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpy_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(saxpy_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_stagg_eoprec, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_stagg_eoprec, 3, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(saxpy_stagg_eoprec, gs2, ls2);
+}
 
 
 
@@ -856,6 +880,10 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel reads 1 su3vec, 1 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (1 + 1) + 1);
 	}
+	if (in == "saxpy_stagg_eoprec") {
+		//this kernel reads 2 su3vec, 1 complex number and writes 1 su3vec per site
+		return C * D * Seo * (NC * (2 + 1) + 1);
+	}
 	
 	logger.warn() << "No if entered in get_read_write_size(). Returning 0 bytes...";
 	return 0;
@@ -960,7 +988,11 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "sax_stagg_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_complex
-		return Seo * (NC * ( meta::get_flop_complex_mult()));
+		return Seo * (NC * (meta::get_flop_complex_mult()));
+	}
+	if (in == "saxpy_stagg_eoprec") {
+		//this kernel performs on each site (eo) su3vec_times_complex and su3vec_acc
+		return Seo * (NC * (meta::get_flop_complex_mult() + 2));
 	}
 	
 	logger.warn() << "No if entered in get_flop_size(). Returning 0 flop...";
@@ -992,6 +1024,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, sax_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpy_stagg_eoprec);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)
