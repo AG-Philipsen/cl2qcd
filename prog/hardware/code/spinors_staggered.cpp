@@ -78,6 +78,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		sax_stagg_eoprec = createKernel("sax_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax.cl";
 		saxpy_stagg_eoprec = createKernel("saxpy_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy.cl";
 		saxpbypz_stagg_eoprec = createKernel("saxpbypz_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpbypz.cl";
+		set_gaussian_spinorfield_stagg_eoprec = createKernel("set_gaussian_spinorfield_stagg_eoprec") << basic_fermion_code << prng_code << "spinorfield_staggered_eo_gaussian.cl";
 	} else {
 		convert_from_eoprec_stagg = 0;
 		convert_to_eoprec_stagg = 0;
@@ -90,6 +91,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		sax_stagg_eoprec = 0;
 		saxpy_stagg_eoprec = 0;
 		saxpbypz_stagg_eoprec = 0;
+		set_gaussian_spinorfield_stagg_eoprec = 0;
 	}
 }
 
@@ -152,6 +154,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(set_cold_spinorfield_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(set_gaussian_spinorfield_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Fields algebra operations
 		clerr = clReleaseKernel(sax_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -169,7 +173,7 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == set_gaussian_spinorfield_stagg
-	   /*|| kernel == generate_gaussian_spinorfield_eo*/) {
+	   || kernel == set_gaussian_spinorfield_stagg_eoprec) {
 		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
 			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
 			logger.debug() << "I changed gs without changing neither ls nor num_groups (in Spinors_staggered::get_work_sizes)!!!";
@@ -785,14 +789,34 @@ void hardware::code::Spinors_staggered::saxpbypz_eoprec_device(const hardware::b
 }
 
 
+void hardware::code::Spinors_staggered::set_gaussian_spinorfield_eoprec_device(const hardware::buffers::SU3vec
+* in, const hardware::buffers::PRNGBuffer * prng) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(set_gaussian_spinorfield_stagg_eoprec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(set_gaussian_spinorfield_stagg_eoprec, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(set_gaussian_spinorfield_stagg_eoprec, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	get_device()->enqueue_kernel(set_gaussian_spinorfield_stagg_eoprec, gs2, ls2);
 
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
+		hmc_float resid;
+		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
 
-
-
-
-
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -918,6 +942,10 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel reads 3 su3vec, 2 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (3 + 1) + 2);
 	}
+	if (in == "set_gaussian_spinorfield_stagg_eoprec") {
+		//this kernel writes 1 su3vec
+		return NC * C * D * Seo;
+	}
 	
 	logger.warn() << "No if entered in get_read_write_size(). Returning 0 bytes...";
 	return 0;
@@ -973,7 +1001,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "set_gaussian_spinorfield_stagg") {
 		//this kernel performs NC multiplications per site
-		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
+		///@todo I did not count the gaussian normal pair production, which is very complicated...
 		return NC * S;
 	}
 	if (in == "sax_staggered") {
@@ -1032,6 +1060,11 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//this kernel performs on each 2*site (eo) su3vec_times_complex and 2*su3vec_acc
 		return Seo * (NC * 2 * (meta::get_flop_complex_mult() + 2));
 	}
+	if (in == "set_gaussian_spinorfield_stagg_eoprec") {
+		//this kernel performs NC multiplications per site
+		///@todo I did not count the gaussian normal pair production, which is very complicated...
+		return NC * Seo;
+	}
 	
 	logger.warn() << "No if entered in get_flop_size(). Returning 0 flop...";
 	return 0;
@@ -1061,6 +1094,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, scalar_product_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, set_gaussian_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, sax_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, saxpy_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, saxpbypz_stagg_eoprec);

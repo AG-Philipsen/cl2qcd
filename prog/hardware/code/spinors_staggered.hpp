@@ -207,6 +207,27 @@ public:
 	 */
 	void set_cold_spinorfield_eoprec_device(const hardware::buffers::SU3vec * x) const;
 	
+	/**
+	 * This function initialize a staggered field with gaussian complex numbers
+	 * (with even-odd preconditioning)
+	 * @param in The field to be initialized 
+	 * @param prng The cl_memory object
+	 * @note A complex gaussian number is a number with both real and imaginary
+	 *       part distributed in a gaussian way. In order to make the complex
+	 *       gaussian distribution be normal (mean zero and variance 1), the real
+	 *       and the imaginary parts must have mean zero and variance 0.5
+	 *       It is worth remarking that a COMPLEX gaussian distribution is 
+	 *       p(z)=1/(pi*sigma_z^2) exp(-|z|^2/sigma_z^2)
+	 *       so it is a product of two real gaussian distributions on condition that
+	 *       they have the SAME VARIANCE.
+	 *       The complex variance sigma_z^2 will be both equal to 2*sigma_x^2 and
+	 *       equal to 2*sigma_y. Hence to have sigma_z^2=1 we have to make
+	 *       sigma_x^2=sigma_y^2=0.5 (for a very detailed treatment of this aspect
+	 *       see "Statistical Signal Processing of Complex-Valued Data" from 
+	 *       PETER J. SCHREIER around page 22).
+	 */
+	void set_gaussian_spinorfield_eoprec_device(const hardware::buffers::SU3vec * in, const hardware::buffers::PRNGBuffer * prng) const;
+	
 	/*********************************************************************************************/
 	/************************************  GENERAL METHODS  **************************************/
 	/*********************************************************************************************/
@@ -366,6 +387,7 @@ private:
 	//Setting field
 	cl_kernel set_zero_spinorfield_stagg_eoprec;
 	cl_kernel set_cold_spinorfield_stagg_eoprec;
+	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
 	
 	//Algebra on staggered fields
 	cl_kernel sax_stagg_eoprec;
@@ -385,11 +407,9 @@ private:
 	cl_kernel convert_from_eoprec_stagg;
 	cl_kernel convert_to_eoprec_stagg;
 	
-	/* To be added...
 	
-	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
+	/* To be added, if needed.
 	
-		
 	//I would not implement these at first. So far, alpha as buffer everywhere.
 	cl_kernel saxpy_arg_stagg; 
 	cl_kernel saxpy_arg_stagg_eoprec;
