@@ -1,7 +1,7 @@
 NS=16
 NT=16
 
-use_eo=false
+use_eo=true
 solver=cg
 
 #this specifies the acceptance precision
