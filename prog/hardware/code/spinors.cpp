@@ -987,7 +987,7 @@ uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 	}
 	if (in == "sax_eoprec") {
 		//this kernel performs on each site spinor_times_complex
-		return S * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
+		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
 	}
 	if (in == "saxsbypz_eoprec") {
 		//this kernel performs on each 2 * site spinor_times_complex and 2 * spinor_add
