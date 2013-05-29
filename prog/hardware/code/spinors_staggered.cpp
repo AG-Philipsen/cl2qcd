@@ -75,6 +75,15 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		set_zero_spinorfield_stagg_eoprec = createKernel("set_zero_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_zero.cl";
 		set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
 		//Fields algebra operations
+	} else {
+		convert_from_eoprec_stagg = 0;
+		convert_to_eoprec_stagg = 0;
+		convert_staggered_field_to_SoA_eo = 0;
+		convert_staggered_field_from_SoA_eo = 0;
+		global_squarenorm_stagg_eoprec = 0;
+		scalar_product_stagg_eoprec = 0;
+		set_zero_spinorfield_stagg_eoprec = 0;
+		set_cold_spinorfield_stagg_eoprec = 0;
 	}
 }
 
