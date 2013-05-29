@@ -70,11 +70,12 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		//Squarenorm
 		global_squarenorm_stagg_eoprec = createKernel("global_squarenorm_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_squarenorm.cl";
 		//Scalar Product
-		scalar_product_stagg_eoprec = createKernel("scalar_product_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_scalar_product.cl";
+		scalar_product_stagg_eoprec = createKernel("scalar_product_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_scalar_product.cl";
 		//Setting fields
 		set_zero_spinorfield_stagg_eoprec = createKernel("set_zero_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_zero.cl";
 		set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
 		//Fields algebra operations
+		sax_stagg_eoprec = createKernel("sax_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax.cl";
 	}
 }
 
@@ -138,6 +139,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		clerr = clReleaseKernel(set_cold_spinorfield_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Fields algebra operations
+		clerr = clReleaseKernel(sax_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
 
@@ -692,7 +695,24 @@ void hardware::code::Spinors_staggered::set_cold_spinorfield_eoprec_device(const
 }
 
 
+void hardware::code::Spinors_staggered::sax_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(sax_stagg_eoprec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(sax_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(sax_stagg_eoprec, 1, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(sax_stagg_eoprec, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(sax_stagg_eoprec, gs2, ls2);
+}
 
 
 
@@ -822,6 +842,10 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel writes 1 su3vec per site (eo)
 		return C * NC * D * Seo;
 	}
+	if (in == "sax_stagg_eoprec") {
+		//this kernel reads 1 su3vec, 1 complex number and writes 1 su3vec per site (eo)
+		return C * D * Seo * (NC * (1 + 1) + 1);
+	}
 	
 	logger.warn() << "No if entered in get_read_write_size(). Returning 0 bytes...";
 	return 0;
@@ -924,6 +948,10 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//this kernel performs 1. / sqrt((3.f * VOL4D)) and su3vec_times_real for each site
 		return Seo * ( 3 + NC * 2);
 	}
+	if (in == "sax_stagg_eoprec") {
+		//this kernel performs on each site (eo) su3vec_times_complex
+		return Seo * (NC * ( meta::get_flop_complex_mult()));
+	}
 	
 	logger.warn() << "No if entered in get_flop_size(). Returning 0 flop...";
 	return 0;
@@ -953,6 +981,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, scalar_product_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, sax_stagg_eoprec);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)

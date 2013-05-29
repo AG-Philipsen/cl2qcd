@@ -96,7 +96,6 @@ public:
 	//////////////////////////////////
 	//      Setting operations      //
 	//////////////////////////////////
-	
 	/**
 	 * This function sets to zero a staggered field (all its su3vec)
 	 * @param x The field to be set to zero 
@@ -138,13 +137,18 @@ public:
 	/////////////////////////////////////////////
 	//        Fields algebra operations        //
 	/////////////////////////////////////////////
-	
-	
+	/**
+	 * This function returns the input staggered field with even-odd preconditioning
+	 * multiplied by a complex constant alpha
+	 * @param x The input staggered field (one su3vec per site even or odd)
+	 * @param alpha The complex constant
+	 * @param out The output staggered field: alpha*x (one su3vec per site even or odd)
+	 */
+	void sax_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const;
 	
 	//////////////////////////////////
 	//      Algebra operations      //
 	//////////////////////////////////
-	
 	/**
 	 * This function performs a complete reduction, calculating the sum of squarenorms
 	 * of the staggered field with EVEN-ODD preconditioning.
@@ -167,7 +171,6 @@ public:
 	//////////////////////////////////
 	//      Setting operations      //
 	//////////////////////////////////
-	
 	/**
 	 * This function sets to zero a staggered field with even-odd preconditioning.
 	 * @param x The field to be set to zero 
@@ -188,7 +191,6 @@ public:
 	//////////////////////////////////////////
 	//      Complex numbers operations      //
 	//////////////////////////////////////////
-	
 	/**
 	 * This function converts a float number into a complex one
 	 * @param in The float number to be converted
@@ -215,7 +217,6 @@ public:
 	//////////////////////////////////////////
 	//     Conversions eo to/from non eo    //
 	//////////////////////////////////////////
-	
 	/**
 	 * This function reconstructs a field on the whole lattice from
 	 * the fields on the even and on the odd sites
@@ -344,7 +345,7 @@ private:
 	cl_kernel set_cold_spinorfield_stagg_eoprec;
 	
 	//Algebra on staggered fields
-	
+	cl_kernel sax_stagg_eoprec;
 	
 	/******************************************************/
 	/****************  GENERAL KERNELS  *******************/
@@ -361,11 +362,8 @@ private:
 	
 	/* To be added...
 	
-	
-	
 	cl_kernel set_gaussian_spinorfield_stagg_eoprec;
 	
-	cl_kernel sax_stagg_eoprec;
 	cl_kernel saxpy_stagg_eoprec;
 	cl_kernel saxpbypz_stagg_eoprec;
 	
