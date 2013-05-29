@@ -619,7 +619,6 @@ void test_sf_gaussian_staggered(std::string inputfile)
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
 	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
 
-	//CP: run the kernel a couple of times times
 	int iterations = params.get_integrationsteps(0);
 
 	su3vec * sf_out;
@@ -1176,56 +1175,44 @@ void test_sf_saxpbypz_staggered_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-
-
-
-
-
-
-
-
-/* To be added...
- *
- *
-
-void test_sf_gaussian_eo(std::string inputfile)
+void test_sf_gaussian_staggered_eo(std::string inputfile)
 {
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "generate_gaussian_spinorfield_eo";
+	kernelName = "set_gaussian_spinorfield_stagg_eoprec";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 
 	physics::PRNG prng(system);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
+	const SU3vec out(NUM_ELEMENTS_SF, device->get_device());
 
-	//CP: run the kernel a couple of times times
 	int iterations = params.get_integrationsteps(0);
 
-	spinor * sf_out;
-	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
+	su3vec * sf_out;
+	sf_out = new su3vec[NUM_ELEMENTS_SF * iterations];
 	BOOST_REQUIRE(sf_out);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
 	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
-	  logger.info() << "Run kernel";
-	  device->generate_gaussian_spinorfield_eo_device(&out, prng_buf);
+	  if(i%200==0)logger.info() << "Run kernel for the " << i << "th time";
+	  device->set_gaussian_spinorfield_eoprec_device(&out, prng_buf);
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
+	  //Here we sum the entries to calculate the mean later
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
 	}
 	logger.info() << "result: mean";
 	hmc_float cpu_res = 0.;
-	sum = sum/iterations/NUM_ELEMENTS_SF/24;	
+	//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real gaussian numbers
+	sum = sum/iterations/NUM_ELEMENTS_SF/6;	
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
@@ -1235,19 +1222,54 @@ void test_sf_gaussian_eo(std::string inputfile)
 	  for (int i=0; i<iterations; i++){
 	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
 	  }
-	  var=var/iterations/NUM_ELEMENTS_SF/24;
+	  //var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
+	  var=var/iterations/NUM_ELEMENTS_SF/6;
 	  
 	  cpu_res = sqrt(var);
 	  logger.info() << "result: variance";
 	  logger.info() << cpu_res;
 	}
 
+	//The Kolmogorov_Smirnov test requires set of n samples with n around 1000
+	//(to big n and to small n are not good choices for this test)
+	//So we can consider each kernel result as a set (NUM_ELEMENTS_SF*6=1536 for a 4^4 lattice)
+	vector<vector<hmc_float>> samples;
+	vector<hmc_float> tmp;
+	vector<hmc_float> tmp2;
+	for(int i=0; i<iterations; i++){
+	  vector<hmc_float> tmp;
+	  for(int j=0; j<NUM_ELEMENTS_SF; j++){
+	    tmp2=reals_from_su3vec(sf_out[i*NUM_ELEMENTS_SF+j]);
+	    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
+	    tmp2.clear();
+	  }
+	  samples.push_back(tmp);
+	  tmp.clear();
+	}
+	logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
+	logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
+	
+	if(params.get_read_multiple_configs()==true){
+	  //Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
+	  //Note that in the test BOOST_CHECK is used.
+	  mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
+	  mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
+	  mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
+	}else{
+	  //Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
+	  //Note that in the test BOOST_CHECK is used.
+	  variance_test_multiple_set(samples,2.,sqrt(0.5));
+	  variance_test_multiple_set(samples,3.,sqrt(0.5));
+	  variance_test_multiple_set(samples,4.,sqrt(0.5));
+	}
+	
 	testFloatSizeAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 
 }
-*/
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 BOOST_AUTO_TEST_SUITE(BUILD)
@@ -2204,6 +2226,29 @@ BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_34 )
 BOOST_AUTO_TEST_SUITE_END()
 
 
+BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN_EO)
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_1 )
+{
+  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_2 )
+{
+  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_3 )
+{
+  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_4 )
+{
+  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_4");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 /* To be added...
  *
@@ -2364,17 +2409,4 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 
-BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN_EO)
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_1 )
-{
-  test_sf_gaussian_eo("/sf_gaussian_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_2 )
-{
-  test_sf_gaussian_eo("/sf_gaussian_eo_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 */
