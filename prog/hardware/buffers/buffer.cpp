@@ -262,3 +262,46 @@ std::string hardware::buffers::md5(const Buffer* buf)
 
 	return std::string(res);
 }
+
+hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event)
+{
+	const cl_event * wait_event = nullptr;
+	cl_uint num_wait_events = 0;
+	if(event.raw()) {
+		wait_event = &event.raw();
+		num_wait_events = 1;
+	}
+
+	cl_event event_cl;
+	cl_int err = clEnqueueCopyBufferRect(*device, *orig->get_cl_buffer(), *dest->get_cl_buffer(), src_origin, dest_origin, region, src_row_pitch, src_slice_pitch, dest_row_pitch, dest_slice_pitch, num_wait_events, wait_event, &event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueCopyBufferRect", __FILE__, __LINE__);
+	}
+
+	const hardware::SynchronizationEvent new_event(event_cl);
+	err = clReleaseEvent(event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return new_event;
+}
+
+#ifdef CL_VERSION_1_2
+void hardware::buffers::Buffer::migrate(hardware::Device * device, const std::vector<hardware::SynchronizationEvent>& events, cl_mem_migration_flags flags)
+{
+	size_t num_events = events.size();
+	std::vector<cl_event> cl_events(num_events);
+	for(size_t i = 0; i < num_events; ++i) {
+		cl_events[i] = events[i].raw();
+	}
+	cl_event * events_p = (num_events > 0) ? &cl_events[0] : 0;
+
+	cl_int err = clEnqueueMigrateMemObjects(*device, 1, this->get_cl_buffer(), flags, num_events, events_p, 0);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueMigrateMemoryObjects", __FILE__, __LINE__);
+	}
+
+	// update device used by this buffer
+	this->device = device;
+}
+#endif
