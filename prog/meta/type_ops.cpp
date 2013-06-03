@@ -59,6 +59,18 @@ template<> void fill(spinor* array, size_t num_elems, int seed)
 	}
 }
 
+template<> void fill(su3vec* array, size_t num_elems, int seed)
+{
+	srand48(seed);
+	for(size_t i = 0; i < num_elems; i++) {
+		array[i] = {
+				{ drand48(), drand48() },
+				{ drand48(), drand48() },
+				{ drand48(), drand48() },
+		};
+	}
+}
+
 template<> void fill(ae* array, size_t num_elems, int seed)
 {
 	srand48(seed);

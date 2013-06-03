@@ -79,6 +79,10 @@ size_t meta::get_flop_su3_su3vec() noexcept {
 	//  NC entries total
 	return (get_flop_complex_mult() * NC + (NC - 1) * 2) * NC;
 }
+size_t meta::get_flop_su3vec_su3vec() noexcept {
+  	// NC * complex_mult + (NC -1) complex adds
+	return NC * get_flop_complex_mult() + (NC - 1) * 2;
+}
 size_t meta::get_su3algebrasize() noexcept {
 	return NC * NC - 1;
 }
@@ -119,8 +123,17 @@ size_t meta::get_flop_spinor_spinor() noexcept {
 	return NDIM * NC * get_flop_complex_mult() + (NDIM * NC - 1) * 2;
 }
 size_t meta::get_flop_spinor_sqnorm() noexcept {
-	//  NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
+	// NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
+	// The 0.5 factor arises from the fact that the result is real and then there is no
+	// imaginary part to be calculated.
 	return NDIM * NC * get_flop_complex_mult() * 0.5 + (NC * NDIM - 1);
+}
+
+size_t meta::get_flop_su3vec_sqnorm() noexcept {
+	// NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
+	// The 0.5 factor arises from the fact that the result is real and then there is no
+	// imaginary part to be calculated.
+	return NC * get_flop_complex_mult() * 0.5 + (NC - 1);
 }
 
 std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept

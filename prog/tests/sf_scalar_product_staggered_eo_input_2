@@ -1,0 +1,13 @@
+NS=4
+NT=4
+
+use_eo=true
+solver=bicgstab
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=189.5839622069628092
+
+#This imput file must not be modified!
+

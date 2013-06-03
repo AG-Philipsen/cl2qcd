@@ -8,14 +8,15 @@ import re
 from collections import namedtuple
 
 linestyles_color = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 'k*']
-#linestyles_gray = ['ko', 'k*', 'kd', 'kh', 'k^', 'kv', 'kx', 'k+']
-linestyles_gray = ['k+', 'kx', 'k1', 'k2', 'k3', 'k4', 'kd', 'k.']
+linestyles_gray = ['kd', 'kh', 'ko', 'k*', 'k^', 'kv', 'kx', 'k+']
+#linestyles_gray = ['k+', 'kx', 'k1', 'k2', 'k3', 'k4', 'kd', 'k.']
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
 def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None, legend_pos = None, offset_lines = False, grayscale=False):
 
 	linestyles = linestyles_gray if grayscale else linestyles_color;
+	markersize = 10 if grayscale else 15
 
 	filedatas = []
 
@@ -40,11 +41,11 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 				runs.append((nspace, ntime, bandwidth, gflops))
 
 		# dump data to cli
+		runs = np.array(sorted(runs, key=lambda p: p[0]**3 * p[1]))
 		print 'NSPACE   NTIME    GB/S   GFLOPS'
 		for run in runs:
 			print '{0[0]:>5}   {0[1]:>5}   {0[2]:>5}   {0[3]:>5}'.format(run)
 
-		runs = np.array(sorted(runs, key=lambda p: p[0]**3 * p[1]))
 		xpos = map(lambda (x,y): int(x)**3 * int(y), runs[:,0:2])
 		filedatas.append(FileData(filelabels[i], runs, xpos))
 
@@ -63,7 +64,10 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 		i -= 1
 	print xtic_pos
 	xtic_label = map(lambda (p, x, y): '{0}^3x{1}'.format(int(x), int(y)), xtic_pos)
+	latex_label = [r'\({0}^3 \times {1}\)'.format(int(x), int(y)) for (p,x,y) in xtic_pos]
 	xtic_pos = map(lambda (p, x, y): p, xtic_pos)
+	print 'xtic={{{0}}},'.format(','.join((str(tic) for tic in xtic_pos)))
+	print 'xticlabels={{{0}}},'.format(','.join(latex_label))
 
 	fig = plt.figure(figsize=(10,4))
 	fig.subplots_adjust(bottom=0.28)
@@ -84,18 +88,18 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 	for data in filedatas:
 		xpos = [pos + offset for pos in data.xpos]
 		if metric == 'gflops':
-			lines.append(ax1.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label)
 			linestyle += 1
 		elif metric == 'gbytes':
-			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label)
 			linestyle += 1
 		else:
-			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label + ' Bandwidth')
 			linestyle += 1
-			lines.append(ax2.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
+			lines.append(ax2.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=markersize))
 			labels.append(data.label + ' Gflops')
 			linestyle += 1
 		offset += offset_per_line

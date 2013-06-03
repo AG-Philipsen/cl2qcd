@@ -1,0 +1,13 @@
+NS=12
+NT=12
+
+use_eo=true
+solver=cg
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=31104
+
+#This input file must not be modified!
+

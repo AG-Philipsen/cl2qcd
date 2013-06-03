@@ -118,6 +118,7 @@ template<typename T> inline void fill(T* array, size_t num_elems, int seed = 0)
 template<> void fill(hmc_complex* array, size_t num_elems, int seed);
 template<> void fill(Matrixsu3* array, size_t num_elems, int seed);
 template<> void fill(spinor* array, size_t num_elems, int seed);
+template<> void fill(su3vec* array, size_t num_elems, int seed);
 template<> void fill(ae* array, size_t num_elems, int seed);
 
 /*

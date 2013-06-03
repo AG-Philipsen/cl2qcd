@@ -1,7 +1,9 @@
 #include "../physics/lattices/gaugefield.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
-#include </usr/include/c++/4.7/fstream> 
+#include </usr/include/c++/4.7/fstream>
+#include <vector>
+
 
 class TestGaugefield {
 
@@ -67,7 +69,7 @@ std::string matrix_to_string(Matrixsu3 m)
 std::string su3vec_to_string(su3vec m)
 {
   std::ostringstream os;
-  os.precision(8);
+  os.precision(16);
   os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im << ")\n\n";
   return os.str();
 }
@@ -307,5 +309,42 @@ void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta:
   }
   file.close();
 }
+
+void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf, meta::Inputparameters params)
+{
+  int nt=params.get_ntime();
+  int ns=params.get_nspace();
+  if(ns!=nt){
+    logger.fatal() << "The lattice must be isotropic to call the function print_staggeredfield_to_textfile(...)!";
+    abort();
+  }
+  //sf     is the su3vec array ordered with the "even-odd superindex scheme"                                                                     
+  //sf_new is the su3vec array in the right order (ref. code scheme) to be written to the file
+  // ======> hence sf_new is in this case equal to sf that contain the values of the field only in
+  //         even (or odd) sites
+  //We can write sf directly to the file 
+  std::ofstream file(outputfile.c_str());
+  file << ns << " " << ns << " " << ns << " " << nt << std::endl;
+  for(int i=0; i<ns*ns*ns*nt/2; i++)
+    file << su3vec_to_string(sf[i]);
+  file.close();
+}
+
+/**
+ * Function that returns a vector with the 6 real number contained in an su3vec
+ */
+std::vector<hmc_float> reals_from_su3vec(su3vec v){
+  std::vector<hmc_float> out;
+  out.push_back(v.e0.re);
+  out.push_back(v.e0.im);
+  out.push_back(v.e1.re);
+  out.push_back(v.e1.im);
+  out.push_back(v.e2.re);
+  out.push_back(v.e2.im);
+  return out;
+}
+
+  
+  
 
 
