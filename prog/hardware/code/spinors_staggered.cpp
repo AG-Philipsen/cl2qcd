@@ -288,7 +288,7 @@ void hardware::code::Spinors_staggered::set_complex_to_scalar_product_device(con
   clerr = clSetKernelArg(scalar_product_reduction_stagg, 2, sizeof(cl_uint), &num_groups);
   if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  get_device()->enqueue_kernel(scalar_product_reduction_stagg, gs2, ls2);
+  get_device()->enqueue_kernel(scalar_product_reduction_stagg, 1, 1);
 }
 
 
@@ -685,7 +685,7 @@ void hardware::code::Spinors_staggered::set_complex_to_scalar_product_eoprec_dev
 	clerr = clSetKernelArg(scalar_product_reduction_stagg, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(scalar_product_reduction_stagg, gs2, ls2);
+	get_device()->enqueue_kernel(scalar_product_reduction_stagg, 1, 1);
 }
 
 
