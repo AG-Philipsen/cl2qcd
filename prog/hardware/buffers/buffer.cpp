@@ -13,11 +13,31 @@
 #include "../code/buffer.hpp"
 
 static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host);
+void memObjectReleased(cl_mem, void * user_data);
+struct MemObjectAllocationTracer {
+	size_t bytes;
+	bool host;
+	hardware::Device * device;
+
+	MemObjectAllocationTracer(size_t bytes, bool host, hardware::Device * device)
+	 : bytes(bytes), host(host), device(device) {
+		device->markMemAllocated(host, bytes);
+	 };
+
+	~MemObjectAllocationTracer() {
+		device->markMemReleased(host, bytes);
+	}
+};
+
 
 hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device, bool place_on_host)
 	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context, place_on_host)), device(device)
 {
-	// nothing to do here, initialization complete
+	// notify device about allocation
+	cl_int err = clSetMemObjectDestructorCallback(cl_buffer, memObjectReleased, new MemObjectAllocationTracer(bytes, place_on_host, device));
+	if(err) {
+		throw hardware::OpenclException(err, "clSetMemObjectDestructorCallback", __FILE__, __LINE__);
+	}
 }
 
 hardware::buffers::Buffer::~Buffer()
@@ -305,3 +325,9 @@ void hardware::buffers::Buffer::migrate(hardware::Device * device, const std::ve
 	this->device = device;
 }
 #endif
+
+void memObjectReleased(cl_mem, void * user_data)
+{
+	MemObjectAllocationTracer * release_info = static_cast<MemObjectAllocationTracer *>(user_data);
+	delete release_info;
+}
