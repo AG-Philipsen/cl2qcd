@@ -51,7 +51,7 @@ public:
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
-	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 * @NOTE: this is meant to be the "netto" amount in order to be comparable.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */

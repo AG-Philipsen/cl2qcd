@@ -1,3 +1,7 @@
+/** @file
+ * Implementation of the hardware::code::fermions_staggered class
+ */
+
 #include "fermions_staggered.hpp"
 
 #include "../../logger.hpp"
@@ -13,7 +17,7 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
 
@@ -107,27 +111,49 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
-	//this is the same as in the function above
-	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
+	//NOTE: 1 spinor has NC = 3 complex entries
 	if (in == "M_staggered") {
-		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
-		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
+		//this kernel reads 9 su3vec, 8 su3matrices and writes 1 su3vec per site:
+		return (C * NC * (9 + 1) + C * 8 * R) * D * S;
 	}
 	return 0;
 }
 
-static int flop_dslash_per_site(const meta::Inputparameters & parameters)
+/**
+ * 
+ * This function returns the number of flops that is needed to make the standard staggered
+ * Dirac operator act onto a field (606 flops). Since in general the mass in the simulation is not
+ * zero (and there are no check on that), the mass-term in the d_slash is always taken
+ * into account (For standard Dirac operator we intend M = D_KS + m).
+ * 
+ * @NOTE In this function (as in the whole code) the staggered phases are not included
+ *       in links and, then, we have some flops in addition to take into account.
+ * @NOTE Here, we do not count the flops that are performed for example in the mulptiplications
+ *       done to impose the boundary conditions. These flops will be taken into account in the
+ *       function get_flop_size.
+ */
+/*
+ * Considering that:
+ * 
+ *  - su3matrix times su3vec is 66 flops
+ *  - real times complex is 2 flops
+ *  - complex times complex is 6 flops
+ *  - real times su3vec is 6 flops
+ *  - complex times su3vec is 18 flops
+ *  - su3vec plus su3vec is 6 flops = NC*2
+ * 
+ * The way of counting flops for the dslash can be summarized as follows:
+ * 
+ *  + For each direction we have twice su3matrix times su3vec
+ *  + We have to sum the 2 rsulting su3vec in each direction
+ *  + To multiply by (0.5*eta) the result of the sum in each direction, a real times su3vec is required
+ *  + The mass term is a real times su3vec
+ *  + Then we have to sum the 5 su3vec (one for each direction + the mass term)
+ * 
+ */
+static int flop_dslash_staggered_per_site(const meta::Inputparameters & parameters)
 {
-	/** @NOTE: this is the "original" dslash without any simplifications, counting everything "full". this is a much too hight number!!
-	   *  //this kernel performs for each eo site a 2*NDIM sum over (1 + gamma_mu) * su3matrix * spinor
-	   *  //return  NDIM * 2 * ( get_parameters().get_flop_su3_spinor() + get_parameters().get_flop_gamma_spinor() ) ;
-	  @NOTE: However, in 0911.3191 the dslash_eo is quoted to perform 1320 flop per site
-	   *  If I count our implementation of the dslash-kernel, I get 1632 flop per site:
-	   *  //the kernel performs 6 su3vec_acc, 2 su3_su3vec and 2 su3vec_complex in NDIM * 2 directions per site
-	  */
-	return NDIM * 2 * (meta::get_flop_su3_su3vec() * 2 + 6 * NC * 2 + 2 * NC * meta::get_flop_complex_mult() );
-	/// I do not know for sure, but if one leaves out the 2 su3vec_complex operations in each directions one has almost 1320 flop per site. This would correspond to have the kappa in the diagonal matrix still.
-
+	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2 + NC * 2) + NC * 2 + 4 * NC * 2;
 }
 
 uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in) const
@@ -135,8 +161,10 @@ uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in
 	size_t S = get_spinorfieldsize(get_parameters());
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	if (in == "M_staggered") {
-		//this kernel performs one dslash on each site and adds this to a spinor
-		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
+		//this kernel performs one dslash on each site. To do that it also impose
+		//the boundary conditions multiplying twice in each direction an su3vec by a complex
+		return S * (flop_dslash_staggered_per_site(get_parameters()) +
+		            2* NC * NDIM * meta::get_flop_complex_mult());
 	}
 	return 0;
 }
