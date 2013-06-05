@@ -45,7 +45,10 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  grid_size(grid_size),
 	  local_lattice_size(calculate_local_lattice_size(grid_size, params)),
 	  halo_size(2),
-	  mem_lattice_size(calculate_mem_lattice_size(grid_size, local_lattice_size, halo_size))
+	  mem_lattice_size(calculate_mem_lattice_size(grid_size, local_lattice_size, halo_size)),
+	  allocated_bytes(0),
+	  max_allocated_bytes(0),
+	  allocated_hostptr_bytes(0)
 {
 	logger.debug() << "Initializing " << get_name();
 	logger.debug() << "Device position: " << grid_pos;
@@ -63,6 +66,8 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	if(err) {
 		throw OpenclException(err, "clCreateCommandQueue", __FILE__, __LINE__);
 	}
+
+	logger.trace() << "Initial memory usage (" << grid_pos << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }
 
 hardware::Device::~Device()
@@ -103,6 +108,8 @@ hardware::Device::~Device()
 
 	clFinish(command_queue);
 	clReleaseCommandQueue(command_queue);
+
+	logger.info() << "Maximum memory used (" << grid_pos << "): " << max_allocated_bytes << " bytes";
 }
 
 hardware::Device::operator cl_command_queue() const noexcept
@@ -202,6 +209,24 @@ void hardware::Device::enqueue_marker(cl_event * event) const
 	cl_int err = clEnqueueMarker(command_queue, event);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueMarker()", __FILE__, __LINE__);
+	}
+}
+
+void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event) const
+{
+	cl_event cl_event = event.raw();
+	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 1, &cl_event, 0);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueBarrier()", __FILE__, __LINE__);
+	}
+}
+
+void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event1, const hardware::SynchronizationEvent& event2) const
+{
+	cl_event cl_events[] = {event1.raw(), event2.raw()};
+	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 2, cl_events, 0);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueBarrier()", __FILE__, __LINE__);
 	}
 }
 
@@ -472,4 +497,28 @@ static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_
 	         local_lattice_size.z + (grid_size.z > 1 ? 2 * halo_size : 0),
 	         local_lattice_size.t + (grid_size.t > 1 ? 2 * halo_size : 0)
 	       );
+}
+
+void hardware::Device::markMemReleased(const bool host, const size_t size)
+{
+	logger.trace() << "Released " << size << " bytes on (" << grid_pos << ").";
+	if(host) {
+		allocated_hostptr_bytes -= size;
+	} else {
+		allocated_bytes -= size;
+	}
+	if(allocated_bytes > max_allocated_bytes)
+		max_allocated_bytes = allocated_bytes;
+	logger.trace() << "Memory usage (" << grid_pos << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+}
+
+void hardware::Device::markMemAllocated(const bool host, const size_t size)
+{
+	logger.trace() << "Allocted " << size << " bytes on (" << grid_pos << ").";
+	if(host) {
+		allocated_hostptr_bytes += size;
+	} else {
+		allocated_bytes += size;
+	}
+	logger.trace() << "Memory usage (" << grid_pos << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }

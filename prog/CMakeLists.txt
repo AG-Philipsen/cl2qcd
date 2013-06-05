@@ -17,6 +17,8 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 # Have the user asked for tests
 enable_testing()
+# And enable Dashboard
+include(CTest)
 
 # make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")

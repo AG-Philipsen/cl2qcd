@@ -15,11 +15,18 @@
 #include "../types.h"
 #include "../meta/size_4.hpp"
 
+class MemObjectAllocationTracer;
+
 namespace hardware {
+
+class SynchronizationEvent;
+class Device;
 
 namespace buffers {
 // forward declaration for friend relation
 class Buffer;
+class ProxyBufferCache;
+hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const Buffer* dest, const Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event);
 }
 
 namespace code {
@@ -51,8 +58,11 @@ class OptimizationError {
 class Device : public DeviceInfo {
 
 	friend hardware::buffers::Buffer;
+	friend hardware::buffers::ProxyBufferCache;
 	friend void print_profiling(Device *, const std::string&, int);
 	friend cl_command_queue profiling_data_test_command_queue_helper(const Device * device);
+	friend hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event);
+	friend MemObjectAllocationTracer;
 
 public:
 	/**
@@ -104,6 +114,12 @@ public:
 	 * Enqueue a kernel on the device using the default number of global threads
 	 */
 	void enqueue_marker(cl_event *) const;
+
+	/**
+	 * Enqueue a barrier, preventing new jobs starting on this device until the given event finished
+	 */
+	void enqueue_barrier(const hardware::SynchronizationEvent& event) const;
+	void enqueue_barrier(const hardware::SynchronizationEvent& event1, const hardware::SynchronizationEvent& event2) const;
 
 	/**
 	 * Recommend a stride for the given number of elements of the given type
@@ -357,6 +373,14 @@ private:
 	 * The size of the lattice in device memory.
 	 */
 	const size_4 mem_lattice_size;
+
+	// memory usage tracing
+	size_t allocated_bytes;
+	size_t max_allocated_bytes;
+	size_t allocated_hostptr_bytes;
+
+	void markMemReleased(bool host, size_t size);
+	void markMemAllocated(bool host, size_t size);
 };
 
 	/**

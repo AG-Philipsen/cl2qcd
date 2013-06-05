@@ -41,11 +41,11 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 				runs.append((nspace, ntime, bandwidth, gflops))
 
 		# dump data to cli
+		runs = np.array(sorted(runs, key=lambda p: p[0]**3 * p[1]))
 		print 'NSPACE   NTIME    GB/S   GFLOPS'
 		for run in runs:
 			print '{0[0]:>5}   {0[1]:>5}   {0[2]:>5}   {0[3]:>5}'.format(run)
 
-		runs = np.array(sorted(runs, key=lambda p: p[0]**3 * p[1]))
 		xpos = map(lambda (x,y): int(x)**3 * int(y), runs[:,0:2])
 		filedatas.append(FileData(filelabels[i], runs, xpos))
 
@@ -64,7 +64,10 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 		i -= 1
 	print xtic_pos
 	xtic_label = map(lambda (p, x, y): '{0}^3x{1}'.format(int(x), int(y)), xtic_pos)
+	latex_label = [r'\({0}^3 \times {1}\)'.format(int(x), int(y)) for (p,x,y) in xtic_pos]
 	xtic_pos = map(lambda (p, x, y): p, xtic_pos)
+	print 'xtic={{{0}}},'.format(','.join((str(tic) for tic in xtic_pos)))
+	print 'xticlabels={{{0}}},'.format(','.join(latex_label))
 
 	fig = plt.figure(figsize=(10,4))
 	fig.subplots_adjust(bottom=0.28)

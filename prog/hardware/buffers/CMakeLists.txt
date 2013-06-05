@@ -13,6 +13,7 @@ add_library(buffers
 	spinor.cpp
 	gaugemomentum.cpp
 	3x3.cpp
+	halo_update.cpp
 	su3vec.cpp
 )
 target_link_libraries(buffers
