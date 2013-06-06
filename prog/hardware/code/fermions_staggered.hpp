@@ -30,11 +30,25 @@ public:
 
 	virtual ~Fermions_staggered();
 
-	//    fermionmatrix operations
-	//    non-eo
-	//        explicit
+	/*********************************************************************************************/
+	/**************************  NON EVEN-ODD PRECONDITIONING METHODS  ***************************/
+	/*********************************************************************************************/
+	
+	/**
+	 * This function apply the standard staggered Dirac operator M = D_KS + m
+	 * to a staggered field on the whole lattice.
+	 *  @param in The input staggered field
+	 *  @param out The output staggered field out=M*in
+	 *  @param gf The gauge configuration
+	 *  @param mass The quark mass
+	 */
 	void M_staggered_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3 * gf, hmc_float mass = ARG_DEF) const;
 
+	/*********************************************************************************************/
+	/****************************  EVEN-ODD PRECONDITIONING METHODS  *****************************/
+	/*********************************************************************************************/
+	
+	////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Print the profiling information to a file.
 	 *

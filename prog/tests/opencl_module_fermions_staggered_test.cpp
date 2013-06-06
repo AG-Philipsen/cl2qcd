@@ -337,13 +337,13 @@ void test_build(std::string inputfile)
 
 void test_m_staggered(std::string inputfile)
 {
-  //Prova();
-  // return;
+//     Prova();
+//     return;
 
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "m_staggered";
+	kernelName = "M_staggered";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -402,7 +402,7 @@ void test_m_staggered(std::string inputfile)
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	device->M_staggered_device(&in, &out,  cpu.get_gaugefield(), params.get_kappa());
-
+	
 	// /*
 	out.dump(sf_out);
 	// for(int i=0; i<NUM_ELEMENTS_SF; i++){
@@ -410,9 +410,9 @@ void test_m_staggered(std::string inputfile)
         //                        << sf_out[i].e1.re << "," << sf_out[i].e1.im << ") ("
 	// 		<< sf_out[i].e2.re << "," << sf_out[i].e2.im << ")";
 	// }
-	print_staggeredfield_to_textfile("out_vec",sf_out,params);
-	Prova();
-	logger.info() << "Produced the out_vec text file with the staggered field M*in. Returning...";
+	//print_staggeredfield_to_textfile("out_vec",sf_out,params);
+	//Prova();
+	//logger.info() << "Produced the out_vec text file with the staggered field M*in. Returning...";
 	//return;
 	// */
 

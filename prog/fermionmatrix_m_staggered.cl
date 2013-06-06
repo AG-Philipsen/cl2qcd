@@ -14,7 +14,7 @@
    M_{n,m}=\frac{1}{2} \sum_{\mu=0}^3 \eta_\mu(n)\Bigl[U_\mu(n)\,\delta_{n+\hat\mu,m}
                                                      - U^\dag_\mu(n-\hat\mu)\,\delta_{n-\hat\mu,m}\Bigr]
                                                      + m_0\,\delta_{n,m}
- * \f]
+   \f]
  *
  * \internal   
  *
@@ -47,6 +47,42 @@
 
 __kernel void M_staggered(__global const su3vec * const restrict in, __global const Matrixsu3StorageType * const restrict field, __global su3vec * const restrict out, hmc_float mass_in)
 {
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	su3vec out_tmp, out_tmp2;
+
+	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+
+		/** @todo this must be done more efficient */
+		st_index pos = (id_local % 2 == 0) ? get_even_st_idx_local(id_local / 2) : get_odd_st_idx_local(id_local / 2);
+
+		
+		//From now on we adopt the notation M = m + D_KS
+		
+		//Diagonal part: m * in(n)
+		out_tmp = get_su3vec_from_field(in, pos.space, pos.time);
+		out_tmp = su3vec_times_real(out_tmp, mass_in);
+		
+		//Non-diagonal part: calc D_KS
+		out_tmp2 = D_KS_local(in, field, pos, TDIR);
+		out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		out_tmp2 = D_KS_local(in, field, pos, XDIR);
+		out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		out_tmp2 = D_KS_local(in, field, pos, YDIR);
+		out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		out_tmp2 = D_KS_local(in, field, pos, ZDIR);
+		out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		
+		put_su3vec_to_field(out_tmp, out, pos.space, pos.time);
+	}
+}
+
+#if 0
+ // The following kernel uses the d_slash_local_x kernels and it was the first version written.
+ // At the moment we leave it out. Uncomment it out if needed for some reason.
+
+__kernel void M_staggered_old(__global const su3vec * const restrict in, __global const Matrixsu3StorageType * const restrict field, __global su3vec * const restrict out, hmc_float mass_in)
+{
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -63,7 +99,6 @@ __kernel void M_staggered(__global const su3vec * const restrict in, __global co
 
 		
 		//From now on we adopt the notation M = m + D_KS
-		
 		//Diagonal part: m * in(n)
 		out_tmp = get_su3vec_from_field(in, pos.space, pos.time);
 		out_tmp = su3vec_times_real(out_tmp, mass_in);
@@ -81,3 +116,4 @@ __kernel void M_staggered(__global const su3vec * const restrict in, __global co
 		put_su3vec_to_field(out_tmp, out, pos.space, pos.time);
 	}
 }
+#endif
