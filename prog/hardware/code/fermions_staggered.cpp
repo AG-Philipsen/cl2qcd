@@ -44,7 +44,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void hardware::code::Fermions_staggered::fill_kernels()
 {
-	sources = get_device()->get_spinor_staggered_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	sources = get_device()->get_spinor_staggered_code()->get_sources() << "operations_staggered.cl" << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	M_staggered = 0;
 
