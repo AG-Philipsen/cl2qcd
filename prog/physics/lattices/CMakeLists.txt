@@ -13,6 +13,7 @@ add_library(lattices
 	scalar_complex.cpp
 	swappable_spinorfield.cpp
 	gaugemomenta.cpp
+	staggeredfield_eo.cpp
 )
 target_link_libraries(lattices
 	hardware
@@ -28,3 +29,4 @@ add_unit_test(physics::lattices::Spinorfield_eo spinorfield_eo_test)
 add_unit_test(physics::lattices::Scalar<hmc_complex> scalar_complex_test)
 add_unit_test(physics::lattices::SwappableSpinorfield swappable_spinorfield_test)
 add_unit_test(physics::lattices::Gaugemomenta gaugemomenta_test)
+add_unit_test(physics::lattices::Staggeredfield_eo staggeredfield_eo_test)
