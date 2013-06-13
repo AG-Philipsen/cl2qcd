@@ -15,8 +15,6 @@
 #include "../../meta/type_ops.hpp"
 #include <cmath>
 
-//To be added...
-#if 0
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -27,135 +25,108 @@ BOOST_AUTO_TEST_CASE(initialization)
 	hardware::System system(params);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Spinorfield_eo sf(system);
-}
-
-BOOST_AUTO_TEST_CASE(gamma5)
-{
-	using physics::lattices::Spinorfield_eo;
-
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
-
-	Spinorfield_eo sf(system);
-	sf.zero();
-	sf.gamma5();
-	BOOST_CHECK_CLOSE(squarenorm(sf), 0., .1);
-	sf.cold();
-	sf.gamma5();
-	BOOST_CHECK_CLOSE(squarenorm(sf), .5, .1);
-	physics::lattices::sax(&sf, { -.5, .3}, sf);
-	sf.gamma5();
-	BOOST_CHECK_CLOSE(squarenorm(sf), .17, .1);
-}
-
-BOOST_AUTO_TEST_CASE(zero)
-{
-	using physics::lattices::Spinorfield_eo;
-
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
-
-	Spinorfield_eo sf(system);
-	sf.gaussian(prng);
-	sf.zero();
-	BOOST_CHECK_CLOSE(squarenorm(sf), 0., .1);
-}
-
-BOOST_AUTO_TEST_CASE(cold)
-{
-	using physics::lattices::Spinorfield_eo;
-
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
-
-	Spinorfield_eo sf(system);
-	sf.gaussian(prng);
-	sf.cold();
-	BOOST_CHECK_CLOSE(squarenorm(sf), .5, .1);
-}
-
-
-BOOST_AUTO_TEST_CASE(gaussian)
-{
-	using physics::lattices::Spinorfield_eo;
-
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
-
-	Spinorfield_eo sf(system);
-	sf.zero();
-	sf.gamma5();
-	hmc_float const gamma5 = squarenorm(sf);
-	sf.gaussian(prng);
-	BOOST_CHECK_NE(squarenorm(sf), gamma5);
+	Staggeredfield_eo sf(system);
 }
 
 BOOST_AUTO_TEST_CASE(squarenorm)
 {
-	using physics::lattices::Spinorfield_eo;
+	using physics::lattices::Staggeredfield_eo;
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	Spinorfield_eo sf(system);
-	sf.zero();
-	sf.gamma5();
-	hmc_float const gamma5 = physics::lattices::squarenorm(sf);
-	BOOST_REQUIRE_CLOSE(gamma5, 0., .1);
-	sf.gaussian(prng);
-	BOOST_CHECK_NE(physics::lattices::squarenorm(sf), gamma5);
-	sf.zero();
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0., .1);
+	Staggeredfield_eo sf(system);
+	sf.set_zero();
+	hmc_float const sq = physics::lattices::squarenorm(sf);
+	BOOST_REQUIRE_CLOSE(sq, 0., 1.e-8);
+	sf.set_gaussian(prng);
+	BOOST_CHECK_NE(physics::lattices::squarenorm(sf), sq);
+	sf.set_zero();
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0., 1.e-8);
+}
+
+BOOST_AUTO_TEST_CASE(zero)
+{
+	using physics::lattices::Staggeredfield_eo;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	Staggeredfield_eo sf(system);
+	sf.set_gaussian(prng);
+	sf.set_zero();
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0., 1.e-8);
+}
+
+BOOST_AUTO_TEST_CASE(cold)
+{
+	using physics::lattices::Staggeredfield_eo;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	Staggeredfield_eo sf(system);
+	sf.set_gaussian(prng);
+	sf.set_cold();
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.5, 1.e-8);
+}
+
+BOOST_AUTO_TEST_CASE(gaussian)
+{
+	using physics::lattices::Staggeredfield_eo;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	Staggeredfield_eo sf(system);
+	sf.set_cold();
+	hmc_float const sq = physics::lattices::squarenorm(sf);
+	sf.set_gaussian(prng);
+	BOOST_CHECK_NE(physics::lattices::squarenorm(sf), sq);
 }
 
 BOOST_AUTO_TEST_CASE(scalar_product)
 {
-	using physics::lattices::Spinorfield_eo;
+	using physics::lattices::Staggeredfield_eo;
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	Spinorfield_eo gaussian(system);
-	gaussian.gaussian(prng);
+	Staggeredfield_eo gaussian(system);
+	gaussian.set_gaussian(prng);
 
-	Spinorfield_eo zero(system);
-	zero.zero();
+	Staggeredfield_eo zero(system);
+	zero.set_zero();
 
-	Spinorfield_eo cold(system);
-	cold.cold();
-
-	Spinorfield_eo gamma(system);
-	gamma.zero();
-	gamma.gamma5();
-	gamma.gamma5();
+	Staggeredfield_eo cold(system);
+	cold.set_cold();
 
 	const hmc_complex gaussian_scalar_prod = physics::lattices::scalar_product(gaussian, gaussian);
 	const hmc_float gaussian_squarenorm = physics::lattices::squarenorm(gaussian);
-	BOOST_CHECK_CLOSE(gaussian_scalar_prod.re, gaussian_squarenorm, .1);
-	BOOST_CHECK_CLOSE(gaussian_scalar_prod.im, 0., .1);
+	BOOST_CHECK_CLOSE(gaussian_scalar_prod.re, gaussian_squarenorm, 1.e-8);
+	BOOST_CHECK_CLOSE(gaussian_scalar_prod.im, 0., 1.e-8);
 	const hmc_complex gaussian_scalar_cold = physics::lattices::scalar_product(gaussian, cold);
 	const hmc_complex cold_scalar_gaussian = physics::lattices::scalar_product(cold, gaussian);
-	BOOST_CHECK_CLOSE(std::abs(gaussian_scalar_cold.re), std::abs(cold_scalar_gaussian.re), .1);
-	BOOST_CHECK_CLOSE(std::abs(gaussian_scalar_cold.im), std::abs(cold_scalar_gaussian.im), .1);
-	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(gamma, zero), hmc_complex_zero);
-	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(zero, gamma), hmc_complex_zero);
-	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(gamma, cold), hmc_complex_zero);
-	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(cold, gamma), hmc_complex_zero);
+	BOOST_CHECK_CLOSE(std::abs(gaussian_scalar_cold.re), std::abs(cold_scalar_gaussian.re), 1.e-8);
+	BOOST_CHECK_CLOSE(std::abs(gaussian_scalar_cold.im), std::abs(cold_scalar_gaussian.im), 1.e-8);
+	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(gaussian, zero), hmc_complex_zero);
+	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(zero, gaussian), hmc_complex_zero);
+	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(zero, cold), hmc_complex_zero);
+	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(cold, zero), hmc_complex_zero);
 }
 
+//To be added...
+#if 0
 BOOST_AUTO_TEST_CASE(sax)
 {
 	using physics::lattices::Spinorfield_eo;
