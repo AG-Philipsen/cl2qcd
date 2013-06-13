@@ -12,56 +12,56 @@
 //#include "../../hardware/code/fermions_staggered.hpp"
 #include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
+//For hardware::code::get_eoprec_spinorfieldsize()
+#include "../../hardware/code/spinors.hpp"
 
+static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const hardware::System& system);
 
-//To be added...
-#if 0
-
-static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
+/*To be added...
 static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
 static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
 static void extract_boundary(char* host, const hardware::buffers::Spinor * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 static void send_halo(const hardware::buffers::Spinor * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
+*/
 
-physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
+physics::lattices::Staggeredfield_eo::Staggeredfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
 {
 }
 
-static  std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system)
+static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const hardware::System& system)
 {
-	using hardware::buffers::Spinor;
+	using hardware::buffers::SU3vec;
 
 	auto devices = system.get_devices();
-	std::vector<const Spinor*> buffers;
+	std::vector<const SU3vec*> buffers;
 	buffers.reserve(devices.size());
 	for(auto device: devices) {
-		buffers.push_back(new Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device));
+		buffers.push_back(new SU3vec(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device));
 	}
 	return buffers;
 }
 
-
-physics::lattices::Spinorfield_eo::~Spinorfield_eo()
+physics::lattices::Staggeredfield_eo::~Staggeredfield_eo()
 {
 for(auto buffer: buffers) {
 		delete buffer;
 	}
 }
 
-const std::vector<const hardware::buffers::Spinor *> physics::lattices::Spinorfield_eo::get_buffers() const noexcept
+const std::vector<const hardware::buffers::SU3vec *> physics::lattices::Staggeredfield_eo::get_buffers() const noexcept
 {
 	return buffers;
 }
 
-hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right)
+hmc_complex physics::lattices::scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right)
 {
 	const Scalar<hmc_complex> res(left.system);
 	scalar_product(&res, left, right);
 	return res.get();
 }
 
-void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right)
+void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Staggeredfield_eo& left, const Staggeredfield_eo& right)
 {
 	auto res_buffers = res->get_buffers();
 	auto left_buffers = left.get_buffers();
@@ -77,21 +77,21 @@ void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spi
 		auto left_buf = left_buffers[i];
 		auto right_buf = right_buffers[i];
 		auto device = res_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->get_spinor_staggered_code();
 
 		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
 	}
 	res->sum();
 }
 
-hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field)
+hmc_float physics::lattices::squarenorm(const Staggeredfield_eo& field)
 {
 	const Scalar<hmc_float> res(field.system);
 	squarenorm(&res, field);
 	return res.get();
 }
 
-void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field)
+void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Staggeredfield_eo& field)
 {
 	auto field_buffers = field.get_buffers();
 	auto res_buffers = res->get_buffers();
@@ -105,30 +105,30 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 		auto field_buf = field_buffers[i];
 		auto res_buf = res_buffers[i];
 		auto device = field_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->get_spinor_staggered_code();
 
 		spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
 	}
 	res->sum();
 }
 
-void physics::lattices::Spinorfield_eo::zero() const
+void physics::lattices::Staggeredfield_eo::set_zero() const
 {
 for(auto buffer: buffers) {
-		auto spinor_code = buffer->get_device()->get_spinor_code();
+		auto spinor_code = buffer->get_device()->get_spinor_staggered_code();
 		spinor_code->set_zero_spinorfield_eoprec_device(buffer);
 	}
 }
 
-void physics::lattices::Spinorfield_eo::cold() const
+void physics::lattices::Staggeredfield_eo::set_cold() const
 {
 for(auto buffer: buffers) {
-		auto spinor_code = buffer->get_device()->get_spinor_code();
-		spinor_code->set_eoprec_spinorfield_cold_device(buffer);
+		auto spinor_code = buffer->get_device()->get_spinor_staggered_code();
+		spinor_code->set_cold_spinorfield_eoprec_device(buffer);
 	}
 }
 
-void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) const
+void physics::lattices::Staggeredfield_eo::set_gaussian(const physics::PRNG& prng) const
 {
 	auto prng_bufs = prng.get_buffers();
 
@@ -139,10 +139,38 @@ void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) cons
 	for(size_t i = 0; i < buffers.size(); ++i) {
 		auto spin_buf = buffers[i];
 		auto prng_buf = prng_bufs[i];
-		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_eo_device(spin_buf, prng_buf);
+		spin_buf->get_device()->get_spinor_staggered_code()->set_gaussian_spinorfield_eoprec_device(spin_buf, prng_buf);
 	}
-	update_halo();
+	//update_halo();
 }
+
+//To be added...
+#if 0
+
+void physics::lattices::sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x)
+{
+	const Scalar<hmc_complex> alpha_buf(out->system);
+	alpha_buf.store(alpha);
+	sax(out, alpha_buf, x);
+}
+
+void physics::lattices::sax(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x)
+{
+	auto out_bufs = out->get_buffers();
+	auto alpha_bufs = alpha.get_buffers();
+	auto x_bufs = x.get_buffers();
+
+	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != x_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
+	}
+}
+
 
 void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
 {
@@ -179,29 +207,6 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_comple
 	}
 }
 
-void physics::lattices::sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x)
-{
-	const Scalar<hmc_complex> alpha_buf(out->system);
-	alpha_buf.store(alpha);
-	sax(out, alpha_buf, x);
-}
-
-void physics::lattices::sax(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x)
-{
-	auto out_bufs = out->get_buffers();
-	auto alpha_bufs = alpha.get_buffers();
-	auto x_bufs = x.get_buffers();
-
-	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != x_bufs.size()) {
-		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
-	}
-
-	for(size_t i = 0; i < out_bufs.size(); ++i) {
-		auto out_buf = out_bufs[i];
-		auto device = out_buf->get_device();
-		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
-	}
-}
 
 void physics::lattices::saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z)
 {
