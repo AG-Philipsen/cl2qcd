@@ -40,11 +40,11 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	Staggeredfield_eo sf(system);
 	sf.set_zero();
 	hmc_float const sq = physics::lattices::squarenorm(sf);
-	BOOST_REQUIRE_CLOSE(sq, 0., 1.e-8);
+	BOOST_REQUIRE_EQUAL(sq, 0);
 	sf.set_gaussian(prng);
 	BOOST_CHECK_NE(physics::lattices::squarenorm(sf), sq);
 	sf.set_zero();
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0., 1.e-8);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
 }
 
 BOOST_AUTO_TEST_CASE(zero)
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(zero)
 	Staggeredfield_eo sf(system);
 	sf.set_gaussian(prng);
 	sf.set_zero();
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0., 1.e-8);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
 }
 
 BOOST_AUTO_TEST_CASE(cold)
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	const hmc_complex gaussian_scalar_prod = physics::lattices::scalar_product(gaussian, gaussian);
 	const hmc_float gaussian_squarenorm = physics::lattices::squarenorm(gaussian);
 	BOOST_CHECK_CLOSE(gaussian_scalar_prod.re, gaussian_squarenorm, 1.e-8);
-	BOOST_CHECK_CLOSE(gaussian_scalar_prod.im, 0., 1.e-8);
+	BOOST_CHECK_EQUAL(gaussian_scalar_prod.im, 0);
 	const hmc_complex gaussian_scalar_cold = physics::lattices::scalar_product(gaussian, cold);
 	const hmc_complex cold_scalar_gaussian = physics::lattices::scalar_product(cold, gaussian);
 	BOOST_CHECK_CLOSE(std::abs(gaussian_scalar_cold.re), std::abs(cold_scalar_gaussian.re), 1.e-8);
@@ -125,89 +125,91 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(cold, zero), hmc_complex_zero);
 }
 
-//To be added...
-#if 0
 BOOST_AUTO_TEST_CASE(sax)
 {
-	using physics::lattices::Spinorfield_eo;
+	using physics::lattices::Staggeredfield_eo;
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	Spinorfield_eo orig_sf(system);
-	orig_sf.gaussian(prng);
-	Spinorfield_eo sf(system);
+	Staggeredfield_eo orig_sf(system);
+	orig_sf.set_gaussian(prng);
+	Staggeredfield_eo sf(system);
 
-	physics::lattices::sax(&sf, {.5, 0}, orig_sf);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .25 * physics::lattices::squarenorm(orig_sf), .1);
+	physics::lattices::sax(&sf, {0.5, 0.}, orig_sf);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.25 * physics::lattices::squarenorm(orig_sf), 1.e-8);
 	physics::lattices::sax(&sf, {2., 0.}, orig_sf);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 4 * physics::lattices::squarenorm(orig_sf), .1);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 4. * physics::lattices::squarenorm(orig_sf), 1.e-8);
 	physics::lattices::sax(&sf, {0., 0.}, orig_sf);
-	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0.);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
 
-	orig_sf.cold();
+	orig_sf.set_cold();
 	physics::lattices::sax(&sf, { -.8, .7}, orig_sf);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.56499999999999906, .1);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.56499999999999906, 1.e-8);
 	physics::lattices::sax(&sf, {.65, .3}, orig_sf);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.25625000000000059, .1);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.25625000000000059, 1.e-8);
 
 }
 
 BOOST_AUTO_TEST_CASE(saxpy)
 {
-	using physics::lattices::Spinorfield_eo;
+	using physics::lattices::Staggeredfield_eo;
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	Spinorfield_eo gaussian(system);
-	gaussian.gaussian(prng);
-	Spinorfield_eo cold(system);
-	cold.cold();
-	Spinorfield_eo zero(system);
-	zero.zero();
-	Spinorfield_eo sf(system);
+	Staggeredfield_eo gaussian(system);
+	gaussian.set_gaussian(prng);
+	Staggeredfield_eo cold(system);
+	cold.set_cold();
+	Staggeredfield_eo zero(system);
+	zero.set_zero();
+	Staggeredfield_eo sf(system);
 
 	physics::lattices::saxpy(&sf, {1., 0.}, gaussian, zero);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
-	physics::lattices::saxpy(&sf, {0., 0.}, gaussian, gaussian);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpy(&sf, {0., 0.}, gaussian, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(cold), 1.e-8);
 	physics::lattices::saxpy(&sf, {.3, .1}, cold, cold);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .25, .1);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .85, 1.e-8);
 }
 
-BOOST_AUTO_TEST_CASE(saxsbypz)
+BOOST_AUTO_TEST_CASE(saxpbypz)
 {
-	using physics::lattices::Spinorfield_eo;
+	using physics::lattices::Staggeredfield_eo;
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-	Spinorfield_eo gaussian(system);
-	gaussian.gaussian(prng);
-	Spinorfield_eo cold(system);
-	cold.cold();
-	Spinorfield_eo zero(system);
-	zero.zero();
-	Spinorfield_eo sf(system);
+	Staggeredfield_eo gaussian(system);
+	gaussian.set_gaussian(prng);
+	Staggeredfield_eo cold(system);
+	cold.set_cold();
+	Staggeredfield_eo zero(system);
+	zero.set_zero();
+	Staggeredfield_eo sf(system);
 
-	physics::lattices::saxsbypz(&sf, {1., 0.}, gaussian, {0., 0.}, cold, zero);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
-	physics::lattices::saxsbypz(&sf, {0., 0.}, cold, {1., 0.}, gaussian, zero);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
-	physics::lattices::saxsbypz(&sf, {0., 0.}, gaussian, {0., 0.}, gaussian, gaussian);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
-	physics::lattices::saxsbypz(&sf, {.3, .7}, cold, {1., 0.}, zero, cold);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 1.09, .1);
-	physics::lattices::saxsbypz(&sf, {.1, .3}, zero, {.7, .3}, cold, cold);
-	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 1.49, .1);
+	physics::lattices::saxpbypz(&sf, {1., 0.}, gaussian, {0., 0.}, cold, zero);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpbypz(&sf, {0., 0.}, cold, {1., 0.}, gaussian, zero);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpbypz(&sf, {0., 0.}, gaussian, {0., 0.}, gaussian, gaussian);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpbypz(&sf, {.3, .7}, cold, {1., 0.}, zero, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 1.09, 1.e-8);
+	physics::lattices::saxpbypz(&sf, {.1, .3}, zero, {.7, .3}, cold, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 1.49, 1.e-8);
 }
+
+
+//To be added (so far only single GPU and only EO preconditioning)...
+#if 0
 
 BOOST_AUTO_TEST_CASE(conversion)
 {
