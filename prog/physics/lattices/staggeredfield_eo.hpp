@@ -82,7 +82,6 @@ private:
 };
 
 
-
 /**
  * Calculate the scalar product of two staggeredfields.
  */
@@ -128,11 +127,11 @@ template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::latti
  *
  * out = alpha * x + beta * y + z
  */
-void saxsbypz(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y, const Staggeredfield_eo& z);
-void saxsbypz(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, const Staggeredfield_eo& x, const Scalar<hmc_complex>& beta, const Staggeredfield_eo& y, const Staggeredfield_eo& z);
+void saxpbypz(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y, const Staggeredfield_eo& z);
+void saxpbypz(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, const Staggeredfield_eo& x, const Scalar<hmc_complex>& beta, const Staggeredfield_eo& y, const Staggeredfield_eo& z);
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
-template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxsbypz>(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpbypz>(const hardware::System&);
 
 /**
  * A utility function to log the tracenorm.
