@@ -50,6 +50,12 @@ add_definitions(-DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
 find_package( LIME REQUIRED )
 include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
 
+find_package( GMP REQUIRED )
+include_directories( SYSTEM ${GMP_INCLUDE_DIR} )
+
+find_package( MPFR REQUIRED )
+include_directories( SYSTEM ${MPFR_INCLUDE_DIR} )
+
 find_package( LibXml2 REQUIRED )
 include_directories( SYSTEM ${LIBXML2_INCLUDE_DIR} )
 if( LIBXML2_DEFINITIONS )
@@ -131,6 +137,8 @@ set_abs_paths(OPTIMAL_FILES
 )
 set(OPTIMAL_USED_LIBS
 	${OPENCL_LIBRARIES}
+#${GMP_LIBRARIES} automatically pulled by mpfr, relying on the implicit pull avoids libary version conflicts
+	${MPFR_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
