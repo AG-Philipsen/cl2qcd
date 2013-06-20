@@ -20,6 +20,9 @@
 #define JMAX 10000 //Maximum number of iterations of Newton's approximation
 #define SUM_MAX 10 // Maximum number of terms in exponential
 
+namespace physics {
+namespace algorithms {
+
 class AlgRemez
 {
  private:
@@ -151,6 +154,8 @@ class AlgRemez
 
 };
 
+}
+}
 #endif  // Include guard
 
 
