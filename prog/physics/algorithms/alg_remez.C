@@ -1,16 +1,16 @@
-/*
-
-  Mike Clark - 25th May 2005
-
-  alg_remez.C
-
-  AlgRemez is an implementation of the Remez algorithm, which in this
-  case is used for generating the optimal nth root rational
-  approximation.
-
-  Note this class requires the gnu multiprecision (GNU MP) library.
-
-*/
+/** @file
+ * 
+ * Mike Clark - 25th May 2005
+ * 
+ * alg_remez.C
+ * 
+ * AlgRemez is an implementation of the Remez algorithm, which in this
+ * case is used for generating the optimal nth root rational
+ * approximation.
+ * 
+ * Note this class requires the gnu multiprecision (GNU MP) library.
+ * 
+ */
 
 #include<math.h>
 #include<stdio.h>
@@ -19,7 +19,7 @@
 
 
 // Constructor
-AlgRemez::AlgRemez(double lower, double upper, long precision) 
+physics::algorithms::AlgRemez::AlgRemez(double lower, double upper, long precision) 
 {
   prec = precision;
   bigfloat::setDefaultPrecision(prec);
@@ -43,7 +43,7 @@ AlgRemez::AlgRemez(double lower, double upper, long precision)
 }
 
 // Destructor
-AlgRemez::~AlgRemez()
+physics::algorithms::AlgRemez::~AlgRemez()
 {
   if (alloc) {
     delete [] param;
@@ -57,7 +57,7 @@ AlgRemez::~AlgRemez()
 }
 
 // Free memory and reallocate as necessary
-void AlgRemez::allocate(int num_degree, int den_degree)
+void physics::algorithms::AlgRemez::allocate(int num_degree, int den_degree)
 {
   // Arrays have previously been allocated, deallocate first, then allocate
   if (alloc) {
@@ -85,7 +85,7 @@ void AlgRemez::allocate(int num_degree, int den_degree)
 }
 
 // Reset the bounds of the approximation
-void AlgRemez::setBounds(double lower, double upper)
+void physics::algorithms::AlgRemez::setBounds(double lower, double upper)
 {
   apstrt = lower;
   apend = upper;
@@ -93,13 +93,13 @@ void AlgRemez::setBounds(double lower, double upper)
 }
 
 // Generate the rational approximation x^(pnum/pden)
-double AlgRemez::generateApprox(int degree, unsigned long pnum, 
+double physics::algorithms::AlgRemez::generateApprox(int degree, unsigned long pnum, 
 				unsigned long pden)
 {
   return generateApprox(degree, degree, pnum, pden);
 }
 
-double AlgRemez::generateApprox(int num_degree, int den_degree, 
+double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_degree, 
 				unsigned long pnum, unsigned long pden)
 {
   double *a_param = 0;
@@ -108,7 +108,7 @@ double AlgRemez::generateApprox(int num_degree, int den_degree,
 }
 
 // Generate the rational approximation x^(pnum/pden)
-double AlgRemez::generateApprox(int num_degree, int den_degree, 
+double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_degree, 
 				unsigned long pnum, unsigned long pden,
 				int a_len, double *a_param, int *a_pow)
 {
@@ -179,7 +179,7 @@ double AlgRemez::generateApprox(int num_degree, int den_degree,
 }
 
 // Return the partial fraction expansion of the approximation x^(pnum/pden)
-int AlgRemez::getPFE(double *Res, double *Pole, double *Norm) {
+int physics::algorithms::AlgRemez::getPFE(double *Res, double *Pole, double *Norm) {
 
   if (n!=d) {
     printf("Cannot handle case: Numerator degree neq Denominator degree\n");
@@ -218,7 +218,7 @@ int AlgRemez::getPFE(double *Res, double *Pole, double *Norm) {
 }
 
 // Return the partial fraction expansion of the approximation x^(-pnum/pden)
-int AlgRemez::getIPFE(double *Res, double *Pole, double *Norm) {
+int physics::algorithms::AlgRemez::getIPFE(double *Res, double *Pole, double *Norm) {
 
   if (n!=d) {
     printf("Cannot handle case: Numerator degree neq Denominator degree\n");
@@ -262,7 +262,7 @@ int AlgRemez::getIPFE(double *Res, double *Pole, double *Norm) {
 }
 
 // Initial values of maximal and minimal errors
-void AlgRemez::initialGuess() {
+void physics::algorithms::AlgRemez::initialGuess() {
 
   // Supply initial guesses for solution points
   long ncheb = neq;			// Degree of Chebyshev error estimate
@@ -290,7 +290,7 @@ void AlgRemez::initialGuess() {
 }
 
 // Initialise step sizes
-void AlgRemez::stpini(bigfloat *step) {
+void physics::algorithms::AlgRemez::stpini(bigfloat *step) {
   xx[neq+1] = apend;
   delta = 0.25;
   step[0] = xx[0] - apstrt;
@@ -299,7 +299,7 @@ void AlgRemez::stpini(bigfloat *step) {
 }
 
 // Search for error maxima and minima
-void AlgRemez::search(bigfloat *step) {
+void physics::algorithms::AlgRemez::search(bigfloat *step) {
   bigfloat a, q, xm, ym, xn, yn, xx0, xx1;
   int i, j, meq, emsign, ensign, steps;
 
@@ -383,7 +383,7 @@ void AlgRemez::search(bigfloat *step) {
 }
 
 // Solve the equations
-void AlgRemez::equations(void) {
+void physics::algorithms::AlgRemez::equations(void) {
   bigfloat x, y, z;
   int i, j, ip;
   bigfloat *aa;
@@ -424,7 +424,7 @@ void AlgRemez::equations(void) {
 
 // Evaluate the rational form P(x)/Q(x) using coefficients
 // from the solution vector param
-bigfloat AlgRemez::approx(const bigfloat x) {
+bigfloat physics::algorithms::AlgRemez::approx(const bigfloat x) {
   bigfloat yn, yd;
   int i;
 
@@ -438,7 +438,7 @@ bigfloat AlgRemez::approx(const bigfloat x) {
 }
 
 // Compute size and sign of the approximation error at x
-bigfloat AlgRemez::getErr(bigfloat x, int *sign) {
+bigfloat physics::algorithms::AlgRemez::getErr(bigfloat x, int *sign) {
   bigfloat e, f;
 
   f = func(x);
@@ -454,7 +454,7 @@ bigfloat AlgRemez::getErr(bigfloat x, int *sign) {
 }
 
 // Calculate function required for the approximation.
-bigfloat AlgRemez::func(const bigfloat x) {
+bigfloat physics::algorithms::AlgRemez::func(const bigfloat x) {
 
   bigfloat z = (bigfloat)power_num / (bigfloat)power_den;
   bigfloat y;
@@ -473,7 +473,7 @@ bigfloat AlgRemez::func(const bigfloat x) {
 }
 
 // Solve the system AX=B
-int AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[], int n) {
+int physics::algorithms::AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[], int n) {
 
   int i, j, ij, ip, ipj, ipk, ipn;
   int idxpiv, iback;
@@ -588,7 +588,7 @@ int AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[], int n) {
 }
 
 // Calculate the roots of the approximation
-int AlgRemez::root() {
+int physics::algorithms::AlgRemez::root() {
 
   long i,j;
   bigfloat x,dx=0.05;
@@ -639,7 +639,7 @@ int AlgRemez::root() {
 }
 
 // Evaluate the polynomial
-bigfloat AlgRemez::polyEval(bigfloat x, bigfloat *poly, long size) {
+bigfloat physics::algorithms::AlgRemez::polyEval(bigfloat x, bigfloat *poly, long size) {
   bigfloat f = poly[size];
   for (int i=size-1; i>=0; i--) f = f*x + poly[i];
   return f;
@@ -654,7 +654,7 @@ complex_bf AlgRemez::polyEval(complex_bf x,complex_bf *poly, long size) {
 }
 */
 // Evaluate the differential of the polynomial
-bigfloat AlgRemez::polyDiff(bigfloat x, bigfloat *poly, long size) {
+bigfloat physics::algorithms::AlgRemez::polyDiff(bigfloat x, bigfloat *poly, long size) {
   bigfloat df = (bigfloat)size*poly[size];
   for (int i=size-1; i>0; i--) df = df*x + (bigfloat)i*poly[i];
   return df;
@@ -662,7 +662,7 @@ bigfloat AlgRemez::polyDiff(bigfloat x, bigfloat *poly, long size) {
 
 
 // Newton's method to calculate roots
-bigfloat AlgRemez::rtnewt(bigfloat *poly, long i, bigfloat x1, 
+bigfloat physics::algorithms::AlgRemez::rtnewt(bigfloat *poly, long i, bigfloat x1, 
 			  bigfloat x2, bigfloat xacc) {
   int j;
   bigfloat df, dx, f, rtn;
@@ -684,7 +684,7 @@ bigfloat AlgRemez::rtnewt(bigfloat *poly, long i, bigfloat x1,
 // Evaluate the partial fraction expansion of the rational function
 // with res roots and poles poles.  Result is overwritten on input
 // arrays.
-void AlgRemez::pfe(bigfloat *res, bigfloat *poles, bigfloat norm) {
+void physics::algorithms::AlgRemez::pfe(bigfloat *res, bigfloat *poles, bigfloat norm) {
   int i,j,small;
   bigfloat temp;
   bigfloat *numerator = new bigfloat[n];
@@ -751,18 +751,18 @@ void AlgRemez::pfe(bigfloat *res, bigfloat *poles, bigfloat norm) {
   delete [] denominator;
 }
 
-double AlgRemez::evaluateApprox(double x) {
+double physics::algorithms::AlgRemez::evaluateApprox(double x) {
   return (double)approx((bigfloat)x);
 }
 
-double AlgRemez::evaluateInverseApprox(double x) {
+double physics::algorithms::AlgRemez::evaluateInverseApprox(double x) {
   return 1.0/(double)approx((bigfloat)x);
 }
 
-double AlgRemez::evaluateFunc(double x) {
+double physics::algorithms::AlgRemez::evaluateFunc(double x) {
   return (double)func((bigfloat)x);
 }
 
-double AlgRemez::evaluateInverseFunc(double x) {
+double physics::algorithms::AlgRemez::evaluateInverseFunc(double x) {
   return 1.0/(double)func((bigfloat)x);
 }
