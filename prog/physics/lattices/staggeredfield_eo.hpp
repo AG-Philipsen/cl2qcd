@@ -38,8 +38,8 @@ public:
 	 */
 	~Staggeredfield_eo();
 
-	/*
-	 * Spinorfield_eos cannot be copied
+	/**
+	 * Staggeredfield_eo cannot be copied
 	 */
 	Staggeredfield_eo& operator=(const Staggeredfield_eo&) = delete;
 	Staggeredfield_eo(const Staggeredfield_eo&) = delete;
