@@ -1,10 +1,6 @@
-/*
-  Mike Clark - 25th May 2005
-
-  Quick test code for calculating optimal rational approximations for
-  the functions x^(y/z) with appropriate bounds.
-
-*/
+/** @file
+ * Tests of the Rational_Approximation algorithm
+ */
 
 #include "rational_approximation.hpp"
 #include "../../logger.hpp"

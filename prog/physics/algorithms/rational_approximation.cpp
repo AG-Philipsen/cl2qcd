@@ -8,12 +8,17 @@
 #include"alg_remez.h"
 #include "../../types.h"
 #include "../../exceptions.h"
+#include "../../logger.hpp"
 
 physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y, int z, hmc_float low, hmc_float high, bool inv, int precision) : inv(inv), d(d), y(y), z(z), precision(precision), low(low), high(high)
 {
 	//Checks on the exponent numerator and denominator
 	if(y<=0 || z<=0 || y%z==0)
 	  throw std::invalid_argument("Exponent of the rational approximation not allowed!");
+	if(inv==false)
+	  logger.info() << "Calculating the rational approximation of the function x^("<< y << "/" << z << ")...";
+	else
+	  logger.info() << "Calculating the rational approximation of the function x^(-"<< y << "/" << z << ")...";
 	//Allocate a and b
 	a = new hmc_float[d];
 	b = new hmc_float[d];
