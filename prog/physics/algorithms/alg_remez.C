@@ -168,7 +168,7 @@ double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_deg
 
   int sign;
   double error = (double)getErr(mm[0],&sign);
-  logger.info() << "Converged at " << iter << " iterations, error = " << error;
+  logger.info() << "Converged at " << iter << " iterations, error = " << std::setprecision(16) << error;
 
   // Once the approximation has been generated, calculate the roots
   if(!root()) {

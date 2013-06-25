@@ -15,10 +15,13 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
 	//Checks on the exponent numerator and denominator
 	if(y<=0 || z<=0 || y%z==0)
 	  throw std::invalid_argument("Exponent of the rational approximation not allowed!");
-	if(inv==false)
-	  logger.info() << "Calculating the rational approximation of the function x^("<< y << "/" << z << ")...";
-	else
-	  logger.info() << "Calculating the rational approximation of the function x^(-"<< y << "/" << z << ")...";
+	if(inv==false){
+	  logger.info() << "Calculating the rational approx. of degree " << 
+	                    d << " of the function x^("<< y << "/" << z << ")...";
+	}else{
+	  logger.info() << "Calculating the rational approx. of degree " << 
+	                    d << " of the function x^(-"<< y << "/" << z << ")...";
+	}
 	//Allocate a and b
 	a = new hmc_float[d];
 	b = new hmc_float[d];
@@ -90,7 +93,7 @@ std::ostream& operator <<(std::ostream &os, const Rational_Approximation &approx
 	os << "\t\t ++\t         Approximation order = " << approx.d << "\t\t\t\t++\n";
 	os << "\t\t ++\t  Range of the approximation = [" << approx.low << "," << approx.high <<"]\t\t\t++\n";
 	os << "\t\t ++\t Precision of the arithmetic = " << approx.precision << "\t\t\t\t++\n";
-	os << "\t\t ++\t      Maximum relative error = " << approx.error << "\t\t\t++\n";
+	os << "\t\t ++\t      Maximum relative error = " << approx.error << "\t\t++\n";
 	os.precision(16);
 	os.setf( std::ios::fixed, std:: ios::floatfield);
 	os << "\t\t ++\t\t\t\t\t\t\t\t\t++\n";
