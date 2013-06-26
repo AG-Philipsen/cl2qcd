@@ -41,6 +41,10 @@ int main(int argc, const char* argv[])
 		// dslash-benchmark
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		for(auto dev: system.get_devices()) {
+			dev->synchronize();
+		}
+
 		int hmc_iter = parameters.get_hmcsteps();
 
 		logger.info() << "Perform dslash (EVEN + ODD) " << hmc_iter << " times.";
