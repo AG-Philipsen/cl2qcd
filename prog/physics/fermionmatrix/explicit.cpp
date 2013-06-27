@@ -142,7 +142,7 @@ void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Sp
 
 void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, int evenodd, hmc_float kappa)
 {
-	in.require_halo();
+	in.require_halo(1);
 
 	auto out_bufs = out->get_buffers();
 	auto gf_bufs = gf.get_buffers();
