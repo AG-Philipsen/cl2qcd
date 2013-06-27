@@ -91,9 +91,14 @@ private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Spinor *> buffers;
 
-	void update_halo() const;
+	/**
+	 * Unconditionally update the halo.
+	 *
+	 * \param widh Up to which thickness to update the halo. Use 0 to indicate the full halo shall be updated.
+	 */
+	void update_halo(unsigned width = 0) const;
 #ifdef LAZY_HALO_UPDATES
-	mutable bool halo_dirty;
+	mutable unsigned valid_halo_width;
 #endif
 
 	friend hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);

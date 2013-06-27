@@ -12,7 +12,7 @@
 #include "util.hpp"
 
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
-static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
+static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params, const unsigned width);
 static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
 static void extract_boundary(char* host, const hardware::buffers::Spinor * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 static void send_halo(const hardware::buffers::Spinor * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
@@ -20,7 +20,7 @@ static void send_halo(const hardware::buffers::Spinor * buffer, const char* host
 physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
 #ifdef LAZY_HALO_UPDATES
-	  , halo_dirty(false)
+	  , valid_halo_width(0)
 #endif
 {
 }
@@ -331,19 +331,20 @@ void physics::lattices::Spinorfield_eo::mark_halo_dirty() const
 {
 #ifdef LAZY_HALO_UPDATES
 	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as dirty.";
-	halo_dirty = true;
+	valid_halo_width = 0;
 #else
 	update_halo();
 #endif
 }
 
-void physics::lattices::Spinorfield_eo::update_halo() const
+void physics::lattices::Spinorfield_eo::update_halo(unsigned width) const
 {
+	// TODO utilize width
 	logger.trace() << "Updating halo of Spinorfield_eo " << this;
 	if(buffers.size() > 1) { // for a single device this will be a noop
 		// currently either all or none of the buffers must be SOA
 		if(buffers[0]->is_soa()) {
-			update_halo_soa(buffers, system.get_inputparameters());
+			update_halo_soa(buffers, system.get_inputparameters(), width);
 		} else {
 			update_halo_aos(buffers, system.get_inputparameters());
 		}
@@ -362,7 +363,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *>
 	hardware::buffers::update_halo<spinor>(buffers, params, .5 /* only even or odd sites */ );
 }
 
-static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
+static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params, const unsigned width)
 {
 	// check all buffers are non-soa
 	for(auto const buffer: buffers) {
@@ -371,17 +372,20 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *>
 		}
 	}
 
-	hardware::buffers::update_halo_soa<spinor>(buffers, params, .5 /* only even or odd sites */ );
+	hardware::buffers::update_halo_soa<spinor>(buffers, params, .5 /* only even or odd sites */, 1, width );
 }
 
 void physics::lattices::Spinorfield_eo::require_halo(unsigned reqd_width) const
 {
 #ifdef LAZY_HALO_UPDATES
-	logger.trace() << "Halo of Spinorfield_eo " << this << " required. Dirty: " << halo_dirty;
-	if(halo_dirty) {
-		update_halo();
+	if(!reqd_width) {
+		reqd_width = buffers[0]->get_device()->get_halo_size();
 	}
-	halo_dirty = false;
+	logger.trace() << "Halo of Spinorfield_eo " << this << " required with width " << reqd_width << ". Width of valid halo: " << valid_halo_width;
+	if(valid_halo_width < reqd_width) {
+		update_halo(reqd_width);
+	}
+	valid_halo_width = reqd_width;
 #endif
 }
 
@@ -389,7 +393,7 @@ void physics::lattices::Spinorfield_eo::mark_halo_clean() const
 {
 #ifdef LAZY_HALO_UPDATES
 	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as clean.";
-	halo_dirty = false;
+	valid_halo_width = buffers[0]->get_device()->get_halo_size();
 #endif
 }
 
