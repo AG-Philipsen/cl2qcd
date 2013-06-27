@@ -14,9 +14,15 @@ namespace physics {
 namespace algorithms {
 
 /**
- * this namespace contains methods to solve linear systems like
- * A * x = b
- * for x
+ * this namespace contains methods to solve linear systems either like \n
+ * <pre>
+ * A * x = b       (for x, so far only for Wilson fermions)  </pre>
+ * or like
+ * <pre>
+ * (A + sigma) * x = b       (for x, so far only with even-odd preconditioned Staggered fields)
+ * </pre>
+ * @note In the latter case, the problem is solved simultaneously for an entire
+ *       set of values of sigma thanks to a multi-shifted inverter
  */
 namespace solvers {
 
