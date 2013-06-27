@@ -68,13 +68,28 @@ public:
 	void gaussian(const physics::PRNG& prng) const;
 
 	/**
-	 * Update the halos of the spinorfield buffers.
+	 * Mark the halo as requiring an update.
+	 *
+	 * @warning: The transfer may be defferred. Make sure to call require_halo if you require any halo values.
 	 */
-	void update_halo() const;
+	void mark_halo_dirty() const;
+
+	/**
+	 * Ensure that the halo has been update.
+	 */
+	void require_halo() const;
+
+	/**
+	 * Mark the halo as up to date.
+	 */
+	void mark_halo_clean() const;
+
 
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Spinor *> buffers;
+
+	void update_halo() const;
 
 	friend hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
 	friend hmc_float squarenorm(const Spinorfield_eo& field);

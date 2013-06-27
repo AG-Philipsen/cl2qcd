@@ -110,6 +110,7 @@ for(auto buffer: buffers) {
 		auto spinor_code = buffer->get_device()->get_spinor_code();
 		spinor_code->set_zero_spinorfield_eoprec_device(buffer);
 	}
+	mark_halo_clean();
 }
 
 void physics::lattices::Spinorfield_eo::cold() const
@@ -118,6 +119,7 @@ for(auto buffer: buffers) {
 		auto spinor_code = buffer->get_device()->get_spinor_code();
 		spinor_code->set_eoprec_spinorfield_cold_device(buffer);
 	}
+	mark_halo_clean();
 }
 
 void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) const
@@ -133,7 +135,7 @@ void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) cons
 		auto prng_buf = prng_bufs[i];
 		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_eo_device(spin_buf, prng_buf);
 	}
-	update_halo();
+	mark_halo_dirty();
 }
 
 void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
@@ -151,6 +153,7 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha, out_buf);
 	}
+	out->mark_halo_dirty();
 }
 
 void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
@@ -169,6 +172,7 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_comple
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
 	}
+	out->mark_halo_dirty();
 }
 
 void physics::lattices::sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x)
@@ -193,6 +197,7 @@ void physics::lattices::sax(const Spinorfield_eo* out, const Scalar<hmc_complex>
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
 	}
+	out->mark_halo_dirty();
 }
 
 void physics::lattices::saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z)
@@ -223,6 +228,7 @@ void physics::lattices::saxsbypz(const Spinorfield_eo* out, const Scalar<hmc_com
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
 	}
+	out->mark_halo_dirty();
 }
 
 void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in)
@@ -240,10 +246,14 @@ void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spin
 		auto spinor_code = in_bufs[i]->get_device()->get_spinor_code();
 		spinor_code->convert_to_eoprec_device(even_bufs[i], odd_bufs[i], in_bufs[i]);
 	}
+	even->mark_halo_clean();
+	odd->mark_halo_clean();
 }
 
 void physics::lattices::convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd)
 {
+	even.require_halo();
+	odd.require_halo();
 	auto merged_bufs = merged->get_buffers();
 	auto even_bufs = even.get_buffers();
 	auto odd_bufs = odd.get_buffers();
@@ -313,6 +323,11 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 	}
 }
 
+void physics::lattices::Spinorfield_eo::mark_halo_dirty() const
+{
+	update_halo();
+}
+
 void physics::lattices::Spinorfield_eo::update_halo() const
 {
 	if(buffers.size() > 1) { // for a single device this will be a noop
@@ -347,4 +362,14 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *>
 	}
 
 	hardware::buffers::update_halo_soa<spinor>(buffers, params, .5 /* only even or odd sites */ );
+}
+
+void physics::lattices::Spinorfield_eo::require_halo() const
+{
+	// nothing to do, yet
+}
+
+void physics::lattices::Spinorfield_eo::mark_halo_clean() const
+{
+	// nothing to do, yet
 }
