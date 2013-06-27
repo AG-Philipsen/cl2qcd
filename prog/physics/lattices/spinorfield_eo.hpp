@@ -90,6 +90,9 @@ private:
 	const std::vector<const hardware::buffers::Spinor *> buffers;
 
 	void update_halo() const;
+#ifdef LAZY_HALO_UPDATES
+	mutable bool halo_dirty;
+#endif
 
 	friend hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
 	friend hmc_float squarenorm(const Spinorfield_eo& field);

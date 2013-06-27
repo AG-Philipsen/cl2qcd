@@ -18,6 +18,9 @@ static void send_halo(const hardware::buffers::Spinor * buffer, const char* host
 
 physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
+#ifdef LAZY_HALO_UPDATES
+	  , halo_dirty(false)
+#endif
 {
 }
 
@@ -325,7 +328,11 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Spinorfield_eo::mark_halo_dirty() const
 {
+#ifdef LAZY_HALO_UPDATES
+	halo_dirty = true;
+#else
 	update_halo();
+#endif
 }
 
 void physics::lattices::Spinorfield_eo::update_halo() const
@@ -366,10 +373,17 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *>
 
 void physics::lattices::Spinorfield_eo::require_halo() const
 {
-	// nothing to do, yet
+#ifdef LAZY_HALO_UPDATES
+	if(halo_dirty) {
+		update_halo();
+	}
+	halo_dirty = false;
+#endif
 }
 
 void physics::lattices::Spinorfield_eo::mark_halo_clean() const
 {
-	// nothing to do, yet
+#ifdef LAZY_HALO_UPDATES
+	halo_dirty = false;
+#endif
 }
