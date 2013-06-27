@@ -9,6 +9,7 @@
 #include "../../hardware/code/fermions.hpp"
 #include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
+#include "util.hpp"
 
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
 static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
@@ -390,4 +391,25 @@ void physics::lattices::Spinorfield_eo::mark_halo_clean() const
 	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as clean.";
 	halo_dirty = false;
 #endif
+}
+
+void physics::lattices::copyData(const physics::lattices::Spinorfield_eo* to, const physics::lattices::Spinorfield_eo& from)
+{
+//	auto from_buffers = from.get_buffers();
+//	auto dest_buffers = to->get_buffers();
+//	if(from_buffers.size() != dest_buffers.size()) {
+//		throw std::invalid_argument("Spinorfield_eohe lattices need to have the same number of buffers.");
+//	}
+//
+//	for(size_t i = 0; i < from_buffers.size(); ++i) {
+//		hardware::buffers::copyData(dest_buffers[i], from_buffers[i]);
+//	}
+	copyData<Spinorfield_eo>(to, from);
+
+	to->mark_halo_dirty(); // TODO can be avoided if source is clean
+}
+
+void physics::lattices::copyData(const physics::lattices::Spinorfield_eo* to, const physics::lattices::Spinorfield_eo* from)
+{
+	copyData(to, *from);
 }
