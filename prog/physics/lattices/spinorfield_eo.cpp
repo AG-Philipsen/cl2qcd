@@ -329,6 +329,7 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 void physics::lattices::Spinorfield_eo::mark_halo_dirty() const
 {
 #ifdef LAZY_HALO_UPDATES
+	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as dirty.";
 	halo_dirty = true;
 #else
 	update_halo();
@@ -337,6 +338,7 @@ void physics::lattices::Spinorfield_eo::mark_halo_dirty() const
 
 void physics::lattices::Spinorfield_eo::update_halo() const
 {
+	logger.trace() << "Updating halo of Spinorfield_eo " << this;
 	if(buffers.size() > 1) { // for a single device this will be a noop
 		// currently either all or none of the buffers must be SOA
 		if(buffers[0]->is_soa()) {
@@ -374,6 +376,7 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *>
 void physics::lattices::Spinorfield_eo::require_halo() const
 {
 #ifdef LAZY_HALO_UPDATES
+	logger.trace() << "Halo of Spinorfield_eo " << this << " required. Dirty: " << halo_dirty;
 	if(halo_dirty) {
 		update_halo();
 	}
@@ -384,6 +387,7 @@ void physics::lattices::Spinorfield_eo::require_halo() const
 void physics::lattices::Spinorfield_eo::mark_halo_clean() const
 {
 #ifdef LAZY_HALO_UPDATES
+	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as clean.";
 	halo_dirty = false;
 #endif
 }
