@@ -76,8 +76,10 @@ public:
 
 	/**
 	 * Ensure that the halo has been update.
+	 *
+	 * \param width Only require the the given width of the halo to be up to date, use 0 to indicate the full halo is required.
 	 */
-	void require_halo() const;
+	void require_halo(unsigned width = 0) const;
 
 	/**
 	 * Mark the halo as up to date.

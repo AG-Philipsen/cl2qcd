@@ -373,7 +373,7 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *>
 	hardware::buffers::update_halo_soa<spinor>(buffers, params, .5 /* only even or odd sites */ );
 }
 
-void physics::lattices::Spinorfield_eo::require_halo() const
+void physics::lattices::Spinorfield_eo::require_halo(unsigned reqd_width) const
 {
 #ifdef LAZY_HALO_UPDATES
 	logger.trace() << "Halo of Spinorfield_eo " << this << " required. Dirty: " << halo_dirty;
