@@ -102,6 +102,22 @@ private:
 };
 
 /**
+ * Copy the contents of one lattice to another
+ *
+ * \param[out] dest The lattice to copy to
+ * \param[in]  from The lattice to copy from
+ */
+void copyData(const Spinorfield_eo* to, const Spinorfield_eo* from);
+
+/**
+ * Copy the contents of one lattice to another
+ *
+ * \param[out] dest Spinorfield_eohe lattice to copy to
+ * \param[in]  from Spinorfield_eohe lattice to copy from
+ */
+void copyData(const Spinorfield_eo* to, const Spinorfield_eo& from);
+
+/**
  * Calculate the scalar product of two spinorfields.
  */
 hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
