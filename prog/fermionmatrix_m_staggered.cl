@@ -38,7 +38,9 @@
  *       calculate staggered phases whenever we need them, instead of including them in
  *       links and hence projecting links to SU(3) group sometimes (one should do such
  *       a projection because if eta_mu is -1 then you go out from SU(3) group).
- *       Observe that, avoiding such projection, we get rid of this approximation.
+ *       Observe that, avoiding such projection, we get rid of this approximation. Actually
+ *       this is not completely true because there is still a projection to be done because
+ *       of the numerical errors in the integration of the molecular dinamics equations.
  * \par
  * @note In this kernel \em no \em even-odd \em preconditioning is assumed: vectors "in" and "out" have
  *       VOL4D components.
