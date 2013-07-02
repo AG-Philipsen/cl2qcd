@@ -83,8 +83,10 @@ public:
 
 	/**
 	 * Mark the halo as up to date.
+	 *
+	 * \param width Only mark part of the halo as up to date. 0 will mark the whole halo as up to date!
 	 */
-	void mark_halo_clean() const;
+	void mark_halo_clean(unsigned width = 0) const;
 
 
 private:

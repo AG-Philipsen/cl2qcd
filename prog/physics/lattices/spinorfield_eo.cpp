@@ -389,11 +389,11 @@ void physics::lattices::Spinorfield_eo::require_halo(unsigned reqd_width) const
 #endif
 }
 
-void physics::lattices::Spinorfield_eo::mark_halo_clean() const
+void physics::lattices::Spinorfield_eo::mark_halo_clean(unsigned width) const
 {
 #ifdef LAZY_HALO_UPDATES
-	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as clean.";
-	valid_halo_width = buffers[0]->get_device()->get_halo_size();
+	valid_halo_width = width ? width : buffers[0]->get_device()->get_halo_size();
+	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as clean (width " << valid_halo_width << ").";
 #endif
 }
 
