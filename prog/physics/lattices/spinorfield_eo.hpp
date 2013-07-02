@@ -88,6 +88,11 @@ public:
 	 */
 	void mark_halo_clean(unsigned width = 0) const;
 
+	/**
+	 * Check if part or all of the halo is valid.
+	 */
+	unsigned get_valid_halo_width() const;
+
 
 private:
 	hardware::System const& system;
