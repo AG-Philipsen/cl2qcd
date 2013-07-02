@@ -62,8 +62,6 @@ void physics::fermionmatrix::M_tm_minus(const physics::lattices::Spinorfield * o
 
 void physics::fermionmatrix::M_tm_inverse_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
-	in.require_halo();
-
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
 
@@ -77,13 +75,16 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal(const physics::lattices::
 		fermion_code->M_tm_inverse_sitediagonal_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
-	out->mark_halo_clean();
+	auto const valid_halo_width = in.get_valid_halo_width();
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::fermionmatrix::M_tm_sitediagonal(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
-	in.require_halo();
-
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
 
@@ -97,13 +98,16 @@ void physics::fermionmatrix::M_tm_sitediagonal(const physics::lattices::Spinorfi
 		fermion_code->M_tm_sitediagonal_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
-	out->mark_halo_clean();
+	auto const valid_halo_width = in.get_valid_halo_width();
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
-	in.require_halo();
-
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
 
@@ -117,13 +121,16 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(const physics::latt
 		fermion_code->M_tm_inverse_sitediagonal_minus_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
-	out->mark_halo_clean();
+	auto const valid_halo_width = in.get_valid_halo_width();
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Spinorfield_eo& in, hmc_float mubar)
 {
-	in.require_halo();
-
 	auto out_bufs = out->get_buffers();
 	auto in_bufs = in.get_buffers();
 
@@ -137,7 +144,12 @@ void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Sp
 		fermion_code->M_tm_sitediagonal_minus_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
-	out->mark_halo_clean();
+	auto const valid_halo_width = in.get_valid_halo_width();
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, int evenodd, hmc_float kappa)
