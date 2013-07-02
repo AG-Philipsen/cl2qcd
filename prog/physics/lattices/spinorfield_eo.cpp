@@ -10,6 +10,7 @@
 #include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
 #include "util.hpp"
+#include <algorithm>
 
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
 static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params, const unsigned width);
@@ -157,7 +158,13 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha, out_buf);
 	}
-	out->mark_halo_dirty();
+
+	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
@@ -176,7 +183,13 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_comple
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
 	}
-	out->mark_halo_dirty();
+
+	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::lattices::sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x)
@@ -201,7 +214,13 @@ void physics::lattices::sax(const Spinorfield_eo* out, const Scalar<hmc_complex>
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
 	}
-	out->mark_halo_dirty();
+
+	auto const valid_halo_width = x.get_valid_halo_width();
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::lattices::saxsbypz(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const hmc_complex beta, const Spinorfield_eo& y, const Spinorfield_eo& z)
@@ -232,7 +251,13 @@ void physics::lattices::saxsbypz(const Spinorfield_eo* out, const Scalar<hmc_com
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
 	}
-	out->mark_halo_dirty();
+
+	auto const valid_halo_width = std::min({x.get_valid_halo_width(), y.get_valid_halo_width(), z.get_valid_halo_width()});
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in)
@@ -405,7 +430,13 @@ unsigned physics::lattices::Spinorfield_eo::get_valid_halo_width() const
 void physics::lattices::copyData(const physics::lattices::Spinorfield_eo* to, const physics::lattices::Spinorfield_eo& from)
 {
 	copyData<Spinorfield_eo>(to, from);
-	to->mark_halo_dirty(); // TODO can be avoided if source is clean
+
+	auto const valid_halo_width = from.get_valid_halo_width();
+	if(valid_halo_width) {
+		to->mark_halo_clean(valid_halo_width);
+	} else {
+		to->mark_halo_dirty();
+	}
 }
 
 void physics::lattices::copyData(const physics::lattices::Spinorfield_eo* to, const physics::lattices::Spinorfield_eo* from)
