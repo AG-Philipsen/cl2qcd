@@ -441,6 +441,14 @@ void test_DKS_eo(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	auto * device = cpu.get_device();
+	
+	//The following three lines are to be used to produce the ref_conf file needed to get the ref_value
+	//---> Comment them out when the reference values have been obtained!
+	/*
+	print_gaugefield_to_textfile("ref_conf",&cpu,params);
+	logger.info() << "Produced the ref_conf text file with the links for the ref. code. Returning...";
+	//return;
+	// */
 
 	logger.info() << "Fill buffers...";
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
@@ -452,6 +460,17 @@ void test_DKS_eo(std::string inputfile)
 	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in_eo, NUM_ELEMENTS_SF_EO);
 	else fill_sf_with_random(sf_in_eo, NUM_ELEMENTS_SF_EO);
 	in_eo_even.load(sf_in_eo);
+	
+	//The following six lines are to be used to produce the ref_vec file needed to get the ref_value
+	//---> Comment them out when the reference values have been obtained!
+	/*
+	if(params.get_read_multiple_configs())
+	  print_staggeredfield_eo_to_textfile("ref_vec_odd",sf_in_eo,params);
+	else
+	  print_staggeredfield_eo_to_textfile("ref_vec_even",sf_in_eo,params);
+	logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";
+	return;
+	// */
 
 	auto spinor_code = device->get_device()->get_spinor_staggered_code();
 
@@ -529,32 +548,32 @@ BOOST_AUTO_TEST_CASE( M_STAGGERED_6)
 
 BOOST_AUTO_TEST_CASE( M_STAGGERED_7)
 {
-  test_m_staggered("/m_staggered_input_7");
+	test_m_staggered("/m_staggered_input_7");
 }
 
 BOOST_AUTO_TEST_CASE( M_STAGGERED_8)
 {
-  test_m_staggered("/m_staggered_input_8");
+	test_m_staggered("/m_staggered_input_8");
 }
 
 BOOST_AUTO_TEST_CASE( M_STAGGERED_9)
 {
-  test_m_staggered("/m_staggered_input_9");
+	test_m_staggered("/m_staggered_input_9");
 }
 
 BOOST_AUTO_TEST_CASE( M_STAGGERED_10)
 {
-  test_m_staggered("/m_staggered_input_10");
+	test_m_staggered("/m_staggered_input_10");
 }
 
 BOOST_AUTO_TEST_CASE( M_STAGGERED_11)
 {
-  test_m_staggered("/m_staggered_input_11");
+	test_m_staggered("/m_staggered_input_11");
 }
 
 BOOST_AUTO_TEST_CASE( M_STAGGERED_12)
 {
-  test_m_staggered("/m_staggered_input_12");
+	test_m_staggered("/m_staggered_input_12");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -567,4 +586,75 @@ BOOST_AUTO_TEST_CASE( DKS_EO_1)
 	test_DKS_eo("/dks_input_1");
 }
 
+BOOST_AUTO_TEST_CASE( DKS_EO_2)
+{
+	test_DKS_eo("/dks_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_3)
+{
+	test_DKS_eo("/dks_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_4)
+{
+	test_DKS_eo("/dks_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_5)
+{
+	test_DKS_eo("/dks_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_6)
+{
+	test_DKS_eo("/dks_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_7)
+{
+	test_DKS_eo("/dks_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_8)
+{
+	test_DKS_eo("/dks_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_9)
+{
+	test_DKS_eo("/dks_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_10)
+{
+	test_DKS_eo("/dks_input_10");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_11)
+{
+	test_DKS_eo("/dks_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_12)
+{
+	test_DKS_eo("/dks_input_12");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_13)
+{
+	test_DKS_eo("/dks_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_15)
+{
+	test_DKS_eo("/dks_input_15");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_16)
+{
+	test_DKS_eo("/dks_input_16");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
+
