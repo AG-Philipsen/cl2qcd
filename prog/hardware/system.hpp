@@ -87,7 +87,7 @@ namespace hardware {
 		 */
 		size_4 get_grid_size();
 
-		Transfer * get_transfer(size_t from, size_t to);
+		Transfer * get_transfer(size_t from, size_t to) const;
 
 	private:
 
@@ -116,7 +116,7 @@ namespace hardware {
 		 */
 		size_4 grid_size;
 
-		std::map<std::pair<size_t,size_t>,std::unique_ptr<Transfer>> transfer_links;
+		mutable std::map<std::pair<size_t,size_t>,std::unique_ptr<Transfer>> transfer_links;
 	};
 
 	/**

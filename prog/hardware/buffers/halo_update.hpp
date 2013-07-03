@@ -11,13 +11,14 @@
 #include <map>
 #include <sstream>
 #include <stdexcept>
+#include "../system.hpp"
 
 namespace hardware {
 
 namespace buffers {
 
 template <typename T, class BUFFER> void update_halo(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE = 1.);
-template <typename T, class BUFFER> void update_halo_soa(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE = 1., const unsigned CHUNKS_PER_LANE = 1, unsigned reqd_width = 0);
+template <typename T, class BUFFER> void update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE = 1., const unsigned CHUNKS_PER_LANE = 1, unsigned reqd_width = 0);
 
 template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent extract_boundary(const PROXY* proxy, const BUFFER * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event);
 template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent send_halo(const BUFFER * buffer, const PROXY* proxy, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, const hardware::SynchronizationEvent& event);
@@ -175,8 +176,9 @@ class ProxyBufferCache {
 }
 }
 
-template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width = 0)
+template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width = 0)
 {
+	auto const & params = system.get_inputparameters();
 	const size_t num_buffers = buffers.size();
 
 	if(num_buffers > 1) {

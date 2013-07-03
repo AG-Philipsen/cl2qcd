@@ -241,7 +241,7 @@ size_4 hardware::System::get_grid_size()
 	return grid_size;
 }
 
-hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to)
+hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to) const
 {
 	auto const link_id = std::make_pair<>(from, to);
 	auto & link = transfer_links[link_id];
