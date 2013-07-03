@@ -55,6 +55,10 @@ BOOST_AUTO_TEST_CASE(good_case)
 	SynchronizationEvent se3;
 	SynchronizationEvent se4 = se3;
 	se3 = se4;
+
+	auto const raw_events = hardware::get_raw_events({se1, se3});
+	BOOST_CHECK_EQUAL(raw_events.size(), 1);
+	BOOST_CHECK_EQUAL(raw_events[0], event);
 }
 
 BOOST_AUTO_TEST_CASE(error_case)

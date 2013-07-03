@@ -29,6 +29,11 @@ class SynchronizationEvent;
  */
 void wait(const std::vector<SynchronizationEvent>& events);
 
+/**
+ * Get the raw version of multiple events (filters out invalids)
+ */
+std::vector<cl_event> get_raw_events(const std::vector<SynchronizationEvent>& events);
+
 class SynchronizationEvent {
 
 public:

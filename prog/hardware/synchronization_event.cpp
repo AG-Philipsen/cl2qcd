@@ -106,3 +106,15 @@ bool hardware::SynchronizationEvent::is_valid() const
 {
 	return event != 0;
 }
+
+std::vector<cl_event> hardware::get_raw_events(const std::vector<SynchronizationEvent>& events)
+{
+	std::vector<cl_event> result;
+	result.reserve(events.size());
+	for(auto const & event: events) {
+		if(event.is_valid()) {
+			result.push_back(event.raw());
+		}
+	}
+	return result;
+}
