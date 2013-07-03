@@ -11,13 +11,14 @@
 #include "../logger.hpp"
 #include <stdexcept>
 #include "device.hpp"
+#include "transfer/transfer.hpp"
 
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling);
 static size_4 calculate_grid_size(size_t num_devices);
 
 hardware::System::System(const meta::Inputparameters& params, bool enable_profiling)
-	: params(params), grid_size(0, 0, 0, 0)
+	: params(params), grid_size(0, 0, 0, 0), transfer_links()
 {
 	using namespace hardware;
 
@@ -134,6 +135,8 @@ for(int i: selection) {
 
 hardware::System::~System()
 {
+	transfer_links.clear();
+
 for(Device * device : devices) {
 		delete device;
 	}
@@ -236,4 +239,14 @@ static size_4 calculate_grid_size(size_t num_devices)
 size_4 hardware::System::get_grid_size()
 {
 	return grid_size;
+}
+
+hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to)
+{
+	auto const link_id = std::make_pair<>(from, to);
+	auto & link = transfer_links[link_id];
+	if(!link.get()) {
+		link = hardware::create_transfer(devices[from], devices[to]);
+	}
+	return link.get();
 }
