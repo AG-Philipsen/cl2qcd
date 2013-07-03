@@ -225,6 +225,6 @@ cl_int clSetKernelArg(cl_kernel, cl_uint, size_t, const hardware::buffers::Buffe
  *
  * Will thorw an invalid_argument exception if the source buffer is of a different size.
  */
-hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event);
+hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const std::vector<hardware::SynchronizationEvent>& events);
 
 #endif /* _HARDWARE_BUFFERS_BUFFER_ */

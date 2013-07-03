@@ -108,7 +108,7 @@ template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent 
 	const size_t buffer_slice_pitch = buffer->get_lane_stride() * STORAGE_TYPE_SIZE;
 	const size_t proxy_slice_pitch = 0; // automatically consecutive
 
-	return copyDataRect(buffer->get_device(), proxy, buffer, proxy_origin, buffer_origin, region, proxy_row_pitch, proxy_slice_pitch, buffer_row_pitch, buffer_slice_pitch, event);
+	return copyDataRect(buffer->get_device(), proxy, buffer, proxy_origin, buffer_origin, region, proxy_row_pitch, proxy_slice_pitch, buffer_row_pitch, buffer_slice_pitch, {event});
 
 // Original code kept for documentation purposes:
 //	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
@@ -140,7 +140,7 @@ template<typename BUFFER, typename PROXY> static hardware::SynchronizationEvent 
 	const size_t buffer_slice_pitch = buffer->get_lane_stride() * STORAGE_TYPE_SIZE;
 	const size_t proxy_slice_pitch = 0; // automatically consecutive
 
-	return copyDataRect(buffer->get_device(), buffer, proxy, buffer_origin, proxy_origin, region, buffer_row_pitch, buffer_slice_pitch, proxy_row_pitch, proxy_slice_pitch, event);
+	return copyDataRect(buffer->get_device(), buffer, proxy, buffer_origin, proxy_origin, region, buffer_row_pitch, buffer_slice_pitch, proxy_row_pitch, proxy_slice_pitch, {event});
 
 // Original code kept for documentation purposes:
 //	for(size_t lane = 0; lane < NUM_LANES; ++lane) {
