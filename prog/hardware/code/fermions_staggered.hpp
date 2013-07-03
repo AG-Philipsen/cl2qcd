@@ -9,7 +9,7 @@
 
 #include "../buffers/plain.hpp"
 #include "../buffers/su3.hpp"
-#include "../buffers/spinor.hpp"
+#include "../buffers/su3vec.hpp"
 #include "../../host_use_timer.h"
 
 namespace hardware {
@@ -47,6 +47,27 @@ public:
 	/*********************************************************************************************/
 	/****************************  EVEN-ODD PRECONDITIONING METHODS  *****************************/
 	/*********************************************************************************************/
+	
+	/**
+	 * This function apply the operator D_KS to a staggered field on half lattice.
+	 * Actually, depending on the value of the variable evenodd, either the operator Doe
+	 * or the operator Deo is selected and applied: if evenodd==EVEN then the staggered
+	 * field in must be an ODD field and out=Deo*in is returned; if evenodd==ODD then 
+	 * the staggered field in must be an EVEN field and out=Doe*in is returned. 
+	 * @note Since there cannot be any check in the code, if one invoke this function with
+	 *       evenodd equal to the parity of the field, there will be no error thrown.
+	 *       By the programming point of you both an even field and an odd field are 
+	 *       vectors with VOL4D/2 components.
+	 * \par
+	 * @note This function does not require the mass of the fermions as an input, because
+	 *       in the staggered formulation the mass appear only in the diagonal part of the
+	 *       Dirac operator.
+	 *       
+	 *  @param in The even/odd input staggered field
+	 *  @param out The odd/even output staggered field out=D_KS*in
+	 *  @param gf The gauge configuration
+	 */
+	void D_KS_eo_device(const hardware::buffers::SU3vec * in, const hardware::buffers::SU3vec * out, const hardware::buffers::SU3 * gf, int evenodd) const;
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 	/**
@@ -104,9 +125,9 @@ private:
 	void clear_kernels();
 
 	////////////////////////////////////
-	//kernels, sorted roughly by groups
 	//fermionmatrix
 	cl_kernel M_staggered;
+	cl_kernel D_KS_eo;
 
 	ClSourcePackage sources;
 };

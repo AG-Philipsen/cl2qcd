@@ -46,11 +46,17 @@ void hardware::code::Fermions_staggered::fill_kernels()
 {
 	sources = get_device()->get_spinor_staggered_code()->get_sources() << "operations_staggered.cl" << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
-	M_staggered = 0;
-
 	logger.debug() << "Create staggered fermion kernels...";
 
-	M_staggered = createKernel("M_staggered") << sources << "fermionmatrix_staggered.cl" << "fermionmatrix_m_staggered.cl";
+	M_staggered = createKernel("M_staggered") << sources << "fermionmatrix_staggered_DKS_local.cl" << "fermionmatrix_staggered_M.cl";
+	/////////////////////////////////////////////////
+	/////////// EVEN-ODD PRECONDITIONING ////////////
+	/////////////////////////////////////////////////
+	if(get_parameters().get_use_eo()){
+	  D_KS_eo = createKernel("D_KS_eo") << sources << "fermionmatrix_staggered_eo_DKS_local.cl" << "fermionmatrix_staggered_eo_DKS.cl";
+	} else {
+	  D_KS_eo = 0;
+	}
 
 	return;
 }
@@ -63,6 +69,13 @@ void hardware::code::Fermions_staggered::clear_kernels()
 	if(M_staggered) {
 		clerr = clReleaseKernel(M_staggered);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		/////////////////////////////////////////////////
+		/////////// EVEN-ODD PRECONDITIONING ////////////
+		/////////////////////////////////////////////////
+		if(get_parameters().get_use_eo()){
+			clerr = clReleaseKernel(D_KS_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
 	}
 }
 
@@ -71,13 +84,14 @@ void hardware::code::Fermions_staggered::get_work_sizes(const cl_kernel kernel, 
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 //explicit fermionmatrix-kernel calling functions
 void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buffers::Plain<su3vec> * in, const hardware::buffers::Plain<su3vec> * out, const hardware::buffers::SU3 * gf, hmc_float mass) const
 {
 	//get mass
-	hmc_float kappa_tmp;
-	if(mass == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
-	else kappa_tmp = mass;
+	hmc_float mass_tmp;
+	if(mass == ARG_DEF) mass_tmp = get_parameters().get_kappa();
+	else mass_tmp = mass;
 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -93,11 +107,39 @@ void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buff
 	clerr = clSetKernelArg(M_staggered, 2, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(M_staggered, 3, sizeof(hmc_float), &kappa_tmp);
+	clerr = clSetKernelArg(M_staggered, 3, sizeof(hmc_float), &mass_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( M_staggered, gs2, ls2);
 }
+
+
+void hardware::code::Fermions_staggered::D_KS_eo_device(const hardware::buffers::SU3vec * in, const hardware::buffers::SU3vec * out, const hardware::buffers::SU3 * gf, int evenodd) const
+{
+	cl_int eo = evenodd;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(D_KS_eo, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(D_KS_eo, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(D_KS_eo, 1, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(D_KS_eo, 2, sizeof(cl_mem), gf->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(D_KS_eo, 3, sizeof(cl_int), &eo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(D_KS_eo, gs2, ls2);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string& in) const
@@ -115,6 +157,10 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
 	if (in == "M_staggered") {
 		//this kernel reads 9 su3vec, 8 su3matrices and writes 1 su3vec per site:
 		return (C * NC * (9 + 1) + C * 8 * R) * D * S;
+	}
+	if (in == "D_KS_eo") {
+		//Not yet counted
+		return 100000000000000000000000;
 	}
 	return 0;
 }
@@ -166,6 +212,10 @@ uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in
 		return S * (flop_dslash_staggered_per_site(get_parameters()) +
 		            2* NC * NDIM * meta::get_flop_complex_mult());
 	}
+	if (in == "D_KS_eo") {
+		//Not yet counted
+		return 100000000000000000000000;
+	}
 	return 0;
 }
 
@@ -173,11 +223,11 @@ void hardware::code::Fermions_staggered::print_profiling(const std::string& file
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, M_staggered);
+	Opencl_Module::print_profiling(filename, D_KS_eo);
 }
 
 hardware::code::Fermions_staggered::Fermions_staggered(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device),
-	  M_staggered(0)
+	: Opencl_Module(params, device)
 {
 	fill_kernels();
 };
