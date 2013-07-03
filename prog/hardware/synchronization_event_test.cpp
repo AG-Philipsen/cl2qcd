@@ -53,6 +53,8 @@ BOOST_AUTO_TEST_CASE(good_case)
 	se2.wait();
 
 	SynchronizationEvent se3;
+	SynchronizationEvent se4 = se3;
+	se3 = se4;
 }
 
 BOOST_AUTO_TEST_CASE(error_case)
@@ -77,6 +79,6 @@ BOOST_AUTO_TEST_CASE(error_case)
 	BOOST_CHECK_THROW(se1.wait(), hardware::OpenclException);
 
 	SynchronizationEvent se3;
-	BOOST_CHECK_THROW(se3.is_finished(), hardware::OpenclException);
-	BOOST_CHECK_THROW(se3.wait(), hardware::OpenclException);
+	BOOST_CHECK_EQUAL(se3.is_finished(), true);
+	se3.wait();
 }

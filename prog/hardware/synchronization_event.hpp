@@ -71,14 +71,17 @@ public:
 	 */
 	const cl_event& raw() const;
 
+	/**
+	 * Check whether this is a valid or a dummy event.
+	 */
+	bool is_valid() const;
+
 private:
 
 	/**
 	 * Reference to the wrapped OpenCL event.
 	 */
 	cl_event event;
-
-	friend void hardware::wait(const std::vector<SynchronizationEvent>& events);
 };
 
 }
