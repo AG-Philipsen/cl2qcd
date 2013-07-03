@@ -241,12 +241,13 @@ size_4 hardware::System::get_grid_size()
 	return grid_size;
 }
 
-hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to) const
+hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to, unsigned id) const
 {
-	auto const link_id = std::make_pair<>(from, to);
+	auto const link_id = std::make_tuple(from, to, id);
 	auto & link = transfer_links[link_id];
 	if(!link.get()) {
 		link = hardware::create_transfer(devices[from], devices[to]);
 	}
+	logger.trace() << "Serving Transfer: " << from << " -> " << to;
 	return link.get();
 }

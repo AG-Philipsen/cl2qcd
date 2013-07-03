@@ -12,7 +12,7 @@
 #include "../meta/size_4.hpp"
 #include <map>
 #include <memory>
-#include <utility>
+#include <tuple>
 
 /**
  * This namespace contains potentially hardware specific code managing the system,
@@ -87,7 +87,7 @@ namespace hardware {
 		 */
 		size_4 get_grid_size();
 
-		Transfer * get_transfer(size_t from, size_t to) const;
+		Transfer * get_transfer(size_t from, size_t to, unsigned id) const;
 
 	private:
 
@@ -116,7 +116,7 @@ namespace hardware {
 		 */
 		size_4 grid_size;
 
-		mutable std::map<std::pair<size_t,size_t>,std::unique_ptr<Transfer>> transfer_links;
+		mutable std::map<std::tuple<size_t,size_t,unsigned>,std::unique_ptr<Transfer>> transfer_links;
 	};
 
 	/**
