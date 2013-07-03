@@ -430,6 +430,57 @@ void test_m_staggered(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+
+void test_DKS_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+	std::string kernelName = "D_KS_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	auto * device = cpu.get_device();
+
+	logger.info() << "Fill buffers...";
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
+	su3vec * sf_in_eo;
+	sf_in_eo = new su3vec[NUM_ELEMENTS_SF_EO];
+	const SU3vec in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
+	const SU3vec out_eo(NUM_ELEMENTS_SF_EO, device->get_device());
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in_eo, NUM_ELEMENTS_SF_EO);
+	else fill_sf_with_random(sf_in_eo, NUM_ELEMENTS_SF_EO);
+	in_eo_even.load(sf_in_eo);
+
+	auto spinor_code = device->get_device()->get_spinor_staggered_code();
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+
+	hmc_float cpu_res;
+	if(params.get_read_multiple_configs()) {
+		device->D_KS_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), EVEN);
+	} else {
+		device->D_KS_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), ODD);
+	}
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out_eo, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << "result:";
+	logger.info() << cpu_res;
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in_eo;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+
+
 BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -508,3 +559,12 @@ BOOST_AUTO_TEST_CASE( M_STAGGERED_12)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
+BOOST_AUTO_TEST_SUITE( DKS_EO )
+
+BOOST_AUTO_TEST_CASE( DKS_EO_1)
+{
+	test_DKS_eo("/dks_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
