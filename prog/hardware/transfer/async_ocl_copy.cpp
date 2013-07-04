@@ -16,10 +16,15 @@ namespace {
 }
 
 hardware::transfer::AsyncOclCopy::AsyncOclCopy(hardware::Device * const from, hardware::Device * const to, hardware::System const & system)
-	: Transfer(from, to), src_cache(), dest_cache(), load_event(), transfer_event(), dump_event(), active_size(0)
+	: Transfer(from, to), src_cache(), dest_cache(), load_event(), transfer_event(), dump_event(), back_migration_event(), active_size(0)
 {
 	cl_int err;
 	transfer_queue = clCreateCommandQueue(system, to->get_id(), 0, &err);
+	if(err) {
+		logger.error() << "Failed to create command queue for asynchroneous transfers. OpenCL Error: " << err;
+		throw Opencl_Error(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
+	}
+	back_migration_queue = clCreateCommandQueue(system, from->get_id(), 0, &err);
 	if(err) {
 		logger.error() << "Failed to create command queue for asynchroneous transfers. OpenCL Error: " << err;
 		throw Opencl_Error(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
@@ -29,6 +34,7 @@ hardware::transfer::AsyncOclCopy::AsyncOclCopy(hardware::Device * const from, ha
 hardware::transfer::AsyncOclCopy::~AsyncOclCopy()
 {
 	clReleaseCommandQueue(transfer_queue);
+	clReleaseCommandQueue(back_migration_queue);
 }
 
 hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::load(const hardware::buffers::Buffer* orig, const size_t *src_origin, const size_t *region, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event)
@@ -38,7 +44,7 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::load(const hard
 
 	// the transfer may neither overlap with a dump or a load, as both use the transfer buffer
 	const size_t transfer_buffer_origin[] = { 0, 0, 0 };
-	load_event = copyDataRect(get_src_device(), transfer_buffer, orig, transfer_buffer_origin, src_origin, region, 0, 0, src_row_pitch, src_slice_pitch, {load_event, transfer_event, event});
+	load_event = copyDataRect(get_src_device(), transfer_buffer, orig, transfer_buffer_origin, src_origin, region, 0, 0, src_row_pitch, src_slice_pitch, {load_event, transfer_event, event, back_migration_event});
 
 	return load_event;
 }
@@ -48,23 +54,42 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 	auto const src_cache = get_src_cache(active_size);
 	auto const dest_cache = get_dest_cache(active_size);
 
-	auto const events = get_raw_events({load_event, transfer_event, dump_event});
-	cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
+	// transfer data to destination device
+	{
+		auto const events = get_raw_events({load_event, transfer_event, dump_event, back_migration_event});
+		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
 
-	cl_event raw_transfer_event;
-	cl_int clerr = clEnqueueCopyBuffer(transfer_queue, *src_cache->get_cl_buffer(), *dest_cache->get_cl_buffer(), 0, 0, active_size, events.size(), events_p, &raw_transfer_event);
-	if(clerr) {
-		logger.error() << "Failed to transfer data between devices using seperate transfer queue. OpenCL Error: " << clerr;
-		throw Opencl_Error(clerr, "clEnqueueCopyBuffer", __FILE__, __LINE__);
+		cl_event raw_transfer_event;
+		cl_int clerr = clEnqueueCopyBuffer(transfer_queue, *src_cache->get_cl_buffer(), *dest_cache->get_cl_buffer(), 0, 0, active_size, events.size(), events_p, &raw_transfer_event);
+		if(clerr) {
+			logger.error() << "Failed to transfer data between devices using seperate transfer queue. OpenCL Error: " << clerr;
+			throw Opencl_Error(clerr, "clEnqueueCopyBuffer", __FILE__, __LINE__);
+		}
+
+		transfer_event = SynchronizationEvent(raw_transfer_event);
+		clerr = clReleaseEvent(raw_transfer_event);
+		if(clerr) {
+			throw Opencl_Error(clerr, "clReleaseEvent", __FILE__, __LINE__);
+		}
 	}
 
-	transfer_event = SynchronizationEvent(raw_transfer_event);
-	clerr = clReleaseEvent(raw_transfer_event);
-	if(clerr) {
-		throw Opencl_Error(clerr, "clReleaseEvent", __FILE__, __LINE__);
+	// migrate source cache back to source device
+	{
+		auto const events = get_raw_events({load_event, transfer_event, back_migration_event});
+		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
+
+		cl_event raw_back_migration_event;
+		cl_int clerr = clEnqueueMigrateMemObjects(back_migration_queue, 1, src_cache->get_cl_buffer(), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, events.size(), events_p, &raw_back_migration_event);
+		if(clerr) {
+			throw Opencl_Error(clerr, "clEnqueueMigrateMemObjects", __FILE__, __LINE__);
+		}
+		back_migration_event = SynchronizationEvent(raw_back_migration_event);
+		clerr = clReleaseEvent(raw_back_migration_event);
+		if(clerr) {
+			throw Opencl_Error(clerr, "clReleaseEvent", __FILE__, __LINE__);
+		}
 	}
 
-	// TODO might want to send back the src buffer using a second custom queue (and dumping its contents)
 	return transfer_event;
 }
 

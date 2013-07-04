@@ -32,10 +32,12 @@ class AsyncOclCopy : public Transfer {
 		std::map<size_t, std::unique_ptr<hardware::buffers::Buffer>> src_cache;
 		std::map<size_t, std::unique_ptr<hardware::buffers::Buffer>> dest_cache;
 		hardware::SynchronizationEvent load_event;
-		hardware::SynchronizationEvent transfer_event; 
-		hardware::SynchronizationEvent dump_event; 
+		hardware::SynchronizationEvent transfer_event;
+		hardware::SynchronizationEvent dump_event;
+		hardware::SynchronizationEvent back_migration_event;
 		size_t active_size;
 		cl_command_queue transfer_queue;
+		cl_command_queue back_migration_queue;
 
 		hardware::buffers::Buffer * get_src_cache(size_t const size);
 		hardware::buffers::Buffer * get_dest_cache(size_t const size);
