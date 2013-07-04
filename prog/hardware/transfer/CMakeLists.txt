@@ -9,6 +9,7 @@
 add_library(transfer
 	transfer.cpp
 	ocl_copy.cpp
+	async_ocl_copy.cpp
 )
 target_link_libraries(transfer
 	hardware

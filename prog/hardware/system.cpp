@@ -246,7 +246,7 @@ hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to, unsi
 	auto const link_id = std::make_tuple(from, to, id);
 	auto & link = transfer_links[link_id];
 	if(!link.get()) {
-		link = hardware::create_transfer(devices[from], devices[to]);
+		link = hardware::create_transfer(devices[from], devices[to], *this);
 	}
 	logger.trace() << "Serving Transfer: " << from << " -> " << to;
 	return link.get();

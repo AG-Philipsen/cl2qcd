@@ -12,6 +12,8 @@
 
 namespace hardware {
 
+class System;
+
 /**
  * A transfer interface.
  *
@@ -63,7 +65,7 @@ class Transfer {
 /**
  * Set up a transfer link from the source to the destination device.
  */
-std::unique_ptr<Transfer> create_transfer(Device * src, Device * dest);
+std::unique_ptr<Transfer> create_transfer(Device * src, Device * dest, hardware::System const & system);
 
 }
 

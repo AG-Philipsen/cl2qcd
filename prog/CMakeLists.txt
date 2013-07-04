@@ -118,6 +118,12 @@ if(LAZY_HALO_UPDATES)
 	add_definitions(-DLAZY_HALO_UPDATES)
 endif()
 
+# whether to enable asynchroneous halo updates
+option(ASYNC_HALO_UPDATES "Perform device-to-device transfers asynchroneous to kernel execution." ON)
+if(ASYNC_HALO_UPDATES)
+	add_definitions(-DASYNC_HALO_UPDATES)
+endif()
+
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
