@@ -31,6 +31,9 @@ int main(int argc, const char* argv[])
 		physics::lattices::Spinorfield_eo sf1(system);
 		physics::lattices::Spinorfield_eo sf2(system);
 
+		// update gaugefield buffers once to have update links fully initialized
+		gf.update_halo();
+
 		logger.info() << "Gaugeobservables:";
 		print_gaugeobservables(gf, 0);
 
