@@ -14,21 +14,19 @@ namespace {
 }
 
 hardware::transfer::OclCopy::OclCopy(hardware::Device * const from, hardware::Device * const to)
-	: Transfer(from, to), transfer_buffer(nullptr), load_event(), dump_event()
+	: Transfer(from, to), transfer_buffers(), load_event(), dump_event()
 {
 	// nothing to do
 }
 
 hardware::transfer::OclCopy::~OclCopy()
 {
-	if(transfer_buffer) {
-		delete transfer_buffer;
-	}
+	// nothing to do
 }
 
 hardware::SynchronizationEvent hardware::transfer::OclCopy::load(const hardware::buffers::Buffer* orig, const size_t *src_origin, const size_t *region, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event)
 {
-	ensure_proper_transfer_buffer_size(region);
+	auto const transfer_buffer = get_transfer_buffer(region);
 
 	// the transfer may neither overlap with a dump or a load, as both use the transfer buffer
 	const size_t transfer_buffer_origin[] = { 0, 0, 0 };
@@ -46,9 +44,7 @@ hardware::SynchronizationEvent hardware::transfer::OclCopy::transfer()
 
 hardware::SynchronizationEvent hardware::transfer::OclCopy::dump(const hardware::buffers::Buffer* dest, const size_t *dest_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, const hardware::SynchronizationEvent& event)
 {
-	if(!transfer_buffer) {
-		throw std::logic_error("Requested dumping data from transfer, but not data has been loaded yet");
-	}
+	auto const transfer_buffer = get_transfer_buffer(region);
 
 	// the transfer may neither overlap with a dump or a load, as both use the transfer buffer
 	const size_t transfer_buffer_origin[] = { 0, 0, 0 };
@@ -57,17 +53,14 @@ hardware::SynchronizationEvent hardware::transfer::OclCopy::dump(const hardware:
 	return dump_event;
 }
 
-void hardware::transfer::OclCopy::ensure_proper_transfer_buffer_size(const size_t * const region)
+hardware::buffers::Buffer * hardware::transfer::OclCopy::get_transfer_buffer(const size_t * const region)
 {
 	auto const required_buffer_size = get_required_buffer_size(region);
-	if(!transfer_buffer || required_buffer_size > transfer_buffer->get_bytes()) {
-		// TODO too large buffers might also be bad for transfer speed ...
-		if(transfer_buffer) {
-			delete transfer_buffer;
-		}
-		// the device for the buffer is only a way to get to the context, it will rebind and we won't use implicit queues
-		transfer_buffer = new hardware::buffers::Buffer(required_buffer_size, get_src_device(), false);
+	auto & transfer_buffer_handle = transfer_buffers[required_buffer_size];
+	if(! (bool) transfer_buffer_handle) {
+		transfer_buffer_handle = std::unique_ptr<hardware::buffers::Buffer>(new hardware::buffers::Buffer(required_buffer_size, get_src_device(), false));
 	}
+	return transfer_buffer_handle.get();
 }
 
 namespace {

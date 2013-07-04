@@ -8,6 +8,8 @@
 #define _HARDWARE_TRANSFER_OCL_COPY_HPP_
 
 #include "transfer.hpp"
+#include <map>
+#include <memory>
 
 namespace hardware {
 
@@ -27,11 +29,11 @@ class OclCopy : public Transfer {
 		SynchronizationEvent dump(const hardware::buffers::Buffer* dest, const size_t *dest_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, const hardware::SynchronizationEvent& event) override;
 
 	private:
-		hardware::buffers::Buffer * transfer_buffer;
-		hardware::SynchronizationEvent load_event;
-		hardware::SynchronizationEvent dump_event;
+		std::map<size_t, std::unique_ptr<hardware::buffers::Buffer>> transfer_buffers;
+		hardware::SynchronizationEvent load_event; // TODO these events could be stored with each buffer
+		hardware::SynchronizationEvent dump_event; // TODO these events could be stored with each buffer
 
-		void ensure_proper_transfer_buffer_size(const size_t * region);
+		hardware::buffers::Buffer * get_transfer_buffer(const size_t * region);
 };
 
 }
