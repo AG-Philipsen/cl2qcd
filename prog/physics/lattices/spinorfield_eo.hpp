@@ -19,10 +19,13 @@
 namespace physics {
 namespace lattices {
 
+class Spinorfield_eoHaloUpdate;
+
 /**
  * Representation of a gaugefield.
  */
 class Spinorfield_eo {
+	friend Spinorfield_eoHaloUpdate;
 
 public:
 	/**
@@ -82,6 +85,20 @@ public:
 	void require_halo(unsigned width = 0) const;
 
 	/**
+	 * Request a halo update, but allow it to be performend asynchroneously.
+	 *
+	 * Extraction of the halo data happens synchroneous to the default queue of each buffer.
+	 * Therefore commands using the default queues of each buffer can safely operate on the non-halo elements if queued after this call.
+	 *
+	 * You will have to use the finalize() method on the returned object before operating on the halo elemens.
+	 *
+	 * Note that depending on the exact transfer method used this might already transfer data between devices!
+	 *
+	 * \param width Only require the the given width of the halo to be up to date, use 0 to indicate the full halo is required.
+	 */
+	Spinorfield_eoHaloUpdate require_halo_async(unsigned width = 0) const;
+
+	/**
 	 * Mark the halo as up to date.
 	 *
 	 * \param width Only mark part of the halo as up to date. 0 will mark the whole halo as up to date!
@@ -104,6 +121,8 @@ private:
 	 * \param widh Up to which thickness to update the halo. Use 0 to indicate the full halo shall be updated.
 	 */
 	void update_halo(unsigned width = 0) const;
+	Spinorfield_eoHaloUpdate update_halo_async(unsigned width = 0) const;
+	void update_halo_finalize(unsigned width = 0) const;
 #ifdef LAZY_HALO_UPDATES
 	mutable unsigned valid_halo_width;
 #endif
@@ -206,6 +225,34 @@ void convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, 
  * It only evaluates in case the squarenorm will actually be printed.
  */
 void log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield_eo& x);
+
+class Spinorfield_eoHaloUpdate {
+		friend Spinorfield_eo;
+	public:
+		/**
+		 * Complete the halo update.
+		 *
+		 * Access the the halo data happens synchroneous to the default queue of each buffer.
+		 * Therefore commands using the default queue of this buffer can safely operate the halo elements if queued after this call.
+		 *
+		 * Note that depending on the exact transfer methods this might cause data transfer between devices.
+		 */
+		void finalize();
+	private:
+		/**
+		 * Construct the handler object. Only done by Spinorfield_eo.
+		 *
+		 * \param target The Spinorfield_eo on which the update is performed.
+		 * \param reqd_halo_width Width of the updated halo segment.
+		 *        0 indicates that update is finished / has alredy been completed and makes finish() a NOOP.
+		 */
+		Spinorfield_eoHaloUpdate(Spinorfield_eo const & target, unsigned const & reqd_halo_width = 0)
+		 : target(target), reqd_halo_width(reqd_halo_width) {  };
+
+		Spinorfield_eo const & target;
+		unsigned reqd_halo_width;
+};
+
 }
 }
 

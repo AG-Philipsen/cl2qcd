@@ -39,7 +39,7 @@ template <typename T, class BUFFER> void initialize_update_halo_soa(std::vector<
  * Finish up a previously started halo update.
  *
  * Access the the halo data happens synchroneous to the default queue of each buffer.
- * Therefore commands using the default queue of this buffer can safely operate on the non-halo / own elements of this buffer if queued after this call.
+ * Therefore commands using the default queue of this buffer can safely operate the halo elements if queued after this call.
  *
  * Note that depending on the exact transfer methods this might cause data transfer between devices.
  */
