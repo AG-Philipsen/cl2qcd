@@ -477,7 +477,7 @@ physics::lattices::Spinorfield_eoHaloUpdate physics::lattices::Spinorfield_eo::r
 
 void physics::lattices::Spinorfield_eoHaloUpdate::finalize()
 {
-	logger.info() << "Finalizing update on Spinorfield_eo " << &target;
+	logger.trace() << "Finalizing update on Spinorfield_eo " << &target;
 #ifdef LAZY_HALO_UPDATES
 	// 0 is used to indicate that the update is already complete (or was not required)
 	if(reqd_halo_width) {
