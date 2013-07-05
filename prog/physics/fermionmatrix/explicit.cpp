@@ -154,8 +154,6 @@ void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Sp
 
 void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, int evenodd, hmc_float kappa)
 {
-	in.require_halo(1);
-
 	auto out_bufs = out->get_buffers();
 	auto gf_bufs = gf.get_buffers();
 	auto in_bufs = in.get_buffers();
@@ -165,10 +163,28 @@ void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * ou
 		throw std::invalid_argument("Given lattices do not use the same devices");
 	}
 
+#ifdef ASYNC_HALO_UPDATES
+	auto update = in.require_halo_async(1);
+
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->dslash_eo_inner(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd, kappa);
+	}
+
+	update.finalize();
+
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		fermion_code->dslash_eo_boundary(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd, kappa);
+	}
+#else
+	in.require_halo(1);
+
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
 		fermion_code->dslash_eo_device(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd, kappa);
 	}
+#endif
 
 	out->mark_halo_dirty();
 }
