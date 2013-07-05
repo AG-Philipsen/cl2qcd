@@ -32,24 +32,26 @@ __kernel void dslash_eo(__global const spinorStorageType * const restrict in, __
 }
 
 #define REQD_HALO_WIDTH 1
+#define HALO_VOL (VOLSPACE / 2 * REQD_HALO_WIDTH)
 
 __kernel void dslash_eo_inner(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, __global const Matrixsu3StorageType * const restrict field, const int evenodd, hmc_float kappa_in)
 {
-	PARALLEL_FOR(id_local, EOPREC_SPINORFIELDSIZE_LOCAL) {
+	size_t id_local;
+	PARALLEL_FOR(id_loop, EOPREC_SPINORFIELDSIZE_LOCAL - (2 * HALO_VOL)) {
+		// note that the scheme we are generating positions will no longer work for spatial seperation!
+		id_local = id_loop + HALO_VOL; // boost position by halo width
 		st_idx pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
-		if(pos.time >= REQD_HALO_WIDTH && pos.time < (NTIME_LOCAL - REQD_HALO_WIDTH)) {
-			dslash_eo_for_site(in, out, field, evenodd, kappa_in, pos);
-		}
+		dslash_eo_for_site(in, out, field, evenodd, kappa_in, pos);
 	}
 }
 
 __kernel void dslash_eo_boundary(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, __global const Matrixsu3StorageType * const restrict field, const int evenodd, hmc_float kappa_in)
 {
-	// TODO only loop over boundary sites instead of masking everybody else out
-	PARALLEL_FOR(id_local, EOPREC_SPINORFIELDSIZE_LOCAL) {
+	size_t id_local;
+	PARALLEL_FOR(id_loop, 2 * HALO_VOL) {
+		id_local = (id_loop < HALO_VOL) ? id_loop : (EOPREC_SPINORFIELDSIZE_LOCAL - HALO_VOL + (id_loop - HALO_VOL));
+		// note that the scheme we are generating positions will no longer work for spatial seperation!
 		st_idx pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
-		if(pos.time < REQD_HALO_WIDTH || pos.time >= (NTIME_LOCAL - REQD_HALO_WIDTH)) {
-			dslash_eo_for_site(in, out, field, evenodd, kappa_in, pos);
-		}
+		dslash_eo_for_site(in, out, field, evenodd, kappa_in, pos);
 	}
 }
