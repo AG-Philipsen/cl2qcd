@@ -7,7 +7,7 @@
 #ifndef _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_STAGG_
 #define _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_STAGG_
 
-#include "../../hardware/code/fermions.hpp"
+#include "../../hardware/code/fermions_staggered.hpp"
 
 #include "../../host_use_timer.h"
 #include "../lattices/staggeredfield_eo.hpp"
@@ -24,10 +24,7 @@ namespace fermionmatrix {
 /*
  * Explicit Fermion operations
  */
-
-
-
-
+void D_KS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, int evenodd);
 
 
 /**
