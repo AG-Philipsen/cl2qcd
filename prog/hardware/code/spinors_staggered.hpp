@@ -1,5 +1,5 @@
 /** @file
- * Heatbath for OpenCL
+ * Spinors_staggered class declaration
  */
 #ifndef _HARDWARE_CODE_SPINORS_STAGGERED
 #define _HARDWARE_CODE_SPINORS_STAGGERED
@@ -16,8 +16,6 @@ namespace code {
 
 /**
  * An OpenCL device
- *
- * Adds random numbers to basic Opencl_Module class
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
