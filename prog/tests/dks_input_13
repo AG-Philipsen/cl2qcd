@@ -1,5 +1,6 @@
 startcondition=continue
-sourcefile=conf.00200
+#sourcefile=conf.00200
+sourcefile=conf_lime
 
 use_eo=true
 NS=4
@@ -20,6 +21,7 @@ read_multiple_configs=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=793.20467133125612236
+test_ref_val=189.6284771829853355
+#test_ref_val=793.20467133125612236 #this is the reference value for sourcefile=conf.00200
 
 #This imput file must not be modified!
