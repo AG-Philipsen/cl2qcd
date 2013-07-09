@@ -235,8 +235,8 @@ void Prova()
   su3vec a,b,c;
   a=su3matrix_times_su3vec(matrixsu3_dim(one,md),v);
   b=su3matrix_times_su3vec(matrixsu3_acc(m,one),v);
-  logger.warn() << "(one-md).v=" << su3vec_to_string(su3vec_times_complex(a,{0.5,0.}));
-  logger.warn() << "(m+one).v="  << su3vec_to_string(su3vec_times_complex(b,{0.5,0.}));
+  //logger.warn() << "(one-md).v=" << su3vec_to_string(su3vec_times_complex(a,{0.5,0.}));
+  //logger.warn() << "(m+one).v="  << su3vec_to_string(su3vec_times_complex(b,{0.5,0.}));
   c=su3matrix_times_su3vec(matrixsu3_acc(one,one),v);
   sum+=su3vec_squarenorm(a);
   sum+=su3vec_squarenorm(b);
@@ -337,9 +337,6 @@ void test_build(std::string inputfile)
 
 void test_m_staggered(std::string inputfile)
 {
-//     Prova();
-//     return;
-
 	using namespace hardware::buffers;
 
 	std::string kernelName;
@@ -380,8 +377,9 @@ void test_m_staggered(std::string inputfile)
 	return;
 	 */
 	
-	/*
+	 /*
 	KernelTry(sf_in,params,&cpu);
+	Prova();
 	return;
 	// */
 
@@ -420,7 +418,8 @@ void test_m_staggered(std::string inputfile)
 	hmc_float cpu_res;
 	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+	logger.info() << std::setprecision(24) << cpu_res;
+	Prova();
 	
 	logger.info() << "Clear buffers";
 	delete[] sf_in;
@@ -644,6 +643,11 @@ BOOST_AUTO_TEST_CASE( DKS_EO_12)
 BOOST_AUTO_TEST_CASE( DKS_EO_13)
 {
 	test_DKS_eo("/dks_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_14)
+{
+	test_DKS_eo("/dks_input_14");
 }
 
 BOOST_AUTO_TEST_CASE( DKS_EO_15)

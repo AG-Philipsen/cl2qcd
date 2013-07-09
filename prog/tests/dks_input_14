@@ -1,14 +1,11 @@
 startcondition=continue
-#sourcefile=conf.00200
-sourcefile=conf_lime
+sourcefile=conf.00200
 
-kappa=0.
-
-use_eo=false
+use_eo=true
 NS=4
 NT=4
 
-#This means ANTIperiodic boundary conditions
+#This means periodic boundary conditions
 ThetaT=1.
 ThetaS=0.
 
@@ -16,10 +13,13 @@ ThetaS=0.
 #      CG sets the init-spinorfield to (1,1,1)
 solver=CG
 
+#with read_multiple_configs one can switch between "EVEN" and "ODD" as parameter for the kernel
+# true = EVEN, false = ODD
+read_multiple_configs=false
+
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=384
-#test_ref_val=1574.2697366803831756 #this is the reference value for sourcefile=conf.00200
+test_ref_val=773.3850653491272169
 
 #This imput file must not be modified!
