@@ -9,6 +9,8 @@
 add_library(fermionmatrix
 	fermionmatrix.cpp
 	explicit.cpp
+	fermionmatrix_stagg.cpp
+	explicit_stagg.cpp
 )
 target_link_libraries(fermionmatrix
 	meta
@@ -18,3 +20,5 @@ target_link_libraries(fermionmatrix
 
 add_unit_test(physics::fermionmatrix::<explicit> explicit_test)
 add_unit_test(physics::fermionmatrix::<fermionmatrix> fermionmatrix_test)
+add_unit_test(physics::fermionmatrix::<explicit_stagg> explicit_stagg_test)
+add_unit_test(physics::fermionmatrix::<fermionmatrix_stagg> fermionmatrix_stagg_test)
