@@ -22,7 +22,7 @@ void physics::fermionmatrix::D_KS_eo(const physics::lattices::Staggeredfield_eo 
 		auto fermion_code = out_bufs[i]->get_device()->get_fermion_staggered_code();
 		fermion_code->D_KS_eo_device(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd);
 	}
-	//if(num_bufs!=1)
+	if(num_bufs!=1)
 	  out->update_halo();
 }
 
