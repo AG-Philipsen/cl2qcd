@@ -56,8 +56,9 @@ public:
 	 * \param device The device to locate the buffer on
 	 * \param place_on_host Request the buffer to remain on the host
 	 *                      Allows to avoid memory limits if many buffers are required
+	 * \param any additional flags required for this buffer
 	 */
-	Buffer(size_t bytes, Device * device, bool place_on_host = false);
+	Buffer(size_t bytes, Device * device, bool place_on_host = false, cl_mem_flags extra_flags = 0);
 
 	virtual ~Buffer();
 

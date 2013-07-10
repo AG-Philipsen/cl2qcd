@@ -12,7 +12,7 @@
 #include "../../crypto/md5.h"
 #include "../code/buffer.hpp"
 
-static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host);
+static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host, cl_mem_flags extra_flags);
 void memObjectReleased(cl_mem, void * user_data);
 struct MemObjectAllocationTracer {
 	size_t bytes;
@@ -30,8 +30,8 @@ struct MemObjectAllocationTracer {
 };
 
 
-hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device, bool place_on_host)
-	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context, place_on_host)), device(device)
+hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device, bool place_on_host, cl_mem_flags extra_flags)
+	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context, place_on_host, extra_flags)), device(device)
 {
 	// notify device about allocation
 	cl_int err = clSetMemObjectDestructorCallback(cl_buffer, memObjectReleased, new MemObjectAllocationTracer(bytes, place_on_host, device));
@@ -45,10 +45,10 @@ hardware::buffers::Buffer::~Buffer()
 	clReleaseMemObject(cl_buffer);
 }
 
-static cl_mem allocateBuffer(size_t bytes, cl_context context, const bool place_on_host)
+static cl_mem allocateBuffer(size_t bytes, cl_context context, const bool place_on_host, const cl_mem_flags extra_flags)
 {
 	cl_int err;
-	const cl_mem_flags mem_flags = place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0;
+	const cl_mem_flags mem_flags = (place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0) | extra_flags;
 	cl_mem cl_buffer = clCreateBuffer(context, mem_flags, bytes, 0, &err);
 	if(err) {
 		throw hardware::OpenclException(err, "clCreateBuffer", __FILE__, __LINE__);
