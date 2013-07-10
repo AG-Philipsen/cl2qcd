@@ -1,6 +1,9 @@
 #include "../physics/lattices/gaugefield.hpp"
+#include "../meta/util.hpp"
+#include "../operations_complex.h"
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
+#include "../hardware/code/spinors.hpp"
 #include </usr/include/c++/4.7/fstream>
 #include <vector>
 
@@ -114,13 +117,6 @@ Matrixsu3 unit_matrixsu3()
   return out;
 }
 
-inline hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
-{
-  hmc_complex res;
-  res.re = a.re * b.re - a.im * b.im;
-  res.im = a.im * b.re + a.re * b.im;
-  return res;
-}
 
 inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor)
 {
@@ -329,6 +325,22 @@ void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf, me
     file << su3vec_to_string(sf[i]);
   file.close();
 }
+
+void print_staggeredfield_eo_to_textfile(std::string outputfile, const physics::lattices::Staggeredfield_eo* sf, const hardware::System& system)
+{
+  meta::Inputparameters params = system.get_inputparameters();
+  su3vec * out_sf;
+  size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
+  out_sf = new su3vec[NUM_ELEMENTS_SF_EO];
+  auto sf_bufs = sf->get_buffers();
+  if(sf_bufs.size() > 1){
+    logger.fatal() << "Print staggeredfield to textfile not implemented for multi device!";
+    abort();
+  }
+  sf_bufs[0]->dump(out_sf);
+  print_staggeredfield_eo_to_textfile(outputfile,out_sf,params);
+}
+
 
 /**
  * Function that returns a vector with the 6 real number contained in an su3vec
