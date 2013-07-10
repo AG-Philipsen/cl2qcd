@@ -12,7 +12,6 @@ static size_t retrieve_preferred_local_thread_num(cl_device_id device_id);
 static size_t retrieve_preferred_global_thread_num(cl_device_id device_id);
 static size_t retrieve_num_compute_units(cl_device_id device_id);
 static cl_device_type retrieve_device_type(cl_device_id device_id);
-static bool retrieve_supports_double(cl_device_id device_id);
 
 
 hardware::DeviceInfo::DeviceInfo(const cl_device_id device_id)
@@ -21,7 +20,6 @@ hardware::DeviceInfo::DeviceInfo(const cl_device_id device_id)
 	  preferred_global_thread_num(retrieve_preferred_global_thread_num(device_id)),
 	  num_compute_units(::retrieve_num_compute_units(device_id)),
 	  device_type(::retrieve_device_type(device_id)),
-	  supports_double(::retrieve_supports_double(device_id)),
 	  prefers_blocked_loops(device_type == CL_DEVICE_TYPE_CPU),
 	  prefers_soa(device_type == CL_DEVICE_TYPE_GPU),
 	  name(retrieve_device_name(device_id))
@@ -35,7 +33,6 @@ hardware::DeviceInfo::DeviceInfo(const DeviceInfo& other)
 	  preferred_global_thread_num(other.preferred_global_thread_num),
 	  num_compute_units(other.num_compute_units),
 	  device_type(other.device_type),
-	  supports_double(other.supports_double),
 	  prefers_blocked_loops(other.prefers_blocked_loops),
 	  prefers_soa(other.prefers_soa),
 	  name(other.name)
@@ -45,7 +42,7 @@ hardware::DeviceInfo::DeviceInfo(const DeviceInfo& other)
 
 bool hardware::DeviceInfo::is_double_supported() const noexcept
 {
-	return supports_double;
+	return check_extension("cl_khr_fp64");
 }
 
 bool hardware::DeviceInfo::get_prefers_blocked_loops() const noexcept
@@ -137,18 +134,18 @@ static cl_device_type retrieve_device_type(cl_device_id device_id)
 	return device_type;
 }
 
-static bool retrieve_supports_double(cl_device_id device_id)
+cl_device_id hardware::DeviceInfo::get_id() const noexcept
 {
-	using namespace hardware;
-//  only on OpenCL 1.2
-//	cl_device_fp_config double_support;
-//	cl_int err = clGetDeviceInfo(device_id, CL_DEVICE_DOUBLE_FP_CONFIG, sizeof(double_support), &double_support, 0);
-//	if(err) {
-//		throw OpenclException();
-//	}
-//	return (double_support & (CL_FP_FMA | CL_FP_ROUND_TO_NEAREST | CL_FP_ROUND_TO_ZERO | CL_FP_ROUND_TO_INF | CL_FP_INF_NAN | CL_FP_DENORM));
+	return device_id;
+}
 
-	// backwards compatible query
+std::string hardware::DeviceInfo::get_name() const noexcept
+{
+	return name;
+}
+
+bool hardware::DeviceInfo::check_extension(std::string const extension) const
+{
 	cl_int err;
 	size_t value_size;
 	err = clGetDeviceInfo(device_id, CL_DEVICE_EXTENSIONS, 0, 0, &value_size);
@@ -163,16 +160,6 @@ static bool retrieve_supports_double(cl_device_id device_id)
 	if(err) {
 		throw OpenclException(err, "clGetDeviceInfo(EXTENSIONS)", __FILE__, __LINE__);
 	}
-	return (extensions.find("cl_khr_fp64") != std::string::npos);
-}
+	return (extensions.find(extension) != std::string::npos);
 
-cl_device_id hardware::DeviceInfo::get_id() const noexcept
-{
-	return device_id;
 }
-
-std::string hardware::DeviceInfo::get_name() const noexcept
-{
-	return name;
-}
-

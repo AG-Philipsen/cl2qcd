@@ -83,6 +83,11 @@ public:
 	 */
 	bool get_prefers_soa() const noexcept;
 
+	/**
+	 * Check if the given extension is supported by the device.
+	 */
+	bool check_extension(std::string) const;
+
 private:
 	/**
 	 * The OpenCL device id of the device
@@ -108,11 +113,6 @@ private:
 	 * The type of the device
 	 */
 	 cl_device_type device_type;
-
-	/**
-	 * Whether this device supports double precsion
-	 */
-	 bool supports_double;
 
 	/**
 	 * Whether this device prefers blocked loops
