@@ -89,6 +89,11 @@ namespace hardware {
 
 		Transfer * get_transfer(size_t from, size_t to, unsigned id) const;
 
+		/**
+		 * Get the platform used.
+		 */
+		cl_platform_id get_platform() const;
+
 	private:
 
 		/**

@@ -251,3 +251,8 @@ hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to, unsi
 	logger.trace() << "Serving Transfer: " << from << " -> " << to;
 	return link.get();
 }
+
+cl_platform_id hardware::System::get_platform() const
+{
+	return platform;
+}
