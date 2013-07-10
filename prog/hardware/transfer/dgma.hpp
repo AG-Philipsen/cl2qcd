@@ -22,11 +22,21 @@ namespace transfer {
 class DGMAGhostBuffer;
 
 /**
+ * This class is thrown to indicate that one of the involved devices does not support DirectGMA.
+ */
+struct DGMAUnsupported { };
+
+/**
  * A transfer method using normal opencl buffer copies but transferring independent of the base command streams.
  */
 class DirectGMA : public Transfer {
 
 	public:
+		/**
+		 * Create a DirectGMA transfer link.
+		 *
+		 * \throw DGMAUnsupported if DirectGMA is not supported by all involved devices.
+		 */
 		DirectGMA(hardware::Device * from, hardware::Device * to, hardware::System const & context);
 		virtual ~DirectGMA();
 

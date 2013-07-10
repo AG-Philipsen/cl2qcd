@@ -13,6 +13,8 @@
 #include "../device.hpp"
 #include "../system.hpp"
 
+#define DGMA_EXTENSION "cl_amd_bus_addressable_memory"
+
 namespace {
 	size_t get_required_buffer_size(const size_t * region);
 }
@@ -38,6 +40,10 @@ class DGMAGhostBuffer {
 hardware::transfer::DirectGMA::DirectGMA(hardware::Device * const from, hardware::Device * const to, hardware::System const & system)
 	: Transfer(from, to), src_cache(), ghost(), dest_cache(), load_event(), transfer_event(), dump_event(), active_size(0), system(system)
 {
+	if(!from->check_extension(DGMA_EXTENSION) || !to->check_extension(DGMA_EXTENSION)) {
+		logger.error() << "DirectGMA is not supported by the used devices.";
+		throw DGMAUnsupported();
+	}
 	cl_int err;
 	transfer_queue = clCreateCommandQueue(system, from->get_id(), 0, &err);
 	if(err) {
