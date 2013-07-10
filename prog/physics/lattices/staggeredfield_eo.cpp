@@ -286,6 +286,57 @@ void physics::lattices::Staggeredfield_eo::update_halo() const
 	*/
 }
 
+//This code is useful for using the template pseudo_randomize defined in lattices/util.hpp
+void physics::lattices::Staggeredfield_eo::import(const su3vec * const host) const
+{
+	logger.trace() << "importing staggeredfield_eo";
+	if(buffers.size() == 1) {
+		buffers[0]->load(host);
+	} else {
+		throw Print_Error_Message("Import not implemented for multi device staggeredfield_eo!", __FILE__, __LINE__);
+		/*
+		auto params = system.get_inputparameters();
+		auto const _device = buffers.at(0)->get_device();
+		auto const local_size = _device->get_local_lattice_size();
+		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
+		auto const grid_size = _device->get_grid_size();
+		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
+		}
+		for(auto const buffer: buffers) {
+			auto device = buffer->get_device();
+
+			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			logger.debug() << offset;
+			const size_t local_volume = get_vol4d(local_size);
+			buffer->load(&host[get_global_pos(offset, params)], local_volume);
+
+			const size_t halo_volume = get_vol4d(halo_size);
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			logger.trace() << get_global_pos(halo_offset, params);
+			logger.trace() << halo_volume;
+			logger.trace() << get_elements();
+			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume);
+
+			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
+			logger.debug() << halo_offset;
+			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume + halo_volume);
+		}
+		*/
+	}
+	logger.trace() << "import complete";
+}
+
+unsigned physics::lattices::Staggeredfield_eo::get_elements() const noexcept
+{
+	return hardware::code::get_spinorfieldsize(system.get_inputparameters());
+}
+
+
+
 //To be added (so far only single GPU and only EO preconditioning)...
 #if 0
 

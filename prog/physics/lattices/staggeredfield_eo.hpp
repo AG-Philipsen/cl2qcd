@@ -13,6 +13,8 @@
 //#include "spinorfield.hpp"
 #include "scalar.hpp"
 #include "../../types_fermions.h"
+//This is to make the template pseudo_randomize friend of this class
+#include "util.hpp"
 
 
 /**
@@ -69,16 +71,23 @@ public:
 	 * Update the halos of the spinorfield buffers.
 	 */
 	void update_halo() const;
+	
+	/**
+	 * Get the number of elements of the field, namely the lattice volume.
+	 */
+	unsigned get_elements() const noexcept;
 
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::SU3vec *> buffers;
+	void import(const su3vec * const host) const;
 
 	friend hmc_complex scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
 	friend hmc_float squarenorm(const Staggeredfield_eo& field);
 	friend void sax(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x);
 	friend void saxpy(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const Staggeredfield_eo& y);
 	friend void saxpbypz(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y, const Staggeredfield_eo& z);
+	friend void pseudo_randomize<Staggeredfield_eo, su3vec>(const Staggeredfield_eo* to, int seed);
 };
 
 
