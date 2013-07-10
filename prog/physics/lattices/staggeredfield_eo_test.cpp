@@ -5,6 +5,7 @@
  */
 
 #include "staggeredfield_eo.hpp"
+#include "util.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -207,6 +208,21 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 1.49, 1.e-8);
 }
 
+BOOST_AUTO_TEST_CASE(pseudorandomize)
+{
+	using physics::lattices::Staggeredfield_eo;
+	
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+	
+	Staggeredfield_eo sf(system);
+	sf.set_zero();
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
+	physics::lattices::pseudo_randomize<Staggeredfield_eo, su3vec>(&sf, 123);
+	logger.info() << "The squarenorm of the pseudorandomized field is " << physics::lattices::squarenorm(sf);
+}
 
 //To be added (so far only single GPU and only EO preconditioning)...
 #if 0
