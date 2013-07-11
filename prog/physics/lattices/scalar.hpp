@@ -121,19 +121,29 @@ template<typename SCALAR> void physics::lattices::Scalar<SCALAR>::sum() const
 	// TODO make this run async
 	size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
-		std::vector<SCALAR> tmp(num_buffers);
+		std::vector<std::unique_ptr<hardware::buffers::MappedBufferHandle>> handles(num_buffers);
+		for(size_t i = 0; i < num_buffers; ++i) {
+			handles[i] = buffers[i]->map();
+		}
+
+		std::vector<SCALAR*> mapped_ptrs(num_buffers);
 		std::vector<hardware::SynchronizationEvent> events(num_buffers);
 		for(size_t i = 0; i < num_buffers; ++i) {
-			events[i] = buffers[i]->dump_async(&tmp[i]);
-			logger.trace() << "Scalar on device " << i << ": " << std::setprecision(16) << tmp[i];
+			mapped_ptrs[i] = static_cast<SCALAR*>(handles[i]->get_mapped_ptr());
+			events[i] = handles[i]->get_map_event();
 		}
 		hardware::wait(events);
-		SCALAR res = tmp[0] + tmp[1];
+
+		SCALAR res = mapped_ptrs[0][0] + mapped_ptrs[1][0];
 		for(size_t i = 2; i < num_buffers; ++i) {
-			res += tmp[i];
+			res += mapped_ptrs[i][0];
+		}
+		for(size_t i = 0; i < num_buffers; ++i) {
+			mapped_ptrs[i][0] = res;
 		}
 		logger.trace() << "Summed scalar: " << std::setprecision(16) << res;
-		store(res);
+
+		// buffers are automatically unmapped by leaving scope
 	}
 }
 
