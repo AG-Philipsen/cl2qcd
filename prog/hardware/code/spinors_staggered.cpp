@@ -1057,7 +1057,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		return Seo * (NC * (meta::get_flop_complex_mult() + 2));
 	}
 	if (in == "saxpbypz_stagg_eoprec") {
-		//this kernel performs on each 2*site (eo) su3vec_times_complex and 2*su3vec_acc
+		//this kernel performs on each site (eo) 2*su3vec_times_complex and 2*su3vec_acc
 		return Seo * (NC * 2 * (meta::get_flop_complex_mult() + 2));
 	}
 	if (in == "set_gaussian_spinorfield_stagg_eoprec") {
