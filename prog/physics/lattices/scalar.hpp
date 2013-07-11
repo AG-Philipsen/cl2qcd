@@ -92,9 +92,17 @@ template<typename SCALAR> static std::vector<const hardware::buffers::Plain<SCAL
 
 	std::vector<const Plain<SCALAR> *> buffers;
 
+
 	auto const devices = system.get_devices();
 	for(auto device: devices) {
-		buffers.push_back(new Plain<SCALAR>(1, device));
+		cl_mem_flags buffer_flags = 0;
+#ifdef CL_MEM_USE_PERSISTENT_MEM_AMD
+		if(device->check_extension("cl_amd_device_persistent_memory")) {
+			buffer_flags |= CL_MEM_USE_PERSISTENT_MEM_AMD;
+		}
+#endif
+
+		buffers.push_back(new Plain<SCALAR>(1, device, false, buffer_flags));
 	}
 
 	return buffers;
