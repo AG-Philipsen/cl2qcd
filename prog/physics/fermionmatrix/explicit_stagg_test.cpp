@@ -18,7 +18,7 @@
 
 BOOST_AUTO_TEST_CASE(D_KS_eo)
 {
-//void physics::fermionmatrix::D_KS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, int evenodd)
+//void physics::fermionmatrix::DKS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, int evenodd)
 	{
 		logger.info() << "First test...";
 		//This test is with cold links, periodic BC, random field, 8**4 lattice
@@ -45,9 +45,9 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 	logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";
 	return;
 	// */
-		physics::fermionmatrix::D_KS_eo(&out, gf, sf1, EVEN);
+		physics::fermionmatrix::DKS_eo(&out, gf, sf1, EVEN);
 		BOOST_CHECK_CLOSE(squarenorm(out), 2030.1639500272767691, 1.e-8);
-		physics::fermionmatrix::D_KS_eo(&out, gf, sf2, ODD);
+		physics::fermionmatrix::DKS_eo(&out, gf, sf2, ODD);
 		BOOST_CHECK_CLOSE(squarenorm(out), 2076.7437224316167885, 1.e-8);
 	}
 
@@ -78,9 +78,9 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 	return;
 	// */
 
-		physics::fermionmatrix::D_KS_eo(&out, gf, sf1, EVEN);
+		physics::fermionmatrix::DKS_eo(&out, gf, sf1, EVEN);
 		BOOST_CHECK_CLOSE(squarenorm(out), 547.69039343718509372, 1.e-8);
-		physics::fermionmatrix::D_KS_eo(&out, gf, sf2, ODD);
+		physics::fermionmatrix::DKS_eo(&out, gf, sf2, ODD);
 		BOOST_CHECK_CLOSE(squarenorm(out), 536.10645183266251479, 1.e-8);
 	}
 

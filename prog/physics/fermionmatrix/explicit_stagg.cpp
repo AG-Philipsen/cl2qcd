@@ -7,7 +7,7 @@
 #include "fermionmatrix_stagg.hpp"
 
 
-void physics::fermionmatrix::D_KS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, int evenodd)
+void physics::fermionmatrix::DKS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, int evenodd)
 {
 	auto out_bufs = out->get_buffers();
 	auto gf_bufs = gf.get_buffers();
