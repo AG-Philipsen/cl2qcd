@@ -24,7 +24,7 @@ namespace fermionmatrix {
 /*
  * Explicit Fermion operations
  */
-void D_KS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, int evenodd);
+void DKS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, int evenodd);
 
 
 /**
@@ -83,22 +83,34 @@ public:
 	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const = 0;
 
 protected:
-	Fermionmatrix_stagg_eo(bool herm, hmc_float _mass, const hardware::System& system) : Fermionmatrix_stagg_basic(system, herm, _mass) { };
+	Fermionmatrix_stagg_eo(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : Fermionmatrix_stagg_basic(system, herm, _mass) { };
 };
 
 
 /**
  * Actual fermion matrices (using even-odd)
  */
+class D_KS_eo : public Fermionmatrix_stagg_eo {
+public:
+	D_KS_eo(const hardware::System& system, bool evenodd) : Fermionmatrix_stagg_eo(system, false), evenodd(evenodd) { };
+	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
+	cl_ulong get_flops() const override;
+private:
+	//This variable is to switch between the Deo and Doe:
+	//   evenodd==EVEN  ---> Deo
+	//   evenodd==ODD   ---> Doe
+	bool evenodd;
+};
+
+
 class MdagM_eo : public Fermionmatrix_stagg_eo {
 public:
-	MdagM_eo(hmc_float _mass, const hardware::System& system, bool ul=true) : Fermionmatrix_stagg_eo(true, _mass, system), tmp(system), tmp2(system), upper_left(ul) { };
+	MdagM_eo(const hardware::System& system, hmc_float _mass, bool ul=EVEN) : Fermionmatrix_stagg_eo(system, true, _mass), tmp(system), upper_left(ul) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
 	cl_ulong get_flops() const override;
 	bool get_upper_left() const;
 private:
 	physics::lattices::Staggeredfield_eo tmp;
-	physics::lattices::Staggeredfield_eo tmp2;
 	//This variable is to switch between the upper_left and the lower-right block
 	//of the MdagM matrix: upper_left==true  ---> MdagM_eo = mass**2 - Deo*Doe
 	//                     upper_left==false ---> MdagM_eo = mass**2 - Doe*Deo

@@ -23,20 +23,36 @@ const hardware::System& physics::fermionmatrix::Fermionmatrix_stagg_basic::get_s
 	return system;
 }
 
+//Class D_KS_eo
+void physics::fermionmatrix::D_KS_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const
+{
+	DKS_eo(out, gf, in, evenodd);
+}
+
+cl_ulong physics::fermionmatrix::D_KS_eo::get_flops() const
+{
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->get_fermion_staggered_code();
+	
+	return fermion_code->get_flop_size("D_KS_eo");
+}
+
+
 //Class MdagM_eo
 void physics::fermionmatrix::MdagM_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const
 {
 	hmc_float mass = get_mass();
-	if(upper_left){
+	if(upper_left==EVEN){
 		//mass**2 - Deo*Doe
-		D_KS_eo(&tmp, gf, in, ODD);
-		D_KS_eo(out, gf, tmp, EVEN);
+		DKS_eo(&tmp, gf, in, ODD);
+		DKS_eo(out, gf, tmp, EVEN);
 		sax(&tmp, {mass*mass, 0.}, in);
 		saxpy(out, {-1., 0.}, *out, tmp);
 	} else {
 		//mass**2 - Doe*Deo
-		D_KS_eo(&tmp, gf, in, EVEN);
-		D_KS_eo(out, gf, tmp, ODD);
+		DKS_eo(&tmp, gf, in, EVEN);
+		DKS_eo(out, gf, tmp, ODD);
 		sax(&tmp, {mass*mass, 0.}, in);
 		saxpy(out, {-1., 0.}, *out, tmp);
 	}
