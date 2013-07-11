@@ -90,14 +90,18 @@ protected:
 /**
  * Actual fermion matrices (using even-odd)
  */
-class MdagM : public Fermionmatrix_stagg_eo {
+class MdagM_eo : public Fermionmatrix_stagg_eo {
 public:
-	MdagM(hmc_float _mass, const hardware::System& system) : Fermionmatrix_stagg_eo(true, _mass, system), tmp(system), tmp2(system) { };
+	MdagM_eo(hmc_float _mass, const hardware::System& system, bool ul=true) : Fermionmatrix_stagg_eo(true, _mass, system), tmp(system), tmp2(system), upper_left(ul) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
 	cl_ulong get_flops() const override;
 private:
 	physics::lattices::Staggeredfield_eo tmp;
 	physics::lattices::Staggeredfield_eo tmp2;
+	//This variable is to switch between the upper_left and the lower-right block
+	//of the MdagM matrix: upper_left==true  ---> MdagM_eo = mass**2 - Deo*Doe
+	//                     upper_left==false ---> MdagM_eo = mass**2 - Doe*Deo
+	bool upper_left;
 };
 
 

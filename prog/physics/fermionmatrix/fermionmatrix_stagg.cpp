@@ -7,7 +7,7 @@
 #include "fermionmatrix_stagg.hpp"
 #include "../../hardware/code/spinors_staggered.hpp"
 
-
+//Generic basic class
 bool physics::fermionmatrix::Fermionmatrix_stagg_basic::is_hermitian() const noexcept
 {
 	return _is_hermitian;
@@ -21,6 +21,39 @@ hmc_float physics::fermionmatrix::Fermionmatrix_stagg_basic::get_mass() const no
 const hardware::System& physics::fermionmatrix::Fermionmatrix_stagg_basic::get_system() const noexcept
 {
 	return system;
+}
+
+//Class MdagM_eo
+void physics::fermionmatrix::MdagM_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const
+{
+	hmc_float mass = get_mass();
+	if(upper_left){
+		//mass**2 - Deo*Doe
+		D_KS_eo(&tmp, gf, in, ODD);
+		D_KS_eo(out, gf, tmp, EVEN);
+		sax(&tmp, {mass*mass, 0.}, in);
+		saxpy(out, {-1., 0.}, *out, tmp);
+	} else {
+		//mass**2 - Doe*Deo
+		D_KS_eo(&tmp, gf, in, EVEN);
+		D_KS_eo(out, gf, tmp, ODD);
+		sax(&tmp, {mass*mass, 0.}, in);
+		saxpy(out, {-1., 0.}, *out, tmp);
+	}
+}
+
+cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
+{
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_staggered_code();
+	auto fermion_code = devices[0]->get_fermion_staggered_code();
+	cl_ulong res;
+	res = 2*fermion_code->get_flop_size("D_KS_eo");
+	res += spinor_code->get_flop_size("sax_stagg_eoprec");
+	res += spinor_code->get_flop_size("saxpy_stagg_eoprec");
+	
+	return res;
 }
 
 
