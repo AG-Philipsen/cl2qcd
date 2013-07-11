@@ -46,9 +46,9 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 	return;
 	// */
 		physics::fermionmatrix::D_KS_eo(&out, gf, sf1, EVEN);
-		BOOST_CHECK_CLOSE(squarenorm(out), 2030.1639500272767691, 0.01);
+		BOOST_CHECK_CLOSE(squarenorm(out), 2030.1639500272767691, 1.e-8);
 		physics::fermionmatrix::D_KS_eo(&out, gf, sf2, ODD);
-		BOOST_CHECK_CLOSE(squarenorm(out), 2076.7437224316167885, 0.01);
+		BOOST_CHECK_CLOSE(squarenorm(out), 2076.7437224316167885, 1.e-8);
 	}
 
 	{
@@ -79,9 +79,9 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 	// */
 
 		physics::fermionmatrix::D_KS_eo(&out, gf, sf1, EVEN);
-		BOOST_CHECK_CLOSE(squarenorm(out), 547.69039343718509372, 0.01);
+		BOOST_CHECK_CLOSE(squarenorm(out), 547.69039343718509372, 1.e-8);
 		physics::fermionmatrix::D_KS_eo(&out, gf, sf2, ODD);
-		BOOST_CHECK_CLOSE(squarenorm(out), 536.10645183266251479, 0.01);
+		BOOST_CHECK_CLOSE(squarenorm(out), 536.10645183266251479, 1.e-8);
 	}
 
 }
