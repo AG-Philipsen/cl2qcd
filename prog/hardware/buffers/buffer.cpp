@@ -327,3 +327,39 @@ void memObjectReleased(cl_mem, void * user_data)
 	MemObjectAllocationTracer * release_info = static_cast<MemObjectAllocationTracer *>(user_data);
 	delete release_info;
 }
+
+std::unique_ptr<hardware::buffers::MappedBufferHandle> hardware::buffers::Buffer::map(cl_map_flags flags) const
+{
+	using hardware::buffers::MappedBufferHandle;
+
+	cl_event raw_event;
+	cl_int err;
+	void * mapped_mem = clEnqueueMapBuffer(*device, cl_buffer, CL_FALSE, flags, 0, bytes, 0, nullptr, &raw_event, &err);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueMapBuffer", __FILE__, __LINE__);
+	}
+	hardware::SynchronizationEvent event(raw_event);
+	err = clReleaseEvent(raw_event);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return std::unique_ptr<MappedBufferHandle>(new MappedBufferHandle(cl_buffer, *device, mapped_mem, event));
+}
+
+hardware::buffers::MappedBufferHandle::MappedBufferHandle(cl_mem buf, cl_command_queue queue, void * mapped_ptr, hardware::SynchronizationEvent map_event)
+ : buf(buf), queue(queue), mapped_ptr(mapped_ptr), map_event(map_event) { }
+hardware::buffers::MappedBufferHandle::~MappedBufferHandle()
+{
+	cl_int err = clEnqueueUnmapMemObject(queue, buf, mapped_ptr, 0, nullptr, nullptr);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueUnmapMemObject", __FILE__, __LINE__);
+	}
+}
+void * hardware::buffers::MappedBufferHandle::get_mapped_ptr() const
+{
+	return mapped_ptr;
+}
+hardware::SynchronizationEvent hardware::buffers::MappedBufferHandle::get_map_event() const
+{
+	return map_event;
+}

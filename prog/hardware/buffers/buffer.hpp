@@ -15,6 +15,7 @@
 
 #include <stdexcept>
 #include "../synchronization_event.hpp"
+#include <memory>
 
 namespace hardware {
 
@@ -37,6 +38,11 @@ namespace buffers {
  * \param src  The buffer to copy from
  */
 template<class T> inline void copyData(const T* dest, const T* orig);
+
+/**
+ * Handle to a buffer mapped to CPU memory.
+ */
+class MappedBufferHandle;
 
 /**
  * A generic OpenCL buffer.
@@ -96,6 +102,11 @@ public:
 	 * Set all bytes of this buffer to zero.
 	 */
 	void clear() const;
+
+	/**
+	 * Map the buffer into host address space.
+	 */
+	std::unique_ptr<MappedBufferHandle> map(cl_map_flags flags = CL_MAP_READ | CL_MAP_WRITE) const;
 
 #ifdef CL_VERSION_1_2
 	/**
@@ -209,6 +220,21 @@ std::string md5(const Buffer* buf);
  * Will thorw an invalid_argument exception if the source buffer is of a different size.
  */
 hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const std::vector<hardware::SynchronizationEvent>& events);
+
+class MappedBufferHandle {
+	friend Buffer;
+	MappedBufferHandle(cl_mem buf, cl_command_queue queue, void * mapped_ptr, hardware::SynchronizationEvent map_event);
+public:
+	MappedBufferHandle(MappedBufferHandle const &) = delete;
+	~MappedBufferHandle();
+	void * get_mapped_ptr() const;
+	hardware::SynchronizationEvent get_map_event() const;
+private:
+	cl_mem const buf;
+	cl_command_queue const queue;
+	void * const mapped_ptr;
+	hardware::SynchronizationEvent const map_event;
+};
 
 }
 }
