@@ -1,4 +1,5 @@
 #include "../physics/lattices/gaugefield.hpp"
+#include "../physics/lattices/staggeredfield_eo.hpp"
 #include "../meta/util.hpp"
 #include "../operations_complex.h"
 #include "../hardware/device.hpp"
