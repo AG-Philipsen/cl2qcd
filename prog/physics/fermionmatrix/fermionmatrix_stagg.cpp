@@ -56,6 +56,11 @@ cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
 	return res;
 }
 
+bool physics::fermionmatrix::MdagM_eo::get_upper_left() const
+{
+	return upper_left;
+}
+
 
 #if 0
 void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const

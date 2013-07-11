@@ -95,6 +95,7 @@ public:
 	MdagM_eo(hmc_float _mass, const hardware::System& system, bool ul=true) : Fermionmatrix_stagg_eo(true, _mass, system), tmp(system), tmp2(system), upper_left(ul) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
 	cl_ulong get_flops() const override;
+	bool get_upper_left() const;
 private:
 	physics::lattices::Staggeredfield_eo tmp;
 	physics::lattices::Staggeredfield_eo tmp2;
