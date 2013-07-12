@@ -57,6 +57,12 @@ namespace physics {
 			void sum() const;
 
 			/**
+			 * Sum up the data of all buffers, getting the scalar into a consistent state again.
+			 * Afterwards return the result.
+			 */
+			SCALAR sum_and_get() const;
+
+			/**
 			 * Store a value
 			 */
 			void store(const SCALAR& val) const;
@@ -152,6 +158,39 @@ template<typename SCALAR> void physics::lattices::Scalar<SCALAR>::sum() const
 		logger.trace() << "Summed scalar: " << std::setprecision(16) << res;
 
 		// buffers are automatically unmapped by leaving scope
+	}
+}
+
+template<typename SCALAR> SCALAR physics::lattices::Scalar<SCALAR>::sum_and_get() const
+{
+	size_t num_buffers = buffers.size();
+	if(num_buffers > 1) {
+		std::vector<std::unique_ptr<hardware::buffers::MappedBufferHandle>> handles(num_buffers);
+		for(size_t i = 0; i < num_buffers; ++i) {
+			handles[i] = buffers[i]->map();
+		}
+
+		std::vector<SCALAR*> mapped_ptrs(num_buffers);
+		std::vector<hardware::SynchronizationEvent> events(num_buffers);
+		for(size_t i = 0; i < num_buffers; ++i) {
+			mapped_ptrs[i] = static_cast<SCALAR*>(handles[i]->get_mapped_ptr());
+			events[i] = handles[i]->get_map_event();
+		}
+		hardware::wait(events);
+
+		SCALAR res = mapped_ptrs[0][0] + mapped_ptrs[1][0];
+		for(size_t i = 2; i < num_buffers; ++i) {
+			res += mapped_ptrs[i][0];
+		}
+		for(size_t i = 0; i < num_buffers; ++i) {
+			mapped_ptrs[i][0] = res;
+		}
+		logger.trace() << "Summed scalar: " << std::setprecision(16) << res;
+
+		// buffers are automatically unmapped by leaving scope
+		return res;
+	} else {
+		return get();
 	}
 }
 

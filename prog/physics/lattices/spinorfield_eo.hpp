@@ -154,6 +154,7 @@ void copyData(const Spinorfield_eo* to, const Spinorfield_eo& from);
  * Calculate the scalar product of two spinorfields.
  */
 hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
+hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right, const Scalar<hmc_complex>* res);
 void scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right);
 
 template<typename S, hmc_complex (*T)(const S&, const S&)> size_t get_flops(const hardware::System&);
@@ -163,6 +164,7 @@ template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices
  * Calculate the squarenorm of the spinorfield
  */
 hmc_float squarenorm(const Spinorfield_eo& field);
+hmc_float squarenorm(const Spinorfield_eo& field, const Scalar<hmc_float>* res);
 void squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field);
 
 template<typename S, hmc_float (*T)(const S&)> size_t get_flops(const hardware::System&);

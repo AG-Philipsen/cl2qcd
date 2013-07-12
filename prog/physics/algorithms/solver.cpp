@@ -31,6 +31,13 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
 static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
 
+namespace {
+
+int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec);
+int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec);
+
+}
+
 physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { }
 
 static std::string create_solver_stuck_message(int iterations)
@@ -779,6 +786,17 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 
 int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
 {
+	if(system.get_devices().size() > 1) {
+		return cg_multidev(x, f, gf, b, system, prec);
+	} else {
+		return cg_singledev(x, f, gf, b, system, prec);
+	}
+}
+
+namespace {
+
+int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+{
 	using namespace physics::lattices;
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
@@ -938,6 +956,140 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 
 	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+}
+
+int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+{
+	using namespace physics::lattices;
+	using physics::algorithms::solvers::SolverStuck;
+	using physics::algorithms::solvers::SolverDidNotSolve;
+
+	auto params = system.get_inputparameters();
+
+	/// @todo start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+
+	const Spinorfield_eo p(system);
+	const Spinorfield_eo rn(system);
+	const Spinorfield_eo v(system);
+
+	const Scalar<hmc_float> tmp_float(system);
+	const Scalar<hmc_complex> tmp_complex(system);
+	hmc_complex alpha;
+	hmc_complex beta;
+	hmc_complex omega;
+	hmc_complex rho;
+	hmc_complex rho_next = (hmc_complex) {std::nan(""), std::nan("")};
+	hmc_complex tmp1;
+	hmc_complex tmp2;
+
+	hmc_float resid;
+	int iter = 0;
+
+	// report source and initial solution
+	log_squarenorm(create_log_prefix_cg(iter) + "b (initial): ", b);
+	log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
+
+	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	for(iter = 0; iter < params.get_cgmax(); iter ++) {
+		if(iter % params.get_iter_refresh() == 0) {
+			//rn = A*inout
+			f(&rn, gf, *x);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
+			//rn = source - A*inout
+			saxpy(&rn, hmc_complex_one, rn, b);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
+			//p = rn
+			copyData(&p, rn);
+			log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
+			//omega = (rn,rn)
+			omega = (hmc_complex) {squarenorm(rn, &tmp_float), 0};
+		} else {
+			//update omega
+			omega = rho_next;
+		}
+		//v = A pn
+		f(&v, gf, p);
+		log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
+
+
+		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
+		rho = scalar_product(p, v, &tmp_complex);
+		alpha = complexdivide(omega, rho);
+		tmp1 = complexmult(hmc_complex_minusone, alpha);
+
+		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
+		saxpy(x, tmp1, p, *x);
+		log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
+
+		//switch between original version and kernel merged one
+		if(params.get_use_merge_kernels_spinor()) {
+			//merge two calls:
+			//rn+1 = rn - alpha*v -> rhat
+			//and
+			//rho_next = |rhat|^2
+			//rho_next is a complex number, set its imag to zero
+			//spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
+			throw Print_Error_Message("Kernel merging currently not implemented", __FILE__, __LINE__);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
+		} else {
+			//rn+1 = rn - alpha*v -> rhat
+			saxpy(&rn, alpha, v, rn);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
+
+			//calc residuum
+			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+			resid = squarenorm(rn, &tmp_float);
+			rho_next = (hmc_complex) {resid, 0.};
+		}
+		logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
+		//test if resid is NAN
+		if(resid != resid) {
+			logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
+			throw SolverStuck(iter, __FILE__, __LINE__);
+		}
+		if(resid < prec) {
+			logger.debug() << create_log_prefix_cg(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
+
+			// report on performance
+			if(logger.beInfo()) {
+				// we are always synchroneous here, as we had to recieve the residium from the device
+				const uint64_t duration = timer.getTime();
+
+				// calculate flops
+				const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+				const cl_ulong mf_flops = f.get_flops();
+				logger.trace() << "mf_flops: " << mf_flops;
+
+				cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
+									   + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
+									   + 3 * get_flops<Spinorfield_eo, saxpy>(system);
+				total_flops *= iter;
+				logger.trace() << "total_flops: " << total_flops;
+				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
+				logger.trace() << "total_flops: " << total_flops;
+
+				// report performance
+				logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+			}
+			// report on solution
+			log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
+			return iter;
+		}
+
+		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
+		beta = complexdivide(rho_next, omega);
+
+		//pn+1 = rn+1 + beta*pn
+		tmp2 = complexmult(hmc_complex_minusone, beta);
+		saxpy(&p, tmp2, p, rn);
+		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
+	}
+
+	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+}
+
 }
 
 static std::string create_log_prefix_solver(std::string name, int number) noexcept

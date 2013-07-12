@@ -60,6 +60,29 @@ hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const 
 	return res.get();
 }
 
+hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right, const Scalar<hmc_complex>* res)
+{
+	auto res_buffers = res->get_buffers();
+	auto left_buffers = left.get_buffers();
+	auto right_buffers = right.get_buffers();
+	size_t num_buffers = res_buffers.size();
+
+	if(num_buffers != left_buffers.size() || num_buffers != right_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
+	}
+
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto res_buf = res_buffers[i];
+		auto left_buf = left_buffers[i];
+		auto right_buf = right_buffers[i];
+		auto device = res_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
+
+		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
+	}
+	return res->sum_and_get();
+}
+
 void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right)
 {
 	auto res_buffers = res->get_buffers();
@@ -88,6 +111,27 @@ hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field)
 	const Scalar<hmc_float> res(field.system);
 	squarenorm(&res, field);
 	return res.get();
+}
+
+hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field, const Scalar<hmc_float>* res)
+{
+	auto field_buffers = field.get_buffers();
+	auto res_buffers = res->get_buffers();
+	size_t num_buffers = field_buffers.size();
+
+	if(num_buffers != res_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
+	}
+
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto field_buf = field_buffers[i];
+		auto res_buf = res_buffers[i];
+		auto device = field_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
+
+		spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
+	}
+	return res->sum_and_get();
 }
 
 void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field)
