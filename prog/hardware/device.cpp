@@ -468,6 +468,10 @@ static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputpa
 		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
 	}
 
+	if(local_size.x % 2 || local_size.y % 2 || local_size.z % 2 || local_size.t % 2) {
+		logger.warn() << "Local lattice size is odd. This is known to cause problems!";
+	}
+
 	return local_size;
 }
 
