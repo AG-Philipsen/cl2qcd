@@ -154,7 +154,17 @@ void copyData(const Spinorfield_eo* to, const Spinorfield_eo& from);
  * Calculate the scalar product of two spinorfields.
  */
 hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right);
+/**
+ * Calculate the scalar product of two spinorfields.
+ *
+ * The given tmp buffer is used to avoid initialization costs. It will be modified, but does not have to contain the result afterwards.
+ */
 hmc_complex scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right, const Scalar<hmc_complex>* res);
+/**
+ * Calculate the scalar product of two spinorfields.
+ *
+ * The given scalar buffer will afterards contain the result.
+ */
 void scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right);
 
 template<typename S, hmc_complex (*T)(const S&, const S&)> size_t get_flops(const hardware::System&);
@@ -164,7 +174,17 @@ template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices
  * Calculate the squarenorm of the spinorfield
  */
 hmc_float squarenorm(const Spinorfield_eo& field);
-hmc_float squarenorm(const Spinorfield_eo& field, const Scalar<hmc_float>* res);
+/**
+ * Calculate the squarenorm of the spinorfield.
+ *
+ * The given tmp buffer is used to avoid initialization costs. It will be modified, but does not have to contain the result afterwards.
+ */
+hmc_float squarenorm(const Spinorfield_eo& field, const Scalar<hmc_float>* tmp);
+/**
+ * Calculate the squarenorm of the spinorfield.
+ *
+ * The given scalar buffer will afterards contain the result.
+ */
 void squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field);
 
 template<typename S, hmc_float (*T)(const S&)> size_t get_flops(const hardware::System&);

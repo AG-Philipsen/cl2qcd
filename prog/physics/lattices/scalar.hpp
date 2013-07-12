@@ -57,10 +57,11 @@ namespace physics {
 			void sum() const;
 
 			/**
-			 * Sum up the data of all buffers, getting the scalar into a consistent state again.
-			 * Afterwards return the result.
+			 * Return the sum of all scalars.
+			 *
+			 * @warning Does not put the scalar into a consistent state. Manually store afterwards of this is desired.
 			 */
-			SCALAR sum_and_get() const;
+			SCALAR get_sum() const;
 
 			/**
 			 * Store a value
@@ -161,13 +162,13 @@ template<typename SCALAR> void physics::lattices::Scalar<SCALAR>::sum() const
 	}
 }
 
-template<typename SCALAR> SCALAR physics::lattices::Scalar<SCALAR>::sum_and_get() const
+template<typename SCALAR> SCALAR physics::lattices::Scalar<SCALAR>::get_sum() const
 {
 	size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
 		std::vector<std::unique_ptr<hardware::buffers::MappedBufferHandle>> handles(num_buffers);
 		for(size_t i = 0; i < num_buffers; ++i) {
-			handles[i] = buffers[i]->map();
+			handles[i] = buffers[i]->map(CL_MAP_READ);
 		}
 
 		std::vector<SCALAR*> mapped_ptrs(num_buffers);
@@ -181,9 +182,6 @@ template<typename SCALAR> SCALAR physics::lattices::Scalar<SCALAR>::sum_and_get(
 		SCALAR res = mapped_ptrs[0][0] + mapped_ptrs[1][0];
 		for(size_t i = 2; i < num_buffers; ++i) {
 			res += mapped_ptrs[i][0];
-		}
-		for(size_t i = 0; i < num_buffers; ++i) {
-			mapped_ptrs[i][0] = res;
 		}
 		logger.trace() << "Summed scalar: " << std::setprecision(16) << res;
 

@@ -80,7 +80,7 @@ hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const 
 
 		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
 	}
-	return res->sum_and_get();
+	return res->get_sum();
 }
 
 void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right)
@@ -131,7 +131,7 @@ hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field, const Scala
 
 		spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
 	}
-	return res->sum_and_get();
+	return res->get_sum();
 }
 
 void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field)
