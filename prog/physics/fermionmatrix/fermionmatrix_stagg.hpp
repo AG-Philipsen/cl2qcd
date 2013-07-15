@@ -47,7 +47,7 @@ protected:
 	/**
 	 * Get the mass of the fermion.
 	 */
-	hmc_float get_mass() const noexcept;
+	virtual hmc_float get_mass() const = 0;
 	
 	/**
 	 * Get the system to operate on.
@@ -95,6 +95,7 @@ public:
 	D_KS_eo(const hardware::System& system, bool evenodd) : Fermionmatrix_stagg_eo(system, false), evenodd(evenodd) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
 	cl_ulong get_flops() const override;
+	hmc_float get_mass() const override;
 private:
 	//This variable is to switch between the Deo and Doe:
 	//   evenodd==EVEN  ---> Deo
@@ -108,6 +109,7 @@ public:
 	MdagM_eo(const hardware::System& system, hmc_float _mass, bool ul=EVEN) : Fermionmatrix_stagg_eo(system, true, _mass), tmp(system), upper_left(ul) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
 	cl_ulong get_flops() const override;
+	hmc_float get_mass() const noexcept override;
 	bool get_upper_left() const;
 private:
 	physics::lattices::Staggeredfield_eo tmp;

@@ -13,7 +13,13 @@ bool physics::fermionmatrix::Fermionmatrix_stagg_basic::is_hermitian() const noe
 	return _is_hermitian;
 }
 
-hmc_float physics::fermionmatrix::Fermionmatrix_stagg_basic::get_mass() const noexcept
+//Even if get_mass is a pure virtual method, the base class can still have an implementation
+//of such a method that can be explicitly called with the scope resolution operator.
+//In this way, derived classes that must return the value of the mass can call this default
+//implementation, those that do not depend on the mass will throw an exception.
+//REMARK: = 0 means derived classes must provide an implementation,
+//        not that the base class can not provide an implementation.
+hmc_float physics::fermionmatrix::Fermionmatrix_stagg_basic::get_mass() const
 {
 	return mass;
 }
@@ -38,6 +44,11 @@ cl_ulong physics::fermionmatrix::D_KS_eo::get_flops() const
 	return fermion_code->get_flop_size("D_KS_eo");
 }
 
+hmc_float physics::fermionmatrix::D_KS_eo::get_mass() const
+{
+	throw Print_Error_Message("Unable to recover right fermions mass from fermionmatrix::D_KS_eo object.", __FILE__, __LINE__);
+	return -1;
+}
 
 //Class MdagM_eo
 void physics::fermionmatrix::MdagM_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const
@@ -77,6 +88,10 @@ bool physics::fermionmatrix::MdagM_eo::get_upper_left() const
 	return upper_left;
 }
 
+hmc_float physics::fermionmatrix::MdagM_eo::get_mass() const noexcept
+{
+	return Fermionmatrix_stagg_basic::get_mass();
+}
 
 #if 0
 void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const

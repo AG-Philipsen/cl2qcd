@@ -55,6 +55,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		FERMIONMATRIX matrix1(system, ARG_DEF, ODD);
 		FERMIONMATRIX matrix2(system, ARG_DEF);
 
+		logger.info() << "The mass of the fermion is " << matrix1.get_mass();
+		
 		Gaugefield gf(system, prng, false);
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
