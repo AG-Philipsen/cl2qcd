@@ -159,14 +159,15 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
 		return (C * NC * (9 + 1) + C * 8 * R) * D * S;
 	}
 	if (in == "D_KS_eo") {
-		//Not yet counted
-		return 100000000000000000000000;
+		//this kernel reads 8 spinors (not that in the site of the output),
+		//8 su3matrices and writes 1 spinor:
+		const unsigned int dirs = 4;
+		return (C * NC * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
 	return 0;
 }
 
 /**
- * 
  * This function returns the number of flops that is needed to make the standard staggered
  * Dirac operator act onto a field (606 flops). Since in general the mass in the simulation is not
  * zero (and there are no check on that), the mass-term in the d_slash is always taken
@@ -202,6 +203,15 @@ static int flop_dslash_staggered_per_site(const meta::Inputparameters & paramete
 	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2 + NC * 2) + NC * 2 + 4 * NC * 2;
 }
 
+/**
+ * This function is the same as flop_dslash_staggered_per_site, except the fact that here
+ * the mass term is not taken into account (return 594 flops)
+ */
+static int flop_dks_staggered_per_site(const meta::Inputparameters & parameters)
+{
+	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2 + NC * 2) + 3 * NC * 2;
+}
+
 uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in) const
 {
 	size_t S = get_spinorfieldsize(get_parameters());
@@ -209,12 +219,14 @@ uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in
 	if (in == "M_staggered") {
 		//this kernel performs one dslash on each site. To do that it also impose
 		//the boundary conditions multiplying twice in each direction an su3vec by a complex
-		return S * (flop_dslash_staggered_per_site(get_parameters()) +
-		            2* NC * NDIM * meta::get_flop_complex_mult());
+		return S * (flop_dslash_staggered_per_site(get_parameters()) + 
+		            2 * NC * NDIM * meta::get_flop_complex_mult());
 	}
 	if (in == "D_KS_eo") {
-		//Not yet counted
-		return 100000000000000000000000;
+		//this kernel performs one dks on each site. To do that it also impose
+		//the boundary conditions multiplying twice in each direction an su3vec by a complex
+		return Seo * (flop_dks_staggered_per_site(get_parameters()) + 
+		            2 * NC * NDIM * meta::get_flop_complex_mult());
 	}
 	return 0;
 }
