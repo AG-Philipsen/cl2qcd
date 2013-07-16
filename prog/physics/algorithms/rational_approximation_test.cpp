@@ -1,5 +1,7 @@
 /** @file
  * Tests of the Rational_Approximation algorithm
+ * 
+ * (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
  */
 
 #include "rational_approximation.hpp"
