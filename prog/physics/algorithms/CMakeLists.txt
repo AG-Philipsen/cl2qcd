@@ -8,6 +8,7 @@
 
 add_library(algorithms
 	solver.cpp
+	solver_shifted.cpp
 	heatbath.cpp
 	kappa_clover.cpp
 	flavour_doublet.cpp
