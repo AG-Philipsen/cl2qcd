@@ -174,6 +174,7 @@ public:
 
 	int get_cg_iteration_block_size() const noexcept;
 	bool get_cg_use_async_copy() const noexcept;
+	int get_cg_minimum_iteration_count() const noexcept;
 
 	bool get_split_cpu() const noexcept;
 
@@ -309,6 +310,7 @@ private:
 
 	int cg_iteration_block_size;
 	bool cg_use_async_copy;
+	int cg_minimum_iteration_count;
 
 	bool split_cpu;
 };

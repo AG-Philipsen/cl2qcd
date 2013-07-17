@@ -801,15 +801,19 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	auto params = system.get_inputparameters();
+	const auto params = system.get_inputparameters();
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
 	/// @todo make configurable from outside
 	const int RESID_CHECK_FREQUENCY = params.get_cg_iteration_block_size();
 	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
+	const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
 	if(USE_ASYNC_COPY) {
 		logger.warn() << "Asynchroneous copying in the CG is currently unimplemented!";
+	}
+	if(MINIMUM_ITERATIONS) {
+		logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
 	}
 
 	const Spinorfield_eo p(system);
@@ -836,7 +840,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 	log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
 
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-	for(iter = 0; iter < params.get_cgmax(); iter ++) {
+	for(iter = 0; iter < params.get_cgmax() || iter < MINIMUM_ITERATIONS; iter ++) {
 		if(iter % params.get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(&rn, gf, *x);
@@ -911,7 +915,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 				logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
 				throw SolverStuck(iter, __FILE__, __LINE__);
 			}
-			if(resid < prec) {
+			if(resid < prec && iter >= MINIMUM_ITERATIONS) {
 				//if(USE_ASYNC_COPY) {
 				//  // make sure everything using our event is completed
 				//  resid_event.wait();
@@ -964,7 +968,11 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	auto params = system.get_inputparameters();
+	const auto params = system.get_inputparameters();
+	const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
+	if(MINIMUM_ITERATIONS) {
+		logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
+	}
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
@@ -1048,7 +1056,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 			logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
 			throw SolverStuck(iter, __FILE__, __LINE__);
 		}
-		if(resid < prec) {
+		if(resid < prec && iter >= MINIMUM_ITERATIONS) {
 			logger.debug() << create_log_prefix_cg(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
 
 			// report on performance
