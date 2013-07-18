@@ -194,6 +194,35 @@ void physics::lattices::saxpy(const Staggeredfield_eo* out, const Scalar<hmc_com
 	}
 }
 
+void physics::lattices::saxpby(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y)
+{
+	const Scalar<hmc_complex> alpha_buf(out->system);
+	const Scalar<hmc_complex> beta_buf(out->system);
+	alpha_buf.store(alpha);
+	beta_buf.store(beta);
+	saxpby(out, alpha_buf, x, beta_buf, y);
+}
+
+void physics::lattices::saxpby(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, const Staggeredfield_eo& x, const Scalar<hmc_complex>& beta, const Staggeredfield_eo& y)
+{
+	auto out_bufs = out->get_buffers();
+	auto alpha_bufs = alpha.get_buffers();
+	auto x_bufs = x.get_buffers();
+	auto beta_bufs = beta.get_buffers();
+	auto y_bufs = y.get_buffers();
+	
+	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != beta_bufs.size() || out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		device->get_spinor_staggered_code()->saxpby_eoprec_device(x_bufs[i], y_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
+	}
+}
+
 void physics::lattices::saxpbypz(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y, const Staggeredfield_eo& z)
 {
 	const Scalar<hmc_complex> alpha_buf(out->system);
@@ -247,6 +276,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
 	return spinor_code->get_flop_size("sax_stag_eoprec");
 }
+
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpy>(const hardware::System& system)
 {
 	// assert single system
@@ -254,6 +284,15 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
 	return spinor_code->get_flop_size("saxpy_stagg_eoprec");
 }
+
+template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpby>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_staggered_code();
+	return spinor_code->get_flop_size("saxpby_stagg_eoprec");
+}
+
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpbypz>(const hardware::System& system)
 {
 	// assert single system

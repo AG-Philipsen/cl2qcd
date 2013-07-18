@@ -86,6 +86,7 @@ private:
 	friend hmc_float squarenorm(const Staggeredfield_eo& field);
 	friend void sax(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x);
 	friend void saxpy(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const Staggeredfield_eo& y);
+	friend void saxpby(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y);
 	friend void saxpbypz(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y, const Staggeredfield_eo& z);
 	friend void pseudo_randomize<Staggeredfield_eo, su3vec>(const Staggeredfield_eo* to, int seed);
 };
@@ -130,6 +131,17 @@ void saxpy(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, const
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpy>(const hardware::System&);
+
+/**
+ * Perform the BLAS (Basic Linear Algebra Subroutine) operation saxpby.
+ *
+ * out = alpha * x + beta * y
+ */
+void saxpby(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y);
+void saxpby(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, const Staggeredfield_eo& x, const Scalar<hmc_complex>& beta, const Staggeredfield_eo& y);
+
+template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpby>(const hardware::System&);
 
 /**
  * Perform the BLAS (Basic Linear Algebra Subroutine) operation saxpbypz.
