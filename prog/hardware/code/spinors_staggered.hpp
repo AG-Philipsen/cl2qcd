@@ -211,7 +211,7 @@ public:
 	
 	/**
 	 * This function sets to 1 a staggered field and normalizes it (i.e. all its su3vec
-	 * are set to 1./(sqrt(3*VOL4D_GLOBAL)).
+	 * are set to 1./(sqrt(3*VOL4D_GLOBAL)). So the squarenorm of the field is 0.5 and not 1
 	 * @param x The field to be set to one and normalized 
 	 */
 	void set_cold_spinorfield_eoprec_device(const hardware::buffers::SU3vec * x) const;
