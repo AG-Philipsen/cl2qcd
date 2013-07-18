@@ -179,6 +179,35 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .85, 1.e-8);
 }
 
+BOOST_AUTO_TEST_CASE(saxpby)
+{
+	using physics::lattices::Staggeredfield_eo;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	Staggeredfield_eo gaussian(system);
+	gaussian.set_gaussian(prng);
+	Staggeredfield_eo cold(system);
+	cold.set_cold();
+	Staggeredfield_eo zero(system);
+	zero.set_zero();
+	Staggeredfield_eo sf(system);
+
+	physics::lattices::saxpby(&sf, {1., 0.}, gaussian, {0., 0.}, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpby(&sf, {0., 0.}, cold, {1., 0.}, gaussian);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpby(&sf, {0., 0.}, gaussian, {0., 0.}, gaussian);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
+	physics::lattices::saxpby(&sf, {.3, .7}, cold, {1., 0.}, zero);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.29, 1.e-8);
+	physics::lattices::saxpby(&sf, {.1, .3}, zero, {.56, .65}, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.36805, 1.e-8);
+}
+
 BOOST_AUTO_TEST_CASE(saxpbypz)
 {
 	using physics::lattices::Staggeredfield_eo;
