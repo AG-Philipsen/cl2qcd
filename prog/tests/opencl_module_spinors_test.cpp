@@ -3,6 +3,7 @@
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/spinors.hpp"
+#include "../hardware/code/complex.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -896,7 +897,7 @@ void test_cplx(std::string inputfile, int switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->get_complex_code();
 
 	logger.info() << "Fill buffers...";
 	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());

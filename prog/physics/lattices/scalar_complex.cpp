@@ -8,7 +8,7 @@
 
 #include <stdexcept>
 #include "../../hardware/device.hpp"
-#include "../../hardware/code/spinors.hpp"
+#include "../../hardware/code/complex.hpp"
 
 //void physics::lattices::add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)
 //{
@@ -21,8 +21,8 @@
 //		throw std::invalid_argument("All arguments must use the same number of devices.");
 //	}
 //	for(size_t i = 0; i < num_bufs; ++i) {
-//		auto code = dest_bufs[i]->get_device()->get_spinor_code();
-//		code->product(dest_bufs[i], left_bufs[i], right_bufs[i]);
+//		auto code = dest_bufs[i]->get_device()->get_complex_code();
+//		code->add(dest_bufs[i], left_bufs[i], right_bufs[i]);
 //	}
 //}
 //
@@ -37,8 +37,8 @@
 //		throw std::invalid_argument("All arguments must use the same number of devices.");
 //	}
 //	for(size_t i = 0; i < num_bufs; ++i) {
-//		auto code = dest_bufs[i]->get_device()->get_spinor_code();
-//		code->product(dest_bufs[i], minuend_bufs[i], subtrahend_bufs[i]);
+//		auto code = dest_bufs[i]->get_device()->get_complex_code();
+//		code->subtract(dest_bufs[i], minuend_bufs[i], subtrahend_bufs[i]);
 //	}
 //}
 
@@ -53,7 +53,7 @@ void physics::lattices::multiply(const Scalar<hmc_complex>* dest, const Scalar<h
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_spinor_code();
+		auto code = dest_bufs[i]->get_device()->get_complex_code();
 		code->set_complex_to_product_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
 	}
 }
@@ -68,7 +68,7 @@ void physics::lattices::divide(const Scalar<hmc_complex>* dest, const Scalar<hmc
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_spinor_code();
+		auto code = dest_bufs[i]->get_device()->get_complex_code();
 		code->set_complex_to_ratio_device(numerator_bufs[i], denominator_bufs[i], dest_bufs[i]);
 	}
 }
@@ -83,7 +83,7 @@ void physics::lattices::convert(const Scalar<hmc_complex>* dest, const Scalar<hm
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_spinor_code();
+		auto code = dest_bufs[i]->get_device()->get_complex_code();
 		code->set_complex_to_float_device(src_bufs[i], dest_bufs[i]);
 	}
 }
