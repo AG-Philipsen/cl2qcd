@@ -38,7 +38,8 @@ BOOST_AUTO_TEST_CASE(cgm)
 		out.push_back(new Staggeredfield_eo(system));
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 13);
 	
-	int iter=cg_m(out, sigma, matrix, gf, b, system, 1.e-8);
+	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-8);
+	logger.info() << "iter=" << iter;
 }
 
 

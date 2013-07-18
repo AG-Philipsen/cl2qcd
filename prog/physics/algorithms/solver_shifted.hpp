@@ -15,8 +15,12 @@ namespace solvers {
 
 /**
  * Solve the linear system (A + sigma) * x = b for x and a whole set of values of sigma,
- * using the CG-M algorithm (multi-shifted inverter) for even-odd preconditioned b and x
- * (see B.Jegerlehner arXiv:hep-lat/9612014v1)
+ * using the CG-M algorithm (multi-shifted inverter) for even-odd preconditioned b and x.
+ * For further details, see B.Jegerlehner arXiv:hep-lat/9612014v1, even if here there are some missing information
+ * and also some wrong indeces. Then compare with "Accurate conjugate gradient methods for families of
+ * shifted systems" that is a work by Jasper van den Eshof and Gerard L. G. Sleijpen of December 2003:
+ * here the notation is completely different, but one can build the complete CG-M algorithm. This was done
+ * and summarized in the file CG-M.pdf (see Feature #482)
  * 
  * \return The number of iterations performed
  *

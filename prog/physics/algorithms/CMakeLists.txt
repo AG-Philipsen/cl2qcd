@@ -8,7 +8,6 @@
 
 add_library(algorithms
 	solver.cpp
-	solver_shifted.cpp
 	heatbath.cpp
 	kappa_clover.cpp
 	flavour_doublet.cpp
@@ -21,6 +20,7 @@ add_library(algorithms
 	hmc.cpp
 	alg_remez.C
 	rational_approximation.cpp
+	solver_shifted.cpp
 )
 target_link_libraries(algorithms
 		lattices
@@ -36,4 +36,4 @@ add_unit_test(physics::algorithms::<fermion_force> fermion_force_test)
 add_unit_test(physics::algorithms::<forces> forces_test)
 add_unit_test(physics::algorithms::<molecular_dynamics> molecular_dynamics_test)
 add_unit_test(physics::algorithms::<rational_approximation> rational_approximation_test)
-add_unit_test(physics::algorithms::<solver_shifted> solver_shifted_test)
+add_unit_test(physics::algorithms::solver::<solver_shifted> solver_shifted_test)
