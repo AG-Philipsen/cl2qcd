@@ -10,37 +10,37 @@
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/complex.hpp"
 
-//void physics::lattices::add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)
-//{
-//	auto dest_bufs = dest->get_buffers();
-//	size_t num_bufs = dest_bufs.size();
-//	auto left_bufs = left.get_buffers();
-//	auto right_bufs = right.get_buffers();
-//
-//	if(num_bufs != left_bufs.size() || num_bufs != right_bufs.size()) {
-//		throw std::invalid_argument("All arguments must use the same number of devices.");
-//	}
-//	for(size_t i = 0; i < num_bufs; ++i) {
-//		auto code = dest_bufs[i]->get_device()->get_complex_code();
-//		code->add(dest_bufs[i], left_bufs[i], right_bufs[i]);
-//	}
-//}
-//
-//void physics::lattices::subtract(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& minuend, const Scalar<hmc_complex>& subtrahend);
-//{
-//	auto dest_bufs = dest->get_buffers();
-//	size_t num_bufs = dest_bufs.size();
-//	auto minuend_bufs = minuend.get_buffers();
-//	auto subtrahend_bufs = subtrahend.get_buffers();
-//
-//	if(num_bufs != minuend_bufs.size() || num_bufs != subtrahend_bufs.size()) {
-//		throw std::invalid_argument("All arguments must use the same number of devices.");
-//	}
-//	for(size_t i = 0; i < num_bufs; ++i) {
-//		auto code = dest_bufs[i]->get_device()->get_complex_code();
-//		code->subtract(dest_bufs[i], minuend_bufs[i], subtrahend_bufs[i]);
-//	}
-//}
+void physics::lattices::add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)
+{
+	auto dest_bufs = dest->get_buffers();
+	size_t num_bufs = dest_bufs.size();
+	auto left_bufs = left.get_buffers();
+	auto right_bufs = right.get_buffers();
+
+	if(num_bufs != left_bufs.size() || num_bufs != right_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = dest_bufs[i]->get_device()->get_complex_code();
+		code->set_complex_to_sum_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
+	}
+}
+
+void physics::lattices::subtract(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& minuend, const Scalar<hmc_complex>& subtrahend)
+{
+	auto dest_bufs = dest->get_buffers();
+	size_t num_bufs = dest_bufs.size();
+	auto minuend_bufs = minuend.get_buffers();
+	auto subtrahend_bufs = subtrahend.get_buffers();
+
+	if(num_bufs != minuend_bufs.size() || num_bufs != subtrahend_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = dest_bufs[i]->get_device()->get_complex_code();
+		code->set_complex_to_difference_device(minuend_bufs[i], subtrahend_bufs[i], dest_bufs[i]);
+	}
+}
 
 void physics::lattices::multiply(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)
 {
