@@ -47,10 +47,6 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	set_zero_spinorfield_stagg = createKernel("set_zero_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_zero.cl";
 	set_cold_spinorfield_stagg = createKernel("set_cold_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_cold.cl";
 	set_gaussian_spinorfield_stagg = createKernel("set_gaussian_spinorfield_stagg") << basic_fermion_code << prng_code << "spinorfield_staggered_gaussian.cl";
-	//Complex number operations
-	convert_stagg = createKernel("convert_float_to_complex") << get_device()->get_gaugefield_code()->get_sources() << "complex_convert.cl";
-	ratio_stagg = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
-	product_stagg = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
 	//Fields algebra operations
 	sax_stagg = createKernel("sax_staggered") << basic_fermion_code << "spinorfield_staggered_sax.cl";
 	saxpy_stagg = createKernel("saxpy_staggered") << basic_fermion_code << "spinorfield_staggered_saxpy.cl";
@@ -117,14 +113,6 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(set_gaussian_spinorfield_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	//Complex numbers operations
-	clerr = clReleaseKernel(convert_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(ratio_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(product_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	//Fields algebra operations
 	clerr = clReleaseKernel(sax_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(saxpy_stagg);
@@ -185,22 +173,6 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	}
 	
 	//Query specific sizes for kernels if needed
-	string kernelname = get_kernel_name(kernel);
-	if(kernelname.compare("convert_float_to_complex") == 0) {
-		*ls = 1;
-		*gs = 1;
-		*num_groups = 1;
-	}
-	if(kernelname.compare("ratio") == 0) {
-		*ls = 1;
-		*gs = 1;
-		*num_groups = 1;
-	}
-	if(kernelname.compare("product") == 0) {
-		*ls = 1;
-		*gs = 1;
-		*num_groups = 1;
-	}
 	//Whenever ls id manually modified, it is crucial to modify num_groups accordingly!
 	if(kernel == global_squarenorm_stagg || kernel == scalar_product_stagg
 	   || kernel == global_squarenorm_stagg_eoprec || kernel == scalar_product_stagg_eoprec) {
@@ -321,63 +293,6 @@ void hardware::code::Spinors_staggered::set_cold_spinorfield_device(const hardwa
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(set_cold_spinorfield_stagg, gs2, ls2);
-}
-
-
-void hardware::code::Spinors_staggered::set_complex_to_float_device(const hardware::buffers::Plain<hmc_float> * in, const hardware::buffers::Plain<hmc_complex> * out) const
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(convert_stagg, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(convert_stagg, 0, sizeof(cl_mem), in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(convert_stagg, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(convert_stagg, gs2, ls2);
-}
-
-
-void hardware::code::Spinors_staggered::set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(ratio_stagg, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(ratio_stagg, 0, sizeof(cl_mem), a->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(ratio_stagg, 1, sizeof(cl_mem), b->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(ratio_stagg, 2, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(ratio_stagg, gs2, ls2);
-}
-
-
-void hardware::code::Spinors_staggered::set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(product_stagg, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(product_stagg, 0, sizeof(cl_mem), a->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(product_stagg, 1, sizeof(cl_mem), b->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(product_stagg, 2, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(product_stagg, gs2, ls2);
 }
 
 
@@ -896,21 +811,9 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel writes 1 su3vec
 		return C * D * S * NC;
 	}
-	if (in == "convert_float_to_complex") {
-		//this kernel reads 1 float and writes 1 complex number
-		return (C + 1) * D;
-	}
 	if (in == "set_gaussian_spinorfield_stagg") {
 		//this kernel writes 1 su3vec per site
 		return ( NC * C ) * D * S;
-	}
-	if (in == "ratio") {
-		//this kernel reads 2 complex numbers and writes 1 complex number
-		return C * D * (2 + 1);
-	}
-	if (in == "product") {
-		//this kernel reads 2 complex numbers and writes 1 complex number
-		return C * D * (2 + 1);
 	}
 	if (in == "sax_staggered") {
 		//this kernel reads 1 su3vec, 1 complex number and writes 1 su3vec per site
@@ -1024,15 +927,6 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//this kernel performs 1. / sqrt((3.f * VOL4D)) and su3vec_times_real for each site
 		return S * (3 + NC * 2);
 	}
-	if (in == "convert_float_to_complex") {
-		return 0;
-	}
-	if (in == "ratio") {
-		return 11;
-	}
-	if (in == "product") {
-		return meta::get_flop_complex_mult();
-	}
 	if (in == "set_gaussian_spinorfield_stagg") {
 		//this kernel performs NC multiplications per site
 		///@todo I did not count the gaussian normal pair production, which is very complicated...
@@ -1118,9 +1012,6 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg);
 	Opencl_Module::print_profiling(filename, set_gaussian_spinorfield_stagg);
-	Opencl_Module::print_profiling(filename, ratio_stagg);
-	Opencl_Module::print_profiling(filename, convert_stagg);
-	Opencl_Module::print_profiling(filename, product_stagg);
 	Opencl_Module::print_profiling(filename, sax_stagg);
 	Opencl_Module::print_profiling(filename, saxpy_stagg);
 	Opencl_Module::print_profiling(filename, saxpbypz_stagg);

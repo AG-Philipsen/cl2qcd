@@ -242,32 +242,6 @@ public:
 	/*********************************************************************************************/
 	
 	//////////////////////////////////////////
-	//      Complex numbers operations      //
-	//////////////////////////////////////////
-	/**
-	 * This function converts a float number into a complex one
-	 * @param in The float number to be converted
-	 * @param out The output complex number
-	 */
-	void set_complex_to_float_device(const hardware::buffers::Plain<hmc_float> * in, const hardware::buffers::Plain<hmc_complex> * out) const;
-	
-	/**
-	 * This function executes the division between two complex numbers
-	 * @param a The numerator
-	 * @param b The denominator
-	 * @param out Complex number a/b
-	 */
-	void set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
-	
-	/**
-	 * This function executes the multiplication between two complex numbers
-	 * @param a The first factor
-	 * @param b The second factor
-	 * @param out Complex number a*b
-	 */
-	void set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out) const;
-	
-	//////////////////////////////////////////
 	//     Conversions eo to/from non eo    //
 	//////////////////////////////////////////
 	/**
@@ -407,11 +381,6 @@ private:
 	/******************************************************/
 	/****************  GENERAL KERNELS  *******************/
 	/******************************************************/
-	
-	//Operations between complex numbers
-	cl_kernel convert_stagg;
-	cl_kernel ratio_stagg;
-	cl_kernel product_stagg;
 	
 	//Conversion from even-odd preconditioning to non even-odd and viceversa
 	cl_kernel convert_from_eoprec_stagg;
