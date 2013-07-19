@@ -883,7 +883,7 @@ void test_sf_saxsbypz_eo(std::string inputfile)
 
 void test_cplx(std::string inputfile, int switcher)
 {
-  //switcher chooses between product and ratio and convert
+  //switcher chooses between product, ratio, sum, subtraction and convert
 	using namespace hardware::buffers;
 
 	std::string kernelName;
@@ -891,7 +891,11 @@ void test_cplx(std::string inputfile, int switcher)
 	  kernelName = "product";
 	else if(switcher == 1)
 	  kernelName = "ratio";
-	else if (switcher == 2)
+	else if(switcher == 2)
+	  kernelName = "sum";
+	else if(switcher == 3)
+	  kernelName = "subtraction";
+	else if (switcher == 4)
 	  kernelName = "convert";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
@@ -917,7 +921,11 @@ void test_cplx(std::string inputfile, int switcher)
 	  device->set_complex_to_product_device(&alpha, &beta, &sqnorm);
 	else if (switcher ==1)
 	  device->set_complex_to_ratio_device(&alpha, &beta, &sqnorm);
-	if(switcher == 2){
+	else if (switcher ==2)
+	  device->set_complex_to_sum_device(&alpha, &beta, &sqnorm);
+	else if (switcher ==3)
+	  device->set_complex_to_difference_device(&alpha, &beta, &sqnorm);
+	if(switcher == 4){
 	  hardware::buffers::Plain<hmc_float> gamma(1, device->get_device());
 	  hmc_float tmp = (params.get_beta());
 	  gamma.load(&tmp);
@@ -1793,16 +1801,54 @@ BOOST_AUTO_TEST_CASE( CPLX_RATIO_4 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(CPLX_SUM)
+
+BOOST_AUTO_TEST_CASE( CPLX_SUM_1 )
+{
+  test_cplx("/cplx_sum_input_1", 2);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_SUM_2 )
+{
+  test_cplx("/cplx_sum_input_2", 2);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_SUM_3 )
+{
+  test_cplx("/cplx_sum_input_3", 2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CPLX_DIFFERENCE)
+
+BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_1 )
+{
+  test_cplx("/cplx_difference_input_1", 3);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_2 )
+{
+  test_cplx("/cplx_difference_input_2", 3);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_3 )
+{
+  test_cplx("/cplx_difference_input_3", 3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE(CPLX_CONVERT)
 
 BOOST_AUTO_TEST_CASE( CPLX_CONVERT_1 )
 {
-  test_cplx("/cplx_convert_input_1", 2);
+  test_cplx("/cplx_convert_input_1", 4);
 }
 
 BOOST_AUTO_TEST_CASE( CPLX_CONVERT_2 )
 {
-  test_cplx("/cplx_convert_input_2", 2);
+  test_cplx("/cplx_convert_input_2", 4);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
