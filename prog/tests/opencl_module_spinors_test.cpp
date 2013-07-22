@@ -881,7 +881,7 @@ void test_sf_saxsbypz_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_cplx(std::string inputfile, int switcher)
+void test_cplx(std::string inputfile, int switcher, bool hard=false)
 {
   //switcher chooses between product, ratio, sum, subtraction and convert
 	using namespace hardware::buffers;
@@ -917,14 +917,26 @@ void test_cplx(std::string inputfile, int switcher)
 	beta.load(&beta_host);
 
 	logger.info() << "Run kernel";
-	if(switcher == 0)
+	if(switcher == 0){
 	  device->set_complex_to_product_device(&alpha, &beta, &sqnorm);
-	else if (switcher ==1)
+	  if(hard)
+	    device->set_complex_to_product_device(&alpha, &sqnorm, &sqnorm);
+	}
+	else if (switcher ==1){
 	  device->set_complex_to_ratio_device(&alpha, &beta, &sqnorm);
-	else if (switcher ==2)
+	  if(hard)
+	    device->set_complex_to_ratio_device(&sqnorm, &beta, &sqnorm);
+	}
+	else if (switcher ==2){
 	  device->set_complex_to_sum_device(&alpha, &beta, &sqnorm);
-	else if (switcher ==3)
+	  if(hard)
+	    device->set_complex_to_sum_device(&alpha, &sqnorm, &sqnorm);
+	}
+	else if (switcher ==3){
 	  device->set_complex_to_difference_device(&alpha, &beta, &sqnorm);
+	  if(hard)
+	    device->set_complex_to_difference_device(&sqnorm, &beta, &sqnorm);
+	}
 	if(switcher == 4){
 	  hardware::buffers::Plain<hmc_float> gamma(1, device->get_device());
 	  hmc_float tmp = (params.get_beta());
@@ -1775,6 +1787,36 @@ BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_6 )
   test_cplx("/cplx_product_input_6", 0);
 }
 
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_7 )
+{
+  test_cplx("/cplx_product_input_7", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_8 )
+{
+  test_cplx("/cplx_product_input_8", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_9 )
+{
+  test_cplx("/cplx_product_input_9", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_10 )
+{
+  test_cplx("/cplx_product_input_10", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_11 )
+{
+  test_cplx("/cplx_product_input_11", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_12 )
+{
+  test_cplx("/cplx_product_input_12", 0, true);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CPLX_RATIO)
@@ -1799,6 +1841,26 @@ BOOST_AUTO_TEST_CASE( CPLX_RATIO_4 )
   test_cplx("/cplx_ratio_input_4", 1);
 }
 
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_5 )
+{
+  test_cplx("/cplx_ratio_input_5", 1, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_6 )
+{
+  test_cplx("/cplx_ratio_input_6", 1, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_7 )
+{
+  test_cplx("/cplx_ratio_input_7", 1, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_RATIO_8 )
+{
+  test_cplx("/cplx_ratio_input_8", 1, true);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CPLX_SUM)
@@ -1818,6 +1880,21 @@ BOOST_AUTO_TEST_CASE( CPLX_SUM_3 )
   test_cplx("/cplx_sum_input_3", 2);
 }
 
+BOOST_AUTO_TEST_CASE( CPLX_SUM_4 )
+{
+  test_cplx("/cplx_sum_input_4", 2, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_SUM_5 )
+{
+  test_cplx("/cplx_sum_input_5", 2, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_SUM_6 )
+{
+  test_cplx("/cplx_sum_input_6", 2, true);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CPLX_DIFFERENCE)
@@ -1835,6 +1912,21 @@ BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_2 )
 BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_3 )
 {
   test_cplx("/cplx_difference_input_3", 3);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_4 )
+{
+  test_cplx("/cplx_difference_input_4", 3, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_5 )
+{
+  test_cplx("/cplx_difference_input_5", 3, true);
+}
+
+BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_6 )
+{
+  test_cplx("/cplx_difference_input_6", 3, true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
