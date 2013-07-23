@@ -7,6 +7,7 @@
 #include "solver_shifted.hpp"
 #include "../../logger.hpp"
 #include "../lattices/util.hpp"
+#include "../lattices/scalar_complex.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -38,6 +39,14 @@ BOOST_AUTO_TEST_CASE(cgm)
 		out.push_back(new Staggeredfield_eo(system));
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 13);
 	
+
+	//Just for simplify the test
+	for(int i=0; i<4; i++){
+	  out.erase(out.begin());
+	  sigma.erase(sigma.begin());
+	}
+	logger.info() << sigma.size() << "   " << sigma[0] << "   " << out.size();
+	getchar();
 	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-8);
 	logger.info() << "iter=" << iter;
 }
