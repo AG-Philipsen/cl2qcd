@@ -23,10 +23,14 @@ typedef float2 hmc_complex_store_type;
  */
 inline hmc_complex complexLoadHack(__global const hmc_complex * p)
 {
+#ifdef USE_CPLX_LOAD_HACK
 	union {
 		hmc_complex_store_type v;
 		hmc_complex c;
 	} tmp;
 	tmp.v = *((__global const hmc_complex_store_type*) p);
 	return tmp.c;
+#else
+	return p[0];
+#endif
 }
