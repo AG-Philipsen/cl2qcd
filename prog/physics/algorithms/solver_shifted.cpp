@@ -106,7 +106,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	//At first, in the log string I will report only the data about the first 3 system.
 	//This is to avoid to print to shell tens of lines per time, since Neqs can be 
 	//also 20 or something like that. In case, modify the int passed to log_squarenorm
-	const int report_num = 1;
+	const int report_num = 5;
 	if(report_num>Neqs)
 		throw std::invalid_argument("In cg-m report_num cannot be bigger than Neqs!");
 	log_squarenorm(create_log_prefix_cgm(iter) + "b (initial): ", b);
@@ -257,7 +257,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		//Set tmp1 from tmp2 for following iteration
 		copyData(&tmp1, tmp2);
 	logger.info() << "End of iteration " << iter;
-		getchar();
+		//getchar();
 	}
 	
 	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;

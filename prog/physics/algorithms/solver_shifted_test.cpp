@@ -8,6 +8,7 @@
 #include "../../logger.hpp"
 #include "../lattices/util.hpp"
 #include "../lattices/scalar_complex.hpp"
+#include "../lattices/staggeredfield_eo.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -15,7 +16,7 @@
 #include <boost/test/unit_test.hpp>
 
 
-BOOST_AUTO_TEST_CASE(cgm)
+BOOST_AUTO_TEST_CASE(cgm_1)
 {
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
@@ -38,18 +39,39 @@ BOOST_AUTO_TEST_CASE(cgm)
 	for(uint i=0; i<sigma.size(); i++)
 		out.push_back(new Staggeredfield_eo(system));
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 13);
-	
 
-	//Just for simplify the test
-	for(int i=0; i<4; i++){
-	  out.erase(out.begin());
-	  sigma.erase(sigma.begin());
+	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-23);
+	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
+	
+	//Once obtained the solution we apply each operator (matrix + sigma) onto the field
+	//out and we should obtain the field b. Hence we compare the squarenorms of b and of 
+	//(matrix + sigma) * out.
+	std::vector<Staggeredfield_eo*> aux;
+	std::vector<hmc_float> sqnorm_out;
+	hmc_float sqnorm_b = squarenorm(b);
+	logger.info() << "                           sqnorm(b)=" << std::setprecision(16) << sqnorm_b;
+	for(uint i=0; i<sigma.size(); i++){
+		aux.push_back(new Staggeredfield_eo(system));
+		matrix(aux[i], gf, *out[i]);
+		saxpy(aux[i], {sigma[i],0.}, *out[i], *aux[i]);
+		sqnorm_out.push_back(squarenorm(*aux[i]));
+		logger.info() << "sqnorm((matrix + sigma[" << i << "]) * out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
+		BOOST_CHECK_CLOSE(sqnorm_b, sqnorm_out[i], 1.e-8);
 	}
-	logger.info() << sigma.size() << "   " << sigma[0] << "   " << out.size();
-	getchar();
-	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-8);
-	logger.info() << "iter=" << iter;
 }
 
-
+/*
+BOOST_AUTO_TEST_CASE(cgm_2)
+{
+  
+   
+  
+  
+  
+  
+  
+  
+  
+}
+*/
 
