@@ -64,7 +64,9 @@ hardware::SynchronizationEvent hardware::transfer::DirectGMA::load(const hardwar
 
 	// the transfer may neither overlap with a dump or a load, as both use the transfer buffer
 	const size_t transfer_buffer_origin[] = { 0, 0, 0 };
-	load_event = copyDataRect(get_src_device(), src_cache.get(), orig, transfer_buffer_origin, src_origin, region, 0, 0, src_row_pitch, src_slice_pitch, {load_event, transfer_event, event});
+	auto * const device = get_src_device();
+	load_event = copyDataRect(device, src_cache.get(), orig, transfer_buffer_origin, src_origin, region, 0, 0, src_row_pitch, src_slice_pitch, {load_event, transfer_event, event});
+	device->flush(); // event and buffer will be used by other queues
 
 	return load_event;
 }
@@ -93,6 +95,13 @@ hardware::SynchronizationEvent hardware::transfer::DirectGMA::transfer()
 		throw Opencl_Error(clerr, "clReleaseEvent", __FILE__, __LINE__);
 	}
 
+	// event and buffer will be used by other queues -> flush
+	clerr = clFlush(transfer_queue);
+	if(clerr) {
+		logger.error() << "Failed to transfer data between devices using seperate transfer queue. OpenCL Error: " << clerr;
+		throw Opencl_Error(clerr, "clEnqueueCopyBuffer", __FILE__, __LINE__);
+	}
+
 	return transfer_event;
 }
 
@@ -106,7 +115,9 @@ hardware::SynchronizationEvent hardware::transfer::DirectGMA::dump(const hardwar
 
 	// the transfer may neither overlap with a dump or a load, as both use the transfer buffer
 	const size_t transfer_buffer_origin[] = { 0, 0, 0 };
-	dump_event = copyDataRect(get_dest_device(), dest, dest_cache.get(), dest_origin, transfer_buffer_origin, region, dest_row_pitch, dest_slice_pitch, 0, 0, {transfer_event, dump_event, event});
+	auto * const device = get_dest_device();
+	dump_event = copyDataRect(device, dest, dest_cache.get(), dest_origin, transfer_buffer_origin, region, dest_row_pitch, dest_slice_pitch, 0, 0, {transfer_event, dump_event, event});
+	device->flush(); // event might be used by other queues
 
 	return dump_event;
 }

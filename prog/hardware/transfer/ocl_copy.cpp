@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 #include "../../exceptions.h"
+#include "../device.hpp"
 
 namespace {
 	size_t get_required_buffer_size(const size_t * region);
@@ -30,7 +31,9 @@ hardware::SynchronizationEvent hardware::transfer::OclCopy::load(const hardware:
 
 	// the transfer may neither overlap with a dump or a load, as both use the transfer buffer
 	const size_t transfer_buffer_origin[] = { 0, 0, 0 };
-	load_event = copyDataRect(get_src_device(), transfer_buffer, orig, transfer_buffer_origin, src_origin, region, 0, 0, src_row_pitch, src_slice_pitch, {load_event, dump_event, event});
+	auto * const device = get_src_device();
+	load_event = copyDataRect(device, transfer_buffer, orig, transfer_buffer_origin, src_origin, region, 0, 0, src_row_pitch, src_slice_pitch, {load_event, dump_event, event});
+	device->flush();
 
 	return load_event;
 }
@@ -48,7 +51,9 @@ hardware::SynchronizationEvent hardware::transfer::OclCopy::dump(const hardware:
 
 	// the transfer may neither overlap with a dump or a load, as both use the transfer buffer
 	const size_t transfer_buffer_origin[] = { 0, 0, 0 };
-	dump_event = copyDataRect(get_dest_device(), dest, transfer_buffer, dest_origin, transfer_buffer_origin, region, dest_row_pitch, dest_slice_pitch, 0, 0, {load_event, dump_event, event});
+	auto * const device = get_dest_device();
+	dump_event = copyDataRect(device, dest, transfer_buffer, dest_origin, transfer_buffer_origin, region, dest_row_pitch, dest_slice_pitch, 0, 0, {load_event, dump_event, event});
+	device->flush();
 
 	return dump_event;
 }
