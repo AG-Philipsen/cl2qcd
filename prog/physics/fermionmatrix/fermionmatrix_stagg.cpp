@@ -58,15 +58,12 @@ void physics::fermionmatrix::MdagM_eo::operator()(const physics::lattices::Stagg
 		//mass**2 - Deo*Doe
 		DKS_eo(&tmp, gf, in, ODD);
 		DKS_eo(out, gf, tmp, EVEN);
-		sax(&tmp, {mass*mass, 0.}, in);
-		saxpy(out, {-1., 0.}, *out, tmp);
 	} else {
 		//mass**2 - Doe*Deo
 		DKS_eo(&tmp, gf, in, EVEN);
 		DKS_eo(out, gf, tmp, ODD);
-		sax(&tmp, {mass*mass, 0.}, in);
-		saxpy(out, {-1., 0.}, *out, tmp);
 	}
+	saxpby(out, {mass*mass, 0.}, in, {-1., 0.}, *out);
 }
 
 cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
@@ -77,8 +74,7 @@ cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
 	auto fermion_code = devices[0]->get_fermion_staggered_code();
 	cl_ulong res;
 	res = 2*fermion_code->get_flop_size("D_KS_eo");
-	res += spinor_code->get_flop_size("sax_stagg_eoprec");
-	res += spinor_code->get_flop_size("saxpy_stagg_eoprec");
+	res += spinor_code->get_flop_size("saxpby_stagg_eoprec");
 	
 	return res;
 }
