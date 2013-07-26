@@ -9,9 +9,10 @@
 
 #include "../../logger.hpp"
 //#include "../../operations_complex.h"
-//#include "../../meta/type_ops.hpp"
+#include "../../meta/type_ops.hpp"
 //#include "../lattices/util.hpp"
 #include "../lattices/scalar_complex.hpp"
+#include "../lattices/staggeredfield_eo.hpp"
 //#include <cmath>
 #include <sstream>
 #include <vector>
@@ -146,12 +147,31 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				logger.debug() << create_log_prefix_cgm(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
 				// report on performance
 				if(logger.beInfo()) {
-					
-					//TODO
-					
+					// we are always synchroneous here, as we had to recieve the residium from the device
+					const uint64_t duration = timer.getTime();
+					// calculate flops
+					const cl_ulong matrix_flops = A.get_flops();
+					logger.trace() << "matrix_flops: " << matrix_flops;
+					logger.info() << "matrix_flops: " << matrix_flops;
+					cl_ulong total_flops = matrix_flops +
+						2 * get_flops<Staggeredfield_eo, scalar_product>(system) +
+						2 * ::get_flops<hmc_complex, complexdivide>() +
+						    ::get_flops<hmc_complex, complexsubtract>() +
+						2 * get_flops<Spinorfield_eo, saxpy>(system) +
+						Neqs * (3 * ::get_flops<hmc_complex, complexdivide>() +
+							11 * ::get_flops<hmc_complex, complexmult>() +
+							     ::get_flops<hmc_complex, complexadd>() +
+							3 * ::get_flops<hmc_complex, complexsubtract>() +
+							    get_flops<Staggeredfield_eo, saxpy>(system) +
+							    get_flops<Staggeredfield_eo, saxpby>(system));
+					total_flops *= iter;
+					logger.trace() << "total_flops: " << total_flops;
+					logger.info() << "total_flops: " << total_flops;
+					// report performance
+					logger.info() << create_log_prefix_cgm(iter) << "CG-M completed in " << std::setprecision(6) << duration / 1000.f << " ms @ " << ((hmc_float)total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations.";
 				}
 				// report on solution
-				//log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (final): ", x, report_num);
+				log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (final): ", x, report_num);
 				return iter;
 			}
 		}
