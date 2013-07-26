@@ -103,10 +103,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 						  // of the loop over iter recursively.
 	alpha_scalar.store(hmc_complex_zero);    // alpha_scalar = 0. The same as beta_scalar above.
 	
-	//At first, in the log string I will report only the data about the first 3 system.
-	//This is to avoid to print to shell tens of lines per time, since Neqs can be 
-	//also 20 or something like that. In case, modify the int passed to log_squarenorm
-	const int report_num = 5;
+	//At first, in the log string I will report all the data about the system.
+	//To avoid to print to shell tens of lines per time, since Neqs can be 
+	//also 20 or something like that, reduce report_num.
+	const int report_num = Neqs;
 	if(report_num>Neqs)
 		throw std::invalid_argument("In cg-m report_num cannot be bigger than Neqs!");
 	log_squarenorm(create_log_prefix_cgm(iter) + "b (initial): ", b);
@@ -114,21 +114,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	log_squarenorm(create_log_prefix_cgm(iter) + "p (initial): ", *p);
 	log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (initial)", x, report_num);
 	log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps (initial)", ps, report_num);
-		
-	logger.info() << " beta_scalar=(" << beta_scalar.get().re << "," << beta_scalar.get().im << ")"; 
-	logger.info() << "alpha_scalar=(" << alpha_scalar.get().re << "," << alpha_scalar.get().im << ")";
-	for(int k=0; k<Neqs; k++){
-	  logger.info() << "  zeta_i[" << k << "]=(" << zeta_i[k]->get().re << "," << zeta_i[k]->get().im << ")";
-	  logger.info() << " zeta_ii[" << k << "]=(" << zeta_ii[k]->get().re << "," << zeta_ii[k]->get().im << ")";
-	  logger.info() << "zeta_iii[" << k << "]=(" << zeta_iii[k]->get().re << "," << zeta_iii[k]->get().im << ") --> Not intialized!";
-	  logger.info() << "   alpha[" << k << "]=(" << alpha[k]->get().re << "," << alpha[k]->get().im << ")";
-	  logger.info() << "    beta[" << k << "]=(" << beta[k]->get().re << "," << beta[k]->get().im << ") --> Not intialized!";
-	}
 	
 	//NOTE: Here, most of the complex numbers may also be just hmc_floats.
-	//      However, for this one would need some additional functions...
+	//      However, for this one would need some additional functions in hardware::code...
 	for(iter = 0; iter < params.get_cgmax(); iter ++) {
-	  logger.info() << "Start of iteration " << iter;
 		//Update beta_scalar: v=A.p and tmp1=(r,r) and tmp3=(p,v) ---> beta_scalar=(-1)*tmp1/tmp3
 		copyData(&beta_scalar_prev,beta_scalar);  //before updating beta_scalar its value is saved
 		A(v, gf, *p);
@@ -179,85 +168,42 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 			//                        + zeta_i[k]*beta_scalar_prev*(1-sigma[k]*beta_scalar)
 			// ---> zeta_iii[k] = num/den
 			//I calculate before the denominator to can use num as auxiliary variable
-			logger.debug() << "Updating zeta_iii[k]...";
-			
-			logger.error() << "zeta_i[" << k << "]=" << zeta_i[k]->get();
-			logger.error() << "zeta_ii[" << k << "]=" << zeta_ii[k]->get();
-			logger.error() << "alpha_scalar_prev=" << alpha_scalar_prev.get();
-			logger.error() << "beta_scalar=" << beta_scalar.get();
 			subtract(&num, *zeta_i[k], *zeta_ii[k]);
 			multiply(&num, num, alpha_scalar_prev);
 			multiply(&num, num, beta_scalar);
-			
-			logger.error() << "shift[" << k << "]=" << shift[k]->get();
-			logger.error() << "beta_scalar=" << beta_scalar.get();
-			logger.error() << "beta_scalar_prev=" << beta_scalar_prev.get();
-			logger.error() << "zeta_i[" << k << "]=" << zeta_i[k]->get();
 			multiply(&den, *shift[k], beta_scalar);
 			subtract(&den, one, den);
 			multiply(&den, den, beta_scalar_prev);
 			multiply(&den, den, *zeta_i[k]);
-			
-			logger.error() << "den_1st_term=" << num.get();
-			logger.error() << "den_2nd_term=" << den.get();
 			add(&den, num, den);
-			logger.warn() << "zeta_iii[" << k << "]: den=" << den.get();
-			
 			//Calculation of the numerator
-			logger.error() << "zeta_i[" << k << "]=" << zeta_i[k]->get();
-			logger.error() << "zeta_ii[" << k << "]=" << zeta_ii[k]->get();
-			logger.error() << "beta_scalar_prev=" << beta_scalar_prev.get();
 			multiply(&num, *zeta_i[k], *zeta_ii[k]);
 			multiply(&num, num, beta_scalar_prev);
-			logger.warn() << "zeta_iii[" << k << "]: num=" << num.get();
 			//Update of zeta_iii[k]
 			divide(zeta_iii[k], num, den);
 			//Update beta[k]: beta[k] = beta_scalar*zeta_iii[k]/zeta_ii[k]
-			logger.debug() << "Updating beta[k]...";
 			multiply(beta[k], beta_scalar, *zeta_iii[k]);
 			divide(beta[k], *beta[k], *zeta_ii[k]);
 			//Update x[k]: x[k] = x[k] - beta[k]*ps[k] ---> use num to store (- beta[k]) for saxpy
-			logger.debug() << "Updating x[k]...";
 			subtract(&num, zero, *beta[k]);
 			saxpy(x[k], num, *ps[k], *x[k]);
 			//Update alpha[k]: num = alpha_scalar*zeta_iii[k]*beta[k]
 			//                 den = zeta_ii[k]*beta_scalar
 			// ---> alpha[k] = num/den
-			logger.debug() << "Updating alpha[k]...";
-			logger.warn() << "alpha_scalar=" << alpha_scalar.get();
-			logger.warn() << "zeta_iii[" << k << "]=" << zeta_iii[k]->get();
-			logger.warn() << "beta[" << k << "]=" << beta[k]->get();
 			multiply(&num, alpha_scalar, *zeta_iii[k]);
 			multiply(&num, num, *beta[k]);
-			logger.warn() << "alpha[" << k << "]: num=" << num.get();
 			multiply(&den, *zeta_ii[k], beta_scalar);
-			logger.warn() << "alpha[" << k << "]: den=" << den.get();
 			divide(alpha[k], num, den);
-			logger.warn() << "alpha[" << k << "]=" << alpha[k]->get();
 			//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
-			logger.debug() << "Updating ps[k]...";
 			saxpby(ps[k], *zeta_iii[k], *r, *alpha[k], *ps[k]);
 			//Adjust zeta for the following iteration
-			logger.debug() << "Updating zeta_i[k] and zeta_ii[k]...";
 			copyData(zeta_i[k], zeta_ii[k]);
 			copyData(zeta_ii[k], zeta_iii[k]);
 		}
-	logger.warn() << "Iter=" << iter;
-	logger.info() << " beta_scalar=(" << beta_scalar.get().re << "," << beta_scalar.get().im << ")"; 
-	logger.info() << "alpha_scalar=(" << alpha_scalar.get().re << "," << alpha_scalar.get().im << ")";
-	for(int k=0; k<Neqs; k++){
-	  logger.info() << "  zeta_i[" << k << "]=(" << zeta_i[k]->get().re << "," << zeta_i[k]->get().im << ")";
-	  logger.info() << " zeta_ii[" << k << "]=(" << zeta_ii[k]->get().re << "," << zeta_ii[k]->get().im << ")";
-	  logger.info() << "zeta_iii[" << k << "]=(" << zeta_iii[k]->get().re << "," << zeta_iii[k]->get().im << ")";
-	  logger.info() << "   alpha[" << k << "]=(" << alpha[k]->get().re << "," << alpha[k]->get().im << ")";
-	  logger.info() << "    beta[" << k << "]=(" << beta[k]->get().re << "," << beta[k]->get().im << ")";
-	}
 		log_squarenorm_aux(create_log_prefix_cgm(iter) + "x", x, report_num);
 		log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps", ps, report_num);
 		//Set tmp1 from tmp2 for following iteration
 		copyData(&tmp1, tmp2);
-	logger.info() << "End of iteration " << iter;
-		//getchar();
 	}
 	
 	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
