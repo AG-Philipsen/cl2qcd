@@ -805,6 +805,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
+	klepsydra::Monotonic timer_noWarmup;
 	/// @todo make configurable from outside
 	const int RESID_CHECK_FREQUENCY = params.get_cg_iteration_block_size();
 	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
@@ -926,26 +927,30 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 				if(logger.beInfo()) {
 					// we are always synchroneous here, as we had to recieve the residium from the device
 					const uint64_t duration = timer.getTime();
+					const uint64_t duration_noWarmup = timer_noWarmup.getTime();
 
 					// calculate flops
 					const unsigned refreshs = iter / params.get_iter_refresh() + 1;
 					const cl_ulong mf_flops = f.get_flops();
 					logger.trace() << "mf_flops: " << mf_flops;
 
-					cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
-					                       + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
-					                       + 3 * get_flops<Spinorfield_eo, saxpy>(system);
-					total_flops *= iter;
-					logger.trace() << "total_flops: " << total_flops;
-					total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
-					logger.trace() << "total_flops: " << total_flops;
+					cl_ulong flops_per_iter = mf_flops + 2 * get_flops<Spinorfield_eo, scalar_product>(system)
+					                          + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
+					                          + 3 * get_flops<Spinorfield_eo, saxpy>(system);
+					cl_ulong flops_per_refresh = mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system);
+					cl_ulong total_flops = iter * flops_per_iter + refreshs * flops_per_refresh;
+					cl_ulong noWarmup_flops = (iter - 1) * flops_per_iter + (refreshs - 1) * flops_per_refresh;
 
 					// report performance
-					logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+					logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << (noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
 				}
 				// report on solution
 				log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
 				return iter;
+			}
+
+			if(iter == 0) {
+				timer_noWarmup.reset();
 			}
 		}
 
@@ -976,6 +981,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
+	klepsydra::Monotonic timer_noWarmup;
 
 	const Spinorfield_eo p(system);
 	const Spinorfield_eo rn(system);
@@ -1063,22 +1069,22 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 			if(logger.beInfo()) {
 				// we are always synchroneous here, as we had to recieve the residium from the device
 				const uint64_t duration = timer.getTime();
+				const uint64_t duration_noWarmup = timer_noWarmup.getTime();
 
 				// calculate flops
 				const unsigned refreshs = iter / params.get_iter_refresh() + 1;
 				const cl_ulong mf_flops = f.get_flops();
 				logger.trace() << "mf_flops: " << mf_flops;
 
-				cl_ulong total_flops = mf_flops + 3 * get_flops<Spinorfield_eo, scalar_product>(system)
-									   + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
-									   + 3 * get_flops<Spinorfield_eo, saxpy>(system);
-				total_flops *= iter;
-				logger.trace() << "total_flops: " << total_flops;
-				total_flops += refreshs * (mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system));
-				logger.trace() << "total_flops: " << total_flops;
+				cl_ulong flops_per_iter = mf_flops + 2 * get_flops<Spinorfield_eo, scalar_product>(system)
+				                          + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
+				                          + 3 * get_flops<Spinorfield_eo, saxpy>(system);
+				cl_ulong flops_per_refresh = mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system);
+				cl_ulong total_flops = iter * flops_per_iter + refreshs * flops_per_refresh;
+				cl_ulong noWarmup_flops = (iter - 1) * flops_per_iter + (refreshs - 1) * flops_per_refresh;
 
 				// report performance
-				logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+				logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << (noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
 			}
 			// report on solution
 			log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
@@ -1092,6 +1098,11 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 		tmp2 = complexmult(hmc_complex_minusone, beta);
 		saxpy(&p, tmp2, p, rn);
 		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
+
+		if(iter == 0) {
+			timer_noWarmup.reset();
+		}
+
 	}
 
 	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
