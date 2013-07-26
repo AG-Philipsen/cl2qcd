@@ -1,24 +1,28 @@
-/*
+/** @file
+ * 
+ * Mike Clark - 25th May 2005
+ * 
+ * alg_remez.h
+ * 
+ * AlgRemez is an implementation of the Remez algorithm, which in this
+ * case is used for generating the optimal nth root rational
+ * approximation.
+ * 
+ * Note this class requires the gnu multiprecision (GNU MP) library.
+ * 
+ * @TODO Add documentation with doxygen (so far see code)
+ */
 
-  Mike Clark - 25th May 2005
-
-  alg_remez.h
-
-  AlgRemez is an implementation of the Remez algorithm, which in this
-  case is used for generating the optimal nth root rational
-  approximation.
-
-  Note this class requires the gnu multiprecision (GNU MP) library.
-
-*/
-
-#ifndef INCLUDED_ALG_REMEZ_H
-#define INCLUDED_ALG_REMEZ_H
+#ifndef _PHYSICS_ALGORITHMS_ALG_REMEZ_
+#define _PHYSICS_ALGORITHMS_ALG_REMEZ_
 
 #include "bigfloat.h"
 
 #define JMAX 10000 //Maximum number of iterations of Newton's approximation
 #define SUM_MAX 10 // Maximum number of terms in exponential
+
+namespace physics {
+namespace algorithms {
 
 class AlgRemez
 {
@@ -151,7 +155,9 @@ class AlgRemez
 
 };
 
-#endif  // Include guard
+}
+}
+#endif  // _PHYSICS_ALGORITHMS_ALG_REMEZ_
 
 
 

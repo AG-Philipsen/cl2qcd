@@ -9,6 +9,7 @@
 #include "../logger.hpp"
 #include "code/gaugefield.hpp"
 #include "code/prng.hpp"
+#include "code/complex.hpp"
 #include "code/spinors.hpp"
 #include "code/spinors_staggered.hpp"
 #include "code/fermions.hpp"
@@ -31,6 +32,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  profiling_data(),
 	  gaugefield_code(nullptr),
 	  prng_code(nullptr),
+	  complex_code(nullptr),
 	  spinor_code(nullptr),
 	  spinor_staggered_code(nullptr),
 	  fermion_code(nullptr),
@@ -98,6 +100,9 @@ hardware::Device::~Device()
 	}
 	if(spinor_staggered_code) {
 		delete spinor_staggered_code;
+	}
+	if(complex_code) {
+		delete complex_code;
 	}
 	if(prng_code) {
 		delete prng_code;
@@ -319,6 +324,14 @@ const hardware::code::PRNG * hardware::Device::get_prng_code()
 	return prng_code;
 }
 
+const hardware::code::Complex * hardware::Device::get_complex_code()
+{
+	if(!complex_code) {
+		complex_code = new hardware::code::Complex(params, this);
+	}
+	return complex_code;
+}
+
 const hardware::code::Spinors * hardware::Device::get_spinor_code()
 {
 	if(!spinor_code) {
@@ -421,6 +434,9 @@ void hardware::print_profiling(Device * device, const std::string& filename, int
 	}
 	if(device->spinor_staggered_code) {
 		device->spinor_staggered_code->print_profiling(filename, id);
+	}
+	if(device->complex_code) {
+		device->complex_code->print_profiling(filename, id);
 	}
 	if(device->prng_code) {
 		device->prng_code->print_profiling(filename, id);

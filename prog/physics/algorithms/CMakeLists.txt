@@ -19,6 +19,7 @@ add_library(algorithms
 	integrator.cpp
 	hmc.cpp
 	alg_remez.C
+	rational_approximation.cpp
 )
 target_link_libraries(algorithms
 		lattices
