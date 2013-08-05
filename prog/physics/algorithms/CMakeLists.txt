@@ -21,6 +21,7 @@ add_library(algorithms
 	alg_remez.C
 	rational_approximation.cpp
 	solver_shifted.cpp
+	find_minmax_eigenvalue.cpp
 )
 target_link_libraries(algorithms
 		lattices
@@ -37,3 +38,4 @@ add_unit_test(physics::algorithms::<forces> forces_test)
 add_unit_test(physics::algorithms::<molecular_dynamics> molecular_dynamics_test)
 add_unit_test(physics::algorithms::<rational_approximation> rational_approximation_test)
 add_unit_test(physics::algorithms::solver::<solver_shifted> solver_shifted_test)
+add_unit_test(physics::algorithms::<find_minmax_eigenvalue> find_minmax_eigenvalue_test)
