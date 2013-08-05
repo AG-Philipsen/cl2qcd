@@ -100,6 +100,7 @@ public:
 	double get_csw_mp() const noexcept;
 	int get_cgmax() const noexcept;
 	int get_cgmax_mp() const noexcept;
+	int get_findminmax_max() const noexcept;
 	double get_theta_fermion_spatial() const noexcept;
 	double get_theta_fermion_temporal() const noexcept;
 	double get_chem_pot_re() const noexcept;
@@ -173,6 +174,7 @@ public:
 	pbp_version get_pbp_version() const noexcept;
 
 	int get_cg_iteration_block_size() const noexcept;
+	int get_find_minmax_iteration_block_size() const noexcept;
 	bool get_cg_use_async_copy() const noexcept;
 
 	bool get_split_cpu() const noexcept;
@@ -226,6 +228,7 @@ private:
 	double csw_mp;
 	int cgmax;
 	int cgmax_mp;
+	int findminmax_max;
 	double theta_fermion_spatial;
 	double theta_fermion_temporal;
 	double chem_pot_re;
@@ -308,6 +311,7 @@ private:
 	pbp_version pbp_version_;
 
 	int cg_iteration_block_size;
+	int find_minmax_iteration_block_size;
 	bool cg_use_async_copy;
 
 	bool split_cpu;
