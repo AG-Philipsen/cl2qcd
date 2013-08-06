@@ -40,6 +40,8 @@ hmc_float find_max_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_
  *  @param gf The gaugefield on which A depends
  *  @param system The system it is operating on
  *  @param prec The precision up to which the minimum eigenvalue is found
+ *  @param conservative If true, the method returns the return value of the method get_mass of the
+ *                      operator A. If false, then the minimum eigenvalue is calculated.
  *
  *  @note The note of the function find_max_eigenvalue is still valid for this function.
  *        Here to estimate the minimum eigenvalue, the maximum one is at first found, and then
@@ -50,7 +52,7 @@ hmc_float find_max_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_
  *        has all eigenvalues bigger than or equal to the mass squared of the quarks. This means
  *        that one could be conservative and return the mass^2 as minimum eigenvalue.
  */
-hmc_float find_min_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec);
+hmc_float find_min_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, const bool conservative=false);
 
 
 }

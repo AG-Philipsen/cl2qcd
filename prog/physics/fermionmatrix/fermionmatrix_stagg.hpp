@@ -81,6 +81,7 @@ public:
 	 * Invoke the matrix function.
 	 */
 	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const = 0;
+	virtual hmc_float get_mass() const = 0;
 
 protected:
 	Fermionmatrix_stagg_eo(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : Fermionmatrix_stagg_basic(system, herm, _mass) { };

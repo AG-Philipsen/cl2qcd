@@ -80,8 +80,13 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
 }
 
 
-hmc_float physics::algorithms::find_min_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec)
+hmc_float physics::algorithms::find_min_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, const bool conservative)
 {
+	if(conservative){
+		hmc_float mass = A.get_mass();
+		return mass*mass;
+	}
+	
 	using namespace physics::lattices;
 	using namespace physics::algorithms;
 	
