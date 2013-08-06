@@ -556,7 +556,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("csw_mp", po::value<double>(&csw_mp)->default_value(0.))
 	("cgmax", po::value<int>(&cgmax)->default_value(1000))
 	("cgmax_mp", po::value<int>(&cgmax_mp)->default_value(1000))
-	("findminmax_max", po::value<int>(&findminmax_max)->default_value(1000))
+	("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
 	("theta_fermion_spatial", po::value<double>(&theta_fermion_spatial)->default_value(0.))
 	("theta_fermion_temporal", po::value<double>(&theta_fermion_temporal)->default_value(0.))
 	("chem_pot_re", po::value<double>(&chem_pot_re)->default_value(0.))
@@ -640,7 +640,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
 
 	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
-	("find_minmax_iteration_block_size", po::value<int>(&find_minmax_iteration_block_size)->default_value(5), "find_minmax will check the residual only every N iterations")
+	("find_minmax_iteration_block_size", po::value<int>(&find_minmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
 	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
 
 	("split_cpu", po::value<bool>(&split_cpu)->default_value(false), "Split the CPU into multiple devices to avoid numa issues. (Requires OpenCL 1.2 at least)");
