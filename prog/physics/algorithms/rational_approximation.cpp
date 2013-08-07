@@ -76,6 +76,16 @@ hmc_float* physics::algorithms::Rational_Approximation::Get_b()
 	return b;
 }
 
+hmc_float physics::algorithms::Rational_Approximation::Get_lower_bound()
+{
+	return low;
+}
+
+hmc_float physics::algorithms::Rational_Approximation::Get_upper_bound()
+{
+	return high;
+}
+
 
 namespace physics {
 namespace algorithms {

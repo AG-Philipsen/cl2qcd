@@ -89,6 +89,15 @@ public:
 	hmc_float* Get_b();
 	
 	/**
+	 * Method to get the lower bound of the approximation
+	 */
+	hmc_float Get_lower_bound();
+	/**
+	 * Method to get the upper bound of the approximation
+	 */
+	hmc_float Get_upper_bound();
+	
+	/**
 	 * This method allows the user to print to the shell the information of the approximation
 	 */
 	friend std::ostream& operator<<(std::ostream&, const Rational_Approximation&); 
