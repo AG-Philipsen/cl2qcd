@@ -15,6 +15,8 @@
 
 
 static std::string create_log_prefix_find_max(int number) noexcept;
+hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec);
+
 
 hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec)
 {
@@ -87,16 +89,40 @@ hmc_float physics::algorithms::find_min_eigenvalue(const physics::fermionmatrix:
 		return mass*mass;
 	}
 	
-	using namespace physics::lattices;
-	using namespace physics::algorithms;
-	
 	if(!(A.is_hermitian()))
 		throw std::invalid_argument("Unable to deal with non-hermitian matrices in find_max_eigenvalue!");
 	
+	hmc_float max = find_max_eigenvalue(A, gf, system, prec);
+	
+	return find_min_knowing_max(max, A, gf, system, prec);
+
+}
+
+
+void physics::algorithms::find_maxmin_eigenvalue(hmc_float& max, hmc_float& min, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, const bool conservative)
+{
+	max = find_max_eigenvalue(A, gf, system, prec);
+
+	if(conservative){
+		hmc_float mass = A.get_mass();
+		min = mass*mass;
+	}else{
+		min = find_min_knowing_max(max, A, gf, system, prec);
+	}
+}
+
+
+
+
+
+
+hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec)
+{
+	using namespace physics::lattices;
+	using namespace physics::algorithms;
+	
 	Scalar<hmc_complex> min(system);
-	hmc_float max  = find_max_eigenvalue(A, gf, system, prec);
 	hmc_float resid;
-	logger.info() << "max = " << std::setprecision(16) << max;
 	
 	//This field is the starting point and it must be random (we have to be sure
 	//to have a non zero component along the eigenvectors referring to the smallest eigenvalue)
@@ -151,12 +177,7 @@ hmc_float physics::algorithms::find_min_eigenvalue(const physics::fermionmatrix:
 	logger.fatal() << "Power Method failed in finding min_eig in " << params.get_findminmax_max() << " iterations. Last resid: " << resid;
 	throw solvers::SolverDidNotSolve(params.get_findminmax_max(), __FILE__, __LINE__);
 	
-	
 }
-
-
-
-
 
 
 static std::string create_log_prefix_find(std::string name, int number) noexcept
