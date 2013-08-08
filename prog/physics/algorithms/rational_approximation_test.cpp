@@ -19,6 +19,26 @@ BOOST_AUTO_TEST_CASE(initialization)
 	
 	Rational_Approximation approx(6,1,2,1e-5,1);
 	logger.info() << approx;
+	int ord = approx.Get_order();
+	hmc_float a0 = approx.Get_a0();
+	hmc_float *a = approx.Get_a();
+	hmc_float *b = approx.Get_b();
+	
+	Rational_Coefficients coeff_alloc(ord);
+	Rational_Coefficients coeff(ord, a0, a, b);
+	int ord2 = coeff.Get_order();
+	hmc_float a02 = coeff.Get_a0();
+	hmc_float *a2 = coeff.Get_a();
+	hmc_float *b2 = coeff.Get_b();
+	
+	BOOST_CHECK_CLOSE(a0, a02, 1.e-8);
+	BOOST_CHECK_EQUAL(ord, ord2);
+	for(int i=0; i<ord; i++){
+		BOOST_CHECK_CLOSE(a[i], a2[i], 1.e-8);
+		BOOST_CHECK_CLOSE(b[i], b2[i], 1.e-8);
+	}
+	
+	logger.info() << "Test done!";
 }
 
 
