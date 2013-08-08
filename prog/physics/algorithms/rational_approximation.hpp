@@ -1,5 +1,5 @@
 /** @file
- * Declaration of the Rational_Approximation class
+ * Declaration of the Rational_Coefficients and Rational_Approximation classes
  *
  * (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
  */
@@ -15,6 +15,91 @@ namespace physics {
 namespace algorithms {
 
 /**
+ * Class to store all coefficient of a root rational approximation.
+ * The approximation has the form
+ * \f[
+ *     r(x) = a_0 + sum_{k=1}^{d}  \frac{a_k}{x + b_k}
+ * \f]
+ * so we store here a_0, a_k and b_k. This will be used in the
+ * Rational_Approximation class.
+ */
+  
+class Rational_Coefficients {
+  
+public:
+	/**
+	 * "Default" constructor of the class. It only allocates memory
+	 */
+	Rational_Coefficients(const int d);
+	
+	/**
+	 * Constructor of the class. It store the coefficients.
+	 *  @param d The degree of approximation, i.e. the size of the vectors.
+	 *  @param a0 The first coefficient of the expansion
+	 *  @param a The numerator coefficients of the expansion
+	 *  @param b The denominator coefficients of the expansion
+	 */
+	Rational_Coefficients(const int d, const hmc_float a0, const hmc_float* a, const hmc_float* b);
+	
+	/*
+	 * Rational_Approximation cannot be copied
+	 */
+	Rational_Coefficients& operator=(const Rational_Coefficients&) = delete;
+	Rational_Coefficients(const Rational_Coefficients&) = delete;
+	Rational_Coefficients() = delete;
+	
+	/**
+	 * Free memory allocated by the constructor
+	 */
+	~Rational_Coefficients();
+	
+	/**
+	 * This method returns the order of the approximation
+	 */
+	int Get_order() const;
+	/**
+	 * Method to get the coefficient a0 of the approximation
+	 */
+	hmc_float Get_a0() const;
+	/**
+	 * Method to get the coefficients a of the approximation
+	 */
+	hmc_float* Get_a() const;
+	/**
+	 * Method to get the coefficients b of the approximation
+	 */
+	hmc_float* Get_b() const;
+
+protected: //These methods will be used ONLY in the constructor of Rational_Approximation
+	   //then it makes sense to define them as protected members
+	/**
+	 * Method to set the coefficient a0 of the approximation
+	 */
+	void Set_a0(hmc_float v);
+	/**
+	 * Method to set the coefficients a of the approximation
+	 */
+	void Set_a(hmc_float* v);
+	/**
+	 * Method to set the coefficients b of the approximation
+	 */
+	void Set_b(hmc_float* v);
+  
+private:
+	int _d;
+	/**
+	 * The partial fraction expansion takes the form 
+	 * r(x) = a0 + sum_{k=0}^{k<d}  a[k] / (x + b[k])
+	 */
+	hmc_float _a0;
+	hmc_float *_a;
+	hmc_float *_b;
+  
+};
+
+
+  
+/**
  * Class to calculate all coefficient of a root rational approximation.
  * The function to be approximated is either x^(y/z) or x^(-y/z) and
  * it is understood that the approximation has the form
@@ -29,7 +114,7 @@ namespace algorithms {
  * @note The index of the sum above, that runs from 1 to d, in the code will be
  *       between 0 and d-1 for c++ reasons.
  */
-class Rational_Approximation {
+class Rational_Approximation : public Rational_Coefficients {
 
 public:
 	/**
@@ -48,14 +133,13 @@ public:
 	 * @par
 	 * @note The "y" and "z" integer parameter MUST be positive and y%z!=0 to make
 	 *       the Remez algorithm work.
+	 * @par
+	 * @note Since this class inherits from Rational_Coefficients and since there are
+	 *       no further members that need some memory to be allocated, we do not need
+	 *       to implement explictly the destructor (that of Rational_Coefficients is enough)
 	 */
 	Rational_Approximation(int d, int y, int z, hmc_float low, hmc_float high,
 			        bool inv=true, int precision=100);
-	
-	/**
-	 * Free memory allocated by the constructor
-	 */
-	~Rational_Approximation();
 	
 	/*
 	 * Rational_Approximation cannot be copied
@@ -68,25 +152,6 @@ public:
 	 * This function returns the maximum relative error of the approximation: (f_approx-f_exact)/f_exact
 	 */
 	hmc_float Get_error();
-	
-	/**
-	 * This method returns the order of the approximation, i.e. the degree of the numerator
-	 * and denominator polynomials that coincides with the number of partial fractions of the expansion
-	 */
-	int Get_order();
-	
-	/**
-	 * Method to get the coefficient a0 of the approximation
-	 */
-	hmc_float Get_a0();
-	/**
-	 * Method to get the coefficients a of the approximation
-	 */
-	hmc_float* Get_a();
-	/**
-	 * Method to get the coefficients b of the approximation
-	 */
-	hmc_float* Get_b();
 	
 	/**
 	 * Method to get the lower bound of the approximation
@@ -104,20 +169,13 @@ public:
 	
 private:
 	bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)
-	int d;             /// The degree of the numerator AND denominator polynomials
+	//int d;             /// The degree of the numerator AND denominator polynomials
 	int y;             /// The numerator of the exponent
 	int z;             /// The denominator of the exponent
 	int precision;     /// The precision that gmp uses
 	hmc_float low;     /// The lower bound of the approximation
 	hmc_float high;    /// The upper bound of the approximation
 	hmc_float error;   /// The max relative error of the approximation: (f_approx-f_exact)/f_exact
-	/**
-	 * The partial fraction expansion takes the form 
-	 * r(x) = a0 + sum_{k=0}^{k<d}  a[k] / (x + b[k])
-	 */
-	hmc_float a0;
-	hmc_float *a = new hmc_float[d];
-	hmc_float *b = new hmc_float[d];
 
 };
 
