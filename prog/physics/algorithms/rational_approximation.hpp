@@ -45,7 +45,7 @@ public:
 	Rational_Coefficients(const int d, const hmc_float a0, const hmc_float* a, const hmc_float* b);
 	
 	/*
-	 * Rational_Approximation cannot be copied
+	 * Rational_Coefficients cannot be copied
 	 */
 	Rational_Coefficients& operator=(const Rational_Coefficients&) = delete;
 	Rational_Coefficients(const Rational_Coefficients&) = delete;
@@ -228,7 +228,6 @@ private:
 	hmc_float error;   /// The max relative error of the approximation: (f_approx-f_exact)/f_exact
 
 };
-
 
 
 }
