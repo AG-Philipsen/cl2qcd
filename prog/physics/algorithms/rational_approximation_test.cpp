@@ -9,7 +9,7 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE physics::lattice::rational_approximation
+#define BOOST_TEST_MODULE physics::algorithms::rational_approximation
 #include <boost/test/unit_test.hpp>
 
 

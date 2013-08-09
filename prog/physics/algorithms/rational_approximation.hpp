@@ -9,7 +9,10 @@
 
 #include "../../types.h"
 #include"alg_remez.h"
+#include "../fermionmatrix/fermionmatrix_stagg.hpp"
 #include <iostream>
+#include <cmath>
+#include "find_minmax_eigenvalue.hpp"
 
 namespace physics {
 namespace algorithms {
@@ -151,25 +154,72 @@ public:
 	/**
 	 * This function returns the maximum relative error of the approximation: (f_approx-f_exact)/f_exact
 	 */
-	hmc_float Get_error();
+	hmc_float Get_error() const;
 	
 	/**
 	 * Method to get the lower bound of the approximation
 	 */
-	hmc_float Get_lower_bound();
+	hmc_float Get_lower_bound() const;
 	/**
 	 * Method to get the upper bound of the approximation
 	 */
-	hmc_float Get_upper_bound();
+	hmc_float Get_upper_bound() const;
+	/**
+	 * Method to get the exponent of the approximation
+	 */
+	hmc_float Get_exponent() const;
 	
 	/**
 	 * This method allows the user to print to the shell the information of the approximation
 	 */
 	friend std::ostream& operator<<(std::ostream&, const Rational_Approximation&); 
 	
+	/**
+	 * This method adapt the coefficients of "this object" to the interval
+	 * [lambda_min, lambda_max], where lambda_max and lambda_min are
+	 * the maximum and minimum eigenvalues of A (that depends on the gaugefield gf).
+	 * This means that the interval where "this object" has been created must be [xmin,1] 
+	 * and if this is not the case an error is thrown.
+	 * Furthermore, it is checked that xmin is smaller of or equal to lambda_min/lambda_max:
+	 * this guarantees the output of this method to be reliable. If this check fails
+	 * another error is thrown.
+	 *  @param A The fermionic operator to calculate the eigenvalues from
+	 *  @param gf The gaugefield which A depends on
+	 *  @param system The system it is operated on
+	 *  @param prec The precision to calculate the eigenvalues up
+	 */
+	Rational_Coefficients* rescale_coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec)
+	{
+		if(low != 1)
+			throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
+	
+		int ord = Get_order();
+		hmc_float exp = Get_exponent();
+		hmc_float a0_new = Get_a0();
+		hmc_float *a_new = new hmc_float[ord];
+		hmc_float *b_new = new hmc_float[ord];
+		
+		hmc_float max;
+		hmc_float min;
+		find_maxmin_eigenvalue(max, min, A, gf, system, prec);
+	
+		if(low > min/max)
+			throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
+	
+		a0_new *= pow(max, exp);
+		for(int i=0; i<ord; i++){
+			a_new[i] *= pow(max, exp+1);
+			b_new[i] *= max;
+		}
+	  
+		Rational_Coefficients *out = new Rational_Coefficients(ord, a0_new, a_new, b_new);
+		delete[] a_new;
+		delete[] b_new;
+		return out;
+	}
+	
 private:
 	bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)
-	//int d;             /// The degree of the numerator AND denominator polynomials
 	int y;             /// The numerator of the exponent
 	int z;             /// The denominator of the exponent
 	int precision;     /// The precision that gmp uses
@@ -180,8 +230,15 @@ private:
 };
 
 
+
 }
 }
+
+
+
+
+
+
 
 
 

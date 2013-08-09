@@ -5,10 +5,11 @@
  */
 
 #include "rational_approximation.hpp"
-#include"alg_remez.h"
+#include "alg_remez.h"
 #include "../../types.h"
 #include "../../exceptions.h"
 #include "../../logger.hpp"
+#include <cmath>
 
 //Rational_Coefficients class
 
@@ -115,21 +116,46 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
 }
 
 
-hmc_float physics::algorithms::Rational_Approximation::Get_error()
+hmc_float physics::algorithms::Rational_Approximation::Get_error() const
 {
 	return error;
 }
 
 
-hmc_float physics::algorithms::Rational_Approximation::Get_lower_bound()
+hmc_float physics::algorithms::Rational_Approximation::Get_lower_bound() const
 {
 	return low;
 }
 
-hmc_float physics::algorithms::Rational_Approximation::Get_upper_bound()
+
+hmc_float physics::algorithms::Rational_Approximation::Get_upper_bound() const
 {
 	return high;
 }
+
+
+hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
+{
+	if(inv)
+	  return -1*((hmc_float)y)/z;
+	else
+	  return ((hmc_float)y)/z;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 namespace physics {
