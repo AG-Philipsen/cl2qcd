@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	hmc_float *b2 = coeff.Get_b();
 	
 	BOOST_CHECK_CLOSE(a0, a02, 1.e-8);
-	BOOST_CHECK_EQUAL(ord, ord2);
+	BOOST_REQUIRE_EQUAL(ord, ord2);
 	for(int i=0; i<ord; i++){
 		BOOST_CHECK_CLOSE(a[i], a2[i], 1.e-8);
 		BOOST_CHECK_CLOSE(b[i], b2[i], 1.e-8);
@@ -99,5 +99,43 @@ BOOST_AUTO_TEST_CASE(coefficients)
 	}
 	BOOST_CHECK_CLOSE(approx.Get_error(), delta, 1.e-6);
 }
+
+
+BOOST_AUTO_TEST_CASE(rescale)
+{
+	using namespace physics::algorithms;
+	using namespace physics::lattices;
+	
+	Rational_Approximation approx(15,1,4,1e-5,1,false);
+	logger.info() << approx;
+	
+	getchar();
+	
+	const char * _params[] = {"foo", "--ntime=4"};
+	meta::Inputparameters params(2, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+	
+	//Operator for the test
+	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
+	//This configuration for the Ref.Code is the same as for example dks_input_5
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	
+	Rational_Coefficients *coeff = approx.rescale_coefficients(matrix, gf, system, 1.e-3);
+	
+	int ord2 = coeff->Get_order();
+	hmc_float a02 = coeff->Get_a0();
+	hmc_float *a2 = coeff->Get_a();
+	hmc_float *b2 = coeff->Get_b();
+	
+	logger.info() << "a02 = " << a02;
+	for(int i=0; i<ord2; i++){
+		logger.info() << "a2[" << i << "] = " << a2[i];
+		logger.info() << "b2[" << i << "] = " << b2[i];
+	}
+	
+	logger.info() << "Test done!";
+}
+
 
 
