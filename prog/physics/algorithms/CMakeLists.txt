@@ -19,9 +19,9 @@ add_library(algorithms
 	integrator.cpp
 	hmc.cpp
 	alg_remez.C
+	find_minmax_eigenvalue.cpp
 	rational_approximation.cpp
 	solver_shifted.cpp
-	find_minmax_eigenvalue.cpp
 )
 target_link_libraries(algorithms
 		lattices

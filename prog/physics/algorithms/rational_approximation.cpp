@@ -157,7 +157,6 @@ hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
 
 
 
-
 namespace physics {
 namespace algorithms {
   
@@ -198,4 +197,31 @@ std::ostream& operator <<(std::ostream &os, const Rational_Approximation &approx
 }
 
 
+physics::algorithms::Rational_Coefficients* physics::algorithms::Rational_Approximation::rescale_coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec)
+{
+	if(high != 1)
+		throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
 
+	int ord = Get_order();
+	hmc_float exp = Get_exponent();
+	hmc_float a0_new = Get_a0();
+	hmc_float *a_new = Get_a();
+	hmc_float *b_new = Get_b();
+
+	hmc_float max;
+	hmc_float min;
+	find_maxmin_eigenvalue(max, min, A, gf, system, prec);
+
+	if(low > min/max)
+		throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
+
+	hmc_float tmp = pow(max, exp);
+	a0_new *= tmp;
+	for(int i=0; i<ord; i++){
+		a_new[i] *= (tmp*max);
+		b_new[i] *= max;
+	}
+
+	Rational_Coefficients *out = new Rational_Coefficients(ord, a0_new, a_new, b_new);
+	return out;
+}
