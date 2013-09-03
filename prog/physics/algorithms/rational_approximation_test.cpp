@@ -117,21 +117,43 @@ BOOST_AUTO_TEST_CASE(rescale)
 	physics::PRNG prng(system);
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
+	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 	
+	//Reference rescaled coefficients
+	hmc_float a0_ref = 3.78396627036665123;
+	hmc_float a_ref[15] = {-2.722986658932525683e-07, -1.2631475639728917521e-06,
+	                       -4.360435755914117958e-06, -1.4160691433260296987e-05,
+			       -4.5207926211912900696e-05, -0.00014352921651252466598,
+			       -0.00045497933178524781715, -0.0014431546521933168083,
+			       -0.0045926953908840342788, -0.014747783330565073998,
+			       -0.048456946841957317107, -0.16880046472141346792,
+			       -0.68431552061715394952, -4.2198332136416603078,
+			       -117.03837887995429412};
+	hmc_float b_ref[15] = {9.2907369101588763806e-06, 5.0627210699159516975e-05,
+	                       0.00016198783558680096995, 0.00044474583457844121164,
+			       0.0011563267279465730842, 0.0029447969579766914219,
+			       0.007440491639209977949, 0.018751086281155571189,
+			       0.047271072978110562079, 0.11959352757092110708,
+			       0.30563294009891067704, 0.80189441104810432748,
+			       2.2562393220051499831, 7.7746421837770229857,
+			       59.252309299420609534};
+	
 	Rational_Coefficients coeff = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3);
 	
-	int ord2 = coeff.Get_order();
-	hmc_float a02 = coeff.Get_a0();
-	std::vector<hmc_float> a2 = coeff.Get_a();
-	std::vector<hmc_float> b2 = coeff.Get_b();
+	int ord = coeff.Get_order();
+	std::vector<hmc_float> a = coeff.Get_a();
+	std::vector<hmc_float> b = coeff.Get_b();
 	
-	logger.info() << "a02 = " << a02;
-	for(int i=0; i<ord2; i++){
-		logger.info() << "a2[" << i << "] = " << a2[i];
-		logger.info() << "b2[" << i << "] = " << b2[i];
+	//Test result: note that the precision is not so high since
+	//the reference code uses a slightly different method to calculate
+	//maximum and minimum eigenvalues (I tuned a bit the ref.code adapting
+	//the loop iterations in finding the max and min eigenvalues, but not too much)
+	BOOST_CHECK_CLOSE(coeff.Get_a0(), a0_ref, 5.e-5);
+	for(int i=0; i<ord; i++){
+		BOOST_CHECK_CLOSE(a[i], a_ref[i], 5.e-5);
+		BOOST_CHECK_CLOSE(b[i], b_ref[i], 5.e-5);
 	}
 	
 	logger.info() << "Test done!";
