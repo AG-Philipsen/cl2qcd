@@ -21,15 +21,15 @@ BOOST_AUTO_TEST_CASE(initialization)
 	logger.info() << approx;
 	int ord = approx.Get_order();
 	hmc_float a0 = approx.Get_a0();
-	hmc_float *a = approx.Get_a();
-	hmc_float *b = approx.Get_b();
+	std::vector<hmc_float> a = approx.Get_a();
+	std::vector<hmc_float> b = approx.Get_b();
 	
 	Rational_Coefficients coeff_alloc(ord);
 	Rational_Coefficients coeff(ord, a0, a, b);
 	int ord2 = coeff.Get_order();
 	hmc_float a02 = coeff.Get_a0();
-	hmc_float *a2 = coeff.Get_a();
-	hmc_float *b2 = coeff.Get_b();
+	std::vector<hmc_float> a2 = coeff.Get_a();
+	std::vector<hmc_float> b2 = coeff.Get_b();
 	
 	BOOST_CHECK_CLOSE(a0, a02, 1.e-8);
 	BOOST_REQUIRE_EQUAL(ord, ord2);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(coefficients)
 	hmc_float pol[5] = {0.0002065381736724, 0.00302707751065980, 0.0200732678058145,
 	                                        0.12517586269872370, 1.0029328743375700};
 	hmc_float delta = 5.3847952988591471e-05;
-	hmc_float *a,*b;
+	std::vector<hmc_float> a, b;
 	Rational_Approximation approx(5,1,2,0.001,1);
 	a = approx.Get_a();
 	b = approx.Get_b();
@@ -121,12 +121,12 @@ BOOST_AUTO_TEST_CASE(rescale)
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 	
-	Rational_Coefficients *coeff = approx.rescale_coefficients(matrix, gf, system, 1.e-3);
+	Rational_Coefficients *coeff = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3);
 	
 	int ord2 = coeff->Get_order();
 	hmc_float a02 = coeff->Get_a0();
-	hmc_float *a2 = coeff->Get_a();
-	hmc_float *b2 = coeff->Get_b();
+	std::vector<hmc_float> a2 = coeff->Get_a();
+	std::vector<hmc_float> b2 = coeff->Get_b();
 	
 	logger.info() << "a02 = " << a02;
 	for(int i=0; i<ord2; i++){

@@ -42,7 +42,7 @@ public:
 	 *  @param a The numerator coefficients of the expansion
 	 *  @param b The denominator coefficients of the expansion
 	 */
-	Rational_Coefficients(const int d, const hmc_float a0, const hmc_float* a, const hmc_float* b);
+	Rational_Coefficients(const int d, const hmc_float a0, const std::vector<hmc_float> a, const std::vector<hmc_float> b);
 	
 	/*
 	 * Rational_Coefficients cannot be copied
@@ -54,7 +54,7 @@ public:
 	/**
 	 * Free memory allocated by the constructor
 	 */
-	~Rational_Coefficients();
+// 	~Rational_Coefficients();
 	
 	/**
 	 * This method returns the order of the approximation
@@ -67,26 +67,26 @@ public:
 	/**
 	 * Method to get the coefficients a of the approximation
 	 */
-	hmc_float* Get_a() const;
+	std::vector<hmc_float> Get_a() const;
 	/**
 	 * Method to get the coefficients b of the approximation
 	 */
-	hmc_float* Get_b() const;
+	std::vector<hmc_float> Get_b() const;
 
 protected: //These methods will be used ONLY in the constructor of Rational_Approximation
 	   //then it makes sense to define them as protected members
 	/**
 	 * Method to set the coefficient a0 of the approximation
 	 */
-	void Set_a0(hmc_float v);
+	void Set_a0(const hmc_float v);
 	/**
 	 * Method to set the coefficients a of the approximation
 	 */
-	void Set_a(hmc_float* v);
+	void Set_a(const std::vector<hmc_float> v);
 	/**
 	 * Method to set the coefficients b of the approximation
 	 */
-	void Set_b(hmc_float* v);
+	void Set_b(const std::vector<hmc_float> v);
   
 private:
 	int _d;
@@ -95,8 +95,8 @@ private:
 	 * r(x) = a0 + sum_{k=0}^{k<d}  a[k] / (x + b[k])
 	 */
 	hmc_float _a0;
-	hmc_float *_a;
-	hmc_float *_b;
+	std::vector<hmc_float> _a;
+	std::vector<hmc_float> _b;
   
 };
 
@@ -188,7 +188,7 @@ public:
 	 *  @param system The system it is operated on
 	 *  @param prec The precision to calculate the eigenvalues up
 	 */
-	Rational_Coefficients* rescale_coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec);
+	Rational_Coefficients* Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec);
 
 private:
 	bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)

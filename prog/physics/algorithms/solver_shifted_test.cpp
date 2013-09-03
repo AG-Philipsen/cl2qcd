@@ -73,11 +73,9 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	
-	//This are some possible values of sigma
-	hmc_float *pol;
+	//These are some possible values of sigma
 	Rational_Approximation approx(8, 1,2, 1.e-5,1);
-	pol = approx.Get_b();
-	std::vector<hmc_float> sigma(pol, pol + 8);
+	std::vector<hmc_float> sigma = approx.Get_b();
 	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5

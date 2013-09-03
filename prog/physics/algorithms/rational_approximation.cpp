@@ -13,24 +13,24 @@
 
 //Rational_Coefficients class
 
-physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d) : _d(d), _a(new hmc_float[d]),
-_b(new hmc_float[d]) { }
-
-physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d, const hmc_float a0, const hmc_float* a, const hmc_float* b) : _d(d), _a0(a0)
+physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d) : _d(d)
 {
-	//Allocate and initialize
-	_a = new hmc_float[d];
-	_b = new hmc_float[d];
-	for(int i=0; i<d; i++){
-		_a[i] = a[i];
-		_b[i] = b[i];
-	}
+	//This constructor can appear unnecessary. In fact, reserving memory we avoid
+	//reallocations pushing back elements in the vectors, since in this way we are
+	//sure that the capacity of the vectors _a and _b is at least d.
+	_a.reserve(d);
+	_b.reserve(d);
 }
 
-physics::algorithms::Rational_Coefficients::~Rational_Coefficients()
+physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d, const hmc_float a0, const std::vector<hmc_float> a, const std::vector<hmc_float> b) : _d(d), _a0(a0)
 {
-	delete[] _a;
-	delete[] _b;
+	//Reserve and initialize
+	_a.reserve(d);
+	_b.reserve(d);
+	for(int i=0; i<d; i++){
+		_a.push_back(a[i]);
+		_b.push_back(b[i]);
+	}
 }
 
 int physics::algorithms::Rational_Coefficients::Get_order() const
@@ -38,20 +38,18 @@ int physics::algorithms::Rational_Coefficients::Get_order() const
 	return _d;
 }
 
-
 hmc_float physics::algorithms::Rational_Coefficients::Get_a0() const
 {
 	return _a0;
 }
 
-
-hmc_float* physics::algorithms::Rational_Coefficients::Get_a() const
+std::vector<hmc_float> physics::algorithms::Rational_Coefficients::Get_a() const
 {
 	return _a;
 }
 
 
-hmc_float* physics::algorithms::Rational_Coefficients::Get_b() const
+std::vector<hmc_float> physics::algorithms::Rational_Coefficients::Get_b() const
 {
 	return _b;
 }
@@ -62,17 +60,17 @@ void physics::algorithms::Rational_Coefficients::Set_a0(hmc_float v)
 }
 
 
-void physics::algorithms::Rational_Coefficients::Set_a(hmc_float* v) 
+void physics::algorithms::Rational_Coefficients::Set_a(std::vector<hmc_float> v) 
 {
 	for(int i=0; i<_d; i++)
-		_a[i] = v[i];
+		_a.push_back(v[i]);
 }
 
 
-void physics::algorithms::Rational_Coefficients::Set_b(hmc_float* v) 
+void physics::algorithms::Rational_Coefficients::Set_b(std::vector<hmc_float> v) 
 {
 	for(int i=0; i<_d; i++)
-		_b[i] = v[i];
+		_b.push_back(v[i]);
 }
 
 
@@ -105,9 +103,13 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
 	  remez.getPFE(a_tmp, b_tmp, a0_tmp);
 	else
 	  remez.getIPFE(a_tmp, b_tmp, a0_tmp);
-	
-	Set_a(a_tmp);
-	Set_b(b_tmp);
+		
+	//I need std::vector to use Set_a, Set_b
+	std::vector<hmc_float> av_tmp (a_tmp, a_tmp + d);
+	std::vector<hmc_float> bv_tmp (b_tmp, b_tmp + d);
+		
+	Set_a(av_tmp);
+	Set_b(bv_tmp);
 	Set_a0(*a0_tmp);
 	
 	delete[] a_tmp;
@@ -143,17 +145,34 @@ hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
 }
 
 
+physics::algorithms::Rational_Coefficients* physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec)
+{
+	if(high != 1)
+		throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
 
+	int ord = Get_order();
+	hmc_float exp = Get_exponent();
+	hmc_float a0_new = Get_a0();
+	std::vector<hmc_float> a_new = Get_a();
+	std::vector<hmc_float> b_new = Get_b();
 
+	hmc_float max;
+	hmc_float min;
+	find_maxmin_eigenvalue(max, min, A, gf, system, prec);
 
+	if(low > min/max)
+		throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
 
+	hmc_float tmp = pow(max, exp);
+	a0_new *= tmp;
+	for(int i=0; i<ord; i++){
+		a_new[i] *= (tmp*max);
+		b_new[i] *= max;
+	}
 
-
-
-
-
-
-
+	Rational_Coefficients *out = new Rational_Coefficients(ord, a0_new, a_new, b_new);
+	return out;
+}
 
 
 
@@ -197,31 +216,3 @@ std::ostream& operator <<(std::ostream &os, const Rational_Approximation &approx
 }
 
 
-physics::algorithms::Rational_Coefficients* physics::algorithms::Rational_Approximation::rescale_coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec)
-{
-	if(high != 1)
-		throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
-
-	int ord = Get_order();
-	hmc_float exp = Get_exponent();
-	hmc_float a0_new = Get_a0();
-	hmc_float *a_new = Get_a();
-	hmc_float *b_new = Get_b();
-
-	hmc_float max;
-	hmc_float min;
-	find_maxmin_eigenvalue(max, min, A, gf, system, prec);
-
-	if(low > min/max)
-		throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
-
-	hmc_float tmp = pow(max, exp);
-	a0_new *= tmp;
-	for(int i=0; i<ord; i++){
-		a_new[i] *= (tmp*max);
-		b_new[i] *= max;
-	}
-
-	Rational_Coefficients *out = new Rational_Coefficients(ord, a0_new, a_new, b_new);
-	return out;
-}
