@@ -44,17 +44,15 @@ public:
 	 */
 	Rational_Coefficients(const int d, const hmc_float a0, const std::vector<hmc_float> a, const std::vector<hmc_float> b);
 	
-	/*
-	 * Rational_Coefficients cannot be copied
+	/**
+	 * Default Rational_Coefficients move constructor and move assignment operator
+	 * Delete Rational_Coefficients default constructor and copy constructor
 	 */
+	Rational_Coefficients(Rational_Coefficients&&) = default;
+	Rational_Coefficients& operator=(Rational_Coefficients&&) = default;
 	Rational_Coefficients& operator=(const Rational_Coefficients&) = delete;
 	Rational_Coefficients(const Rational_Coefficients&) = delete;
 	Rational_Coefficients() = delete;
-	
-	/**
-	 * Free memory allocated by the constructor
-	 */
-// 	~Rational_Coefficients();
 	
 	/**
 	 * This method returns the order of the approximation
@@ -188,7 +186,7 @@ public:
 	 *  @param system The system it is operated on
 	 *  @param prec The precision to calculate the eigenvalues up
 	 */
-	Rational_Coefficients* Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec);
+	Rational_Coefficients Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec);
 
 private:
 	bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)

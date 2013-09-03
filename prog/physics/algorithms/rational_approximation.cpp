@@ -145,7 +145,7 @@ hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
 }
 
 
-physics::algorithms::Rational_Coefficients* physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec)
+physics::algorithms::Rational_Coefficients physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec)
 {
 	if(high != 1)
 		throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
@@ -170,7 +170,7 @@ physics::algorithms::Rational_Coefficients* physics::algorithms::Rational_Approx
 		b_new[i] *= max;
 	}
 
-	Rational_Coefficients *out = new Rational_Coefficients(ord, a0_new, a_new, b_new);
+	Rational_Coefficients out(ord, a0_new, a_new, b_new);
 	return out;
 }
 

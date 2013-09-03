@@ -121,12 +121,12 @@ BOOST_AUTO_TEST_CASE(rescale)
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 	
-	Rational_Coefficients *coeff = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3);
+	Rational_Coefficients coeff = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3);
 	
-	int ord2 = coeff->Get_order();
-	hmc_float a02 = coeff->Get_a0();
-	std::vector<hmc_float> a2 = coeff->Get_a();
-	std::vector<hmc_float> b2 = coeff->Get_b();
+	int ord2 = coeff.Get_order();
+	hmc_float a02 = coeff.Get_a0();
+	std::vector<hmc_float> a2 = coeff.Get_a();
+	std::vector<hmc_float> b2 = coeff.Get_b();
 	
 	logger.info() << "a02 = " << a02;
 	for(int i=0; i<ord2; i++){
@@ -136,6 +136,5 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	logger.info() << "Test done!";
 }
-
 
 
