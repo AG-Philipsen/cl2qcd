@@ -185,8 +185,11 @@ public:
 	 *  @param gf The gaugefield which A depends on
 	 *  @param system The system it is operated on
 	 *  @param prec The precision to calculate the eigenvalues up
+	 *  @param conservative If true, the maximum eigenvalue found by find_maxmin_eigenvalue is
+	 *                      increased by 5% and the minimum one is set to the squared mass of the
+	 *                      fermions. This circumvents possible numeric errors.
 	 */
-	Rational_Coefficients Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec);
+	Rational_Coefficients Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec, bool conservative=false);
 
 private:
 	bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)

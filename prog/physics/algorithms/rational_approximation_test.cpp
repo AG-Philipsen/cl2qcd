@@ -139,21 +139,46 @@ BOOST_AUTO_TEST_CASE(rescale)
 			       0.30563294009891067704, 0.80189441104810432748,
 			       2.2562393220051499831, 7.7746421837770229857,
 			       59.252309299420609534};
+	//Reference rescaled coefficients conservative
+	hmc_float a0_ref_cons = 3.8304052181004228927;
+	hmc_float a_ref_cons[15] = {-2.8942286130576286221e-07, -1.3425838169907005556e-06,
+				    -4.6346528686679587346e-06, -1.5051222595004849162e-05,
+				    -4.8050941840019680289e-05, -0.00015255541700051565286,
+				    -0.00048359186633654911497, -0.0015339111096058541221,
+				    -0.0048815187425726713766, -0.015675235262161982264,
+				    -0.051504285410779379606, -0.17941591204330820108,
+				    -0.72735044574402074602, -4.4852081772741634325,
+				    -124.39863554566063897};
+	hmc_float b_ref_cons[15] = {9.7552862512145591676e-06, 5.3158639325027219212e-05,
+				    0.00017008744523117717558, 0.00046698372446689161283,
+				    0.0012141446195419417376, 0.003092040766471044512,
+				    0.007812526228236587808, 0.019688665814428581158,
+				    0.04963469020409881638, 0.12557336479641045823,
+				    0.32091499816392937694, 0.84199021010590602287,
+				    2.3690543226274733968, 8.1633847494467222106,
+				    62.215004455600926292};
 	
 	Rational_Coefficients coeff = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3);
+	Rational_Coefficients coeff_cons = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3, true);
 	
 	int ord = coeff.Get_order();
 	std::vector<hmc_float> a = coeff.Get_a();
 	std::vector<hmc_float> b = coeff.Get_b();
 	
+	std::vector<hmc_float> a_cons = coeff_cons.Get_a();
+	std::vector<hmc_float> b_cons = coeff_cons.Get_b();
+	
 	//Test result: note that the precision is not so high since
 	//the reference code uses a slightly different method to calculate
-	//maximum and minimum eigenvalues (I tuned a bit the ref.code adapting
-	//the loop iterations in finding the max and min eigenvalues, but not too much)
+	//maximum and minimum eigenvalues (I tuned a bit the ref.code adapting the number
+	//of loop iterations in finding the max and min eigenvalues, but not too much)
 	BOOST_CHECK_CLOSE(coeff.Get_a0(), a0_ref, 5.e-5);
+	BOOST_CHECK_CLOSE(coeff_cons.Get_a0(), a0_ref_cons, 5.e-5);
 	for(int i=0; i<ord; i++){
 		BOOST_CHECK_CLOSE(a[i], a_ref[i], 5.e-5);
 		BOOST_CHECK_CLOSE(b[i], b_ref[i], 5.e-5);
+		BOOST_CHECK_CLOSE(a_cons[i], a_ref_cons[i], 2.e-4);
+		BOOST_CHECK_CLOSE(b_cons[i], b_ref_cons[i], 2.e-4);
 	}
 	
 	logger.info() << "Test done!";
