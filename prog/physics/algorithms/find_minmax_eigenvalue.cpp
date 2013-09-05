@@ -29,6 +29,9 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
 	Scalar<hmc_complex> max(system);
 	hmc_float resid;
 	
+	//This timer is to know how long this function takes
+	klepsydra::Monotonic timer;
+	
 	//This field is the starting point and it must be random (we have to be sure
 	//to have a non zero component along the eigenvectors referring to the biggest eigenvalue)
 	Staggeredfield_eo v1(system);
@@ -68,7 +71,9 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
 					logger.fatal() << "Power Method found complex eigenvalue!";
 					throw solvers::SolverStuck(i, __FILE__, __LINE__);
 				}
-				logger.debug() << "Find max_eig converged in " << i << " iterations! resid = " << resid;
+				//Here we are sure the eigenvalue is correctly found, then we get the duration
+				const uint64_t duration = timer.getTime();
+				logger.debug() << "Find_max_eig completed in " << duration/1000.f << " ms. Performed " << i << " iterations (resid = " << resid << ").";
 				return result.re;
 			}
 		}
@@ -101,6 +106,9 @@ hmc_float physics::algorithms::find_min_eigenvalue(const physics::fermionmatrix:
 
 void physics::algorithms::find_maxmin_eigenvalue(hmc_float& max, hmc_float& min, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, const bool conservative)
 {
+	//This timer is to know how long this function takes
+	klepsydra::Monotonic timer;
+	
 	max = find_max_eigenvalue(A, gf, system, prec);
 
 	if(conservative){
@@ -109,6 +117,11 @@ void physics::algorithms::find_maxmin_eigenvalue(hmc_float& max, hmc_float& min,
 	}else{
 		min = find_min_knowing_max(max, A, gf, system, prec);
 	}
+	
+	//Here we are sure the eigenvalue is correctly found, then we get the duration
+	const uint64_t duration = timer.getTime();
+	logger.debug() << "Find_maxmin_eig completed in " << duration/1000.f << " ms.";
+	
 }
 
 
@@ -123,6 +136,9 @@ hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix
 	
 	Scalar<hmc_complex> min(system);
 	hmc_float resid;
+	
+	//This timer is to know how long this function takes
+	klepsydra::Monotonic timer;
 	
 	//This field is the starting point and it must be random (we have to be sure
 	//to have a non zero component along the eigenvectors referring to the smallest eigenvalue)
@@ -167,7 +183,9 @@ hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix
 					logger.fatal() << "Power Method found complex eigenvalue!";
 					throw solvers::SolverStuck(i, __FILE__, __LINE__);
 				}
-				logger.debug() << "Find min_eig converged in " << i << " iterations! resid = " << resid;
+				//Here we are sure the eigenvalue is correctly found, then we get the duration
+				const uint64_t duration = timer.getTime();
+				logger.debug() << "Find_min_eig completed in " << duration/1000.f << " ms. Performed " << i << " iterations (resid = " << resid << ").";
 				return max-result.re;
 			}
 		}
