@@ -220,3 +220,31 @@ Matrix3x3 tr_v_times_u_dagger(su3vec u, su3vec v, su3vec w, su3vec x)
 	tmp.e22.im = (u).e2.im * (v).e2.re - (u).e2.re * (v).e2.im + (w).e2.im * (x).e2.re - (w).e2.re * (x).e2.im;
 	return tmp;
 }
+
+
+//This function makes the direct product of the su3 vectors u and v, returning the Matrix3x3 u*v^dagger
+Matrix3x3 u_times_v_dagger(su3vec u, su3vec v)
+{
+	Matrix3x3 out;
+	
+	out.e00.re = u.e0.re * v.e0.re + u.e0.im * v.e0.im;
+	out.e00.im = u.e0.im * v.e0.re - u.e0.re * v.e0.im;
+	out.e01.re = u.e0.re * v.e1.re + u.e0.im * v.e1.im;
+	out.e01.im = u.e0.im * v.e1.re - u.e0.re * v.e1.im;
+	out.e02.re = u.e0.re * v.e2.re + u.e0.im * v.e2.im;
+	out.e02.im = u.e0.im * v.e2.re - u.e0.re * v.e2.im;
+	out.e10.re = u.e1.re * v.e0.re + u.e1.im * v.e0.im;
+	out.e10.im = u.e1.im * v.e0.re - u.e1.re * v.e0.im;
+	out.e11.re = u.e1.re * v.e1.re + u.e1.im * v.e1.im;
+	out.e11.im = u.e1.im * v.e1.re - u.e1.re * v.e1.im;
+	out.e12.re = u.e1.re * v.e2.re + u.e1.im * v.e2.im;
+	out.e12.im = u.e1.im * v.e2.re - u.e1.re * v.e2.im;
+	out.e20.re = u.e2.re * v.e0.re + u.e2.im * v.e0.im;
+	out.e20.im = u.e2.im * v.e0.re - u.e2.re * v.e0.im;
+	out.e21.re = u.e2.re * v.e1.re + u.e2.im * v.e1.im;
+	out.e21.im = u.e2.im * v.e1.re - u.e2.re * v.e1.im;
+	out.e22.re = u.e2.re * v.e2.re + u.e2.im * v.e2.im;
+	out.e22.im = u.e2.im * v.e2.re - u.e2.re * v.e2.im;
+	
+	return out;
+}
