@@ -376,8 +376,13 @@ inline hmc_complex det_matrixsu3(const Matrixsu3 p)
 //CP: tested version that recreates the matrices made by tmlqcd
 /** @todo recheck the factor 0.5 (or F_1_2) that has been deleted here */
 
-//this build a su3-matrix from an algebraelement!!
-inline Matrixsu3 build_su3_from_ae(ae in)
+//This build a su3-matrix from an algebraelement and multiplies the result by i.
+// to be more precise, what is here calculated is the following linear combination:
+//   out = \sum_k (i * in_k * \lambda_k)
+// where lambda_k are the Gell Mann matrices. Actually, there should be a factor
+// 1/2 to obtain an su(3) matrix, since the generators T_k of the group are 0.5 * \lambda_k.
+// This factor here is not taken into account and it is somehow put in the ae object.
+inline Matrixsu3 build_su3_from_ae_times_i(ae in)
 {
 	Matrixsu3 v;
 
@@ -387,8 +392,8 @@ inline Matrixsu3 build_su3_from_ae(ae in)
 	v.e01.im = in.e0;
 	v.e02.re = in.e4;
 	v.e02.im = in.e3;
-	v.e10.re = -in.e1;;
-	v.e10.im = in.e0;;
+	v.e10.re = -in.e1;
+	v.e10.im = in.e0;
 	v.e11.re = 0.0;
 	v.e11.im = (in.e7 * F_1_S3 - in.e2);
 	v.e12.re = in.e6;
@@ -402,8 +407,9 @@ inline Matrixsu3 build_su3_from_ae(ae in)
 	return v;
 }
 
-//this build a su3-matrix from an algebraelement and in addition multiplies it by a real number!!
-inline Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps)
+//this build a su3-matrix from an algebraelement, multiplies it by i and in addition
+//multiplies it by a real number!! See documentation build_su3_from_ae_times_i (above).
+inline Matrixsu3 build_su3_from_ae_times_i_times_real(ae in, hmc_float eps)
 {
 	Matrixsu3 v;
 
@@ -413,8 +419,8 @@ inline Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps)
 	v.e01.im = eps * in.e0;
 	v.e02.re = eps * in.e4;
 	v.e02.im = eps * in.e3;
-	v.e10.re = -eps * in.e1;;
-	v.e10.im = eps * in.e0;;
+	v.e10.re = -eps * in.e1;
+	v.e10.im = eps * in.e0;
 	v.e11.re = 0.0;
 	v.e11.im = eps * (in.e7 * F_1_S3 - in.e2);
 	v.e12.re = eps * in.e6;
@@ -439,7 +445,7 @@ inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	//Also, a factor of 0.5 is taken out to fit the different trace-definition from tmqlcd
 	hmc_float halfeps = epsilon;// *F_1_2;
 	//CP: this performs 25 flops
-	const Matrixsu3 v = build_su3_from_ae_times_real(inn, halfeps);
+	const Matrixsu3 v = build_su3_from_ae_times_i_times_real(inn, halfeps);
 
 	// calculates v^2
 	const Matrixsu3 v2 = multiply_matrixsu3(v, v);
