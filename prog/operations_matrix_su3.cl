@@ -376,8 +376,8 @@ inline hmc_complex det_matrixsu3(const Matrixsu3 p)
 //CP: tested version that recreates the matrices made by tmlqcd
 /** @todo recheck the factor 0.5 (or F_1_2) that has been deleted here */
 
-//This build a su3-matrix from an algebraelement and multiplies the result by i.
-// to be more precise, what is here calculated is the following linear combination:
+// This build a su3-matrix from an algebraelement and multiplies the result by i.
+// To be more precise, here the following linear combination is calculated:
 //   out = \sum_k (i * in_k * \lambda_k)
 // where lambda_k are the Gell Mann matrices. Actually, there should be a factor
 // 1/2 to obtain an su(3) matrix, since the generators T_k of the group are 0.5 * \lambda_k.
@@ -404,6 +404,31 @@ inline Matrixsu3 build_su3_from_ae_times_i(ae in)
 	v.e21.im = in.e5;
 	v.e22.re = 0.0;
 	v.e22.im = -2.*in.e7 * F_1_S3;
+	return v;
+}
+
+// This build an algebraelement from a su3-matrix.
+// To be more precise, here the following linear combination is
+// inverted (lambda_k are the Gell Mann matrices):
+//   in = 0.5 * \sum_k (i * out_k * \lambda_k)
+// This means that, given a generic su3 matrix (hermitian and traceless)
+// the corresponding coefficients of Gell Mann matrices are evaluated.
+// NOTE: The factor 1/2 in front of the expression above, is taken into
+//       account in the function below (the generators T_k of the group are 0.5 * \lambda_k).
+// For further details see file ae_from_su3_matrix.pdf in the feature #491
+inline ae build_ae_from_su3(Matrixsu3 in)
+{
+	ae v;
+
+	v.e0 =  2 * in.e01.re;
+	v.e1 = -2 * in.e01.im;
+	v.e2 = in.e00.re - in.e11.re;
+	v.e3 =  2 * in.e02.re;
+	v.e4 = -2 * in.e02.im;
+	v.e5 =  2 * in.e12.re;
+	v.e6 = -2 * in.e12.im;
+	v.e7 = (in.e00.re + in.e11.re) / F_1_S3;
+	
 	return v;
 }
 
