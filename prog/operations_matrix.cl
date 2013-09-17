@@ -569,3 +569,47 @@ inline Matrixsu3 project_anti_herm(Matrix3x3 in)
 	return tmp;
 
 }
+
+//This function returns the traceless antihermitian part of the input Matrix3x3.
+//It is nothing but
+//  M_TA = 1/2(M-M^dag) - 1/6 Tr(M-M^dag) Id
+//where Id is the 3x3 identity matrix.
+//NOTE: This function is exactely the same as project_anti_herm but
+//      here the sign flip in the end doesn't appear because it is
+//      done during the function (the factor of the division is +2.0 and not -2.0).
+//      I checked in the tmLQCD / smearing / utils_project_antiherm.c file
+//      and the function void project_antiherm(su3 *omega) is exactly this.
+//NOTE: The output is an ANTIhermitean matrix so it is NOT a Matrixsu3 but only a Matrix3x3.
+/**
+ * @todo Fix this doubling of the code, basically figuring out whether it is correct
+ *       (I do not think so) that project_anti_herm returns a Matrixsu3 object. In case
+ *       substitute it by traceless_antihermitian_part.
+ */
+inline Matrix3x3 traceless_antihermitian_part(Matrix3x3 in)
+{
+	Matrix3x3 out;
+	hmc_float trace = (in.e00.im + in.e11.im + in.e22.im) / 3.0;
+	
+	out.e00.re = 0.0;
+	out.e11.re = 0.0;
+	out.e22.re = 0.0;
+	out.e00.im = in.e00.im - trace;
+	out.e11.im = in.e11.im - trace;
+	out.e22.im = in.e22.im - trace;
+	
+	out.e01.re = 0.5 * (in.e01.re - in.e10.re);
+	out.e01.im = 0.5 * (in.e01.im + in.e10.im);
+	out.e02.re = 0.5 * (in.e02.re - in.e20.re);
+	out.e02.im = 0.5 * (in.e02.im + in.e20.im);
+	out.e12.re = 0.5 * (in.e12.re - in.e21.re);
+	out.e12.im = 0.5 * (in.e12.im + in.e21.im);
+	
+	out.e10.re = -out.e01.re;
+	out.e10.im =  out.e01.im;
+	out.e20.re = -out.e02.re;
+	out.e20.im =  out.e02.im;
+	out.e21.re = -out.e12.re;
+	out.e21.im =  out.e12.im;
+	
+	return out;
+}
