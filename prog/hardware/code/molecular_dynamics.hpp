@@ -8,6 +8,7 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/prng_buffer.hpp"
 #include "../buffers/su3.hpp"
+#include "../buffers/su3vec.hpp"
 #include "../buffers/3x3.hpp"
 #include "../buffers/spinor.hpp"
 #include "../buffers/gaugemomentum.hpp"
@@ -42,6 +43,9 @@ public:
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa = ARG_DEF) const;
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, const hardware::buffers::Gaugemomentum *, int evenodd, hmc_float kappa = ARG_DEF) const;
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate) const;
+	///////////////////////////////////////////////////
+	//Methods added exclusively for staggered fermions
+	void fermion_staggered_partial_force_device(const hardware::buffers::SU3vec * A, const hardware::buffers::SU3vec * B, const hardware::buffers::Gaugemomentum * out, int evenodd) const;
 
 protected:
 
@@ -104,6 +108,9 @@ private:
 	cl_kernel fermion_force;
 	cl_kernel fermion_force_eo;
 	cl_kernel stout_smear_fermion_force;
+	
+	//staggered kernels
+	cl_kernel fermion_stagg_partial_force_eo;
 
 	cl_kernel gauge_force_tlsym_1;
 	cl_kernel gauge_force_tlsym_2;

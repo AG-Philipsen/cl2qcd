@@ -41,6 +41,7 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
 		fermion_force_eo = createKernel("fermion_force_eo") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_stagg_partial_force_eo = createKernel("fermion_staggered_partial_force_eo") << basic_molecular_dynamics_code << "operations_staggered.cl" << "spinorfield_staggered_eo.cl" << "force_staggered_fermion_eo.cl";
 	}
 	fermion_force = createKernel("fermion_force") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_molecular_dynamics_code << "md_update_gaugefield.cl";
@@ -78,6 +79,8 @@ void hardware::code::Molecular_Dynamics::clear_kernels()
 	logger.debug() << "release molecular dynamics kernels.." ;
 	if(get_parameters().get_use_eo() == true) {
 		clerr = clReleaseKernel(fermion_force_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(fermion_stagg_partial_force_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	} else {
 		clerr = clReleaseKernel(fermion_force);
@@ -173,6 +176,9 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 		//this kernel reads 16 spinors, 8 su3matrices and writes 1 ae per site
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * Seo;
 	}
+	if (in == "fermion_staggered_partial_force_eo") {
+		return 10000000000000000000;
+	}
 	if (in == "stout_smear_fermion_force") {
 		return 10000000000000000000;
 	}
@@ -219,6 +225,9 @@ uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
 		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + meta::get_flop_su3_su3() + meta::get_flop_complex_mult() * R );
 	}
+	if (in == "fermion_staggered_partial_force_eo") {
+		return 10000000000000000000;
+	}
 	if (in == "stout_smear_fermion_force") {
 		return 10000000000000000000;
 	}
@@ -240,6 +249,7 @@ void hardware::code::Molecular_Dynamics::print_profiling(const std::string& file
 	Opencl_Module::print_profiling(filename, gauge_force_tlsym_6);
 	Opencl_Module::print_profiling(filename, fermion_force);
 	Opencl_Module::print_profiling(filename, fermion_force_eo);
+	Opencl_Module::print_profiling(filename, fermion_stagg_partial_force_eo);
 	Opencl_Module::print_profiling(filename, stout_smear_fermion_force);
 }
 
@@ -493,6 +503,46 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 	}
 }
 
+
+void hardware::code::Molecular_Dynamics::fermion_staggered_partial_force_device(const hardware::buffers::SU3vec * A, const hardware::buffers::SU3vec * B, const hardware::buffers::Gaugemomentum * out, int evenodd) const
+{
+	using namespace hardware::buffers;
+
+	//kernel prototype fermion_staggered_partial_force_eo(A, B, out, evenodd);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(fermion_stagg_partial_force_eo, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 0, sizeof(cl_mem), A->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 1, sizeof(cl_mem), B->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 3, sizeof(int), &evenodd);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
+	get_device()->enqueue_kernel(fermion_stagg_partial_force_eo, gs2, ls2);
+
+	if(logger.beDebug()) {
+		Plain<hmc_float> force_tmp(1, get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
+		hmc_float resid;
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\t\t\tFORCE_STAGG_PARTIAL:\t" << resid;
+
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+}
+
+
 void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate) const
 {
 	//query work-sizes for kernel
@@ -503,8 +553,9 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 }
 
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), md_update_gaugefield (0), md_update_gaugemomenta (0), gauge_force (0), gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
-	  gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
+	: Opencl_Module(params, device), md_update_gaugefield (0), md_update_gaugemomenta (0), gauge_force (0),
+	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
+	  fermion_stagg_partial_force_eo(0), gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
 {
 	fill_kernels();
 }
