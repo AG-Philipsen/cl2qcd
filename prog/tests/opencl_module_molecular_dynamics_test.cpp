@@ -3,6 +3,7 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/molecular_dynamics.hpp"
 #include "../hardware/code/spinors.hpp"
+#include "../hardware/code/spinors_staggered.hpp"
 #include "../hardware/code/gaugemomentum.hpp"
 
 // use the boost test framework
@@ -60,6 +61,16 @@ void fill_sf_with_one(spinor * sf_in, int size)
 		sf_in[i].e3.e0 = hmc_complex_one;
 		sf_in[i].e3.e1 = hmc_complex_one;
 		sf_in[i].e3.e2 = hmc_complex_one;
+	}
+	return;
+}
+
+void fill_sf_with_one(su3vec * sf_in, int size)
+{
+	for(int i = 0; i < size; ++i) {
+		sf_in[i].e0 = hmc_complex_one;
+		sf_in[i].e1 = hmc_complex_one;
+		sf_in[i].e2 = hmc_complex_one;
 	}
 	return;
 }
@@ -130,6 +141,21 @@ void fill_sf_with_random(spinor * sf_in, int size, int seed)
 	return;
 }
 
+void fill_sf_with_random(su3vec * sf_in, int size, int seed)
+{
+	prng_init(seed);
+	for(int i = 0; i < size; ++i) {
+		sf_in[i].e0.re = prng_double();
+		sf_in[i].e1.re = prng_double();
+		sf_in[i].e2.re = prng_double();
+		
+		sf_in[i].e0.im = prng_double();
+		sf_in[i].e1.im = prng_double();
+		sf_in[i].e2.im = prng_double();
+	}
+	return;
+}
+
 void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed)
 {
 	prng_init(seed);
@@ -185,6 +211,29 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 		sf_in2[i].e3.e0.im = prng_double();
 		sf_in2[i].e3.e1.im = prng_double();
 		sf_in2[i].e3.e2.im = prng_double();
+	}
+	return;
+}
+
+void fill_sf_with_random_eo(su3vec * sf_in1, su3vec * sf_in2, int size, int seed)
+{
+	prng_init(seed);
+	for(int i = 0; i < size; ++i) {
+		sf_in1[i].e0.re = prng_double();
+		sf_in1[i].e1.re = prng_double();
+		sf_in1[i].e2.re = prng_double();
+
+		sf_in1[i].e0.im = prng_double();
+		sf_in1[i].e1.im = prng_double();
+		sf_in1[i].e2.im = prng_double();
+		
+		sf_in2[i].e0.re = prng_double();
+		sf_in2[i].e1.re = prng_double();
+		sf_in2[i].e2.re = prng_double();
+
+		sf_in2[i].e0.im = prng_double();
+		sf_in2[i].e1.im = prng_double();
+		sf_in2[i].e2.im = prng_double();
 	}
 	return;
 }
@@ -566,6 +615,93 @@ void test_f_fermion_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+/////////////////////////////////////////////////////////////////////////
+//    TESTS FOR STAGGERED FERMIONS MOLECULAR DYNAMICS RELATED TOOLS    //
+/////////////////////////////////////////////////////////////////////////
+
+void test_f_stagg_fermion_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+	
+	std::string kernelName = "fermion_staggered_partial_force_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	auto * device = cpu.get_device();
+	
+	su3vec * sf_in1;
+	su3vec * sf_in2;
+	ae * ae_out;
+	
+	logger.info() << "fill buffers";
+	size_t NUM_ELEMENTS_SF =  hardware::code::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+
+	sf_in1 = new su3vec[NUM_ELEMENTS_SF];
+	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
+	ae_out = new ae[NUM_ELEMENTS_AE];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
+		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
+	} else {
+		fill_sf_with_random(sf_in1, NUM_ELEMENTS_SF, 123); //With these seeds the fields are the same
+		fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456); //as the test_sf_saxpy_staggered_eo
+	}
+	fill_with_zero(ae_out, NUM_ELEMENTS_AE);
+	BOOST_REQUIRE(sf_in1);
+	BOOST_REQUIRE(sf_in2);
+	BOOST_REQUIRE(ae_out);
+	
+	auto spinor_code = device->get_device()->get_spinor_staggered_code();
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
+
+	const SU3vec in1(NUM_ELEMENTS_SF, device->get_device());
+	const SU3vec in2(NUM_ELEMENTS_SF, device->get_device());
+	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+
+	in1.load(sf_in1);
+	in2.load(sf_in2);
+	gm_code->importGaugemomentumBuffer(&out, ae_out);
+
+
+	hmc_float cpu_res, cpu_back, cpu_back2;
+	logger.info() << "|in_1|^2:";
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in1, &sqnorm);
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "|in_2|^2:";
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
+	sqnorm.dump(&cpu_back2);
+	logger.info() << cpu_back2;
+	logger.info() << "Run kernel";
+
+	//switch according to "read_multiple_configs"
+	if(params.get_read_multiple_configs()) {
+		device->fermion_staggered_partial_force_device(&in1, &in2, &out, EVEN);
+	} else {
+		device->fermion_staggered_partial_force_device(&in1, &in2, &out, ODD);
+	}
+	logger.info() << "|force|^2:";
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in1;
+	delete[] sf_in2;
+	delete[] ae_out;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+
+
 BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -819,6 +955,43 @@ BOOST_AUTO_TEST_CASE( F_FERMION_EO_20 )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////////////////////////////////////////////
+//    TESTS SUITE FOR STAGGERED FERMIONS MOLECULAR DYNAMICS RELATED TOOLS    //
+///////////////////////////////////////////////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE( F_STAGG_FERMION_EO )
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_1 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_2 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_3 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_4 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_4");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 void test_f_fermion_compare_noneo_eo(std::string inputfile)
 {
