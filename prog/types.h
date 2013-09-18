@@ -74,6 +74,7 @@ __constant hmc_complex hmc_complex_one = {1., 0.};
 __constant hmc_complex hmc_complex_zero = {0., 0.};
 __constant hmc_complex hmc_complex_minusone = { -1., 0.};
 __constant hmc_complex hmc_complex_i = {0., 1.};
+__constant hmc_complex hmc_complex_minusi = {0., -1.};
 #else
 /** A complex 1 */
 hmc_complex const hmc_complex_one = {1., 0.};
@@ -83,6 +84,8 @@ hmc_complex const hmc_complex_minusone = { -1., 0.};
 hmc_complex const hmc_complex_zero = {0., 0.};
 /** A complex i */
 hmc_complex const hmc_complex_i = {0., 1.};
+/** A complex -i */
+hmc_complex const hmc_complex_minusi = {0., -1.};
 #endif
 
 //matrix definitions
