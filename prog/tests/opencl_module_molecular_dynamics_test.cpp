@@ -637,7 +637,7 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 	
 	logger.info() << "fill buffers";
 	size_t NUM_ELEMENTS_SF =  hardware::code::get_eoprec_spinorfieldsize(params);
-	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM;
 
 	sf_in1 = new su3vec[NUM_ELEMENTS_SF];
 	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
@@ -670,6 +670,11 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 
 
 	hmc_float cpu_res, cpu_back, cpu_back2;
+	//logger.info() << "|initial_force|^2:";
+	//gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	//sqnorm.dump(&cpu_res);
+	//logger.info() << cpu_res;
+	//getchar();
 	logger.info() << "|in_1|^2:";
 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in1, &sqnorm);
 	sqnorm.dump(&cpu_back);
@@ -686,6 +691,11 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 	} else {
 		device->fermion_staggered_partial_force_device(&in1, &in2, &out, ODD);
 	}
+	//gm_code->exportGaugemomentumBuffer(ae_out, &out);
+	//for(uint i=0; i<40; i++){
+	//  logger.error() << std::setprecision(16) << "ae_out[" << i << "]=(" << ae_out[i].e0 << ", " << ae_out[i].e1 << ", " << ae_out[i].e2 << ", " << ae_out[i].e3 << ", " << ae_out[i].e4 << ", " << ae_out[i].e5 << ", " << ae_out[i].e6 << ", " << ae_out[i].e7 << ")";
+	//}
+	
 	logger.info() << "|force|^2:";
 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
