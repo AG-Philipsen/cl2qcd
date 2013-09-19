@@ -12,12 +12,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include "test_util.h"
+#include "test_util_staggered.h"
 #include "../host_random.h"
 
-class TestGaugefield {
+class TestMolecularDynamics {
 
 public:
-	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
+	TestMolecularDynamics(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
 		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
 		auto inputfile = system->get_inputparameters();
 		meta::print_info_hmc("test program", inputfile);
@@ -36,12 +37,12 @@ private:
 	const physics::lattices::Gaugefield gf;
 };
 
-const hardware::code::Molecular_Dynamics* TestGaugefield::get_device()
+const hardware::code::Molecular_Dynamics* TestMolecularDynamics::get_device()
 {
 	return system->get_devices()[0]->get_molecular_dynamics_code();
 }
 
-const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
+const hardware::buffers::SU3 * TestMolecularDynamics::get_gaugefield()
 {
 	return gf.get_buffers().at(0);
 }
@@ -244,7 +245,7 @@ void test_build(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	BOOST_MESSAGE("Test done");
 }
 
@@ -261,7 +262,7 @@ void test_gf_update(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 	hmc_float * gm_in;
 
@@ -319,7 +320,7 @@ void test_f_update(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 	hmc_float * gm_in;
 	hmc_float * gm_out;
@@ -383,7 +384,7 @@ void test_f_gauge(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 	ae * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
@@ -426,7 +427,7 @@ void test_f_gauge_tlsym(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 	ae * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
@@ -470,7 +471,7 @@ void test_f_fermion(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
@@ -544,7 +545,7 @@ void test_f_fermion_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
@@ -628,7 +629,7 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 	
 	su3vec * sf_in1;
@@ -668,6 +669,15 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 	in2.load(sf_in2);
 	gm_code->importGaugemomentumBuffer(&out, ae_out);
 
+	//The following seven lines are to be used to produce the ref_vec file needed to get the ref_value
+        //---> Comment them out when the reference values have been obtained! 
+	/*
+        print_staggeredfield_eo_to_textfile("ref_vec_f_stagg1_eo", sf_in1, params); 
+        logger.info() << "Produced the ref_vec_f_stagg1_eo text file with the staggered field for the ref. code."; 
+	print_staggeredfield_eo_to_textfile("ref_vec_f_stagg2_eo", sf_in2, params); 
+        logger.info() << "Produced the ref_vec_f_stagg2_eo text file with the staggered field for the ref. code. Returning...";   
+        return;
+	// */
 
 	hmc_float cpu_res, cpu_back, cpu_back2;
 	//logger.info() << "|initial_force|^2:";
@@ -992,6 +1002,46 @@ BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_4 )
 	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_4");
 }
 
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_5 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_6 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_7 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_8 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_9 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_10 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_10");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_11 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_12 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_12");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -1012,7 +1062,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestMolecularDynamics cpu(&system);
 	auto * device = cpu.get_device();
 
 	spinor * sf_in1_noneo;

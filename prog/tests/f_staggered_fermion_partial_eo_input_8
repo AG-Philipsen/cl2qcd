@@ -1,6 +1,6 @@
 use_eo=true
-NS=4
-NT=4
+NS=8
+NT=8
 
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
@@ -12,6 +12,6 @@ read_multiple_configs=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=814.5314127829804
+test_ref_val=12888.99434747295345
 
 #This input file must not be modified!

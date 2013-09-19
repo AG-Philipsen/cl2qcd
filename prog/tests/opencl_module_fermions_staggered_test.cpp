@@ -250,7 +250,7 @@ void Prova()
 }
 
 
-void KernelTry(su3vec * in, meta::Inputparameters params,  TestGaugefield * cpu)
+void KernelTry(su3vec * in, meta::Inputparameters params,  TestGaugefield_stagg * cpu)
 {
 	int nt=params.get_ntime();
 	int ns=params.get_nspace();
@@ -331,7 +331,7 @@ void test_build(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestGaugefield_stagg cpu(&system);
 	BOOST_MESSAGE("Test done");
 }
 
@@ -345,7 +345,7 @@ void test_m_staggered(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestGaugefield_stagg cpu(&system);
 	//The following three lines are to be used to produce the ref_conf file needed to get the ref_value
 	//---> Comment them out when the reference values have been obtained!
 	/*
@@ -438,7 +438,7 @@ void test_DKS_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield cpu(&system);
+	TestGaugefield_stagg cpu(&system);
 	auto * device = cpu.get_device();
 	
 	//The following three lines are to be used to produce the ref_conf file needed to get the ref_value

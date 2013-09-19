@@ -9,10 +9,10 @@
 #include <vector>
 
 
-class TestGaugefield {
+class TestGaugefield_stagg {
 
  public:
- TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
+ TestGaugefield_stagg(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
     auto inputfile = system->get_inputparameters();
     meta::print_info_hmc("test program", inputfile);
@@ -30,22 +30,22 @@ class TestGaugefield {
 };
 
  
-const hardware::code::Fermions_staggered* TestGaugefield::get_device()   
+const hardware::code::Fermions_staggered* TestGaugefield_stagg::get_device()   
 {
   return system->get_devices()[0]->get_fermion_staggered_code(); 
 }
 
-const hardware::code::Gaugefield* TestGaugefield::get_gf_code()      
+const hardware::code::Gaugefield* TestGaugefield_stagg::get_gf_code()      
 {
   return system->get_devices()[0]->get_gaugefield_code();                                                                             
 } 
 
-const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
+const hardware::buffers::SU3 * TestGaugefield_stagg::get_gaugefield()
 {
   return gf.get_buffers().at(0);                                                                                                      
 }
 
-void TestGaugefield::save_conf()
+void TestGaugefield_stagg::save_conf()
 { 
   gf.save("conf_lime",13);                                                                                                            
 }                                     
@@ -150,7 +150,7 @@ inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor
  *  @note: In our program mu=0 is the TIME direction and mu=1,2,3 are the x,y,z direction!!!   
  * 
  */
-void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield * cpu, meta::Inputparameters params)
+void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg * cpu, meta::Inputparameters params)
 {
   int nt=params.get_ntime();
   int ns=params.get_nspace();
