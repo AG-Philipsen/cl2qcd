@@ -149,7 +149,6 @@ set(OPTIMAL_USED_LIBS
 )
 
 add_library(optimal ${OPTIMAL_FILES})
-target_link_libraries(optimal buffers)
 # add all modules
 add_modules(optimal
 	meta
@@ -157,6 +156,7 @@ add_modules(optimal
 	physics
 )
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
+set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
 
 # The actual executables (frontends)
 add_executable(gaugeobservables gaugeobservables.cpp)
