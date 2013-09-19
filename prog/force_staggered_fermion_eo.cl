@@ -91,11 +91,8 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		nn = get_neighbor_spatial(n, dir);
 		nn_eo = get_n_eoprec(nn, t); //transform normal indices to eoprec index
 		a = get_su3vec_from_field_eo(A, nn_eo);
-		if(evenodd == EVEN) //Get staggered phase and take into account global sign
-		  eta = get_staggered_phase(n, t, dir);
-		else
-		  eta = -1 * get_staggered_phase(n, t, dir);
-		a = su3vec_times_real(a, eta);
+		if(evenodd == ODD) //In XDIR the stagg. phase is +1 always, take into account only global sign
+			a = su3vec_times_real(a, -1.);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
 		tmp = traceless_antihermitian_part(u_times_v_dagger(a, b));
 		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
