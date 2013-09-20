@@ -51,7 +51,13 @@ ae acc_algebraelement(ae in, ae force_in)
 	return tmp;
 }
 
-//calculates the trace of i times generator times 3x3-matrix and stores this in a su3-algebraelement
+// This function returns Tr[i * T_k * (in - in^\dag)], i.e. calculates the trace of
+// i times a generator of the algebra su(3) times a 3x3-matrix that is (in - in^\dag).
+// The result is stored in a su3-algebraelement:
+//  - ae.e0 = Tr[i * T_0 * (in - in^\dag)]
+//  - ae.e1 = Tr[i * T_1 * (in - in^\dag)]
+//  - ae.e2 = Tr[i * T_2 * (in - in^\dag)]
+// and so on (remember that T_k is the Gell Mann matrix lambda_k divided by 2).
 ae tr_lambda_u(Matrix3x3 in)
 {
 	ae tmp;

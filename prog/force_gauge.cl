@@ -1,3 +1,35 @@
+/** @file
+ * Kernel for the standard Wilson-action gauge force calculation.
+ * 
+ * According to the Gattringer book (page 198) the gauge part of the force should be
+ * @code
+ * F_G = - \beta/6 * \sum_{k=1}^8 T_k Tr[i * T_k * (U*V - V^\dag*U^\dag)] 
+ * 
+ *     = - \beta/12 * i * (U*V - V^\dag*U^\dag)
+ * @endcode
+ * where V are the well known staples. Nevertheless this expression is not in
+ * agreement with the Gottlieb and Toussaint work (Hybrid-molecular dynamics
+ * algorithm for numerical simulation of QCD), where we found
+ * @code
+ * F_G =  - \beta/6 * i * (U*V - V^\dag*U^\dag) .
+ * @endcode
+ * Then there is a factor 1/2 of discrepancy.
+ * 
+ * @note It is worth recalling that an overall factor in the force calculation does
+ *       not affect the correctness of the (R)HMC algorithm. In fact (thinking to
+ *       leapfrog, see page 197 Gattringer), this factor would mean to have a different
+ *       time step size in the integration of the equations of motion. Of course if one
+ *       wants to make the fields evolve for a fixed time in, let's say, 100 steps,
+ *       he will deduce a certain time step. A missing overall factor in the force
+ *       calculation would affect the time step and therefore all the fields would
+ *       evolve for less or more time!
+ * 
+ * @attention Now, here, as one can see reading the code, the matrix U*V is calculated
+ *            and then the function tr_lambda_u is called on it. This function returns
+ *            Tr[i * T_k * (U*V - V^\dag*U^\dag)] that is calculated ONLY by @f$ \beta/3 @f$.
+ *            We are then coeherent with the Gottlieb and Toussaint result.
+ */
+
 inline void gauge_force_per_link(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out, const st_index pos, const dir_idx dir) {
 	Matrix3x3 V = calc_staple(field, pos.space, pos.time, dir);
 	Matrixsu3 U = get_matrixsu3(field, pos.space, pos.time, dir);
