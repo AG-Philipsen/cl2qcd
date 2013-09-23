@@ -45,7 +45,7 @@ public:
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate) const;
 	///////////////////////////////////////////////////
 	//Methods added exclusively for staggered fermions
-	void fermion_staggered_partial_force_device(const hardware::buffers::SU3vec * A, const hardware::buffers::SU3vec * B, const hardware::buffers::Gaugemomentum * out, int evenodd) const;
+	void fermion_staggered_partial_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3vec * A, const hardware::buffers::SU3vec * B, const hardware::buffers::Gaugemomentum * out, int evenodd) const;
 
 protected:
 

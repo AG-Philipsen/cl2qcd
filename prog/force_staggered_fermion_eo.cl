@@ -23,11 +23,12 @@
  *  Q^i_\mu(n) = | 
  *               | -eta_\mu(n) (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
  * 
- * => return -i*[Q^i_\mu(n)]_TA
+ * => return -i*[U_\mu(n)*Q^i_\mu(n)]_TA
  * @endcode
  *
- * In this kernel only Q^i_\mu(n) is evaluated. In the expressions above k is the order of rational
- * approximation and then for each i from 1 to k we will call this kernel twice. Finally, two different
+ * In this kernel only U_\mu(n)*Q^i_\mu(n) is evaluated and not the \sum. In the expression
+ * above of F_\mu(n) k is the order of rational approximation and c_i are the numerators.
+ * Then for each i from 1 to k we will call this kernel twice. Finally, two different
  * spinorfield are passed to this kernel: A and B. Depending on evenodd they will be different
  * objects, but at this level it does not matter:
  * @code
@@ -35,12 +36,15 @@
  *  Q^i_\mu(n) = |
  *               | -eta_\mu(n) (A)_{n+\mu} (B^\dag)_n     if evenodd = ODD
  * 
- * => return -i*[Q^i_\mu(n)]_TA
+ * => return -i*[U_\mu(n)*Q^i_\mu(n)]_TA
  * @endcode
  * @todo If a chemical potential is introduced, probably this kernel has to be modified!
  */
 
-__kernel void fermion_staggered_partial_force_eo(__global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, __global aeStorageType * const restrict out, int evenodd)
+///////////////////////////////////////////////////////////////////////////////////
+//HERE, BOUNDARY CONDITIONS ARE SUPPOSED TO BE INCLUDED IN STAGGERED PHASES!!!!! //
+///////////////////////////////////////////////////////////////////////////////////
+__kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, __global aeStorageType * const restrict out, int evenodd)
 {
 	//The following 2 lines were about the Wilson kernel. I do not know if they are still valid.
 	// must include HALO, as we are updating neighbouring sites
@@ -50,7 +54,7 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		st_index pos = (evenodd == EVEN) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
 
 		Matrix3x3 tmp;
-		Matrixsu3 aux;
+		Matrixsu3 U, aux;
 		su3vec a, b;
 		ae out_tmp;
 		int eta; //staggered phase
@@ -70,6 +74,7 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		///////////////////////////////////
 		nn = get_neighbor_temporal(t);
 		nn_eo = get_n_eoprec(n, nn); //transform normal indices to eoprec index
+		U = get_matrixsu3(field, n, t, dir);
 		a = get_su3vec_from_field_eo(A, nn_eo);
 		if(evenodd == EVEN) //Get staggered phase and take into account global sign
 		  eta = get_staggered_phase(n, t, dir);
@@ -77,7 +82,8 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		  eta = -1 * get_staggered_phase(n, t, dir);
 		a = su3vec_times_real(a, eta);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = traceless_antihermitian_part(u_times_v_dagger(a, b));
+		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
+		tmp = traceless_antihermitian_part(tmp);
 		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
 		out_tmp = build_ae_from_su3(aux);
 		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)
@@ -90,11 +96,13 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		///////////////////////////////////
 		nn = get_neighbor_spatial(n, dir);
 		nn_eo = get_n_eoprec(nn, t); //transform normal indices to eoprec index
+		U = get_matrixsu3(field, n, t, dir);
 		a = get_su3vec_from_field_eo(A, nn_eo);
 		if(evenodd == ODD) //In XDIR the stagg. phase is +1 always, take into account only global sign
 			a = su3vec_times_real(a, -1.);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = traceless_antihermitian_part(u_times_v_dagger(a, b));
+		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
+		tmp = traceless_antihermitian_part(tmp);
 		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
 		out_tmp = build_ae_from_su3(aux);
 		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)
@@ -107,6 +115,7 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		///////////////////////////////////
 		nn = get_neighbor_spatial(n, dir);
 		nn_eo = get_n_eoprec(nn, t); //transform normal indices to eoprec index
+		U = get_matrixsu3(field, n, t, dir);
 		a = get_su3vec_from_field_eo(A, nn_eo);
 		if(evenodd == EVEN) //Get staggered phase and take into account global sign
 		  eta = get_staggered_phase(n, t, dir);
@@ -114,7 +123,8 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		  eta = -1 * get_staggered_phase(n, t, dir);
 		a = su3vec_times_real(a, eta);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = traceless_antihermitian_part(u_times_v_dagger(a, b));
+		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
+		tmp = traceless_antihermitian_part(tmp);
 		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
 		out_tmp = build_ae_from_su3(aux);
 		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)
@@ -127,6 +137,7 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		///////////////////////////////////
 		nn = get_neighbor_spatial(n, dir);
 		nn_eo = get_n_eoprec(nn, t); //transform normal indices to eoprec index
+		U = get_matrixsu3(field, n, t, dir);
 		a = get_su3vec_from_field_eo(A, nn_eo);
 		if(evenodd == EVEN) //Get staggered phase and take into account global sign
 		  eta = get_staggered_phase(n, t, dir);
@@ -134,7 +145,8 @@ __kernel void fermion_staggered_partial_force_eo(__global const staggeredStorage
 		  eta = -1 * get_staggered_phase(n, t, dir);
 		a = su3vec_times_real(a, eta);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = traceless_antihermitian_part(u_times_v_dagger(a, b));
+		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
+		tmp = traceless_antihermitian_part(tmp);
 		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
 		out_tmp = build_ae_from_su3(aux);
 		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)

@@ -504,7 +504,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 }
 
 
-void hardware::code::Molecular_Dynamics::fermion_staggered_partial_force_device(const hardware::buffers::SU3vec * A, const hardware::buffers::SU3vec * B, const hardware::buffers::Gaugemomentum * out, int evenodd) const
+void hardware::code::Molecular_Dynamics::fermion_staggered_partial_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3vec * A, const hardware::buffers::SU3vec * B, const hardware::buffers::Gaugemomentum * out, int evenodd) const
 {
 	using namespace hardware::buffers;
 
@@ -514,16 +514,20 @@ void hardware::code::Molecular_Dynamics::fermion_staggered_partial_force_device(
 	cl_uint num_groups;
 	this->get_work_sizes(fermion_stagg_partial_force_eo, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 0, sizeof(cl_mem), A->get_cl_buffer());
+	
+	int clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 0, sizeof(cl_mem), gf->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
+	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 1, sizeof(cl_mem), A->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 1, sizeof(cl_mem), B->get_cl_buffer());
+	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 2, sizeof(cl_mem), B->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 2, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 3, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 3, sizeof(int), &evenodd);
+	clerr = clSetKernelArg(fermion_stagg_partial_force_eo, 4, sizeof(int), &evenodd);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
 	get_device()->enqueue_kernel(fermion_stagg_partial_force_eo, gs2, ls2);
