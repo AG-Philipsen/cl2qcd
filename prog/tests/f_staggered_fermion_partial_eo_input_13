@@ -1,4 +1,5 @@
-startcondition=cold
+startcondition=continue
+sourcefile=conf.00200
 
 use_eo=true
 NS=4
@@ -14,6 +15,6 @@ read_multiple_configs=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.
+test_ref_val=4143.8966549458982627
 
 #This input file must not be modified!

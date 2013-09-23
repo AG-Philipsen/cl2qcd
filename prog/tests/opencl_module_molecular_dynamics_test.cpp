@@ -692,9 +692,9 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 
 	//switch according to "read_multiple_configs"
 	if(params.get_read_multiple_configs()) {
-		device->fermion_staggered_partial_force_device(&in1, &in2, &out, EVEN);
+		device->fermion_staggered_partial_force_device(cpu.get_gaugefield(), &in1, &in2, &out, EVEN);
 	} else {
-		device->fermion_staggered_partial_force_device(&in1, &in2, &out, ODD);
+		device->fermion_staggered_partial_force_device(cpu.get_gaugefield(), &in1, &in2, &out, ODD);
 	}
 	
 	logger.info() << "|force|^2:";
@@ -1032,6 +1032,27 @@ BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_12 )
 {
 	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_12");
 }
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_13 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_14 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_14");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_15 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_15");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_16 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_16");
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

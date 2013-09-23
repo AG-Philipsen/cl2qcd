@@ -1,3 +1,5 @@
+startcondition=cold
+
 use_eo=true
 NS=8
 NT=8
