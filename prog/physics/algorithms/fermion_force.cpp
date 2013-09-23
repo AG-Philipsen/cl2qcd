@@ -277,10 +277,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
  * @endcode
  * and then reconstruct the force, using the Rational Coefficients.
  * 
- * @attention Even though the parameter "mubar" is passed to this function, it is not
- *            used yet. This means that it is ignored in the force calculation. The reason
- *            why it appears here is that, in this way, we can use the template calc_fermion_forces
- *            to implement the function calc_fermion_forces (that then will be used in the code).
+ * @warning Remember that this function add to the Gaugemomenta field the fermionic
+ *          contribution. Therefore such a field must be properly initialized.
  */
 void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, const hmc_float mass)
 {
