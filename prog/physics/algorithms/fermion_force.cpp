@@ -649,6 +649,27 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 	gm->update_halo();
 }
 
+void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Staggeredfield_eo& A, const physics::lattices::Staggeredfield_eo& B, const int evenodd)
+{
+	auto gm_bufs = gm->get_buffers();
+	auto A_bufs = A.get_buffers();
+	auto B_bufs = B.get_buffers();
+	size_t num_bufs = gm_bufs.size();
+	if(num_bufs != A_bufs.size() || num_bufs != B_bufs.size()) {
+		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
+	}
+
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto gm_buf = gm_bufs[i];
+		auto A_buf = A_bufs[i];
+		auto B_buf = B_bufs[i];
+		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		code->fermion_staggered_partial_force_device(A_buf, B_buf, gm_buf, evenodd);
+	}
+	gm->update_halo();
+}
+
+
 template<class SPINORFIELD> static void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
 	using physics::lattices::Gaugefield;
