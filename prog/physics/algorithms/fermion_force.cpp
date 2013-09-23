@@ -150,6 +150,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	fermion_force(force, tmp_1, solution, ODD, gf, kappa);
 }
 
+
 void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::lattices::Spinorfield;
@@ -244,6 +245,51 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	logger.debug() << "\t\tcalc fermion_force...";
 	fermion_force(force, phi_inv, solution, gf, kappa);
 }
+
+/**
+ * This function reconstructs the fermionic contribution to the force. It is given by
+ * @code
+ * F_\mu(n) = -i * [U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA
+ * @endcode
+ * where k is the order of rational approximation, c_i are the numerators and
+ * @code
+ *               | +eta_\mu(n) (D_oe X_e^i)_{n+\mu} (X_e^i^\dag)_n     if evenodd = EVEN 
+ *  Q^i_\mu(n) = | 
+ *               | -eta_\mu(n) (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
+ * 
+ * @endcode
+ * If we put U_\mu(n) into Q^i_\mu(n) we have
+ * @code
+ * F_\mu(n) = -i * [\sum_{i=1}^k c_i QQ^i_\mu(n)]_TA
+ * @endcode
+ * with
+ * @code
+ *                | +eta_\mu(n) U_\mu(n) * (D_oe X_e^i)_{n+\mu} (X_e^i^\dag)_n     if evenodd = EVEN 
+ *  QQ^i_\mu(n) = | 
+ *                | -eta_\mu(n) U_\mu(n) * (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
+ * 
+ * @endcode
+ * Now, QQ is exactely what the function fermion_force calculates, given the fields
+ * (D_oe X_e^i) and (X_e^i). So, basically, here we have to calculate them with the
+ * multi-shifted inverter:
+ * @code
+ *  X^i_e = (M^\dagM + p_i)^{-1} * phi_e  ==>  D_oe X_e^i
+ * @endcode
+ * and then reconstruct the force, using the Rational Coefficients.
+ * 
+ * @attention Even though the parameter "mubar" is passed to this function, it is not
+ *            used yet. This means that it is ignored in the force calculation. The reason
+ *            why it appears here is that, in this way, we can use the template calc_fermion_forces
+ *            to implement the function calc_fermion_forces (that then will be used in the code).
+ */
+void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, const hmc_float mass)
+{
+  
+  
+  
+}
+
+
 
 void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
 {
@@ -600,9 +646,19 @@ void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemome
 {
 	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
 }
+
 void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
 {
 	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+}
+
+//At the moment only even-odd Staggeredfield are used and we have only one staggered force
+//to be calculated. Hence there is no need to develop a new template. It is worth remarking
+//that we cannot use the template written for Wilson, since we need a Rational_Coefficients
+//object as parameter.
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+{
+	calc_fermion_force(force, gf, phi, coeff, system, mass);
 }
 
 void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
