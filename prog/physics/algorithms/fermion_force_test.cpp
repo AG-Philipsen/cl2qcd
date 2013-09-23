@@ -206,6 +206,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
+		Gaugefield gf(system, prng, false);
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Gaugemomenta gm(system);
@@ -216,10 +217,10 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		gm.zero();
 
 		BOOST_REQUIRE_EQUAL(squarenorm(gm), 0);
-		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, EVEN);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 855.08060572822057566, 1.e-8);
 		//Note that now the ODD part is added to the EVEN one
-		physics::algorithms::fermion_force(&gm, sf1, sf2, ODD);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, ODD);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1714.8417937241449636, 1.e-8);
 	}
 	
@@ -230,6 +231,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
+		Gaugefield gf(system, prng, false);
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Gaugemomenta gm(system);
@@ -239,10 +241,35 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		gm.zero();
 
 		BOOST_REQUIRE_EQUAL(squarenorm(gm), 0);
-		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, EVEN);
 		BOOST_REQUIRE_EQUAL(squarenorm(gm), 0);
-		physics::algorithms::fermion_force(&gm, sf1, sf2, ODD);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, ODD);
 		BOOST_REQUIRE_EQUAL(squarenorm(gm), 0);
+	}
+	
+	{
+		using namespace physics::lattices;
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Staggeredfield_eo sf1(system);
+		Staggeredfield_eo sf2(system);
+		Gaugemomenta gm(system);
+		
+		//These are the same fields of the excplicit test D_KS_eo (second test)
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+		gm.zero();
+
+		BOOST_REQUIRE_EQUAL(squarenorm(gm), 0);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, EVEN);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 1995.1105623150542669, 1.e-8);
+		//Note that now the ODD part is added to the EVEN one
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, ODD);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 3977.231580060397846, 1.e-8);
 	}
 }
 

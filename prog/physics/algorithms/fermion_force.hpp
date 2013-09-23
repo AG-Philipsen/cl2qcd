@@ -39,7 +39,7 @@ void calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, 
 //namely the just call the function that enqueues the kernel
 void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, hmc_float kappa = ARG_DEF);
 void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Spinorfield_eo& Y, const physics::lattices::Spinorfield_eo& X, int evenodd, const physics::lattices::Gaugefield& gf, hmc_float kappa = ARG_DEF);
-void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Staggeredfield_eo& A, const physics::lattices::Staggeredfield_eo& X, int evenodd);
+void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Staggeredfield_eo& A, const physics::lattices::Staggeredfield_eo& B, const physics::lattices::Gaugefield& gf, int evenodd);
 
 }
 }
