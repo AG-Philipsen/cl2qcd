@@ -261,6 +261,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
  * If we put U_\mu(n) into Q^i_\mu(n) we have
  * @code
  * F_\mu(n) = -i * [\sum_{i=1}^k c_i QQ^i_\mu(n)]_TA
+ *          = -i * \sum_{i=1}^k [c_i QQ^i_\mu(n)]_TA
+ *          = \sum_{i=1}^k {c_i * (-i) * [QQ^i_\mu(n)]_TA}
  * @endcode
  * with
  * @code
@@ -269,13 +271,18 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
  *                | -eta_\mu(n) U_\mu(n) * (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
  * 
  * @endcode
- * Now, QQ is exactely what the function fermion_force calculates, given the fields
+ * Now, (-i) * [QQ^i_\mu(n)]_TA is exactely what the function fermion_force calculates, given the fields
  * (D_oe X_e^i) and (X_e^i). So, basically, here we have to calculate them with the
  * multi-shifted inverter:
  * @code
  *  X^i_e = (M^\dagM + p_i)^{-1} * phi_e  ==>  D_oe X_e^i
  * @endcode
- * and then reconstruct the force, using the Rational Coefficients.
+ * and then reconstruct the force, using the Rational Coefficients:
+ * @code
+ * F_\mu(n) = \sum_{i=1}^k {c_i * out_fermion_force} . 
+ * @endcode
+ * 
+ * @note To perform the sum above, the saxpy operation of the gaugemomenta is used.
  * 
  * @warning Remember that this function add to the Gaugemomenta field the fermionic
  *          contribution. Therefore such a field must be properly initialized.
