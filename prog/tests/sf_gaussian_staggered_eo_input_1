@@ -5,7 +5,7 @@ NT=4
 integrationsteps0=4000
 
 #reference value: the result of the test must be smaller than this to make the test passes
-test_ref_val=0.001
+test_ref_val=0.002
 
 use_eo=true
 

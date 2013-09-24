@@ -107,9 +107,6 @@ BOOST_AUTO_TEST_CASE(rescale)
 	using namespace physics::lattices;
 	
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
-	logger.info() << approx;
-	
-	getchar();
 	
 	const char * _params[] = {"foo", "--ntime=4"};
 	meta::Inputparameters params(2, _params);
