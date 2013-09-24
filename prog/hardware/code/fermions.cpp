@@ -75,6 +75,8 @@ void hardware::code::Fermions::fill_kernels()
 			M_tm_inverse_sitediagonal_minus = createKernel("M_tm_inverse_sitediagonal_minus") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 		}
 		dslash_eo = createKernel("dslash_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
+		_dslash_eo_boundary = createKernel("dslash_eo_boundary") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
+		_dslash_eo_inner = createKernel("dslash_eo_inner") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eo = createKernel("gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 		//merged kernels
 		if (get_parameters().get_use_merge_kernels_fermion() == true) {
@@ -115,6 +117,10 @@ void hardware::code::Fermions::clear_kernels()
 
 	if(get_parameters().get_use_eo()) {
 		clerr = clReleaseKernel(dslash_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(_dslash_eo_boundary);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(_dslash_eo_inner);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(gamma5_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -384,6 +390,68 @@ void hardware::code::Fermions::dslash_eo_device(const hardware::buffers::Spinor 
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(dslash_eo , gs2, ls2);
+}
+
+void hardware::code::Fermions::dslash_eo_boundary(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
+{
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
+	else kappa_tmp = kappa;
+
+	cl_int eo = evenodd;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(_dslash_eo_boundary, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(_dslash_eo_boundary, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_boundary, 1, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_boundary, 2, sizeof(cl_mem), gf->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_boundary, 3, sizeof(cl_int), &eo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_boundary, 4, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(_dslash_eo_boundary , gs2, ls2);
+}
+
+void hardware::code::Fermions::dslash_eo_inner(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
+{
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
+	else kappa_tmp = kappa;
+
+	cl_int eo = evenodd;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(_dslash_eo_inner, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(_dslash_eo_inner, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_inner, 1, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_inner, 2, sizeof(cl_mem), gf->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_inner, 3, sizeof(cl_int), &eo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_dslash_eo_inner, 4, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(_dslash_eo_inner , gs2, ls2);
 }
 
 void hardware::code::Fermions::dslash_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const

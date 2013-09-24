@@ -12,7 +12,7 @@
 #include "../../crypto/md5.h"
 #include "../code/buffer.hpp"
 
-static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host);
+static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host, cl_mem_flags extra_flags);
 void memObjectReleased(cl_mem, void * user_data);
 struct MemObjectAllocationTracer {
 	size_t bytes;
@@ -30,8 +30,8 @@ struct MemObjectAllocationTracer {
 };
 
 
-hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device, bool place_on_host)
-	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context, place_on_host)), device(device)
+hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device, bool place_on_host, cl_mem_flags extra_flags)
+	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context, place_on_host, extra_flags)), device(device)
 {
 	// notify device about allocation
 	cl_int err = clSetMemObjectDestructorCallback(cl_buffer, memObjectReleased, new MemObjectAllocationTracer(bytes, place_on_host, device));
@@ -45,10 +45,10 @@ hardware::buffers::Buffer::~Buffer()
 	clReleaseMemObject(cl_buffer);
 }
 
-static cl_mem allocateBuffer(size_t bytes, cl_context context, const bool place_on_host)
+static cl_mem allocateBuffer(size_t bytes, cl_context context, const bool place_on_host, const cl_mem_flags extra_flags)
 {
 	cl_int err;
-	const cl_mem_flags mem_flags = place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0;
+	const cl_mem_flags mem_flags = (place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0) | extra_flags;
 	cl_mem cl_buffer = clCreateBuffer(context, mem_flags, bytes, 0, &err);
 	if(err) {
 		throw hardware::OpenclException(err, "clCreateBuffer", __FILE__, __LINE__);
@@ -283,17 +283,13 @@ std::string hardware::buffers::md5(const Buffer* buf)
 	return std::string(res);
 }
 
-hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event)
+hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const std::vector<hardware::SynchronizationEvent> & events)
 {
-	const cl_event * wait_event = nullptr;
-	cl_uint num_wait_events = 0;
-	if(event.raw()) {
-		wait_event = &event.raw();
-		num_wait_events = 1;
-	}
+	auto const raw_events = get_raw_events(events);
+	cl_event const * const raw_events_p = raw_events.size() > 0 ? raw_events.data() : nullptr;
 
 	cl_event event_cl;
-	cl_int err = clEnqueueCopyBufferRect(*device, *orig->get_cl_buffer(), *dest->get_cl_buffer(), src_origin, dest_origin, region, src_row_pitch, src_slice_pitch, dest_row_pitch, dest_slice_pitch, num_wait_events, wait_event, &event_cl);
+	cl_int err = clEnqueueCopyBufferRect(*device, *orig->get_cl_buffer(), *dest->get_cl_buffer(), src_origin, dest_origin, region, src_row_pitch, src_slice_pitch, dest_row_pitch, dest_slice_pitch, raw_events.size(), raw_events_p, &event_cl);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueCopyBufferRect", __FILE__, __LINE__);
 	}
@@ -330,4 +326,40 @@ void memObjectReleased(cl_mem, void * user_data)
 {
 	MemObjectAllocationTracer * release_info = static_cast<MemObjectAllocationTracer *>(user_data);
 	delete release_info;
+}
+
+std::unique_ptr<hardware::buffers::MappedBufferHandle> hardware::buffers::Buffer::map(cl_map_flags flags) const
+{
+	using hardware::buffers::MappedBufferHandle;
+
+	cl_event raw_event;
+	cl_int err;
+	void * mapped_mem = clEnqueueMapBuffer(*device, cl_buffer, CL_FALSE, flags, 0, bytes, 0, nullptr, &raw_event, &err);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueMapBuffer", __FILE__, __LINE__);
+	}
+	hardware::SynchronizationEvent event(raw_event);
+	err = clReleaseEvent(raw_event);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return std::unique_ptr<MappedBufferHandle>(new MappedBufferHandle(cl_buffer, *device, mapped_mem, event));
+}
+
+hardware::buffers::MappedBufferHandle::MappedBufferHandle(cl_mem buf, cl_command_queue queue, void * mapped_ptr, hardware::SynchronizationEvent map_event)
+ : buf(buf), queue(queue), mapped_ptr(mapped_ptr), map_event(map_event) { }
+hardware::buffers::MappedBufferHandle::~MappedBufferHandle()
+{
+	cl_int err = clEnqueueUnmapMemObject(queue, buf, mapped_ptr, 0, nullptr, nullptr);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueUnmapMemObject", __FILE__, __LINE__);
+	}
+}
+void * hardware::buffers::MappedBufferHandle::get_mapped_ptr() const
+{
+	return mapped_ptr;
+}
+hardware::SynchronizationEvent hardware::buffers::MappedBufferHandle::get_map_event() const
+{
+	return map_event;
 }

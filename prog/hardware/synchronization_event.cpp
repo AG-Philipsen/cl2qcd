@@ -10,9 +10,11 @@
 hardware::SynchronizationEvent::SynchronizationEvent(const cl_event& event)
 	: event(event)
 {
-	cl_int err = clRetainEvent(event);
-	if(err) {
-		throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+	if(event) {
+		cl_int err = clRetainEvent(event);
+		if(err) {
+			throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+		}
 	}
 }
 
@@ -33,9 +35,11 @@ hardware::SynchronizationEvent& hardware::SynchronizationEvent::operator=(const 
 
 	event = other.event;
 
-	cl_int err = clRetainEvent(event);
-	if(err) {
-		throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+	if(event) {
+		cl_int err = clRetainEvent(event);
+		if(err) {
+			throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+		}
 	}
 	return *this;
 }
@@ -52,33 +56,42 @@ hardware::SynchronizationEvent::~SynchronizationEvent()
 
 bool hardware::SynchronizationEvent::is_finished() const
 {
-	cl_int event_status;
-	cl_int err = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &event_status, 0);
-	if(err) {
-		throw OpenclException(err, "clGetEventInfo(CL_EVENT_COMMAND_EXECUTION_STATUS)", __FILE__, __LINE__);
-	} else if(event_status < 0) {
-		throw OpenclException(event_status, "event execution status", __FILE__, __LINE__);
+	if(event) {
+		cl_int event_status;
+		cl_int err = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &event_status, 0);
+		if(err) {
+			throw OpenclException(err, "clGetEventInfo(CL_EVENT_COMMAND_EXECUTION_STATUS)", __FILE__, __LINE__);
+		} else if(event_status < 0) {
+			throw OpenclException(event_status, "event execution status", __FILE__, __LINE__);
+		} else {
+			return event_status == CL_COMPLETE;
+		}
 	} else {
-		return event_status == CL_COMPLETE;
+		return true;
 	}
 }
 
 void hardware::SynchronizationEvent::wait() const
 {
-	cl_int err = clWaitForEvents(1, &event);
-	if(err) {
-		throw OpenclException(err, "clWaitForEvents", __FILE__, __LINE__);
-	};
+	if(event) {
+		cl_int err = clWaitForEvents(1, &event);
+		if(err) {
+			throw OpenclException(err, "clWaitForEvents", __FILE__, __LINE__);
+		};
+	}
 }
 
 void hardware::wait(const std::vector<SynchronizationEvent>& events)
 {
 	const size_t num_events = events.size();
-	std::vector<cl_event> cl_events(num_events);
+	std::vector<cl_event> cl_events;
+	cl_events.reserve(num_events);
 	for(size_t i = 0; i < num_events; ++i) {
-		cl_events[i] = events[i].event;
+		if(events[i].is_valid()) {
+			cl_events.push_back(events[i].raw());
+		}
 	}
-	cl_int err = clWaitForEvents(num_events, &cl_events[0]);
+	cl_int err = clWaitForEvents(num_events, cl_events.data());
 	if(err) {
 		throw OpenclException(err, "clWaitForEvents", __FILE__, __LINE__);
 	};
@@ -87,4 +100,21 @@ void hardware::wait(const std::vector<SynchronizationEvent>& events)
 const cl_event& hardware::SynchronizationEvent::raw() const
 {
 	return event;
+}
+
+bool hardware::SynchronizationEvent::is_valid() const
+{
+	return event != 0;
+}
+
+std::vector<cl_event> hardware::get_raw_events(const std::vector<SynchronizationEvent>& events)
+{
+	std::vector<cl_event> result;
+	result.reserve(events.size());
+	for(auto const & event: events) {
+		if(event.is_valid()) {
+			result.push_back(event.raw());
+		}
+	}
+	return result;
 }

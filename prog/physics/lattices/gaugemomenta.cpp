@@ -15,7 +15,7 @@
 
 static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);
 static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const meta::Inputparameters& params);
-static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const meta::Inputparameters& params);
+static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system);
 
 physics::lattices::Gaugemomenta::Gaugemomenta(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
@@ -111,7 +111,7 @@ void physics::lattices::Gaugemomenta::update_halo() const
 	if(buffers.size() > 1) { // for a single device this will be a noop
 		// currently either all or none of the buffers must be SOA
 		if(buffers[0]->is_soa()) {
-			update_halo_soa(buffers, system.get_inputparameters());
+			update_halo_soa(buffers, system);
 		} else {
 			update_halo_aos(buffers, system.get_inputparameters());
 		}
@@ -130,7 +130,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemome
 	hardware::buffers::update_halo<ae>(buffers, params, NDIM);
 }
 
-static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const meta::Inputparameters& params)
+static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system)
 {
 	// check all buffers are non-soa
 	for(auto const buffer: buffers) {
@@ -139,7 +139,7 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemome
 		}
 	}
 
-	hardware::buffers::update_halo_soa<ae>(buffers, params, .5, 2 * NDIM);
+	hardware::buffers::update_halo_soa<ae>(buffers, system, .5, 2 * NDIM);
 }
 
 unsigned physics::lattices::Gaugemomenta::get_elements() const noexcept

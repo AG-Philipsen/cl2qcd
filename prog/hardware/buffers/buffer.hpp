@@ -15,6 +15,7 @@
 
 #include <stdexcept>
 #include "../synchronization_event.hpp"
+#include <memory>
 
 namespace hardware {
 
@@ -39,6 +40,11 @@ namespace buffers {
 template<class T> inline void copyData(const T* dest, const T* orig);
 
 /**
+ * Handle to a buffer mapped to CPU memory.
+ */
+class MappedBufferHandle;
+
+/**
  * A generic OpenCL buffer.
  *
  * This class should not really be used directly, it more works as a
@@ -56,8 +62,9 @@ public:
 	 * \param device The device to locate the buffer on
 	 * \param place_on_host Request the buffer to remain on the host
 	 *                      Allows to avoid memory limits if many buffers are required
+	 * \param any additional flags required for this buffer
 	 */
-	Buffer(size_t bytes, Device * device, bool place_on_host = false);
+	Buffer(size_t bytes, Device * device, bool place_on_host = false, cl_mem_flags extra_flags = 0);
 
 	virtual ~Buffer();
 
@@ -95,6 +102,11 @@ public:
 	 * Set all bytes of this buffer to zero.
 	 */
 	void clear() const;
+
+	/**
+	 * Map the buffer into host address space.
+	 */
+	std::unique_ptr<MappedBufferHandle> map(cl_map_flags flags = CL_MAP_READ | CL_MAP_WRITE) const;
 
 #ifdef CL_VERSION_1_2
 	/**
@@ -200,6 +212,30 @@ template<class T> inline void copyData(const T* dest, const T* orig)
  * Get the md5 sum of the given buffer
  */
 std::string md5(const Buffer* buf);
+
+/**
+ * Utility function to get the data from another buffer. Should only be used using
+ * Should be implemented by children using element instead of bytes sizes
+ *
+ * Will thorw an invalid_argument exception if the source buffer is of a different size.
+ */
+hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const std::vector<hardware::SynchronizationEvent>& events);
+
+class MappedBufferHandle {
+	friend Buffer;
+	MappedBufferHandle(cl_mem buf, cl_command_queue queue, void * mapped_ptr, hardware::SynchronizationEvent map_event);
+public:
+	MappedBufferHandle(MappedBufferHandle const &) = delete;
+	~MappedBufferHandle();
+	void * get_mapped_ptr() const;
+	hardware::SynchronizationEvent get_map_event() const;
+private:
+	cl_mem const buf;
+	cl_command_queue const queue;
+	void * const mapped_ptr;
+	hardware::SynchronizationEvent const map_event;
+};
+
 }
 }
 
@@ -218,13 +254,5 @@ cl_int clSetKernelArg(cl_kernel, cl_uint, size_t, const hardware::buffers::Buffe
 //	// Invoke the original OpenCL function
 //	clSetKernelArg(kernel, idx, bytes, static_cast<const void *>(arg));
 //}
-
-/**
- * Utility function to get the data from another buffer. Should only be used using
- * Should be implemented by children using element instead of bytes sizes
- *
- * Will thorw an invalid_argument exception if the source buffer is of a different size.
- */
-hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event);
 
 #endif /* _HARDWARE_BUFFERS_BUFFER_ */

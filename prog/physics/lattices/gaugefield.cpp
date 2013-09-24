@@ -37,7 +37,7 @@ static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
 static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params);
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
-static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 static void extract_boundary(char* host, const hardware::buffers::SU3 * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 static void send_halo(const hardware::buffers::SU3 * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
@@ -790,7 +790,7 @@ void physics::lattices::Gaugefield::update_halo() const
 	if(buffers.size() > 1) { // for a single device this will be a noop
 		// currently either all or none of the buffers must be SOA
 		if(buffers[0]->is_soa()) {
-			update_halo_soa(buffers, system.get_inputparameters());
+			update_halo_soa(buffers, system);
 		} else {
 			update_halo_aos(buffers, system.get_inputparameters());
 		}
@@ -809,7 +809,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> bu
 	hardware::buffers::update_halo<Matrixsu3>(buffers, params, NDIM);
 }
 
-static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system)
 {
 	// check all buffers are non-soa
 	for(auto const buffer: buffers) {
@@ -818,5 +818,5 @@ static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> bu
 		}
 	}
 
-	hardware::buffers::update_halo_soa<Matrixsu3>(buffers, params, .5, 2 * NDIM);
+	hardware::buffers::update_halo_soa<Matrixsu3>(buffers, system, .5, 2 * NDIM);
 }

@@ -45,7 +45,18 @@ public:
 	void M_tm_sitediagonal_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar = ARG_DEF) const;
 	void M_tm_inverse_sitediagonal_minus_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar = ARG_DEF) const;
 	void M_tm_sitediagonal_minus_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar = ARG_DEF) const;
+	/**
+	 * Perform dslash_eo on the whole buffer.
+	 */
 	void dslash_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF) const;
+	/**
+	 * Perform dslash_eo only on the boundary sites that require the halo.
+	 */
+	void dslash_eo_boundary(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF) const;
+	/**
+	 * Perform dslash_eo only on the inner sites which do not require the halo.
+	 */
+	void dslash_eo_inner(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF) const;
 	//        merged
 //	void Aee_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 //	void Aee_minus_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
@@ -122,6 +133,8 @@ private:
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eo;
+	cl_kernel _dslash_eo_boundary;
+	cl_kernel _dslash_eo_inner;
 	cl_kernel dslash_AND_gamma5_eo;
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_eo;
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_minus_eo;

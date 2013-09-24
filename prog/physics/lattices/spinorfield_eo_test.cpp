@@ -282,19 +282,22 @@ BOOST_AUTO_TEST_CASE(halo_update)
 
 	sf.gaussian(prng);
 	orig_squarenorm = physics::lattices::squarenorm(sf);
-	sf.update_halo();
+	sf.mark_halo_dirty();
+	sf.require_halo();
 	new_squarenorm = physics::lattices::squarenorm(sf);
 	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
 
 	sf.zero();
 	orig_squarenorm = physics::lattices::squarenorm(sf);
-	sf.update_halo();
+	sf.mark_halo_dirty();
+	sf.require_halo();
 	new_squarenorm = physics::lattices::squarenorm(sf);
 	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
 
 	sf.cold();
 	orig_squarenorm = physics::lattices::squarenorm(sf);
-	sf.update_halo();
+	sf.mark_halo_dirty();
+	sf.require_halo();
 	new_squarenorm = physics::lattices::squarenorm(sf);
 	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
 }

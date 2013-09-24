@@ -10,6 +10,9 @@
 #include "../meta/inputparameters.hpp"
 #include "../types.h"
 #include "../meta/size_4.hpp"
+#include <map>
+#include <memory>
+#include <tuple>
 
 /**
  * This namespace contains potentially hardware specific code managing the system,
@@ -35,6 +38,7 @@ namespace hardware {
 
 	// forward decleartion of used class
 	class Device;
+	class Transfer;
 
 	/**
 	 * Representation of the system we are working on.
@@ -83,6 +87,13 @@ namespace hardware {
 		 */
 		size_4 get_grid_size();
 
+		Transfer * get_transfer(size_t from, size_t to, unsigned id) const;
+
+		/**
+		 * Get the platform used.
+		 */
+		cl_platform_id get_platform() const;
+
 	private:
 
 		/**
@@ -109,6 +120,8 @@ namespace hardware {
 		 * The size of the device grid.
 		 */
 		size_4 grid_size;
+
+		mutable std::map<std::tuple<size_t,size_t,unsigned>,std::unique_ptr<Transfer>> transfer_links;
 	};
 
 	/**

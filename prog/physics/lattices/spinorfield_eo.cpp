@@ -9,15 +9,22 @@
 #include "../../hardware/code/fermions.hpp"
 #include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
+#include "util.hpp"
+#include <algorithm>
 
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
-static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
+static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
+static void update_halo_soa_async(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
+static void update_halo_soa_finalize(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
 static void extract_boundary(char* host, const hardware::buffers::Spinor * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 static void send_halo(const hardware::buffers::Spinor * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 
 physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
+#ifdef LAZY_HALO_UPDATES
+	  , valid_halo_width(0)
+#endif
 {
 }
 
@@ -53,6 +60,29 @@ hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const 
 	return res.get();
 }
 
+hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const Spinorfield_eo& right, const Scalar<hmc_complex>* res)
+{
+	auto res_buffers = res->get_buffers();
+	auto left_buffers = left.get_buffers();
+	auto right_buffers = right.get_buffers();
+	size_t num_buffers = res_buffers.size();
+
+	if(num_buffers != left_buffers.size() || num_buffers != right_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
+	}
+
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto res_buf = res_buffers[i];
+		auto left_buf = left_buffers[i];
+		auto right_buf = right_buffers[i];
+		auto device = res_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
+
+		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
+	}
+	return res->get_sum();
+}
+
 void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, const Spinorfield_eo& right)
 {
 	auto res_buffers = res->get_buffers();
@@ -83,6 +113,27 @@ hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field)
 	return res.get();
 }
 
+hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field, const Scalar<hmc_float>* res)
+{
+	auto field_buffers = field.get_buffers();
+	auto res_buffers = res->get_buffers();
+	size_t num_buffers = field_buffers.size();
+
+	if(num_buffers != res_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
+	}
+
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto field_buf = field_buffers[i];
+		auto res_buf = res_buffers[i];
+		auto device = field_buf->get_device();
+		auto spinor_code = device->get_spinor_code();
+
+		spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
+	}
+	return res->get_sum();
+}
+
 void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field)
 {
 	auto field_buffers = field.get_buffers();
@@ -110,6 +161,7 @@ for(auto buffer: buffers) {
 		auto spinor_code = buffer->get_device()->get_spinor_code();
 		spinor_code->set_zero_spinorfield_eoprec_device(buffer);
 	}
+	mark_halo_clean();
 }
 
 void physics::lattices::Spinorfield_eo::cold() const
@@ -118,6 +170,7 @@ for(auto buffer: buffers) {
 		auto spinor_code = buffer->get_device()->get_spinor_code();
 		spinor_code->set_eoprec_spinorfield_cold_device(buffer);
 	}
+	mark_halo_clean();
 }
 
 void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) const
@@ -133,7 +186,7 @@ void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) cons
 		auto prng_buf = prng_bufs[i];
 		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_eo_device(spin_buf, prng_buf);
 	}
-	update_halo();
+	mark_halo_dirty();
 }
 
 void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
@@ -150,6 +203,13 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha, out_buf);
+	}
+
+	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
 	}
 }
 
@@ -168,6 +228,13 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_comple
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
+	}
+
+	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
 	}
 }
 
@@ -192,6 +259,13 @@ void physics::lattices::sax(const Spinorfield_eo* out, const Scalar<hmc_complex>
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
+	}
+
+	auto const valid_halo_width = x.get_valid_halo_width();
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
 	}
 }
 
@@ -223,6 +297,13 @@ void physics::lattices::saxsbypz(const Spinorfield_eo* out, const Scalar<hmc_com
 		auto device = out_buf->get_device();
 		device->get_spinor_code()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
 	}
+
+	auto const valid_halo_width = std::min({x.get_valid_halo_width(), y.get_valid_halo_width(), z.get_valid_halo_width()});
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
 }
 
 void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in)
@@ -240,10 +321,14 @@ void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spin
 		auto spinor_code = in_bufs[i]->get_device()->get_spinor_code();
 		spinor_code->convert_to_eoprec_device(even_bufs[i], odd_bufs[i], in_bufs[i]);
 	}
+	even->mark_halo_clean();
+	odd->mark_halo_clean();
 }
 
 void physics::lattices::convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd)
 {
+	even.require_halo();
+	odd.require_halo();
 	auto merged_bufs = merged->get_buffers();
 	auto even_bufs = even.get_buffers();
 	auto odd_bufs = odd.get_buffers();
@@ -313,17 +398,56 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 	}
 }
 
-void physics::lattices::Spinorfield_eo::update_halo() const
+void physics::lattices::Spinorfield_eo::mark_halo_dirty() const
 {
+#ifdef LAZY_HALO_UPDATES
+	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as dirty.";
+	valid_halo_width = 0;
+#else
+	update_halo();
+#endif
+}
+
+void physics::lattices::Spinorfield_eo::update_halo(unsigned width) const
+{
+	logger.trace() << "Updating halo of Spinorfield_eo " << this;
 	if(buffers.size() > 1) { // for a single device this will be a noop
 		// currently either all or none of the buffers must be SOA
 		if(buffers[0]->is_soa()) {
-			update_halo_soa(buffers, system.get_inputparameters());
+			update_halo_soa(buffers, system, width);
 		} else {
 			update_halo_aos(buffers, system.get_inputparameters());
 		}
 	}
 }
+
+physics::lattices::Spinorfield_eoHaloUpdate physics::lattices::Spinorfield_eo::update_halo_async(unsigned width) const
+{
+	logger.debug() << "Starting async update of halo of Spinorfield_eo " << this;
+	if(buffers.size() > 1) { // for a single device this will be a noop
+		// currently either all or none of the buffers must be SOA
+		if(buffers[0]->is_soa()) {
+			update_halo_soa_async(buffers, system, width);
+		} else {
+			update_halo_aos(buffers, system.get_inputparameters());
+		}
+	}
+	return Spinorfield_eoHaloUpdate(*this, width);
+}
+
+void physics::lattices::Spinorfield_eo::update_halo_finalize(unsigned width) const
+{
+	logger.debug() << "Finalizing async update of halo of Spinorfield_eo " << this;
+	if(buffers.size() > 1) { // for a single device this will be a noop
+		// currently either all or none of the buffers must be SOA
+		if(buffers[0]->is_soa()) {
+			logger.trace() << "This is SoA";
+			update_halo_soa_finalize(buffers, system, width);
+		}
+		// NOOP for AoS
+	}
+}
+
 
 static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
 {
@@ -337,7 +461,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *>
 	hardware::buffers::update_halo<spinor>(buffers, params, .5 /* only even or odd sites */ );
 }
 
-static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
+static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width)
 {
 	// check all buffers are non-soa
 	for(auto const buffer: buffers) {
@@ -346,5 +470,94 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *>
 		}
 	}
 
-	hardware::buffers::update_halo_soa<spinor>(buffers, params, .5 /* only even or odd sites */ );
+	hardware::buffers::update_halo_soa<spinor>(buffers, system, .5 /* only even or odd sites */, 1, width );
+}
+
+static void update_halo_soa_async(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width)
+{
+	// check all buffers are non-soa
+	for(auto const buffer: buffers) {
+		if(!buffer->is_soa()) {
+			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
+		}
+	}
+
+	hardware::buffers::initialize_update_halo_soa<spinor>(buffers, system, .5 /* only even or odd sites */, 1, width );
+}
+
+static void update_halo_soa_finalize(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width)
+{
+	hardware::buffers::finalize_update_halo_soa<spinor>(buffers, system, .5 /* only even or odd sites */, 1, width );
+}
+
+void physics::lattices::Spinorfield_eo::require_halo(unsigned reqd_width) const
+{
+#ifdef LAZY_HALO_UPDATES
+	if(!reqd_width) {
+		reqd_width = buffers[0]->get_device()->get_halo_size();
+	}
+	logger.debug() << "Halo of Spinorfield_eo " << this << " required with width " << reqd_width << ". Width of valid halo: " << valid_halo_width;
+	if(valid_halo_width < reqd_width) {
+		update_halo(reqd_width);
+		valid_halo_width = reqd_width;
+	}
+#endif
+}
+
+physics::lattices::Spinorfield_eoHaloUpdate physics::lattices::Spinorfield_eo::require_halo_async(unsigned reqd_width) const
+{
+#ifdef LAZY_HALO_UPDATES
+	if(!reqd_width) {
+		reqd_width = buffers[0]->get_device()->get_halo_size();
+	}
+	logger.debug() << "Async Halo of Spinorfield_eo " << this << " required with width " << reqd_width << ". Width of valid halo: " << valid_halo_width;
+	if(valid_halo_width < reqd_width) {
+		return update_halo_async(reqd_width);
+	} else {
+		return Spinorfield_eoHaloUpdate(*this);
+	}
+#endif
+}
+
+void physics::lattices::Spinorfield_eoHaloUpdate::finalize()
+{
+	logger.trace() << "Finalizing update on Spinorfield_eo " << &target;
+#ifdef LAZY_HALO_UPDATES
+	// 0 is used to indicate that the update is already complete (or was not required)
+	if(reqd_halo_width) {
+		target.update_halo_finalize(reqd_halo_width);
+		target.valid_halo_width = reqd_halo_width;
+		reqd_halo_width = 0; // mark self as done to avoid duplicate call
+	}
+#endif
+}
+
+void physics::lattices::Spinorfield_eo::mark_halo_clean(unsigned width) const
+{
+#ifdef LAZY_HALO_UPDATES
+	valid_halo_width = width ? width : buffers[0]->get_device()->get_halo_size();
+	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as clean (width " << valid_halo_width << ").";
+#endif
+}
+
+unsigned physics::lattices::Spinorfield_eo::get_valid_halo_width() const
+{
+	return valid_halo_width;
+}
+
+void physics::lattices::copyData(const physics::lattices::Spinorfield_eo* to, const physics::lattices::Spinorfield_eo& from)
+{
+	copyData<Spinorfield_eo>(to, from);
+
+	auto const valid_halo_width = from.get_valid_halo_width();
+	if(valid_halo_width) {
+		to->mark_halo_clean(valid_halo_width);
+	} else {
+		to->mark_halo_dirty();
+	}
+}
+
+void physics::lattices::copyData(const physics::lattices::Spinorfield_eo* to, const physics::lattices::Spinorfield_eo* from)
+{
+	copyData(to, *from);
 }

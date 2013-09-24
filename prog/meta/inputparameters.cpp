@@ -491,6 +491,10 @@ bool Inputparameters::get_cg_use_async_copy() const noexcept
 {
   return cg_use_async_copy;
 }
+int Inputparameters::get_cg_minimum_iteration_count() const noexcept
+{
+  return cg_minimum_iteration_count;
+}
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
@@ -642,6 +646,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
 	("find_minmax_iteration_block_size", po::value<int>(&find_minmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
 	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
+	("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!")
 
 	("split_cpu", po::value<bool>(&split_cpu)->default_value(false), "Split the CPU into multiple devices to avoid numa issues. (Requires OpenCL 1.2 at least)");
 
