@@ -8,6 +8,7 @@
 
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "solver.hpp"
+#include "solver_shifted.hpp"
 #include "../lattices/util.hpp"
 #include "molecular_dynamics.hpp"
 #include "../../meta/util.hpp"
@@ -247,7 +248,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 }
 
 /**
- * This function reconstructs the fermionic contribution to the force. It is given by
+ * This function reconstructs the fermionic contribution to the force (in the RHMC). It is given by
  * @code
  * F_\mu(n) = -i * [U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA
  * @endcode
@@ -284,16 +285,45 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
  * 
  * @note To perform the sum above, the saxpy operation of the gaugemomenta is used.
  * 
- * @warning Remember that this function add to the Gaugemomenta field the fermionic
+ * @warning Remember that this function add to the Gaugemomenta field "force" the fermionic
  *          contribution. Therefore such a field must be properly initialized.
  */
 void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, const hmc_float mass)
 {
-  
-  
-  
+	using physics::lattices::Staggeredfield_eo;
+	using namespace physics::algorithms::solvers;
+	using namespace physics::fermionmatrix;
+	
+	auto params = system.get_inputparameters();	
+	logger.debug() << "\t\tcalc_fermion_force...";
+	
+	logger.debug() << "\t\t\tstart solver";
+	std::vector<Staggeredfield_eo *> X;
+	std::vector<Staggeredfield_eo *> Y;
+	for(int i=0; i<coeff.Get_order(); i++){
+		X.push_back(new Staggeredfield_eo(system));
+		Y.push_back(new Staggeredfield_eo(system));
+	}
+	const MdagM_eo fm(system, mass);
+	const int iterations = cg_m(X, coeff.Get_b(), fm, gf, phi, system, params.get_force_prec());
+	logger.debug() << "\t\t\t  end solver";
+	
+	//Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
+	//reconstruct the force. I will use a temporary Gaugemomenta to calculate the
+	//partial force (on the whole lattice) that will be later added to "force"
+	const D_KS_eo Doe(system, ODD); //with ODD it is the Doe operator
+	physics::lattices::Gaugemomenta tmp(system);
+	
+	for(int i=0; i<coeff.Get_order(); i++){
+		Doe(Y[i], gf, *X[i]);
+		tmp.zero();
+		fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
+		fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
+		physics::lattices::saxpy(force, (coeff.Get_a())[i], tmp);
+	}
+	
+	logger.debug() << "\t\t...end calc_fermion_force!";
 }
-
 
 
 void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
