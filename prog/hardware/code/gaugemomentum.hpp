@@ -33,6 +33,16 @@ public:
 	void generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng) const;
 	void set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum *) const;
 	/**
+	 * This function returns the input gaugemomentum field x
+	 * multiplied by alpha and added to the other input gaugemomentum field y
+	 * @param x The first input gaugemomentum field (one ae per site)
+	 * @param y The second input gaugemomentum field (one ae per site)
+	 * @param alpha The real constant
+	 * @param out The output gaugemomentum field alpha*x + y (one ae per site)
+	 */
+	void saxpy_device(const hardware::buffers::Gaugemomentum * x, const hardware::buffers::Gaugemomentum * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::Gaugemomentum * out) const;
+	
+	/**
 	 * Import data from the gaugemomenta array into the given buffer.
 	 *
 	 * The data in the buffer will be stored in the device specific format.
@@ -52,18 +62,6 @@ public:
 	void exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const;
 
 	ClSourcePackage get_sources() const noexcept;
-
-protected:
-
-	/**
-	 * comutes work-sizes for a kernel
-	 * @todo autotune
-	 * @param ls local-work-size
-	 * @param gs global-work-size
-	 * @param num_groups number of work groups
-	 * @param name name of the kernel for possible autotune-usage, not yet used!!
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 	/**
 	 * Print the profiling information to a file.
@@ -87,6 +85,18 @@ protected:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
+protected:
+
+	/**
+	 * computes work-sizes for a kernel
+	 * @todo autotune
+	 * @param ls local-work-size
+	 * @param gs global-work-size
+	 * @param num_groups number of work groups
+	 * @param name name of the kernel for possible autotune-usage, not yet used!!
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
+	
 private:
 	/**
 	 * Constructor.
@@ -112,6 +122,7 @@ private:
 	cl_kernel gaugemomentum_squarenorm;
 	cl_kernel gaugemomentum_convert_to_soa;
 	cl_kernel gaugemomentum_convert_from_soa;
+	cl_kernel gaugemomentum_saxpy;
 };
 
 }

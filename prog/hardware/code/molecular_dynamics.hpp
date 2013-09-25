@@ -33,7 +33,7 @@ public:
 
 	///////////////////////////////////////////////////
 	//Methods on device
-	void md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::Gaugemomentum *, hmc_float eps) const;
+
 	void md_update_gaugefield_device(hmc_float eps) const;
 	void md_update_gaugefield_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::SU3 *, hmc_float eps) const;
 	void gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out) const;
@@ -102,7 +102,6 @@ private:
 
 	//kernels
 	cl_kernel md_update_gaugefield;
-	cl_kernel md_update_gaugemomenta;
 	cl_kernel gauge_force;
 	cl_kernel gauge_force_tlsym;
 	cl_kernel fermion_force;

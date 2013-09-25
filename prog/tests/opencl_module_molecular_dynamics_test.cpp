@@ -312,71 +312,6 @@ void test_gf_update(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_f_update(std::string inputfile)
-{
-	std::string kernelName = "md_update_gaugemomenta";
-	printKernelInfo(kernelName);
-
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestMolecularDynamics cpu(&system);
-	auto * device = cpu.get_device();
-	hmc_float * gm_in;
-	hmc_float * gm_out;
-	auto gm_code = device->get_device()->get_gaugemomentum_code();
-
-	logger.info() << "create buffers";
-	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-	gm_in = new hmc_float[NUM_ELEMENTS_AE];
-	gm_out = new hmc_float[NUM_ELEMENTS_AE];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-		fill_with_one(gm_in, NUM_ELEMENTS_AE);
-		fill_with_one(gm_out, NUM_ELEMENTS_AE);
-	} else {
-		fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
-		fill_with_random(gm_out, NUM_ELEMENTS_AE, 789101);
-	}
-	BOOST_REQUIRE(gm_in);
-	BOOST_REQUIRE(gm_out);
-
-	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
-	gm_code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
-	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "|in|^2:";
-	gm_code->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-	hmc_float cpu_back;
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "|out|^2:";
-	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
-	hmc_float cpu_back2;
-	sqnorm.dump(&cpu_back2);
-	logger.info() << cpu_back2;
-
-	logger.info() << "Run kernel";
-	hmc_float eps = params.get_tau();
-	device->md_update_gaugemomentum_device(&in, &out, eps);
-
-	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
-	hmc_float cpu_res;
-	sqnorm.dump(&cpu_res);
-	logger.info() << "result:";
-	logger.info() << cpu_res;
-
-	logger.info() << "Free buffers";
-	delete[] gm_in;
-	delete[] gm_out;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
 void test_f_gauge(std::string inputfile)
 {
 	std::string kernelName = "f_gauge";
@@ -763,35 +698,6 @@ BOOST_AUTO_TEST_CASE(GF_UPDATE_5 )
 BOOST_AUTO_TEST_CASE(GF_UPDATE_6 )
 {
 	test_gf_update("/gf_update_input_6");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( F_UPDATE )
-
-BOOST_AUTO_TEST_CASE( F_UPDATE_1 )
-{
-	test_f_update("/f_update_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( F_UPDATE_2 )
-{
-	test_f_update("/f_update_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( F_UPDATE_3 )
-{
-	test_f_update("/f_update_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( F_UPDATE_4 )
-{
-	test_f_update("/f_update_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( F_UPDATE_5 )
-{
-	test_f_update("/f_update_input_5");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

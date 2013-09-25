@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(zero)
 	Gaugemomenta gm(system);
 
 	// fill all buffers with noise
-for(auto buffer: gm.get_buffers()) {
+	for(auto buffer: gm.get_buffers()) {
 		fill_buffer(buffer, 13);
 	}
 
@@ -54,7 +54,7 @@ for(auto buffer: gm.get_buffers()) {
 	gm.zero();
 
 	// check result
-for(auto buffer: gm.get_buffers()) {
+	for(auto buffer: gm.get_buffers()) {
 		size_t num_elems = buffer->get_elements();
 		ae * host_mem = new ae[num_elems];
 		buffer->get_device()->get_gaugemomentum_code()->exportGaugemomentumBuffer(host_mem, buffer);
@@ -137,6 +137,27 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	pseudo_randomize<Gaugemomenta, ae>(&gm, 51);
 	squarenorm(&res, gm);
 	BOOST_CHECK_CLOSE(res.get(), 5484.798507726874, .01);
+}
+
+BOOST_AUTO_TEST_CASE(saxpy)
+{
+	using physics::lattices::Gaugemomenta;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	Gaugemomenta gauss(system);
+	gauss.gaussian(prng);
+	Gaugemomenta zz(system);
+	zz.zero();
+	Gaugemomenta gm(system);
+
+	physics::lattices::saxpy(&gm, 1., gauss, zz);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(gm), physics::lattices::squarenorm(gauss), 1.e-8);
+	physics::lattices::saxpy(&gm, 0., gauss, zz);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(gm), 0);
 }
 
 BOOST_AUTO_TEST_CASE(halo_update)

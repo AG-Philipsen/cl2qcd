@@ -55,6 +55,7 @@ void hardware::code::Gaugemomentum::fill_kernels()
 	_set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_gaugemomentum_code <<  "gaugemomentum_zero.cl";
 	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_gaugemomentum_code << prng_code << "gaugemomentum_gaussian.cl";
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_gaugemomentum_code << "gaugemomentum_squarenorm.cl";
+	gaugemomentum_saxpy = createKernel("gaugemomentum_saxpy") << basic_gaugemomentum_code  << "gaugemomentum_saxpy.cl";
 	if(get_device()->get_prefers_soa()) {
 		gaugemomentum_convert_to_soa = createKernel("gaugemomentum_convert_to_soa") << basic_gaugemomentum_code << "gaugemomentum_convert.cl";
 		gaugemomentum_convert_from_soa = createKernel("gaugemomentum_convert_from_soa") << basic_gaugemomentum_code << "gaugemomentum_convert.cl";
@@ -67,12 +68,22 @@ void hardware::code::Gaugemomentum::fill_kernels()
 void hardware::code::Gaugemomentum::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
-	///@todo some kernels are missing here
 	logger.debug() << "release gaugemomentum kernels.." ;
+	
 	clerr = clReleaseKernel(generate_gaussian_gaugemomenta);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(_set_zero_gaugemomentum);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(gaugemomentum_squarenorm);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(gaugemomentum_saxpy);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	if(get_device()->get_prefers_soa()) {
+		clerr = clReleaseKernel(gaugemomentum_convert_to_soa);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(gaugemomentum_convert_from_soa);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 }
 
 void hardware::code::Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -115,6 +126,10 @@ size_t hardware::code::Gaugemomentum::get_read_write_size(const std::string& in)
 		//this kernel reads 1 ae and writes 1 float per link
 		return G * D * ( A + 1);
 	}
+	if (in == "gaugemomentum_saxpy") {
+		//this kernel reads 2 ae and writes 1 ae per link
+		return ((2 + 1) * A) * D * G;
+	}
 	if (in == "gaugemomentum_convert_to_soa") {
 		return 1000000000000000000000000;
 	}
@@ -143,6 +158,10 @@ uint64_t hardware::code::Gaugemomentum::get_flop_size(const std::string& in) con
 		//this kernel performs 8 real mults and 8-1 real adds per ae
 		return (8 + 7) * A * G;
 	}
+	if (in == "gaugemomentum_saxpy") {
+		//this kernel performs 1 real mult and 1 real add per ae
+		return (1 + 1) * A * G;
+	}
 	if (in == "gaugemomentum_convert_to_soa") {
 		return 1000000000000000000000000;
 	}
@@ -158,6 +177,7 @@ void hardware::code::Gaugemomentum::print_profiling(const std::string& filename,
 	Opencl_Module::print_profiling(filename, generate_gaussian_gaugemomenta);
 	Opencl_Module::print_profiling(filename, _set_zero_gaugemomentum);
 	Opencl_Module::print_profiling(filename, gaugemomentum_squarenorm);
+	Opencl_Module::print_profiling(filename, gaugemomentum_saxpy);
 	Opencl_Module::print_profiling(filename, gaugemomentum_convert_to_soa);
 	Opencl_Module::print_profiling(filename, gaugemomentum_convert_from_soa);
 }
@@ -280,6 +300,26 @@ void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device
 	get_device()->enqueue_kernel(gaugemomentum_squarenorm, gs2, ls2);
 
 	spinor_code->global_squarenorm_reduction(out, &clmem_global_squarenorm_buf_glob);
+}
+
+void hardware::code::Gaugemomentum::saxpy_device(const hardware::buffers::Gaugemomentum * x, const hardware::buffers::Gaugemomentum * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::Gaugemomentum * out) const
+{
+	//__kernel void gaugemomentum_saxpy(__global ae *x, __global ae *y, hmc_float alpha, __global ae *out){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(gaugemomentum_saxpy, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(gaugemomentum_saxpy, 0, sizeof(hmc_float), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(gaugemomentum_saxpy, 1, sizeof(cl_mem), y->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(gaugemomentum_saxpy, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(gaugemomentum_saxpy, 3, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(gaugemomentum_saxpy , gs2, ls2);
 }
 
 void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data) const

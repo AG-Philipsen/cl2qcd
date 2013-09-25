@@ -34,7 +34,7 @@ public:
 	virtual ~Gaugemomenta();
 
 	/*
-	 * Gaugemomentas cannot be copied
+	 * Gaugemomenta cannot be copied
 	 */
 	Gaugemomenta& operator=(const Gaugemomenta&) = delete;
 	Gaugemomenta(const Gaugemomenta&) = delete;
@@ -74,9 +74,24 @@ private:
 	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
 	void import(const ae * const host) const;
 
+	friend void saxpy(const Gaugemomenta* out, const hmc_float alpha, const Gaugemomenta& x, const Gaugemomenta& y);
 	friend hmc_float squarenorm(const Gaugemomenta&);
 	friend void pseudo_randomize<Gaugemomenta, ae>(const Gaugemomenta* to, int seed);
 };
+
+/**
+ * Perform the BLAS (Basic Linear Algebra Subroutine) operation saxpy.
+ *
+ * out = alpha * x + y
+ */
+void saxpy(const Gaugemomenta* out, const hmc_float alpha, const Gaugemomenta& x, const Gaugemomenta& y);
+void saxpy(const Gaugemomenta* out, const Scalar<hmc_float>& alpha, const Gaugemomenta& x, const Gaugemomenta& y);
+//In the following two functions out = alpha * x + out
+void saxpy(const Gaugemomenta* out, const hmc_float alpha, const Gaugemomenta& x);
+void saxpy(const Gaugemomenta* out, const Scalar<hmc_float>& alpha, const Gaugemomenta& x);
+
+template<typename S, void (*T)(const S*, const hmc_float, const S&, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Gaugemomenta, physics::lattices::saxpy>(const hardware::System&);
 
 /**
  * Calculate the squarenorm of the gaugemomenta
@@ -84,6 +99,14 @@ private:
 hmc_float squarenorm(const Gaugemomenta& field);
 void squarenorm(const Scalar<hmc_float>* res, const Gaugemomenta& field);
 
+template<typename S, hmc_float (*T)(const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Gaugemomenta, physics::lattices::squarenorm>(const hardware::System&);
+
+/**
+ * A utility function to log the tracenorm.
+ *
+ * It only evaluates in case the squarenorm will actually be printed.
+ */
 void log_squarenorm(const std::string& msg, const physics::lattices::Gaugemomenta& x);
 }
 }

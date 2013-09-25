@@ -45,7 +45,6 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 	}
 	fermion_force = createKernel("fermion_force") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_molecular_dynamics_code << "md_update_gaugefield.cl";
-	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_molecular_dynamics_code  << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_molecular_dynamics_code  << "force_gauge.cl";
 	if(meta::get_use_rectangles(get_parameters()) == true) {
 		//at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
@@ -87,8 +86,6 @@ void hardware::code::Molecular_Dynamics::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 	clerr = clReleaseKernel(md_update_gaugefield);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(md_update_gaugemomenta);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(gauge_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -154,10 +151,6 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 		//this kernel reads 1 ae and 1 su3 matrix and writes 1 su3 matrix for every link
 		return (A + (1 + 1) * R * C) * D * G;
 	}
-	if (in == "md_update_gaugemomenta") {
-		//this kernel reads 2 ae and writes 1 ae per link
-		return ((2 + 1) * A) * D * G;
-	}
 	if (in == "gauge_force") {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 ae for every link
 		return G * D * (R * C * ( 6 * (NDIM - 1) + 1 ) + A );
@@ -201,10 +194,6 @@ uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in
 		//this kernel performs one exp(i ae) ( = 327 flops + 1 su3 mult ) and 1 su3 mult per link
 		return (meta::get_flop_su3_su3() * ( 1 + 1)  + 327 ) * G;
 	}
-	if (in == "md_update_gaugemomenta") {
-		//this kernel performs 1 real mult and 1 real add per ae
-		return (1 + 1) * A * G;
-	}
 	if (in == "gauge_force") {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2*ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
 		return ( 4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + 1 * meta::get_flop_su3_su3() + 19  + A * ( 1 + 1 )
@@ -238,7 +227,6 @@ void hardware::code::Molecular_Dynamics::print_profiling(const std::string& file
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, md_update_gaugefield);
-	Opencl_Module::print_profiling(filename, md_update_gaugemomenta);
 	Opencl_Module::print_profiling(filename, gauge_force);
 	Opencl_Module::print_profiling(filename, gauge_force_tlsym);
 	Opencl_Module::print_profiling(filename, gauge_force_tlsym_1);
@@ -251,25 +239,6 @@ void hardware::code::Molecular_Dynamics::print_profiling(const std::string& file
 	Opencl_Module::print_profiling(filename, fermion_force_eo);
 	Opencl_Module::print_profiling(filename, fermion_stagg_partial_force_eo);
 	Opencl_Module::print_profiling(filename, stout_smear_fermion_force);
-}
-
-void hardware::code::Molecular_Dynamics::md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Gaugemomentum * out, hmc_float eps) const
-{
-	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
-	hmc_float tmp = eps;
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(md_update_gaugemomenta, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(md_update_gaugemomenta, 0, sizeof(hmc_float), &tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(md_update_gaugemomenta, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(md_update_gaugemomenta, 2, sizeof(cl_mem), in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(md_update_gaugemomenta , gs2, ls2);
 }
 
 void hardware::code::Molecular_Dynamics::md_update_gaugefield_device(const hardware::buffers::Gaugemomentum * gm_in, const hardware::buffers::SU3 * gf_out, hmc_float eps) const
@@ -557,7 +526,7 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 }
 
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), md_update_gaugefield (0), md_update_gaugemomenta (0), gauge_force (0),
+	: Opencl_Module(params, device), md_update_gaugefield (0), gauge_force (0),
 	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
 	  fermion_stagg_partial_force_eo(0), gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
 {

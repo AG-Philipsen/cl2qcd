@@ -69,6 +69,41 @@ void physics::lattices::Gaugemomenta::gaussian(const physics::PRNG& prng) const
 	update_halo();
 }
 
+void physics::lattices::saxpy(const Gaugemomenta* out, const hmc_float alpha, const Gaugemomenta& x)
+{
+	saxpy(out, alpha, x, *out);
+}
+
+void physics::lattices::saxpy(const Gaugemomenta* out, const Scalar<hmc_float>& alpha, const Gaugemomenta& x)
+{
+	saxpy(out, alpha, x, *out);
+}
+
+void physics::lattices::saxpy(const Gaugemomenta* out, const hmc_float alpha, const Gaugemomenta& x, const Gaugemomenta& y)
+{
+	const Scalar<hmc_float> alpha_buf(out->system);
+	alpha_buf.store(alpha);
+	saxpy(out, alpha_buf, x, y);
+}
+
+void physics::lattices::saxpy(const Gaugemomenta* out, const Scalar<hmc_float>& alpha, const Gaugemomenta& x, const Gaugemomenta& y)
+{
+	auto out_bufs = out->get_buffers();
+	auto alpha_bufs = alpha.get_buffers();
+	auto x_bufs = x.get_buffers();
+	auto y_bufs = y.get_buffers();
+
+	if(out_bufs.size() != alpha_bufs.size() || out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		device->get_gaugemomentum_code()->saxpy_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
+	}
+}
+
 hmc_float physics::lattices::squarenorm(const Gaugemomenta& field)
 {
 	const Scalar<hmc_float> res(field.system);
@@ -97,6 +132,23 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Gaugemome
 
 	res->sum();
 }
+
+template<> size_t physics::lattices::get_flops<physics::lattices::Gaugemomenta, physics::lattices::saxpy>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto gaugemomentum_code = devices[0]->get_gaugemomentum_code();
+	return gaugemomentum_code->get_flop_size("gaugemomentum_saxpy");
+}
+
+template<> size_t physics::lattices::get_flops<physics::lattices::Gaugemomenta, physics::lattices::squarenorm>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto gaugemomentum_code = devices[0]->get_gaugemomentum_code();
+	return gaugemomentum_code->get_flop_size("gaugemomentum_squarenorm");
+}
+
 
 void physics::lattices::log_squarenorm(const std::string& msg, const physics::lattices::Gaugemomenta& x)
 {
