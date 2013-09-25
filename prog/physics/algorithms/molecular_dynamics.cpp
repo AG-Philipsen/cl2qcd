@@ -15,24 +15,6 @@
 #include "../../hardware/code/molecular_dynamics.hpp"
 #include "../lattices/util.hpp"
 
-// static void md_update_gaugemomenta(const physics::lattices::Gaugemomenta * dest, const physics::lattices::Gaugemomenta& src, hmc_float eps);
-// 
-// static void md_update_gaugemomenta(const physics::lattices::Gaugemomenta * const dest, const physics::lattices::Gaugemomenta& src, const hmc_float eps)
-// {
-// 	auto dest_bufs = dest->get_buffers();
-// 	auto src_bufs = src.get_buffers();
-// 	size_t num_bufs = dest_bufs.size();
-// 	if(num_bufs != src_bufs.size()) {
-// 		throw std::invalid_argument("The source and destination gaugemomenta use different devices.");
-// 	}
-// 
-// 	for(size_t i = 0; i < num_bufs; ++i) {
-// 		auto dest_buf = dest_bufs[i];
-// 		auto src_buf = src_bufs[i];
-// 		auto code = dest_buf->get_device()->get_molecular_dynamics_code();
-// 		code->md_update_gaugemomentum_device(src_buf, dest_buf, eps);
-// 	}
-// }
 
 void physics::algorithms::md_update_gaugefield(const physics::lattices::Gaugefield * const gf, const physics::lattices::Gaugemomenta& gm, const hmc_float eps)
 {
@@ -151,7 +133,6 @@ template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::l
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, delta_p);
-	//md_update_gaugemomenta(inout, delta_p, -1.*eps);
 }
 void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
 {
@@ -171,7 +152,6 @@ void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices:
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(gm, -1.*eps, force);
-	//md_update_gaugemomenta(gm, force, -1.*eps);
 }
 
 template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
@@ -185,7 +165,6 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const ph
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, force);
-	//md_update_gaugemomenta(inout, force, -1.*eps);
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
 {
@@ -207,7 +186,6 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const p
 
 	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, force);
-	//md_update_gaugemomenta(inout, force, -1.*eps);
 }
 void physics::algorithms::md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system)
 {
