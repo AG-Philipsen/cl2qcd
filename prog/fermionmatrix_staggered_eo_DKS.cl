@@ -37,14 +37,11 @@ __kernel void D_KS_eo(__global const staggeredStorageType * const restrict in, _
 
 		//Non-diagonal part: calc D_KS (here if it is Doe or Deo is automatic
 		//                              thanks to the if above to set pos)
-		out_tmp2 = D_KS_eo_local(in, field, pos, TDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		out_tmp2 = D_KS_eo_local(in, field, pos, XDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		out_tmp2 = D_KS_eo_local(in, field, pos, YDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		out_tmp2 = D_KS_eo_local(in, field, pos, ZDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		for(dir_idx dir = 0; dir < 4; ++dir) {
+			out_tmp2 = D_KS_eo_local(in, field, pos, dir);
+			out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		}
+
 
 		put_su3vec_to_field_eo(out, get_eo_site_idx_from_st_idx(pos), out_tmp);
 	}
