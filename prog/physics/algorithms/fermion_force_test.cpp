@@ -274,7 +274,32 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 }
 
 
+BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
+{
+	{
+		using namespace physics::lattices;
+		using namespace physics::algorithms;
+		const char * _params[] = {"foo", "--ntime=4"};
+		meta::Inputparameters params(2, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
 
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Staggeredfield_eo sf1(system);
+		Staggeredfield_eo sf2(system);
+		Gaugemomenta gm(system);
+		Rational_Approximation approx(8, 1,2, 1.e-5,1);
+		Rational_Coefficients coeff(approx.Get_order(), approx.Get_a0(), approx.Get_a(), approx.Get_b());
+		
+		//These are the same fields of the excplicit test D_KS_eo (second test)
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+		gm.zero();
+		
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, coeff, system, params.get_kappa());
+		BOOST_CHECK_CLOSE(squarenorm(gm), 351.78322964987097521, 0.01);
+	}
+}
 
 
 
