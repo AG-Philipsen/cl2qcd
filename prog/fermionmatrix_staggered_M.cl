@@ -61,14 +61,10 @@ __kernel void M_staggered(__global const su3vec * const restrict in, __global co
 		out_tmp = su3vec_times_real(out_tmp, mass_in);
 		
 		//Non-diagonal part: calc D_KS
-		out_tmp2 = D_KS_local(in, field, pos, TDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		out_tmp2 = D_KS_local(in, field, pos, XDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		out_tmp2 = D_KS_local(in, field, pos, YDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
-		out_tmp2 = D_KS_local(in, field, pos, ZDIR);
-		out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		for(dir_idx dir = 0; dir < 4; ++dir) {
+			out_tmp2 = D_KS_local(in, field, pos, dir);
+			out_tmp = su3vec_acc(out_tmp, out_tmp2);
+		}
 		
 		put_su3vec_to_field(out_tmp, out, pos.space, pos.time);
 	}
