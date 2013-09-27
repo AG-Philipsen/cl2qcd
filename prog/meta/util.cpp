@@ -65,6 +65,8 @@ size_t meta::get_poly_norm(const Inputparameters& params)
 {
 	return get_volspace(params);
 }
+
+//Flops calculation tools
 size_t meta::get_flop_complex_mult() noexcept {
 	return 6;
 }
@@ -83,6 +85,12 @@ size_t meta::get_flop_su3vec_su3vec() noexcept {
   	// NC * complex_mult + (NC -1) complex adds
 	return NC * get_flop_complex_mult() + (NC - 1) * 2;
 }
+size_t meta::get_flop_su3vec_direct_su3vec() noexcept{
+	// NC*NC complex_mult
+	return NC * NC * get_flop_complex_mult();
+}
+
+
 size_t meta::get_su3algebrasize() noexcept {
 	return NC * NC - 1;
 }

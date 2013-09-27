@@ -29,6 +29,7 @@ namespace meta {
 	size_t get_flop_su3trace() noexcept;
 	size_t get_flop_su3_su3vec() noexcept;
 	size_t get_flop_su3vec_su3vec() noexcept;
+	size_t get_flop_su3vec_direct_su3vec() noexcept;
 	size_t get_su3algebrasize() noexcept;
 	double get_c0(const Inputparameters& params);
 	double get_c1(const Inputparameters& params);

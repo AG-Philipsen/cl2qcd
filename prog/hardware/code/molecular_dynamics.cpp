@@ -166,11 +166,12 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * S;
 	}
 	if (in == "fermion_force_eo") {
-		//this kernel reads 16 spinors, 8 su3matrices and writes 1 ae per site
+		//this kernel reads 16 spinors, 8 su3matrices and writes 8 ae per site_eo
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * Seo;
 	}
 	if (in == "fermion_staggered_partial_force_eo") {
-		return 10000000000000000000;
+		//this kernel reads 8 su3vec, 4 su3matrices and writes 4 ae per site_eo
+		return (C * 3 * (8) + C * 4 * R + 4 * A) * D * Seo;
 	}
 	if (in == "stout_smear_fermion_force") {
 		return 10000000000000000000;
@@ -211,11 +212,19 @@ uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in
 		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + meta::get_flop_su3_su3() + meta::get_flop_complex_mult() * R );
 	}
 	if (in == "fermion_force_eo") {
-		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
+		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site_eo
 		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + meta::get_flop_su3_su3() + meta::get_flop_complex_mult() * R );
 	}
 	if (in == "fermion_staggered_partial_force_eo") {
-		return 10000000000000000000;
+		//this kernel performs (su3vec_times_real               (6 flops) +
+		//                      u_times_v_dagger                (get_flop_su3vec_direct_su3vec()) +
+		//                      multiply_matrix_3x3             (get_flop_su3_su3()) +
+		//                      traceless_antihermitian_part    (18 flops) +
+		//                      multiply_matrix3x3_by_complex   (R * get_flop_complex_mult()) +
+		//                      build_ae_from_su3               (9 flops) +
+		//                      update_ae                       (8*2 flops))  per direction per site_eo
+		return Seo * NDIM * (6 + meta::get_flop_su3vec_direct_su3vec() + meta::get_flop_su3_su3() +
+		                     18 + R * 18 + meta::get_flop_complex_mult() + 9 + 16);
 	}
 	if (in == "stout_smear_fermion_force") {
 		return 10000000000000000000;
