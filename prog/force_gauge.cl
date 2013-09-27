@@ -46,9 +46,9 @@ inline void gauge_force_per_link(__global const Matrixsu3StorageType * const res
 
 __kernel void gauge_force(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out)
 {
-	//Gauge force is factor*Im(i Tr(T_i U V))
+	//Gauge force is factor*Im(Tr(T_i U V))
 	//   with T_i being the SU3-Generator in i-th direction and V the staplematrix
-	//   and the factor being - beta / NC (for standard Wilson-action) and -c0 * beta / NC (for tlSym)
+	//   and the factor being beta / NC (for standard Wilson-action) and c0 * beta / NC (for tlSym)
 	PARALLEL_FOR(id_local, VOL4D_LOCAL * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
