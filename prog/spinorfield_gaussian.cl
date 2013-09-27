@@ -1,12 +1,7 @@
 __kernel void generate_gaussian_spinorfield(__global spinor * const restrict out, __global rngStateStorageType * const restrict rngStates)
 {
-	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
-	int n, t;
 	hmc_complex tmp;
 	//sigma has to be 0.5 here
 	hmc_float sigma = 0.5;

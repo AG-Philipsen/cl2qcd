@@ -4,13 +4,8 @@
 
 __kernel void M_wilson(__global const spinor * const restrict in, __global const Matrixsu3StorageType * const restrict field, __global spinor * const restrict out, hmc_float kappa_in)
 {
-	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
-	int n, t;
 	spinor out_tmp, out_tmp2;
 
 	for(int id_local = id; id_local < SPINORFIELDSIZE_LOCAL; id_local += global_size) {
