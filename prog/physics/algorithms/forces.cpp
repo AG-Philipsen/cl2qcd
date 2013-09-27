@@ -73,3 +73,16 @@ void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta
 {
 	::calc_total_force(force, gf, phi, system, kappa, mubar);
 }
+
+//Again, for staggered fermions, so far there is only the RHMC force and then there is no need to write
+//a new template (the Wilson one cannot be used since here we need a Rational_Coefficients objects)
+void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+{
+	using namespace physics::algorithms;
+
+	force->zero();
+	if(!system.get_inputparameters().get_use_gauge_only() )
+		calc_fermion_forces(force, gf, phi, coeff, system, mass);
+	calc_gauge_force(force, gf, system);
+}
+
