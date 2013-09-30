@@ -42,11 +42,9 @@
  *             the choice of labels made in operation_geometry.cl, it can be YDIR, ZDIR or TDIR.
  *      
  */
- 
-int get_staggered_phase(const int n, const int t, const int dir)
+int get_staggered_phase(const int n, const int dir)
 {
-	coord_spatial coord;
-	coord=get_coord_spatial(n);
+	coord_spatial coord = get_coord_spatial(n);
 	switch(dir) {
 		case YDIR:
 			return 1-2*((coord.x)%2);
@@ -58,6 +56,72 @@ int get_staggered_phase(const int n, const int t, const int dir)
 			//else
 			//return -(1-2*((coord.x+coord.y+coord.z)%2));
 		default:
-			printf("Something bad happened: get_staggered_phase(...) was called without any proper value for dir variable");
+			printf("Something bad happened: get_staggered_phase(...) was called without any proper value for dir variable. Returning zero...");
+			return 0;
 	}
 }
+
+/**
+ * This function returns the staggered phase modified in order to include in it
+ * the boundary conditions. This means that the staggered phases at the last site
+ * in the mu-dir must be multiplied by exp(i*theta_mu). For this reason the return
+ * value is a complex number and we have also to pass to the function the time coordinate
+ * in order to judge whether we are on the last site in the temporal direction.
+ */
+hmc_complex get_modified_stagg_phase(const int n, const int t, const int dir)
+{
+	int ph;
+	coord_spatial coord = get_coord_spatial(n);
+	hmc_complex out;
+	switch(dir) {
+	  case XDIR:
+		if(coord.x == (NSPACE-1)) {
+			out.re = COS_THETAS;
+			out.im = SIN_THETAS;
+		} else {
+			out.re = 1.;
+			out.im = 0.;
+		}
+		return out;
+	  case YDIR:
+		ph = 1-2*((coord.x)%2);
+		if(coord.y == (NSPACE-1)) {
+			out.re = ph * COS_THETAS;
+			out.im = ph * SIN_THETAS;
+		} else {
+			out.re = ph;
+			out.im = 0.;
+		}
+		return out;
+	  case ZDIR:
+		ph = 1-2*((coord.x+coord.y)%2);
+		if(coord.z == (NSPACE-1)) {
+			out.re = ph * COS_THETAS;
+			out.im = ph * SIN_THETAS;
+		} else {
+			out.re = ph;
+			out.im = 0.;
+		}
+		return out;
+	  case TDIR:
+		ph = 1-2*((coord.x+coord.y+coord.z)%2);
+		if(t == (NTIME_GLOBAL-1)) {
+			out.re = ph * COS_THETAT;
+			out.im = ph * SIN_THETAT;
+		} else {
+			out.re = ph;
+			out.im = 0.;
+		}
+		return out;
+	  default:
+		printf("Something bad happened: get_modified_stagg_phase(...) was called without any proper value for dir variable. Returning zero...");
+		out.re = 0.;
+		out.im = 0.;
+	}
+	return out;
+}
+
+
+
+
+
