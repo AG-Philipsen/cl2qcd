@@ -1,12 +1,11 @@
 startcondition=continue
-#sourcefile=conf.00200
-sourcefile=conf_lime
+sourcefile=conf.00200
 
 use_eo=true
 NS=4
 NT=4
 
-#This means periodic boundary conditions
+#This means ANTIperiodic boundary conditions
 ThetaT=1.
 ThetaS=0.
 
@@ -21,7 +20,6 @@ read_multiple_configs=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=189.6284771829853355
-#test_ref_val=793.20467133125612236 #this is the reference value for sourcefile=conf.00200
+test_ref_val=793.20467133125612236
 
 #This imput file must not be modified!
