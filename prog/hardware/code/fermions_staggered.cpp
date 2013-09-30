@@ -209,16 +209,18 @@ uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in
 	if (in == "M_staggered") {
 		//this kernel performs one dslash on each site. To do that it also takes into
 		//account the staggered phases and the boundary conditions multiplying twice
-		//in each direction an su3vec by a complex
+		//in each direction an su3vec by a complex. Actually, the modified staggered
+		//phase has to be calculated and to do this 2 flop are performed (real times complex)
 		return S * (flop_dslash_staggered_per_site(get_parameters()) + 
-		            2 * NC * NDIM * meta::get_flop_complex_mult()); // S * 726 flop
+		            2 * NC * NDIM * meta::get_flop_complex_mult() + 2); // S * 728 flop
 	}
 	if (in == "D_KS_eo") {
 		//this kernel performs one dslash on each site. To do that it also takes into
 		//account the staggered phases and the boundary conditions multiplying twice
-		//in each direction an su3vec by a complex
+		//in each direction an su3vec by a complex.  Actually, the modified staggered
+		//phase has to be calculated and to do this 2 flop are performed (real times complex)
 		return Seo * (flop_dks_staggered_per_site(get_parameters()) + 
-		            2 * NC * NDIM * meta::get_flop_complex_mult()); // Seo * 714 flop
+		            2 * NC * NDIM * meta::get_flop_complex_mult() + 2); // Seo * 716 flop
 	}
 	return 0;
 }
