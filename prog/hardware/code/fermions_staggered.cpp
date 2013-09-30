@@ -23,22 +23,12 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 	options.precision(16);
 
-	//CP: These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
-	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
-	//BC: on the corners in each direction: exp(i theta*PI) -> on each site
-	//    exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
-
-	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
-	options << " -D MSPATIAL_RE=" << -cos(tmp_spatial);
-	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
-	options << " -D MSPATIAL_IM=" << -sin(tmp_spatial);
-
-	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
-	options << " -D MTEMPORAL_RE=" << -cos(tmp_temporal);
-	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
-	options << " -D MTEMPORAL_IM=" << -sin(tmp_temporal);
-  	
+	//These 4 parameters are needed to modify staggered phases and then to impose BC
+	options << " -D COS_THETAS=" << cos(params.get_theta_fermion_spatial() * PI);
+	options << " -D SIN_THETAS=" << sin(params.get_theta_fermion_spatial() * PI);
+	options << " -D COS_THETAT=" << cos(params.get_theta_fermion_temporal() * PI);
+  	options << " -D SIN_THETAT=" << sin(params.get_theta_fermion_temporal() * PI);
+	
 	return options.str();
 }
 
@@ -169,15 +159,16 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
 
 /**
  * This function returns the number of flops that is needed to make the standard staggered
- * Dirac operator act onto a field (606 flops). Since in general the mass in the simulation is not
+ * Dirac operator act onto a field (582 flops). Since in general the mass in the simulation is not
  * zero (and there are no check on that), the mass-term in the d_slash is always taken
  * into account (For standard Dirac operator we intend M = D_KS + m).
  * 
- * @NOTE In this function (as in the whole code) the staggered phases are not included
- *       in links and, then, we have some flops in addition to take into account.
- * @NOTE Here, we do not count the flops that are performed for example in the mulptiplications
- *       done to impose the boundary conditions. These flops will be taken into account in the
- *       function get_flop_size.
+ * @attention In this function (as in the whole code) the staggered phases are not included
+ *            in links and, then, we have some flops in addition to take into account.
+ *            However, we do not take them into account because the staggered phases are
+ *            used also to impose the boundary conditions. It is more convenient to calculate
+ *            here the number of flops of the Dirac operator without staggered phases and with
+ *            periodic boundary conditions. These flops will be then added in the function get_flop_size.
  */
 /*
  * Considering that:
@@ -192,24 +183,23 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
  * The way of counting flops for the dslash can be summarized as follows:
  * 
  *  + For each direction we have twice su3matrix times su3vec
- *  + We have to sum the 2 rsulting su3vec in each direction
- *  + To multiply by (0.5*eta) the result of the sum in each direction, a real times su3vec is required
+ *  + We have to sum the 2 resulting su3vec in each direction
  *  + The mass term is a real times su3vec
  *  + Then we have to sum the 5 su3vec (one for each direction + the mass term)
  * 
  */
 static int flop_dslash_staggered_per_site(const meta::Inputparameters & parameters)
 {
-	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2 + NC * 2) + NC * 2 + 4 * NC * 2;
+	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2) + NC * 2 + 4 * NC * 2;
 }
 
 /**
  * This function is the same as flop_dslash_staggered_per_site, except the fact that here
- * the mass term is not taken into account (return 594 flops)
+ * the mass term is not taken into account (return 570 flops)
  */
 static int flop_dks_staggered_per_site(const meta::Inputparameters & parameters)
 {
-	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2 + NC * 2) + 3 * NC * 2;
+	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2) + 3 * NC * 2;
 }
 
 uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in) const
@@ -217,16 +207,18 @@ uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in
 	size_t S = get_spinorfieldsize(get_parameters());
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	if (in == "M_staggered") {
-		//this kernel performs one dslash on each site. To do that it also impose
-		//the boundary conditions multiplying twice in each direction an su3vec by a complex
+		//this kernel performs one dslash on each site. To do that it also takes into
+		//account the staggered phases and the boundary conditions multiplying twice
+		//in each direction an su3vec by a complex
 		return S * (flop_dslash_staggered_per_site(get_parameters()) + 
-		            2 * NC * NDIM * meta::get_flop_complex_mult());
+		            2 * NC * NDIM * meta::get_flop_complex_mult()); // S * 726 flop
 	}
 	if (in == "D_KS_eo") {
-		//this kernel performs one dks on each site. To do that it also impose
-		//the boundary conditions multiplying twice in each direction an su3vec by a complex
+		//this kernel performs one dslash on each site. To do that it also takes into
+		//account the staggered phases and the boundary conditions multiplying twice
+		//in each direction an su3vec by a complex
 		return Seo * (flop_dks_staggered_per_site(get_parameters()) + 
-		            2 * NC * NDIM * meta::get_flop_complex_mult());
+		            2 * NC * NDIM * meta::get_flop_complex_mult()); // Seo * 714 flop
 	}
 	return 0;
 }
