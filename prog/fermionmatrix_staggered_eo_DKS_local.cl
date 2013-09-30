@@ -29,12 +29,14 @@
   *         field is on even sites then idx_arg will be an odd site and vice-versa.
   * 
   * @note The staggered phases are included in this function with the help of the function
-  *       get_staggered_phase \internal(see operations_staggered.cl).\endinternal
+  *       get_modified_stagg_phase @internal(see operations_staggered.cl)@endinternal.
   * \par
-  * @note If we chose to impose boundary conditions modifying staggered phases at the end of the
-  *       lattice in each direction, then we would make each staggered phase appear EXACTELY
-  *       next to the link, and if the link is dagger, we would take the complex coniugate
+  * @note Since we chose to impose boundary conditions modifying staggered phases at the end of the
+  *       lattice in each direction, then we make each staggered phase appear EXACTELY
+  *       next to the link, and if the link is dagger, we take the complex coniugate
   *       of the staggered phase (that would be complex in general due to the modification).
+  *       Next to the link means that it must be calculated in the same site where the
+  *       link is considered.
   * 
   * @todo If a chemical potential is introduced, this kernel has to be modified!
   */
@@ -48,17 +50,10 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	//this are used for the calculation
 	su3vec out_tmp, plus, chi;
 	Matrixsu3 U;
-	//this is used to save the BC-conditions...
-	hmc_complex bc_tmp;
-	if(dir == TDIR){
-	  bc_tmp.re = TEMPORAL_RE;
-	  bc_tmp.im = TEMPORAL_IM;
-	}else{
-	  bc_tmp.re = SPATIAL_RE;
-	  bc_tmp.im = SPATIAL_IM;
-	}
-	//this is used to take into account the staggered phase
+	//this is used to take into account the staggered phase and the BC-conditions...
+	hmc_complex eta_mod;
 	hmc_float eta;
+	
 	out_tmp = set_su3vec_zero();
 	
 	//go through the different directions
@@ -73,37 +68,20 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	//Thanks to the variables passed to this kernel I can write all directions in few lines:
 	//chi=U*plus
 	chi=su3matrix_times_su3vec(U,plus);
-	chi=su3vec_times_complex(chi,bc_tmp);
-	out_tmp=su3vec_acc(out_tmp,chi);
-	
-	//The 3 lines above are equivalent to the following code
-	/*
-	if(dir == XDIR) {
-		//chi=U*plus
-		chi=su3matrix_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_acc(out_tmp,chi);
-		
-	} else if(dir == YDIR) {
-		//chi=U*plus
-		chi=su3matrix_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_acc(out_tmp,chi);
-	  
-	} else if(dir == ZDIR) {
-		//chi=U*plus
-		chi=su3matrix_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_acc(out_tmp,chi);
-	  
-	} else { // dir == TDIR
-		//chi=U*plus
-		chi=su3matrix_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_acc(out_tmp,chi);
-
+	coord_spatial coord = get_coord_spatial(idx_arg.space);
+	if(coord.x == (NSPACE-1) || coord.y == (NSPACE-1) || coord.z == (NSPACE-1) ||
+	   idx_arg.time == (NTIME_GLOBAL-1)){
+		eta_mod = get_modified_stagg_phase(idx_arg.space, idx_arg.time, dir);
+		eta_mod.re *= 0.5; //to take into account the factor at the beginning of D_KS
+		chi = su3vec_times_complex(chi, eta_mod);
+	}else{
+		if(dir != XDIR)
+		  eta = 0.5 * get_staggered_phase(idx_arg.space, dir);
+		else
+		  eta = 0.5;
+		chi = su3vec_times_real(chi, eta);
 	}
-	*/
+	out_tmp=su3vec_acc(out_tmp,chi);
 	
 	///////////////////////////////////
 	// mu = -dir
@@ -113,62 +91,23 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_neigh));
-	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
-	if(dir == TDIR){
-	  bc_tmp.re = TEMPORAL_RE;
-	  bc_tmp.im = MTEMPORAL_IM;
-	}else{
-	  bc_tmp.re = SPATIAL_RE;
-	  bc_tmp.im = MSPATIAL_IM;
-	}
 	//Thanks to the variables passed to this kernel I can write all directions in few lines:
-	//chi=U^dagger*plus
+	//chi=((0.5*eta)^conjugated * U^dagger) * plus
 	chi=su3matrix_dagger_times_su3vec(U,plus);
-	chi=su3vec_times_complex(chi,bc_tmp);
+	coord = get_coord_spatial(idx_neigh.space);
+	if(coord.x == (NSPACE-1) || coord.y == (NSPACE-1) || coord.z == (NSPACE-1) ||
+	   idx_neigh.time == (NTIME_GLOBAL-1)){
+		eta_mod = get_modified_stagg_phase(idx_neigh.space, idx_neigh.time, dir);
+		eta_mod.re *= 0.5; //to take into account the factor at the beginning of D_KS
+		chi = su3vec_times_complex_conj(chi, eta_mod);
+	}else{
+		if(dir != XDIR)
+		  eta = 0.5 * get_staggered_phase(idx_arg.space, dir);
+		else
+		  eta = 0.5;
+		chi = su3vec_times_real(chi, eta);
+	}
 	out_tmp=su3vec_dim(out_tmp,chi);
-	//multiply by the factor 1/2*eta_dir that appears at the beginning of D_KS
-	//if dir==XDIR then eta_x is 1 and the multiplication is unnecessary
-	if(dir == XDIR)
-		out_tmp = su3vec_times_real(out_tmp, F_1_2); //AS: I'm not sure that here F_1_2 is an hmc_float
-	else{
-		eta=0.5*get_staggered_phase(idx_arg.space,idx_arg.time,dir);
-		out_tmp = su3vec_times_real(out_tmp, eta);
-	}
-	//The 9 lines of code above are equivalent to the following code
-	/*
-	if(dir == XDIR) {
-		//chi=U^dagger*plus
-		chi=su3matrix_dagger_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_dim(out_tmp,chi);
-	} else if(dir == YDIR) {
-		//chi=U^dagger*plus
-		chi=su3matrix_dagger_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_dim(out_tmp,chi);
-		//multiply by the factor 1/2*eta_y that appears at the beginning of D_KS
-		eta=0.5*get_staggered_phase(idx_arg.space,idx_arg.time,dir);
-		out_tmp = su3vec_times_real(out_tmp, eta); 
-		
-	} else if(dir == ZDIR) {
-		//chi=U^dagger*plus
-		chi=su3matrix_dagger_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_dim(out_tmp,chi);
-		//multiply by the factor 1/2*eta_z that appears at the beginning of D_KS
-		eta=0.5*get_staggered_phase(idx_arg.space,idx_arg.time,dir);
-		out_tmp = su3vec_times_real(out_tmp, eta); 
-		  
-	} else { // TDIR
-		//chi=U^dagger*plus
-		chi=su3matrix_dagger_times_su3vec(U,plus);
-		chi=su3vec_times_complex(chi,bc_tmp);
-		out_tmp=su3vec_dim(out_tmp,chi);
-		//multiply by the factor 1/2*eta_t that appears at the beginning of D_KS
-		eta=0.5*get_staggered_phase(idx_arg.space,idx_arg.time,dir);
-		out_tmp = su3vec_times_real(out_tmp, eta); 
-	}
-	*/
 
 	return out_tmp;
 }
