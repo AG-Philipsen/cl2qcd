@@ -959,6 +959,26 @@ BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_16 )
 	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_16");
 }
 
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_17 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_17");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_18 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_18");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_19 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_19");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_20 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_20");
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
