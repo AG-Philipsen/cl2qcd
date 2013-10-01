@@ -52,6 +52,28 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
 }
 
 /**
+ * This is the update of the Staggeredfield_eo in the RHMC. Actually, it is a tool to obtain
+ * the new Staggeredfield_eo at the beginning of each iteration, given a gaussian drwn field.
+ * In fact, this function makes the operator (Mdag*M) to some rational power act on the
+ * Staggeredfield_eo "orig". To be clearer, here the following operation is implemented:
+ * @code
+ *   out = (a_0 + \sum_{i=1}^k a_i * (Mdag*M + b_i)^{-1} ) * orig 
+ * @endcode
+ * where k is the order of the rational approximation, a_0, a_i and b_i are the coefficients.
+ */
+void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+{
+	logger.debug() << "\tHMC [UP]:\tupdate SF";
+	
+	
+	
+	
+	
+	
+	
+}
+
+/**
  * template for md_update_spinorfield_mp
  * this needs 3 fermionmatrices in order to use cg as default solver (because for the cg one needs a hermitian matrix)
  */
