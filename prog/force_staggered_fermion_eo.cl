@@ -41,9 +41,49 @@
  * @todo If a chemical potential is introduced, probably this kernel has to be modified!
  */
 
-///////////////////////////////////////////////////////////////////////////////////
-//HERE, BOUNDARY CONDITIONS ARE SUPPOSED TO BE INCLUDED IN STAGGERED PHASES!!!!! //
-///////////////////////////////////////////////////////////////////////////////////
+ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, const st_index pos, const dir_idx dir)
+{
+	Matrix3x3 tmp;
+	Matrixsu3 U, aux;
+	su3vec a, b;
+	int n = pos.space;
+	int t = pos.time;
+	int nn_eo;
+	st_index nn;
+	
+	////////////////////////////////////////////////
+	nn = get_neighbor_from_st_idx(pos, dir);
+	nn_eo = get_eo_site_idx_from_st_idx(nn); //transform normal indices to eoprec index
+	U = get_matrixsu3(field, n, t, dir);
+	a = get_su3vec_from_field_eo(A, nn_eo);
+	
+	coord_spatial coord = get_coord_spatial(n);
+	if(coord.x == (NSPACE-1) || coord.y == (NSPACE-1) || coord.z == (NSPACE-1) ||
+	   t == (NTIME_GLOBAL-1)){
+		hmc_complex eta; //staggered phase + BC
+		eta = get_modified_stagg_phase(n, t, dir);
+		a = su3vec_times_complex(a, eta);
+	}else{
+		int eta; //staggered phase
+		if(dir != XDIR)
+		  eta = get_staggered_phase(n, dir);
+		else
+		  eta = 1;
+		a = su3vec_times_real(a, eta);
+	}
+	
+	b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
+	tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
+	tmp = traceless_antihermitian_part(tmp);
+	aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
+	////////////////////////////////////////////////
+	
+	return build_ae_from_su3(aux);  
+}
+
+////////////////////////////////////////////////////////////////////
+//HERE, BOUNDARY CONDITIONS ARE INCLUDED IN STAGGERED PHASES!!!!! //
+////////////////////////////////////////////////////////////////////
 __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, __global aeStorageType * const restrict out, int evenodd)
 {
 	//The following 2 lines were about the Wilson kernel. I do not know if they are still valid.
@@ -52,7 +92,35 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
 		//caculate (pos,time) out of id_local depending on evenodd
 		st_index pos = (evenodd == EVEN) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
+		
+		ae tmp;
+		for(dir_idx dir = 0; dir < 4; ++dir) {
+			tmp = fermion_staggered_partial_force_eo_local(field, A, B, pos, dir);
+			if(evenodd == EVEN)
+			  update_gaugemomentum(tmp, 1., get_link_idx(dir, pos), out);
+			else
+			  update_gaugemomentum(tmp, -1., get_link_idx(dir, pos), out);
+		}
+	}
+}
 
+
+
+
+//The following kernel is the same as that above, except that there are NOT included BC using
+//modified staggered phases, i.e. BC are assumed to be periodic in all directions.
+//Maybe it is useful for tests to avoid spilling...
+
+/*
+__kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, __global aeStorageType * const restrict out, int evenodd)
+{
+	//The following 2 lines were about the Wilson kernel. I do not know if they are still valid.
+	// must include HALO, as we are updating neighbouring sites
+	// -> not all local sites will fully updated if we don't calculate on halo indices, too
+	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
+		//caculate (pos,time) out of id_local depending on evenodd
+		st_index pos = (evenodd == EVEN) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
+		
 		Matrix3x3 tmp;
 		Matrixsu3 U, aux;
 		su3vec a, b;
@@ -77,9 +145,9 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 		U = get_matrixsu3(field, n, t, dir);
 		a = get_su3vec_from_field_eo(A, nn_eo);
 		if(evenodd == EVEN) //Get staggered phase and take into account global sign
-		  eta = get_staggered_phase(n, t, dir);
+		  eta = get_staggered_phase(n, dir);
 		else
-		  eta = -1 * get_staggered_phase(n, t, dir);
+		  eta = -1 * get_staggered_phase(n, dir);
 		a = su3vec_times_real(a, eta);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
 		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
@@ -118,9 +186,9 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 		U = get_matrixsu3(field, n, t, dir);
 		a = get_su3vec_from_field_eo(A, nn_eo);
 		if(evenodd == EVEN) //Get staggered phase and take into account global sign
-		  eta = get_staggered_phase(n, t, dir);
+		  eta = get_staggered_phase(n, dir);
 		else
-		  eta = -1 * get_staggered_phase(n, t, dir);
+		  eta = -1 * get_staggered_phase(n, dir);
 		a = su3vec_times_real(a, eta);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
 		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
@@ -140,9 +208,9 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 		U = get_matrixsu3(field, n, t, dir);
 		a = get_su3vec_from_field_eo(A, nn_eo);
 		if(evenodd == EVEN) //Get staggered phase and take into account global sign
-		  eta = get_staggered_phase(n, t, dir);
+		  eta = get_staggered_phase(n, dir);
 		else
-		  eta = -1 * get_staggered_phase(n, t, dir);
+		  eta = -1 * get_staggered_phase(n, dir);
 		a = su3vec_times_real(a, eta);
 		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
 		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
@@ -153,3 +221,4 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 		update_gaugemomentum(out_tmp, 1., get_link_pos(dir, n, t), out);
 	}
 }
+*/
