@@ -178,11 +178,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf1, coeff, system, params.get_kappa());
-		BOOST_CHECK_CLOSE(squarenorm(gm), 51236.720197418151656, 1.e-6);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 58639.680325374203676, 1.e-6);
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf2, coeff, system, params.get_kappa());
-		BOOST_CHECK_CLOSE(squarenorm(gm), 51273.800031975944876, 1.e-6);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 57864.102469501536689, 1.e-6);
 	}
 	
 	{
@@ -202,11 +202,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf1, coeff, system, params.get_kappa());
-		BOOST_CHECK_CLOSE(squarenorm(gm), 52140.035289172330522, 1.e-6);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 59243.416931556392228, 1.e-6);
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf2, coeff, system, params.get_kappa());
-		BOOST_CHECK_CLOSE(squarenorm(gm), 51566.93012059526518, 1.e-6);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 57301.210920764693583, 1.e-6);
 	}
 	
 }

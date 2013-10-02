@@ -293,9 +293,9 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 	//These are the same fields of the excplicit test D_KS_eo (second test)
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
-	gm.zero();
 	
-	physics::algorithms::calc_fermion_forces(&gm, gf, sf1, coeff, system, params.get_kappa());
+	gm.zero();
+	physics::algorithms::calc_fermion_forces(&gm, gf, sf1, coeff, system, params.get_kappa());		
 	BOOST_CHECK_CLOSE(squarenorm(gm), 2214.9003939576623452, 1.e-6);
 	
 	gm.zero();
