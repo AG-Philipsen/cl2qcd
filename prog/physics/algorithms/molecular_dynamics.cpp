@@ -11,6 +11,7 @@
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "../../meta/util.hpp"
 #include "solver.hpp"
+#include "solver_shifted.hpp"
 #include "forces.hpp"
 #include "../../hardware/code/molecular_dynamics.hpp"
 #include "../lattices/util.hpp"
@@ -53,24 +54,35 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
 
 /**
  * This is the update of the Staggeredfield_eo in the RHMC. Actually, it is a tool to obtain
- * the new Staggeredfield_eo at the beginning of each iteration, given a gaussian drwn field.
+ * the new Staggeredfield_eo at the beginning of each iteration, given a gaussian drawn field.
  * In fact, this function makes the operator (Mdag*M) to some rational power act on the
  * Staggeredfield_eo "orig". To be clearer, here the following operation is implemented:
  * @code
  *   out = (a_0 + \sum_{i=1}^k a_i * (Mdag*M + b_i)^{-1} ) * orig 
+ *       = a_0 * orig + \sum_{i=1}^k a_i * [(Mdag*M + b_i)^{-1} * orig]
  * @endcode
  * where k is the order of the rational approximation, a_0, a_i and b_i are the coefficients.
  */
-void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& orig, physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& orig, physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
 {
-	logger.debug() << "\tHMC [UP]:\tupdate SF";
+	logger.debug() << "\tRHMC [UP]:\tupdate SF";
+	auto params = system.get_inputparameters();
+	const physics::fermionmatrix::MdagM_eo fm(system, mass);
 	
+	//Temporary fields for shifted inverter
+	logger.trace() << "\t\tstart solver...";
+	std::vector<physics::lattices::Staggeredfield_eo *> X;
+	for(int i=0; i<coeff.Get_order(); i++)
+		X.push_back(new physics::lattices::Staggeredfield_eo(system));
+	//Here the inversion must be performed with high precision, because it'll be used for Metropolis test
+	const int iterations = physics::algorithms::solvers::cg_m(X, coeff.Get_b(), fm, gf, orig, system, params.get_solver_prec());
+	logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 	
+	physics::lattices::sax(out, {coeff.Get_a0(), 0.}, orig);
+	for(int i=0; i<coeff.Get_order(); i++)
+		physics::lattices::saxpy(out, {(coeff.Get_a())[i], 0.}, orig, *out);
 	
-	
-	
-	
-	
+	log_squarenorm("Staggeredfield_eo after update", *out);
 }
 
 /**
