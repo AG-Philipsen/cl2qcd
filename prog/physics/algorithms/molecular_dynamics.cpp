@@ -63,7 +63,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
  * @endcode
  * where k is the order of the rational approximation, a_0, a_i and b_i are the coefficients.
  */
-void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& orig, physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& orig, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
 {
 	logger.debug() << "\tRHMC [UP]:\tupdate SF";
 	auto params = system.get_inputparameters();
