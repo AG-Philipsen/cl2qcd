@@ -248,9 +248,17 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 }
 
 /**
- * This function reconstructs the fermionic contribution to the force (in the RHMC). It is given by
+ * This function reconstructs the fermionic contribution to the force (in the RHMC). Now, here
+ * it is particularly easy to get lost beacuse of minus signs. What is called force is somehow
+ * arbitrary. For sure, instead, there is no doubts about the definition of the time derivative
+ * of the momentum field conjugated to the gaugefield, it is -dS/dq. Now, if we refer to the
+ * Gattringer (page 197) notation (as done in the Wilson code), we choose to call force F_\mu(n)
+ * only dS/dq and later, in the update of the gaugemomentum, we will take into account the minus sign.
+ * Indicating the gaugemomentum field as H_\mu(n), we have that F_\mu(n) = - Hdot_\mu(n). To be
+ * coherent with the Wilson code, we have to add here a minus sign to obtain F_\mu(n) from Hdot_\mu(n).
+ * Starting from the field Hdot, we have
  * @code
- * F_\mu(n) = -i * [U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA
+ * Hdot_\mu(n) = -i * [U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA
  * @endcode
  * where k is the order of rational approximation, c_i are the numerators and
  * @code
@@ -280,8 +288,9 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
  * @endcode
  * and then reconstruct the force, using the Rational Coefficients:
  * @code
- * F_\mu(n) = \sum_{i=1}^k {c_i * out_fermion_force} . 
+ * Hdot_\mu(n) = \sum_{i=1}^k {c_i * out_fermion_force} ==> F_\mu(n) = \sum_{i=1}^k {-c_i * out_fermion_force}
  * @endcode
+ * where we add a minus sign to pass from Hdot_\mu(n) to F_\mu(n).
  * 
  * @note To perform the sum above, the saxpy operation of the gaugemomenta is used.
  * 
@@ -319,7 +328,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		tmp.zero();
 		fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
 		fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
-		physics::lattices::saxpy(force, (coeff.Get_a())[i], tmp);
+		physics::lattices::saxpy(force, -1.*(coeff.Get_a())[i], tmp);
 	}
 	
 	logger.debug() << "\t\t...end calc_fermion_force!";
