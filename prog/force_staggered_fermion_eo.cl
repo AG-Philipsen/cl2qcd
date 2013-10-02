@@ -13,9 +13,9 @@
  * To make the code understandable, let us summarize the notation here. The force term here calculated
  * is not exactely the total fermion force (this explains the partial adjective), because of the rational
  * approximation. This kernel will be then used to reconstruct the whole force term. In the RHMC the
- * fermion force is
+ * time derivative of the momenta conjugated to links is
  * @code
- *  i*F_\mu(n)=[U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA 
+ *  i*Hdot_\mu(n)=[U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA 
  * @endcode
  * where 
  * @code
@@ -27,7 +27,7 @@
  * @endcode
  *
  * In this kernel only U_\mu(n)*Q^i_\mu(n) is evaluated and not the \sum. In the expression
- * above of F_\mu(n) k is the order of rational approximation and c_i are the numerators.
+ * above of Hdot_\mu(n) k is the order of rational approximation and c_i are the numerators.
  * Then for each i from 1 to k we will call this kernel twice. Finally, two different
  * spinorfield are passed to this kernel: A and B. Depending on evenodd they will be different
  * objects, but at this level it does not matter:
