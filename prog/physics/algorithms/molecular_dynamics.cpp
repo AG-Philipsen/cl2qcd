@@ -177,6 +177,21 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
 }
 
+//In the RHMC (staggered fermions) there is non need to write a new template since only eo-preconditioned
+//field are so far used. We can neither use the above template, because of the Rational Approximation.
+void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+{
+	using namespace physics::algorithms;
+
+	physics::lattices::Gaugemomenta delta_p(system);
+	delta_p.zero();
+	calc_total_force(&delta_p, gf, phi, coeff, system, mass);
+
+	logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
+	physics::lattices::saxpy(inout, -1.*eps, delta_p);
+}
+
+
 void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * const gm, const hmc_float eps, const physics::lattices::Gaugefield& gf, const hardware::System& system)
 {
 	const physics::lattices::Gaugemomenta force(system);
@@ -208,6 +223,22 @@ void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattice
 {
 	::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, kappa, mubar);
 }
+
+//In the RHMC (staggered fermions) there is non need to write a new template since only eo-preconditioned
+//field are so far used. We can neither use the above template, because of the Rational Approximation.
+void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+{
+	using namespace physics::algorithms;
+
+	const physics::lattices::Gaugemomenta force(system);
+	force.zero();
+	calc_fermion_force(&force, gf, phi, coeff, system, mass);
+	log_squarenorm("\tRHMC [UP]:\tFORCE [DET]:\t", force);
+
+	logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
+	physics::lattices::saxpy(inout, -1.*eps, force);
+}
+
 
 template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
