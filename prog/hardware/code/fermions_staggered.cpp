@@ -23,6 +23,16 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 	options.precision(16);
 
+	//These are the BCs in spatial and temporal direction
+	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
+	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
+	//BC: on the corners in each direction: exp(i theta*PI) <=> 
+	//    on each site: exp(i theta*PI /LATEXTENSION) = cos(..) + isin(..)
+	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
+	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
+	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
+	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
+	
 	//These 4 parameters are needed to modify staggered phases and then to impose BC
 	options << " -D COS_THETAS=" << cos(params.get_theta_fermion_spatial() * PI);
 	options << " -D SIN_THETAS=" << sin(params.get_theta_fermion_spatial() * PI);
@@ -138,7 +148,7 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
 	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
 	size_t R = meta::get_mat_size(get_parameters());
-	//this is the number of spinors in the system (or number of sites)
+	//this is the number of su3vec in the system (or number of sites)
 	size_t S = get_spinorfieldsize(get_parameters());
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
@@ -146,13 +156,14 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
 	//NOTE: 1 spinor has NC = 3 complex entries
 	if (in == "M_staggered") {
 		//this kernel reads 9 su3vec, 8 su3matrices and writes 1 su3vec per site:
-		return (C * NC * (9 + 1) + C * 8 * R) * D * S;
+		const unsigned int dirs = 4;
+		return (C * NC * (2 * dirs + 1 + 1) + C * 2 * dirs * R) * D * S; //1632 bytes * S
 	}
 	if (in == "D_KS_eo") {
-		//this kernel reads 8 spinors (not that in the site of the output),
-		//8 su3matrices and writes 1 spinor:
+		//this kernel reads 8 su3vec (not that in the site of the output),
+		//8 su3matrices and writes 1 su3vec:
 		const unsigned int dirs = 4;
-		return (C * NC * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
+		return (C * NC * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo; //1584 bytes * Seo
 	}
 	return 0;
 }
@@ -161,14 +172,37 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
  * This function returns the number of flops that is needed to make the standard staggered
  * Dirac operator act onto a field (582 flops). Since in general the mass in the simulation is not
  * zero (and there are no check on that), the mass-term in the d_slash is always taken
- * into account (For standard Dirac operator we intend M = D_KS + m).
+ * into account (for standard Dirac operator we intend M = D_KS + m). Working with evenodd
+ * preconditioning, then the mass term is not put in the kernel and this is taken into account
+ * in the number of flops calculation.
  * 
  * @attention In this function (as in the whole code) the staggered phases are not included
- *            in links and, then, we have some flops in addition to take into account.
- *            However, we do not take them into account because the staggered phases are
- *            used also to impose the boundary conditions. It is more convenient to calculate
- *            here the number of flops of the Dirac operator without staggered phases and with
- *            periodic boundary conditions. These flops will be then added in the function get_flop_size.
+ *            in links and, then, we have some flops in addition to take them into account
+ *            as well as for the boundary conditions. Usually, in the community, in all
+ *            codes with staggered fermions, staggered phases are calculated only once and
+ *            are put in links (including also boundary conditions). In this way staggered phases
+ *            and BC are completely forgotten. Nevertheless, here we prefer to calculate them
+ *            every time that we need them, not putting them into links. There are basically
+ *            two reasons to do that. \n
+ *            \arg Flops needed to calculate staggered phases and BC do not lower the
+ *                 performance, since they are few flops and "Flops don't count".\n
+ *            \arg It is really important not to change gauge part of the code, so that
+ *                 both staggered and Wilson codes share the same gauge tools.\n
+ *            Hence, our code will perform more floating point operations in the kernels than
+ *            codes that include phases in links. But this does not mean that we must count
+ *            these additional operations in the number of total flop, because otherwise
+ *            our performance is not comparable to other codes. To understand why, one can give
+ *            the following argument. The best benchmark would be in term of needed time to execute
+ *            the kernel: if one finds a better way to implement something, the time needed is
+ *            smaller and the performance higher. But if changing the code, one adapt also the
+ *            number of floating point operations, then the measured performance does not reflect
+ *            the truth. It can happen that the measured performance does not improve when the
+ *            time to execute the kernel has lowered. Another example is the following: suppose
+ *            you do a lot of unnecessary operations in the kernel and take them into account.
+ *            Since LQCD is really memory limited you will have more or less the same time with
+ *            and without those operations. But if you count them, then your benchmark will look
+ *            amazing, when the time needed to execute the kernel is probably the same as other
+ *            codes.
  */
 /*
  * Considering that:
@@ -188,7 +222,7 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
  *  + Then we have to sum the 5 su3vec (one for each direction + the mass term)
  * 
  */
-static int flop_dslash_staggered_per_site(const meta::Inputparameters & parameters)
+static int flop_dslash_staggered_per_site()
 {
 	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2) + NC * 2 + 4 * NC * 2;
 }
@@ -197,7 +231,7 @@ static int flop_dslash_staggered_per_site(const meta::Inputparameters & paramete
  * This function is the same as flop_dslash_staggered_per_site, except the fact that here
  * the mass term is not taken into account (return 570 flops)
  */
-static int flop_dks_staggered_per_site(const meta::Inputparameters & parameters)
+static int flop_dks_staggered_per_site()
 {
 	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2) + 3 * NC * 2;
 }
@@ -207,20 +241,14 @@ uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in
 	size_t S = get_spinorfieldsize(get_parameters());
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	if (in == "M_staggered") {
-		//this kernel performs one dslash on each site. To do that it also takes into
-		//account the staggered phases and the boundary conditions multiplying twice
-		//in each direction an su3vec by a complex. Actually, the modified staggered
-		//phase has to be calculated and to do this 2 flop are performed (real times complex)
-		return S * (flop_dslash_staggered_per_site(get_parameters()) + 
-		            2 * NC * NDIM * meta::get_flop_complex_mult() + 2); // S * 728 flop
+		//this kernel performs one dslash on each site. To do that it also calculates
+		//the staggered phases and the BC but we do not count this flop (see explanation above)
+		return S * flop_dslash_staggered_per_site(); // S * 582 flop
 	}
 	if (in == "D_KS_eo") {
-		//this kernel performs one dslash on each site. To do that it also takes into
-		//account the staggered phases and the boundary conditions multiplying twice
-		//in each direction an su3vec by a complex.  Actually, the modified staggered
-		//phase has to be calculated and to do this 2 flop are performed (real times complex)
-		return Seo * (flop_dks_staggered_per_site(get_parameters()) + 
-		            2 * NC * NDIM * meta::get_flop_complex_mult() + 2); // Seo * 716 flop
+		//this kernel performs one dks on each site. To do that it also calculates
+		//the staggered phases and the BC but we do not count this flop (see explanation above)
+		return Seo * flop_dks_staggered_per_site(); // Seo * 570 flop
 	}
 	return 0;
 }
@@ -236,7 +264,7 @@ hardware::code::Fermions_staggered::Fermions_staggered(const meta::Inputparamete
 	: Opencl_Module(params, device)
 {
 	fill_kernels();
-};
+}
 
 hardware::code::Fermions_staggered::~Fermions_staggered()
 {
