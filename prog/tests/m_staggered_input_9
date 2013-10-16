@@ -1,6 +1,5 @@
 startcondition=continue
-#sourcefile=conf.00200
-sourcefile=conf_lime
+sourcefile=conf.00200
 
 kappa=0.
 
@@ -19,7 +18,6 @@ solver=CG
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=384
-#test_ref_val=1574.2697366803831756 #this is the reference value for sourcefile=conf.00200
+test_ref_val=1589.3962030555962883
 
 #This imput file must not be modified!

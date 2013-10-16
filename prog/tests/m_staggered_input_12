@@ -18,6 +18,6 @@ solver=BICGSTAB
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1044.0319081409352293
+test_ref_val=1052.339453942095588
 
 #This imput file must not be modified!
