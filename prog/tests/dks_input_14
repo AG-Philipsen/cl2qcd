@@ -20,6 +20,6 @@ read_multiple_configs=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=773.3850653491272169
+test_ref_val=788.7655889098162
 
 #This imput file must not be modified!
