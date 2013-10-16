@@ -68,8 +68,11 @@ int main(int argc, const char* argv[])
 
 		auto fermion_code = system.get_devices()[0]->get_fermion_code();
 		size_t flop_count = fermion_code->get_flop_size("dslash_eo");
+		size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
 		double gflops = static_cast<double>(flop_count) * 2 * hmc_iter / elapsed_mus / 1e3;
+		double gbytes = static_cast<double>(byte_count) * 2 * hmc_iter / elapsed_mus / 1e3;
 		logger.info() << "Dslash performance: " << gflops << " GFLOPS";
+		logger.info() << "Dslash memory: " << gbytes << " GB/S";
 
 	} //try
 	//exceptions from Opencl classes
