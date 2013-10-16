@@ -65,7 +65,7 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_arg));
 	//chi=U*plus
-	chi=su3matrix_times_su3vec(U,plus);
+	chi = su3matrix_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
 	eta_mod.re *= 0.5; //the factors 0.5 is to take into 
 	eta_mod.im *= 0.5; //account the factor in front of D_KS
@@ -76,13 +76,12 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	///////////////////////////////////
 	// mu = -dir
 	///////////////////////////////////
-	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);
-	//transform normal indices to eoprec index
+	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_neigh));
 	//chi=U^dagger * plus
-	chi=su3matrix_dagger_times_su3vec(U,plus);
+	chi = su3matrix_dagger_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
 	eta_mod.re *= 0.5; //the factors 0.5 is to take into 
 	eta_mod.im *= 0.5; //account the factor in front of D_KS
