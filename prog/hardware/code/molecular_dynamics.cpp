@@ -26,11 +26,15 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	if(meta::get_use_rectangles(params) == true) {
 		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
 	}
-	//These 4 parameters are needed to modify staggered phases and then to impose BC
-	options << " -D COS_THETAS=" << cos(params.get_theta_fermion_spatial() * PI);
-	options << " -D SIN_THETAS=" << sin(params.get_theta_fermion_spatial() * PI);
-	options << " -D COS_THETAT=" << cos(params.get_theta_fermion_temporal() * PI);
-	options << " -D SIN_THETAT=" << sin(params.get_theta_fermion_temporal() * PI);
+	//These are the BCs in spatial and temporal direction
+	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
+	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
+	//BC: on the corners in each direction: exp(i theta*PI) <=> 
+	//    on each site: exp(i theta*PI /LATEXTENSION) = cos(..) + isin(..)
+	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
+	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
+	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
+	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
 	
 	return options.str();
 }

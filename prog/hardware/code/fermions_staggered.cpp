@@ -33,12 +33,6 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
 	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
 	
-	//These 4 parameters are needed to modify staggered phases and then to impose BC
-	options << " -D COS_THETAS=" << cos(params.get_theta_fermion_spatial() * PI);
-	options << " -D SIN_THETAS=" << sin(params.get_theta_fermion_spatial() * PI);
-	options << " -D COS_THETAT=" << cos(params.get_theta_fermion_temporal() * PI);
-  	options << " -D SIN_THETAT=" << sin(params.get_theta_fermion_temporal() * PI);
-	
 	return options.str();
 }
 
