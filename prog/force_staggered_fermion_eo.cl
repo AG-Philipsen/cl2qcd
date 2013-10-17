@@ -50,6 +50,8 @@ ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType 
 	int t = pos.time;
 	int nn_eo;
 	st_index nn;
+	//this is used to take into account the staggered phase and the BC-conditions
+	hmc_complex eta_mod;
 	
 	////////////////////////////////////////////////
 	nn = get_neighbor_from_st_idx(pos, dir);
@@ -57,20 +59,8 @@ ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType 
 	U = get_matrixsu3(field, n, t, dir);
 	a = get_su3vec_from_field_eo(A, nn_eo);
 	
-	coord_spatial coord = get_coord_spatial(n);
-	if(coord.x == (NSPACE-1) || coord.y == (NSPACE-1) || coord.z == (NSPACE-1) ||
-	   t == (NTIME_GLOBAL-1)){
-		hmc_complex eta; //staggered phase + BC
-		eta = get_modified_stagg_phase(n, t, dir);
-		a = su3vec_times_complex(a, eta);
-	}else{
-		int eta; //staggered phase
-		if(dir != XDIR)
-		  eta = get_staggered_phase(n, dir);
-		else
-		  eta = 1;
-		a = su3vec_times_real(a, eta);
-	}
+	eta_mod = get_modified_stagg_phase(n, dir);
+	a = su3vec_times_complex(a, eta_mod);
 	
 	b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
 	tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
@@ -96,6 +86,7 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 		ae tmp;
 		for(dir_idx dir = 0; dir < 4; ++dir) {
 			tmp = fermion_staggered_partial_force_eo_local(field, A, B, pos, dir);
+			//Depending on evenodd the sign in front of Q^i_\mu(n) is here taken into account
 			if(evenodd == EVEN)
 			  update_gaugemomentum(tmp, 1., get_link_idx(dir, pos), out);
 			else
@@ -106,119 +97,3 @@ __kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3Storage
 
 
 
-
-//The following kernel is the same as that above, except that there are NOT included BC using
-//modified staggered phases, i.e. BC are assumed to be periodic in all directions.
-//Maybe it is useful for tests to avoid spilling...
-
-/*
-__kernel void fermion_staggered_partial_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, __global aeStorageType * const restrict out, int evenodd)
-{
-	//The following 2 lines were about the Wilson kernel. I do not know if they are still valid.
-	// must include HALO, as we are updating neighbouring sites
-	// -> not all local sites will fully updated if we don't calculate on halo indices, too
-	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
-		//caculate (pos,time) out of id_local depending on evenodd
-		st_index pos = (evenodd == EVEN) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
-		
-		Matrix3x3 tmp;
-		Matrixsu3 U, aux;
-		su3vec a, b;
-		ae out_tmp;
-		int eta; //staggered phase
-		int dir;
-		int n = pos.space;
-		int t = pos.time;
-		int nn, nn_eo;
-
-		//go through the different directions. Here we have only positive directions
-		//because in the Q^i_\mu(n) we have only {n+\mu}
-		///////////////////////////////////
-		// mu = +0
-		///////////////////////////////////
-		dir = TDIR; //here in other parts of the code we have dir=0, but it should be changed
-		            //to be coherent with the definitions of geometry. If one wanted to change
-		            //conventions, it should be enough to change the operations_geometry.cl file.
-		///////////////////////////////////
-		nn = get_neighbor_temporal(t);
-		nn_eo = get_n_eoprec(n, nn); //transform normal indices to eoprec index
-		U = get_matrixsu3(field, n, t, dir);
-		a = get_su3vec_from_field_eo(A, nn_eo);
-		if(evenodd == EVEN) //Get staggered phase and take into account global sign
-		  eta = get_staggered_phase(n, dir);
-		else
-		  eta = -1 * get_staggered_phase(n, dir);
-		a = su3vec_times_real(a, eta);
-		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
-		tmp = traceless_antihermitian_part(tmp);
-		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
-		out_tmp = build_ae_from_su3(aux);
-		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)
-		update_gaugemomentum(out_tmp, 1., get_link_pos(dir, n, t), out);
-
-		///////////////////////////////////
-		// mu = +1
-		///////////////////////////////////
-		dir = XDIR; //See comment for dir=TDIR
-		///////////////////////////////////
-		nn = get_neighbor_spatial(n, dir);
-		nn_eo = get_n_eoprec(nn, t); //transform normal indices to eoprec index
-		U = get_matrixsu3(field, n, t, dir);
-		a = get_su3vec_from_field_eo(A, nn_eo);
-		if(evenodd == ODD) //In XDIR the stagg. phase is +1 always, take into account only global sign
-			a = su3vec_times_real(a, -1.);
-		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
-		tmp = traceless_antihermitian_part(tmp);
-		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
-		out_tmp = build_ae_from_su3(aux);
-		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)
-		update_gaugemomentum(out_tmp, 1., get_link_pos(dir, n, t), out);
-		
-		///////////////////////////////////
-		// mu = +2
-		///////////////////////////////////
-		dir = YDIR; //See comment for dir=TDIR
-		///////////////////////////////////
-		nn = get_neighbor_spatial(n, dir);
-		nn_eo = get_n_eoprec(nn, t); //transform normal indices to eoprec index
-		U = get_matrixsu3(field, n, t, dir);
-		a = get_su3vec_from_field_eo(A, nn_eo);
-		if(evenodd == EVEN) //Get staggered phase and take into account global sign
-		  eta = get_staggered_phase(n, dir);
-		else
-		  eta = -1 * get_staggered_phase(n, dir);
-		a = su3vec_times_real(a, eta);
-		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
-		tmp = traceless_antihermitian_part(tmp);
-		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
-		out_tmp = build_ae_from_su3(aux);
-		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)
-		update_gaugemomentum(out_tmp, 1., get_link_pos(dir, n, t), out);
-		
-		///////////////////////////////////
-		// mu = +3
-		///////////////////////////////////
-		dir = ZDIR; //See comment for dir=TDIR
-		///////////////////////////////////
-		nn = get_neighbor_spatial(n, dir);
-		nn_eo = get_n_eoprec(nn, t); //transform normal indices to eoprec index
-		U = get_matrixsu3(field, n, t, dir);
-		a = get_su3vec_from_field_eo(A, nn_eo);
-		if(evenodd == EVEN) //Get staggered phase and take into account global sign
-		  eta = get_staggered_phase(n, dir);
-		else
-		  eta = -1 * get_staggered_phase(n, dir);
-		a = su3vec_times_real(a, eta);
-		b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
-		tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
-		tmp = traceless_antihermitian_part(tmp);
-		aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
-		out_tmp = build_ae_from_su3(aux);
-		//Let's add out_tmp to out in the right site that is get_link_pos(dir, n, t)
-		update_gaugemomentum(out_tmp, 1., get_link_pos(dir, n, t), out);
-	}
-}
-*/
