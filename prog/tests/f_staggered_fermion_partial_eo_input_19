@@ -19,6 +19,6 @@ read_multiple_configs=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1847.7086388415750662
+test_ref_val=1856.991830029393
 
 #This input file must not be modified!
