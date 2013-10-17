@@ -202,11 +202,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf1, coeff, system, params.get_kappa());
-		BOOST_CHECK_CLOSE(squarenorm(gm), 59243.416931556392228, 1.e-6);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 58424.656915726853185, 1.e-6);
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf2, coeff, system, params.get_kappa());
-		BOOST_CHECK_CLOSE(squarenorm(gm), 57301.210920764693583, 1.e-6);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 58492.589653369606822, 1.e-6);
 	}
 	
 }
