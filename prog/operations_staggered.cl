@@ -95,6 +95,7 @@ hmc_complex get_modified_stagg_phase(const int n, const int dir)
 	return out;
 }
 
+
 /**
  * This function returns the staggered phase modified in order to include in it
  * the boundary conditions. This means that the staggered phases at the last site
@@ -102,6 +103,15 @@ hmc_complex get_modified_stagg_phase(const int n, const int dir)
  * value is a complex number and we have also to pass to the function the time coordinate
  * in order to judge whether we are on the last site in the temporal direction.
  */
+/*
+//In case the following function is uncommented, these options have to be passed
+//to the kernels that use the function.
+//These 4 parameters are needed to modify staggered phases and then to impose BC
+//  options << " -D COS_THETAS=" << cos(params.get_theta_fermion_spatial() * PI);
+//  options << " -D SIN_THETAS=" << sin(params.get_theta_fermion_spatial() * PI);
+//  options << " -D COS_THETAT=" << cos(params.get_theta_fermion_temporal() * PI);
+//  options << " -D SIN_THETAT=" << sin(params.get_theta_fermion_temporal() * PI);
+
 hmc_complex get_mod_stagg_phase(const int n, const int t, const int dir)
 {
 	int ph;
@@ -151,7 +161,7 @@ hmc_complex get_mod_stagg_phase(const int n, const int t, const int dir)
 	}
 	return out;
 }
-
+*/
 
 
 
