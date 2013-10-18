@@ -62,15 +62,13 @@ void physics::algorithms::Rational_Coefficients::Set_a0(hmc_float v)
 
 void physics::algorithms::Rational_Coefficients::Set_a(std::vector<hmc_float> v) 
 {
-	for(int i=0; i<_d; i++)
-		_a.push_back(v[i]);
+	_a = v;
 }
 
 
 void physics::algorithms::Rational_Coefficients::Set_b(std::vector<hmc_float> v) 
 {
-	for(int i=0; i<_d; i++)
-		_b.push_back(v[i]);
+	_b = v;
 }
 
 
