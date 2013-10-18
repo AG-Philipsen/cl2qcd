@@ -210,10 +210,6 @@ int Inputparameters::get_cgmax_mp() const noexcept
 {
   return cgmax_mp;
 }
-int Inputparameters::get_findminmax_max() const noexcept
-{
-  return findminmax_max;
-}
 double Inputparameters::get_theta_fermion_spatial() const noexcept
 {
   return theta_fermion_spatial;
@@ -344,6 +340,29 @@ default:
 throw std::out_of_range("No such timescale");
 }
 }
+
+//RHMC specific parameters
+int Inputparameters::get_md_approx_ord() const noexcept
+{
+  return md_approx_ord;
+}
+int Inputparameters::get_metro_approx_ord() const noexcept
+{
+  return metro_approx_ord;
+}
+int Inputparameters::get_findminmax_iteration_block_size() const noexcept
+{
+  return findminmax_iteration_block_size;
+}
+int Inputparameters::get_findminmax_max() const noexcept
+{
+  return findminmax_max;
+}
+double Inputparameters::get_findminmax_prec() const noexcept
+{
+  return findminmax_prec;
+}
+
 
 //direction for the correlator
 int Inputparameters::get_corr_dir() const noexcept
@@ -483,10 +502,6 @@ int Inputparameters::get_cg_iteration_block_size() const noexcept
 {
   return cg_iteration_block_size;
 }
-int Inputparameters::get_find_minmax_iteration_block_size() const noexcept
-{
-  return find_minmax_iteration_block_size;
-}
 bool Inputparameters::get_cg_use_async_copy() const noexcept
 {
   return cg_use_async_copy;
@@ -560,7 +575,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("csw_mp", po::value<double>(&csw_mp)->default_value(0.))
 	("cgmax", po::value<int>(&cgmax)->default_value(1000))
 	("cgmax_mp", po::value<int>(&cgmax_mp)->default_value(1000))
-	("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
 	("theta_fermion_spatial", po::value<double>(&theta_fermion_spatial)->default_value(0.))
 	("theta_fermion_temporal", po::value<double>(&theta_fermion_temporal)->default_value(0.))
 	("chem_pot_re", po::value<double>(&chem_pot_re)->default_value(0.))
@@ -602,6 +616,13 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
 	("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
 	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
+	
+	//RHMC specific parameters
+	("md_approx_ord", po::value<int>(&md_approx_ord)->default_value(8))
+	("metro_approx_ord", po::value<int>(&metro_approx_ord)->default_value(15))
+	("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
+	("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
+	("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
 
 	("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
 
@@ -644,7 +665,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
 
 	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
-	("find_minmax_iteration_block_size", po::value<int>(&find_minmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
 	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
 	("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!")
 

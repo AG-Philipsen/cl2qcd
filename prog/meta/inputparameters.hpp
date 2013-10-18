@@ -100,7 +100,6 @@ public:
 	double get_csw_mp() const noexcept;
 	int get_cgmax() const noexcept;
 	int get_cgmax_mp() const noexcept;
-	int get_findminmax_max() const noexcept;
 	double get_theta_fermion_spatial() const noexcept;
 	double get_theta_fermion_temporal() const noexcept;
 	double get_chem_pot_re() const noexcept;
@@ -131,6 +130,13 @@ public:
 	integrator get_integrator(size_t timescale) const noexcept;
 	//this is the optimal value...
 	double get_lambda(size_t timescale) const noexcept;
+	
+	//RHMC specific parameters
+	int get_md_approx_ord() const noexcept;
+	int get_metro_approx_ord() const noexcept;
+	int get_findminmax_iteration_block_size() const noexcept;
+	int get_findminmax_max() const noexcept;
+	double get_findminmax_prec() const noexcept;
 
 	//direction for the correlator
 	int get_corr_dir() const noexcept;
@@ -174,7 +180,6 @@ public:
 	pbp_version get_pbp_version() const noexcept;
 
 	int get_cg_iteration_block_size() const noexcept;
-	int get_find_minmax_iteration_block_size() const noexcept;
 	bool get_cg_use_async_copy() const noexcept;
 	int get_cg_minimum_iteration_count() const noexcept;
 
@@ -229,7 +234,6 @@ private:
 	double csw_mp;
 	int cgmax;
 	int cgmax_mp;
-	int findminmax_max;
 	double theta_fermion_spatial;
 	double theta_fermion_temporal;
 	double chem_pot_re;
@@ -265,6 +269,13 @@ private:
 	double lambda0;
 	double lambda1;
 	double lambda2;
+	
+	//RHMC specific parameters
+	int md_approx_ord;
+	int metro_approx_ord;
+	int findminmax_iteration_block_size;
+	int findminmax_max;
+	double findminmax_prec;
 
 	//direction for the correlator
 	int corr_dir;
@@ -312,7 +323,6 @@ private:
 	pbp_version pbp_version_;
 
 	int cg_iteration_block_size;
-	int find_minmax_iteration_block_size;
 	bool cg_use_async_copy;
 	int cg_minimum_iteration_count;
 
