@@ -189,7 +189,7 @@ public:
 	 *                      increased by 5% and the minimum one is set to the squared mass of the
 	 *                      fermions. This circumvents possible numeric errors.
 	 */
-	Rational_Coefficients Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec, bool conservative=false);
+	Rational_Coefficients Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec, bool conservative=false) const;
 
 private:
 	bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)
