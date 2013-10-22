@@ -232,6 +232,9 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	//Fermion-Part:
 	if(! params.get_use_gauge_only() ) {
 		if( params.get_use_mp() ) {
+			if(params.get_fermact() == meta::Inputparameters::rooted_stagg) {
+				throw Invalid_Parameters("Mass preconditioning not implemented for staggered fermions!", "NOT rooted_stagg", get_system().get_inputparameters().get_fermact());
+			}
 			//in this case one has contributions from det(m_light/m_heavy) and det(m_heavy)
 			// det(m_heavy)
 			hmc_float s_fermion_final;
