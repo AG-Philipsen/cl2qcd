@@ -27,6 +27,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Rooted_Staggeredfield_eo sf(system);
+	physics::algorithms::Rational_Approximation approx(3,1,4,1e-5,1);
+	Rooted_Staggeredfield_eo sf2(approx, system);
+	
 }
 
 

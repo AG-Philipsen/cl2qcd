@@ -9,6 +9,8 @@
 
 #include "../../hardware/system.hpp"
 #include "../algorithms/rational_approximation.hpp"
+//This is to make the template pseudo_randomize friend of this class
+#include "util.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -27,6 +29,7 @@ public:
 	 * Construct a rooted staggeredfield based on the input-files of the system
 	 */
 	Rooted_Staggeredfield_eo(const hardware::System&);
+	Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System&);
 
 	/**
 	 * Staggeredfield_eo cannot be copied
@@ -37,8 +40,17 @@ public:
 
 	/**
 	 * Rescale coefficients on the basis of a Rational_Approximation objects
+	 *  @param A The fermionic operator to calculate the eigenvalues from
+	 *  @param gf The gaugefield which A depends on
+	 *  @param system The system it is operated on
+	 *  @param prec The precision to calculate the eigenvalues up
+	 *  @param conservative If true, the maximum eigenvalue found by find_maxmin_eigenvalue is
+	 *                      increased by 5% and the minimum one is set to the squared mass of the
+	 *                      fermions. This circumvents possible numeric errors.
 	 */
 	void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, bool conservative=false);
+	
+	friend void pseudo_randomize<Rooted_Staggeredfield_eo, su3vec>(const Rooted_Staggeredfield_eo* to, int seed);
 
 };
 

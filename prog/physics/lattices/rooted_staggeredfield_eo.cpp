@@ -23,6 +23,11 @@ physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hard
 {
 }
 
+physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System& system)
+	: Staggeredfield_eo(system), physics::algorithms::Rational_Coefficients(approx.Get_order(), approx.Get_a0(), approx.Get_a(), approx.Get_b()) 
+{
+}
+
 void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, bool conservative)
 {
 	physics::algorithms::Rational_Coefficients aux = approx.Rescale_Coefficients(A, gf, system, prec, conservative);
