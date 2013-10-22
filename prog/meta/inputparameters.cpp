@@ -724,6 +724,7 @@ static Inputparameters::action get_action(std::string s)
 	m["tlsym"] = Inputparameters::tlsym;
 	m["iwasaki"] = Inputparameters::iwasaki;
 	m["dbw2"] = Inputparameters::dbw2;
+	m["rooted_stagg"] = Inputparameters::rooted_stagg;
 
 	Inputparameters::action a = m[s];
 	if(a) { // map returns 0 if element is not found
