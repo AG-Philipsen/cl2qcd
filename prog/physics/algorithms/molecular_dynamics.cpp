@@ -165,7 +165,7 @@ template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::l
 	delta_p.zero();
 	calc_total_force(&delta_p, gf, phi, system, kappa, mubar);
 
-	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	logger.debug() << "\t(R)HMC [UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, delta_p);
 }
 void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
@@ -177,18 +177,9 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 	::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar);
 }
 
-//In the RHMC (staggered fermions) there is non need to write a new template since only eo-preconditioned
-//field are so far used. We can neither use the above template, because of the Rational Approximation.
-void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
 {
-	using namespace physics::algorithms;
-
-	physics::lattices::Gaugemomenta delta_p(system);
-	delta_p.zero();
-	calc_total_force(&delta_p, gf, phi, coeff, system, mass);
-
-	logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
-	physics::lattices::saxpy(inout, -1.*eps, delta_p);
+	::md_update_gaugemomentum(inout, eps, gf, phi, system, mass, mubar);
 }
 
 
@@ -210,9 +201,9 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const ph
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
 	calc_fermion_force(&force, gf, phi, system, kappa, mubar);
-	log_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
+	log_squarenorm("\t(R)HMC [UP]:\tFORCE [DET]:\t", force);
 
-	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	logger.debug() << "\t(R)HMC [UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, force);
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
@@ -226,17 +217,9 @@ void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattice
 
 //In the RHMC (staggered fermions) there is non need to write a new template since only eo-preconditioned
 //field are so far used. We can neither use the above template, because of the Rational Approximation.
-void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
 {
-	using namespace physics::algorithms;
-
-	const physics::lattices::Gaugemomenta force(system);
-	force.zero();
-	calc_fermion_force(&force, gf, phi, coeff, system, mass);
-	log_squarenorm("\tRHMC [UP]:\tFORCE [DET]:\t", force);
-
-	logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
-	physics::lattices::saxpy(inout, -1.*eps, force);
+	::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, mass, mubar);
 }
 
 
