@@ -165,7 +165,10 @@ template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::l
 	delta_p.zero();
 	calc_total_force(&delta_p, gf, phi, system, kappa, mubar);
 
-	logger.debug() << "\t(R)HMC [UP]:\tupdate GM [" << eps << "]";
+	if(system.get_inputparameters().get_fermact() != meta::Inputparameters::rooted_stagg)
+		logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	else
+		logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, delta_p);
 }
 void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
@@ -201,9 +204,13 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const ph
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
 	calc_fermion_force(&force, gf, phi, system, kappa, mubar);
-	log_squarenorm("\t(R)HMC [UP]:\tFORCE [DET]:\t", force);
-
-	logger.debug() << "\t(R)HMC [UP]:\tupdate GM [" << eps << "]";
+	if(system.get_inputparameters().get_fermact() != meta::Inputparameters::rooted_stagg){
+		log_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
+		logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
+	}else{
+		log_squarenorm("\tRHMC [UP]:\tFORCE [DET]:\t", force);
+		logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
+	}
 	physics::lattices::saxpy(inout, -1.*eps, force);
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
