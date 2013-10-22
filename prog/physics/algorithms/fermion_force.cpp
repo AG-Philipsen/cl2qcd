@@ -297,7 +297,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
  * @warning Remember that this function add to the Gaugemomenta field "force" the fermionic
  *          contribution. Therefore such a field must be properly initialized.
  */
-void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, const hmc_float mass)
+void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
 {
 	using physics::lattices::Staggeredfield_eo;
 	using namespace physics::algorithms::solvers;
@@ -309,12 +309,12 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	logger.debug() << "\t\t\tstart solver";
 	std::vector<Staggeredfield_eo *> X;
 	std::vector<Staggeredfield_eo *> Y;
-	for(int i=0; i<coeff.Get_order(); i++){
+	for(int i=0; i<phi.Get_order(); i++){
 		X.push_back(new Staggeredfield_eo(system));
 		Y.push_back(new Staggeredfield_eo(system));
 	}
 	const MdagM_eo fm(system, mass);
-	const int iterations = cg_m(X, coeff.Get_b(), fm, gf, phi, system, params.get_force_prec());
+	const int iterations = cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_force_prec());
 	logger.debug() << "\t\t\t  end solver";
 	
 	//Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
@@ -323,12 +323,12 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	const D_KS_eo Doe(system, ODD); //with ODD it is the Doe operator
 	physics::lattices::Gaugemomenta tmp(system);
 	
-	for(int i=0; i<coeff.Get_order(); i++){
+	for(int i=0; i<phi.Get_order(); i++){
 		Doe(Y[i], gf, *X[i]);
 		tmp.zero();
 		fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
 		fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
-		physics::lattices::saxpy(force, -1.*(coeff.Get_a())[i], tmp);
+		physics::lattices::saxpy(force, -1.*(phi.Get_a())[i], tmp);
 	}
 	
 	logger.debug() << "\t\t...end calc_fermion_force!";
@@ -696,13 +696,9 @@ void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemome
 	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
 }
 
-//At the moment only even-odd Staggeredfield are used and we have only one staggered force
-//to be calculated. Hence there is no need to develop a new template. It is worth remarking
-//that we cannot use the template written for Wilson, since we need a Rational_Coefficients
-//object as parameter.
-void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& phi, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
 {
-	calc_fermion_force(force, gf, phi, coeff, system, mass);
+	::calc_fermion_forces(force, gf, phi, system, mass, mubar);
 }
 
 void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
