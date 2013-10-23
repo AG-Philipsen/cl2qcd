@@ -176,11 +176,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		pseudo_randomize<Rooted_Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
 		
 		gm.zero();
-		calc_total_force(&gm, gf, sf1, system, params.get_kappa());
+		calc_total_force(&gm, gf, sf1, system, 0.125);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 58639.680325374203676, 1.e-6);
 		
 		gm.zero();
-		calc_total_force(&gm, gf, sf2, system, params.get_kappa());
+		calc_total_force(&gm, gf, sf2, system, 0.125);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 57864.102469501536689, 1.e-6);
 	}
 	
@@ -200,11 +200,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		pseudo_randomize<Rooted_Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
 		
 		gm.zero();
-		calc_total_force(&gm, gf, sf1, system, params.get_kappa());
+		calc_total_force(&gm, gf, sf1, system, 0.125);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 58424.656915726853185, 1.e-6);
 		
 		gm.zero();
-		calc_total_force(&gm, gf, sf2, system, params.get_kappa());
+		calc_total_force(&gm, gf, sf2, system, 0.125);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 58492.589653369606822, 1.e-6);
 	}
 	

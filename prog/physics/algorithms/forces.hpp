@@ -24,7 +24,7 @@ void calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics:
 
 void calc_total_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 void calc_total_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-void calc_total_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, hmc_float mass, hmc_float mubar = ARG_DEF); //mubar is so far NOT IMPLEMENTED!!
+void calc_total_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, hmc_float mass = ARG_DEF, hmc_float mubar = ARG_DEF); //mubar is so far NOT IMPLEMENTED!!
 
 
 }

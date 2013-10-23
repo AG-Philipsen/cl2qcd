@@ -294,11 +294,11 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 	pseudo_randomize<Rooted_Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
 	
 	gm.zero();
-	physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, params.get_kappa());
+	physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, 0.125);
 	BOOST_CHECK_CLOSE(squarenorm(gm), 2214.9003939576623452, 1.e-6);
 	
 	gm.zero();
-	physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, params.get_kappa());
+	physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, 0.125);
 	BOOST_CHECK_CLOSE(squarenorm(gm), 1845.6513833002247793, 1.e-6);
 }
 
