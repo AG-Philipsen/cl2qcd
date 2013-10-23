@@ -84,7 +84,7 @@ void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buff
 {
 	//get mass
 	hmc_float mass_tmp;
-	if(mass == ARG_DEF) mass_tmp = get_parameters().get_kappa();
+	if(mass == ARG_DEF) mass_tmp = get_parameters().get_mass();
 	else mass_tmp = mass;
 
 	//query work-sizes for kernel
