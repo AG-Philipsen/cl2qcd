@@ -1,6 +1,6 @@
 startcondition=cold
 
-kappa=0.1
+mass=0.1
 
 use_eo=false
 NS=4

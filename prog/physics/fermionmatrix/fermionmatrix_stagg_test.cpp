@@ -52,8 +52,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
-		FERMIONMATRIX matrix1(system, ARG_DEF, ODD);
-		FERMIONMATRIX matrix2(system, ARG_DEF);
+		FERMIONMATRIX matrix1(system, 1., ODD);
+		FERMIONMATRIX matrix2(system, 1.);
 
 		logger.info() << "The mass of the fermion is " << matrix1.get_mass();
 		
@@ -83,8 +83,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
-		FERMIONMATRIX matrix1(system, ARG_DEF, ODD);
-		FERMIONMATRIX matrix2(system, ARG_DEF);
+		FERMIONMATRIX matrix1(system, 1., ODD);
+		FERMIONMATRIX matrix2(system, 1.);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");

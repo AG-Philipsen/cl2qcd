@@ -219,7 +219,7 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg *
   //Now we can write conf_new to the file                                                                                             
   std::ofstream file(outputfile.c_str());
   file << ns << " " << ns << " " << ns << " " << nt << " ";
-  file << params.get_beta() << " " << params.get_kappa() << " 12345" << std::endl;
+  file << params.get_beta() << " " << params.get_mass() << " 12345" << std::endl;
   //The last number that I set to 12345 should be the hmc iteration; here it is not relevant                                          
   for(int i=0; i<ns*ns*ns*nt*4; i++)
     file << matrix_to_string(conf_new[i]);

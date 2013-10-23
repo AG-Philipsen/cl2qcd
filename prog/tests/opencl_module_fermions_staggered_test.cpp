@@ -114,7 +114,7 @@ void test_m_staggered(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	device->M_staggered_device(&in, &out,  cpu.get_gaugefield(), params.get_kappa());
+	device->M_staggered_device(&in, &out,  cpu.get_gaugefield(), ARG_DEF);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
