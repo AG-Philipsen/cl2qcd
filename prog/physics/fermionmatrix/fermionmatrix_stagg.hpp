@@ -42,7 +42,7 @@ public:
 	virtual cl_ulong get_flops() const = 0;
 
 protected:
-	Fermionmatrix_stagg_basic(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : _is_hermitian(herm), mass(_mass), system(system) { };
+	Fermionmatrix_stagg_basic(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : _is_hermitian(herm), mass((_mass == ARG_DEF) ? system.get_inputparameters().get_mass() : _mass), system(system) { };
 
 	/**
 	 * Get the mass of the fermion.
