@@ -169,6 +169,11 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	return squarenorm(phi_inv);
 }
 
+hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi_mp, const hardware::System& system)
+{
+   //Function not yet implemented!
+}
+
 /**
  * This function returns the value of the fermionic part of the action for the RHMC, i.e.
  * \f$ \phi^*\,(M^\dag\,M)^{-\frac{N_f}{4}}\,\phi \f$.
@@ -353,6 +358,11 @@ hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_f
 }
 
 hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Spinorfield_eo& phi, const hmc_float spinor_energy_init, const physics::lattices::Spinorfield_eo * const phi_mp, const hmc_float spinor_energy_mp_init, const hardware::System& system)
+{
+	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp, spinor_energy_mp_init, system);
+}
+
+hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hmc_float spinor_energy_init, const physics::lattices::Rooted_Staggeredfield_eo* const phi_mp, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
 	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp, spinor_energy_mp_init, system);
 }
