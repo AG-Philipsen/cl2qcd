@@ -63,7 +63,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
  * @endcode
  * where k is the order of the rational approximation, a_0, a_i and b_i are the coefficients.
  */
-void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& orig, const physics::algorithms::Rational_Coefficients& coeff, const hardware::System& system, hmc_float mass)
+void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
 {
 	logger.debug() << "\tRHMC [UP]:\tupdate SF";
 	auto params = system.get_inputparameters();
@@ -72,15 +72,15 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Stagger
 	//Temporary fields for shifted inverter
 	logger.trace() << "\t\tstart solver...";
 	std::vector<physics::lattices::Staggeredfield_eo *> X;
-	for(int i=0; i<coeff.Get_order(); i++)
+	for(int i=0; i<orig.Get_order(); i++)
 		X.push_back(new physics::lattices::Staggeredfield_eo(system));
 	//Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-	const int iterations = physics::algorithms::solvers::cg_m(X, coeff.Get_b(), fm, gf, orig, system, params.get_solver_prec());
+	const int iterations = physics::algorithms::solvers::cg_m(X, orig.Get_b(), fm, gf, orig, system, params.get_solver_prec());
 	logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 	
-	physics::lattices::sax(out, {coeff.Get_a0(), 0.}, orig);
-	for(int i=0; i<coeff.Get_order(); i++)
-		physics::lattices::saxpy(out, {(coeff.Get_a())[i], 0.}, orig, *out);
+	physics::lattices::sax(out, {orig.Get_a0(), 0.}, orig);
+	for(int i=0; i<orig.Get_order(); i++)
+		physics::lattices::saxpy(out, {(orig.Get_a())[i], 0.}, *X[i], *out);
 	
 	log_squarenorm("Staggeredfield_eo after update", *out);
 }
