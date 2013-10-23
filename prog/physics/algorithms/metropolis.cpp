@@ -8,6 +8,7 @@
 #include "metropolis.hpp"
 
 #include "solver.hpp"
+#include "solver_shifted.hpp"
 #include "../lattices/util.hpp"
 #include "../../meta/util.hpp"
 #include <cmath>
@@ -168,6 +169,44 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	return squarenorm(phi_inv);
 }
 
+/**
+ * This function returns the value of the fermionic part of the action for the RHMC, i.e.
+ * \f$ \phi^*\,(M^\dag\,M)^{-\frac{N_f}{4}}\,\phi \f$.
+ * 
+ * Here, we use the coefficients of the rational expansion of \f$ x^{-\frac{N_f}{4}} \f$ 
+ * included in the Rooted_Staggeredfield_eo object to calculate \f$ (M^\dag\,M)^{-\frac{N_f}{4}}\,\phi \f$
+ * (using the multi-shifted inverter). Then a scalar product give the returning value.
+ * 
+ */
+hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
+{
+	using physics::lattices::Rooted_Staggeredfield_eo;
+	using namespace physics::algorithms::solvers;
+	using namespace physics::fermionmatrix;
+	
+	auto params = system.get_inputparameters();
+	const physics::fermionmatrix::MdagM_eo fm(system, mass);
+	
+	//Temporary fields for shifted inverter
+	logger.debug() << "\t\tstart solver...";
+	std::vector<physics::lattices::Staggeredfield_eo *> X;
+	for(int i=0; i<phi.Get_order(); i++)
+		X.push_back(new physics::lattices::Staggeredfield_eo(system));
+	//Here the inversion must be performed with high precision, because it'll be used for Metropolis test
+	const int iterations = physics::algorithms::solvers::cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_solver_prec());
+	logger.debug() << "\t\t...end solver in " << iterations << " iterations";
+	
+	physics::lattices::Staggeredfield_eo tmp(system); //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
+	sax(&tmp, {phi.Get_a0(), 0.}, phi);
+	for(int i=0; i<phi.Get_order(); i++){
+		logger.warn() << "sqnorm(X[" << i << "]) = " << squarenorm(*X[i]);
+		saxpy(&tmp, {(phi.Get_a())[i], 0.}, *X[i], tmp);
+	}
+	
+	return scalar_product(phi, tmp).re;
+  
+}
+
 template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const SPINORFIELD& phi, const hmc_float spinor_energy_init, const SPINORFIELD * const phi_mp, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
 	using namespace physics::algorithms;
@@ -233,7 +272,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	if(! params.get_use_gauge_only() ) {
 		if( params.get_use_mp() ) {
 			if(params.get_fermact() == meta::Inputparameters::rooted_stagg) {
-				throw Invalid_Parameters("Mass preconditioning not implemented for staggered fermions!", "NOT rooted_stagg", get_system().get_inputparameters().get_fermact());
+				throw Invalid_Parameters("Mass preconditioning not implemented for staggered fermions!", "NOT rooted_stagg", params.get_fermact());
 			}
 			//in this case one has contributions from det(m_light/m_heavy) and det(m_heavy)
 			// det(m_heavy)
