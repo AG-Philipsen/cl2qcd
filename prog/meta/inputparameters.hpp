@@ -93,6 +93,7 @@ public:
 	action get_fermact() const noexcept;
 	action get_fermact_mp() const noexcept;
 	double get_kappa() const noexcept;
+	double get_mass() const noexcept;
 	double get_mu() const noexcept;
 	double get_csw() const noexcept;
 	double get_kappa_mp() const noexcept;
@@ -227,6 +228,7 @@ private:
 	action fermact;
 	action fermact_mp;
 	double kappa;
+	double mass; //staggered quark mass
 	double mu;
 	double csw;
 	double kappa_mp;

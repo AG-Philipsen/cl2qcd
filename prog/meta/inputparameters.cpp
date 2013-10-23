@@ -182,6 +182,10 @@ double Inputparameters::get_kappa() const noexcept
 {
   return kappa;
 }
+double Inputparameters::get_mass() const noexcept
+{
+  return mass;
+}
 double Inputparameters::get_mu() const noexcept
 {
   return mu;
@@ -568,6 +572,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("fermact", po::value<std::string>()->default_value("wilson"))
 	("fermact_mp", po::value<std::string>()->default_value("wilson"))
 	("kappa", po::value<double>(&kappa)->default_value(0.125))
+	("mass", po::value<double>(&mass)->default_value(0.1))
 	("mu", po::value<double>(&mu)->default_value(0.006))
 	("csw", po::value<double>(&csw)->default_value(0.))
 	("kappa_mp", po::value<double>(&kappa_mp)->default_value(0.125))
