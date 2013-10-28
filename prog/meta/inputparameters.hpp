@@ -138,6 +138,7 @@ public:
 	int get_findminmax_iteration_block_size() const noexcept;
 	int get_findminmax_max() const noexcept;
 	double get_findminmax_prec() const noexcept;
+	bool get_conservative() const noexcept;
 
 	//direction for the correlator
 	int get_corr_dir() const noexcept;
@@ -278,6 +279,7 @@ private:
 	int findminmax_iteration_block_size;
 	int findminmax_max;
 	double findminmax_prec;
+	bool conservative;
 
 	//direction for the correlator
 	int corr_dir;

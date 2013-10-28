@@ -366,6 +366,10 @@ double Inputparameters::get_findminmax_prec() const noexcept
 {
   return findminmax_prec;
 }
+bool Inputparameters::get_conservative() const noexcept
+{
+  return conservative;
+}
 
 
 //direction for the correlator
@@ -628,6 +632,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
 	("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
 	("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
+	("conservative", po::value<bool>(&conservative)->default_value(false))
 
 	("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
 
