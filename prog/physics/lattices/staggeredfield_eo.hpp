@@ -77,13 +77,10 @@ public:
 	 */
 	unsigned get_elements() const noexcept;
 
-protected:
-	//This method has been declared as protected to can be used by derived class Rooted_Staggeredfield_eo 
-	void import(const su3vec * const host) const;
-
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::SU3vec *> buffers;
+	void import(const su3vec * const host) const;
 
 	friend hmc_complex scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
 	friend hmc_float squarenorm(const Staggeredfield_eo& field);

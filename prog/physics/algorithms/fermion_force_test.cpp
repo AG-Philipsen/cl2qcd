@@ -290,8 +290,8 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 	Rooted_Staggeredfield_eo sf2(approx, system);
 	
 	//These are the same fields of the excplicit test D_KS_eo (second test)
-	pseudo_randomize<Rooted_Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
-	pseudo_randomize<Rooted_Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+	pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
+	pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
 	
 	gm.zero();
 	physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, 0.125);
