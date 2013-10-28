@@ -35,6 +35,10 @@ void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const
 {
 	::leapfrog(gm, gf, phi, system);
 }
+void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system)
+{
+	::leapfrog(gm, gf, phi, system);
+}
 void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield& phi, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
 {
 	::leapfrog(gm, gf, phi, phi_mp, system);
@@ -192,6 +196,10 @@ void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm
 	::twomn(gm, gf, phi, system);
 }
 void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
+{
+	::twomn(gm, gf, phi, system);
+}
+void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system)
 {
 	::twomn(gm, gf, phi, system);
 }
@@ -449,6 +457,10 @@ void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * con
 	::integrator(gm, gf, phi, system);
 }
 void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system)
+{
+	::integrator(gm, gf, phi, system);
+}
+void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system)
 {
 	::integrator(gm, gf, phi, system);
 }
