@@ -22,6 +22,7 @@ add_library(algorithms
 	find_minmax_eigenvalue.cpp
 	rational_approximation.cpp
 	solver_shifted.cpp
+	rhmc.cpp
 )
 target_link_libraries(algorithms
 		lattices
