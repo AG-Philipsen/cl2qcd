@@ -62,8 +62,11 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
  *       = a_0 * orig + \sum_{i=1}^k a_i * [(Mdag*M + b_i)^{-1} * orig]
  * @endcode
  * where k is the order of the rational approximation, a_0, a_i and b_i are the coefficients.
+ * 
+ * @note The coefficients of the approximation are stored in out, since this is the field that
+ *       appears in the perform_RHMC_step function.
  */
-void physics::algorithms::md_update_spinorfield(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
+void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
 {
 	logger.debug() << "\tRHMC [UP]:\tupdate SF";
 	auto params = system.get_inputparameters();
@@ -72,15 +75,15 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Stagger
 	//Temporary fields for shifted inverter
 	logger.trace() << "\t\tstart solver...";
 	std::vector<physics::lattices::Staggeredfield_eo *> X;
-	for(int i=0; i<orig.Get_order(); i++)
+	for(int i=0; i<out->Get_order(); i++)
 		X.push_back(new physics::lattices::Staggeredfield_eo(system));
 	//Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-	const int iterations = physics::algorithms::solvers::cg_m(X, orig.Get_b(), fm, gf, orig, system, params.get_solver_prec());
+	const int iterations = physics::algorithms::solvers::cg_m(X, out->Get_b(), fm, gf, orig, system, params.get_solver_prec());
 	logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 	
-	physics::lattices::sax(out, {orig.Get_a0(), 0.}, orig);
-	for(int i=0; i<orig.Get_order(); i++)
-		physics::lattices::saxpy(out, {(orig.Get_a())[i], 0.}, *X[i], *out);
+	physics::lattices::sax(out, {out->Get_a0(), 0.}, orig);
+	for(int i=0; i<out->Get_order(); i++)
+		physics::lattices::saxpy(out, {(out->Get_a())[i], 0.}, *X[i], *out);
 	
 	log_squarenorm("Staggeredfield_eo after update", *out);
 }
@@ -165,10 +168,7 @@ template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::l
 	delta_p.zero();
 	calc_total_force(&delta_p, gf, phi, system, kappa, mubar);
 
-	if(system.get_inputparameters().get_fermact() != meta::Inputparameters::rooted_stagg)
-		logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
-	else
-		logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
+	logger.debug() << ((system.get_inputparameters().get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, delta_p);
 }
 void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
@@ -204,13 +204,8 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const ph
 	const physics::lattices::Gaugemomenta force(system);
 	force.zero();
 	calc_fermion_force(&force, gf, phi, system, kappa, mubar);
-	if(system.get_inputparameters().get_fermact() != meta::Inputparameters::rooted_stagg){
-		log_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
-		logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
-	}else{
-		log_squarenorm("\tRHMC [UP]:\tFORCE [DET]:\t", force);
-		logger.debug() << "\tRHMC [UP]:\tupdate GM [" << eps << "]";
-	}
+	log_squarenorm(((system.get_inputparameters().get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC [UP]:\tFORCE [DET]:\t" : "\tRHMC [UP]:\tFORCE [DET]:\t"), force);
+	logger.debug() <<  ((system.get_inputparameters().get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[UP]:\tupdate GM [" << eps << "]";
 	physics::lattices::saxpy(inout, -1.*eps, force);
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
