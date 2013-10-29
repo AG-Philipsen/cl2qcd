@@ -3,7 +3,7 @@
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
-#include </usr/include/c++/4.7/fstream>
+#include "../general_header.h"
 //spinors.hpp needed for get_spinorfieldsize and get_eoprec_spinorfieldsize
 #include "../hardware/code/spinors.hpp" 
 
