@@ -78,7 +78,7 @@ void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buff
 	gs = buffer->get_elements();
 	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
 		/// @todo upgrade to newer ranluxcl to avoid this restcition
-		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", get_parameters().get_host_seed());
+		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", (int)get_parameters().get_host_seed());
 	}
 	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);

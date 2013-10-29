@@ -9,6 +9,7 @@
 #include "meta/util.hpp"
 #include <cmath>
 
+static void check_rhmc_parameters(const meta::Inputparameters& params);
 static void print_hmcobservables(const hmc_observables& obs, int iter, const std::string& filename, const meta::Inputparameters& params);
 static void print_hmcobservables(const hmc_observables& obs, int iter);
 
@@ -20,17 +21,20 @@ int main(int argc, const char* argv[])
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
 		
+		//Check if inputparameters has reasonable parameters
+		check_rhmc_parameters(parameters);
+		
 		meta::print_info_rhmc(argv[0], parameters);
 
 		ofstream ofile;
 		ofile.open("rhmc.log");
 		if(ofile.is_open()) {
-			meta::print_info_hmc(argv[0], &ofile, parameters);
+			meta::print_info_rhmc(argv[0], &ofile, parameters);
 			ofile.close();
 		} else {
 			logger.warn() << "Could not log file for rhmc.";
 		}
-#if 0
+
 		/////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		/////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +50,7 @@ int main(int argc, const char* argv[])
 		logger.info() << "Gaugeobservables:";
 		print_gaugeobservables(gaugefield, 0);
 		init_timer.add();
-
+#if 0
 		/////////////////////////////////////////////////////////////////////////////////
 		// RHMC
 		/////////////////////////////////////////////////////////////////////////////////
@@ -130,6 +134,29 @@ int main(int argc, const char* argv[])
 
 	return 0;
 
+}
+
+
+static void check_rhmc_parameters(const meta::Inputparameters& p)
+{
+	if(p.get_fermact() != meta::Inputparameters::rooted_stagg)
+	  throw Invalid_Parameters("Fermion action not suitable for RHMC!", meta::Inputparameters::rooted_stagg, p.get_fermact());
+	if(!p.get_use_eo())
+	  throw Invalid_Parameters("RHMC available only WITH eo-prec!", "use_eo=1", p.get_use_eo());
+	if(p.get_use_mp())
+	  throw Invalid_Parameters("RHMC available only WITHOUT mass preconditionig!", "use_mp=0", p.get_use_mp());
+	if(p.get_use_chem_pot_re())
+	  throw Invalid_Parameters("RHMC available only WITHOUT real chemical potential!", "use_chem_pot_re=0", p.get_use_chem_pot_re());
+	if(p.get_use_chem_pot_im())
+	  throw Invalid_Parameters("RHMC available only WITHOUT imaginary chemical potential!", "use_chem_pot_im=0", p.get_use_chem_pot_im());
+	if(p.get_num_tastes() == 4)
+	  throw Invalid_Parameters("RHMC not working with 4 tastes (there is no need of the rooting trick)!", "num_tastes!=4", p.get_num_tastes());
+	if(p.get_cg_iteration_block_size() == 0 || p.get_findminmax_iteration_block_size() == 0)
+	  throw Invalid_Parameters("Iteration block sizes CANNOT be zero!", "cg_iteration_block_size!=0 && findminmax_iteration_block_size!=0", p.get_cg_iteration_block_size()==0 ? "cg_iteration_block_size=0" : "findminmax_iteration_block_size=0");
+	if(p.get_approx_upper() != 1)
+	  throw Invalid_Parameters("RHMC not available if the Rational expansion is not calculated in [..,1]!", "approx_upper=1", p.get_approx_upper());
+	if(p.get_approx_lower() >= 1)
+	   throw Invalid_Parameters("The lower bound of the Rational expansion >= than the upper one does not make sense!", "approx_lower < approx_upper", to_string(p.get_approx_lower())+" >= 1");
 }
 
 

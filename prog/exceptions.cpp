@@ -76,6 +76,14 @@ Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, 
 	return;
 }
 
+Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, double found) : std::invalid_argument(descr)
+{
+	std::stringstream msg;
+	msg << descr << " Expected: " << expected << " But found: " << found;
+	error_message = msg.str();
+	return;
+}
+
 Invalid_Parameters::Invalid_Parameters(std::string descr, int expected, int found) : std::invalid_argument(descr)
 {
 	std::stringstream msg;

@@ -40,6 +40,7 @@ class Invalid_Parameters : public std::invalid_argument {
 public:
 	Invalid_Parameters(std::string descr, std::string expected, std::string found);
 	Invalid_Parameters(std::string descr, std::string expected, int found);
+	Invalid_Parameters(std::string descr, std::string expected, double found);
 	Invalid_Parameters(std::string descr, int expected, int found);
 	virtual const char* what() const noexcept override;
 private:

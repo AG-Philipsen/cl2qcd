@@ -77,10 +77,10 @@ static void print_info_global(const meta::Inputparameters& params)
 		}
 		break;
 		case Inputparameters::cold_start:
-			logger.info() << "## cold start";
+			logger.info() << "## COLD start";
 			break;
 		case Inputparameters::hot_start:
-			logger.info() << "## hot start";
+			logger.info() << "## HOT start";
 			break;
 	}
 	if(params.get_use_smearing() == 1) {
@@ -663,6 +663,8 @@ void meta::print_info_rhmc(const char* progname, const Inputparameters& params)
 	logger.info() << "##       + range = [" << params.get_approx_lower() << " , "
 	                                        << params.get_approx_upper() << "]";
 	logger.info() << "##  ";
+	logger.info() << "## Strategy for finding max and min MdagM eigenvalue: " << (params.get_conservative() ? "conservative" : "NOT conservative");
+	logger.info() << "##  ";
 	logger.info() << "## Simulation info:";
 	logger.info() << "##   - RHMC steps  = " << params.get_rhmcsteps();
 	logger.info() << "##   - precision used in  Mol. Dyn.-inversions = " << params.get_force_prec();
@@ -751,6 +753,8 @@ void meta::print_info_rhmc(const char* progname, std::ostream* os, const Inputpa
 	*os << "##       + range = [" << params.get_approx_lower() << " , "
 	                                        << params.get_approx_upper() << "]" << endl;
 	*os << "##  " << endl;
+	*os << "## Strategy for finding max and min MdagM eigenvalue: " << (params.get_conservative() ? "conservative" : "NOT conservative") << endl;
+	*os << "##  " << endl;
 	*os << "## Simulation info:" << endl;
 	*os << "##   - RHMC steps  = " << params.get_rhmcsteps() << endl;
 	*os << "##   - precision used in  Mol. Dyn.-inversions = " << params.get_force_prec() << endl;
@@ -820,7 +824,7 @@ static void print_info_configs_io(const meta::Inputparameters& params)
 	using namespace meta;
 
 	logger.info() << "## **********************************************************";
-	logger.info() << "## configuration naming parameters:";
+	logger.info() << "## Configuration naming parameters:";
 	logger.info() << "## digits in name:  " << params.get_config_number_digits();
 	logger.info() << "## name prefix:   " << params.get_config_prefix();
 	logger.info() << "## name postfix:   " << params.get_config_postfix();
@@ -839,7 +843,7 @@ static void print_info_configs_io(std::ostream * os, const meta::Inputparameters
 	using namespace meta;
 
 	*os << "## **********************************************************" << endl;
-	*os << "## configuration naming parameters:" << endl;
+	*os << "## Configuration naming parameters:" << endl;
 	*os << "## digits in name:  " << params.get_config_number_digits() << endl;
 	*os << "## name prefix:   " << params.get_config_prefix() << endl;
 	*os << "## name postfix:   " << params.get_config_postfix() << endl;
