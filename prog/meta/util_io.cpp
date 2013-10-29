@@ -25,6 +25,8 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 static void print_info_observables_fermion_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params);
+static void print_info_observables_rhmc_io(const meta::Inputparameters& params);
+static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_source(const meta::Inputparameters params);
 static void print_info_source(std::ostream * os, const meta::Inputparameters params);
 
@@ -265,6 +267,11 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## kappa  = " << params.get_kappa();
 		logger.info() << "## csw    = " << params.get_csw();
 	}
+	if(params.get_fermact() == Inputparameters::rooted_stagg) {
+		logger.info() <<  "## fermion action: staggered standard ";
+		logger.info() << "## mass           = " << params.get_mass();
+		logger.info() << "## Num. of tastes = " << params.get_num_tastes();
+	}
 	logger.info() << "##" ;
 	logger.info() << "## Inverter parameters:";
 	logger.info() << "## precision for inversions = " << params.get_solver_prec();
@@ -272,20 +279,25 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(params.get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
-	switch(params.get_solver()) {
-		case Inputparameters::cg:
-			logger.info() << "## Use CG-solver for inversions" ;
-			break;
-		case Inputparameters::bicgstab:
-			logger.info() << "## Use BiCGStab for inversions";
-			break;
-		case Inputparameters::bicgstab_save:
-			logger.info() << "## Use BiCGStab-SAVE for inversions";
-			break;
+	if(params.get_fermact() != Inputparameters::rooted_stagg){
+		switch(params.get_solver()) {
+			case Inputparameters::cg:
+				logger.info() << "## Use CG-solver for inversions" ;
+				break;
+			case Inputparameters::bicgstab:
+				logger.info() << "## Use BiCGStab for inversions";
+				break;
+			case Inputparameters::bicgstab_save:
+				logger.info() << "## Use BiCGStab-SAVE for inversions";
+				break;
+		}
+		logger.info() << "## cgmax  = " << params.get_cgmax();
+		logger.info() << "## iter_refresh  = " << params.get_iter_refresh();
+	} else {
+		logger.info() << "## Use Multi-shifted CG-solver for inversions" ;
+		logger.info() << "## cgm_max  = " << params.get_cgmax();
 	}
-	logger.info() << "## cgmax  = " << params.get_cgmax();
-	logger.info() << "## iter_refresh  = " << params.get_iter_refresh();
-
+	
 	if(params.get_profile_solver() == true)
 		logger.warn() << "## Profiling of solver activated. This may influence the overall performance time!";
 
@@ -297,9 +309,9 @@ static void print_info_fermion(const meta::Inputparameters& params)
 
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( params.get_theta_fermion_spatial() == 0. && params.get_theta_fermion_temporal() == 0.) {
-		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
+		logger.warn() << "NOTE: BCs have been set to periodic values by default!!\n\t\t\t  To change this use e.g. ThetaT/ThetaS in the input-file.";
 	}
-}
+}	
 
 static void print_info_fermion(std::ostream * os, const meta::Inputparameters& params)
 {
@@ -337,6 +349,11 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## kappa  = " << params.get_kappa() << endl;
 		*os  << "## csw    = " << params.get_csw() << endl;
 	}
+	if(params.get_fermact() == Inputparameters::rooted_stagg) {
+		*os <<  "## fermion action: staggered standard " << endl;
+		*os << "## mass           = " << params.get_mass() << endl;
+		*os << "## Num. of tastes = " << params.get_num_tastes() << endl;
+	}
 	*os  << "##" << endl;
 	*os  << "## Inverter parameters:" << endl;
 	*os << "## precision for inversions = " << params.get_solver_prec() << endl;
@@ -344,19 +361,24 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(params.get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
-	switch(params.get_solver()) {
-		case Inputparameters::cg:
-		  *os << "## Use CG-solver for inversions" << endl;
-			break;
-		case Inputparameters::bicgstab:
-		  *os << "## Use BiCGStab for inversions" << endl;
-			break;
-		case Inputparameters::bicgstab_save:
-		  *os << "## Use BiCGStab-SAVE for inversions" << endl;
-			break;
+	if(params.get_fermact() != Inputparameters::rooted_stagg){
+		switch(params.get_solver()) {
+			case Inputparameters::cg:
+				*os << "## Use CG-solver for inversions" << endl;
+				break;
+			case Inputparameters::bicgstab:
+				*os << "## Use BiCGStab for inversions" << endl;
+				break;
+			case Inputparameters::bicgstab_save:
+				*os << "## Use BiCGStab-SAVE for inversions" << endl;
+				break;
+		}
+		*os << "## cgmax  = " << params.get_cgmax() << endl;
+		*os << "## iter_refresh  = " << params.get_iter_refresh() << endl;
+	} else {
+	  	*os << "## Use Multi-shifted CG-solver for inversions" << endl;
+		*os << "## cgm_max  = " << params.get_cgmax() << endl;
 	}
-	*os << "## cgmax  = " << params.get_cgmax() << endl;
-	*os << "## iter_refresh  = " << params.get_iter_refresh() << endl;
 
 	if(params.get_profile_solver() == true)
 		*os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
@@ -370,7 +392,7 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( params.get_theta_fermion_spatial() == 0. && params.get_theta_fermion_temporal() == 0.) {
-		*os << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
+		*os << "NOTE: BCs have been set to periodic values by default!!\n\t\t\t  To change this use e.g. ThetaT/ThetaS in the input-file." << endl;
 	}
 }
 
@@ -609,6 +631,186 @@ void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputpar
 	return;
 }
 
+void meta::print_info_rhmc(const char* progname, const Inputparameters& params)
+{
+	logger.info() << "## Starting RHMC program, executable name: " << progname ;
+	print_info_global(params);
+	print_info_configs_io(params);
+	print_info_observables_rhmc_io(params);
+	print_info_fermion(params);
+	print_info_gauge(params);
+	logger.info() << "## **********************************************************";
+	logger.info() << "## RHMC parameters: " ;
+	logger.info() << "##  ";
+	logger.info() << "## Rational Approximations info:";
+	logger.info() << "##   - Generation of phi:";
+	logger.info() << "##       + x^(+" << params.get_num_tastes() << "/8)";
+	logger.info() << "##       + order = " << params.get_metro_approx_ord();
+	logger.info() << "##       + range = [" << params.get_approx_lower() << " , "
+	                                        << params.get_approx_upper() << "]";
+	logger.info() << "##   - Molecular Dynamics:";
+	logger.info() << "##       + x^(-" << params.get_num_tastes() << "/4)";
+	logger.info() << "##       + order = " << params.get_md_approx_ord();
+	logger.info() << "##       + range = [" << params.get_approx_lower() << " , "
+	                                        << params.get_approx_upper() << "]";
+	logger.info() << "##   - Evaluation of new action in Metropolis test:";
+	logger.info() << "##       + x^(-" << params.get_num_tastes() << "/4)";
+	logger.info() << "##       + order = " << params.get_metro_approx_ord();
+	logger.info() << "##       + range = [" << params.get_approx_lower() << " , "
+	                                        << params.get_approx_upper() << "]";
+	logger.info() << "##  ";
+	logger.info() << "## Simulation info:";
+	logger.info() << "##   - RHMC steps  = " << params.get_rhmcsteps();
+	logger.info() << "##   - precision used in  Mol. Dyn.-inversions = " << params.get_force_prec();
+	logger.info() << "##   - precision used in Metropolis-inversions = " << params.get_solver_prec();
+	logger.info() << "##  ";
+	logger.info() << "## MD integration info:";
+	logger.info() << "##   - Time of integration  = " << params.get_tau();
+	logger.info() << "##   - Number of Timescales  = " << params.get_num_timescales();
+	if(params.get_use_gauge_only() && params.get_num_timescales() == 1) {
+		logger.warn() << "## use PureGaugeTheory in RHMC!";
+	} else if (params.get_use_gauge_only() && params.get_num_timescales() > 1) {
+		logger.fatal() << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting...";
+		throw out_of_range("Too many timescales");
+	}
+	//integrator infos
+	logger.info() << "##  ";
+	logger.info() << "## Integrators info:";
+	for(int i = 0; i < params.get_num_timescales(); i++) {
+		print_info_integrator(i, params);
+	}
+	if(params.get_use_mp() == true) {
+		//Not yet implemented!
+		/*
+		logger.info() << "##  ";
+		logger.info() <<  "## use mass preconditioning:";
+		if(params.get_fermact_mp() == Inputparameters::wilson) {
+			logger.info() <<  "## mp action: unimproved Wilson";
+			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
+		}
+		if(params.get_fermact_mp() == Inputparameters::twistedmass) {
+			logger.info() <<  "## mp action: twisted mass Wilson";
+			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
+			logger.info() << "## mu_mp     = " << params.get_mu_mp();
+		}
+		if(params.get_fermact_mp() == Inputparameters::clover) {
+			logger.info() <<  "## mp action: clover Wilson";
+			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
+			logger.info() << "## csw_mp   = " << params.get_csw_mp();
+		}
+		logger.info() << "##" ;
+		switch(params.get_solver_mp()) {
+			case Inputparameters::cg:
+				logger.info() << "## Use CG-solver for mp inversions" ;
+				break;
+			case Inputparameters::bicgstab:
+				logger.info() << "## Use BiCGStab for mp inversions";
+				break;
+			case Inputparameters::bicgstab_save:
+				logger.info() << "## Use BiCGStab-SAVE for mp inversions";
+				break;
+		}
+		logger.info() << "## cgmax_mp  = " << params.get_cgmax_mp();
+		logger.info() << "## iter_refresh_mp  = " << params.get_iter_refresh_mp();
+		logger.info() << "##" ;
+		*/
+	}
+	logger.info() << "## **********************************************************";
+	return;
+}
+
+void meta::print_info_rhmc(const char* progname, std::ostream* os, const Inputparameters& params)
+{
+	*os << "## Starting RHMC program, executable name: " << progname << endl;
+	print_info_global(os, params);
+	print_info_configs_io(os, params);
+	print_info_observables_rhmc_io(os, params);
+	print_info_fermion(os, params);
+	print_info_gauge(os, params);
+	*os << "## **********************************************************" << endl;
+	*os << "## RHMC parameters: "  << endl;
+	*os << "##  " << endl;
+	*os << "## Rational Approximations info:" << endl;
+	*os << "##   - Generation of phi:" << endl;
+	*os << "##       + x^(+" << params.get_num_tastes() << "/8)" << endl;
+	*os << "##       + order = " << params.get_metro_approx_ord() << endl;
+	*os << "##       + range = [" << params.get_approx_lower() << " , "
+	                                        << params.get_approx_upper() << "]" << endl;
+	*os << "##   - Molecular Dynamics:" << endl;
+	*os << "##       + x^(-" << params.get_num_tastes() << "/4)" << endl;
+	*os << "##       + order = " << params.get_md_approx_ord() << endl;
+	*os << "##       + range = [" << params.get_approx_lower() << " , "
+	                                        << params.get_approx_upper() << "]" << endl;
+	*os << "##   - Evaluation of new action in Metropolis test:" << endl;
+	*os << "##       + x^(-" << params.get_num_tastes() << "/4)" << endl;
+	*os << "##       + order = " << params.get_metro_approx_ord() << endl;
+	*os << "##       + range = [" << params.get_approx_lower() << " , "
+	                                        << params.get_approx_upper() << "]" << endl;
+	*os << "##  " << endl;
+	*os << "## Simulation info:" << endl;
+	*os << "##   - RHMC steps  = " << params.get_rhmcsteps() << endl;
+	*os << "##   - precision used in  Mol. Dyn.-inversions = " << params.get_force_prec() << endl;
+	*os << "##   - precision used in Metropolis-inversions = " << params.get_solver_prec() << endl;
+	*os << "##  " << endl;
+	*os << "## MD integration info:" << endl;
+	*os << "##   - Time of integration  = " << params.get_tau() << endl;
+	*os << "##   - Number of Timescales  = " << params.get_num_timescales() << endl;
+	if(params.get_use_gauge_only() && params.get_num_timescales() == 1) {
+		*os << "## use PureGaugeTheory in RHMC!" << endl;
+	} else if (params.get_use_gauge_only() && params.get_num_timescales() > 1) {
+		*os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting..." << endl;
+		throw out_of_range("Too many timescales");
+	}
+	//integrator infos
+	*os << "##  " << endl;
+	*os << "## Integrators info:" << endl;
+	for(int i = 0; i < params.get_num_timescales(); i++) {
+		print_info_integrator(os, i, params);
+	}
+	if(params.get_use_mp() == true) {
+		//Not yet implemented!
+		/*
+		*os << "##  " << endl;
+		*os <<  "## use mass preconditioning:" << endl;
+		if(params.get_fermact_mp() == Inputparameters::wilson) {
+			*os <<  "## mp action: unimproved Wilson" << endl;
+			*os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
+		}
+		if(params.get_fermact_mp() == Inputparameters::twistedmass) {
+			*os <<  "## mp action: twisted mass Wilson" << endl;
+			*os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
+			*os << "## mu_mp     = " << params.get_mu_mp() << endl;
+		}
+		if(params.get_fermact_mp() == Inputparameters::clover) {
+			*os <<  "## mp action: clover Wilson" << endl;
+			*os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
+			*os << "## csw_mp   = " << params.get_csw_mp() << endl;
+		}
+		*os << "##"  << endl;
+		switch(params.get_solver_mp()) {
+			case Inputparameters::cg:
+				*os << "## Use CG-solver for mp inversions"  << endl;
+				break;
+			case Inputparameters::bicgstab:
+				*os << "## Use BiCGStab for mp inversions" << endl;
+				break;
+			case Inputparameters::bicgstab_save:
+				*os << "## Use BiCGStab-SAVE for mp inversions" << endl;
+				break;
+		}
+		*os << "## cgmax_mp  = " << params.get_cgmax_mp() << endl;
+		*os << "## iter_refresh_mp  = " << params.get_iter_refresh_mp() << endl;
+		*os << "##"  << endl;
+		*/
+	}
+	*os << "## **********************************************************" << endl;
+	return;
+}
+
+
+
+
+
 static void print_info_configs_io(const meta::Inputparameters& params)
 {
 	using namespace meta;
@@ -772,6 +974,36 @@ static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputpa
 		*os << "## write hmc observables to single file" << endl;
 	} else {
 		*os << "## write hmc observables to multiple files" << endl;
+	}
+}
+
+static void print_info_observables_rhmc_io(const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	logger.info() << "## **********************************************************";
+	logger.info() << "## RHMC observables file naming parameters:";
+	logger.info() << "## name prefix:   " << params.get_rhmc_obs_prefix();
+	logger.info() << "## name postfix:   " << params.get_rhmc_obs_postfix();
+	if(params.get_rhmc_obs_to_single_file() == true) {
+		logger.info() << "## write rhmc observables to single file";
+	} else {
+		logger.info() << "## write rhmc observables to multiple files";
+	}
+}
+
+static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	*os << "## **********************************************************" << endl;
+	*os << "## RHMC observables file naming parameters:" << endl;
+	*os << "## name prefix:   " << params.get_rhmc_obs_prefix() << endl;
+	*os << "## name postfix:   " << params.get_rhmc_obs_postfix() << endl;
+	if(params.get_rhmc_obs_to_single_file() == true) {
+		*os << "## write rhmc observables to single file" << endl;
+	} else {
+		*os << "## write rhmc observables to multiple files" << endl;
 	}
 }
 
