@@ -1,7 +1,8 @@
 /** @file
- * Declaration of the metropolis algorithm
+ * Implementation of the fermion_force functions
  *
  * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
 
 #include "fermion_force.hpp"

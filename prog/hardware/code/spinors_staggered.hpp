@@ -1,6 +1,9 @@
 /** @file
- * Spinors_staggered class declaration
+ * Spinors_staggered OpenCL functionality
+ * 
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
+
 #ifndef _HARDWARE_CODE_SPINORS_STAGGERED
 #define _HARDWARE_CODE_SPINORS_STAGGERED
 

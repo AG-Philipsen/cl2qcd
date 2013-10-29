@@ -1,5 +1,7 @@
 /** @file
- * Basic OpenCL functionality
+ * Fermions_staggered OpenCL functionality
+ * 
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
 
 #ifndef _HARDWARE_CODE_FERMIONS_STAGGERED_

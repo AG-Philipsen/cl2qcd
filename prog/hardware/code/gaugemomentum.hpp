@@ -1,6 +1,11 @@
 /** @file
- * Basic OpenCL functionality
+ * Gaugemomentum OpenCL functionality
+ * 
+ * (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
+
+
 #ifndef _HARDWARE_CODE_GAUGEMOMENTUM_
 #define _HARDWARE_CODE_GAUGEMOMENTUM_
 

@@ -1,5 +1,9 @@
 /** @file
  * Input file handling
+ * 
+ * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
 
 #ifndef _META_INPUTPARAMETERS_HPP_

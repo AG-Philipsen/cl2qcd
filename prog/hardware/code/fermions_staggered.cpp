@@ -1,5 +1,7 @@
 /** @file
  * Implementation of the hardware::code::fermions_staggered class
+ * 
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
 
 #include "fermions_staggered.hpp"

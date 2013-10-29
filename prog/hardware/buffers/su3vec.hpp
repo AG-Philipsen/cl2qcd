@@ -1,7 +1,8 @@
 /** @file
  * Declaration of the hardware::buffers::SU3vec class
  *
- * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
+ * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
 
 #ifndef _HARDWARE_BUFFERS_SU3VEC_

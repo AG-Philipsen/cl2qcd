@@ -1,3 +1,9 @@
+/** @file
+ * Implementation of the hardware::code::Spinors_staggered class
+ * 
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
+ */
+
 #include "spinors_staggered.hpp"
 
 #include "../../logger.hpp"

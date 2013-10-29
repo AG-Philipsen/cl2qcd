@@ -1,6 +1,11 @@
 /** @file
- * Basic OpenCL functionality
+ * Molecular_Dynamics OpenCL functionality
+ * 
+ * (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
+
+
 #ifndef _HARDWARE_CODE_MOLECULAR_DYNAMICS_
 #define _HARDWARE_CODE_MOLECULAR_DYNAMICS_
 

@@ -1,5 +1,9 @@
 /** @file
  * IO utility functions
+ * 
+ * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
 
 #include <stdexcept>

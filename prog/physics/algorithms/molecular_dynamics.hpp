@@ -2,6 +2,7 @@
  * Declaration of the molecular dynamics algorithms
  *
  * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
 
 #ifndef _PHYSICS_ALGORITHMS_MOLECULAR_DYNAMICS_

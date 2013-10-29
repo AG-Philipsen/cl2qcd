@@ -1,3 +1,9 @@
+/** @file
+ * rhmc algorithm main()
+ * 
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
+ */
+
 #include "rhmc.h"
 
 #include "meta/util.hpp"

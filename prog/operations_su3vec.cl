@@ -1,6 +1,6 @@
-
 /** @file
  * Device code for operations on SU(3) vectors
+ * 
  */
 
 hmc_float su3vec_squarenorm(su3vec in)

@@ -2,6 +2,7 @@
  * Unit test for the physics::lattices::Gaugemomenta class
  *
  * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  */
 
 #include "gaugemomenta.hpp"

@@ -1,3 +1,10 @@
+/** @file
+ * Implementation of the hardware::code::Molecular_Dynamics class
+ * 
+ * (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
+ */
+
 #include "molecular_dynamics.hpp"
 
 #include "../../logger.hpp"

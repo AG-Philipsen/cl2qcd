@@ -1,3 +1,10 @@
+/** @file
+ * Implementation of the hardware::code::Complex class
+ * 
+ * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
+ */
+
 #include "complex.hpp"
 
 #include "../../logger.hpp"

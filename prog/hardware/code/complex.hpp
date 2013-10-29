@@ -1,6 +1,7 @@
 /** @file
- * Heatbath for OpenCL
+ * Complex OpenCL functionality
  *
+ * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
  * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
 

@@ -1,6 +1,6 @@
 /** @file
  * 
- * Mike Clark - 25th May 2005
+ * (c) Mike Clark - 25th May 2005
  * 
  * alg_remez.h
  * 
