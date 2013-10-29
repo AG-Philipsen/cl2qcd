@@ -22,10 +22,6 @@ add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logg
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(OpenclCompiler openclCompiler)
 
-add_executable(cryptoLibTest crypto.cpp)
-target_link_libraries(cryptoLibTest ${Boost_LIBRARIES} crypto)
-add_test(Crypto cryptoLibTest)
-
 add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend
 	optimal

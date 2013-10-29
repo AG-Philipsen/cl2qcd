@@ -156,8 +156,8 @@ set(OPTIMAL_USED_LIBS
 	${Boost_LIBRARIES}
 	klepsydra
 	einhard
-	crypto
 	${PRNG_LIBRARIES}
+	crypto
 )
 
 add_library(optimal ${OPTIMAL_FILES})
@@ -196,12 +196,12 @@ endif(NOT CMAKE_HOST_APPLE)
 
 add_library(einhard einhard/einhard.cpp)
 
-# Add crypto stuff
-add_subdirectory( crypto )
-
 # Random number generation lib
 add_subdirectory(ranlux)
 add_subdirectory(ranluxcl)
+
+# Crypto
+add_subdirectory(crypto)
 
 option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
 if(BUILD_MICROBENCHMARKS)

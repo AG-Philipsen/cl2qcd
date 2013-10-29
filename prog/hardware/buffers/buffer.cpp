@@ -9,7 +9,7 @@
 #include "../system.hpp"
 #include "../device.hpp"
 #include "../../logger.hpp"
-#include "../../crypto/md5.h"
+#include "../../crypto/md5.hpp"
 #include "../code/buffer.hpp"
 
 static cl_mem allocateBuffer(size_t bytes, cl_context context, bool place_on_host, cl_mem_flags extra_flags);
@@ -264,23 +264,9 @@ void hardware::buffers::Buffer::clear() const
 
 std::string hardware::buffers::md5(const Buffer* buf)
 {
-	md5_t md5_state;
-	md5_init(&md5_state);
-
-	char* data = new char[buf->bytes];
-	buf->dump(data);
-
-	md5_process(&md5_state, data, buf->bytes);
-
-	delete[] data;
-
-	char sig[MD5_SIZE];
-	md5_finish(&md5_state, sig);
-
-	char res[33];
-	md5_sig_to_string(sig, res, 33);
-
-	return std::string(res);
+	std::vector<char> data(buf->bytes);
+	buf->dump(data.data());
+	return crypto::md5(std::string{begin(data), end(data)});
 }
 
 hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const std::vector<hardware::SynchronizationEvent> & events)

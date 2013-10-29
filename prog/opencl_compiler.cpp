@@ -11,7 +11,7 @@
 #include <boost/regex.hpp>
 #include <cstring>
 #include <boost/algorithm/string.hpp>
-#include "crypto/md5.h"
+#include "crypto/md5.hpp"
 
 #define BOOST_FILESYSTEM_VERSION 3
 #include <boost/filesystem.hpp>
@@ -443,8 +443,7 @@ std::string TmpClKernel::generateMD5() const
 
 	/// @todo respect headers
 
-	md5_t md5_state;
-	md5_init(&md5_state);
+	std::ostringstream id_string;
 
 	cl_int clerr;
 
@@ -461,8 +460,7 @@ std::string TmpClKernel::generateMD5() const
 		logger.error() << "Failed to get name of OpenCL device: ";
 		throw Opencl_Error(clerr);
 	}
-	logger.trace() << "Adding " << device_name << " to MD5";
-	md5_process(&md5_state, device_name, device_name_bytes);
+	id_string << std::string{device_name, device_name_bytes};
 
 	size_t driver_version_bytes;
 	clerr = clGetDeviceInfo( device, CL_DRIVER_VERSION, 0, NULL, &driver_version_bytes );
@@ -476,8 +474,7 @@ std::string TmpClKernel::generateMD5() const
 		logger.error() << "Failed to get name of OpenCL device: ";
 		throw Opencl_Error(clerr);
 	}
-	logger.trace() << "Adding " << driver_version << " to MD5";
-	md5_process(&md5_state, driver_version, driver_version_bytes);
+	id_string << std::string{driver_version, driver_version_bytes};
 
 	// add platform information
 	cl_platform_id platform;
@@ -499,8 +496,7 @@ std::string TmpClKernel::generateMD5() const
 		logger.error() << "Failed to get vendor of OpenCL platform: ";
 		throw Opencl_Error(clerr);
 	}
-	logger.trace() << "Adding " << platform_name << " to MD5";
-	md5_process(&md5_state, platform_name, platform_name_bytes);
+	id_string << std::string{platform_name, platform_name_bytes};
 
 	size_t platform_version_bytes;
 	clerr = clGetPlatformInfo(platform, CL_PLATFORM_VERSION, 0, NULL, &platform_version_bytes);
@@ -514,26 +510,18 @@ std::string TmpClKernel::generateMD5() const
 		logger.error() << "Failed to get vendor of OpenCL platform: ";
 		throw Opencl_Error(clerr);
 	}
-	logger.trace() << "Adding " << platform_version << " to MD5";
-	md5_process(&md5_state, platform_version, platform_version_bytes);
+	id_string << std::string{platform_version, platform_version_bytes};
 
 	// add source information
 	for(auto filename: files) {
 		std::string abs_filename = get_source_file_path(filename).string();
-		md5_process(&md5_state, abs_filename.c_str(), abs_filename.length());
+		id_string << abs_filename;
 	}
 
 	// build options
-	logger.trace() << "Adding " << build_options << " to MD5";
-	md5_process(&md5_state, build_options.c_str(), build_options.length());
+	id_string << build_options;
 
-	char sig[MD5_SIZE];
-	md5_finish(&md5_state, sig);
-
-	char res[33];
-	md5_sig_to_string(sig, res, 33);
-
-	return std::string(res);
+	return crypto::md5(id_string.str());
 }
 
 void TmpClKernel::dumpBinary(cl_program program, std::string md5) const
