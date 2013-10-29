@@ -186,6 +186,9 @@ target_link_libraries(inverter optimal)
 add_executable(hmc hmc.cpp)
 target_link_libraries(hmc optimal)
 
+add_executable(rhmc rhmc.cpp)
+target_link_libraries(rhmc optimal)
+
 # Utilities
 add_library(klepsydra
 	klepsydra/timer.cpp
