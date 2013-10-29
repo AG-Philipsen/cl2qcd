@@ -139,6 +139,10 @@ public:
 	int get_findminmax_max() const noexcept;
 	double get_findminmax_prec() const noexcept;
 	bool get_conservative() const noexcept;
+	int get_num_tastes() const noexcept;
+	double get_approx_lower() const noexcept;
+	double get_approx_upper() const noexcept;
+	int get_rhmcsteps() const noexcept;
 
 	//direction for the correlator
 	int get_corr_dir() const noexcept;
@@ -172,6 +176,9 @@ public:
 	std::string get_hmc_obs_prefix() const noexcept;
 	std::string get_hmc_obs_postfix() const noexcept;
 	bool get_hmc_obs_to_single_file() const noexcept;
+	std::string get_rhmc_obs_prefix() const noexcept;
+	std::string get_rhmc_obs_postfix() const noexcept;
+	bool get_rhmc_obs_to_single_file() const noexcept;
 	bool get_measure_correlators() const noexcept;
 	bool get_measure_pbp() const noexcept;
 
@@ -279,7 +286,11 @@ private:
 	int findminmax_iteration_block_size;
 	int findminmax_max;
 	double findminmax_prec;
-	bool conservative;
+	bool conservative; //this is for the strategy in findminmax_eigenvalues
+	int num_tastes; //the numerator of the power of the determinant and then of the Rational Approx.
+	double approx_lower;
+	double approx_upper; //range of validity of the Rational Approximation
+	int rhmcsteps;
 
 	//direction for the correlator
 	int corr_dir;
@@ -315,6 +326,9 @@ private:
 	bool hmc_obs_to_single_file;
 	std::string hmc_obs_prefix;
 	std::string hmc_obs_postfix;
+	bool rhmc_obs_to_single_file;
+	std::string rhmc_obs_prefix;
+	std::string rhmc_obs_postfix;
 
 	bool measure_correlators;
 	bool measure_pbp;

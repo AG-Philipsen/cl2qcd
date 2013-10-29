@@ -370,7 +370,22 @@ bool Inputparameters::get_conservative() const noexcept
 {
   return conservative;
 }
-
+int Inputparameters::get_num_tastes() const noexcept
+{
+  return num_tastes;
+}
+double Inputparameters::get_approx_lower() const noexcept
+{
+  return approx_lower;
+}
+double Inputparameters::get_approx_upper() const noexcept
+{
+  return approx_upper;
+}
+int Inputparameters::get_rhmcsteps() const noexcept
+{
+  return rhmcsteps;
+}
 
 //direction for the correlator
 int Inputparameters::get_corr_dir() const noexcept
@@ -485,6 +500,18 @@ std::string Inputparameters::get_hmc_obs_postfix() const noexcept
 bool Inputparameters::get_hmc_obs_to_single_file() const noexcept
 {
   return hmc_obs_to_single_file;
+}
+std::string Inputparameters::get_rhmc_obs_prefix() const noexcept
+{
+  return rhmc_obs_prefix;
+}
+std::string Inputparameters::get_rhmc_obs_postfix() const noexcept
+{
+  return rhmc_obs_postfix;
+}
+bool Inputparameters::get_rhmc_obs_to_single_file() const noexcept
+{
+  return rhmc_obs_to_single_file;
 }
 Inputparameters::sourcetypes Inputparameters::get_sourcetype() const noexcept
 {
@@ -633,6 +660,10 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
 	("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
 	("conservative", po::value<bool>(&conservative)->default_value(false))
+	("num_tastes", po::value<int>(&num_tastes)->default_value(2))
+	("approx_lower", po::value<double>(&approx_lower)->default_value(1.e-5))
+	("approx_upper", po::value<double>(&approx_upper)->default_value(1.))
+	("rhmcsteps", po::value<int>(&rhmcsteps)->default_value(10))
 
 	("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
 
@@ -668,6 +699,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("hmc_obs_to_single_file", po::value<bool>(&hmc_obs_to_single_file)->default_value(true), "Save hmc observables to one single file")
 	("hmc_obs_prefix", po::value<std::string>(&hmc_obs_prefix)->default_value("hmc_output"), "Prefix for hmc observables file")
 	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file")
+	("rhmc_obs_to_single_file", po::value<bool>(&rhmc_obs_to_single_file)->default_value(true), "Save rhmc observables to one single file")
+	("rhmc_obs_prefix", po::value<std::string>(&rhmc_obs_prefix)->default_value("rhmc_output"), "Prefix for rhmc observables file")
+	("rhmc_obs_postfix", po::value<std::string>(&rhmc_obs_postfix)->default_value(""), "Postfix for rhmc observables file")
 
 	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
 	("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
