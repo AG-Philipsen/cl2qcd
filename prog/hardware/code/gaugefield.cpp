@@ -98,6 +98,7 @@ void hardware::code::Gaugefield::fill_kernels()
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	logger.debug() << "Create gaugeobservables kernels...";
+	
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	if(meta::get_use_rectangles(get_parameters()) == true) {

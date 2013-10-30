@@ -43,6 +43,9 @@ void hardware::code::Spinors_staggered::fill_kernels()
 {
 	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield_staggered.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	
+	logger.debug() << "Create fermions_staggered kernels...";
+	
 	//Squarenorm
 	global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
 	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
