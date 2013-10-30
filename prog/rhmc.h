@@ -11,5 +11,6 @@
 #include "general_header.h"
 
 #include "physics/algorithms/rhmc.hpp"
+#include "physics/algorithms/rational_approximation.hpp"
 
 #endif /* _RHMCH_ */

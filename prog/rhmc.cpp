@@ -10,15 +10,21 @@
 #include <cmath>
 
 static void check_rhmc_parameters(const meta::Inputparameters& params);
-static void print_hmcobservables(const hmc_observables& obs, int iter, const std::string& filename, const meta::Inputparameters& params);
-static void print_hmcobservables(const hmc_observables& obs, int iter);
+static void print_rhmcobservables(const hmc_observables& obs, int iter, const std::string& filename, const meta::Inputparameters& params);
+static void print_rhmcobservables(const hmc_observables& obs, int iter);
 
 int main(int argc, const char* argv[])
 {
 	using physics::algorithms::perform_rhmc_step;
+	using physics::algorithms::Rational_Approximation;
 
 	try {
-		meta::Inputparameters parameters(argc, argv);
+		//I build a vector from argv so that I can manually add parameters that I would
+		//always add (e.g. fermact=rooted_stagg) without modifying default values in Inputparameters
+		std::vector<const char*> w(argv, argv + argc);
+		w.push_back("--fermact=rooted_stagg");
+		const char ** _params = &w[0];
+		meta::Inputparameters parameters(w.size(), _params);
 		switchLogLevel(parameters.get_log_level());
 		
 		//Check if inputparameters has reasonable parameters
@@ -50,7 +56,7 @@ int main(int argc, const char* argv[])
 		logger.info() << "Gaugeobservables:";
 		print_gaugeobservables(gaugefield, 0);
 		init_timer.add();
-#if 0
+
 		/////////////////////////////////////////////////////////////////////////////////
 		// RHMC
 		/////////////////////////////////////////////////////////////////////////////////
@@ -60,26 +66,45 @@ int main(int argc, const char* argv[])
 		//start from the iterationnumber from sourcefile
 		//NOTE: this is 0 in case of cold or hot start
 		int iter = gaugefield.get_parameters_source().trajectorynr_source;
-		const int hmc_iter = iter + parameters.get_hmcsteps();
+		const int rhmc_iter = iter + parameters.get_rhmcsteps();
+		if(iter >= rhmc_iter)
+		  logger.warn() << "The total number of RHMC iterations is NOT smaller than those already done.\nNO further iteration will be performed!";
 		hmc_float acc_rate = 0.;
 		const int writefreq = parameters.get_writefrequency();
 		const int savefreq = parameters.get_savefrequency();
-
-		logger.info() << "perform HMC on device(s)... ";
+		
+		logger.info() << "";
+		logger.info() << "Generation of Rational Approximations...";
+		//This is the approx. to be used to generate the initial (pseudo)fermionic field
+		Rational_Approximation approx_hb(3,//parameters.get_metro_approx_ord(),
+						  parameters.get_num_tastes(), 8, parameters.get_approx_lower(),
+						  parameters.get_approx_upper(), false);
+		//This is the approx. to be used to generate the initial (pseudo)fermionic field
+		Rational_Approximation approx_md(3,//parameters.get_md_approx_ord(),
+						  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
+						  parameters.get_approx_upper(), true);
+		//This is the approx. to be used to generate the initial (pseudo)fermionic field
+		Rational_Approximation approx_met(3,//parameters.get_metro_approx_ord(),
+						  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
+						  parameters.get_approx_upper(), true);
+		
+		logger.info() << "";
+		logger.info() << "Perform RHMC on device(s)... ";
 
 		//main hmc-loop
-		for(; iter < hmc_iter; iter ++) {
+		for(; iter < rhmc_iter; iter++) {
 			//generate new random-number for Metropolis step
 			const hmc_float rnd_number = prng.get_double();
-
-			obs = perform_hmc_step(&gaugefield, iter, rnd_number, prng, system);
+			
+			obs = perform_rhmc_step(approx_hb, approx_md, approx_met,
+						 &gaugefield, iter, rnd_number, prng, system);
 
 			acc_rate += obs.accept;
-			if( ( (iter + 1) % writefreq ) == 0 ) {
-				std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
-				print_hmcobservables(obs, iter, gaugeout_name, parameters);
-			} else if(parameters.get_print_to_screen() ) {
-				print_hmcobservables(obs, iter);
+			if(((iter + 1)%writefreq) == 0) {
+				std::string gaugeout_name = meta::get_rhmc_obs_file_name(parameters, "");
+				print_rhmcobservables(obs, iter, gaugeout_name, parameters);
+			} else if(parameters.get_print_to_screen()) {
+				print_rhmcobservables(obs, iter);
 			}
 
 			if( savefreq != 0 && ( (iter + 1) % savefreq ) == 0 ) {
@@ -104,17 +129,16 @@ int main(int argc, const char* argv[])
 		logger.info() << "saving current prng state to \"" << outputfile << "\"";
 		prng.store(outputfile);
 
-		logger.info() << "HMC done";
-		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, parameters.get_hmcsteps()) << "%";
+		logger.info() << "RHMC done";
+		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, parameters.get_rhmcsteps()) << "%";
 		perform_timer.add();
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Final Output
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+		
+		/////////////////////////////////////////////////////////////////////////////////
+		// Final output
+		/////////////////////////////////////////////////////////////////////////////////
 		total_timer.add();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
-#endif
+
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {
@@ -149,21 +173,29 @@ static void check_rhmc_parameters(const meta::Inputparameters& p)
 	  throw Invalid_Parameters("RHMC available only WITHOUT real chemical potential!", "use_chem_pot_re=0", p.get_use_chem_pot_re());
 	if(p.get_use_chem_pot_im())
 	  throw Invalid_Parameters("RHMC available only WITHOUT imaginary chemical potential!", "use_chem_pot_im=0", p.get_use_chem_pot_im());
-	if(p.get_num_tastes() == 4)
-	  throw Invalid_Parameters("RHMC not working with 4 tastes (there is no need of the rooting trick)!", "num_tastes!=4", p.get_num_tastes());
+	if(p.get_num_tastes()%4 == 0)
+	  throw Invalid_Parameters("RHMC not working with multiple of 4 tastes (there is no need of the rooting trick)!", "num_tastes%4 !=0", "num_tastes=" + to_string(p.get_num_tastes()));
 	if(p.get_cg_iteration_block_size() == 0 || p.get_findminmax_iteration_block_size() == 0)
 	  throw Invalid_Parameters("Iteration block sizes CANNOT be zero!", "cg_iteration_block_size!=0 && findminmax_iteration_block_size!=0", p.get_cg_iteration_block_size()==0 ? "cg_iteration_block_size=0" : "findminmax_iteration_block_size=0");
 	if(p.get_approx_upper() != 1)
 	  throw Invalid_Parameters("RHMC not available if the Rational expansion is not calculated in [..,1]!", "approx_upper=1", p.get_approx_upper());
 	if(p.get_approx_lower() >= 1)
 	   throw Invalid_Parameters("The lower bound of the Rational expansion >= than the upper one does not make sense!", "approx_lower < approx_upper", to_string(p.get_approx_lower())+" >= 1");
+	if(p.get_writefrequency() == 0)
+	  throw Invalid_Parameters("Write frequency CANNOT be zero!", "writefrequency!=0", p.get_writefrequency());
+	if(p.get_savefrequency() == 0){
+	  logger.warn() << "savefrequency==0 and hence NEITHER gaugefield NOR prng will be saved!!";
+	  logger.warn() << "The simulation will start in 5 seconds..";
+	  sleep(2); logger.warn() << "..3.."; sleep(1); logger.warn() << "..2.."; sleep(1);
+	  logger.warn() << "..1, go!"; sleep(1);
+	}
 }
 
 
 
 
 
-static void print_hmcobservables(const hmc_observables& obs, const int iter, const std::string& filename, const meta::Inputparameters& params)
+static void print_rhmcobservables(const hmc_observables& obs, const int iter, const std::string& filename, const meta::Inputparameters& params)
 {
 	const hmc_float exp_deltaH = std::exp(obs.deltaH);
 	std::fstream hmcout(filename.c_str(), std::ios::out | std::ios::app);
@@ -196,12 +228,12 @@ static void print_hmcobservables(const hmc_observables& obs, const int iter, con
 	hmcout.close();
 
 	//print to screen
-	print_hmcobservables(obs, iter);
+	print_rhmcobservables(obs, iter);
 }
 
-static void print_hmcobservables(const hmc_observables& obs, const int iter)
+static void print_rhmcobservables(const hmc_observables& obs, const int iter)
 {
 	using namespace std;
 	//short version of output, all obs are collected in the output file anyways...
-	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
+	logger.info() << "\tRHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
 }
