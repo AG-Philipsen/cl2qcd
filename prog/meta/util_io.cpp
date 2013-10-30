@@ -641,8 +641,8 @@ void meta::print_info_rhmc(const char* progname, const Inputparameters& params)
 	print_info_global(params);
 	print_info_configs_io(params);
 	print_info_observables_rhmc_io(params);
-	print_info_fermion(params);
 	print_info_gauge(params);
+	print_info_fermion(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## RHMC parameters: " ;
 	logger.info() << "##  ";
@@ -731,8 +731,8 @@ void meta::print_info_rhmc(const char* progname, std::ostream* os, const Inputpa
 	print_info_global(os, params);
 	print_info_configs_io(os, params);
 	print_info_observables_rhmc_io(os, params);
-	print_info_fermion(os, params);
 	print_info_gauge(os, params);
+	print_info_fermion(os, params);
 	*os << "## **********************************************************" << endl;
 	*os << "## RHMC parameters: "  << endl;
 	*os << "##  " << endl;

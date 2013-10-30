@@ -224,6 +224,25 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
   }
 }
 
+std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+{
+  if(parameters.get_rhmc_obs_to_single_file() ){
+    return parameters.get_rhmc_obs_prefix() +  parameters.get_rhmc_obs_postfix();
+  } else {
+    switch ( parameters.get_startcondition() ) {
+    case meta::Inputparameters::start_from_source :
+      return  parameters.get_rhmc_obs_prefix() + conf_name + parameters.get_rhmc_obs_postfix();
+      break;
+    case meta::Inputparameters::hot_start :
+      return  parameters.get_rhmc_obs_prefix() + "conf.hot" +   parameters.get_rhmc_obs_postfix() ;
+      break;
+    case meta::Inputparameters::cold_start :
+      return  parameters.get_rhmc_obs_prefix() + "conf.cold" + parameters.get_rhmc_obs_postfix() ;
+      break;
+    }
+  }
+}
+
 std::string meta::create_configuration_name(const Inputparameters& parameters, int number) noexcept
 {
 	using namespace std;
