@@ -73,6 +73,8 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.trace() << "\tRHMC [MET]:\tperform Metropolis step: ";
+	//Before Metropolis test the coeff. of phi have to be set to the rescaled ones on the base of approx3
+	phi.Rescale_Coefficients(approx3, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
 	//this call calculates also the HMC-Observables
 	const hmc_observables obs = metropolis(rnd_number, params.get_beta(), *gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp.get(), spinor_energy_init_mp, system);
 
