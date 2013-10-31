@@ -9,94 +9,10 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
-{
-	using namespace hardware::buffers;
-
-	const size_4 local_size = device->get_local_lattice_size();
-	const size_4 mem_size = device->get_mem_lattice_size();
-
-	std::ostringstream options;
-	options.precision(16);
-	options << "-D _INKERNEL_";
-	options << " -D NSPACE=" << params.get_nspace();
-
-	options << " -D NTIME_GLOBAL=" << params.get_ntime();
-	options << " -D NTIME_LOCAL=" << local_size.t;
-	options << " -D NTIME_MEM=" << mem_size.t;
-	options << " -D NTIME_OFFSET=" << device->get_grid_pos().t * local_size.t;
-
-	options << " -D VOLSPACE=" << meta::get_volspace(params);
-
-	options << " -D VOL4D_GLOBAL=" << meta::get_vol4d(params);
-	options << " -D VOL4D_LOCAL=" << get_vol4d(local_size);
-	options << " -D VOL4D_MEM=" << get_vol4d(mem_size);
-
-	//this is needed for hmc_ocl_su3matrix
-	options << " -D SU3SIZE=" << NC*NC << " -D STAPLEMATRIXSIZE=" << NC*NC;
-
-	if(params.get_precision() == 64) {
-		options << " -D _USEDOUBLEPREC_";
-		// TODO renable support for older AMD GPUs
-		//if( device_double_extension.empty() ) {
-		//  logger.warn() << "Warning: Undefined extension for use of double.";
-		//} else {
-		//  options << " -D _DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
-		//}
-		options << " -D _DEVICE_DOUBLE_EXTENSION_KHR_";
-	}
-	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
-		options << " -D _USEGPU_";
-	if(params.get_use_chem_pot_re() == true) {
-		options << " -D _CP_REAL_";
-		options << " -D CPR=" << params.get_chem_pot_re();
-		options << " -D EXPCPR=" << exp(params.get_chem_pot_re() );
-		options << " -D MEXPCPR=" << exp(-1.*params.get_chem_pot_re() );
-	}
-	if(params.get_use_chem_pot_im() == true) {
-		options << " -D _CP_IMAG_";
-		options << " -D CPI=" << params.get_chem_pot_im();
-		options << " -D COSCPI=" << cos( params.get_chem_pot_im() );
-		options << " -D SINCPI=" << sin( params.get_chem_pot_im() );
-	}
-	if(params.get_use_smearing() == true) {
-		options << " -D _USE_SMEARING_";
-		options << " -D RHO=" << params.get_rho();
-		options << " -D RHO_ITER=" << params.get_rho_iter();
-	}
-	if(device->get_prefers_soa()) {
-		options << " -D _USE_SOA_";
-	}
-	if(check_SU3_for_SOA(device)) {
-		options << " -D GAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(get_vol4d(mem_size) * NDIM, device);
-	}
-	if(check_Matrix3x3_for_SOA(device)) {
-		options << " -D GAUGEFIELD_3X3_STRIDE=" << get_Matrix3x3_buffer_stride(get_vol4d(mem_size) * NDIM, device);
-	}
-	options << " -I " << SOURCEDIR;
-
-	if(device->get_prefers_blocked_loops()) {
-		options << " -D _USE_BLOCKED_LOOPS_";
-	}
-
-	if(meta::get_use_rectangles(params) == true) {
-		options <<  " -D _USE_RECT_" ;
-	}
-	if(params.get_use_rec12() == true) {
-		options <<  " -D _USE_REC12_" ;
-	}
-
-	return options.str();
-}
-
 void hardware::code::Gaugefield::fill_kernels()
 {
-	basic_opencl_code = ClSourcePackage(collect_build_options(get_device(), get_parameters()))
-	                    << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
+	basic_opencl_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
 	logger.debug() << "Create gaugeobservables kernels...";
 	
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
