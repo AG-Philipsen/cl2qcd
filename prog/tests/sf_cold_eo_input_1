@@ -6,5 +6,5 @@ use_eo=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1.
+test_ref_val=0.5
 

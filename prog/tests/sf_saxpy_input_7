@@ -1,6 +1,8 @@
 NS=4
 NT=4
 
+use_eo=false
+
 # this specifies alpha.re
 beta=0.
 # this specifies alpha.im

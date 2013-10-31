@@ -1358,7 +1358,7 @@ BOOST_AUTO_TEST_SUITE(SF_COLD_EO)
 
 BOOST_AUTO_TEST_CASE( SF_COLD_EO_1 )
 {
-	test_sf_cold("/sf_cold_eo_input_1", true);
+  test_sf_cold_eo("/sf_cold_eo_input_1", true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1376,7 +1376,7 @@ BOOST_AUTO_TEST_SUITE(SF_ZERO_EO)
 
 BOOST_AUTO_TEST_CASE( SF_ZERO_EO_1 )
 {
-  test_sf_cold("/sf_zero_eo_input_1",  false);
+  test_sf_cold_eo("/sf_zero_eo_input_1",  false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
