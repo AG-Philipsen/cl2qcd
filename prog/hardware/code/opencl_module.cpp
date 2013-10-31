@@ -1,10 +1,18 @@
 #include "opencl_module.hpp"
 
 #include <fstream>
+#include <cmath>
 
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+//from here on the files are needed for collect_build_options
+#include "spinors.hpp"
+#include "../buffers/3x3.hpp"
+#include "../buffers/su3.hpp"
+#include "../buffers/prng_buffer.hpp"
+#include "../buffers/spinor.hpp"
+
 
 using namespace std;
 
@@ -22,6 +30,105 @@ static void print_profile_header(const std::string& filename, int number);
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
+{
+	using namespace hardware::buffers;
+
+	const size_4 local_size = device->get_local_lattice_size();
+	const size_4 mem_size = device->get_mem_lattice_size();
+
+	std::ostringstream options;
+	options.precision(16);
+	
+	options << "-I " << SOURCEDIR;
+	options << " -D _INKERNEL_";
+	options << " -D NSPACE=" << params.get_nspace();
+
+	options << " -D NTIME_GLOBAL=" << params.get_ntime();
+	options << " -D NTIME_LOCAL=" << local_size.t;
+	options << " -D NTIME_MEM=" << mem_size.t;
+	options << " -D NTIME_OFFSET=" << device->get_grid_pos().t * local_size.t;
+
+	options << " -D VOLSPACE=" << meta::get_volspace(params);
+
+	options << " -D VOL4D_GLOBAL=" << meta::get_vol4d(params);
+	options << " -D VOL4D_LOCAL=" << get_vol4d(local_size);
+	options << " -D VOL4D_MEM=" << get_vol4d(mem_size);
+
+	//this is needed for hmc_ocl_su3matrix
+	options << " -D SU3SIZE=" << NC*NC << " -D STAPLEMATRIXSIZE=" << NC*NC;
+
+	if(params.get_precision() == 64) {
+		options << " -D _USEDOUBLEPREC_";
+		// TODO renable support for older AMD GPUs
+		//if( device_double_extension.empty() ) {
+		//  logger.warn() << "Warning: Undefined extension for use of double.";
+		//} else {
+		//  options << " -D _DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
+		//}
+		options << " -D _DEVICE_DOUBLE_EXTENSION_KHR_";
+	}
+	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
+		options << " -D _USEGPU_";
+	if(params.get_use_chem_pot_re() == true) {
+		options << " -D _CP_REAL_";
+		options << " -D CPR=" << params.get_chem_pot_re();
+		options << " -D EXPCPR=" << exp(params.get_chem_pot_re() );
+		options << " -D MEXPCPR=" << exp(-1.*params.get_chem_pot_re() );
+	}
+	if(params.get_use_chem_pot_im() == true) {
+		options << " -D _CP_IMAG_";
+		options << " -D CPI=" << params.get_chem_pot_im();
+		options << " -D COSCPI=" << cos( params.get_chem_pot_im() );
+		options << " -D SINCPI=" << sin( params.get_chem_pot_im() );
+	}
+	if(params.get_use_smearing() == true) {
+		options << " -D _USE_SMEARING_";
+		options << " -D RHO=" << params.get_rho();
+		options << " -D RHO_ITER=" << params.get_rho_iter();
+	}
+	if(device->get_prefers_soa()) {
+		options << " -D _USE_SOA_";
+	}
+	if(check_SU3_for_SOA(device)) {
+		options << " -D GAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(get_vol4d(mem_size) * NDIM, device);
+	}
+	if(check_Matrix3x3_for_SOA(device)) {
+		options << " -D GAUGEFIELD_3X3_STRIDE=" << get_Matrix3x3_buffer_stride(get_vol4d(mem_size) * NDIM, device);
+	}
+	if(device->get_prefers_blocked_loops()) {
+		options << " -D _USE_BLOCKED_LOOPS_";
+	}
+	if(meta::get_use_rectangles(params) == true) {
+		options <<  " -D _USE_RECT_" ;
+	}
+	if(params.get_use_rec12() == true) {
+		options <<  " -D _USE_REC12_" ;
+	}
+	
+	options << " -D _FERMIONS_";
+	options << " -D SPINORFIELDSIZE_GLOBAL=" << hardware::code::get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << hardware::code::get_eoprec_spinorfieldsize(params);
+	options << " -D SPINORFIELDSIZE_LOCAL=" << hardware::code::get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << hardware::code::get_eoprec_spinorfieldsize(local_size);
+	options << " -D SPINORFIELDSIZE_MEM=" << hardware::code::get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << hardware::code::get_eoprec_spinorfieldsize(mem_size);
+	if(check_Spinor_for_SOA(device)) {
+		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(hardware::code::get_eoprec_spinorfieldsize(mem_size), device);
+	}
+
+	return options.str();
+}
+
+static std::vector<std::string> collect_build_files()
+{
+	std::vector<std::string> out;
+	out.push_back("opencl_header.cl");
+
+	return out;
+}
+
+//Constructor of the class
+hardware::code::Opencl_Module::Opencl_Module(const meta::Inputparameters& params, hardware::Device * device): parameters(params), device(device), basic_sources(ClSourcePackage(collect_build_files(), collect_build_options(get_device(), get_parameters()))) { }
+
+
 const meta::Inputparameters& hardware::code::Opencl_Module::get_parameters() const noexcept
 {
 	return parameters;
@@ -30,6 +137,11 @@ const meta::Inputparameters& hardware::code::Opencl_Module::get_parameters() con
 hardware::Device * hardware::code::Opencl_Module::get_device() const noexcept
 {
 	return device;
+}
+
+ClSourcePackage hardware::code::Opencl_Module::get_basic_sources() const noexcept
+{
+	return basic_sources;
 }
 
 TmpClKernel hardware::code::Opencl_Module::createKernel(const char * const kernel_name, std::string build_opts) const

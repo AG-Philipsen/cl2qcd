@@ -47,6 +47,12 @@ public:
 	 * @param number task-id
 	 */
 	void virtual print_profiling(const std::string& filename, int number) const;
+	
+	/**
+	 * Returns the sources for all children modules.
+	 * @return basic_sources
+	 */
+	ClSourcePackage get_basic_sources() const noexcept;
 
 protected:
 	/**
@@ -54,8 +60,7 @@ protected:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
-		: parameters(params), device(device) { };
+	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -121,6 +126,12 @@ private:
 	 * The device used by this module
 	 */
 	hardware::Device * const device;
+	
+	/**
+	 * The basic source used by all modules (children classes of this)
+	 */
+	ClSourcePackage basic_sources;
+	
 };
 
 }
