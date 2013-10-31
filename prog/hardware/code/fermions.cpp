@@ -51,7 +51,7 @@ void hardware::code::Fermions::fill_kernels()
 	M_tm_plus = 0;
 	M_tm_minus = 0;
 
-	logger.debug() << "Create fermion kernels...";
+	logger.debug() << "Create Fermions kernels...";
 	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		M_wilson = createKernel("M_wilson") << sources << "fermionmatrix.cl" << "fermionmatrix_m.cl";
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
