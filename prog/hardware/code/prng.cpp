@@ -44,7 +44,7 @@ hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device
 //	prng_buffer.load(rndarray);
 #elif defined(USE_PRNG_RANLUX)
 	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "ranluxcl/ranluxcl.cl" << "random.cl";
-	init_kernel = createKernel("prng_ranlux_init") << get_device()->get_gaugefield_code()->get_sources() << prng_code << "random_ranlux_init.cl";
+	init_kernel = createKernel("prng_ranlux_init") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_") <<  "opencl_header.cl" << prng_code << "random_ranlux_init.cl";
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
