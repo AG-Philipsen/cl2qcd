@@ -9,54 +9,24 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
-{
-	using namespace hardware::buffers;
-	using namespace hardware::code;
-
-	const size_4 mem_size = device->get_mem_lattice_size();
-	const size_4 local_size = device->get_local_lattice_size();
-
-	std::ostringstream options;
-	options.precision(16);
-	options << "-D _FERMIONS_";
-	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
-	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << get_eoprec_spinorfieldsize(local_size);
-	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
-	if(check_Spinor_for_SOA(device)) {
-		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
-	}
-
-	return options.str();
-}
-
-
 void hardware::code::Spinors::fill_kernels()
 {
-	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl";
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
+	} else {
+		basic_fermion_code = basic_fermion_code << "spinorfield.cl";
 	}
-
-	if(get_parameters().get_use_eo() == true) {
-		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";
-	}
-	generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_fermion_code << prng_code << "spinorfield_gaussian.cl";
-	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
-	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
-	saxpy_arg = createKernel("saxpy_arg") << basic_fermion_code << "spinorfield_saxpy.cl";
-	sax = createKernel("sax") << basic_fermion_code << "spinorfield_sax.cl";
-	saxsbypz = createKernel("saxsbypz") << basic_fermion_code << "spinorfield_saxsbypz.cl";
-	scalar_product = createKernel("scalar_product") << basic_fermion_code << "spinorfield_scalar_product.cl";
-	scalar_product_reduction = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_scalar_product.cl";
-	set_zero_spinorfield = createKernel("set_zero_spinorfield") << basic_fermion_code << "spinorfield_set_zero.cl";
-	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	
+	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	
+	logger.debug() << "Create Spinors kernels...";
+	
 	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
-
+	scalar_product_reduction = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_scalar_product.cl";
+	
 	if(get_parameters().get_use_eo() ) {
+		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
@@ -72,7 +42,32 @@ void hardware::code::Spinors::fill_kernels()
 		//merged kernels
 		if (get_parameters().get_use_merge_kernels_spinor() == true) {
 			saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
+		} else {
+			saxpy_AND_squarenorm_eo = 0;
 		}
+	} else {
+		generate_gaussian_spinorfield_eo = 0;
+		convert_from_eoprec = 0;
+		convert_to_eoprec =0;
+		set_eoprec_spinorfield_cold = 0;
+		sax_eoprec = 0;
+		saxpy_eoprec = 0;
+		saxpy_arg_eoprec = 0;
+		saxsbypz_eoprec = 0;
+		scalar_product_eoprec = 0;
+		set_zero_spinorfield_eoprec = 0;
+		global_squarenorm_eoprec = 0;
+		convertSpinorfieldToSOA_eo = 0;
+		convertSpinorfieldFromSOA_eo = 0;
+		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_fermion_code << prng_code << "spinorfield_gaussian.cl";
+		set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
+		saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
+		saxpy_arg = createKernel("saxpy_arg") << basic_fermion_code << "spinorfield_saxpy.cl";
+		sax = createKernel("sax") << basic_fermion_code << "spinorfield_sax.cl";
+		saxsbypz = createKernel("saxsbypz") << basic_fermion_code << "spinorfield_saxsbypz.cl";
+		scalar_product = createKernel("scalar_product") << basic_fermion_code << "spinorfield_scalar_product.cl";
+		set_zero_spinorfield = createKernel("set_zero_spinorfield") << basic_fermion_code << "spinorfield_set_zero.cl";
+		global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	}
 }
 
@@ -80,37 +75,14 @@ void hardware::code::Spinors::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
 
-	if(get_parameters().get_use_eo() == true) {
-		clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	}
-	clerr = clReleaseKernel(generate_gaussian_spinorfield);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
-	clerr = clReleaseKernel(set_spinorfield_cold);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
-	clerr = clReleaseKernel(saxpy);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(saxpy_arg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(sax);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(saxsbypz);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(scalar_product);
+	clerr = clReleaseKernel(_global_squarenorm_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(scalar_product_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
-	clerr = clReleaseKernel(set_zero_spinorfield);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(global_squarenorm);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(_global_squarenorm_reduction);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
 	if(get_parameters().get_use_eo()) {
+		clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(saxpy_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(saxpy_arg_eoprec);
@@ -126,6 +98,25 @@ void hardware::code::Spinors::clear_kernels()
 		clerr = clReleaseKernel(convertSpinorfieldToSOA_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(convertSpinorfieldFromSOA_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	} else {
+		clerr = clReleaseKernel(generate_gaussian_spinorfield);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(set_spinorfield_cold);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxpy);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxpy_arg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(sax);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxsbypz);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(scalar_product);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(set_zero_spinorfield);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(global_squarenorm);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
