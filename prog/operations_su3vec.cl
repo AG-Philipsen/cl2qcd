@@ -3,6 +3,13 @@
  * 
  */
 
+#ifdef ENABLE_PRINTF
+void print_su3vec(su3vec in)
+{
+	printf("(%f,%f)\t(%f,%f)\t(%f,%f)", in.e0.re, in.e0.im, in.e1.re, in.e1.im, in.e2.re, in.e2.im);
+}
+#endif
+
 hmc_float su3vec_squarenorm(su3vec in)
 {
 	return

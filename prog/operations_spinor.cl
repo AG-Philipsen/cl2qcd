@@ -2,7 +2,19 @@
  * Device code for operations on spinors
  */
 
-//opencl_operations_spinor
+#ifdef ENABLE_PRINTF
+void print_spinor(spinor in)
+{
+	print_su3vec(in.e0);
+	printf("\n");
+	print_su3vec(in.e1);
+	printf("\n");
+	print_su3vec(in.e2);
+	printf("\n");
+	print_su3vec(in.e3);
+	printf("\n");
+}
+#endif
 
 #ifdef _FERMIONS_
 spinor set_spinor_zero()
