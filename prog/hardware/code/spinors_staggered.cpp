@@ -16,56 +16,25 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
-{
-	using namespace hardware::buffers;
-	using namespace hardware::code;
-
-	const size_4 mem_size = device->get_mem_lattice_size();
-	const size_4 local_size = device->get_local_lattice_size();
-
-	std::ostringstream options;
-	options.precision(16);
-	options << "-D _FERMIONS_";
-	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
-	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << get_eoprec_spinorfieldsize(local_size);
-	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
-	if(check_su3vec_for_SOA(device)) {
-		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_su3vec_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
-	}
-
-	return options.str();
-}
-
 void hardware::code::Spinors_staggered::fill_kernels()
 {
-	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield_staggered.cl";
+	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.cl"  << "types_fermions.h" << "operations_su3vec.cl";
+	if(get_parameters().get_use_eo()) {
+		basic_fermion_code = basic_fermion_code << "spinorfield_staggered_eo.cl";;
+	} else {
+		basic_fermion_code = basic_fermion_code << "spinorfield_staggered.cl";
+	}
+	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	
 	logger.debug() << "Create fermions_staggered kernels...";
 	
-	//Squarenorm
-	global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
-	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
-	//Scalar Product
-	scalar_product_stagg = createKernel("scalar_product_staggered") << basic_fermion_code << "spinorfield_staggered_scalar_product.cl";
-	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_staggered_scalar_product.cl";
-	//Setting fields
-	set_zero_spinorfield_stagg = createKernel("set_zero_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_zero.cl";
-	set_cold_spinorfield_stagg = createKernel("set_cold_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_cold.cl";
-	set_gaussian_spinorfield_stagg = createKernel("set_gaussian_spinorfield_stagg") << basic_fermion_code << prng_code << "spinorfield_staggered_gaussian.cl";
-	//Fields algebra operations
-	sax_stagg = createKernel("sax_staggered") << basic_fermion_code << "spinorfield_staggered_sax.cl";
-	saxpy_stagg = createKernel("saxpy_staggered") << basic_fermion_code << "spinorfield_staggered_saxpy.cl";
-	saxpbypz_stagg = createKernel("saxpbypz_staggered") << basic_fermion_code << "spinorfield_staggered_saxpbypz.cl";
-	/////////////////////////////////////////////////
-	/////////// EVEN-ODD PRECONDITIONING ////////////
-	/////////////////////////////////////////////////
+	//Reductions are really small kernels, so few needed options loaded by hands
+	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_staggered_squarenorm_reduction.cl";
+	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.cl" << "spinorfield_staggered_scalar_product_reduction.cl";
+
+	//In staggered formulation either eo or non-eo kernels are built!!
 	if(get_parameters().get_use_eo()){
-		//Include functionalities in basic_fermion_code
-		basic_fermion_code = basic_fermion_code << "spinorfield_staggered_eo.cl";
 		//Functionalities to convert eo from/to non eo
 		convert_from_eoprec_stagg = createKernel("convert_from_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
 		convert_to_eoprec_stagg = createKernel("convert_to_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
@@ -79,12 +48,12 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		//Setting fields
 		set_zero_spinorfield_stagg_eoprec = createKernel("set_zero_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_zero.cl";
 		set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
+		set_gaussian_spinorfield_stagg_eoprec = createKernel("set_gaussian_spinorfield_stagg_eoprec") << basic_fermion_code << prng_code << "spinorfield_staggered_eo_gaussian.cl";
 		//Fields algebra operations
 		sax_stagg_eoprec = createKernel("sax_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax.cl";
 		saxpy_stagg_eoprec = createKernel("saxpy_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy.cl";
 		saxpby_stagg_eoprec = createKernel("saxpby_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpby.cl";
 		saxpbypz_stagg_eoprec = createKernel("saxpbypz_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpbypz.cl";
-		set_gaussian_spinorfield_stagg_eoprec = createKernel("set_gaussian_spinorfield_stagg_eoprec") << basic_fermion_code << prng_code << "spinorfield_staggered_eo_gaussian.cl";
 	} else {
 		convert_from_eoprec_stagg = 0;
 		convert_to_eoprec_stagg = 0;
@@ -99,38 +68,31 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		saxpby_stagg_eoprec = 0;
 		saxpbypz_stagg_eoprec = 0;
 		set_gaussian_spinorfield_stagg_eoprec = 0;
+		//Squarenorm
+		global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
+		//Scalar Product
+		scalar_product_stagg = createKernel("scalar_product_staggered") << basic_fermion_code << "spinorfield_staggered_scalar_product.cl";
+		//Setting fields
+		set_zero_spinorfield_stagg = createKernel("set_zero_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_zero.cl";
+		set_cold_spinorfield_stagg = createKernel("set_cold_spinorfield_stagg") << basic_fermion_code << "spinorfield_staggered_set_cold.cl";
+		set_gaussian_spinorfield_stagg = createKernel("set_gaussian_spinorfield_stagg") << basic_fermion_code << prng_code << "spinorfield_staggered_gaussian.cl";
+		//Fields algebra operations
+		sax_stagg = createKernel("sax_staggered") << basic_fermion_code << "spinorfield_staggered_sax.cl";
+		saxpy_stagg = createKernel("saxpy_staggered") << basic_fermion_code << "spinorfield_staggered_saxpy.cl";
+		saxpbypz_stagg = createKernel("saxpbypz_staggered") << basic_fermion_code << "spinorfield_staggered_saxpbypz.cl";
 	}
 }
 
 void hardware::code::Spinors_staggered::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
-	//Squarenorm
-	clerr = clReleaseKernel(global_squarenorm_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	
+	//Reductions
 	clerr = clReleaseKernel(global_squarenorm_reduction_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	//Scalar Product
-	clerr = clReleaseKernel(scalar_product_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(scalar_product_reduction_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	//Setting fields
-	clerr = clReleaseKernel(set_zero_spinorfield_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(set_cold_spinorfield_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(set_gaussian_spinorfield_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(sax_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(saxpy_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(saxpbypz_stagg);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	/////////////////////////////////////////////////
-	/////////// EVEN-ODD PRECONDITIONING ////////////
-	/////////////////////////////////////////////////
+	
 	if(get_parameters().get_use_eo()){
 		//Functionalities to convert eo from/to non eo
 		clerr = clReleaseKernel(convert_from_eoprec_stagg);
@@ -163,6 +125,27 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		clerr = clReleaseKernel(saxpby_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(saxpbypz_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	} else {
+		//Squarenorm
+		clerr = clReleaseKernel(global_squarenorm_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		//Scalar Product
+		clerr = clReleaseKernel(scalar_product_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		//Setting fields
+		clerr = clReleaseKernel(set_zero_spinorfield_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(set_cold_spinorfield_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(set_gaussian_spinorfield_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		//Fields algebra operations
+		clerr = clReleaseKernel(sax_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxpy_stagg);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxpbypz_stagg);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
