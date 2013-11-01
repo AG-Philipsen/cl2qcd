@@ -1,5 +1,7 @@
 startcondition=cold
 
+fermact=rooted_stagg
+
 mass=0.
 
 use_eo=false

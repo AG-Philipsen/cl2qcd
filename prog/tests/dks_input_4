@@ -1,5 +1,7 @@
 startcondition=cold
 
+fermact=rooted_stagg
+
 use_eo=true
 NS=4
 NT=4

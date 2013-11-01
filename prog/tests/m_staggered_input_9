@@ -1,6 +1,8 @@
 startcondition=continue
 sourcefile=conf.00200
 
+fermact=rooted_stagg
+
 mass=0.
 
 use_eo=false
