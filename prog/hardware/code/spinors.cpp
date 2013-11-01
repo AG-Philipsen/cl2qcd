@@ -11,19 +11,18 @@ using namespace std;
 
 void hardware::code::Spinors::fill_kernels()
 {
-	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl";
+	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
-	} else {
-		basic_fermion_code = basic_fermion_code << "spinorfield.cl";
 	}
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	
 	logger.debug() << "Create Spinors kernels...";
 	
-	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	scalar_product_reduction = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_scalar_product.cl";
+	//Reductions are really small kernels, so few needed options loaded by hands
+	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_squarenorm_reduction.cl";
+	scalar_product_reduction = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.cl" << "spinorfield_scalar_product_reduction.cl";
 	
 	if(get_parameters().get_use_eo() ) {
 		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";
@@ -59,22 +58,24 @@ void hardware::code::Spinors::fill_kernels()
 		global_squarenorm_eoprec = 0;
 		convertSpinorfieldToSOA_eo = 0;
 		convertSpinorfieldFromSOA_eo = 0;
-		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_fermion_code << prng_code << "spinorfield_gaussian.cl";
-		set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
-		saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
-		saxpy_arg = createKernel("saxpy_arg") << basic_fermion_code << "spinorfield_saxpy.cl";
-		sax = createKernel("sax") << basic_fermion_code << "spinorfield_sax.cl";
-		saxsbypz = createKernel("saxsbypz") << basic_fermion_code << "spinorfield_saxsbypz.cl";
-		scalar_product = createKernel("scalar_product") << basic_fermion_code << "spinorfield_scalar_product.cl";
-		set_zero_spinorfield = createKernel("set_zero_spinorfield") << basic_fermion_code << "spinorfield_set_zero.cl";
-		global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	}
+	//Always build non eo-prec kernels
+	generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_fermion_code << prng_code << "spinorfield_gaussian.cl";
+	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
+	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
+	saxpy_arg = createKernel("saxpy_arg") << basic_fermion_code << "spinorfield_saxpy.cl";
+	sax = createKernel("sax") << basic_fermion_code << "spinorfield_sax.cl";
+	saxsbypz = createKernel("saxsbypz") << basic_fermion_code << "spinorfield_saxsbypz.cl";
+	scalar_product = createKernel("scalar_product") << basic_fermion_code << "spinorfield_scalar_product.cl";
+	set_zero_spinorfield = createKernel("set_zero_spinorfield") << basic_fermion_code << "spinorfield_set_zero.cl";
+	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 }
 
 void hardware::code::Spinors::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
 
+	//Reductions
 	clerr = clReleaseKernel(_global_squarenorm_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(scalar_product_reduction);
@@ -99,26 +100,26 @@ void hardware::code::Spinors::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(convertSpinorfieldFromSOA_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	} else {
-		clerr = clReleaseKernel(generate_gaussian_spinorfield);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(set_spinorfield_cold);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpy);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpy_arg);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(sax);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxsbypz);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(scalar_product);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(set_zero_spinorfield);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(global_squarenorm);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
+	//Always build non eo-prec kernels
+	clerr = clReleaseKernel(generate_gaussian_spinorfield);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(set_spinorfield_cold);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(saxpy);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(saxpy_arg);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(sax);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(saxsbypz);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(scalar_product);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(set_zero_spinorfield);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(global_squarenorm);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
 
