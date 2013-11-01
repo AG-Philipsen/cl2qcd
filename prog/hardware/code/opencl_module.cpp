@@ -13,6 +13,7 @@
 #include "../buffers/prng_buffer.hpp"
 #include "../buffers/spinor.hpp"
 #include "../buffers/su3vec.hpp"
+#include "../buffers/gaugemomentum.hpp"
 
 using namespace std;
 
@@ -102,6 +103,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	}
 	if(meta::get_use_rectangles(params) == true) {
 		options <<  " -D _USE_RECT_" ;
+		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
 	}
 	if(params.get_use_rec12() == true) {
 		options <<  " -D _USE_REC12_" ;
@@ -116,6 +118,13 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size);
 	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size);
 	
+	options << " -D GAUGEMOMENTASIZE_GLOBAL=" << meta::get_vol4d(params) * NDIM;
+	options << " -D GAUGEMOMENTASIZE_LOCAL=" << get_vol4d(local_size) * NDIM;
+	options << " -D GAUGEMOMENTASIZE_MEM=" << get_vol4d(mem_size) * NDIM;
+	
+	if(check_Gaugemomentum_for_SOA(device)) {
+		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(get_vol4d(mem_size)*NDIM, device);
+	}
 	if(check_Spinor_for_SOA(device)) {
 		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
 	}
@@ -145,7 +154,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D MTEMPORAL_RE=" << -cos(tmp_temporal);
 	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
 	options << " -D MTEMPORAL_IM=" << -sin(tmp_temporal);
-
+	
 	return options.str();
 }
 
