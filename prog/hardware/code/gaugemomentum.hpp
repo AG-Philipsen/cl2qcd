@@ -35,6 +35,7 @@ public:
 	///////////////////////////////////////////////////
 	//Methods on device
 	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out) const;
+	void global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf) const;
 	void generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng) const;
 	void set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum *) const;
 	/**
@@ -125,6 +126,7 @@ private:
 	cl_kernel generate_gaussian_gaugemomenta;
 	cl_kernel _set_zero_gaugemomentum;
 	cl_kernel gaugemomentum_squarenorm;
+	cl_kernel gaugemomentum_squarenorm_reduction;
 	cl_kernel gaugemomentum_convert_to_soa;
 	cl_kernel gaugemomentum_convert_from_soa;
 	cl_kernel gaugemomentum_saxpy;
