@@ -1,5 +1,6 @@
 // hmc_float squarenorm, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
+//     (the latter is in spinorfield_squarenorm_reduction.cl)
 /// NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
 __kernel void global_squarenorm(__global const spinor * const restrict x, __global hmc_float * const restrict result, __local hmc_float * const restrict result_local)
 {
@@ -46,15 +47,3 @@ __kernel void global_squarenorm(__global const spinor * const restrict x, __glob
 	return;
 }
 
-
-__kernel void global_squarenorm_reduction(__global hmc_float* dest, __global hmc_float* result_tmp, const uint elems)
-{
-	uint id = get_global_id(0);
-	hmc_float tmp = 0;
-	if(id == 0) {
-		for (uint i = 0; i < elems; i++) {
-			tmp += result_tmp[i];
-		}
-		*dest = tmp;
-	}
-}

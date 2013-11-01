@@ -1,5 +1,6 @@
 // complex (!!!) scalarproduct, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
+//     (the second kernel is in spinorfield_scalar_product_reduction.cl)
 /// NOTE: The reduction used in this kernel is only safe with ls being a power of 2 and bigger than 8!
 __kernel void scalar_product( __global const spinor * const restrict x, __global const spinor * const restrict y, __global hmc_complex * const restrict result, __local hmc_complex * const restrict result_local)
 {
@@ -56,20 +57,3 @@ __kernel void scalar_product( __global const spinor * const restrict x, __global
 	return;
 }
 
-
-__kernel void scalar_product_reduction(__global hmc_complex* result_tmp, __global hmc_complex* result, const uint num_values)
-{
-	//!!CP: complex_acc cannot handle __global
-	int id = get_global_id(0);
-	if(id == 0) {
-		hmc_complex tmp1;
-		hmc_complex tmp2;
-		tmp2 = complexLoadHack(&result_tmp[0]);
-		for (int i = 1; i < get_num_groups(0); i++) {
-			tmp1 = complexLoadHack(&result_tmp[i]);
-			tmp2 = complexadd(tmp2, tmp1);
-		}
-		(*result) = tmp2;
-	}
-	return;
-}
