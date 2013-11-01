@@ -203,7 +203,7 @@ void test_sf_squarenorm_staggered(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);	
@@ -227,12 +227,10 @@ void test_sf_squarenorm_staggered(std::string inputfile)
 
 	in.load(sf_in);
 
-	auto spinor_staggered_code = device->get_device()->get_spinor_staggered_code();
-
 	logger.info() << "Run kernel";
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	spinor_staggered_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
+	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 
@@ -250,7 +248,7 @@ void test_sf_scalar_product_staggered(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
@@ -287,12 +285,10 @@ void test_sf_scalar_product_staggered(std::string inputfile)
 	in.load(sf_in);
 	in2.load(sf_in2);
 
-	auto spinor_code = device->get_device()->get_spinor_staggered_code();
-
 	logger.info() << "Run kernel";
 	logger.info() << "result:";
 	hmc_complex cpu_res_tmp;
-	spinor_code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
+	device->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
 	sqnorm.dump(&cpu_res_tmp);
 	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
 	logger.info() << cpu_res;
@@ -315,22 +311,22 @@ void test_sf_cold(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto spinor_code = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 	
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<su3vec> in(NUM_ELEMENTS_SF, spinor_code->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, spinor_code->get_device());
+	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
 	logger.info() << "Run kernel";
         if(switcher)
-	  spinor_code->set_cold_spinorfield_device(&in);
+	  device->set_cold_spinorfield_device(&in);
         else
-          spinor_code->set_zero_spinorfield_device(&in);
+          device->set_zero_spinorfield_device(&in);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
+	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 
@@ -348,7 +344,7 @@ void test_sf_sax_staggered(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
@@ -410,7 +406,7 @@ void test_sf_saxpy_staggered(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
@@ -480,7 +476,7 @@ void test_sf_saxpbypz_staggered(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
@@ -561,7 +557,7 @@ void test_sf_gaussian_staggered(std::string inputfile)
 	hardware::System system(params);
 
 	physics::PRNG prng(system);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
@@ -659,7 +655,7 @@ void test_sf_convert_to_eo_staggered(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -720,7 +716,7 @@ void test_sf_convert_from_eo_staggered(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -780,7 +776,7 @@ void test_sf_squarenorm_staggered_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -829,7 +825,7 @@ void test_sf_cold_staggered_eo(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -861,7 +857,7 @@ void test_sf_scalar_product_staggered_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -920,7 +916,7 @@ void test_sf_sax_staggered_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -984,7 +980,7 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, bool switcher)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -1055,7 +1051,7 @@ void test_sf_saxpby_staggered_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -1125,7 +1121,7 @@ void test_sf_saxpbypz_staggered_eo(std::string inputfile)
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
@@ -1206,7 +1202,7 @@ void test_sf_gaussian_staggered_eo(std::string inputfile)
 	hardware::System system(params);
 
 	physics::PRNG prng(system);
-	auto * device = system.get_devices().at(0)->get_spinor_staggered_code();
+	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
