@@ -123,7 +123,28 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 		options << " -D EOPREC_SU3VECFIELD_STRIDE=" << get_su3vec_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
 	}
 
+	switch (params.get_fermact()) {
+		case meta::Inputparameters::twistedmass :
+			options << " -D _TWISTEDMASS_";
+			break;
+		case meta::Inputparameters::clover :
+			options << " -D _CLOVER_";
+			break;
+	}
 
+	//CP: These are the BCs in spatial and temporal direction
+	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
+	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
+	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
+	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
+	options << " -D MSPATIAL_RE=" << -cos(tmp_spatial);
+	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
+	options << " -D MSPATIAL_IM=" << -sin(tmp_spatial);
+
+	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
+	options << " -D MTEMPORAL_RE=" << -cos(tmp_temporal);
+	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
+	options << " -D MTEMPORAL_IM=" << -sin(tmp_temporal);
 
 	return options.str();
 }
