@@ -10,48 +10,15 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
-{
-	std::ostringstream options;
-	options.precision(16);
-
-	switch (params.get_fermact()) {
-		case meta::Inputparameters::twistedmass :
-			options << "-D _TWISTEDMASS_";
-			break;
-		case meta::Inputparameters::clover :
-			options << "-D _CLOVER_";
-			break;
-	}
-
-	//CP: These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
-	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
-	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
-	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
-	options << " -D MSPATIAL_RE=" << -cos(tmp_spatial);
-	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
-	options << " -D MSPATIAL_IM=" << -sin(tmp_spatial);
-
-	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
-	options << " -D MTEMPORAL_RE=" << -cos(tmp_temporal);
-	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
-	options << " -D MTEMPORAL_IM=" << -sin(tmp_temporal);
-
-	return options.str();
-}
-
 void hardware::code::Fermions::fill_kernels()
 {
-	sources = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
-
-	M_wilson = 0;
-	M_tm_plus = 0;
-	M_tm_minus = 0;
+	sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	if(get_parameters().get_use_eo()) {
+		sources = sources << "operations_spinorfield_eo.cl";
+	}
 
 	logger.debug() << "Create Fermions kernels...";
+	
 	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		M_wilson = createKernel("M_wilson") << sources << "fermionmatrix.cl" << "fermionmatrix_m.cl";
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
@@ -62,10 +29,8 @@ void hardware::code::Fermions::fill_kernels()
 	} else {
 		throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ", __FILE__, __LINE__);
 	}
-
+	
 	gamma5 = createKernel("gamma5") << sources << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
-
-
 	//Kernels needed if eoprec is used
 	if(get_parameters().get_use_eo() == true) {
 		if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
@@ -86,11 +51,7 @@ void hardware::code::Fermions::fill_kernels()
 			M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
 			M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
 		}
-
 	}
-
-
-	return;
 }
 
 void hardware::code::Fermions::clear_kernels()
@@ -902,7 +863,7 @@ hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware
 	  M_tm_sitediagonal_minus_AND_gamma5_eo(0)
 {
 	fill_kernels();
-};
+}
 
 hardware::code::Fermions::~Fermions()
 {
