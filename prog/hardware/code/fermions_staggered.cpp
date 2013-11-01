@@ -17,61 +17,39 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
-{
-	std::ostringstream options;
-
-	options.precision(16);
-
-	//These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
-	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
-	//BC: on the corners in each direction: exp(i theta*PI) <=> 
-	//    on each site: exp(i theta*PI /LATEXTENSION) = cos(..) + isin(..)
-	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
-	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
-	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
-	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
-	
-	return options.str();
-}
-
 void hardware::code::Fermions_staggered::fill_kernels()
 {
-	sources = get_device()->get_spinor_staggered_code()->get_sources() << "operations_staggered.cl" << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	sources = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.cl"  << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_staggered.cl";
+	if(get_parameters().get_use_eo()) {
+		sources = sources << "spinorfield_staggered_eo.cl";;
+	} else {
+		sources = sources << "spinorfield_staggered.cl";
+	}
 
 	logger.debug() << "Create staggered fermion kernels...";
 
-	M_staggered = createKernel("M_staggered") << sources << "fermionmatrix_staggered_DKS_local.cl" << "fermionmatrix_staggered_M.cl";
-	/////////////////////////////////////////////////
-	/////////// EVEN-ODD PRECONDITIONING ////////////
-	/////////////////////////////////////////////////
-	if(get_parameters().get_use_eo()){
-	  D_KS_eo = createKernel("D_KS_eo") << sources << "fermionmatrix_staggered_eo_DKS_local.cl" << "fermionmatrix_staggered_eo_DKS.cl";
+	if(get_parameters().get_fermact() == meta::Inputparameters::rooted_stagg) {
+	      if(get_parameters().get_use_eo()){
+			D_KS_eo = createKernel("D_KS_eo") << sources << "fermionmatrix_staggered_eo_DKS_local.cl" << "fermionmatrix_staggered_eo_DKS.cl";
+	      } else {
+			D_KS_eo = 0;
+			M_staggered = createKernel("M_staggered") << sources << "fermionmatrix_staggered_DKS_local.cl" << "fermionmatrix_staggered_M.cl";
+	      }
 	} else {
-	  D_KS_eo = 0;
+		throw Print_Error_Message("Fermions_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
 	}
-
-	return;
 }
 
 void hardware::code::Fermions_staggered::clear_kernels()
 {
-	logger.trace() << "clearing staggered fermion kernels...";
 	cl_uint clerr = CL_SUCCESS;
 
-	if(M_staggered) {
+	if(get_parameters().get_use_eo()){
+		clerr = clReleaseKernel(D_KS_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	} else {
 		clerr = clReleaseKernel(M_staggered);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		/////////////////////////////////////////////////
-		/////////// EVEN-ODD PRECONDITIONING ////////////
-		/////////////////////////////////////////////////
-		if(get_parameters().get_use_eo()){
-			clerr = clReleaseKernel(D_KS_eo);
-			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		}
 	}
 }
 
