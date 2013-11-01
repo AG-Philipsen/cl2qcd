@@ -16,7 +16,6 @@ void print_spinor(spinor in)
 }
 #endif
 
-#ifdef _FERMIONS_
 spinor set_spinor_zero()
 {
 	spinor tmp;
@@ -126,4 +125,3 @@ spinor spinor_acc_acc(spinor in1, spinor in2, spinor in3)
 	return tmp;
 }
 
-#endif //_FERMIONS_

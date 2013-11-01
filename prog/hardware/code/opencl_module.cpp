@@ -12,7 +12,7 @@
 #include "../buffers/su3.hpp"
 #include "../buffers/prng_buffer.hpp"
 #include "../buffers/spinor.hpp"
-
+#include "../buffers/su3vec.hpp"
 
 using namespace std;
 
@@ -33,6 +33,7 @@ static void print_profiling(const std::string& filename, const std::string& kern
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
+	using namespace hardware::code;
 
 	const size_4 local_size = device->get_local_lattice_size();
 	const size_4 mem_size = device->get_mem_lattice_size();
@@ -105,14 +106,24 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	if(params.get_use_rec12() == true) {
 		options <<  " -D _USE_REC12_" ;
 	}
-	
-	options << " -D _FERMIONS_";
-	options << " -D SPINORFIELDSIZE_GLOBAL=" << hardware::code::get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << hardware::code::get_eoprec_spinorfieldsize(params);
-	options << " -D SPINORFIELDSIZE_LOCAL=" << hardware::code::get_spinorfieldsize(local_size) << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << hardware::code::get_eoprec_spinorfieldsize(local_size);
-	options << " -D SPINORFIELDSIZE_MEM=" << hardware::code::get_spinorfieldsize(mem_size) << " -D EOPREC_SPINORFIELDSIZE_MEM=" << hardware::code::get_eoprec_spinorfieldsize(mem_size);
-	if(check_Spinor_for_SOA(device)) {
-		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(hardware::code::get_eoprec_spinorfieldsize(mem_size), device);
+	if(params.get_use_eo()) {
+		options << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
+		options << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << get_eoprec_spinorfieldsize(local_size);
+		options << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
 	}
+	//Always have non eo-prec options (for example in Wilson non eo kernels are always built)
+	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params);
+	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size);
+	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size);
+	
+	if(check_Spinor_for_SOA(device)) {
+		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
+	}
+	if(check_su3vec_for_SOA(device)) {
+		options << " -D EOPREC_SU3VECFIELD_STRIDE=" << get_su3vec_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
+	}
+
+
 
 	return options.str();
 }

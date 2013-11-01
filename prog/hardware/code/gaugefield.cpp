@@ -13,6 +13,7 @@ void hardware::code::Gaugefield::fill_kernels()
 {
 	basic_opencl_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+	
 	logger.debug() << "Create gaugeobservables kernels...";
 	
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
