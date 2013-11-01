@@ -50,7 +50,7 @@ bool mean_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float mu
     return true;
   else{
     if(logger.beDebug()){
-      logger.error() << "mean_test_single_set failed since " << mu-num_sigma*mean_std_dev << "<=" << data_mean << "<=" << mu+num_sigma*mean_std_dev << " is not true!";
+      logger.trace() << "mean_test_single_set failed since " << mu-num_sigma*mean_std_dev << "<=" << data_mean << "<=" << mu+num_sigma*mean_std_dev << " is not true!";
     }
     return false;
   }
@@ -66,12 +66,12 @@ bool mean_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float mu
 void mean_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sigma, hmc_float mu=0, hmc_float sigma=1){
   hmc_float success_exp;
   hmc_float success_teo=erf(num_sigma/sqrt(2))*100;
-  for(int i=0, k=0; i<samples.size(); i++){
+  for(uint i=0, k=0; i<samples.size(); i++){
     if(mean_test_single_set(samples[i],num_sigma,mu,sigma))
       k++;
     else{
       if(logger.beDebug())
-	logger.warn() << "The " << i << "th mean_test_single_set failed!";
+	logger.trace() << "The " << i << "th mean_test_single_set failed!";
     }
     if(i==samples.size()-1)
       success_exp=((hmc_float)k)/samples.size()*100;
@@ -114,7 +114,7 @@ bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_floa
     return true;
   else{
     if(logger.beDebug()){
-      logger.error() << "variance_test_single_set failed since " << sigma*sigma-num_sigma*variance_std_dev << "<=" << data_variance << "<=" << sigma*sigma+num_sigma*variance_std_dev << " is not true!";
+      logger.trace() << "variance_test_single_set failed since " << sigma*sigma-num_sigma*variance_std_dev << "<=" << data_variance << "<=" << sigma*sigma+num_sigma*variance_std_dev << " is not true!";
     }
     return false;
   }
@@ -130,12 +130,12 @@ bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_floa
 void variance_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sigma, hmc_float sigma=1){
   hmc_float success_exp;
   hmc_float success_teo=erf(num_sigma/sqrt(2))*100;
-  for(int i=0, k=0; i<samples.size(); i++){
+  for(uint i=0, k=0; i<samples.size(); i++){
     if(variance_test_single_set(samples[i],num_sigma,sigma))
       k++;
     else{
       if(logger.beDebug())
-	logger.warn() << "The " << i << "th variance_test_single_set failed!";
+	logger.trace() << "The " << i << "th variance_test_single_set failed!";
     }
     if(i==samples.size()-1)
       success_exp=((hmc_float)k)/samples.size()*100;

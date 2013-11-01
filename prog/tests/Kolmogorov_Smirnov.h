@@ -12,7 +12,7 @@ using namespace std;
 
 void print(vector<double> a){
   cout << "(";
-  for(int i=0; i<a.size()-1; i++)
+  for(uint i=0; i<a.size()-1; i++)
     cout << a[i] << "," << endl;
   cout << a[a.size()-1] << ")" << endl;
 }
@@ -81,7 +81,7 @@ double Kplus(vector<double> sample, double mu=0, double sigma=1){
   vector<double> teo=F(mu,sigma);
   vector<double> exp=Fn(sample,mu,sigma);
   vector<double> diff(teo.size());
-  for(int i=0; i<diff.size(); i++)
+  for(uint i=0; i<diff.size(); i++)
     diff[i]=exp[i]-teo[i];
   return (*max_element(diff.begin(),diff.end()))*sqrt(sample.size());
 }
@@ -91,7 +91,7 @@ double Kminus(vector<double> sample, double mu=0, double sigma=1){
   vector<double> teo=F(mu,sigma);
   vector<double> exp=Fn(sample,mu,sigma);
   vector<double> diff(teo.size());
-  for(int i=0; i<diff.size(); i++)
+  for(uint i=0; i<diff.size(); i++)
     diff[i]=teo[i]-exp[i];
   return (*max_element(diff.begin(),diff.end()))*sqrt(sample.size());
 }
@@ -106,7 +106,7 @@ double how_often_between(vector<double> sample){
 //This is the Kolmogorof_Smirnov test for a set of set of samples. Only Kplus is considered.
 double Kolmogorov_Smirnov(vector<vector<double>> samples, double mu=0, double sigma=1){
   vector<double> Kp;
-  for(int i=0; i<samples.size(); i++)
+  for(uint i=0; i<samples.size(); i++)
     Kp.push_back(Kplus(samples[i],mu,sigma));
   return how_often_between(Kp);
 }  

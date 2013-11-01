@@ -402,9 +402,10 @@ void test_sf_saxpy_staggered(std::string inputfile, bool switcher)
 	std::string kernelName;
 	if( switcher)
 	  kernelName = "saxpy_staggered";
-	else
-	  ;
+	else {
 	  //kernelName = "saxpy_staggered_arg";
+	  ;
+	}	  
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -612,7 +613,7 @@ void test_sf_gaussian_staggered(std::string inputfile)
 	vector<hmc_float> tmp2;
 	for(int i=0; i<iterations; i++){
 	  vector<hmc_float> tmp;
-	  for(int j=0; j<NUM_ELEMENTS_SF; j++){
+	  for(uint j=0; j<NUM_ELEMENTS_SF; j++){
 	    tmp2=reals_from_su3vec(sf_out[i*NUM_ELEMENTS_SF+j]);
 	    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
 	    tmp2.clear();
@@ -975,9 +976,10 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, bool switcher)
 	std::string kernelName;
 	if( switcher)
 	  kernelName = "saxpy_staggered_eoprec";
-	else
-	  ;
+	else {
 	  //kernelName = "saxpy_staggered_eoprec_arg";
+	  ;
+	}
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -1255,7 +1257,7 @@ void test_sf_gaussian_staggered_eo(std::string inputfile)
 	vector<hmc_float> tmp2;
 	for(int i=0; i<iterations; i++){
 	  vector<hmc_float> tmp;
-	  for(int j=0; j<NUM_ELEMENTS_SF; j++){
+	  for(uint j=0; j<NUM_ELEMENTS_SF; j++){
 	    tmp2=reals_from_su3vec(sf_out[i*NUM_ELEMENTS_SF+j]);
 	    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
 	    tmp2.clear();
@@ -2367,10 +2369,9 @@ BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_4 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* To be added...
+/* To be added if needed...
  *
  *
-
 
 BOOST_AUTO_TEST_SUITE(SF_SAXPY_ARG)
 
