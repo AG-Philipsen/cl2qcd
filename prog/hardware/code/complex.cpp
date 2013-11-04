@@ -15,13 +15,13 @@
 
 void hardware::code::Complex::fill_kernels()
 {
-	/// @todo the gaugefield code should depend on this, not the other way around
-	basic_complex_code = get_device()->get_gaugefield_code()->get_sources();
-	convert = createKernel("convert_float_to_complex") << get_device()->get_gaugefield_code()->get_sources() << "complex_convert.cl";
-	ratio = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
-	product = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
-	sum = createKernel("sum") << get_device()->get_gaugefield_code()->get_sources() << "complex_sum.cl";
-	difference = createKernel("subtraction") << get_device()->get_gaugefield_code()->get_sources() << "complex_subtraction.cl";
+	basic_complex_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.cl";
+	
+	convert = createKernel("convert_float_to_complex") << basic_complex_code << "complex_convert.cl";
+	ratio = createKernel("ratio") << basic_complex_code << "complex_ratio.cl";
+	product = createKernel("product") << basic_complex_code << "complex_product.cl";
+	sum = createKernel("sum") << basic_complex_code << "complex_sum.cl";
+	difference = createKernel("subtraction") << basic_complex_code << "complex_subtraction.cl";
 }
 
 void hardware::code::Complex::clear_kernels()
