@@ -14,9 +14,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	std::ostringstream options;
 	options.precision(16);
 	if(params.get_use_same_rnd_numbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
-#ifdef USE_PRNG_NR3
-	options << "-D USE_PRNG_NR3";
-#elif defined(USE_PRNG_RANLUX)
+#ifdef USE_PRNG_RANLUX
 	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
@@ -27,22 +25,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device)
 {
-#ifdef USE_PRNG_NR3
-#error
-//	// Prepare random number arrays, for each task and device separately
-//	const size_t num_rndstates = prng_buffer.get_elements();
-//	rndarray = new nr3_state_dev[num_rndstates];
-//	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
-//	prng_buffer.load(rndarray);
-//
-//	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "random.cl";
-//
-//	// Prepare random number arrays, for each task and device separately
-//	const size_t num_rndstates = prng_buffer.get_elements();
-//	rndarray = new nr3_state_dev[num_rndstates];
-//	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
-//	prng_buffer.load(rndarray);
-#elif defined(USE_PRNG_RANLUX)
+#ifdef USE_PRNG_RANLUX
 	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "ranluxcl/ranluxcl.cl" << "random.cl";
 	init_kernel = createKernel("prng_ranlux_init") << get_device()->get_gaugefield_code()->get_sources() << prng_code << "random_ranlux_init.cl";
 #else // USE_PRNG_XXX
@@ -52,9 +35,7 @@ hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device
 
 hardware::code::PRNG::~PRNG()
 {
-#ifdef USE_PRNG_NR3
-	delete [] rndarray;
-#elif defined(USE_PRNG_RANLUX)
+#ifdef USE_PRNG_RANLUX
 	cl_int clerr = clReleaseKernel(init_kernel);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 #else // USE_PRNG_XXX

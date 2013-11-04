@@ -101,16 +101,13 @@ if( USE_DOUBLE_PRECISION )
 endif( USE_DOUBLE_PRECISION )
 
 # allow to choose a PRNG
-set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default) and NR3")
-if(PRNG STREQUAL "NR3")
-	add_definitions(-DUSE_PRNG_NR3)
-	set(PRNG_LIBRARIES "")
-elseif(PRNG STREQUAL "Ranlux")
+set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default)")
+if(PRNG STREQUAL "Ranlux")
 	add_definitions(-DUSE_PRNG_RANLUX)
 	set(PRNG_LIBRARIES ranlux)
-else(PRNG STREQUAL "NR3")
-	message(SEND_ERROR "PRNG must be Ranlux (default) or NR3. \"${PRNG}\" is not a valid value.")
-endif(PRNG STREQUAL "NR3")
+else()
+	message(SEND_ERROR "PRNG must be Ranlux (default). \"${PRNG}\" is not a valid value.")
+endif()
 
 # whether to use lazy halo update
 option(LAZY_HALO_UPDATES "Delay halo updates until the halo is required." ON)

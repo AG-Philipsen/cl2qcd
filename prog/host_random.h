@@ -31,20 +31,6 @@ void prng_get(int* buf);
 
 void prng_set(int* buf);
 
-#ifdef USE_PRNG_NR3
-/** Storage type for state of the device random number generator */
-typedef cl_ulong4 nr3_state_dev;
-
-/**
- * init the given array with seeds for parallel random number generation on an OpenCL device
- *
- * @param[out] hmc_rndarray The array to feed with seeds
- * @param[in] file The file containing the binary seed
- * @param[in,out] inittime Timer to add execution time to
- */
-void nr3_init_seeds(nr3_state_dev * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
-#endif // USE_PRNG_NR3
-
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
 
