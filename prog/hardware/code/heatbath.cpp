@@ -9,29 +9,12 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
-{
-	std::ostringstream options;
-	options.precision(16);
-
-	options <<  "-D BETA=" << params.get_beta();
-	if(params.get_use_aniso() == true) {
-		options << " -D _ANISO_";
-		options <<  " -D XI_0=" << meta::get_xi_0(params);
-	}
-
-	return options.str();
-}
-
 void hardware::code::Heatbath::fill_kernels()
 {
-	ClSourcePackage sources = get_device()->get_gaugefield_code()->get_sources()
-	                          << get_device()->get_prng_code()->get_sources()
-	                          << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	ClSourcePackage sources = get_basic_sources() << get_device()->get_prng_code()->get_sources() << "operations_geometry.cl" << "operations_complex.cl" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	logger.debug() << "Create heatbath kernels...";
+	
 	heatbath_even = createKernel("heatbath_even") << sources << "operations_heatbath.cl" << "heatbath_even.cl";
 	heatbath_odd = createKernel("heatbath_odd") << sources << "operations_heatbath.cl" << "heatbath_odd.cl";
 
