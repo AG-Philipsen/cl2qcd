@@ -154,6 +154,25 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D MTEMPORAL_RE=" << -cos(tmp_temporal);
 	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
 	options << " -D MTEMPORAL_IM=" << -sin(tmp_temporal);
+
+	//This is mainly for molecular dynamics
+	options <<  " -D BETA=" << params.get_beta();
+	
+	//Options for correlators
+	if(params.get_fermact() != meta::Inputparameters::rooted_stagg){
+		hmc_float kappa_tmp = params.get_kappa();
+		options << " -D KAPPA=" << kappa_tmp;
+		options << " -D MKAPPA=" << -kappa_tmp;
+	}
+	options << " -D NUM_SOURCES=" << params.get_num_sources();
+	//CP: give content of sources as compile parameters
+	options << " -D SOURCE_CONTENT=" << params.get_sourcecontent();
+	
+	//Options for heatbath
+	if(params.get_use_aniso() == true) {
+		options << " -D _ANISO_";
+		options << " -D XI_0=" << meta::get_xi_0(params);
+	}
 	
 	return options.str();
 }
