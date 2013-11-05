@@ -8,30 +8,10 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
-{
-	std::ostringstream options;
-	options.precision(16);
-
-	//CP: give kappa and its negative value
-	hmc_float kappa_tmp = params.get_kappa();
-	options << "-D KAPPA=" << kappa_tmp;
-	options << " -D MKAPPA=" << -kappa_tmp;
-
-	options << " -D NUM_SOURCES=" << params.get_num_sources();
-
-	//CP: give content of sources as compile parameters
-	options << " -D SOURCE_CONTENT=" << params.get_sourcecontent();
-
-	return options.str();
-}
-
-
 void hardware::code::Correlator::fill_kernels()
 {
-	basic_correlator_code = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
 	logger.debug() << "Create correlator kernels...";
