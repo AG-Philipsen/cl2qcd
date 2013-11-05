@@ -7,25 +7,12 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
-{
-	std::ostringstream options;
-	options.precision(16);
-
-	options <<  "-D BETA=" << params.get_beta();
-	options <<  " -D XI_0=" << meta::get_xi_0(params);
-
-	return options.str();
-}
-
-
 void hardware::code::Kappa::fill_kernels()
 {
-	ClSourcePackage sources = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	ClSourcePackage sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	cout << "Create TK clover kernels..." << endl;
+	
 	kappa_clover_gpu = createKernel("kappa_clover_gpu") << sources << "opencl_tk_kappa.cl";
 }
 
