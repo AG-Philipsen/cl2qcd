@@ -140,7 +140,7 @@ public:
 	 *       to implement explictly the destructor (that of Rational_Coefficients is enough)
 	 */
 	Rational_Approximation(int d, int y, int z, hmc_float low, hmc_float high,
-			        bool inv=true, int precision=100);
+			        bool inv=true, int precision=113);
 	
 	/*
 	 * Rational_Approximation cannot be copied
