@@ -18,33 +18,7 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
 static bool use_multipass_gauge_force_tlsym(hardware::Device * device);
-
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
-{
-	using namespace hardware::buffers;
-
-	std::ostringstream options;
-	options.precision(16);
-	options <<  "-D BETA=" << params.get_beta();
-	//in case of tlsym gauge action
-	if(meta::get_use_rectangles(params) == true) {
-		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
-	}
-	//These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
-	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
-	//BC: on the corners in each direction: exp(i theta*PI) <=> 
-	//    on each site: exp(i theta*PI /LATEXTENSION) = cos(..) + isin(..)
-	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
-	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
-	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
-	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
-	
-	return options.str();
-}
 
 static bool use_multipass_gauge_force_tlsym(hardware::Device * device)
 {
@@ -53,12 +27,13 @@ static bool use_multipass_gauge_force_tlsym(hardware::Device * device)
 
 void hardware::code::Molecular_Dynamics::fill_kernels()
 {
-	basic_molecular_dynamics_code = get_device()->get_gaugemomentum_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	basic_molecular_dynamics_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "types_hmc.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_gaugemomentum.cl";
+	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
-		fermion_force_eo = createKernel("fermion_force_eo") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo = createKernel("fermion_force_eo") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 		fermion_stagg_partial_force_eo = createKernel("fermion_staggered_partial_force_eo") << basic_molecular_dynamics_code << "operations_staggered.cl" << "spinorfield_staggered_eo.cl" << "force_staggered_fermion_eo.cl";
 	}
 	fermion_force = createKernel("fermion_force") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion.cl";
