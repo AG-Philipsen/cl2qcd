@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(max)
 	
 	hmc_float ref_max_eig = 5.9887256245527069609;
 	
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	
@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE(min)
 	
 	hmc_float ref_min_eig = 1.053927941164244;
 	
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	
@@ -81,8 +81,8 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	hmc_float ref_max_eig = 5.2827838704124030;
 	hmc_float ref_min_eig = 0.3485295092571166;
 	
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	

@@ -165,8 +165,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 	using namespace physics::algorithms;
 	Rational_Approximation approx(8, 1,2, 1.e-5,1);
 	{
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -189,8 +189,9 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 	}
 	
 	{
-		const char * _params[] = {"foo", "--ntime=4", "--theta_fermion_temporal=1"};
-		meta::Inputparameters params(3, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--theta_fermion_temporal=1",
+		                          "--fermact=rooted_stagg"};
+		meta::Inputparameters params(4, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		

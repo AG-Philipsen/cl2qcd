@@ -204,8 +204,8 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 {
 	{
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
@@ -229,8 +229,8 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 	
 	{
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=16", "--nspace=8"};
-		meta::Inputparameters params(3, _params);
+		const char * _params[] = {"foo", "--ntime=16", "--nspace=8", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(4, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -252,8 +252,8 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 	
 	{
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
@@ -281,8 +281,8 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 {
 	using namespace physics::lattices;
 	using namespace physics::algorithms;
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 

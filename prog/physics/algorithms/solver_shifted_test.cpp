@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	
@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
 	
-	const char * _params[] = {"foo", "--ntime=4"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	

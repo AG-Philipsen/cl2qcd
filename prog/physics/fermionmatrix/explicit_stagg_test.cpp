@@ -23,8 +23,8 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		logger.info() << "First test...";
 		//This test is with cold links, periodic BC, random field, 8**4 lattice
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--nspace=8"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
@@ -55,8 +55,8 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		logger.info() << "Second test...";
 		//This test is with hot links, periodic BC, random field, 4**4 lattice
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 

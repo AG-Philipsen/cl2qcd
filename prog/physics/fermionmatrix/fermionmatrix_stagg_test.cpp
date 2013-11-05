@@ -47,8 +47,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		//Test with cold links, periodic BC, random field, 8**4 lattice
 		logger.info() << "First test...";
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--nspace=8"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -78,8 +78,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		//Test with hot links, periodic BC, random field, 4**4 lattice
 		logger.info() << "Second test...";
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -112,8 +112,8 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		//Test with cold links, periodic BC, random field, 8**4 lattice
 		logger.info() << "First test...";
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--nspace=8"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -141,8 +141,8 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		//Test with hot links, periodic BC, random field, 4**4 lattice
 		logger.info() << "Second test...";
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
