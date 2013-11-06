@@ -17,7 +17,7 @@ void hardware::code::Fermions::fill_kernels()
 		sources = sources << "operations_spinorfield_eo.cl";
 	}
 
-	logger.debug() << "Create Fermions kernels...";
+	logger.debug() << "Creating Fermions kernels...";
 	
 	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		M_wilson = createKernel("M_wilson") << sources << "fermionmatrix.cl" << "fermionmatrix_m.cl";
@@ -56,8 +56,9 @@ void hardware::code::Fermions::fill_kernels()
 
 void hardware::code::Fermions::clear_kernels()
 {
-	logger.trace() << "clearing fermion kernels...";
 	cl_uint clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Fermions kernels...";
 
 	if(M_wilson) {
 		clerr = clReleaseKernel(M_wilson);

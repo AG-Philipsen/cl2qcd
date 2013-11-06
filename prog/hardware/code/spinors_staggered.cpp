@@ -27,7 +27,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	
-	logger.debug() << "Create fermions_staggered kernels...";
+	logger.debug() << "Creating Spinors_staggered kernels...";
 	
 	//Reductions are really small kernels, so few needed options loaded by hands
 	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_staggered_squarenorm_reduction.cl";
@@ -86,6 +86,8 @@ void hardware::code::Spinors_staggered::fill_kernels()
 void hardware::code::Spinors_staggered::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Spinors_staggered kernels...";
 	
 	//Reductions
 	clerr = clReleaseKernel(global_squarenorm_reduction_stagg);

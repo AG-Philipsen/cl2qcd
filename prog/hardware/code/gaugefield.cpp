@@ -14,7 +14,7 @@ void hardware::code::Gaugefield::fill_kernels()
 	basic_opencl_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 	
-	logger.debug() << "Create gaugeobservables kernels...";
+	logger.debug() << "Creating Gaugefield kernels...";
 	
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
@@ -41,9 +41,9 @@ void hardware::code::Gaugefield::fill_kernels()
 
 void hardware::code::Gaugefield::clear_kernels()
 {
-	logger.trace() << "Clearing kernels";
-
 	cl_int clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Gaugefield kernels...";
 
 	clerr = clReleaseKernel(plaquette);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);

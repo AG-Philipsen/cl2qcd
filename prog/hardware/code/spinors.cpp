@@ -18,7 +18,7 @@ void hardware::code::Spinors::fill_kernels()
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	
-	logger.debug() << "Create Spinors kernels...";
+	logger.debug() << "Creating Spinors kernels...";
 	
 	//Reductions are really small kernels, so few needed options loaded by hands
 	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_squarenorm_reduction.cl";
@@ -74,6 +74,8 @@ void hardware::code::Spinors::fill_kernels()
 void hardware::code::Spinors::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Spinors kernels...";
 
 	//Reductions
 	clerr = clReleaseKernel(_global_squarenorm_reduction);

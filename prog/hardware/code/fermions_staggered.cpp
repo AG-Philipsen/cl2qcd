@@ -26,7 +26,7 @@ void hardware::code::Fermions_staggered::fill_kernels()
 		sources = sources << "spinorfield_staggered.cl";
 	}
 
-	logger.debug() << "Create staggered fermion kernels...";
+	logger.debug() << "Creating Fermions_staggered kernels...";
 
 	if(get_parameters().get_fermact() == meta::Inputparameters::rooted_stagg) {
 	      if(get_parameters().get_use_eo()){
@@ -43,6 +43,8 @@ void hardware::code::Fermions_staggered::fill_kernels()
 void hardware::code::Fermions_staggered::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Fermions_staggered kernels...";
 
 	if(get_parameters().get_use_eo()){
 		clerr = clReleaseKernel(D_KS_eo);

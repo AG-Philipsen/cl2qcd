@@ -30,6 +30,8 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 	basic_molecular_dynamics_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "types_hmc.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_gaugemomentum.cl";
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	
+	logger.debug() << "Creating Molecular_Dynamics kernels...";
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
@@ -68,7 +70,8 @@ void hardware::code::Molecular_Dynamics::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
 
-	logger.debug() << "release molecular dynamics kernels.." ;
+	logger.debug() << "Clearing Molecular_Dynamics kernels.." ;
+	
 	if(get_parameters().get_use_eo() == true) {
 		clerr = clReleaseKernel(fermion_force_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);

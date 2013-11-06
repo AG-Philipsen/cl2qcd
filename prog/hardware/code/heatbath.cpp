@@ -13,7 +13,7 @@ void hardware::code::Heatbath::fill_kernels()
 {
 	ClSourcePackage sources = get_basic_sources() << get_device()->get_prng_code()->get_sources() << "operations_geometry.cl" << "operations_complex.cl" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
-	logger.debug() << "Create heatbath kernels...";
+	logger.debug() << "Creating Heatbath kernels...";
 	
 	heatbath_even = createKernel("heatbath_even") << sources << "operations_heatbath.cl" << "heatbath_even.cl";
 	heatbath_odd = createKernel("heatbath_odd") << sources << "operations_heatbath.cl" << "heatbath_odd.cl";
@@ -43,6 +43,8 @@ void hardware::code::Heatbath::clear_kernels()
 void hardware::code::Heatbath::run_heatbath(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const
 {
 	cl_int clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Heatbath kernels...";
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;

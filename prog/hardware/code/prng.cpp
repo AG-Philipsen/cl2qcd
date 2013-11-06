@@ -43,6 +43,7 @@ hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device
 //	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
 //	prng_buffer.load(rndarray);
 #elif defined(USE_PRNG_RANLUX)
+	logger.debug() << "Creating PRNG kernels...";
 	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "ranluxcl/ranluxcl.cl" << "random.cl";
 	init_kernel = createKernel("prng_ranlux_init") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_") <<  "opencl_header.cl" << prng_code << "random_ranlux_init.cl";
 #else // USE_PRNG_XXX
@@ -55,6 +56,7 @@ hardware::code::PRNG::~PRNG()
 #ifdef USE_PRNG_NR3
 	delete [] rndarray;
 #elif defined(USE_PRNG_RANLUX)
+	logger.debug() << "Clearing PRNG kernels...";
 	cl_int clerr = clReleaseKernel(init_kernel);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 #else // USE_PRNG_XXX

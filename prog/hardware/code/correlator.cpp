@@ -14,7 +14,7 @@ void hardware::code::Correlator::fill_kernels()
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
-	logger.debug() << "Create correlator kernels...";
+	logger.debug() << "Creating Correlator kernels...";
 
 	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
 		create_point_source = createKernel("create_point_source") << basic_correlator_code << prng_code << "spinorfield_point_source.cl";
@@ -90,6 +90,9 @@ void hardware::code::Correlator::fill_kernels()
 void hardware::code::Correlator::clear_kernels()
 {
 	int clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Correlator kernels...";
+	
 	if(correlator_ps)
 		clerr = clReleaseKernel(correlator_ps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);

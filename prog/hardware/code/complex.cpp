@@ -17,6 +17,8 @@ void hardware::code::Complex::fill_kernels()
 {
 	basic_complex_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.cl";
 	
+	logger.debug() << "Creating Complex kernels...";
+	
 	convert = createKernel("convert_float_to_complex") << basic_complex_code << "complex_convert.cl";
 	ratio = createKernel("ratio") << basic_complex_code << "complex_ratio.cl";
 	product = createKernel("product") << basic_complex_code << "complex_product.cl";
@@ -28,6 +30,8 @@ void hardware::code::Complex::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
 
+	logger.debug() << "Clearing Complex kernels...";
+	
 	clerr = clReleaseKernel(convert);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(ratio);

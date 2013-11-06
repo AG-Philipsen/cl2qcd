@@ -35,7 +35,7 @@ void hardware::code::Gaugemomentum::fill_kernels()
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	
-	logger.debug() << "Create gaugemomentum kernels...";
+	logger.debug() << "Creating Gaugemomentum kernels...";
 
 	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "gaugemomentum_squarenorm_reduction.cl";
 
@@ -55,6 +55,8 @@ void hardware::code::Gaugemomentum::fill_kernels()
 void hardware::code::Gaugemomentum::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Gaugefield kernels...";
 	
 	clerr = clReleaseKernel(generate_gaussian_gaugemomenta);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
