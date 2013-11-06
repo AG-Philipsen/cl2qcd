@@ -243,7 +243,7 @@ template<class BUFFER> struct UpdateHaloSOAhelper {
 	unsigned vol4d_local;
 };
 
-template <typename T, class BUFFER> void hardware::buffers::initialize_update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width = 0)
+template <typename T, class BUFFER> void hardware::buffers::initialize_update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width)
 {
 	// TODO all transfer imply that buffers are mapped 1:1 to devices, this must be improved!
 	const size_t num_buffers = buffers.size();
@@ -276,7 +276,7 @@ template <typename T, class BUFFER> void hardware::buffers::initialize_update_ha
 	}
 }
 
-template <typename T, class BUFFER> void hardware::buffers::finalize_update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width = 0)
+template <typename T, class BUFFER> void hardware::buffers::finalize_update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width)
 {
 	const size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
@@ -297,7 +297,7 @@ template <typename T, class BUFFER> void hardware::buffers::finalize_update_halo
 	}
 }
 
-template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width = 0)
+template <typename T, class BUFFER> void hardware::buffers::update_halo_soa(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width)
 {
 	initialize_update_halo_soa<T>(buffers, system, ELEMS_PER_SITE, CHUNKS_PER_LANE, reqd_width);
 	finalize_update_halo_soa<T>(buffers, system, ELEMS_PER_SITE, CHUNKS_PER_LANE, reqd_width);

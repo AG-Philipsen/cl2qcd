@@ -66,28 +66,7 @@ private:
 	 */
 	ClSourcePackage prng_code;
 
-#ifdef USE_PRNG_NR3
-	/**
-	 * Copy the RNG state to the appropriate OpenCL buffer.
-	 *
-	 * @param host_rndarray The RNG state to copy
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndstate_to_device(nr3_state_dev* host_rndarray) const;
-
-	/**
-	 * Copy the RNG state from the OpenCL buffer.
-	 *
-	 * @param[out] rndarray The RNG copy target
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndstate_from_device(nr3_state_dev* rndarray) const;
-
-	nr3_state_dev* rndarray;
-	size_t sizeof_rndarray;
-#elif defined(USE_PRNG_RANLUX)
+#ifdef USE_PRNG_RANLUX
 	cl_kernel init_kernel;
 #endif // USE_PRNG_???
 };

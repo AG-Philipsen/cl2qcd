@@ -29,16 +29,9 @@ size_t hardware::buffers::PRNGBuffer::get_elements() const noexcept
 size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const meta::Inputparameters& params)
 {
 	if(params.get_use_same_rnd_numbers()) {
-		    return 1.;
+		return 1.;
 	} else {
-#ifdef USE_PRNG_NR3
-		// Prepare random number arrays, for each task and device separately
-		if(device->get_device_type() == CL_DEVICE_TYPE_GPU) {
-			return 5120;
-		} else {
-			return 64;
-		}
-#elif defined(USE_PRNG_RANLUX)
+#ifdef USE_PRNG_RANLUX
 		// make num of random states equal to default num of global threads
 		// TODO make this somewhat more automatic (avoid code duplication)
 		if(device->get_device_type() == CL_DEVICE_TYPE_GPU) {

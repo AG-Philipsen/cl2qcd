@@ -1,6 +1,4 @@
-#include "../crypto/md5.h"
-
-#include <string>
+#include "md5.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -42,11 +40,5 @@ BOOST_AUTO_TEST_CASE( MD5 )
 
 void testMD5(std::string string, std::string ref)
 {
-	char sig[16];
-	md5_buffer(string.c_str(), string.length(), sig);
-
-	char res[33];
-	md5_sig_to_string(sig, res, 33);
-
-	BOOST_CHECK_EQUAL(std::string(res), ref);
+	BOOST_CHECK_EQUAL(crypto::md5(string), ref);
 }

@@ -1,14 +1,14 @@
-# MD5 is endian-dependent
-include(TestBigEndian REQUIRED)
-test_big_endian(BIG_ENDIAN)
-if(BIG_ENDIAN)
-	add_definitions( "-DMD5_BIG_ENDIAN=true" )
-endif(BIG_ENDIAN)
-
-# Define sources for MD5
-set(MD5_SRCS
-	md5.c
-)
+find_package( Nettle REQUIRED )
+include_directories(SYSTEM ${Nettle_INCLUDE_DIRS})
 
 # Build one crypto lib
-add_library(crypto ${MD5_SRCS})
+add_library(crypto
+	md5.cpp
+)
+target_link_libraries(crypto
+	${Nettle_LIBRARIES}
+)
+
+add_executable(cryptoTest test.cpp)
+target_link_libraries(cryptoTest ${Boost_LIBRARIES} crypto)
+add_test(Crypto cryptoTest)

@@ -101,16 +101,13 @@ if( USE_DOUBLE_PRECISION )
 endif( USE_DOUBLE_PRECISION )
 
 # allow to choose a PRNG
-set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default) and NR3")
-if(PRNG STREQUAL "NR3")
-	add_definitions(-DUSE_PRNG_NR3)
-	set(PRNG_LIBRARIES "")
-elseif(PRNG STREQUAL "Ranlux")
+set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default)")
+if(PRNG STREQUAL "Ranlux")
 	add_definitions(-DUSE_PRNG_RANLUX)
 	set(PRNG_LIBRARIES ranlux)
-else(PRNG STREQUAL "NR3")
-	message(SEND_ERROR "PRNG must be Ranlux (default) or NR3. \"${PRNG}\" is not a valid value.")
-endif(PRNG STREQUAL "NR3")
+else()
+	message(SEND_ERROR "PRNG must be Ranlux (default). \"${PRNG}\" is not a valid value.")
+endif()
 
 # whether to use lazy halo update
 option(LAZY_HALO_UPDATES "Delay halo updates until the halo is required." ON)
@@ -156,8 +153,8 @@ set(OPTIMAL_USED_LIBS
 	${Boost_LIBRARIES}
 	klepsydra
 	einhard
-	crypto
 	${PRNG_LIBRARIES}
+	crypto
 )
 
 add_library(optimal ${OPTIMAL_FILES})
@@ -199,12 +196,12 @@ endif(NOT CMAKE_HOST_APPLE)
 
 add_library(einhard einhard/einhard.cpp)
 
-# Add crypto stuff
-add_subdirectory( crypto )
-
 # Random number generation lib
 add_subdirectory(ranlux)
 add_subdirectory(ranluxcl)
+
+# Crypto
+add_subdirectory(crypto)
 
 option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
 if(BUILD_MICROBENCHMARKS)

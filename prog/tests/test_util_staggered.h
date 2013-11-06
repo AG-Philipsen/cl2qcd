@@ -5,7 +5,7 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
 #include "../hardware/code/spinors.hpp"
-#include </usr/include/c++/4.7/fstream>
+#include "../general_header.h"
 #include <vector>
 
 

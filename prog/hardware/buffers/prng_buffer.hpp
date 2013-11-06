@@ -10,10 +10,6 @@
 #include "buffer.hpp"
 #include "../../meta/inputparameters.hpp"
 
-#ifdef USE_PRNG_NR3
-#include "../../host_random.h"
-#endif
-
 namespace hardware {
 namespace buffers {
 
@@ -31,9 +27,7 @@ size_t get_prng_buffer_size(const Device * device, const meta::Inputparameters& 
 class PRNGBuffer : public Buffer {
 
 public:
-#ifdef USE_PRNG_NR3
-	typedef nr3_state_dev prng_state_t;
-#elif defined(USE_PRNG_RANLUX)
+#ifdef USE_PRNG_RANLUX
 	typedef cl_float4 prng_state_t[7];
 	static_assert(sizeof(prng_state_t) == 7 * sizeof(cl_float4), "PRNG state type mockup is of wrong size.");
 #else // USE_PRNG_XXX
