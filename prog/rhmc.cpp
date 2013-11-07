@@ -76,15 +76,15 @@ int main(int argc, const char* argv[])
 		logger.info() << "";
 		logger.info() << "Generation of Rational Approximations...";
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		Rational_Approximation approx_hb(3,//parameters.get_metro_approx_ord(),
+		Rational_Approximation approx_hb(parameters.get_metro_approx_ord(),
 						  parameters.get_num_tastes(), 8, parameters.get_approx_lower(),
 						  parameters.get_approx_upper(), false);
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		Rational_Approximation approx_md(3,//parameters.get_md_approx_ord(),
+		Rational_Approximation approx_md(parameters.get_md_approx_ord(),
 						  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
 						  parameters.get_approx_upper(), true);
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		Rational_Approximation approx_met(3,//parameters.get_metro_approx_ord(),
+		Rational_Approximation approx_met(parameters.get_metro_approx_ord(),
 						  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
 						  parameters.get_approx_upper(), true);
 		

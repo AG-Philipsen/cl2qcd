@@ -33,7 +33,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 
 	const auto params = system.get_inputparameters();
 
-	logger.trace() << "\tRHMC:\tinit spinorfield and gaugemomentum" ;
+	logger.debug() << "\tRHMC:\tinit spinorfield and gaugemomentum" ;
 	const Gaugemomenta p(system);
 	p.gaussian(prng);
 
@@ -53,7 +53,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 			init_spinorfield(&phi, &spinor_energy_init, *gf, prng, system);
 	}
 	
-	logger.trace() << "\tRHMC:\tupdate gaugefield and gaugemomentum" ;
+	logger.debug() << "\tRHMC:\tupdate gaugefield and gaugemomentum" ;
 	const Gaugefield new_u(system, prng, false);
 	const Gaugemomenta new_p(system);
 	// copy u->u' p->p' for the integrator
@@ -61,7 +61,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	copyData(&new_p, p);
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
-	logger.trace() << "\tRHMC:\tcall integrator" ;
+	logger.debug() << "\tRHMC:\tcall integrator" ;
 	//Before MD the coefficients of phi have to be set to the rescaled ones on the base of approx2
 	phi.Rescale_Coefficients(approx2, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
 	if(params.get_use_mp()) {
@@ -72,7 +72,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	}
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
-	logger.trace() << "\tRHMC [MET]:\tperform Metropolis step: ";
+	logger.debug() << "\tRHMC [MET]:\tperform Metropolis step: ";
 	//Before Metropolis test the coeff. of phi have to be set to the rescaled ones on the base of approx3
 	phi.Rescale_Coefficients(approx3, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
 	//this call calculates also the HMC-Observables
