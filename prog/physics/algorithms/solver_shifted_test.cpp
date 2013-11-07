@@ -109,4 +109,93 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(cgm_3)
+{
+	using namespace physics::lattices;
+	using namespace physics::algorithms::solvers;
+	using namespace physics::algorithms;
+	
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+	
+	//These are some possible values of sigma
+	Rational_Approximation approx(16, 1,2, 1.e-5,1);
+	
+	std::vector<hmc_float> sigma = approx.Get_b();
+	physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
+	
+	//This configuration for the Ref.Code is the same as for example dks_input_5
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Staggeredfield_eo b(system);
+	std::vector<Staggeredfield_eo*> out;
+	for(uint i=0; i<sigma.size(); i++)
+		out.push_back(new Staggeredfield_eo(system));
+	//This field is that of the test explicit_stagg, part 2 (D_KS_eo)
+	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
+	
+	//These are the sqnorms of the output of the CG-M algorithm from the reference code
+	std::vector<hmc_float> sqnorms_ref;
+	sqnorms_ref.push_back(3790.2414703421331978);
+	sqnorms_ref.push_back(3789.5266994555458950);
+	sqnorms_ref.push_back(3787.5285290870838253);
+	sqnorms_ref.push_back(3782.6617780789301833);
+	sqnorms_ref.push_back(3771.0928645597095965);
+	sqnorms_ref.push_back(3743.8629449816535271);
+	sqnorms_ref.push_back(3680.7256977108900173);
+	sqnorms_ref.push_back(3539.0807487819220114);
+	sqnorms_ref.push_back(3243.3813294554852291);
+	sqnorms_ref.push_back(2708.4856234685380514);
+	sqnorms_ref.push_back(1947.5005180873681638);
+	sqnorms_ref.push_back(1157.0234695785266013);
+	sqnorms_ref.push_back(559.56186864729193076);
+	sqnorms_ref.push_back(215.02535309652577666);
+	sqnorms_ref.push_back(58.529059535207736076);
+	sqnorms_ref.push_back(6.2407847688851161294);
+	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-24);
+	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
+	
+	std::vector<hmc_float> sqnorm_out;
+	for(uint i=0; i<sigma.size(); i++){
+		sqnorm_out.push_back(squarenorm(*out[i]));
+		logger.info() << "sqnorm(out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
+		BOOST_CHECK_CLOSE(sqnorms_ref[i], sqnorm_out[i], 1.e-8);
+	}
+}
 
+/*//This is just to play with cg_m to optimize it
+BOOST_AUTO_TEST_CASE(cgm_4)
+{
+	using namespace physics::lattices;
+	using namespace physics::algorithms::solvers;
+	using namespace physics::algorithms;
+	
+	const char * _params[] = {"foo", "--nspace=16", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(4, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+	
+	//These are some possible values of sigma
+	Rational_Approximation approx(8, 1,2, 1.e-5,1);
+	
+	std::vector<hmc_float> sigma = approx.Get_b();
+	physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
+	
+	Gaugefield gf(system, prng, "hot");
+	Staggeredfield_eo b(system);
+	std::vector<Staggeredfield_eo*> out;
+	for(uint i=0; i<sigma.size(); i++)
+		out.push_back(new Staggeredfield_eo(system));
+	//This field is that of the test explicit_stagg, part 2 (D_KS_eo)
+	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
+	
+	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-24);
+	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
+	
+	std::vector<hmc_float> sqnorm_out;
+	for(uint i=0; i<sigma.size(); i++){
+		sqnorm_out.push_back(squarenorm(*out[i]));
+		logger.info() << "sqnorm(out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
+	}
+}*/
