@@ -274,7 +274,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("sax_stag_eoprec");
+	return spinor_code->get_flop_size("sax_stagg_eoprec");
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpy>(const hardware::System& system)
