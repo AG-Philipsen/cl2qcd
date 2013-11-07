@@ -878,7 +878,7 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		return NC * C * D * Seo;
 	}
 	
-	logger.warn() << "No if entered in get_read_write_size(). Returning 0 bytes...";
+	logger.warn() << "No if entered in get_read_write_size(), in = " << in << ". Returning 0 bytes...";
 	return 0;
 }
 
@@ -992,7 +992,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		return NC * Seo;
 	}
 	
-	logger.warn() << "No if entered in get_flop_size(). Returning 0 flop...";
+	logger.warn() << "No if entered in get_flop_size(), in = " << in << ". Returning 0 flop...";
 	return 0;
 }
 

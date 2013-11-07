@@ -15,6 +15,7 @@
 
 
 static std::string create_log_prefix_find_max(int number) noexcept;
+static std::string create_log_prefix_find_min(int number) noexcept;
 hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec);
 
 
@@ -144,7 +145,7 @@ hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix
 	//to have a non zero component along the eigenvectors referring to the smallest eigenvalue)
 	Staggeredfield_eo v1(system);
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&v1, 321);
-	log_squarenorm(create_log_prefix_find_max(0) + "v1 (initial): ", v1);
+	log_squarenorm(create_log_prefix_find_min(0) + "v1 (initial): ", v1);
 	sax(&v1, {1./sqrt(squarenorm(v1)), 0.}, v1); //v1 is now normalized
 	//Auxiliary field
 	Staggeredfield_eo v2(system);
@@ -152,25 +153,25 @@ hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix
 	auto params = system.get_inputparameters();
 	const int RESID_CHECK_FREQUENCY = params.get_findminmax_iteration_block_size();
 	
-	log_squarenorm(create_log_prefix_find_max(0) + "v1 (initial): ", v1);
-	log_squarenorm(create_log_prefix_find_max(0) + "v2 (initial) [not-initialized]: ", v2);
+	log_squarenorm(create_log_prefix_find_min(0) + "v1 (initial): ", v1);
+	log_squarenorm(create_log_prefix_find_min(0) + "v2 (initial) [not-initialized]: ", v2);
 	
 	for(int i=0; i < params.get_findminmax_max(); i++){
 		//Apply (max-A) onto v1
 		A(&v2, gf, v1);
 		saxpby(&v2, {max,0.}, v1, {-1.,0.}, v2); //Now in v2 there is (max-A)*v1
-		if(i%100 == 0) log_squarenorm(create_log_prefix_find_max(i) + "v2: ", v2);
+		if(i%100 == 0) log_squarenorm(create_log_prefix_find_min(i) + "v2: ", v2);
 		//Normalize v2
 		sax(&v2, {1./sqrt(squarenorm(v2)), 0.}, v2);
-		if(i%100 == 0) log_squarenorm(create_log_prefix_find_max(i) + "v2: ", v2);
+		if(i%100 == 0) log_squarenorm(create_log_prefix_find_min(i) + "v2: ", v2);
 		//Check whether the algorithm converged
 		if(i % RESID_CHECK_FREQUENCY == 0) {
 			saxpy(&v1, {-1.,0.}, v1, v2);//Here I can use v1 as container, the important is not
 			                              //to modify v2 that will be copied in v1
-			log_squarenorm(create_log_prefix_find_max(i) + "v1: ", v1);
+			log_squarenorm(create_log_prefix_find_min(i) + "v1: ", v1);
 			resid = sqrt(squarenorm(v1));
 			
-			logger.debug() << create_log_prefix_find_max(i) << "resid: " << std::setprecision(8)<< resid;
+			logger.debug() << create_log_prefix_find_min(i) << "resid: " << std::setprecision(8)<< resid;
 			
 			if(resid < prec){
 				//Apply (max-A) onto v2
@@ -219,6 +220,11 @@ static std::string create_log_prefix_find(std::string name, int number) noexcept
 static std::string create_log_prefix_find_max(int number) noexcept
 {
   return create_log_prefix_find("MAX", number);
+}
+
+static std::string create_log_prefix_find_min(int number) noexcept
+{
+  return create_log_prefix_find("MIN", number);
 }
 
 
