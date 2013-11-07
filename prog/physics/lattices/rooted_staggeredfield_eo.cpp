@@ -32,9 +32,7 @@ void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const phy
 {
 	physics::algorithms::Rational_Coefficients aux = approx.Rescale_Coefficients(A, gf, system, prec, conservative);
 	
-	Set_a0(aux.Get_a0());
-	Set_a(aux.Get_a());
-	Set_b(aux.Get_b());
+	Set_coeff(aux.Get_a0(), aux.Get_a(), aux.Get_b());
 }
 
 
