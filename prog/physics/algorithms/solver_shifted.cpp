@@ -16,13 +16,16 @@
 //#include <cmath>
 #include <sstream>
 #include <vector>
+#include <numeric>
 
 static std::string create_log_prefix_cgm(int number) noexcept;
-void log_squarenorm_aux(const std::string& msg, const std::vector<physics::lattices::Staggeredfield_eo *> x, const int n) noexcept;
-
+static void log_squarenorm_aux(const std::string& msg, const std::vector<physics::lattices::Staggeredfield_eo *> x, const int n) noexcept;
+static void compare_sqnorm(const std::vector<hmc_float> a, const std::vector<physics::lattices::Staggeredfield_eo *> x) noexcept;
 
 int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Staggeredfield_eo *> x, const std::vector<hmc_float> sigma, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& b, const hardware::System& system, hmc_float prec)
 {
+	std::vector<hmc_float> xsq(x.size(), 0);
+	
 	if(sigma.size() != x.size())
 		throw std::invalid_argument("Wrong size of multi-shifted inverter parameters!");
 	
@@ -35,7 +38,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
 	/// @todo make configurable from outside
-	const int RESID_CHECK_FREQUENCY = params.get_cg_iteration_block_size();
 	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
 	if(USE_ASYNC_COPY) {
 		logger.warn() << "Asynchroneous copying in the CG-M is currently unimplemented!";
@@ -56,6 +58,8 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	std::vector<const Scalar<hmc_complex>*> zeta_ii;  //This is zeta at the step iter
 	std::vector<const Scalar<hmc_complex>*> zeta_iii; //This is zeta at the step iter+1
 	std::vector<const Scalar<hmc_complex>*> shift;    //This is to store constants sigma
+	std::vector<bool> single_system_converged;        //This is to stop calculation on single system
+	std::vector<uint> single_system_iter;             //This is to calculate performance properly
 	//Auxiliary scalars
 	const Scalar<hmc_complex> alpha_scalar_prev(system);   //This is alpha_scalar at the step iter-1
 	const Scalar<hmc_complex> alpha_scalar(system);        //This is alpha_scalar at the step iter
@@ -69,6 +73,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	const Scalar<hmc_complex> tmp3(system);                     //this is to store (p,v) as Scalar
 	const Scalar<hmc_complex> num(system);                      //this is to store constants numerators
 	const Scalar<hmc_complex> den(system);                      //this is to store constants denumerators
+	bool converged=false;                                       //this is to start to check the residuum
 
 	//Auxiliary constants as Scalar
 	const Scalar<hmc_complex> zero(system);
@@ -95,6 +100,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		zeta_ii[i]->store(hmc_complex_one);                   // zeta_ii[i] = 1
 		shift.push_back(new Scalar<hmc_complex>(system));
 		shift[i]->store({sigma[i],0.});
+		single_system_converged.push_back(false);             //no system converged
 	}
 	copyData(r, b);                          // r = b
 	copyData(p, b);                          // p = b
@@ -129,12 +135,86 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		//Update field r: r+=beta_scalar*A.p ---> r = r + beta_scalar*v
 		saxpy(r, beta_scalar, *v, *r);
 		log_squarenorm(create_log_prefix_cgm(iter) + "r: ", *r);
-		
 		//We store in tmp2 the quantity (r,r) that we use later. When we check
 		//the residuum, then it is already calculated.
 		scalar_product(&tmp2, *r, *r);
+		if(logger.beDebug()){
+			//Calculate squarenorm of the output field
+			for(uint i=0; i<x.size(); i++)
+				xsq[i] = squarenorm(*x[i]);
+		}
+		//Update alpha_scalar: alpha_scalar = tmp2/tmp1
+		copyData(&alpha_scalar_prev,alpha_scalar); //before updating alpha_scalar its value is saved
+		divide(&alpha_scalar, tmp2, tmp1);
+		//Update field p: p = r + alpha_scalar*p
+		saxpy(p, alpha_scalar, *p, *r);
+		//saxpy(p, alpha_scalar, *p, *r);
+		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", *p);
+		//Loop over the system equations, namely over the set of sigma values
+		for(int k=0; k<Neqs; k++){
+			if(single_system_converged[k]==false){
+				//Update zeta_iii[k]: num = zeta_i[k]*zeta_ii[k]*beta_scalar_prev
+				//                    den = beta_scalar*alpha_scalar*(zeta_i[k]-zeta_ii[k])+
+				//                        + zeta_i[k]*beta_scalar_prev*(1-sigma[k]*beta_scalar)
+				// ---> zeta_iii[k] = num/den
+				//I calculate before the denominator to can use num as auxiliary variable
+				subtract(&num, *zeta_i[k], *zeta_ii[k]);
+				multiply(&num, num, alpha_scalar_prev);
+				multiply(&num, num, beta_scalar);
+				multiply(&den, *shift[k], beta_scalar);
+				subtract(&den, one, den);
+				multiply(&den, den, beta_scalar_prev);
+				multiply(&den, den, *zeta_i[k]);
+				add(&den, num, den);
+				//Calculation of the numerator
+				multiply(&num, *zeta_i[k], *zeta_ii[k]);
+				multiply(&num, num, beta_scalar_prev);
+				//Update of zeta_iii[k]
+				divide(zeta_iii[k], num, den);
+				//Update beta[k]: beta[k] = beta_scalar*zeta_iii[k]/zeta_ii[k]
+				multiply(beta[k], beta_scalar, *zeta_iii[k]);
+				divide(beta[k], *beta[k], *zeta_ii[k]);
+				//Update x[k]: x[k] = x[k] - beta[k]*ps[k]
+				// ---> use num to store (- beta[k]) for saxpy
+				subtract(&num, zero, *beta[k]);
+				saxpy(x[k], num, *ps[k], *x[k]);
+				//Update alpha[k]: num = alpha_scalar*zeta_iii[k]*beta[k]
+				//                 den = zeta_ii[k]*beta_scalar
+				// ---> alpha[k] = num/den
+				multiply(&num, alpha_scalar, *zeta_iii[k]);
+				multiply(&num, num, *beta[k]);
+				multiply(&den, *zeta_ii[k], beta_scalar);
+				divide(alpha[k], num, den);
+				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
+				saxpby(ps[k], *zeta_iii[k], *r, *alpha[k], *ps[k]);
+				//Check fields squarenorm form possible nan
+				if((squarenorm(*x[k]) != squarenorm(*x[k])) ||
+				   (squarenorm(*ps[k]) != squarenorm(*ps[k]))){
+					logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
+					throw SolverStuck(iter, __FILE__, __LINE__);
+				}
+				//Check if single system converged: ||zeta_iii[k] * r||^2 < prec
+				// ---> v = zeta_iii[k] * r
+				sax(v, *zeta_iii[k], *r);
+				if(squarenorm(*v) < prec){
+					single_system_converged[k] = true;
+					single_system_iter.push_back((uint)iter);
+					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get().re;
+				}
+				//Adjust zeta for the following iteration
+				copyData(zeta_i[k], zeta_ii[k]);
+				copyData(zeta_ii[k], zeta_iii[k]);
+			}
+		}
+		if(single_system_iter.size()==(uint)Neqs)
+			converged = true;
+		if(logger.beDebug()){
+			compare_sqnorm(xsq, x);
+		}
+		log_squarenorm_aux(create_log_prefix_cgm(iter) + "x", x, report_num);
+		log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps", ps, report_num);
 		//Check whether the algorithm converged
-		if(iter % RESID_CHECK_FREQUENCY == 0) {
+		if(converged) {
 			//Calculate resid: 
 			resid = tmp2.get().re;
 			logger.debug() << create_log_prefix_cgm(iter) << "resid: " << resid;
@@ -147,26 +227,27 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				logger.debug() << create_log_prefix_cgm(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
 				// report on performance
 				if(logger.beInfo()) {
-					// we are always synchroneous here, as we had to recieve the residium from the device
+					// we are always synchroneous here, as we had to recieve the residuum from the device
 					const uint64_t duration = timer.getTime();
 					// calculate flops
 					const cl_ulong matrix_flops = A.get_flops();
-					logger.trace() << "matrix_flops: " << matrix_flops;
-					logger.info() << "matrix_flops: " << matrix_flops;
-					cl_ulong total_flops = matrix_flops +
+					const int sum_of_partial_iter = std::accumulate(single_system_iter.begin(), single_system_iter.end(),0);
+					logger.debug() << "matrix_flops: " << matrix_flops;
+					cl_ulong total_flops = iter * (matrix_flops +
 						2 * get_flops<Staggeredfield_eo, scalar_product>(system) +
 						2 * ::get_flops<hmc_complex, complexdivide>() +
 						    ::get_flops<hmc_complex, complexsubtract>() +
-						2 * get_flops<Spinorfield_eo, saxpy>(system) +
-						Neqs * (3 * ::get_flops<hmc_complex, complexdivide>() +
+						2 * get_flops<Staggeredfield_eo, saxpy>(system)) +
+						sum_of_partial_iter * (
+							 3 * ::get_flops<hmc_complex, complexdivide>() +
 							11 * ::get_flops<hmc_complex, complexmult>() +
 							     ::get_flops<hmc_complex, complexadd>() +
-							3 * ::get_flops<hmc_complex, complexsubtract>() +
-							    get_flops<Staggeredfield_eo, saxpy>(system) +
-							    get_flops<Staggeredfield_eo, saxpby>(system));
-					total_flops *= iter;
-					logger.trace() << "total_flops: " << total_flops;
-					logger.info() << "total_flops: " << total_flops;
+							 3 * ::get_flops<hmc_complex, complexsubtract>() +
+							       get_flops<Staggeredfield_eo, saxpy>(system) +
+							       get_flops<Staggeredfield_eo, saxpby>(system) +
+							       get_flops<Staggeredfield_eo, sax>(system) +
+							   5 * get_flops<Staggeredfield_eo, squarenorm>(system));
+					logger.debug() << "total_flops: " << total_flops;
 					// report performance
 					logger.info() << create_log_prefix_cgm(iter) << "CG-M completed in " << std::setprecision(6) << duration / 1000.f << " ms @ " << ((hmc_float)total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations.";
 				}
@@ -175,53 +256,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				return iter;
 			}
 		}
-		//Update alpha_scalar: alpha_scalar = tmp2/tmp1
-		copyData(&alpha_scalar_prev,alpha_scalar); //before updating alpha_scalar its value is saved
-		divide(&alpha_scalar, tmp2, tmp1);
-		//Update field p: p = r + alpha_scalar*p
-		saxpy(p, alpha_scalar, *p, *r);
-		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", *p);
-		//Loop over the system equations, namely over the set of sigma values
-		for(int k=0; k<Neqs; k++){
-			//Update zeta_iii[k]: num = zeta_i[k]*zeta_ii[k]*beta_scalar_prev
-			//                    den = beta_scalar*alpha_scalar*(zeta_i[k]-zeta_ii[k])+
-			//                        + zeta_i[k]*beta_scalar_prev*(1-sigma[k]*beta_scalar)
-			// ---> zeta_iii[k] = num/den
-			//I calculate before the denominator to can use num as auxiliary variable
-			subtract(&num, *zeta_i[k], *zeta_ii[k]);
-			multiply(&num, num, alpha_scalar_prev);
-			multiply(&num, num, beta_scalar);
-			multiply(&den, *shift[k], beta_scalar);
-			subtract(&den, one, den);
-			multiply(&den, den, beta_scalar_prev);
-			multiply(&den, den, *zeta_i[k]);
-			add(&den, num, den);
-			//Calculation of the numerator
-			multiply(&num, *zeta_i[k], *zeta_ii[k]);
-			multiply(&num, num, beta_scalar_prev);
-			//Update of zeta_iii[k]
-			divide(zeta_iii[k], num, den);
-			//Update beta[k]: beta[k] = beta_scalar*zeta_iii[k]/zeta_ii[k]
-			multiply(beta[k], beta_scalar, *zeta_iii[k]);
-			divide(beta[k], *beta[k], *zeta_ii[k]);
-			//Update x[k]: x[k] = x[k] - beta[k]*ps[k] ---> use num to store (- beta[k]) for saxpy
-			subtract(&num, zero, *beta[k]);
-			saxpy(x[k], num, *ps[k], *x[k]);
-			//Update alpha[k]: num = alpha_scalar*zeta_iii[k]*beta[k]
-			//                 den = zeta_ii[k]*beta_scalar
-			// ---> alpha[k] = num/den
-			multiply(&num, alpha_scalar, *zeta_iii[k]);
-			multiply(&num, num, *beta[k]);
-			multiply(&den, *zeta_ii[k], beta_scalar);
-			divide(alpha[k], num, den);
-			//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
-			saxpby(ps[k], *zeta_iii[k], *r, *alpha[k], *ps[k]);
-			//Adjust zeta for the following iteration
-			copyData(zeta_i[k], zeta_ii[k]);
-			copyData(zeta_ii[k], zeta_iii[k]);
-		}
-		log_squarenorm_aux(create_log_prefix_cgm(iter) + "x", x, report_num);
-		log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps", ps, report_num);
 		//Set tmp1 from tmp2 for following iteration
 		copyData(&tmp1, tmp2);
 	}
@@ -255,18 +289,26 @@ static std::string create_log_prefix_cgm(int number) noexcept
   return create_log_prefix_solver("CG-M", number);
 }
 
-
-void log_squarenorm_aux(const std::string& msg, const std::vector<physics::lattices::Staggeredfield_eo *> x, const int n) noexcept
+static void log_squarenorm_aux(const std::string& msg, const std::vector<physics::lattices::Staggeredfield_eo *> x, const int n) noexcept
 {
 	if(logger.beDebug()) {
 		hmc_float tmp;
 		for(int i=0; i<n; i++){
 			tmp = squarenorm(*x[i]);
-			logger.debug() << msg << "[field_" << i << "]: " << std::scientific << std::setprecision(10) << tmp;
+			logger.debug() << msg << "[field_" << i << "]: " << std::scientific << std::setprecision(16) << tmp;
 		}
 	}
 }
 
-
-
-
+static void compare_sqnorm(const std::vector<hmc_float> a, const std::vector<physics::lattices::Staggeredfield_eo *> x) noexcept
+{
+	hmc_float tmp;
+	logger.debug() << "===============================================";
+	for(uint i=0; i<x.size(); i++){
+		tmp = squarenorm(*x[i]);
+		logger.debug() << ((i<10) ? " " : "") << "delta_sqnorm[field_" << i << "]: " << std::scientific << std::setprecision(16) << tmp-a[i];		  
+	}
+	logger.debug() << "===============================================";
+}
+  
+  
