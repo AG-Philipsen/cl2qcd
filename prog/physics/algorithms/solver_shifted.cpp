@@ -260,7 +260,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		copyData(&tmp1, tmp2);
 	}
 	
-	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << tmp2.get().re;
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
