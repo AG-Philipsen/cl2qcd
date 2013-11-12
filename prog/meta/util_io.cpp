@@ -45,7 +45,7 @@ static void print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## NTIME:   " << params.get_ntime();
 	logger.info() << "## NDIM:    " << NDIM;
 	logger.info() << "## NCOLOR:  " << NC;
-	logger.info() << "## NSPIN:   " << NSPIN;
+	if(params.get_fermact()!=Inputparameters::rooted_stagg) logger.info() << "## NSPIN:   " << NSPIN;
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Computational parameters:";
 	logger.info() << "## PREC:    " << params.get_precision();
