@@ -9,6 +9,7 @@
 #include "../../types.h"
 #include "../../exceptions.h"
 #include "../../logger.hpp"
+#include "../../general_header.h"
 #include <cmath>
 
 //Rational_Coefficients class
@@ -58,7 +59,7 @@ void physics::algorithms::Rational_Coefficients::Set_coeff(const hmc_float v0, c
 {
 	if(v_a.size() != v_b.size())
 	  throw std::invalid_argument("Vectors with different sizes passed to Rational_Coefficients::Set_coeff!");
-	if(_d != v_a.size()){
+	if(_d != (int)v_a.size()){
 	  logger.debug() << "Rational_Coefficients::Set_coeff changed the order of the instance.";
 	  _d = v_a.size();
 	}
@@ -107,6 +108,31 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
 	delete[] a_tmp;
 	delete[] b_tmp;
 	delete a0_tmp;
+}
+
+physics::algorithms::Rational_Approximation::Rational_Approximation(std::string filename) : Rational_Coefficients(0)
+{
+	std::fstream file;
+	file.open(filename.c_str());
+	if(!file){
+		logger.fatal() << "Unable to open the file with Rational_Approximation data!";
+		throw File_Exception(filename);
+	}
+	int d;
+	hmc_float a0,tmp;
+	std::vector<hmc_float> a,b;
+	file >> d >> y >> z >> low >> high >> inv >> precision >> error >> a0;
+	for(int i=0; i<d; i++){
+		file >> tmp;
+		a.push_back(tmp);
+		file >> tmp;
+		b.push_back(tmp);
+	}
+	file >> tmp;
+	if(!(file.peek() == EOF && file.eof()))
+	    logger.warn() << "The file with Rational_Approximation data contains additional stuff! Check it!";
+	file.close();
+	Set_coeff(a0, a, b);
 }
 
 

@@ -133,6 +133,12 @@ public:
 	Rational_Approximation(int d, int y, int z, hmc_float low, hmc_float high,
 			        bool inv=true, int precision=113);
 	
+	/**
+	 * Constructor of the class from file. It reads the rational approximation parameters
+	 * and the coefficients a_0, a_k and b_k.
+	 */
+	Rational_Approximation(std::string filename);
+	
 	/*
 	 * Rational_Approximation cannot be copied
 	 */

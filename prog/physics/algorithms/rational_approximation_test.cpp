@@ -30,12 +30,23 @@ BOOST_AUTO_TEST_CASE(initialization)
 	hmc_float a02 = coeff.Get_a0();
 	std::vector<hmc_float> a2 = coeff.Get_a();
 	std::vector<hmc_float> b2 = coeff.Get_b();
-	
 	BOOST_CHECK_CLOSE(a0, a02, 1.e-8);
 	BOOST_REQUIRE_EQUAL(ord, ord2);
 	for(int i=0; i<ord; i++){
 		BOOST_CHECK_CLOSE(a[i], a2[i], 1.e-8);
 		BOOST_CHECK_CLOSE(b[i], b2[i], 1.e-8);
+	}
+	
+	Rational_Approximation approx_file("approx_test");
+	int ord3 = approx_file.Get_order();
+	hmc_float a03 = approx_file.Get_a0();
+	std::vector<hmc_float> a3 = approx_file.Get_a();
+	std::vector<hmc_float> b3 = approx_file.Get_b();
+	BOOST_CHECK_CLOSE(a0, a03, 1.e-8);
+	BOOST_REQUIRE_EQUAL(ord, ord3);
+	for(int i=0; i<ord; i++){
+		BOOST_CHECK_CLOSE(a[i], a3[i], 1.e-8);
+		BOOST_CHECK_CLOSE(b[i], b3[i], 1.e-8);
 	}
 	
 	logger.info() << "Test done!";
