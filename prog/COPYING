@@ -10,7 +10,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 A copy of the GNU General Public License is provided in the file COPYING.GPL3.
 You can also find it, including translations, at <http://www.gnu.org/licenses/>.
 
-This version of CL2QCD includes code licensed under different free licenses:
+This version of CL2QCD includes code licensed under different licenses:
 
  * Ranlux is also distributed under the terms of the GNU General Public (GPL),
    but it originally was distributed under the GPL2, a copy of which can be
@@ -18,3 +18,10 @@ This version of CL2QCD includes code licensed under different free licenses:
 
  * Ranluxcl is distributed under the terms of an MIT license. For details look
    into the respective source files, e.g. ranluxcl/ranluxcl.cl.
+
+ * Einhard is distributed under the the terms of the GNU General Public (GPL)
+
+ * Klepsydra is distributed under the the terms of the GNU General Public (GPL)
+
+ * The CPP bindings for OpenCL are copyrighted by Khronos and may be distributed
+   freely. For license details see hacks/cl_hpp/CL/cl.hpp
