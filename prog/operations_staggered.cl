@@ -21,7 +21,7 @@
 /** @file
  * General utilities for staggered code (e.g. calculation of staggered phases)
  * 
- * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  */
 
 /**

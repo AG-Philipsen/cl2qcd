@@ -1,7 +1,7 @@
 /** @file
  * rhmc algorithm main()
  *
- * (c) 2013 Alessandro Sciarra <sciarra@compeng.uni-frankfurt.de>
+ * (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
