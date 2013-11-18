@@ -1,7 +1,7 @@
 /** @file
  * Implementation of explicit fermionamtrix operations
  *
- * (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
  *
  * CL2QCD is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

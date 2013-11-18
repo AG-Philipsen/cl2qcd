@@ -1,8 +1,8 @@
 /** @file
  * Implementation of the hardware::code::Gaugemomentum class
  *
- * (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

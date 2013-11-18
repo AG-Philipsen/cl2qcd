@@ -1,7 +1,7 @@
 /** @file
  * Everything required by rhmc's main()
  *
- * (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

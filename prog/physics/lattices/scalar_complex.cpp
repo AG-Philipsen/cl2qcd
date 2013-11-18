@@ -1,7 +1,7 @@
 /** @file
  * Implementation of some operations for physics::lattices::Scalar<hmc_complex>
  *
- * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

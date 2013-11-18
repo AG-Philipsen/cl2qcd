@@ -1,7 +1,7 @@
 /** @file
  * Declaration of the hardware::buffers::Matrix3x3 class
  *
- * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

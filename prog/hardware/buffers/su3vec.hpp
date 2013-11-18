@@ -1,8 +1,8 @@
 /** @file
  * Declaration of the hardware::buffers::SU3vec class
  *
- * (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
- * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

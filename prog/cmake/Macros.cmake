@@ -1,6 +1,6 @@
 # Utility functions for specifying the build of OpTiMaL
 #
-# (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
 
 # Create a list of files just as you'd use set.
 # Will automatically replace all filenames by absolute ones

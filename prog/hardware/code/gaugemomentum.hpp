@@ -1,8 +1,8 @@
 /** @file
  * Gaugemomentum OpenCL functionality
  *
- * (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
- * (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2012 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra

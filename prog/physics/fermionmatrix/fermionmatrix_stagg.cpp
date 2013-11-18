@@ -1,7 +1,7 @@
 /** @file
  * Implementation of staggered fermionmatrix classes methods.
  *
- * (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

@@ -1,8 +1,8 @@
 /** @file
  * Declaration of the hmc algorithm
  *
- * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
- * (c) 2012-2013 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2012-2013 Christopher Pinke <pinke@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

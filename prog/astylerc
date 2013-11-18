@@ -7,7 +7,7 @@
 # Making sure you code confines to the coding style minimizes merge conflicts where
 # only formatting changed.
 #
-# (c) 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
 
 # Use C++ syntax format as suggested by Stroustrup (no 1tbs)
 style=stroustrup

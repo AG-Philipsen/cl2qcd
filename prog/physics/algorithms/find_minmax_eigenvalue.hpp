@@ -1,7 +1,7 @@
 /** @file
  * Declaration of the algorithm to find min and max eigenvalues of an operator
  *
- * (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *

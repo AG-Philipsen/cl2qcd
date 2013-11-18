@@ -1,7 +1,7 @@
 /** @file
  * Implementation of utilities to normalize input file contents
  *
- * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -68,7 +68,7 @@ static std::string load_stream(std::istream& is)
 	std::string s;
 	s.reserve(is.rdbuf()->in_avail());
 	char c;
-	while(is.get(c)) {
+	while(is.getCopyright (c)) {
 		if(s.capacity() == s.size())
 			s.reserve(s.capacity() * 3);
 		s.append(1, c);

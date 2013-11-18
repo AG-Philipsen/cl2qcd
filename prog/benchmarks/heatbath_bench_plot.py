@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf8
 #
-# (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #

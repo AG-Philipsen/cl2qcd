@@ -1,6 +1,6 @@
 # Build specifications for the contents of the physics package
 #
-# (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
 
 #
 # Collect all code in this part of the source tree

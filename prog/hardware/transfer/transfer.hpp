@@ -1,7 +1,7 @@
 /** @file
  * Interface for buffer transfer methods
  *
- * (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
