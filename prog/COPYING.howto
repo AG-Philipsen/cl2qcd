@@ -1,0 +1,72 @@
+CL2QCD is distributed under the terms of the GPL. This file provides guidelines
+for authors to reach a coherent style of copyright and licensing notices. In
+general, try to follow the instructions of the GPL. These can be found at
+http://www.gnu.org/licenses/gpl-howto.en.html.
+
+ * If you are contributing for the first time, add you name and contact address
+   (email) to the file AUTHORS
+
+ * If you create a new file, add copyright and license remarks to a comment at
+   the top of the file (after a possible shebang and short introductory
+   comments). Templates are provided below. Copyright remarks should not only
+   use the (c) symbol, but also the term „copyright“. See
+   http://www.gnu.org/licenses/gpl-howto.en.html for details.
+
+ * When editing an existing file, ensure there is a copyright remark with your
+   name. If there is none, add one directly below any existing copyright
+   remarks. If there is already a copyright remark with your name, ensure it
+   contains the current name. Otherwise add the current year. The years should
+   form a comma-seperated list. If more than two subsequent years are given, the
+   list can be merged into a range.
+
+The following sample shows what the top level comment of a C++ source fiel
+should look like. Please include an empty line between the comment and the first
+line of code.
+
+/** @file
+ * Cool functionality to show of some neat things
+ *
+ * Copyright (c) 2013 Jane Doe <doe@example.com>
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+The following sample shows what a top level comment for a Python source file
+should look like. Please include an empty line between the comment and the first
+line of code.
+
+#!/usr/bin/env python
+# coding=utf8
+#
+# Cool functionality to show of some neat things
+#
+# Copyright (c) 2012, 2013 Jane Doe <doe@example.com>
+# Copyright (c) 2013 Max Mustermann <mustermann@example.com>
+#
+# This file is part of CL2QCD.
+#
+# CL2QCD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CL2QCD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
