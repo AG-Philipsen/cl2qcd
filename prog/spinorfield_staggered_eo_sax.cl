@@ -36,3 +36,17 @@ __kernel void sax_staggered_eoprec(__global const staggeredStorageType * const x
 		put_su3vec_to_field_eo(out, id_mem, x_tmp);
 	}
 }
+
+__kernel void sax_arg_staggered_eoprec(__global const spinorStorageType * const x, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const out)
+{
+	const int id = get_global_id(0);
+	const int global_size = get_global_size(0);
+
+	const hmc_complex alpha = (hmc_complex) {alpha_re, alpha_im};
+
+	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
+		su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
+		x_tmp = su3vec_times_complex(x_tmp, alpha);
+		put_su3vec_to_field_eo(out, id_mem, x_tmp);
+	}
+}

@@ -24,6 +24,7 @@
 #include "../../types.h"
 #include "../../exceptions.h"
 #include "../../logger.hpp"
+#include "../../general_header.h"
 #include <cmath>
 
 //Rational_Coefficients class
@@ -69,21 +70,17 @@ std::vector<hmc_float> physics::algorithms::Rational_Coefficients::Get_b() const
 	return _b;
 }
 
-void physics::algorithms::Rational_Coefficients::Set_a0(hmc_float v) 
+void physics::algorithms::Rational_Coefficients::Set_coeff(const hmc_float v0, const std::vector<hmc_float> v_a, const std::vector<hmc_float> v_b) 
 {
-	_a0 = v;
-}
-
-
-void physics::algorithms::Rational_Coefficients::Set_a(std::vector<hmc_float> v) 
-{
-	_a = v;
-}
-
-
-void physics::algorithms::Rational_Coefficients::Set_b(std::vector<hmc_float> v) 
-{
-	_b = v;
+	if(v_a.size() != v_b.size())
+	  throw std::invalid_argument("Vectors with different sizes passed to Rational_Coefficients::Set_coeff!");
+	if(_d != (int)v_a.size()){
+	  logger.debug() << "Rational_Coefficients::Set_coeff changed the order of the instance.";
+	  _d = v_a.size();
+	}
+	_a0 = v0;
+	_a = v_a; //Recall that the assignment operator between vectors "Assigns new contents to the
+	_b = v_b; //container, replacing its current contents, and modifying its size accordingly".
 }
 
 
@@ -117,17 +114,40 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
 	else
 	  remez.getIPFE(a_tmp, b_tmp, a0_tmp);
 		
-	//I need std::vector to use Set_a, Set_b
+	//I need std::vector to use Set_coeff
 	std::vector<hmc_float> av_tmp (a_tmp, a_tmp + d);
 	std::vector<hmc_float> bv_tmp (b_tmp, b_tmp + d);
-		
-	Set_a(av_tmp);
-	Set_b(bv_tmp);
-	Set_a0(*a0_tmp);
+	
+	Set_coeff(*a0_tmp, av_tmp, bv_tmp);
 	
 	delete[] a_tmp;
 	delete[] b_tmp;
 	delete a0_tmp;
+}
+
+physics::algorithms::Rational_Approximation::Rational_Approximation(std::string filename) : Rational_Coefficients(0)
+{
+	std::fstream file;
+	file.open(filename.c_str());
+	if(!file){
+		logger.fatal() << "Unable to open the file with Rational_Approximation data!";
+		throw File_Exception(filename);
+	}
+	int d;
+	hmc_float a0,tmp;
+	std::vector<hmc_float> a,b;
+	file >> d >> y >> z >> low >> high >> inv >> precision >> error >> a0;
+	for(int i=0; i<d; i++){
+		file >> tmp;
+		a.push_back(tmp);
+		file >> tmp;
+		b.push_back(tmp);
+	}
+	file >> tmp;
+	if(!(file.peek() == EOF && file.eof()))
+	    logger.warn() << "The file with Rational_Approximation data contains additional stuff! Check it!";
+	file.close();
+	Set_coeff(a0, a, b);
 }
 
 

@@ -86,20 +86,11 @@ public:
 	 */
 	std::vector<hmc_float> Get_b() const;
 
-protected: //These methods will be used ONLY in the constructor of Rational_Approximation
-	   //then it makes sense to define them as protected members
+protected: 
 	/**
-	 * Method to set the coefficient a0 of the approximation
+	 * Method to set the coefficients a0, a and b of the approximation
 	 */
-	void Set_a0(const hmc_float v);
-	/**
-	 * Method to set the coefficients a of the approximation
-	 */
-	void Set_a(const std::vector<hmc_float> v);
-	/**
-	 * Method to set the coefficients b of the approximation
-	 */
-	void Set_b(const std::vector<hmc_float> v);
+	void Set_coeff(const hmc_float v0, const std::vector<hmc_float> v_a, const std::vector<hmc_float> v_b);
   
 private:
 	int _d;
@@ -156,6 +147,12 @@ public:
 	 */
 	Rational_Approximation(int d, int y, int z, hmc_float low, hmc_float high,
 			        bool inv=true, int precision=113);
+	
+	/**
+	 * Constructor of the class from file. It reads the rational approximation parameters
+	 * and the coefficients a_0, a_k and b_k.
+	 */
+	Rational_Approximation(std::string filename);
 	
 	/*
 	 * Rational_Approximation cannot be copied
