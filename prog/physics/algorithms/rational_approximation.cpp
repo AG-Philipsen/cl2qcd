@@ -9,7 +9,7 @@
 #include "../../types.h"
 #include "../../exceptions.h"
 #include "../../logger.hpp"
-#include "../../general_header.h"
+#include <fstream>
 #include <cmath>
 
 //Rational_Coefficients class
