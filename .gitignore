@@ -16,13 +16,13 @@ doc/*.dvi
 doc/main.pdf
 doc/*.ps
 
-prog/hmc.v0.1
+hmc.v0.1
 
-prog/gaugeobservables_beta*
-prog/conf.?????
-prog/cl_kernelsource.cl
-prog/time_measurement_0
-prog/time_measurement_1
+gaugeobservables_beta*
+conf.?????
+cl_kernelsource.cl
+time_measurement_0
+time_measurement_1
 
-prog/build
-prog/debug
+build
+debug

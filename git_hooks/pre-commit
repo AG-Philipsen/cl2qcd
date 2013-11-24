@@ -16,7 +16,7 @@ if ! builtin type -P astyle; then
       exit 1
 fi
 
-ASTYLE_PARAMETERS="--options=prog/astylerc"
+ASTYLE_PARAMETERS="--options=astylerc"
 
 echo "--Checking style--"
 for file in `git diff-index --cached --name-only HEAD --diff-filter=ACMR| grep -e "\.c$" -e "\.cpp$" -e "\.h$" -e "\.hpp$" -e "\.cl$"` ; do
