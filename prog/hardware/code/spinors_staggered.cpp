@@ -913,7 +913,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	if (in == "global_squarenorm_reduction") {
 		//This if should not be entered since the sum of the site squarenorms
 		//has already taken into account with the (S-1)*2 term in the previous if
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "scalar_product_staggered") {
 		//this kernel performs su3vec_scalarproduct on each site and then adds S-1 complex numbers
@@ -926,7 +926,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	if (in == "scalar_product_reduction") {
 		//This if should not be entered since the sum of the site squarenorms
 		//has already taken into account with the (S-1)*2 term in the previous if
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "set_zero_spinorfield_stagg") {
 		//this kernel does not do any flop

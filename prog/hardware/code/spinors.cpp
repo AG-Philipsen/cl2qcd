@@ -923,14 +923,14 @@ uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 		return S * meta::get_flop_spinor_spinor() + (S - 1) * 2;
 	}
 	if (in == "scalar_product_reduction") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "global_squarenorm") {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
 		return S * meta::get_flop_spinor_sqnorm() + (S - 1) * 2;
 	}
 	if (in == "global_squarenorm_reduction") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "scalar_product_eoprec") {
 		//this kernel performs spinor*spinor on each site and then adds S-1 complex numbers
