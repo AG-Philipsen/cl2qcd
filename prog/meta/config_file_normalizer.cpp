@@ -68,7 +68,7 @@ static std::string load_stream(std::istream& is)
 	std::string s;
 	s.reserve(is.rdbuf()->in_avail());
 	char c;
-	while(is.getCopyright (c)) {
+	while(is.get(c)) {
 		if(s.capacity() == s.size())
 			s.reserve(s.capacity() * 3);
 		s.append(1, c);
