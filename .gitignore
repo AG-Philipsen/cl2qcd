@@ -1,6 +1,7 @@
 *~
 *.backup
 *.swp
+.*.kate-swp
 *.o
 *.a
 *.pyc
