@@ -24,6 +24,12 @@ static void compare_sqnorm(const std::vector<hmc_float> a, const std::vector<phy
 
 int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Staggeredfield_eo *> x, const std::vector<hmc_float> sigma, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& b, const hardware::System& system, hmc_float prec)
 {
+	if(squarenorm(b)==0){
+	  for(uint i=0; i<sigma.size(); i++)
+		x[i]->set_zero();   
+	  return 0;
+	}
+	
 	std::vector<hmc_float> xsq(x.size(), 0);
 	
 	if(sigma.size() != x.size())
@@ -196,7 +202,11 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				//Check if single system converged: ||zeta_iii[k] * r||^2 < prec
 				// ---> v = zeta_iii[k] * r
 				sax(v, *zeta_iii[k], *r);
+				//Check if single system converged: (zeta_ii[k] * zeta_ii[k] * tmp1) < prec
+				//multiply(&tmp3, *zeta_ii[k], *zeta_ii[k]);
+				//multiply(&tmp3, tmp3, tmp1);
 				if(squarenorm(*v) < prec){
+				//if(tmp3.get().re < prec){
 					single_system_converged[k] = true;
 					single_system_iter.push_back((uint)iter);
 					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get().re;
@@ -253,6 +263,9 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				}
 				// report on solution
 				log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (final): ", x, report_num);
+				
+				//for(Staggeredfield_eo* i : x)
+				//  logger.warn() << "sqnorm(x[i]) = " << squarenorm(*i);
 				return iter;
 			}
 		}
