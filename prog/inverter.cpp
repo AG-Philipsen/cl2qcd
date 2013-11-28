@@ -1,3 +1,23 @@
+/*
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "inverter.h"
 
 #include "physics/lattices/gaugefield.hpp"
@@ -8,7 +28,95 @@
 
 #include "meta/util.hpp"
 
+class generalExecutable{
+public:
+	generalExecutable(int argc, const char* argv[]) : parameters(argc, argv){
+		ownName = argv[0];
+		totalRuntimeOfExecutable.reset();
+		performInitialization();
+	}
+	~generalExecutable(){
+		totalRuntimeOfExecutable.add();
+		printRuntimeInformationToScreenAndFile();
+	}
+	void performInitialization(){
+		initializationTime.reset();
+		switchLogLevel(parameters.get_log_level());
+		system = new hardware::System(parameters);
+		prng = new physics::PRNG(*system);
+		performSpecificInitialization();
+		initializationTime.add();
+	}
+protected:
+	const char* ownName;
+	usetimer totalRuntimeOfExecutable;
+	usetimer initializationTime;
+	usetimer performanceTime;
+	meta::Inputparameters parameters;
+	const hardware::System * system;
+	const physics::PRNG * prng;
+
+	void printRuntimeInformationToScreenAndFile()
+	{
+		uint64_t totaltime = totalRuntimeOfExecutable.getTime();
+		uint64_t init_time = initializationTime.getTime();
+		uint64_t perform_time = performanceTime.getTime();
+
+		logger.info() << "## *******************************************************************";
+		logger.info() << "## General Times [mus]:";
+		logger.info() << "## *******************************************************************";
+		logger.info() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
+		logger.info() << "## Total:\t" << setfill(' ') << setw(12) << totaltime;
+		logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << init_time << '\t' << fixed << setw(5) << setprecision(1) << percent(init_time, totaltime) ;
+		logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t' << fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
+		logger.info() << "## *******************************************************************";
+
+		logger.info() << "## writing general times to file: \"general_time_output\"";
+		ofstream ofile;
+		ofile.open("general_time_output");
+		if(ofile.is_open()) {
+			ofile  << "## *******************************************************************" << endl;
+			ofile  << "## General Times [mus]:" << endl;
+			ofile << "## Total\tInit\tPerformance" << endl;
+			ofile  << totaltime << "\t" << init_time << '\t' << perform_time << endl;
+			ofile.close();
+		} else {
+			logger.warn() << "Could not open output file for general time output.";
+		}
+		return;
+	}
+
+	void performSpecificInitialization(){
+		meta::print_info_inverter(ownName, parameters);
+		writeInverterLogfile(ownName, parameters);
+	}
+
+	void writeInverterLogfile(const char* executableName,
+			meta::Inputparameters& parameters) {
+		ofstream ofile;
+		ofile.open("inverter.log");
+		if (ofile.is_open()) {
+			meta::print_info_inverter(executableName, &ofile, parameters);
+			ofile.close();
+		} else {
+			logger.warn() << "Could not open log file for inverter.";
+		}
+	}
+};
+
 void perform_measurements(hardware::System& system, physics::lattices::Gaugefield& gf, physics::PRNG& prng, const std::string config_name);
+
+void writeInverterLogfile(const char* executableName,
+		meta::Inputparameters& parameters) {
+	ofstream ofile;
+	ofile.open("inverter.log");
+	if (ofile.is_open()) {
+		meta::print_info_inverter(executableName, &ofile, parameters);
+		ofile.close();
+	} else {
+		logger.warn() << "Could not open log file for inverter.";
+	}
+}
 
 int main(int argc, const char* argv[])
 {
@@ -16,73 +124,59 @@ int main(int argc, const char* argv[])
 	using namespace physics;
 
 	try {
+		generalExecutable executableInstance(argc, argv);
+		exit(0);
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
 
 		meta::print_info_inverter(argv[0], parameters);
-
-		ofstream ofile;
-		ofile.open("inverter.log");
-		if(ofile.is_open()) {
-			meta::print_info_inverter(argv[0], &ofile, parameters);
-			ofile.close();
-		} else {
-			logger.warn() << "Could not open log file for inverter.";
-		}
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Initialization
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+		writeInverterLogfile(argv[0], parameters);
 		init_timer.reset();
 		hardware::System system(parameters);
 		physics::PRNG prng(system);
-
 		init_timer.add();
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// inverter
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		perform_timer.reset();
-		logger.info() << "Perform inversion(s) on device.." ;
-
-		if(parameters.get_read_multiple_configs()) {
-			const int iter_start = (parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
-			// the "+1" is necessary so that all config are read
-			const int iter_end   = (parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1   : 1;
-			const int iter_incr =  (parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr()  : 1;
+		logger.info() << "Perform inversion(s) on device..";
+		if (parameters.get_read_multiple_configs()) {
+			const int iter_start =
+					(parameters.get_read_multiple_configs()) ?
+							parameters.get_config_read_start() : 0;
+			const int iter_end =
+					(parameters.get_read_multiple_configs()) ?
+							parameters.get_config_read_end() + 1 : 1;
+			const int iter_incr =
+					(parameters.get_read_multiple_configs()) ?
+							parameters.get_config_read_incr() : 1;
 			int iter = 0;
-
-			//main loop
-			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
-				std::string config_name = meta::create_configuration_name(parameters, iter);
+			for (iter = iter_start; iter < iter_end; iter += iter_incr) {
+				std::string config_name = meta::create_configuration_name(
+						parameters, iter);
 				logger.info() << config_name;
-				logger.info() << "Measure fermionic observables on configuration: " << config_name;
-				Gaugefield gaugefield(system, prng, config_name) ;
+				logger.info()
+						<< "Measure fermionic observables on configuration: "
+						<< config_name;
+				Gaugefield gaugefield(system, prng, config_name);
 				perform_measurements(system, gaugefield, prng, config_name);
-				//save current status of prng
 				std::string outputfile = "prng.inverter.save";
-				logger.info() << "saving current prng state to \"" << outputfile << "\"";
+				logger.info() << "saving current prng state to \"" << outputfile
+						<< "\"";
 				prng.store(outputfile);
 			}
 		} else {
 			std::string config_name = parameters.get_sourcefile();
 			logger.info() << config_name;
-			logger.info() << "Measure fermionic observables on configuration: " << config_name;
+			logger.info() << "Measure fermionic observables on configuration: "
+					<< config_name;
 			Gaugefield gaugefield(system, prng);
 			perform_measurements(system, gaugefield, prng, config_name);
-			//save current status of prng
 			std::string outputfile = "prng.inverter.save";
-			logger.info() << "saving current prng state to \"" << outputfile << "\"";
+			logger.info() << "saving current prng state to \"" << outputfile
+					<< "\"";
 			prng.store(outputfile);
 		}
-		logger.trace() << "Inversion done" ;
+		logger.trace() << "Inversion done";
 		perform_timer.add();
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Final Output
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		total_timer.add();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
