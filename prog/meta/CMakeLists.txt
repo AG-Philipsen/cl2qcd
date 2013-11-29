@@ -18,6 +18,7 @@ add_library(meta
 add_dependencies(meta git_commit_id_header)
 target_link_libraries(meta
 	einhard
+	${Boost_LIBRARIES}
 )
 
 #
