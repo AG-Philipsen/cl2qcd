@@ -102,26 +102,27 @@ public:
 		initializationTime.reset();
 		prng = new physics::PRNG(*system);
 		meta::print_info_inverter(ownName, parameters);
-		writeInverterLogfile(ownName, parameters);
+		writeInverterLogfile();
 		initializationTime.add();
 	}
 protected:
 	const physics::PRNG * prng;
+
+	void writeInverterLogfile() {
+		ofstream ofile;
+		ofile.open("inverter.log");
+		if (ofile.is_open()) {
+			meta::print_info_inverter(ownName, &ofile, parameters);
+			ofile.close();
+		} else {
+			logger.warn() << "Could not open log file for inverter.";
+		}
+	}
 };
 
 void perform_measurements(hardware::System& system, physics::lattices::Gaugefield& gf, physics::PRNG& prng, const std::string config_name);
 
-void writeInverterLogfile(const char* executableName,
-		meta::Inputparameters& parameters) {
-	ofstream ofile;
-	ofile.open("inverter.log");
-	if (ofile.is_open()) {
-		meta::print_info_inverter(executableName, &ofile, parameters);
-		ofile.close();
-	} else {
-		logger.warn() << "Could not open log file for inverter.";
-	}
-}
+
 
 int main(int argc, const char* argv[])
 {
@@ -135,7 +136,6 @@ int main(int argc, const char* argv[])
 		switchLogLevel(parameters.get_log_level());
 
 		meta::print_info_inverter(argv[0], parameters);
-		writeInverterLogfile(argv[0], parameters);
 		init_timer.reset();
 		hardware::System system(parameters);
 		physics::PRNG prng(system);
