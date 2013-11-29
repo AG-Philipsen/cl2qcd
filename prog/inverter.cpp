@@ -104,6 +104,10 @@ protected:
 	}
 };
 
+class inverterExecutable : public generalExecutable {
+
+};
+
 void perform_measurements(hardware::System& system, physics::lattices::Gaugefield& gf, physics::PRNG& prng, const std::string config_name);
 
 void writeInverterLogfile(const char* executableName,
