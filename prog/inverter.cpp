@@ -43,7 +43,6 @@ public:
 		initializationTime.reset();
 		switchLogLevel(parameters.get_log_level());
 		system = new hardware::System(parameters);
-		performSpecificInitialization();
 		initializationTime.add();
 	}
 protected:
@@ -84,11 +83,6 @@ protected:
 		return;
 	}
 
-	void performSpecificInitialization(){
-		meta::print_info_inverter(ownName, parameters);
-		writeInverterLogfile(ownName, parameters);
-	}
-
 	void writeInverterLogfile(const char* executableName,
 			meta::Inputparameters& parameters) {
 		ofstream ofile;
@@ -107,6 +101,8 @@ public:
 	inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv){
 		initializationTime.reset();
 		prng = new physics::PRNG(*system);
+		meta::print_info_inverter(ownName, parameters);
+		writeInverterLogfile(ownName, parameters);
 		initializationTime.add();
 	}
 protected:
