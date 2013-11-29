@@ -33,10 +33,10 @@ public:
 	generalExecutable(int argc, const char* argv[]) : parameters(argc, argv){
 		ownName = argv[0];
 		totalRuntimeOfExecutable.reset();
-		initializationTime.reset();
+		initializationTimer.reset();
 		switchLogLevel(parameters.get_log_level());
 		system = new hardware::System(parameters);
-		initializationTime.add();
+		initializationTimer.add();
 	}
 	~generalExecutable(){
 		totalRuntimeOfExecutable.add();
@@ -45,8 +45,8 @@ public:
 protected:
 	const char* ownName;
 	usetimer totalRuntimeOfExecutable;
-	usetimer initializationTime;
-	usetimer performanceTime;
+	usetimer initializationTimer;
+	usetimer performanceTimer;
 	meta::Inputparameters parameters;
 	hardware::System * system;
 
@@ -63,8 +63,8 @@ protected:
 		logger.info() << "## *******************************************************************";
 		logger.info() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
 		logger.info() << "## Total:\t" << setfill(' ') << setw(12) << totalRuntimeOfExecutable.getTime();
-		logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << initializationTime.getTime() << '\t' << fixed << setw(5) << setprecision(1) << percent(initializationTime.getTime(), totalRuntimeOfExecutable.getTime()) ;
-		logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << performanceTime.getTime() << '\t' << fixed << setw(5) << setprecision(1) << percent(performanceTime.getTime(), totalRuntimeOfExecutable.getTime()) ;
+		logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << initializationTimer.getTime() << '\t' << fixed << setw(5) << setprecision(1) << percent(initializationTimer.getTime(), totalRuntimeOfExecutable.getTime()) ;
+		logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << performanceTimer.getTime() << '\t' << fixed << setw(5) << setprecision(1) << percent(performanceTimer.getTime(), totalRuntimeOfExecutable.getTime()) ;
 		logger.info() << "## *******************************************************************";
 		return;
 	}
@@ -76,23 +76,23 @@ protected:
 			ofile  << "## *******************************************************************" << endl;
 			ofile  << "## General Times [mus]:" << endl;
 			ofile << "## Total\tInit\tPerformance" << endl;
-			ofile  << totalRuntimeOfExecutable.getTime() << "\t" << initializationTime.getTime() << '\t' << performanceTime.getTime() << endl;
+			ofile  << totalRuntimeOfExecutable.getTime() << "\t" << initializationTimer.getTime() << '\t' << performanceTimer.getTime() << endl;
 			ofile.close();
 		} else {
 			logger.warn() << "Could not open output file for general time output.";
 		}
-
+		return;
 	}
 };
 
 class inverterExecutable : public generalExecutable {
 public:
 	inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv){
-		initializationTime.reset();
+		initializationTimer.reset();
 		prng = new physics::PRNG(*system);
 		meta::print_info_inverter(ownName, parameters);
 		writeInverterLogfile();
-		initializationTime.add();
+		initializationTimer.add();
 	}
 
 	~inverterExecutable(){
@@ -112,7 +112,7 @@ public:
 	}
 
 	void performMeasurements(){
-		performanceTime.reset();
+		performanceTimer.reset();
 		logger.info() << "Perform inversion(s) on device..";
 		if (parameters.get_read_multiple_configs()) {
 			const int iter_start =
@@ -152,7 +152,7 @@ public:
 			prng->store(outputfile);
 		}
 		logger.trace() << "Inversion done";
-		performanceTime.add();
+		performanceTimer.add();
 	}
 protected:
 	physics::PRNG * prng;
