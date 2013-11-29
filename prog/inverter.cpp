@@ -52,19 +52,23 @@ protected:
 
 	void printRuntimeInformationToScreenAndFile()
 	{
-		uint64_t totaltime = totalRuntimeOfExecutable.getTime();
-		uint64_t init_time = initializationTime.getTime();
-		uint64_t perform_time = performanceTime.getTime();
+		printGeneralTimesToScreen();
+		printGeneralTimesToFile();
+		return;
+	}
 
+	void printGeneralTimesToScreen(){
 		logger.info() << "## *******************************************************************";
 		logger.info() << "## General Times [mus]:";
 		logger.info() << "## *******************************************************************";
 		logger.info() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
-		logger.info() << "## Total:\t" << setfill(' ') << setw(12) << totaltime;
-		logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << init_time << '\t' << fixed << setw(5) << setprecision(1) << percent(init_time, totaltime) ;
-		logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t' << fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
+		logger.info() << "## Total:\t" << setfill(' ') << setw(12) << totalRuntimeOfExecutable.getTime();
+		logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << initializationTime.getTime() << '\t' << fixed << setw(5) << setprecision(1) << percent(initializationTime.getTime(), totalRuntimeOfExecutable.getTime()) ;
+		logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << performanceTime.getTime() << '\t' << fixed << setw(5) << setprecision(1) << percent(performanceTime.getTime(), totalRuntimeOfExecutable.getTime()) ;
 		logger.info() << "## *******************************************************************";
-
+		return;
+	}
+	void printGeneralTimesToFile(){
 		logger.info() << "## writing general times to file: \"general_time_output\"";
 		ofstream ofile;
 		ofile.open("general_time_output");
@@ -72,16 +76,14 @@ protected:
 			ofile  << "## *******************************************************************" << endl;
 			ofile  << "## General Times [mus]:" << endl;
 			ofile << "## Total\tInit\tPerformance" << endl;
-			ofile  << totaltime << "\t" << init_time << '\t' << perform_time << endl;
+			ofile  << totalRuntimeOfExecutable.getTime() << "\t" << initializationTime.getTime() << '\t' << performanceTime.getTime() << endl;
 			ofile.close();
 		} else {
 			logger.warn() << "Could not open output file for general time output.";
 		}
-		return;
+
 	}
 };
-
-void perform_measurements(physics::lattices::Gaugefield& gf, const std::string config_name);
 
 class inverterExecutable : public generalExecutable {
 public:
