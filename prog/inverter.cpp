@@ -43,7 +43,6 @@ public:
 		initializationTime.reset();
 		switchLogLevel(parameters.get_log_level());
 		system = new hardware::System(parameters);
-		prng = new physics::PRNG(*system);
 		performSpecificInitialization();
 		initializationTime.add();
 	}
@@ -54,7 +53,6 @@ protected:
 	usetimer performanceTime;
 	meta::Inputparameters parameters;
 	const hardware::System * system;
-	const physics::PRNG * prng;
 
 	void printRuntimeInformationToScreenAndFile()
 	{
@@ -105,7 +103,14 @@ protected:
 };
 
 class inverterExecutable : public generalExecutable {
-
+public:
+	inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv){
+		initializationTime.reset();
+		prng = new physics::PRNG(*system);
+		initializationTime.add();
+	}
+protected:
+	const physics::PRNG * prng;
 };
 
 void perform_measurements(hardware::System& system, physics::lattices::Gaugefield& gf, physics::PRNG& prng, const std::string config_name);
@@ -128,7 +133,7 @@ int main(int argc, const char* argv[])
 	using namespace physics;
 
 	try {
-		generalExecutable executableInstance(argc, argv);
+		inverterExecutable executableInstance(argc, argv);
 		exit(0);
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
