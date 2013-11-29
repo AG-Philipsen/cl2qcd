@@ -33,17 +33,14 @@ public:
 	generalExecutable(int argc, const char* argv[]) : parameters(argc, argv){
 		ownName = argv[0];
 		totalRuntimeOfExecutable.reset();
-		performInitialization();
-	}
-	~generalExecutable(){
-		totalRuntimeOfExecutable.add();
-		printRuntimeInformationToScreenAndFile();
-	}
-	void performInitialization(){
 		initializationTime.reset();
 		switchLogLevel(parameters.get_log_level());
 		system = new hardware::System(parameters);
 		initializationTime.add();
+	}
+	~generalExecutable(){
+		totalRuntimeOfExecutable.add();
+		printRuntimeInformationToScreenAndFile();
 	}
 protected:
 	const char* ownName;
@@ -81,18 +78,6 @@ protected:
 			logger.warn() << "Could not open output file for general time output.";
 		}
 		return;
-	}
-
-	void writeInverterLogfile(const char* executableName,
-			meta::Inputparameters& parameters) {
-		ofstream ofile;
-		ofile.open("inverter.log");
-		if (ofile.is_open()) {
-			meta::print_info_inverter(executableName, &ofile, parameters);
-			ofile.close();
-		} else {
-			logger.warn() << "Could not open log file for inverter.";
-		}
 	}
 };
 
