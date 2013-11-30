@@ -111,51 +111,59 @@ public:
 		}
 	}
 
-	void performMeasurements(){
+	void setIterationVariables(int& iter_start, int& iter_end, int& iter_incr) {
+		iter_start =
+				(parameters.get_read_multiple_configs()) ?
+						parameters.get_config_read_start() : 0;
+		iter_end =
+				(parameters.get_read_multiple_configs()) ?
+						parameters.get_config_read_end() + 1 : 1;
+		iter_incr =
+				(parameters.get_read_multiple_configs()) ?
+						parameters.get_config_read_incr() : 1;
+	}
+
+	void saveCurrentPrngStateToFile() {
+		logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
+		prng->store(filenameForCurrentPrngState);
+	}
+
+	void performMeasurements() {
 		performanceTimer.reset();
+		int iterationStart;
+		int iterationEnd;
+		int iterationIncrement;
+		int iteration = 0;
 		logger.info() << "Perform inversion(s) on device..";
 		if (parameters.get_read_multiple_configs()) {
-			const int iter_start =
-					(parameters.get_read_multiple_configs()) ?
-							parameters.get_config_read_start() : 0;
-			const int iter_end =
-					(parameters.get_read_multiple_configs()) ?
-							parameters.get_config_read_end() + 1 : 1;
-			const int iter_incr =
-					(parameters.get_read_multiple_configs()) ?
-							parameters.get_config_read_incr() : 1;
-			int iter = 0;
-			for (iter = iter_start; iter < iter_end; iter += iter_incr) {
+			setIterationVariables(iterationStart, iterationEnd,
+					iterationIncrement);
+			for (iteration = iterationStart; iteration < iterationEnd;
+					iteration += iterationIncrement) {
 				std::string config_name = meta::create_configuration_name(
-						parameters, iter);
+						parameters, iteration);
 				logger.info() << config_name;
 				logger.info()
-										<< "Measure fermionic observables on configuration: "
-										<< config_name;
+						<< "Measure fermionic observables on configuration: "
+						<< config_name;
 				physics::lattices::Gaugefield gaugefield(*system, *prng, config_name);
 				perform_measurements(gaugefield, config_name);
-				std::string outputfile = "prng.inverter.save";
-				logger.info() << "saving current prng state to \"" << outputfile
-						<< "\"";
-				prng->store(outputfile);
+				saveCurrentPrngStateToFile();
 			}
 		} else {
 			std::string config_name = parameters.get_sourcefile();
 			logger.info() << config_name;
-			logger.info() << "Measure fermionic observables on configuration: "
-					<< config_name;
+			logger.info() << "Measure fermionic observables on configuration: " << config_name;
 			physics::lattices::Gaugefield gaugefield(*system, *prng);
 			perform_measurements(gaugefield, config_name);
-			std::string outputfile = "prng.inverter.save";
-			logger.info() << "saving current prng state to \"" << outputfile
-					<< "\"";
-			prng->store(outputfile);
+			saveCurrentPrngStateToFile();
 		}
 		logger.trace() << "Inversion done";
 		performanceTimer.add();
 	}
 protected:
 	physics::PRNG * prng;
+	const std::string filenameForCurrentPrngState = "prng.inverter.save";
 
 	void writeInverterLogfile() {
 		ofstream ofile;
@@ -167,6 +175,7 @@ protected:
 			logger.warn() << "Could not open log file for inverter.";
 		}
 	}
+
 	void perform_measurements(physics::lattices::Gaugefield& gaugefield, const std::string config_name)
 	{
 		using namespace physics;
