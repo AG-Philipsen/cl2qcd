@@ -129,26 +129,27 @@ public:
 		prng->store(filenameForCurrentPrngState);
 	}
 
-	void performMeasurementsForSpecificConfiguration() {
+	void initializeGaugefieldAccordingToIterationVariable() {
 		currentConfigurationName = meta::create_configuration_name(parameters,iteration);
-		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 		gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
-		measureFermionicObservablesOnGaugefield();
 	}
 
-	void performMeasurementsForConfigurationGivenInSourcefileParameter() {
+	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter() {
 		currentConfigurationName = parameters.get_sourcefile();
-		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-		measureFermionicObservablesOnGaugefield();
+	}
+
+	void initializeGaugefield() {
+		if (parameters.get_read_multiple_configs()) {
+			initializeGaugefieldAccordingToIterationVariable();
+		} else {
+			initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
+		}
 	}
 
 	void performMeasurementsForSpecificIteration() {
-		if (parameters.get_read_multiple_configs()) {
-			performMeasurementsForSpecificConfiguration();
-		} else {
-			performMeasurementsForConfigurationGivenInSourcefileParameter();
-		}
+		initializeGaugefield();
+		measureFermionicObservablesOnGaugefield();
 		saveCurrentPrngStateToFile();
 	}
 
@@ -162,6 +163,7 @@ public:
 		logger.trace() << "Inversion(s) done";
 		performanceTimer.add();
 	}
+
 protected:
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
@@ -185,6 +187,8 @@ protected:
 
 	void measureFermionicObservablesOnGaugefield()
 	{
+		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
+
 		using namespace physics;
 		using namespace physics::lattices;
 		using namespace physics::algorithms;
