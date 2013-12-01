@@ -49,6 +49,7 @@ protected:
 	usetimer performanceTimer;
 	meta::Inputparameters parameters;
 	hardware::System * system;
+	ofstream outputToFile;
 
 	void printRuntimeInformationToScreenAndFile()
 	{
@@ -70,14 +71,13 @@ protected:
 	}
 	void printGeneralTimesToFile(){
 		logger.info() << "## writing general times to file: \"general_time_output\"";
-		ofstream ofile;
-		ofile.open("general_time_output");
-		if(ofile.is_open()) {
-			ofile  << "## *******************************************************************" << endl;
-			ofile  << "## General Times [mus]:" << endl;
-			ofile << "## Total\tInit\tPerformance" << endl;
-			ofile  << totalRuntimeOfExecutable.getTime() << "\t" << initializationTimer.getTime() << '\t' << performanceTimer.getTime() << endl;
-			ofile.close();
+		outputToFile.open("general_time_output");
+		if(outputToFile.is_open()) {
+			outputToFile  << "## *******************************************************************" << endl;
+			outputToFile  << "## General Times [mus]:" << endl;
+			outputToFile << "## Total\tInit\tPerformance" << endl;
+			outputToFile  << totalRuntimeOfExecutable.getTime() << "\t" << initializationTimer.getTime() << '\t' << performanceTimer.getTime() << endl;
+			outputToFile.close();
 		} else {
 			logger.warn() << "Could not open output file for general time output.";
 		}
@@ -168,6 +168,7 @@ protected:
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
 	const std::string filenameForCurrentPrngState = "prng.inverter.save";
+	const std::string filenameForInverterLogfile = "inverter.log";
 	std::string currentConfigurationName;
 	int iterationStart;
 	int iterationEnd;
@@ -175,11 +176,10 @@ protected:
 	int iteration;
 
 	void writeInverterLogfile() {
-		ofstream ofile;
-		ofile.open("inverter.log");
-		if (ofile.is_open()) {
-			meta::print_info_inverter(ownName, &ofile, parameters);
-			ofile.close();
+		outputToFile.open(filenameForInverterLogfile);
+		if (outputToFile.is_open()) {
+			meta::print_info_inverter(ownName, &outputToFile, parameters);
+			outputToFile.close();
 		} else {
 			logger.warn() << "Could not open log file for inverter.";
 		}
