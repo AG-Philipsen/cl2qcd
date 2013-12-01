@@ -83,7 +83,7 @@ protected:
 		if(outputToFile.is_open()) {
 			outputToFile  << "## *******************************************************************" << endl;
 			outputToFile  << "## General Times [mus]:" << endl;
-			outputToFile << "## Total\tInit\tPerformance" << endl;
+			outputToFile  << "## Total\tInit\tPerformance" << endl;
 			outputToFile  << totalRuntimeOfExecutable.getTime() << "\t" << initializationTimer.getTime() << '\t' << performanceTimer.getTime() << endl;
 			outputToFile.close();
 		} else {
@@ -185,6 +185,7 @@ protected:
 		initializeGaugefield();
 		measureFermionicObservablesOnGaugefield();
 		saveCurrentPrngStateToFile();
+		delete gaugefield;
 	}
 
 	void writeInverterLogfile()
