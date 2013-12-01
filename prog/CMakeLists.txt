@@ -181,7 +181,7 @@ target_link_libraries(heatbath optimal)
 add_executable(transportcoefficient transportcoefficient.cpp)
 target_link_libraries(transportcoefficient optimal)
 
-add_executable(inverter inverter.cpp)
+add_executable(inverter inverterExecutable.cpp)
 target_link_libraries(inverter optimal)
 
 add_executable(hmc hmc.cpp)
