@@ -139,6 +139,7 @@ protected:
 	int iterationEnd;
 	int iterationIncrement;
 	int iteration;
+	usetimer solverTimer;
 
 	void setIterationVariables()
 	{
@@ -206,9 +207,8 @@ protected:
 
 	void getSolverStatistics(int& totalSolverCalls, uint64_t& totalSolverTime, uint64_t& averageSolverTime)
 	{
-		totalSolverCalls = solver_timer.getNumMeas();
-		totalSolverTime = solver_timer.getTime();
-		//check if kernel has been called at all
+		totalSolverCalls = solverTimer.getNumMeas();
+		totalSolverTime = solverTimer.getTime();
 		if (totalSolverCalls != 0 && totalSolverTime != 0) {
 			averageSolverTime = (uint64_t)(
 					((float) ((totalSolverTime))) / ((float) ((totalSolverCalls))));
