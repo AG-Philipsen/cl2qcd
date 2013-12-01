@@ -14,6 +14,7 @@
 #include "exceptions.h"
 #include "logger.hpp"
 #include "meta/util.hpp"
+#include "./hardware/system.hpp"
 
 class generalExecutable
 {

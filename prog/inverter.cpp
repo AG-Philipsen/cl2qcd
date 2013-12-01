@@ -20,16 +20,6 @@
 
 #include "inverter.h"
 
-#include "physics/lattices/gaugefield.hpp"
-#include "physics/lattices/spinorfield.hpp"
-#include "physics/sources.hpp"
-#include "physics/algorithms/flavour_doublet.hpp"
-#include "physics/algorithms/inversion.hpp"
-
-#include "meta/util.hpp"
-
-#include "generalExecutable.h"
-
 class inverterExecutable : public generalExecutable
 {
 public:
@@ -67,7 +57,7 @@ protected:
 	physics::lattices::Gaugefield * gaugefield;
 	const std::string 	filenameForCurrentPrngState 	= "prng.inverter.save";
 	const std::string 	filenameForInverterLogfile 		= "inverter.log";
-	const std::string 	filenameForProfilingData 		= string(ownName) + string("_profiling_data");
+	const std::string 	filenameForProfilingData 		= std::string(ownName) + std::string("_profiling_data");
 	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
 	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
 	std::string 		currentConfigurationName;
