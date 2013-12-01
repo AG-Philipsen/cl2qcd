@@ -12,13 +12,25 @@
 #include "physics/algorithms/flavour_doublet.hpp"
 #include "physics/algorithms/inversion.hpp"
 
+/**
+ * Inverter executable which measures fermionic observables on gaugefield configurations.
+ */
 class inverterExecutable : public generalExecutable
 {
 public:
+	/**
+	 * Constructor. Initializes Random Number Generator and Iteration variables.
+	 */
 	inverterExecutable(int argc, const char* argv[]);
 
+	/**
+	 * Destructor. Print profiling information about solver usage if wanted.
+	 */
 	~inverterExecutable();
 
+	/**
+	 * Performs measurements of fermionic observables on possibly various gaugefield configurations.
+	 */
 	void performMeasurements();
 
 protected:
