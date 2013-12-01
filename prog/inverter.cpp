@@ -133,14 +133,14 @@ public:
 		currentConfigurationName = meta::create_configuration_name(parameters,iteration);
 		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 		physics::lattices::Gaugefield gaugefield(*system, *prng, currentConfigurationName);
-		perform_measurements(gaugefield, currentConfigurationName);
+		perform_measurements(gaugefield);
 	}
 
 	void performMeasurementsForConfigurationGivenInSourcefileParameter() {
 		currentConfigurationName = parameters.get_sourcefile();
 		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 		physics::lattices::Gaugefield gaugefield(*system, *prng);
-		perform_measurements(gaugefield, currentConfigurationName);
+		perform_measurements(gaugefield);
 	}
 
 	void performMeasurementsForSpecificIteration() {
@@ -154,12 +154,12 @@ public:
 
 	void performMeasurements() {
 		performanceTimer.reset();
-		logger.info() << "Perform inversion(s) on device..";
+		logger.trace() << "Perform inversion(s) on device..";
 		for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
 		{
 			performMeasurementsForSpecificIteration();
 		}
-		logger.trace() << "Inversion done";
+		logger.trace() << "Inversion(s) done";
 		performanceTimer.add();
 	}
 protected:
@@ -182,7 +182,7 @@ protected:
 		}
 	}
 
-	void perform_measurements(physics::lattices::Gaugefield& gaugefield, const std::string config_name)
+	void perform_measurements(physics::lattices::Gaugefield& gaugefield)
 	{
 		using namespace physics;
 		using namespace physics::lattices;
@@ -208,14 +208,14 @@ protected:
 			swap_in(result);
 
 			//get name for file to which correlators are to be stored
-			std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
+			std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
 			flavour_doublet_correlators(result, sources, corr_fn, *system);
 			release_spinorfields(result);
 			release_spinorfields(sources);
 		}
 		if(parameters.get_measure_pbp() ) {
 			//get name for file to which pbp is to be stored
-			std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
+			std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, currentConfigurationName);
 			// the chiral condensate needs only one source at a time
 			for(int i_sources = 0; i_sources < parameters.get_num_sources(); i_sources ++) {
 				auto sources = create_sources(*system, *prng, 1);
