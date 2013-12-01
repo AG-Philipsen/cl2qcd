@@ -132,15 +132,15 @@ public:
 	void performMeasurementsForSpecificConfiguration() {
 		currentConfigurationName = meta::create_configuration_name(parameters,iteration);
 		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
-		physics::lattices::Gaugefield gaugefield(*system, *prng, currentConfigurationName);
-		perform_measurements(gaugefield);
+		gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
+		measureFermionicObservablesOnGaugefield();
 	}
 
 	void performMeasurementsForConfigurationGivenInSourcefileParameter() {
 		currentConfigurationName = parameters.get_sourcefile();
 		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
-		physics::lattices::Gaugefield gaugefield(*system, *prng);
-		perform_measurements(gaugefield);
+		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+		measureFermionicObservablesOnGaugefield();
 	}
 
 	void performMeasurementsForSpecificIteration() {
@@ -164,12 +164,13 @@ public:
 	}
 protected:
 	physics::PRNG * prng;
+	physics::lattices::Gaugefield * gaugefield;
 	const std::string filenameForCurrentPrngState = "prng.inverter.save";
+	std::string currentConfigurationName;
 	int iterationStart;
 	int iterationEnd;
 	int iterationIncrement;
 	int iteration;
-	std::string currentConfigurationName;
 
 	void writeInverterLogfile() {
 		ofstream ofile;
@@ -182,7 +183,7 @@ protected:
 		}
 	}
 
-	void perform_measurements(physics::lattices::Gaugefield& gaugefield)
+	void measureFermionicObservablesOnGaugefield()
 	{
 		using namespace physics;
 		using namespace physics::lattices;
@@ -190,7 +191,7 @@ protected:
 
 		auto parameters = system->get_inputparameters();
 		if(parameters.get_print_to_screen() ) {
-			print_gaugeobservables(gaugefield, gaugefield.get_parameters_source().trajectorynr_source);
+			print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
 		}
 		if(parameters.get_measure_correlators() ) {
 			// for the correlator calculation, all sources are needed on the device
@@ -200,7 +201,7 @@ protected:
 			swap_out(sources);
 			swap_out(result);
 
-			perform_inversion(&result, &gaugefield, sources, *system);
+			perform_inversion(&result, gaugefield, sources, *system);
 
 			logger.info() << "Finished inversion. Starting measurements.";
 
@@ -221,9 +222,9 @@ protected:
 				auto sources = create_sources(*system, *prng, 1);
 				auto result = create_spinorfields(*system, sources.size());
 
-				perform_inversion(&result, &gaugefield, sources, *system);
+				perform_inversion(&result, gaugefield, sources, *system);
 
-				flavour_doublet_chiral_condensate(result, sources, pbp_fn, gaugefield.get_parameters_source().trajectorynr_source, *system);
+				flavour_doublet_chiral_condensate(result, sources, pbp_fn, gaugefield->get_parameters_source().trajectorynr_source, *system);
 				release_spinorfields(result);
 				release_spinorfields(sources);
 			}
