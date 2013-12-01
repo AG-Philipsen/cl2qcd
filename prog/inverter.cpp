@@ -20,208 +20,182 @@
 
 #include "inverter.h"
 
-class inverterExecutable : public generalExecutable
+inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
 {
-public:
-	inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
-	{
-		initializationTimer.reset();
-		prng = new physics::PRNG(*system);
-		meta::print_info_inverter(ownName, parameters);
-		writeInverterLogfile();
-		setIterationVariables();
-		initializationTimer.add();
+	initializationTimer.reset();
+	prng = new physics::PRNG(*system);
+	meta::print_info_inverter(ownName, parameters);
+	writeInverterLogfile();
+	setIterationVariables();
+	initializationTimer.add();
+}
+
+inline inverterExecutable::~inverterExecutable()
+{
+	if (parameters.get_profile_solver()) {
+		writeProfilingDataToScreenAndFile();
 	}
+}
 
-	~inverterExecutable()
+inline void inverterExecutable::performMeasurements()
+{
+	performanceTimer.reset();
+	logger.trace() << "Perform inversion(s) on device..";
+	for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
 	{
-		if (parameters.get_profile_solver()) {
-			writeProfilingDataToScreenAndFile();
-		}
+		performMeasurementsForSpecificIteration();
 	}
+	logger.trace() << "Inversion(s) done";
+	performanceTimer.add();
+}
 
-	void performMeasurements()
-	{
-		performanceTimer.reset();
-		logger.trace() << "Perform inversion(s) on device..";
-		for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
-		{
-			performMeasurementsForSpecificIteration();
-		}
-		logger.trace() << "Inversion(s) done";
-		performanceTimer.add();
+inline void inverterExecutable::setIterationVariables()
+{
+	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
+	iterationEnd = 			(parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
+	iterationIncrement =	(parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
+}
+
+inline void inverterExecutable::saveCurrentPrngStateToFile()
+{
+	logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
+	prng->store(filenameForCurrentPrngState);
+}
+
+inline void inverterExecutable::initializeGaugefieldAccordingToIterationVariable()
+{
+	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
+	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
+}
+
+inline void inverterExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
+{
+	currentConfigurationName = parameters.get_sourcefile();
+	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+}
+
+inline void inverterExecutable::initializeGaugefield()
+{
+	if (parameters.get_read_multiple_configs()) {
+		initializeGaugefieldAccordingToIterationVariable();
+	} else {
+		initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
 	}
+}
 
-protected:
-	physics::PRNG * prng;
-	physics::lattices::Gaugefield * gaugefield;
-	const std::string 	filenameForCurrentPrngState 	= "prng.inverter.save";
-	const std::string 	filenameForInverterLogfile 		= "inverter.log";
-	const std::string 	filenameForProfilingData 		= std::string(ownName) + std::string("_profiling_data");
-	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
-	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
-	std::string 		currentConfigurationName;
-	std::fstream 		outputStreamForProfilingData;
-	int iterationStart;
-	int iterationEnd;
-	int iterationIncrement;
-	int iteration;
-	usetimer solverTimer;
+inline void inverterExecutable::performMeasurementsForSpecificIteration()
+{
+	initializeGaugefield();
+	measureFermionicObservablesOnGaugefield();
+	saveCurrentPrngStateToFile();
+	delete gaugefield;
+}
 
-	void setIterationVariables()
-	{
-		iterationStart 		= 	(parameters.get_read_multiple_configs())	?	parameters.get_config_read_start() 	: 0;
-		iterationEnd 		= 	(parameters.get_read_multiple_configs())	? 	parameters.get_config_read_end() + 1 	: 1;
-		iterationIncrement 	= 	(parameters.get_read_multiple_configs())	? 	parameters.get_config_read_incr() 		: 1;
+inline void inverterExecutable::writeInverterLogfile()
+{
+	outputToFile.open(filenameForInverterLogfile);
+	if (outputToFile.is_open()) {
+		meta::print_info_inverter(ownName, &outputToFile, parameters);
+		outputToFile.close();
+	} else {
+		logger.warn() << "Could not open log file for inverter.";
 	}
+}
 
-	void saveCurrentPrngStateToFile()
-	{
-		logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
-		prng->store(filenameForCurrentPrngState);
+inline void inverterExecutable::writeProfilingDataToScreenAndFile()
+{
+	uint64_t avg_time = 0.;
+	uint64_t time_total = 0;
+	int calls_total = 0;
+	getSolverStatistics(calls_total, time_total, avg_time);
+	writeProfilingDataToScreen(time_total, calls_total, avg_time);
+	writeProfilingDataToFile(time_total, calls_total, avg_time);
+}
+
+inline void inverterExecutable::getSolverStatistics(int& totalSolverCalls, uint64_t& totalSolverTime, uint64_t& averageSolverTime)
+{
+	totalSolverCalls = solverTimer.getNumMeas();
+	totalSolverTime = solverTimer.getTime();
+	if (totalSolverCalls != 0 && totalSolverTime != 0) {
+		averageSolverTime = (uint64_t)(
+				((float) (((((((((totalSolverTime))))))))))
+						/ ((float) (((((((((totalSolverCalls)))))))))));
 	}
+}
 
-	void initializeGaugefieldAccordingToIterationVariable()
-	{
-		currentConfigurationName = meta::create_configuration_name(parameters,iteration);
-		gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
+inline void inverterExecutable::writeProfilingDataToScreen( uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
+{
+	logger.info() << "## **********************************************************";
+	logger.info() << "## Solver Times [mus]:\ttime\tcalls\tavg";
+	logger.info() << "##\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime;
+	logger.info() << "## **********************************************************";
+}
+
+inline void inverterExecutable::writeProfilingDataToFile( uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
+{
+	outputStreamForProfilingData.open(filenameForProfilingData.c_str(), std::ios::out | std::ios::app);
+	if (outputStreamForProfilingData.is_open()) {
+		writeProfilingDataToFileUsingOpenOutputStream(totalSolverTime, totalSolverCalls, averageSolverTime);
+		outputStreamForProfilingData.close();
+	} else {
+		logger.warn() << "Could not open " << filenameForProfilingData;
+		File_Exception(filenameForProfilingData.c_str());
 	}
+}
 
-	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
-	{
-		currentConfigurationName = parameters.get_sourcefile();
-		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-	}
+inline void inverterExecutable::writeProfilingDataToFileUsingOpenOutputStream( uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
+{
+	meta::print_info_inverter(ownName, &outputStreamForProfilingData, parameters);
+	outputStreamForProfilingData.width(32);
+	outputStreamForProfilingData.precision(15);
+	outputStreamForProfilingData << "## **********************************************************" << std::endl;
+	outputStreamForProfilingData << "## Solver Times [mus]:\ttime\tcalls\tavg" << std::endl;
+	outputStreamForProfilingData << "\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime << std::endl;
+	outputStreamForProfilingData << "## **********************************************************" << std::endl;
+	return;
+}
 
-	void initializeGaugefield()
-	{
-		if (parameters.get_read_multiple_configs()) {
-			initializeGaugefieldAccordingToIterationVariable();
-		} else {
-			initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
-		}
-	}
+inline void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield() {
+	filenameForTwoFlavourDoubletCorrelatorData = meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
+	// for the correlator calculation, all sources are needed on the device
+	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parameters.get_num_sources());
+	const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), parameters.get_place_sources_on_host());
+	swap_out(sources);
+	swap_out(result);
+	physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
+	logger.info() << "Finished inversion. Starting measurements.";
+	swap_in(sources);
+	swap_in(result);
+	physics::algorithms::flavour_doublet_correlators(result, sources, filenameForTwoFlavourDoubletCorrelatorData, *system);
+	release_spinorfields(result);
+	release_spinorfields(sources);
+}
 
-	void performMeasurementsForSpecificIteration()
-	{
-		initializeGaugefield();
-		measureFermionicObservablesOnGaugefield();
-		saveCurrentPrngStateToFile();
-		delete gaugefield;
-	}
-
-	void writeInverterLogfile()
-	{
-		outputToFile.open(filenameForInverterLogfile);
-		if (outputToFile.is_open()) {
-			meta::print_info_inverter(ownName, &outputToFile, parameters);
-			outputToFile.close();
-		} else {
-			logger.warn() << "Could not open log file for inverter.";
-		}
-	}
-
-	void writeProfilingDataToScreenAndFile()
-	{
-		uint64_t avg_time 	= 0.;
-		uint64_t time_total = 0;
-		int calls_total 	= 0;
-		getSolverStatistics(calls_total, time_total, avg_time);
-
-		writeProfilingDataToScreen(time_total, calls_total, avg_time);
-		writeProfilingDataToFile(time_total, calls_total, avg_time);
-	}
-
-	void getSolverStatistics(int& totalSolverCalls, uint64_t& totalSolverTime, uint64_t& averageSolverTime)
-	{
-		totalSolverCalls = solverTimer.getNumMeas();
-		totalSolverTime = solverTimer.getTime();
-		if (totalSolverCalls != 0 && totalSolverTime != 0) {
-			averageSolverTime = (uint64_t)(
-					((float) ((totalSolverTime))) / ((float) ((totalSolverCalls))));
-		}
-	}
-
-	void writeProfilingDataToScreen(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
-	{
-		logger.info() << "## **********************************************************";
-		logger.info() << "## Solver Times [mus]:\ttime\tcalls\tavg";
-		logger.info() << "##\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime;
-		logger.info() << "## **********************************************************";
-	}
-
-	void writeProfilingDataToFile(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
-	{
-		outputStreamForProfilingData.open(filenameForProfilingData.c_str(),	std::ios::out | std::ios::app);
-		if (outputStreamForProfilingData.is_open()) {
-			writeProfilingDataToFileUsingOpenOutputStream(totalSolverTime, totalSolverCalls, averageSolverTime);
-			outputStreamForProfilingData.close();
-		} else {
-			logger.warn() << "Could not open " << filenameForProfilingData;
-			File_Exception(filenameForProfilingData.c_str());
-		}
-	}
-
-	void writeProfilingDataToFileUsingOpenOutputStream(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
-	{
-		meta::print_info_inverter(ownName, &outputStreamForProfilingData, parameters);
-		outputStreamForProfilingData.width(32);
-		outputStreamForProfilingData.precision(15);
-		outputStreamForProfilingData << "## **********************************************************" << std::endl;
-		outputStreamForProfilingData << "## Solver Times [mus]:\ttime\tcalls\tavg" 						<< std::endl;
-		outputStreamForProfilingData << "\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime 	<< std::endl;
-		outputStreamForProfilingData << "## **********************************************************" << std::endl;
-		return;
-	}
-
-	void measureTwoFlavourDoubletCorrelatorsOnGaugefield()
-	{
-		filenameForTwoFlavourDoubletCorrelatorData = meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
-
-		// for the correlator calculation, all sources are needed on the device
-		const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parameters.get_num_sources());
-		const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), parameters.get_place_sources_on_host());
-		swap_out(sources);
-		swap_out(result);
+inline void inverterExecutable::measureTwoFlavourDoubletChiralCondensateOnGaugefield() {
+	filenameForTwoFlavourDoubletChiralCondensateData = meta::get_ferm_obs_pbp_file_name(parameters, currentConfigurationName);
+	int sourceNumber = 0;
+	for (; sourceNumber < parameters.get_num_sources(); sourceNumber++) {
+		auto sources = physics::create_sources(*system, *prng, 1);
+		auto result = physics::lattices::create_spinorfields(*system, sources.size());
 		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
-
-		logger.info() << "Finished inversion. Starting measurements.";
-		swap_in(sources);
-		swap_in(result);
-		physics::algorithms::flavour_doublet_correlators(result, sources, filenameForTwoFlavourDoubletCorrelatorData, *system);
+		physics::algorithms::flavour_doublet_chiral_condensate(result, sources, filenameForTwoFlavourDoubletChiralCondensateData, gaugefield->get_parameters_source().trajectorynr_source, *system);
 		release_spinorfields(result);
 		release_spinorfields(sources);
 	}
+}
 
-	void measureTwoFlavourDoubletChiralCondensateOnGaugefield()
-	{
-		filenameForTwoFlavourDoubletChiralCondensateData = meta::get_ferm_obs_pbp_file_name(parameters,	currentConfigurationName);
-		int sourceNumber = 0;
-
-		for (; sourceNumber < parameters.get_num_sources(); sourceNumber++)
-		{
-			auto sources = physics::create_sources(*system, *prng, 1);
-			auto result = physics::lattices::create_spinorfields(*system, sources.size());
-			physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
-			physics::algorithms::flavour_doublet_chiral_condensate(result, sources, filenameForTwoFlavourDoubletChiralCondensateData, gaugefield->get_parameters_source().trajectorynr_source, *system);
-			release_spinorfields(result);
-			release_spinorfields(sources);
-		}
+inline void inverterExecutable::measureFermionicObservablesOnGaugefield() {
+	logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
+	if (parameters.get_print_to_screen()) {
+		print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
 	}
-
-	void measureFermionicObservablesOnGaugefield() {
-		logger.info() << "Measure fermionic observables on configuration: "	<< currentConfigurationName;
-		if (parameters.get_print_to_screen()) {
-			print_gaugeobservables(*gaugefield,	gaugefield->get_parameters_source().trajectorynr_source);
-		}
-		if (parameters.get_measure_correlators()) {
-			measureTwoFlavourDoubletCorrelatorsOnGaugefield();
-		}
-		if (parameters.get_measure_pbp()) {
-			measureTwoFlavourDoubletChiralCondensateOnGaugefield();
-		}
+	if (parameters.get_measure_correlators()) {
+		measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 	}
-};
+	if (parameters.get_measure_pbp()) {
+		measureTwoFlavourDoubletChiralCondensateOnGaugefield();
+	}
+}
 
 int main(int argc, const char* argv[])
 {
