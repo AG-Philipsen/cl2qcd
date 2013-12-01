@@ -96,24 +96,35 @@ public:
 		initializationTimer.add();
 	}
 
-	void writeProfilingDataToFile() {
-		outputStreamForProfilingData.open(filenameForProfilingData.c_str(),
-				std::ios::out | std::ios::app);
-		if (outputStreamForProfilingData.is_open()) {
-			meta::print_info_inverter(ownName, &outputStreamForProfilingData,
-					parameters);
-			outputStreamForProfilingData.close();
-		} else {
-			logger.warn() << "Could not open " << filenameForProfilingData;
-		}
-		print_solver_profiling(filenameForProfilingData);
-	}
-
 	~inverterExecutable() {
 		if (parameters.get_profile_solver()) {
 			writeProfilingDataToFile();
 		}
 	}
+
+	void performMeasurements() {
+		performanceTimer.reset();
+		logger.trace() << "Perform inversion(s) on device..";
+		for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
+		{
+			performMeasurementsForSpecificIteration();
+		}
+		logger.trace() << "Inversion(s) done";
+		performanceTimer.add();
+	}
+
+protected:
+	physics::PRNG * prng;
+	physics::lattices::Gaugefield * gaugefield;
+	const std::string filenameForCurrentPrngState = "prng.inverter.save";
+	const std::string filenameForInverterLogfile = "inverter.log";
+	const std::string filenameForProfilingData = string(ownName) + string("_profiling_data");
+	std::string currentConfigurationName;
+	std::fstream outputStreamForProfilingData;
+	int iterationStart;
+	int iterationEnd;
+	int iterationIncrement;
+	int iteration;
 
 	void setIterationVariables() {
 		iterationStart =
@@ -156,30 +167,6 @@ public:
 		saveCurrentPrngStateToFile();
 	}
 
-	void performMeasurements() {
-		performanceTimer.reset();
-		logger.trace() << "Perform inversion(s) on device..";
-		for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
-		{
-			performMeasurementsForSpecificIteration();
-		}
-		logger.trace() << "Inversion(s) done";
-		performanceTimer.add();
-	}
-
-protected:
-	physics::PRNG * prng;
-	physics::lattices::Gaugefield * gaugefield;
-	const std::string filenameForCurrentPrngState = "prng.inverter.save";
-	const std::string filenameForInverterLogfile = "inverter.log";
-	const std::string filenameForProfilingData = string(ownName) + string("_profiling_data");
-	std::string currentConfigurationName;
-	std::fstream outputStreamForProfilingData;
-	int iterationStart;
-	int iterationEnd;
-	int iterationIncrement;
-	int iteration;
-
 	void writeInverterLogfile() {
 		outputToFile.open(filenameForInverterLogfile);
 		if (outputToFile.is_open()) {
@@ -188,6 +175,17 @@ protected:
 		} else {
 			logger.warn() << "Could not open log file for inverter.";
 		}
+	}
+
+	void writeProfilingDataToFile() {
+		outputStreamForProfilingData.open(filenameForProfilingData.c_str(),	std::ios::out | std::ios::app);
+		if (outputStreamForProfilingData.is_open()) {
+			meta::print_info_inverter(ownName, &outputStreamForProfilingData, parameters);
+			outputStreamForProfilingData.close();
+		} else {
+			logger.warn() << "Could not open " << filenameForProfilingData;
+		}
+		print_solver_profiling(filenameForProfilingData);
 	}
 
 	void measureFermionicObservablesOnGaugefield()
