@@ -96,19 +96,22 @@ public:
 		initializationTimer.add();
 	}
 
-	~inverterExecutable(){
-		if(parameters.get_profile_solver() ) {
-			string profiling_out;
-			profiling_out = string(ownName) + string("_profiling_data");
-			fstream prof_file;
-			prof_file.open(profiling_out.c_str(), std::ios::out | std::ios::app);
-			if(prof_file.is_open()) {
-				meta::print_info_inverter(ownName, &prof_file, parameters);
-				prof_file.close();
-			} else {
-				logger.warn() << "Could not open " << profiling_out;
-			}
-			print_solver_profiling(profiling_out);
+	void writeProfilingDataToFile() {
+		outputStreamForProfilingData.open(filenameForProfilingData.c_str(),
+				std::ios::out | std::ios::app);
+		if (outputStreamForProfilingData.is_open()) {
+			meta::print_info_inverter(ownName, &outputStreamForProfilingData,
+					parameters);
+			outputStreamForProfilingData.close();
+		} else {
+			logger.warn() << "Could not open " << filenameForProfilingData;
+		}
+		print_solver_profiling(filenameForProfilingData);
+	}
+
+	~inverterExecutable() {
+		if (parameters.get_profile_solver()) {
+			writeProfilingDataToFile();
 		}
 	}
 
@@ -169,7 +172,9 @@ protected:
 	physics::lattices::Gaugefield * gaugefield;
 	const std::string filenameForCurrentPrngState = "prng.inverter.save";
 	const std::string filenameForInverterLogfile = "inverter.log";
+	const std::string filenameForProfilingData = string(ownName) + string("_profiling_data");
 	std::string currentConfigurationName;
+	std::fstream outputStreamForProfilingData;
 	int iterationStart;
 	int iterationEnd;
 	int iterationIncrement;
