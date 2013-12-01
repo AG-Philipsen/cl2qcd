@@ -109,7 +109,7 @@ public:
 	~inverterExecutable()
 	{
 		if (parameters.get_profile_solver()) {
-			writeProfilingDataToFile();
+			writeProfilingDataToScreenAndFile();
 		}
 	}
 
@@ -128,13 +128,13 @@ public:
 protected:
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
-	const std::string filenameForCurrentPrngState = "prng.inverter.save";
-	const std::string filenameForInverterLogfile = "inverter.log";
-	const std::string filenameForProfilingData = string(ownName) + string("_profiling_data");
-	std::string filenameForTwoFlavourDoubletChiralCondensateData;
-	std::string filenameForTwoFlavourDoubletCorrelatorData;
-	std::string currentConfigurationName;
-	std::fstream outputStreamForProfilingData;
+	const std::string 	filenameForCurrentPrngState 	= "prng.inverter.save";
+	const std::string 	filenameForInverterLogfile 		= "inverter.log";
+	const std::string 	filenameForProfilingData 		= string(ownName) + string("_profiling_data");
+	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
+	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
+	std::string 		currentConfigurationName;
+	std::fstream 		outputStreamForProfilingData;
 	int iterationStart;
 	int iterationEnd;
 	int iterationIncrement;
@@ -142,15 +142,9 @@ protected:
 
 	void setIterationVariables()
 	{
-		iterationStart =
-				(parameters.get_read_multiple_configs()) ?
-						parameters.get_config_read_start() : 0;
-		iterationEnd =
-				(parameters.get_read_multiple_configs()) ?
-						parameters.get_config_read_end() + 1 : 1;
-		iterationIncrement =
-				(parameters.get_read_multiple_configs()) ?
-						parameters.get_config_read_incr() : 1;
+		iterationStart 		= 	(parameters.get_read_multiple_configs())	?	parameters.get_config_read_start() 	: 0;
+		iterationEnd 		= 	(parameters.get_read_multiple_configs())	? 	parameters.get_config_read_end() + 1 	: 1;
+		iterationIncrement 	= 	(parameters.get_read_multiple_configs())	? 	parameters.get_config_read_incr() 		: 1;
 	}
 
 	void saveCurrentPrngStateToFile()
@@ -199,16 +193,58 @@ protected:
 		}
 	}
 
-	void writeProfilingDataToFile()
+	void writeProfilingDataToScreenAndFile()
+	{
+		uint64_t avg_time 	= 0.;
+		uint64_t time_total = 0;
+		int calls_total 	= 0;
+		getSolverStatistics(calls_total, time_total, avg_time);
+
+		writeProfilingDataToScreen(time_total, calls_total, avg_time);
+		writeProfilingDataToFile(time_total, calls_total, avg_time);
+	}
+
+	void getSolverStatistics(int& totalSolverCalls, uint64_t& totalSolverTime, uint64_t& averageSolverTime)
+	{
+		totalSolverCalls = solver_timer.getNumMeas();
+		totalSolverTime = solver_timer.getTime();
+		//check if kernel has been called at all
+		if (totalSolverCalls != 0 && totalSolverTime != 0) {
+			averageSolverTime = (uint64_t)(
+					((float) ((totalSolverTime))) / ((float) ((totalSolverCalls))));
+		}
+	}
+
+	void writeProfilingDataToScreen(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
+	{
+		logger.info() << "## **********************************************************";
+		logger.info() << "## Solver Times [mus]:\ttime\tcalls\tavg";
+		logger.info() << "##\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime;
+		logger.info() << "## **********************************************************";
+	}
+
+	void writeProfilingDataToFile(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
 	{
 		outputStreamForProfilingData.open(filenameForProfilingData.c_str(),	std::ios::out | std::ios::app);
 		if (outputStreamForProfilingData.is_open()) {
-			meta::print_info_inverter(ownName, &outputStreamForProfilingData, parameters);
+			writeProfilingDataToFileUsingOpenOutputStream(totalSolverTime, totalSolverCalls, averageSolverTime);
 			outputStreamForProfilingData.close();
 		} else {
 			logger.warn() << "Could not open " << filenameForProfilingData;
+			File_Exception(filenameForProfilingData.c_str());
 		}
-		print_solver_profiling(filenameForProfilingData);
+	}
+
+	void writeProfilingDataToFileUsingOpenOutputStream(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
+	{
+		meta::print_info_inverter(ownName, &outputStreamForProfilingData, parameters);
+		outputStreamForProfilingData.width(32);
+		outputStreamForProfilingData.precision(15);
+		outputStreamForProfilingData << "## **********************************************************" << std::endl;
+		outputStreamForProfilingData << "## Solver Times [mus]:\ttime\tcalls\tavg" 						<< std::endl;
+		outputStreamForProfilingData << "\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime 	<< std::endl;
+		outputStreamForProfilingData << "## **********************************************************" << std::endl;
+		return;
 	}
 
 	void measureTwoFlavourDoubletCorrelatorsOnGaugefield()
