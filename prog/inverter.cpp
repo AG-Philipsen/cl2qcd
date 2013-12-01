@@ -50,6 +50,7 @@ protected:
 	meta::Inputparameters parameters;
 	hardware::System * system;
 	ofstream outputToFile;
+	const char* generalTimeOutputFilename = "general_time_output";
 
 	void printRuntimeInformationToScreenAndFile()
 	{
@@ -70,8 +71,8 @@ protected:
 		return;
 	}
 	void printGeneralTimesToFile(){
-		logger.info() << "## writing general times to file: \"general_time_output\"";
-		outputToFile.open("general_time_output");
+		logger.info() << "## writing general times to file: \"" << generalTimeOutputFilename << "\"";
+		outputToFile.open(generalTimeOutputFilename);
 		if(outputToFile.is_open()) {
 			outputToFile  << "## *******************************************************************" << endl;
 			outputToFile  << "## General Times [mus]:" << endl;
