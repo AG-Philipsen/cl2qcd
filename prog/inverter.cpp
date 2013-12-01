@@ -92,6 +92,7 @@ public:
 		prng = new physics::PRNG(*system);
 		meta::print_info_inverter(ownName, parameters);
 		writeInverterLogfile();
+		setIterationVariables();
 		initializationTimer.add();
 	}
 
@@ -111,14 +112,14 @@ public:
 		}
 	}
 
-	void setIterationVariables(int& iter_start, int& iter_end, int& iter_incr) {
-		iter_start =
+	void setIterationVariables() {
+		iterationStart =
 				(parameters.get_read_multiple_configs()) ?
 						parameters.get_config_read_start() : 0;
-		iter_end =
+		iterationEnd =
 				(parameters.get_read_multiple_configs()) ?
 						parameters.get_config_read_end() + 1 : 1;
-		iter_incr =
+		iterationIncrement =
 				(parameters.get_read_multiple_configs()) ?
 						parameters.get_config_read_incr() : 1;
 	}
@@ -128,35 +129,35 @@ public:
 		prng->store(filenameForCurrentPrngState);
 	}
 
+	void performMeasurementsForSpecificConfiguration() {
+		currentConfigurationName = meta::create_configuration_name(parameters,iteration);
+		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
+		physics::lattices::Gaugefield gaugefield(*system, *prng, currentConfigurationName);
+		perform_measurements(gaugefield, currentConfigurationName);
+	}
+
+	void performMeasurementsForConfigurationGivenInSourcefileParameter() {
+		currentConfigurationName = parameters.get_sourcefile();
+		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
+		physics::lattices::Gaugefield gaugefield(*system, *prng);
+		perform_measurements(gaugefield, currentConfigurationName);
+	}
+
+	void performMeasurementsForSpecificIteration() {
+		if (parameters.get_read_multiple_configs()) {
+			performMeasurementsForSpecificConfiguration();
+		} else {
+			performMeasurementsForConfigurationGivenInSourcefileParameter();
+		}
+		saveCurrentPrngStateToFile();
+	}
+
 	void performMeasurements() {
 		performanceTimer.reset();
-		int iterationStart;
-		int iterationEnd;
-		int iterationIncrement;
-		int iteration = 0;
 		logger.info() << "Perform inversion(s) on device..";
-		if (parameters.get_read_multiple_configs()) {
-			setIterationVariables(iterationStart, iterationEnd,
-					iterationIncrement);
-			for (iteration = iterationStart; iteration < iterationEnd;
-					iteration += iterationIncrement) {
-				std::string config_name = meta::create_configuration_name(
-						parameters, iteration);
-				logger.info() << config_name;
-				logger.info()
-						<< "Measure fermionic observables on configuration: "
-						<< config_name;
-				physics::lattices::Gaugefield gaugefield(*system, *prng, config_name);
-				perform_measurements(gaugefield, config_name);
-				saveCurrentPrngStateToFile();
-			}
-		} else {
-			std::string config_name = parameters.get_sourcefile();
-			logger.info() << config_name;
-			logger.info() << "Measure fermionic observables on configuration: " << config_name;
-			physics::lattices::Gaugefield gaugefield(*system, *prng);
-			perform_measurements(gaugefield, config_name);
-			saveCurrentPrngStateToFile();
+		for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
+		{
+			performMeasurementsForSpecificIteration();
 		}
 		logger.trace() << "Inversion done";
 		performanceTimer.add();
@@ -164,6 +165,11 @@ public:
 protected:
 	physics::PRNG * prng;
 	const std::string filenameForCurrentPrngState = "prng.inverter.save";
+	int iterationStart;
+	int iterationEnd;
+	int iterationIncrement;
+	int iteration;
+	std::string currentConfigurationName;
 
 	void writeInverterLogfile() {
 		ofstream ofile;
