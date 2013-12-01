@@ -28,9 +28,12 @@
 
 #include "meta/util.hpp"
 
-class generalExecutable{
+class generalExecutable
+{
+
 public:
-	generalExecutable(int argc, const char* argv[]) : parameters(argc, argv){
+	generalExecutable(int argc, const char* argv[]) : parameters(argc, argv)
+	{
 		ownName = argv[0];
 		totalRuntimeOfExecutable.reset();
 		initializationTimer.reset();
@@ -38,10 +41,12 @@ public:
 		system = new hardware::System(parameters);
 		initializationTimer.add();
 	}
-	~generalExecutable(){
+	~generalExecutable()
+	{
 		totalRuntimeOfExecutable.add();
 		printRuntimeInformationToScreenAndFile();
 	}
+
 protected:
 	const char* ownName;
 	usetimer totalRuntimeOfExecutable;
@@ -59,7 +64,8 @@ protected:
 		return;
 	}
 
-	void printGeneralTimesToScreen(){
+	void printGeneralTimesToScreen()
+	{
 		logger.info() << "## *******************************************************************";
 		logger.info() << "## General Times [mus]:";
 		logger.info() << "## *******************************************************************";
@@ -70,7 +76,8 @@ protected:
 		logger.info() << "## *******************************************************************";
 		return;
 	}
-	void printGeneralTimesToFile(){
+	void printGeneralTimesToFile()
+	{
 		logger.info() << "## writing general times to file: \"" << generalTimeOutputFilename << "\"";
 		outputToFile.open(generalTimeOutputFilename);
 		if(outputToFile.is_open()) {
@@ -86,9 +93,11 @@ protected:
 	}
 };
 
-class inverterExecutable : public generalExecutable {
+class inverterExecutable : public generalExecutable
+{
 public:
-	inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv){
+	inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
+	{
 		initializationTimer.reset();
 		prng = new physics::PRNG(*system);
 		meta::print_info_inverter(ownName, parameters);
@@ -97,13 +106,15 @@ public:
 		initializationTimer.add();
 	}
 
-	~inverterExecutable() {
+	~inverterExecutable()
+	{
 		if (parameters.get_profile_solver()) {
 			writeProfilingDataToFile();
 		}
 	}
 
-	void performMeasurements() {
+	void performMeasurements()
+	{
 		performanceTimer.reset();
 		logger.trace() << "Perform inversion(s) on device..";
 		for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
@@ -127,7 +138,8 @@ protected:
 	int iterationIncrement;
 	int iteration;
 
-	void setIterationVariables() {
+	void setIterationVariables()
+	{
 		iterationStart =
 				(parameters.get_read_multiple_configs()) ?
 						parameters.get_config_read_start() : 0;
@@ -139,22 +151,26 @@ protected:
 						parameters.get_config_read_incr() : 1;
 	}
 
-	void saveCurrentPrngStateToFile() {
+	void saveCurrentPrngStateToFile()
+	{
 		logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
 		prng->store(filenameForCurrentPrngState);
 	}
 
-	void initializeGaugefieldAccordingToIterationVariable() {
+	void initializeGaugefieldAccordingToIterationVariable()
+	{
 		currentConfigurationName = meta::create_configuration_name(parameters,iteration);
 		gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
 	}
 
-	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter() {
+	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
+	{
 		currentConfigurationName = parameters.get_sourcefile();
 		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 	}
 
-	void initializeGaugefield() {
+	void initializeGaugefield()
+	{
 		if (parameters.get_read_multiple_configs()) {
 			initializeGaugefieldAccordingToIterationVariable();
 		} else {
@@ -162,13 +178,15 @@ protected:
 		}
 	}
 
-	void performMeasurementsForSpecificIteration() {
+	void performMeasurementsForSpecificIteration()
+	{
 		initializeGaugefield();
 		measureFermionicObservablesOnGaugefield();
 		saveCurrentPrngStateToFile();
 	}
 
-	void writeInverterLogfile() {
+	void writeInverterLogfile()
+	{
 		outputToFile.open(filenameForInverterLogfile);
 		if (outputToFile.is_open()) {
 			meta::print_info_inverter(ownName, &outputToFile, parameters);
@@ -178,7 +196,8 @@ protected:
 		}
 	}
 
-	void writeProfilingDataToFile() {
+	void writeProfilingDataToFile()
+	{
 		outputStreamForProfilingData.open(filenameForProfilingData.c_str(),	std::ios::out | std::ios::app);
 		if (outputStreamForProfilingData.is_open()) {
 			meta::print_info_inverter(ownName, &outputStreamForProfilingData, parameters);
@@ -242,7 +261,7 @@ protected:
 
 int main(int argc, const char* argv[])
 {
-	try {
+	try{
 		inverterExecutable inverterInstance(argc, argv);
 		inverterInstance.performMeasurements();
 	} //try
@@ -263,6 +282,5 @@ int main(int argc, const char* argv[])
 	}
 
 	return 0;
-
 }
 
