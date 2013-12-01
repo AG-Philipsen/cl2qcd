@@ -131,6 +131,8 @@ protected:
 	const std::string filenameForCurrentPrngState = "prng.inverter.save";
 	const std::string filenameForInverterLogfile = "inverter.log";
 	const std::string filenameForProfilingData = string(ownName) + string("_profiling_data");
+	std::string filenameForTwoFlavourDoubletChiralCondensateData;
+	std::string filenameForTwoFlavourDoubletCorrelatorData;
 	std::string currentConfigurationName;
 	std::fstream outputStreamForProfilingData;
 	int iterationStart;
@@ -208,53 +210,51 @@ protected:
 		print_solver_profiling(filenameForProfilingData);
 	}
 
-	void measureFermionicObservablesOnGaugefield()
+	void measureTwoFlavourDoubletCorrelatorsOnGaugefield()
 	{
-		logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
+		filenameForTwoFlavourDoubletCorrelatorData = meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
 
-		using namespace physics;
-		using namespace physics::lattices;
-		using namespace physics::algorithms;
+		// for the correlator calculation, all sources are needed on the device
+		const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parameters.get_num_sources());
+		const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), parameters.get_place_sources_on_host());
+		swap_out(sources);
+		swap_out(result);
+		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
 
-		auto parameters = system->get_inputparameters();
-		if(parameters.get_print_to_screen() ) {
-			print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
-		}
-		if(parameters.get_measure_correlators() ) {
-			// for the correlator calculation, all sources are needed on the device
-			const std::vector<Spinorfield*> sources = create_swappable_sources(*system, *prng, parameters.get_num_sources());
-			const std::vector<Spinorfield*> result = create_swappable_spinorfields(*system, sources.size(), parameters.get_place_sources_on_host());
+		logger.info() << "Finished inversion. Starting measurements.";
+		swap_in(sources);
+		swap_in(result);
+		physics::algorithms::flavour_doublet_correlators(result, sources, filenameForTwoFlavourDoubletCorrelatorData, *system);
+		release_spinorfields(result);
+		release_spinorfields(sources);
+	}
 
-			swap_out(sources);
-			swap_out(result);
+	void measureTwoFlavourDoubletChiralCondensateOnGaugefield()
+	{
+		filenameForTwoFlavourDoubletChiralCondensateData = meta::get_ferm_obs_pbp_file_name(parameters,	currentConfigurationName);
+		int sourceNumber = 0;
 
-			perform_inversion(&result, gaugefield, sources, *system);
-
-			logger.info() << "Finished inversion. Starting measurements.";
-
-			swap_in(sources);
-			swap_in(result);
-
-			//get name for file to which correlators are to be stored
-			std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
-			flavour_doublet_correlators(result, sources, corr_fn, *system);
+		for (; sourceNumber < parameters.get_num_sources(); sourceNumber++)
+		{
+			auto sources = physics::create_sources(*system, *prng, 1);
+			auto result = physics::lattices::create_spinorfields(*system, sources.size());
+			physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
+			physics::algorithms::flavour_doublet_chiral_condensate(result, sources, filenameForTwoFlavourDoubletChiralCondensateData, gaugefield->get_parameters_source().trajectorynr_source, *system);
 			release_spinorfields(result);
 			release_spinorfields(sources);
 		}
-		if(parameters.get_measure_pbp() ) {
-			//get name for file to which pbp is to be stored
-			std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, currentConfigurationName);
-			// the chiral condensate needs only one source at a time
-			for(int i_sources = 0; i_sources < parameters.get_num_sources(); i_sources ++) {
-				auto sources = create_sources(*system, *prng, 1);
-				auto result = create_spinorfields(*system, sources.size());
+	}
 
-				perform_inversion(&result, gaugefield, sources, *system);
-
-				flavour_doublet_chiral_condensate(result, sources, pbp_fn, gaugefield->get_parameters_source().trajectorynr_source, *system);
-				release_spinorfields(result);
-				release_spinorfields(sources);
-			}
+	void measureFermionicObservablesOnGaugefield() {
+		logger.info() << "Measure fermionic observables on configuration: "	<< currentConfigurationName;
+		if (parameters.get_print_to_screen()) {
+			print_gaugeobservables(*gaugefield,	gaugefield->get_parameters_source().trajectorynr_source);
+		}
+		if (parameters.get_measure_correlators()) {
+			measureTwoFlavourDoubletCorrelatorsOnGaugefield();
+		}
+		if (parameters.get_measure_pbp()) {
+			measureTwoFlavourDoubletChiralCondensateOnGaugefield();
 		}
 	}
 };
