@@ -36,8 +36,6 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	logger.debug() << "\tRHMC:\tinit spinorfield and gaugemomentum" ;
 	const Gaugemomenta p(system);
 	p.gaussian(prng);
-	logger.warn() << "squarenorm(p) after gaussian initialization = " << squarenorm(p);
-	getchar();
 
 	SPINORFIELD phi(system);
 	const std::auto_ptr<const SPINORFIELD> phi_mp(params.get_use_mp() ? new SPINORFIELD(system) : nullptr);
@@ -70,9 +68,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 		throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!",  __FILE__, __LINE__);
 		//integrator(&new_p, &new_u, phi, *phi_mp.get(), system);
 	} else {
-		logger.warn() << "squarenorm(new_p) before integrator = " << squarenorm(new_p);
 		integrator(&new_p, &new_u, phi, system);
-		logger.warn() << "squarenorm(new_p) after integrator = " << squarenorm(new_p);
 	}
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
