@@ -36,6 +36,8 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	logger.debug() << "\tRHMC:\tinit spinorfield and gaugemomentum" ;
 	const Gaugemomenta p(system);
 	p.gaussian(prng);
+	logger.warn() << "squarenorm(p) after gaussian initialization = " << squarenorm(p);
+	getchar();
 
 	SPINORFIELD phi(system);
 	const std::auto_ptr<const SPINORFIELD> phi_mp(params.get_use_mp() ? new SPINORFIELD(system) : nullptr);
@@ -47,10 +49,10 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	if(!params.get_use_gauge_only()) {
 		if(params.get_use_mp()) {
 			throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!", __FILE__, __LINE__);
-		}
-		//init_spinorfield_mp(&phi, &spinor_energy_init, phi_mp.get(), &spinor_energy_init_mp, *gf, prng, system);
+			//init_spinorfield_mp(&phi, &spinor_energy_init, phi_mp.get(), &spinor_energy_init_mp, *gf, prng, system);
 		} else {
 			init_spinorfield(&phi, &spinor_energy_init, *gf, prng, system);
+		}
 	}
 	
 	logger.debug() << "\tRHMC:\tupdate gaugefield and gaugemomentum" ;
@@ -68,7 +70,9 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 		throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!",  __FILE__, __LINE__);
 		//integrator(&new_p, &new_u, phi, *phi_mp.get(), system);
 	} else {
+		logger.warn() << "squarenorm(new_p) before integrator = " << squarenorm(new_p);
 		integrator(&new_p, &new_u, phi, system);
+		logger.warn() << "squarenorm(new_p) after integrator = " << squarenorm(new_p);
 	}
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
@@ -116,8 +120,8 @@ template <class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * ph
 	initial.set_gaussian(prng);
 	//calc init energy for spinorfield
 	*spinor_energy_init = squarenorm(initial);
-	//update spinorfield: det(kappa, mu)
-	md_update_spinorfield(phi, gf, initial, system, params.get_kappa(), meta::get_mubar(params));
+	//update spinorfield
+	md_update_spinorfield(phi, gf, initial, system, params.get_mass(), meta::get_mubar(params));
 }
 
 //Mass preconditioning not yet implemented!
