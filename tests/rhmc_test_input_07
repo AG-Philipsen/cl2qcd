@@ -1,0 +1,40 @@
+##################################################################
+##	This is 
+##	 + rhmc_test_input_01
+##
+##	It performs one rhmc-step with tau = 0.01 with:
+##	 - leapfrog integrator
+##	 - 2 TS
+##	 - starting from conf.00200
+##	 - periodic BC
+##
+##################################################################
+
+startcondition=continue
+sourcefile=conf.00200
+num_timescales=2
+integrator0=leapfrog
+integrator1=leapfrog
+integrationsteps0=10
+integrationsteps1=2
+ThetaT=0
+
+#These parameters are in common to all tests
+NS=4
+NT=4
+beta=6
+mass=0.13
+ThetaS=0
+use_eo=true
+use_rec12=0
+use_gpu=0
+prec=64
+rhmcsteps=1
+cgmax=1000
+tau=0.01
+savefrequency=10
+
+#NOTE: tau so small is to make the algorithm accept the new configuration and have
+#      then the plaquette value slightly changed. It would be better to increase the
+#      number of integrationsteps, but this would make the test too slow. Furthermore
+#      these test are to check the reproducibility of the results, hence it is fine tau=0.01
