@@ -14,6 +14,8 @@
 #include "../../meta/util.hpp"
 #include <cmath>
 
+static void print_info_debug(const meta::Inputparameters& params, std::string metropolis_part, hmc_float value, bool info=true);
+
 hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::lattices::Spinorfield;
@@ -190,6 +192,8 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 	
+	logger.trace() << "\tRHMC [DH]:\tcalc final fermion energy...";
+	
 	auto params = system.get_inputparameters();
 	const physics::fermionmatrix::MdagM_eo fm(system, mass);
 	
@@ -205,7 +209,6 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	physics::lattices::Staggeredfield_eo tmp(system); //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
 	sax(&tmp, {phi.Get_a0(), 0.}, phi);
 	for(int i=0; i<phi.Get_order(); i++){
-		logger.warn() << "sqnorm(X[" << i << "]) = " << squarenorm(*X[i]);
 		saxpy(&tmp, {(phi.Get_a())[i], 0.}, *X[i], tmp);
 	}
 	
@@ -220,7 +223,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	auto params = system.get_inputparameters();
 
 	//Calc Hamiltonian
-	logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tCalculate Hamiltonian";
+	print_info_debug(params, "[DH]:\tCalculate Hamiltonian", sqrt(-1.), false);
 	hmc_float deltaH = 0.;
 	hmc_float s_old = 0.;
 	hmc_float s_new = 0.;
@@ -252,9 +255,9 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 		s_new = -(plaq_new) * beta / factor;
 	}
 
-	logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[GF]_0:\t" << std::setprecision(10) << s_old;
-	logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[GF]_1:\t" << std::setprecision(10) << s_new;
-	logger.info()  << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tdS[GF]: \t" << std::setprecision(10) << deltaH;
+	print_info_debug(params, "[DH]:\tS[GF]_0:\t", s_old, false);
+	print_info_debug(params, "[DH]:\tS[GF]_1:\t", s_new, false);
+	print_info_debug(params, "[DH]:\tdS[GF]: \t", deltaH);
 	//check on NANs
 	if (s_old != s_old || s_new != s_new || deltaH != deltaH) {
 		throw Print_Error_Message("NAN occured in Metropolis! Aborting!", __FILE__, __LINE__);
@@ -263,12 +266,20 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	//Gaugemomentum-Part
 	hmc_float p2 = squarenorm(p);
 	hmc_float new_p2 = squarenorm(new_p);
-	//the energy is half the squarenorm
-	deltaH += 0.5 * (p2 - new_p2);
-
-	logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[GM]_0:\t" << std::setprecision(10) << 0.5 * p2;
-	logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[GM]_1:\t" << std::setprecision(10) << 0.5 * new_p2;
-	logger.info()  << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tdS[GM]: \t" << std::setprecision(10) << 0.5 * (p2 - new_p2);
+	if(params.get_fermact() != meta::Inputparameters::rooted_stagg){
+		//the energy is half the squarenorm
+		deltaH += 0.5 * (p2 - new_p2);
+	}else{
+		//The gaugemomenta part of the action in the staggered code is:
+		// \sum_{n,\mu} 0.5 * Tr[P_\mu(n)P_\mu(n)] = 0.25 \sum_{n,\mu,A} ||P^A_\mu(n)||^2
+		    p2 *= 0.5;
+		new_p2 *= 0.5; //I multiply here by 0.5 so that in the following cout we have the correct numbers
+		deltaH += 0.5 * (p2 - new_p2);
+	}
+	
+	print_info_debug(params, "[DH]:\tS[GM]_0:\t", 0.5 * p2, false);
+	print_info_debug(params, "[DH]:\tS[GM]_1:\t", 0.5 * new_p2, false);
+	print_info_debug(params, "[DH]:\tdS[GM]: \t", 0.5 * (p2 - new_p2));
 	//check on NANs
 	if (p2 != p2 || new_p2 != new_p2 || deltaH != deltaH) {
 		throw Print_Error_Message("NAN occured in Metropolis! Aborting!", __FILE__, __LINE__);
@@ -287,9 +298,9 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 			s_fermion_final = calc_s_fermion(new_u, phi, system, params.get_kappa_mp(),  meta::get_mubar_mp(params));
 			deltaH += spinor_energy_init - s_fermion_final;
 
-			logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[DET]_0:\t" << std::setprecision(10) <<  spinor_energy_init;
-			logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[DET]_1:\t" << std::setprecision(10) << s_fermion_final;
-			logger.info() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tdS[DET]:\t" << spinor_energy_init - s_fermion_final;
+			print_info_debug(params, "[DH]:\tS[DET]_0:\t", spinor_energy_init, false);
+			print_info_debug(params, "[DH]:\tS[DET]_1:\t", s_fermion_final, false);
+			print_info_debug(params, "[DH]:\tdS[DET]:\t" , spinor_energy_init - s_fermion_final);
 			//check on NANs
 			if (spinor_energy_init != spinor_energy_init || s_fermion_final != s_fermion_final || deltaH != deltaH) {
 				throw Print_Error_Message("NAN occured in Metropolis! Aborting!", __FILE__, __LINE__);
@@ -300,9 +311,9 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 			hmc_float s_fermion_mp_final = calc_s_fermion_mp(new_u, *phi_mp, system);
 			deltaH += spinor_energy_mp_init - s_fermion_mp_final;
 
-			logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[DETRAT]_0:\t" << std::setprecision(10) <<  spinor_energy_mp_init;
-			logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[DETRAT]_1:\t" << std::setprecision(10) << s_fermion_mp_final;
-			logger.info() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tdS[DETRAT]:\t" << spinor_energy_mp_init - s_fermion_mp_final;
+			print_info_debug(params, "[DH]:\tS[DETRAT]_0:\t", spinor_energy_mp_init, false);
+			print_info_debug(params, "[DH]:\tS[DETRAT]_1:\t", s_fermion_mp_final, false);
+			print_info_debug(params, "[DH]:\tdS[DETRAT]:\t", spinor_energy_mp_init - s_fermion_mp_final);
 			//check on NANs
 			if (spinor_energy_mp_init != spinor_energy_mp_init || s_fermion_mp_final != s_fermion_mp_final || deltaH != deltaH) {
 				throw Print_Error_Message("NAN occured in Metropolis! Aborting!", __FILE__, __LINE__);
@@ -311,9 +322,9 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 			hmc_float s_fermion_final = calc_s_fermion(new_u, phi, system);
 			deltaH += spinor_energy_init - s_fermion_final;
 
-			logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[DET]_0:\t" << std::setprecision(10) <<  spinor_energy_init;
-			logger.debug() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tS[DET]_1:\t" << std::setprecision(10) << s_fermion_final;
-			logger.info() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tdS[DET]: \t" << spinor_energy_init - s_fermion_final;
+			print_info_debug(params, "[DH]:\tS[DET]_0:\t", spinor_energy_init, false);
+			print_info_debug(params, "[DH]:\tS[DET]_1:\t", s_fermion_final, false);
+			print_info_debug(params, "[DH]:\tdS[DET]: \t", spinor_energy_init - s_fermion_final);
 			//check on NANs
 			if (spinor_energy_init != spinor_energy_init || s_fermion_final != s_fermion_final || deltaH != deltaH) {
 				throw Print_Error_Message("NAN occured in Metropolis! Aborting!", __FILE__, __LINE__);
@@ -327,8 +338,8 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	} else {
 		compare_prob = 1.0;
 	}
-	logger.info() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[DH]:\tdH:\t\t" << deltaH;
-	logger.info() << ((params.get_fermact() != meta::Inputparameters::rooted_stagg) ? "\tHMC " : "\tRHMC ") << "[MET]:\tAcc-Prop:\t" << compare_prob;
+	print_info_debug(params, "[DH]:\tdH:\t\t", deltaH);
+	print_info_debug(params, "[MET]:\tAcc-Prop:\t", compare_prob);
 	hmc_observables tmp;
 	if(rnd <= compare_prob) {
 		tmp.accept = 1;
@@ -366,4 +377,36 @@ hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_f
 hmc_observables physics::algorithms::metropolis(const hmc_float rnd, const hmc_float beta, const physics::lattices::Gaugefield& gf, const physics::lattices::Gaugefield& new_u, const physics::lattices::Gaugemomenta& p, const physics::lattices::Gaugemomenta& new_p, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hmc_float spinor_energy_init, const physics::lattices::Rooted_Staggeredfield_eo* const phi_mp, const hmc_float spinor_energy_mp_init, const hardware::System& system)
 {
 	return ::metropolis(rnd, beta, gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp, spinor_energy_mp_init, system);
+}
+
+static void print_info_debug(const meta::Inputparameters& params, std::string metropolis_part, hmc_float value, bool info){
+
+	if(info == false){
+	  if(logger.beDebug()){
+	    if(params.get_fermact() != meta::Inputparameters::rooted_stagg){
+	      if(value == value)
+		logger.debug() << "\tHMC " << metropolis_part << std::setprecision(10) << value;
+	      else
+		logger.debug() << "\tHMC " << metropolis_part;
+	    }else{
+	      if(value == value)
+		logger.debug() << "\tRHMC " << metropolis_part << std::setprecision(10) << value;
+	      else
+		logger.debug() << "\tRHMC " << metropolis_part;
+	    }
+	  }
+	}else{
+	  if(params.get_fermact() != meta::Inputparameters::rooted_stagg){
+	    if(value == value)
+	      logger.info() << "\tHMC " << metropolis_part << std::setprecision(10) << value;
+	    else
+	      logger.info() << "\tHMC " << metropolis_part;
+	  }else{
+	    if(value == value)
+	      logger.info() << "\tRHMC " << metropolis_part << std::setprecision(10) << value;
+	    else
+	      logger.info() << "\tRHMC " << metropolis_part;
+	  }
+	}
+
 }
