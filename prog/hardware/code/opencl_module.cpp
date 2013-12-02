@@ -139,6 +139,9 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 		case meta::Inputparameters::clover :
 			options << " -D _CLOVER_";
 			break;
+		case meta::Inputparameters::rooted_stagg :
+			options << " -D _RHMC_";
+			break;
 	}
 
 	//CP: These are the BCs in spatial and temporal direction

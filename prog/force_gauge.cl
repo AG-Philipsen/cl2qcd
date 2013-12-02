@@ -11,9 +11,13 @@
  * agreement with the Gottlieb and Toussaint work (Hybrid-molecular dynamics
  * algorithm for numerical simulation of QCD), where we found
  * @code
- * F_G =  - \beta/6 * i * (U*V - V^\dag*U^\dag) .
+ * F_G = - \beta/6 * i * (U*V - V^\dag*U^\dag)
+ * 
+ *     = - \beta/3 * \sum_{k=1}^8 T_k Tr[i * T_k * (U*V - V^\dag*U^\dag)]  .
  * @endcode
- * Then there is a factor 1/2 of discrepancy.
+ * Then there is a factor 1/2 of discrepancy. Actually, this is only apparent:
+ * Gattringer and Gottlieb use different factors in the gaugemomenta part of the action
+ * (compare eq.(8.35) of the first with eq.(4) of the second).
  * 
  * @note It is worth recalling that an overall factor in the force calculation does
  *       not affect the correctness of the (R)HMC algorithm. In fact (thinking to
@@ -26,8 +30,24 @@
  * 
  * @attention Now, here, as one can see reading the code, the matrix U*V is calculated
  *            and then the function tr_lambda_u is called on it. This function returns
- *            Tr[i * T_k * (U*V - V^\dag*U^\dag)] that is calculated ONLY by @f$ \beta/3 @f$.
- *            We are then coeherent with the Gottlieb and Toussaint result.
+ *            Tr[i * T_k * (U*V - V^\dag*U^\dag)] that is multiplied ONLY by @f$ -\beta/3 @f$.
+ *            We are then apparently coeherent with the Gottlieb and Toussaint result.
+ *            Actually, this is not true because the gaugemomenta part of the action calculated
+ *            in physics/algorithms/metropolis.cpp (in the Wilson case) is exactely that
+ *            in eq.(8.35) of Gattringer book: as explained in the note above, there can be
+ *            an overall factor in the force calculation that has to be balanced by an
+ *            appropriate choice of the time interval (i.e. the parameter "tau" of Inputparameters),
+ *            if one wants to integrate the MD equations of motion for a given interval (in
+ *            other words, if there is an overall factor k in the force calculation, and the eq.
+ *            of motion should be integrated for a time interval Dt, then tau must be Dt/k).
+ *            In the staggered formulation, instead, all the code is completely coherent with
+ *            the Gottlieb-Toussaint paper and this factors compensation has been avoided (the
+ *            gaugemomenta part of the action calculated in physics/algorithms/metropolis.cpp
+ *            is different from the Wilson case by a factor 0.5). The force calculated in the
+ *            code is exactely "the right one", namely that which can be analitically derived
+ *            from the action. If the eq. of motion should be integrated for a time interval Dt,
+ *            then tau must be Dt.
+ *            
  */
 
 inline void gauge_force_per_link(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out, const st_index pos, const dir_idx dir) {
