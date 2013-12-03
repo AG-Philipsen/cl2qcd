@@ -21,7 +21,7 @@
  */
 
 #ifndef _PHYSICS_ALGORITHMS_FORCES_
-#define _PHYSICS_ALGORITHMS_FFORCES_
+#define _PHYSICS_ALGORITHMS_FORCES_
 
 #include "../lattices/gaugemomenta.hpp"
 #include "../lattices/gaugefield.hpp"

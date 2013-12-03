@@ -134,10 +134,10 @@ size_t hardware::code::Gaugemomentum::get_read_write_size(const std::string& in)
 		return ((2 + 1) * A) * D * G;
 	}
 	if (in == "gaugemomentum_convert_to_soa") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "gaugemomentum_convert_from_soa") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	return 0;
 }
@@ -166,10 +166,10 @@ uint64_t hardware::code::Gaugemomentum::get_flop_size(const std::string& in) con
 		return (1 + 1) * A * G;
 	}
 	if (in == "gaugemomentum_convert_to_soa") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "gaugemomentum_convert_from_soa") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	return 0;
 }

@@ -402,10 +402,10 @@ size_t hardware::code::Gaugefield::get_read_write_size(const std::string& in) co
 		return (num_groups + 1 ) * 3 * C * D;
 	}
 	if (in == "rectangles") {
-		return 1000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "rectangles_reduction") {
-		return 1000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "stout_smear") {
 		//this kernel reads in a complete gaugefield + a staple on each site and writes out a complete gaugefield
@@ -429,23 +429,23 @@ uint64_t hardware::code::Gaugefield::get_flop_size(const std::string& in) const
 		return VOLSPACE * ( (get_parameters().get_ntime() - 1) * meta::get_flop_su3_su3() + meta::get_flop_su3trace()) ;
 	}
 	if (in == "polyakov_reduction") {
-		return 1000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "plaquette") {
 		//this kernel performs 3 su3matrix-mutliplications, a real su3 trace and sums over VOL4D and mu and nu (nu<mu)
 		return VOL4D * NDIM * (NDIM - 1) * ( 3 + NC);
 	}
 	if (in == "plaquette_reduction") {
-		return 1000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "rectangles") {
-		return 1000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "rectangles_reduction") {
-		return 1000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "stout_smear") {
-		return 1000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	return 0;
 }

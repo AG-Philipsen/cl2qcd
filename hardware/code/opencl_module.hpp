@@ -22,6 +22,7 @@
 #define _HARDWARE_CODE_OPENCLMODULE_
 
 #include <string>
+#include <limits>
 
 #include "../../meta/inputparameters.hpp"
 #include "../../opencl_compiler.hpp"
@@ -146,8 +147,12 @@ private:
 	 * The basic source used by all modules (children classes of this)
 	 */
 	ClSourcePackage basic_sources;
-	
+
 };
+
+template<typename T> T module_metric_not_implemented() {
+	return std::numeric_limits<T>::max();
+}
 
 }
 

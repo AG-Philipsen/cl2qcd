@@ -414,16 +414,16 @@ size_t hardware::code::Correlator::get_read_write_size(const std::string& in) co
 	//this is the same as in the function above
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	if (in == "create_point_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "create_volume_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "create_timeslice_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "create_zslice_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "correlator_ps_z" ) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
@@ -499,40 +499,40 @@ uint64_t hardware::code::Correlator::get_flop_size(const std::string& in) const
 	size_t Seo = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (in == "create_point_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "create_volume_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "create_timeslice_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "create_zslice_source") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_ps_z" ) {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_sc_z") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_vx_z") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_vy_z") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_vz_z") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_ax_z") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_ay_z") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "correlator_az_z") {
-		return 1000000000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 
 	return 0;
