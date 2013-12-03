@@ -1,6 +1,6 @@
 ##################################################################
 ##	This is 
-##	 + rhmc_test_input_01
+##	 + rhmc_test_input_10
 ##
 ##	It performs one rhmc-step with tau = 0.01 with:
 ##	 - 2MN integrator
