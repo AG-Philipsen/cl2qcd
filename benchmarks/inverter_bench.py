@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# coding=utf8
+#
+#!/usr/bin/env python
 #
 # Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
 # Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
