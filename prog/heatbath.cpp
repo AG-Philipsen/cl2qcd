@@ -19,13 +19,14 @@ public:
 		initializationTimer.add();
 	}
 
-	void invoke()
+	void performHeatbathAndMeasureGaugeObservables()
 	{
 		performanceTimer.reset();
 		performThermalization();
-		performHeatbath();
+		performHeatbathAndMeasurements();
 		performanceTimer.add();
 	}
+
 private:
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
@@ -98,13 +99,16 @@ private:
 		}
 	}
 
-	void performHeatbath()
+	void measureGaugeObservables(int& iteration)
 	{
+		writeGaugeObservablesToScreenAndFile(iteration);
+	}
+
+	void performHeatbathAndMeasurements() {
 		logger.info() << "Start heatbath";
-		for (int iteration = 0; iteration < heatbathSteps; iteration++)
-		{
+		for (int iteration = 0; iteration < heatbathSteps; iteration++) {
 			physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
-			writeGaugeObservablesToScreenAndFile(iteration);
+			measureGaugeObservables(iteration);
 			saveGaugefield(iteration);
 		}
 		logger.info() << "heatbath done";
@@ -115,7 +119,7 @@ int main(int argc, const char* argv[])
 {
 	try {
 		heatbathExecutable heatbathInstance(argc, argv);
-		heatbathInstance.invoke();
+		heatbathInstance.performHeatbathAndMeasureGaugeObservables();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {
