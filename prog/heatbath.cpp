@@ -22,7 +22,6 @@ public:
 	void invoke()
 	{
 		performanceTimer.reset();
-		print_gaugeobservables(*gaugefield, 0);
 		performThermalization();
 		performHeatbath();
 		performanceTimer.add();
@@ -51,17 +50,19 @@ private:
 
 	void setIterationParameters()
 	{
-		thermalizationSteps = parameters.get_thermalizationsteps();
-		heatbathSteps = parameters.get_heatbathsteps();
-		overrelaxSteps = parameters.get_overrelaxsteps();
-		writeFrequency = parameters.get_writefrequency();
-		saveFrequency = parameters.get_savefrequency();
+		thermalizationSteps = 	parameters.get_thermalizationsteps();
+		heatbathSteps = 		parameters.get_heatbathsteps();
+		overrelaxSteps = 		parameters.get_overrelaxsteps();
+		writeFrequency = 		parameters.get_writefrequency();
+		saveFrequency = 		parameters.get_savefrequency();
 	}
 
 	void performThermalization()
 	{
 		logger.info() << "Start thermalization";
-		for (int iter = 0; iter < thermalizationSteps; iter++)
+		int iteration = 0;
+		writeGaugeObservablesToScreen(iteration);
+		for (; iteration < thermalizationSteps; iteration++)
 		{
 			physics::algorithms::heatbath(*gaugefield, *prng);
 		}
@@ -78,7 +79,7 @@ private:
 
 	void writeGaugeObservablesToScreen(int& iteration)
 	{
-		if (parameters.get_print_to_screen()) {
+		if ( parameters.get_print_to_screen() || (iteration == 0) ) {
 				print_gaugeobservables(*gaugefield, iteration);
 		}
 	}
