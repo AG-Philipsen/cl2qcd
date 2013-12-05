@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "inverter.h"
+#include "inverterExecutable.h"
 
 inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
 {
