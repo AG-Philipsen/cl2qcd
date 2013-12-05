@@ -15,8 +15,48 @@ public:
 		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 		meta::print_info_heatbath(ownName, parameters);
 		writeHeatbathLogfile();
+		setIterationParameters();
 		initializationTimer.add();
 	}
+
+	void invoke(int argc, const char* argv[]) {
+		using namespace physics;
+		using namespace physics::lattices;
+		using physics::algorithms::heatbath;
+		performanceTimer.reset();
+
+		print_gaugeobservables(*gaugefield, 0);
+		logger.trace() << "Start thermalization";
+
+		for (int iter = 0; iter < thermalizationSteps; iter++)
+			heatbath(*gaugefield, *prng);
+		logger.info() << "Start heatbath";
+		for (int i = 0; i < heatbathSteps; i++) {
+			heatbath(*gaugefield, *prng, overrelaxSteps);
+			if (((i + 1) % writeFrequency) == 0) {
+				//name of file to store gauge observables
+				std::string gaugeout_name = meta::get_gauge_obs_file_name(
+						parameters, "");
+				print_gaugeobservables(*gaugefield, i, gaugeout_name);
+			}
+			if (saveFrequency != 0 && ((i + 1) % saveFrequency) == 0) {
+				gaugefield->save(i + 1);
+			}
+		}
+
+		gaugefield->save(heatbathSteps);
+		logger.trace() << "heatbath done";
+		performanceTimer.add();
+	}
+private:
+	physics::PRNG * prng;
+	physics::lattices::Gaugefield * gaugefield;
+	const std::string 	filenameForInverterLogfile 		= "heatbath.log";
+	int thermalizationSteps;
+	int heatbathSteps;
+	int overrelaxSteps;
+	int writeFrequency;
+	int saveFrequency;
 
 	void writeHeatbathLogfile() {
 		outputToFile.open(filenameForInverterLogfile, std::ios::out | std::ios::app);
@@ -28,48 +68,13 @@ public:
 		}
 	}
 
-	void invoke(int argc, const char* argv[]) {
-		using namespace physics;
-		using namespace physics::lattices;
-		using physics::algorithms::heatbath;
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Initialization
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Heatbath
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		performanceTimer.reset();
-		print_gaugeobservables(*gaugefield, 0);
-		logger.trace() << "Start thermalization";
-		int ntherm = parameters.get_thermalizationsteps();
-		for (int iter = 0; iter < ntherm; iter++)
-			heatbath(*gaugefield, *prng);
-		int nsteps = parameters.get_heatbathsteps();
-		int overrelaxsteps = parameters.get_overrelaxsteps();
-		int writefreq = parameters.get_writefrequency();
-		int savefreq = parameters.get_savefrequency();
-		logger.info() << "Start heatbath";
-		for (int i = 0; i < nsteps; i++) {
-			heatbath(*gaugefield, *prng, overrelaxsteps);
-			if (((i + 1) % writefreq) == 0) {
-				//name of file to store gauge observables
-				std::string gaugeout_name = meta::get_gauge_obs_file_name(
-						parameters, "");
-				print_gaugeobservables(*gaugefield, i, gaugeout_name);
-			}
-			if (savefreq != 0 && ((i + 1) % savefreq) == 0) {
-				gaugefield->save(i + 1);
-			}
-		}
-
-		gaugefield->save(nsteps);
-		logger.trace() << "heatbath done";
-		performanceTimer.add();
+	void setIterationParameters() {
+		thermalizationSteps = parameters.get_thermalizationsteps();
+		heatbathSteps = parameters.get_heatbathsteps();
+		overrelaxSteps = parameters.get_overrelaxsteps();
+		writeFrequency = parameters.get_writefrequency();
+		saveFrequency = parameters.get_savefrequency();
 	}
-private:
-	physics::PRNG * prng;
-	physics::lattices::Gaugefield * gaugefield;
-	const std::string 	filenameForInverterLogfile 		= "heatbath.log";
 };
 
 int main(int argc, const char* argv[])
