@@ -15,19 +15,21 @@ public:
 
 	}
 
-	void invoke(int argc, const char* argv[])
-	{
+	void writeHeatbathLogfile() {
+		outputToFile.open(filenameForInverterLogfile, std::ios::out | std::ios::app);
+		if (outputToFile.is_open()) {
+			meta::print_info_heatbath(ownName, &outputToFile, parameters);
+			outputToFile.close();
+		} else {
+			throw File_Exception(filenameForInverterLogfile);
+		}
+	}
+
+	void invoke(int argc, const char* argv[]) {
 		using namespace physics;
 		using namespace physics::lattices;
 		using physics::algorithms::heatbath;
-		fstream logfile;
-		logfile.open("heatbath.log", std::ios::out | std::ios::app);
-		if (logfile.is_open()) {
-			meta::print_info_heatbath(argv[0], &logfile, parameters);
-			logfile.close();
-		} else {
-			throw File_Exception("heatbath.log");
-		}
+		writeHeatbathLogfile();
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +74,8 @@ public:
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer,
 				&poly_timer);
 	}
+private:
+	const std::string 	filenameForInverterLogfile 		= "heatbath.log";
 };
 
 int main(int argc, const char* argv[])
