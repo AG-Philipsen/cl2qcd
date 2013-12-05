@@ -23,22 +23,7 @@ public:
 		performanceTimer.reset();
 		print_gaugeobservables(*gaugefield, 0);
 		performThermalization();
-
-		logger.info() << "Start heatbath";
-		for (int iteration = 0; iteration < heatbathSteps; iteration++)
-		{
-			physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
-			if (((iteration + 1) % writeFrequency) == 0) {
-				filenameForGaugeobservables = meta::get_gauge_obs_file_name(
-						parameters, "");
-				print_gaugeobservables(*gaugefield, iteration, filenameForGaugeobservables);
-			}
-			if (saveFrequency != 0 && ((iteration + 1) % saveFrequency) == 0 || ( iteration == heatbathSteps -1) ) {
-				gaugefield->save(iteration + 1);
-			}
-		}
-
-		logger.info() << "heatbath done";
+		performHeatbath();
 		performanceTimer.add();
 	}
 private:
@@ -77,6 +62,22 @@ private:
 			physics::algorithms::heatbath(*gaugefield, *prng);
 		}
 		logger.info() << "thermalization done";
+	}
+
+	void performHeatbath() {
+		logger.info() << "Start heatbath";
+		for (int iteration = 0; iteration < heatbathSteps; iteration++) {
+			physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
+			if (((iteration + 1) % writeFrequency) == 0) {
+				filenameForGaugeobservables = meta::get_gauge_obs_file_name(parameters, "");
+				print_gaugeobservables(*gaugefield, iteration, filenameForGaugeobservables);
+			}
+			if (   ( (saveFrequency != 0)  && ((iteration + 1) % saveFrequency) == 0 )
+				|| ( iteration == heatbathSteps - 1) ) {
+				gaugefield->save(iteration + 1);
+			}
+		}
+		logger.info() << "heatbath done";
 	}
 };
 
