@@ -19,16 +19,14 @@ public:
 		initializationTimer.add();
 	}
 
-	void invoke(int argc, const char* argv[]) {
+	void invoke() {
 		performanceTimer.reset();
-
 		print_gaugeobservables(*gaugefield, 0);
-		logger.trace() << "Start thermalization";
-		for (int iter = 0; iter < thermalizationSteps; iter++)
-			physics::algorithms::heatbath(*gaugefield, *prng);
+		performThermalization();
 
-		logger.trace() << "Start heatbath";
-		for (int iteration = 0; iteration < heatbathSteps; iteration++) {
+		logger.info() << "Start heatbath";
+		for (int iteration = 0; iteration < heatbathSteps; iteration++)
+		{
 			physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
 			if (((iteration + 1) % writeFrequency) == 0) {
 				filenameForGaugeobservables = meta::get_gauge_obs_file_name(
@@ -41,7 +39,7 @@ public:
 		}
 
 		gaugefield->save(heatbathSteps);
-		logger.trace() << "heatbath done";
+		logger.info() << "heatbath done";
 		performanceTimer.add();
 	}
 private:
@@ -72,13 +70,22 @@ private:
 		writeFrequency = parameters.get_writefrequency();
 		saveFrequency = parameters.get_savefrequency();
 	}
+
+	void performThermalization() {
+		logger.info() << "Start thermalization";
+		for (int iter = 0; iter < thermalizationSteps; iter++)
+		{
+			physics::algorithms::heatbath(*gaugefield, *prng);
+		}
+		logger.info() << "thermalization done";
+	}
 };
 
 int main(int argc, const char* argv[])
 {
 	try {
 		heatbathExecutable heatbathInstance(argc, argv);
-		heatbathInstance.invoke(argc, argv);
+		heatbathInstance.invoke();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {
