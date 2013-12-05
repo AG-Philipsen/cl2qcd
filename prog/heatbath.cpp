@@ -1,9 +1,20 @@
+#include "generalExecutable.h"
+
 #include "general_header.h"
 
 #include "meta/util.hpp"
 #include "physics/prng.hpp"
 #include "physics/lattices/gaugefield.hpp"
 #include "physics/algorithms/heatbath.hpp"
+
+class heatbathExecutable: public generalExecutable
+{
+	heatbathExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
+	{
+
+	}
+};
+
 
 int main(int argc, const char* argv[])
 {
