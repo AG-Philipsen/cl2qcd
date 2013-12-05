@@ -107,14 +107,12 @@ inline void heatbathExecutable::writeTransportcoefficientKappaToFile(hmc_float k
 		logger.warn() << "Could not open " << filename;
 		File_Exception(filename.c_str());
 	}
-
-
-	return;
 }
 
 inline void heatbathExecutable::measureGaugeObservables(int& iteration)
 {
 	writeGaugeObservablesToScreenAndFile(iteration);
+	measureTransportcoefficientKappa(iteration);
 }
 
 inline void heatbathExecutable::performHeatbathAndMeasurements()
