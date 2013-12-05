@@ -20,27 +20,23 @@ public:
 	}
 
 	void invoke(int argc, const char* argv[]) {
-		using namespace physics;
-		using namespace physics::lattices;
-		using physics::algorithms::heatbath;
 		performanceTimer.reset();
 
 		print_gaugeobservables(*gaugefield, 0);
 		logger.trace() << "Start thermalization";
-
 		for (int iter = 0; iter < thermalizationSteps; iter++)
-			heatbath(*gaugefield, *prng);
-		logger.info() << "Start heatbath";
-		for (int i = 0; i < heatbathSteps; i++) {
-			heatbath(*gaugefield, *prng, overrelaxSteps);
-			if (((i + 1) % writeFrequency) == 0) {
-				//name of file to store gauge observables
-				std::string gaugeout_name = meta::get_gauge_obs_file_name(
+			physics::algorithms::heatbath(*gaugefield, *prng);
+
+		logger.trace() << "Start heatbath";
+		for (int iteration = 0; iteration < heatbathSteps; iteration++) {
+			physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
+			if (((iteration + 1) % writeFrequency) == 0) {
+				filenameForGaugeobservables = meta::get_gauge_obs_file_name(
 						parameters, "");
-				print_gaugeobservables(*gaugefield, i, gaugeout_name);
+				print_gaugeobservables(*gaugefield, iteration, filenameForGaugeobservables);
 			}
-			if (saveFrequency != 0 && ((i + 1) % saveFrequency) == 0) {
-				gaugefield->save(i + 1);
+			if (saveFrequency != 0 && ((iteration + 1) % saveFrequency) == 0) {
+				gaugefield->save(iteration + 1);
 			}
 		}
 
@@ -51,7 +47,8 @@ public:
 private:
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
-	const std::string 	filenameForInverterLogfile 		= "heatbath.log";
+	const std::string 	filenameForHeatbathLogfile 		= "heatbath.log";
+	std::string filenameForGaugeobservables;
 	int thermalizationSteps;
 	int heatbathSteps;
 	int overrelaxSteps;
@@ -59,12 +56,12 @@ private:
 	int saveFrequency;
 
 	void writeHeatbathLogfile() {
-		outputToFile.open(filenameForInverterLogfile, std::ios::out | std::ios::app);
+		outputToFile.open(filenameForHeatbathLogfile, std::ios::out | std::ios::app);
 		if (outputToFile.is_open()) {
 			meta::print_info_heatbath(ownName, &outputToFile, parameters);
 			outputToFile.close();
 		} else {
-			throw File_Exception(filenameForInverterLogfile);
+			throw File_Exception(filenameForHeatbathLogfile);
 		}
 	}
 
