@@ -1,9 +1,4 @@
-#include "generalExecutable.h"
-
-#include "meta/util.hpp"
-#include "physics/prng.hpp"
-#include "physics/lattices/gaugefield.hpp"
-#include "physics/algorithms/heatbath.hpp"
+#include "heatbathExecutable.h"
 
 class heatbathExecutable: public generalExecutable
 {
