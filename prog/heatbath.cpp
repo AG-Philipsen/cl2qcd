@@ -20,8 +20,6 @@ public:
 		using namespace physics;
 		using namespace physics::lattices;
 		using physics::algorithms::heatbath;
-		meta::Inputparameters parameters(argc, argv);
-		switchLogLevel(parameters.get_log_level());
 		fstream logfile;
 		logfile.open("heatbath.log", std::ios::out | std::ios::app);
 		if (logfile.is_open()) {
@@ -34,9 +32,8 @@ public:
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		init_timer.reset();
-		hardware::System system(parameters);
-		PRNG prng(system);
-		Gaugefield gaugefield(system, prng);
+		PRNG prng(*system);
+		Gaugefield gaugefield(*system, prng);
 		print_gaugeobservables(gaugefield, 0);
 		init_timer.add();
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
