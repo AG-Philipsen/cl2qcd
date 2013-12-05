@@ -19,7 +19,8 @@ class inverterExecutable : public generalExecutable
 {
 public:
 	/**
-	 * Constructor. Initializes Random Number Generator and Iteration variables.
+	 * Constructor.
+	 * Initializes generalExecutable object, Random Number Generator and Iteration variables.
 	 */
 	inverterExecutable(int argc, const char* argv[]);
 
@@ -29,7 +30,7 @@ public:
 	~inverterExecutable();
 
 	/**
-	 * Performs measurements of fermionic observables on possibly various gaugefield configurations.
+	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
 	 */
 	void performMeasurements();
 
@@ -46,20 +47,19 @@ protected:
 	int iterationStart;
 	int iterationEnd;
 	int iterationIncrement;
-	int iteration;
 	usetimer solverTimer;
 
 	void setIterationVariables();
 
 	void saveCurrentPrngStateToFile();
 
-	void initializeGaugefieldAccordingToIterationVariable();
+	void initializeGaugefieldAccordingToIterationVariable(int interation);
 
 	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
 
-	void initializeGaugefield();
+	void initializeGaugefield(int interation);
 
-	void performMeasurementsForSpecificIteration();
+	void performMeasurementsForSpecificIteration(int interation);
 
 	void writeInverterLogfile();
 

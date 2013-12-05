@@ -41,9 +41,11 @@ inline void inverterExecutable::performMeasurements()
 {
 	performanceTimer.reset();
 	logger.trace() << "Perform inversion(s) on device..";
+
+	int iteration = 0;
 	for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
 	{
-		performMeasurementsForSpecificIteration();
+		performMeasurementsForSpecificIteration(iteration);
 	}
 	logger.trace() << "Inversion(s) done";
 	performanceTimer.add();
@@ -62,7 +64,7 @@ inline void inverterExecutable::saveCurrentPrngStateToFile()
 	prng->store(filenameForCurrentPrngState);
 }
 
-inline void inverterExecutable::initializeGaugefieldAccordingToIterationVariable()
+inline void inverterExecutable::initializeGaugefieldAccordingToIterationVariable(int iteration)
 {
 	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
@@ -74,18 +76,20 @@ inline void inverterExecutable::initializeGaugefieldAccordingToConfigurationGive
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
 
-inline void inverterExecutable::initializeGaugefield()
+inline void inverterExecutable::initializeGaugefield(int iteration)
 {
+	initializationTimer.reset();
 	if (parameters.get_read_multiple_configs()) {
-		initializeGaugefieldAccordingToIterationVariable();
+		initializeGaugefieldAccordingToIterationVariable(iteration);
 	} else {
 		initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
 	}
+	initializationTimer.add();
 }
 
-inline void inverterExecutable::performMeasurementsForSpecificIteration()
+inline void inverterExecutable::performMeasurementsForSpecificIteration(int iteration)
 {
-	initializeGaugefield();
+	initializeGaugefield(iteration);
 	measureFermionicObservablesOnGaugefield();
 	saveCurrentPrngStateToFile();
 	delete gaugefield;
