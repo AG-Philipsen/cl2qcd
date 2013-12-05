@@ -83,6 +83,35 @@ inline void heatbathExecutable::saveGaugefield(int iteration)
 	}
 }
 
+inline void heatbathExecutable::measureTransportcoefficientKappa(int iteration)
+{
+	double kappa = 0;
+	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters.get_beta());
+	writeTransportcoefficientKappaToFile(kappa, iteration, "kappa_clover.dat");
+}
+
+inline void heatbathExecutable::writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration)
+{
+	outputToFile.width(8);
+	outputToFile.precision(15);
+	outputToFile << iteration << "\t" << kappa << std::endl;
+}
+
+inline void heatbathExecutable::writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename)
+{
+	outputToFile.open(filename.c_str(), std::ios::app);
+	if ( outputToFile.is_open() ) {
+		writeTransportcoefficientKappaToFileUsingOpenOutputStream(kappa, iteration);
+		outputToFile.close();
+	} else {
+		logger.warn() << "Could not open " << filename;
+		File_Exception(filename.c_str());
+	}
+
+
+	return;
+}
+
 inline void heatbathExecutable::measureGaugeObservables(int& iteration)
 {
 	writeGaugeObservablesToScreenAndFile(iteration);

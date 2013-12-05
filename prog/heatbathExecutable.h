@@ -12,6 +12,7 @@
 #include "physics/prng.hpp"
 #include "physics/lattices/gaugefield.hpp"
 #include "physics/algorithms/heatbath.hpp"
+#include "physics/algorithms/kappa_clover.hpp"
 
 class heatbathExecutable: public generalExecutable
 {
@@ -56,6 +57,12 @@ private:
 	void measureGaugeObservables(int& iteration);
 
 	void performHeatbathAndMeasurements();
+
+	void measureTransportcoefficientKappa(int iteration);
+
+	void writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename);
+
+	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration);
 };
 
 #endif /* HEATBATHEXECUTABLE_H_ */
