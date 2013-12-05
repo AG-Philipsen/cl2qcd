@@ -33,12 +33,11 @@ public:
 						parameters, "");
 				print_gaugeobservables(*gaugefield, iteration, filenameForGaugeobservables);
 			}
-			if (saveFrequency != 0 && ((iteration + 1) % saveFrequency) == 0) {
+			if (saveFrequency != 0 && ((iteration + 1) % saveFrequency) == 0 || ( iteration == heatbathSteps -1) ) {
 				gaugefield->save(iteration + 1);
 			}
 		}
 
-		gaugefield->save(heatbathSteps);
 		logger.info() << "heatbath done";
 		performanceTimer.add();
 	}
