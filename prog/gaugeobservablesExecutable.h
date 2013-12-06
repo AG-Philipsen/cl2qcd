@@ -12,7 +12,18 @@ class gaugeobservablesExecutable : public multipleConfigurationExecutable
 {
 public:
 	gaugeobservablesExecutable(int argc, const char* argv[]);
-};
 
+protected:
+	const std::string 	filenameForGaugeobservablesLogfile = "gaugeobservables.log";
+
+	void writeGaugeobservablesLogfile();
+
+	void printParametersToScreenAndFile();
+
+	/**
+	 * Performs measurements of gauge observables on possibly multiple gaugefield configurations.
+	 */
+	void performApplicationSpecificMeasurements();
+};
 
 #endif /* GAUGEOBSERVABLESEXECUTABLE_H_ */

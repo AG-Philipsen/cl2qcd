@@ -22,7 +22,33 @@
 
 gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : multipleConfigurationExecutable(argc, argv)
 {
+	logger.info() << "This executable requires the following parameter value(s) to work properly:";
+	logger.info() << "startcondition:\tcontinue";
+	if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ) {
+		logger.fatal() << "Found wrong startcondition! Aborting..";
+		throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
+	}
+}
 
+inline void gaugeobservablesExecutable::writeGaugeobservablesLogfile()
+{
+	outputToFile.open(filenameForGaugeobservablesLogfile);
+	if (outputToFile.is_open()) {
+		meta::print_info_inverter(ownName, &outputToFile, parameters);
+		outputToFile.close();
+	} else {
+		throw File_Exception(filenameForGaugeobservablesLogfile);
+	}
+}
+
+void gaugeobservablesExecutable::printParametersToScreenAndFile()
+{
+	meta::print_info_gaugeobservables(ownName, parameters);
+	writeGaugeobservablesLogfile();
+}
+
+inline void gaugeobservablesExecutable::performApplicationSpecificMeasurements() {
+	logger.info() << "Measure gauge observables on configuration: " << currentConfigurationName;
 }
 
 int main(int argc, const char* argv[])
