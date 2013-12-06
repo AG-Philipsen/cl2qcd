@@ -30,13 +30,6 @@ inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : ge
 	initializationTimer.add();
 }
 
-inline inverterExecutable::~inverterExecutable()
-{
-	if (parameters.get_profile_solver()) {
-		writeProfilingDataToScreenAndFile();
-	}
-}
-
 inline void inverterExecutable::performMeasurements()
 {
 	performanceTimer.reset();
@@ -104,59 +97,6 @@ inline void inverterExecutable::writeInverterLogfile()
 	} else {
 		logger.warn() << "Could not open log file for inverter.";
 	}
-}
-
-inline void inverterExecutable::writeProfilingDataToScreenAndFile()
-{
-	uint64_t avg_time = 0.;
-	uint64_t time_total = 0;
-	int calls_total = 0;
-	getSolverStatistics(calls_total, time_total, avg_time);
-	writeProfilingDataToScreen(time_total, calls_total, avg_time);
-	writeProfilingDataToFile(time_total, calls_total, avg_time);
-}
-
-inline void inverterExecutable::getSolverStatistics(int& totalSolverCalls, uint64_t& totalSolverTime, uint64_t& averageSolverTime)
-{
-	totalSolverCalls = solverTimer.getNumMeas();
-	totalSolverTime = solverTimer.getTime();
-	if (totalSolverCalls != 0 && totalSolverTime != 0) {
-		averageSolverTime = (uint64_t)(
-				((float) (((((((((totalSolverTime))))))))))
-						/ ((float) (((((((((totalSolverCalls)))))))))));
-	}
-}
-
-inline void inverterExecutable::writeProfilingDataToScreen( uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
-{
-	logger.info() << "## **********************************************************";
-	logger.info() << "## Solver Times [mus]:\ttime\tcalls\tavg";
-	logger.info() << "##\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime;
-	logger.info() << "## **********************************************************";
-}
-
-inline void inverterExecutable::writeProfilingDataToFile( uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
-{
-	outputStreamForProfilingData.open(filenameForProfilingData.c_str(), std::ios::out | std::ios::app);
-	if (outputStreamForProfilingData.is_open()) {
-		writeProfilingDataToFileUsingOpenOutputStream(totalSolverTime, totalSolverCalls, averageSolverTime);
-		outputStreamForProfilingData.close();
-	} else {
-		logger.warn() << "Could not open " << filenameForProfilingData;
-		File_Exception(filenameForProfilingData.c_str());
-	}
-}
-
-inline void inverterExecutable::writeProfilingDataToFileUsingOpenOutputStream( uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime)
-{
-	meta::print_info_inverter(ownName, &outputStreamForProfilingData, parameters);
-	outputStreamForProfilingData.width(32);
-	outputStreamForProfilingData.precision(15);
-	outputStreamForProfilingData << "## **********************************************************" << std::endl;
-	outputStreamForProfilingData << "## Solver Times [mus]:\ttime\tcalls\tavg" << std::endl;
-	outputStreamForProfilingData << "\t" << totalSolverTime << "\t" << totalSolverCalls << "\t" << averageSolverTime << std::endl;
-	outputStreamForProfilingData << "## **********************************************************" << std::endl;
-	return;
 }
 
 inline void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield() {

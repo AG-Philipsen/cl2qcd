@@ -25,11 +25,6 @@ public:
 	inverterExecutable(int argc, const char* argv[]);
 
 	/**
-	 * Destructor. Print profiling information about solver usage if wanted.
-	 */
-	~inverterExecutable();
-
-	/**
 	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
 	 */
 	void performMeasurements();
@@ -39,15 +34,12 @@ protected:
 	physics::lattices::Gaugefield * gaugefield;
 	const std::string 	filenameForCurrentPrngState 	= "prng.inverter.save";
 	const std::string 	filenameForInverterLogfile 		= "inverter.log";
-	const std::string 	filenameForProfilingData 		= std::string(ownName) + std::string("_profiling_data");
 	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
 	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
 	std::string 		currentConfigurationName;
-	std::fstream 		outputStreamForProfilingData;
 	int iterationStart;
 	int iterationEnd;
 	int iterationIncrement;
-	usetimer solverTimer;
 
 	void setIterationVariables();
 
@@ -62,16 +54,6 @@ protected:
 	void performMeasurementsForSpecificIteration(int interation);
 
 	void writeInverterLogfile();
-
-	void writeProfilingDataToScreenAndFile();
-
-	void getSolverStatistics(int& totalSolverCalls, uint64_t& totalSolverTime, uint64_t& averageSolverTime);
-
-	void writeProfilingDataToScreen(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime);
-
-	void writeProfilingDataToFile(uint64_t totalSolverTime,	int totalSolverCalls, uint64_t averageSolverTime);
-
-	void writeProfilingDataToFileUsingOpenOutputStream(uint64_t totalSolverTime, int totalSolverCalls, uint64_t averageSolverTime);
 
 	void measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 
