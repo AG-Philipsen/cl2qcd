@@ -95,3 +95,27 @@ void multipleConfigurationExecutable::initializeGaugefield(int iteration)
 	}
 	initializationTimer.add();
 }
+
+void multipleConfigurationExecutable::performMeasurements()
+{
+	performanceTimer.reset();
+	logger.trace() << "Perform inversion(s) on device..";
+
+	int iteration = 0;
+	for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
+	{
+		performMeasurementsForSpecificIteration(iteration);
+	}
+	logger.trace() << "Inversion(s) done";
+	performanceTimer.add();
+}
+
+void multipleConfigurationExecutable::performMeasurementsForSpecificIteration(int iteration)
+{
+	initializeGaugefield(iteration);
+	performApplicationSpecificMeasurements();
+	saveCurrentPrngStateToFile();
+	delete gaugefield;
+}
+
+

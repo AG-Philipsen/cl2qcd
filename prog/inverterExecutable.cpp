@@ -28,28 +28,6 @@ inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : mu
 	initializationTimer.add();
 }
 
-inline void inverterExecutable::performMeasurements()
-{
-	performanceTimer.reset();
-	logger.trace() << "Perform inversion(s) on device..";
-
-	int iteration = 0;
-	for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
-	{
-		performMeasurementsForSpecificIteration(iteration);
-	}
-	logger.trace() << "Inversion(s) done";
-	performanceTimer.add();
-}
-
-inline void inverterExecutable::performMeasurementsForSpecificIteration(int iteration)
-{
-	initializeGaugefield(iteration);
-	measureFermionicObservablesOnGaugefield();
-	saveCurrentPrngStateToFile();
-	delete gaugefield;
-}
-
 inline void inverterExecutable::writeInverterLogfile()
 {
 	outputToFile.open(filenameForInverterLogfile);
@@ -90,7 +68,7 @@ inline void inverterExecutable::measureTwoFlavourDoubletChiralCondensateOnGaugef
 	}
 }
 
-inline void inverterExecutable::measureFermionicObservablesOnGaugefield() {
+inline void inverterExecutable::performApplicationSpecificMeasurements() {
 	logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 	if (parameters.get_print_to_screen()) {
 		print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source);

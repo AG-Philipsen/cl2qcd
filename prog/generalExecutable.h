@@ -64,6 +64,8 @@ public:
 		initializationTimer.add();
 	}
 
+	void performMeasurements();
+
 protected:
 	std::string currentConfigurationName;
 	int iterationStart;
@@ -77,6 +79,10 @@ protected:
 	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
 
 	void initializeGaugefield(int interation);
+
+	void performMeasurementsForSpecificIteration(int interation);
+
+	virtual void performApplicationSpecificMeasurements() {};
 };
 
 #endif /* GENERALEXECUTABLE_H_ */

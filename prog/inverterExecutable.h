@@ -19,21 +19,14 @@ class inverterExecutable : public multipleConfigurationExecutable
 public:
 	/**
 	 * Constructor.
-	 * Initializes generalExecutable object, Random Number Generator and Iteration variables.
+	 * Writes Logfile.
 	 */
 	inverterExecutable(int argc, const char* argv[]);
 
-	/**
-	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
-	 */
-	void performMeasurements();
-
 protected:
-	const std::string 	filenameForInverterLogfile 		= "inverter.log";
+	const std::string 	filenameForInverterLogfile = "inverter.log";
 	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
 	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
-
-	void performMeasurementsForSpecificIteration(int interation);
 
 	void writeInverterLogfile();
 
@@ -41,7 +34,10 @@ protected:
 
 	void measureTwoFlavourDoubletChiralCondensateOnGaugefield();
 
-	void measureFermionicObservablesOnGaugefield();
+	/**
+	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
+	 */
+	void performApplicationSpecificMeasurements();
 };
 
 #endif /* _INVERTERH_ */
