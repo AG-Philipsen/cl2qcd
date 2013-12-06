@@ -65,3 +65,33 @@ void generalExecutable::saveCurrentPrngStateToFile()
 	logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
 	prng->store(filenameForCurrentPrngState);
 }
+
+void multipleConfigurationExecutable::setIterationVariables()
+{
+	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
+	iterationEnd = 			(parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
+	iterationIncrement =	(parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
+}
+
+void multipleConfigurationExecutable::initializeGaugefieldAccordingToIterationVariable(int iteration)
+{
+	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
+	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
+}
+
+void multipleConfigurationExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
+{
+	currentConfigurationName = parameters.get_sourcefile();
+	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+}
+
+void multipleConfigurationExecutable::initializeGaugefield(int iteration)
+{
+	initializationTimer.reset();
+	if (parameters.get_read_multiple_configs()) {
+		initializeGaugefieldAccordingToIterationVariable(iteration);
+	} else {
+		initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
+	}
+	initializationTimer.add();
+}

@@ -25,7 +25,6 @@ inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : mu
 	initializationTimer.reset();
 	meta::print_info_inverter(ownName, parameters);
 	writeInverterLogfile();
-	setIterationVariables();
 	initializationTimer.add();
 }
 
@@ -41,36 +40,6 @@ inline void inverterExecutable::performMeasurements()
 	}
 	logger.trace() << "Inversion(s) done";
 	performanceTimer.add();
-}
-
-inline void inverterExecutable::setIterationVariables()
-{
-	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
-	iterationEnd = 			(parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
-	iterationIncrement =	(parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
-}
-
-inline void inverterExecutable::initializeGaugefieldAccordingToIterationVariable(int iteration)
-{
-	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
-}
-
-inline void inverterExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
-{
-	currentConfigurationName = parameters.get_sourcefile();
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-}
-
-inline void inverterExecutable::initializeGaugefield(int iteration)
-{
-	initializationTimer.reset();
-	if (parameters.get_read_multiple_configs()) {
-		initializeGaugefieldAccordingToIterationVariable(iteration);
-	} else {
-		initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
-	}
-	initializationTimer.add();
 }
 
 inline void inverterExecutable::performMeasurementsForSpecificIteration(int iteration)

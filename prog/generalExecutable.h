@@ -59,8 +59,24 @@ class multipleConfigurationExecutable : public generalExecutable
 public:
 	multipleConfigurationExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 	{
-
+		initializationTimer.reset();
+		setIterationVariables();
+		initializationTimer.add();
 	}
+
+protected:
+	std::string currentConfigurationName;
+	int iterationStart;
+	int iterationEnd;
+	int iterationIncrement;
+
+	void setIterationVariables();
+
+	void initializeGaugefieldAccordingToIterationVariable(int interation);
+
+	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
+
+	void initializeGaugefield(int interation);
 };
 
 #endif /* GENERALEXECUTABLE_H_ */

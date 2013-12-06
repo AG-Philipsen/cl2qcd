@@ -32,18 +32,6 @@ protected:
 	const std::string 	filenameForInverterLogfile 		= "inverter.log";
 	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
 	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
-	std::string 		currentConfigurationName;
-	int iterationStart;
-	int iterationEnd;
-	int iterationIncrement;
-
-	void setIterationVariables();
-
-	void initializeGaugefieldAccordingToIterationVariable(int interation);
-
-	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
-
-	void initializeGaugefield(int interation);
 
 	void performMeasurementsForSpecificIteration(int interation);
 
