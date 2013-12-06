@@ -23,8 +23,7 @@
 inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : multipleConfigurationExecutable(argc, argv)
 {
 	initializationTimer.reset();
-	meta::print_info_inverter(ownName, parameters);
-	writeInverterLogfile();
+	printParametersToScreenAndFile();
 	initializationTimer.add();
 }
 
@@ -35,8 +34,14 @@ inline void inverterExecutable::writeInverterLogfile()
 		meta::print_info_inverter(ownName, &outputToFile, parameters);
 		outputToFile.close();
 	} else {
-		logger.warn() << "Could not open log file for inverter.";
+		throw File_Exception(filenameForInverterLogfile);
 	}
+}
+
+void inverterExecutable::printParametersToScreenAndFile()
+{
+	meta::print_info_inverter(ownName, parameters);
+	writeInverterLogfile();
 }
 
 inline void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield() {

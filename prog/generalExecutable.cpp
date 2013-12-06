@@ -66,6 +66,13 @@ void generalExecutable::saveCurrentPrngStateToFile()
 	prng->store(filenameForCurrentPrngState);
 }
 
+multipleConfigurationExecutable::multipleConfigurationExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
+{
+	initializationTimer.reset();
+	setIterationVariables();
+	initializationTimer.add();
+}
+
 void multipleConfigurationExecutable::setIterationVariables()
 {
 	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;

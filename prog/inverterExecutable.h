@@ -30,6 +30,8 @@ protected:
 
 	void writeInverterLogfile();
 
+	void printParametersToScreenAndFile();
+
 	void measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 
 	void measureTwoFlavourDoubletChiralCondensateOnGaugefield();

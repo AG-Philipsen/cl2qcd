@@ -22,7 +22,7 @@ class generalExecutable
 
 public:
 	/**
-	 * Initialize meta::Inputparametes and Shardware::System objects
+	 * Initialize meta::Inputparametes and hardware::System objects
 	 */
 	generalExecutable(int argc, const char* argv[]);
 
@@ -57,12 +57,7 @@ protected:
 class multipleConfigurationExecutable : public generalExecutable
 {
 public:
-	multipleConfigurationExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
-	{
-		initializationTimer.reset();
-		setIterationVariables();
-		initializationTimer.add();
-	}
+	multipleConfigurationExecutable(int argc, const char* argv[]);
 
 	void performMeasurements();
 
