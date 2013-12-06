@@ -52,6 +52,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_heatbathsteps(), 1000);
 	BOOST_REQUIRE_EQUAL(params.get_overrelaxsteps(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_xi(), 1);
+	BOOST_REQUIRE_EQUAL(params.get_measure_transportcoefficient_kappa(), false);
 
 	//fermionic parameters
 	BOOST_REQUIRE_EQUAL(params.get_fermact(), Inputparameters::wilson);
@@ -173,6 +174,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_heatbathsteps(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_overrelaxsteps(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_xi(), 2);
+	BOOST_REQUIRE_EQUAL(params.get_measure_transportcoefficient_kappa(), true);
 
 	//fermionic parameters
 	BOOST_REQUIRE_EQUAL(params.get_fermact(), Inputparameters::tlsym);

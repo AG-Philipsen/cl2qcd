@@ -30,6 +30,7 @@ thermalizationsteps = 10
 heatbathsteps = 100
 overrelaxsteps = 10
 xi = 2
+measure_transportcoefficient_kappa = true
 
 # fermionic parameters
 fermact = TLSYM
