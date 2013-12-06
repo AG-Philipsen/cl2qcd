@@ -53,4 +53,14 @@ protected:
 	void saveCurrentPrngStateToFile();
 };
 
+
+class multipleConfigurationExecutable : public generalExecutable
+{
+public:
+	multipleConfigurationExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
+	{
+
+	}
+};
+
 #endif /* GENERALEXECUTABLE_H_ */

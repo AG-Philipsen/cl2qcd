@@ -20,7 +20,7 @@
 
 #include "inverterExecutable.h"
 
-inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
+inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : multipleConfigurationExecutable(argc, argv)
 {
 	initializationTimer.reset();
 	meta::print_info_inverter(ownName, parameters);

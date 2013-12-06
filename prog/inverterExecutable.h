@@ -14,7 +14,7 @@
 /**
  * Inverter executable which measures fermionic observables on gaugefield configurations.
  */
-class inverterExecutable : public generalExecutable
+class inverterExecutable : public multipleConfigurationExecutable
 {
 public:
 	/**
