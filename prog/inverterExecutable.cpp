@@ -23,7 +23,6 @@
 inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
 {
 	initializationTimer.reset();
-	prng = new physics::PRNG(*system);
 	meta::print_info_inverter(ownName, parameters);
 	writeInverterLogfile();
 	setIterationVariables();
@@ -49,12 +48,6 @@ inline void inverterExecutable::setIterationVariables()
 	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
 	iterationEnd = 			(parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
 	iterationIncrement =	(parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
-}
-
-inline void inverterExecutable::saveCurrentPrngStateToFile()
-{
-	logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
-	prng->store(filenameForCurrentPrngState);
 }
 
 inline void inverterExecutable::initializeGaugefieldAccordingToIterationVariable(int iteration)

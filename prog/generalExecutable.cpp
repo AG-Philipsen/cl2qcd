@@ -14,6 +14,7 @@ generalExecutable::generalExecutable(int argc, const char* argv[]) : parameters(
 	initializationTimer.reset();
 	switchLogLevel(parameters.get_log_level());
 	system = new hardware::System(parameters);
+	prng = new physics::PRNG(*system);
 	initializationTimer.add();
 }
 generalExecutable::~generalExecutable()
@@ -57,4 +58,10 @@ void generalExecutable::printGeneralTimesToFile()
 		logger.warn() << "Could not open output file for general time output.";
 	}
 	return;
+}
+
+void generalExecutable::saveCurrentPrngStateToFile()
+{
+	logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
+	prng->store(filenameForCurrentPrngState);
 }

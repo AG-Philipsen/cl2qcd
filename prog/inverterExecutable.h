@@ -6,7 +6,6 @@
 #define _INVERTERH_
 
 #include "generalExecutable.h"
-#include "physics/lattices/gaugefield.hpp"
 #include "physics/lattices/spinorfield.hpp"
 #include "physics/sources.hpp"
 #include "physics/algorithms/flavour_doublet.hpp"
@@ -30,9 +29,6 @@ public:
 	void performMeasurements();
 
 protected:
-	physics::PRNG * prng;
-	physics::lattices::Gaugefield * gaugefield;
-	const std::string 	filenameForCurrentPrngState 	= "prng.inverter.save";
 	const std::string 	filenameForInverterLogfile 		= "inverter.log";
 	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
 	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
@@ -42,8 +38,6 @@ protected:
 	int iterationIncrement;
 
 	void setIterationVariables();
-
-	void saveCurrentPrngStateToFile();
 
 	void initializeGaugefieldAccordingToIterationVariable(int interation);
 

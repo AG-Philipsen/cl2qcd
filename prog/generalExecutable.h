@@ -15,6 +15,7 @@
 #include "logger.hpp"
 #include "meta/util.hpp"
 #include "./hardware/system.hpp"
+#include "physics/lattices/gaugefield.hpp"
 
 class generalExecutable
 {
@@ -32,11 +33,14 @@ public:
 
 protected:
 	const char* ownName;
+	const std::string 	filenameForCurrentPrngState 	= "prng.inverter.save";
 	usetimer totalRuntimeOfExecutable;
 	usetimer initializationTimer;
 	usetimer performanceTimer;
 	meta::Inputparameters parameters;
 	hardware::System * system;
+	physics::PRNG * prng;
+	physics::lattices::Gaugefield * gaugefield;
 	std::ofstream outputToFile;
 	const char* generalTimeOutputFilename = "general_time_output";
 
@@ -46,6 +50,7 @@ protected:
 
 	void printGeneralTimesToFile();
 
+	void saveCurrentPrngStateToFile();
 };
 
 #endif /* GENERALEXECUTABLE_H_ */

@@ -30,8 +30,6 @@ public:
 	void performHeatbathAndMeasureGaugeObservables();
 
 private:
-	physics::PRNG * prng;
-	physics::lattices::Gaugefield * gaugefield;
 	const std::string 	filenameForHeatbathLogfile 		= "heatbath.log";
 	std::string filenameForGaugeobservables;
 	int thermalizationSteps;
