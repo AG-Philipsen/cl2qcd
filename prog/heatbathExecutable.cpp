@@ -112,7 +112,9 @@ inline void heatbathExecutable::writeTransportcoefficientKappaToFile(hmc_float k
 inline void heatbathExecutable::measureGaugeObservables(int& iteration)
 {
 	writeGaugeObservablesToScreenAndFile(iteration);
-	measureTransportcoefficientKappa(iteration);
+	if ( parameters.get_measure_transportcoefficient_kappa() ) {
+		measureTransportcoefficientKappa(iteration);
+	}
 }
 
 inline void heatbathExecutable::performHeatbathAndMeasurements()
