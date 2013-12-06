@@ -14,6 +14,7 @@ public:
 	gaugeobservablesExecutable(int argc, const char* argv[]);
 
 protected:
+	std::string filenameForGaugeobservables;
 	const std::string 	filenameForGaugeobservablesLogfile = "gaugeobservables.log";
 
 	void writeGaugeobservablesLogfile();
