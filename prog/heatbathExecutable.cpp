@@ -1,7 +1,7 @@
 #include "heatbathExecutable.h"
 
 inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
-		generalExecutable(argc, argv)
+		generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng);

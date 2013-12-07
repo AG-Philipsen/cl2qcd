@@ -6,7 +6,7 @@
 #ifndef HEATBATHEXECUTABLE_H_
 #define HEATBATHEXECUTABLE_H_
 
-#include "generalExecutable.h"
+#include "generationExecutable.h"
 
 #include "meta/util.hpp"
 #include "physics/prng.hpp"
@@ -14,7 +14,7 @@
 #include "physics/algorithms/heatbath.hpp"
 #include "physics/algorithms/kappa_clover.hpp"
 
-class heatbathExecutable: public generalExecutable
+class heatbathExecutable: public generationExecutable
 {
 public:
 	/**
