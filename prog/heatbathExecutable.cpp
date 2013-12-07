@@ -4,7 +4,6 @@ inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 		generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 	meta::print_info_heatbath(ownName, parameters);
 	writeHeatbathLogfile();
 	setIterationParameters();
