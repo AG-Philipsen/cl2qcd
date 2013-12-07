@@ -6,6 +6,7 @@
  */
 
 #include "generalExecutable.h"
+#include "physics/algorithms/kappa_clover.hpp"
 
 class generationExecutable : public generalExecutable
 {
@@ -16,6 +17,7 @@ protected:
 	int writeFrequency;
 	int saveFrequency;
 	int thermalizationSteps;
+	int generationSteps;
 	std::string filenameForGaugeobservables;
 
 	void setIterationParameters();
@@ -25,6 +27,16 @@ protected:
 	void writeGaugeObservablesToScreen(int& iteration);
 
 	void writeGaugeObservablesToScreenAndFile(int iteration);
+
+	void measureGaugeObservables(int& iteration);
+
+	void saveGaugefield(int iteration);
+
+	void measureTransportcoefficientKappa(int iteration);
+
+	void writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename);
+
+	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration);
 };
 
 

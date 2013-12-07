@@ -35,3 +35,45 @@ void generationExecutable::writeGaugeObservablesToScreenAndFile(int iteration) {
 	writeGaugeObservablesToScreen(iteration);
 	writeGaugeObservablesToFile(iteration);
 }
+
+void generationExecutable::measureGaugeObservables(int& iteration)
+{
+	writeGaugeObservablesToScreenAndFile(iteration);
+	if ( parameters.get_measure_transportcoefficient_kappa() ) {
+		measureTransportcoefficientKappa(iteration);
+	}
+}
+
+void generationExecutable::saveGaugefield(int iteration)
+{
+	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)
+			|| (iteration == generationSteps - 1)) {
+		gaugefield->save(iteration + 1);
+	}
+}
+
+void generationExecutable::measureTransportcoefficientKappa(int iteration)
+{
+	double kappa = 0;
+	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters.get_beta());
+	writeTransportcoefficientKappaToFile(kappa, iteration, "kappa_clover.dat");
+}
+
+void generationExecutable::writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration)
+{
+	outputToFile.width(8);
+	outputToFile.precision(15);
+	outputToFile << iteration << "\t" << kappa << std::endl;
+}
+
+void generationExecutable::writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename)
+{
+	outputToFile.open(filename.c_str(), std::ios::app);
+	if ( outputToFile.is_open() ) {
+		writeTransportcoefficientKappaToFileUsingOpenOutputStream(kappa, iteration);
+		outputToFile.close();
+	} else {
+		logger.warn() << "Could not open " << filename;
+		File_Exception(filename.c_str());
+	}
+}

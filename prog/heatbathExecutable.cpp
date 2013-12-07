@@ -34,7 +34,7 @@ inline void heatbathExecutable::writeHeatbathLogfile()
 void heatbathExecutable::setIterationParameters()
 {
 	generationExecutable::setIterationParameters();
-	heatbathSteps = parameters.get_heatbathsteps();
+	generationSteps = parameters.get_heatbathsteps();
 	overrelaxSteps = parameters.get_overrelaxsteps();
 }
 
@@ -50,52 +50,10 @@ void heatbathExecutable::performThermalization()
 	logger.info() << "thermalization done";
 }
 
-inline void heatbathExecutable::saveGaugefield(int iteration)
-{
-	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)
-			|| (iteration == heatbathSteps - 1)) {
-		gaugefield->save(iteration + 1);
-	}
-}
-
-inline void heatbathExecutable::measureTransportcoefficientKappa(int iteration)
-{
-	double kappa = 0;
-	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters.get_beta());
-	writeTransportcoefficientKappaToFile(kappa, iteration, "kappa_clover.dat");
-}
-
-inline void heatbathExecutable::writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration)
-{
-	outputToFile.width(8);
-	outputToFile.precision(15);
-	outputToFile << iteration << "\t" << kappa << std::endl;
-}
-
-inline void heatbathExecutable::writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename)
-{
-	outputToFile.open(filename.c_str(), std::ios::app);
-	if ( outputToFile.is_open() ) {
-		writeTransportcoefficientKappaToFileUsingOpenOutputStream(kappa, iteration);
-		outputToFile.close();
-	} else {
-		logger.warn() << "Could not open " << filename;
-		File_Exception(filename.c_str());
-	}
-}
-
-inline void heatbathExecutable::measureGaugeObservables(int& iteration)
-{
-	writeGaugeObservablesToScreenAndFile(iteration);
-	if ( parameters.get_measure_transportcoefficient_kappa() ) {
-		measureTransportcoefficientKappa(iteration);
-	}
-}
-
 inline void heatbathExecutable::performHeatbathAndMeasurements()
 {
 	logger.info() << "Start heatbath";
-	for (int iteration = 0; iteration < heatbathSteps; iteration++)
+	for (int iteration = 0; iteration < generationSteps; iteration++)
 	{
 		physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
 		measureGaugeObservables(iteration);
