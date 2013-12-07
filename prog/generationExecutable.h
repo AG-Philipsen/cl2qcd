@@ -16,8 +16,15 @@ protected:
 	int writeFrequency;
 	int saveFrequency;
 	int thermalizationSteps;
+	std::string filenameForGaugeobservables;
 
 	void setIterationParameters();
+
+	void writeGaugeObservablesToFile(int& iteration);
+
+	void writeGaugeObservablesToScreen(int& iteration);
+
+	void writeGaugeObservablesToScreenAndFile(int iteration);
 };
 
 

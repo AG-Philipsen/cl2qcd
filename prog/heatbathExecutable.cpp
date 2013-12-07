@@ -38,7 +38,7 @@ void heatbathExecutable::setIterationParameters()
 	overrelaxSteps = parameters.get_overrelaxsteps();
 }
 
-inline void heatbathExecutable::performThermalization()
+void heatbathExecutable::performThermalization()
 {
 	logger.info() << "Start thermalization";
 	int iteration = 0;
@@ -48,28 +48,6 @@ inline void heatbathExecutable::performThermalization()
 		physics::algorithms::heatbath(*gaugefield, *prng);
 	}
 	logger.info() << "thermalization done";
-}
-
-inline void heatbathExecutable::writeGaugeObservablesToFile(int& iteration)
-{
-	if (((iteration + 1) % writeFrequency) == 0) {
-		filenameForGaugeobservables = meta::get_gauge_obs_file_name(parameters,
-				"");
-		print_gaugeobservables(*gaugefield, iteration,
-				filenameForGaugeobservables);
-	}
-}
-
-inline void heatbathExecutable::writeGaugeObservablesToScreen(int& iteration)
-{
-	if (parameters.get_print_to_screen() || (iteration == 0)) {
-		print_gaugeobservables(*gaugefield, iteration);
-	}
-}
-
-inline void heatbathExecutable::writeGaugeObservablesToScreenAndFile(int iteration) {
-	writeGaugeObservablesToScreen(iteration);
-	writeGaugeObservablesToFile(iteration);
 }
 
 inline void heatbathExecutable::saveGaugefield(int iteration)

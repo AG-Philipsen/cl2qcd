@@ -31,7 +31,6 @@ public:
 
 private:
 	const std::string 	filenameForHeatbathLogfile 		= "heatbath.log";
-	std::string filenameForGaugeobservables;
 	int heatbathSteps;
 	int overrelaxSteps;
 
@@ -40,12 +39,6 @@ private:
 	void setIterationParameters();
 
 	void performThermalization();
-
-	void writeGaugeObservablesToFile(int& iteration);
-
-	void writeGaugeObservablesToScreen(int& iteration);
-
-	void writeGaugeObservablesToScreenAndFile(int iteration);
 
 	void saveGaugefield(int iteration);
 
