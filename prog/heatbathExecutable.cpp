@@ -31,13 +31,11 @@ inline void heatbathExecutable::writeHeatbathLogfile()
 	}
 }
 
-inline void heatbathExecutable::setIterationParameters()
+void heatbathExecutable::setIterationParameters()
 {
-	thermalizationSteps = parameters.get_thermalizationsteps();
+	generationExecutable::setIterationParameters();
 	heatbathSteps = parameters.get_heatbathsteps();
 	overrelaxSteps = parameters.get_overrelaxsteps();
-	writeFrequency = parameters.get_writefrequency();
-	saveFrequency = parameters.get_savefrequency();
 }
 
 inline void heatbathExecutable::performThermalization()

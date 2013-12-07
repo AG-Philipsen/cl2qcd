@@ -32,11 +32,8 @@ public:
 private:
 	const std::string 	filenameForHeatbathLogfile 		= "heatbath.log";
 	std::string filenameForGaugeobservables;
-	int thermalizationSteps;
 	int heatbathSteps;
 	int overrelaxSteps;
-	int writeFrequency;
-	int saveFrequency;
 
 	void writeHeatbathLogfile();
 

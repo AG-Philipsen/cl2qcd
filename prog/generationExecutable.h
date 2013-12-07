@@ -11,6 +11,13 @@ class generationExecutable : public generalExecutable
 {
 public:
 	generationExecutable(int argc, const char* argv[]);
+
+protected:
+	int writeFrequency;
+	int saveFrequency;
+	int thermalizationSteps;
+
+	void setIterationParameters();
 };
 
 
