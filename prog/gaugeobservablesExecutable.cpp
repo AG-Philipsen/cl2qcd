@@ -20,7 +20,7 @@
 
 #include "gaugeobservablesExecutable.h"
 
-gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : multipleConfigurationExecutable(argc, argv)
+gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
 	logger.info() << "This executable requires the following parameter value(s) to work properly:";
 	logger.info() << "startcondition:\tcontinue";

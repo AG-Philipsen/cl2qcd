@@ -20,7 +20,7 @@
 
 #include "inverterExecutable.h"
 
-inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : multipleConfigurationExecutable(argc, argv)
+inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();

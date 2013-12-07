@@ -66,33 +66,33 @@ void generalExecutable::saveCurrentPrngStateToFile()
 	prng->store(filenameForCurrentPrngState);
 }
 
-multipleConfigurationExecutable::multipleConfigurationExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
+measurementExecutable::measurementExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 {
 	initializationTimer.reset();
 	setIterationVariables();
 	initializationTimer.add();
 }
 
-void multipleConfigurationExecutable::setIterationVariables()
+void measurementExecutable::setIterationVariables()
 {
 	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
 	iterationEnd = 			(parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
 	iterationIncrement =	(parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
 }
 
-void multipleConfigurationExecutable::initializeGaugefieldAccordingToIterationVariable(int iteration)
+void measurementExecutable::initializeGaugefieldAccordingToIterationVariable(int iteration)
 {
 	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
 }
 
-void multipleConfigurationExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
+void measurementExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
 {
 	currentConfigurationName = parameters.get_sourcefile();
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
 
-void multipleConfigurationExecutable::initializeGaugefield(int iteration)
+void measurementExecutable::initializeGaugefield(int iteration)
 {
 	initializationTimer.reset();
 	if (parameters.get_read_multiple_configs()) {
@@ -103,7 +103,7 @@ void multipleConfigurationExecutable::initializeGaugefield(int iteration)
 	initializationTimer.add();
 }
 
-void multipleConfigurationExecutable::performMeasurements()
+void measurementExecutable::performMeasurements()
 {
 	performanceTimer.reset();
 	logger.trace() << "Perform inversion(s) on device..";
@@ -117,7 +117,7 @@ void multipleConfigurationExecutable::performMeasurements()
 	performanceTimer.add();
 }
 
-void multipleConfigurationExecutable::performMeasurementsForSpecificIteration(int iteration)
+void measurementExecutable::performMeasurementsForSpecificIteration(int iteration)
 {
 	initializeGaugefield(iteration);
 	performApplicationSpecificMeasurements();

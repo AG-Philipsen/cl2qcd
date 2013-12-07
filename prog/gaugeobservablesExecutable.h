@@ -8,7 +8,7 @@
 
 #include "generalExecutable.h"
 
-class gaugeobservablesExecutable : public multipleConfigurationExecutable
+class gaugeobservablesExecutable : public measurementExecutable
 {
 public:
 	gaugeobservablesExecutable(int argc, const char* argv[]);

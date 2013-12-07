@@ -54,10 +54,10 @@ protected:
 };
 
 
-class multipleConfigurationExecutable : public generalExecutable
+class measurementExecutable : public generalExecutable
 {
 public:
-	multipleConfigurationExecutable(int argc, const char* argv[]);
+	measurementExecutable(int argc, const char* argv[]);
 
 	void performMeasurements();
 
