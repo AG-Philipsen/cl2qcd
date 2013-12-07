@@ -37,9 +37,9 @@ private:
 
 	void setIterationParameters();
 
-	void performThermalization();
+	void thermalize();
 
-	void performHeatbathAndMeasurements();
+	void generate();
 };
 
 #endif /* HEATBATHEXECUTABLE_H_ */

@@ -30,7 +30,7 @@ void heatbathExecutable::setIterationParameters()
 	overrelaxSteps = parameters.get_overrelaxsteps();
 }
 
-void heatbathExecutable::performThermalization()
+void heatbathExecutable::thermalize()
 {
 	logger.info() << "Start thermalization";
 	int iteration = 0;
@@ -42,7 +42,7 @@ void heatbathExecutable::performThermalization()
 	logger.info() << "thermalization done";
 }
 
-inline void heatbathExecutable::performHeatbathAndMeasurements()
+inline void heatbathExecutable::generate()
 {
 	logger.info() << "Start heatbath";
 	for (int iteration = 0; iteration < generationSteps; iteration++)
