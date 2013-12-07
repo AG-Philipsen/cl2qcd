@@ -6,7 +6,7 @@
 #ifndef GAUGEOBSERVABLESEXECUTABLE_H_
 #define GAUGEOBSERVABLESEXECUTABLE_H_
 
-#include "generalExecutable.h"
+#include "measurementExecutable.h"
 
 class gaugeobservablesExecutable : public measurementExecutable
 {

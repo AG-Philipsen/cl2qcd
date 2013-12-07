@@ -5,7 +5,7 @@
 #ifndef _INVERTERH_
 #define _INVERTERH_
 
-#include "generalExecutable.h"
+#include "measurementExecutable.h"
 #include "physics/lattices/spinorfield.hpp"
 #include "physics/sources.hpp"
 #include "physics/algorithms/flavour_doublet.hpp"

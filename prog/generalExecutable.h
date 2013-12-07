@@ -53,31 +53,4 @@ protected:
 	void saveCurrentPrngStateToFile();
 };
 
-
-class measurementExecutable : public generalExecutable
-{
-public:
-	measurementExecutable(int argc, const char* argv[]);
-
-	void performMeasurements();
-
-protected:
-	std::string currentConfigurationName;
-	int iterationStart;
-	int iterationEnd;
-	int iterationIncrement;
-
-	void setIterationVariables();
-
-	void initializeGaugefieldAccordingToIterationVariable(int interation);
-
-	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
-
-	void initializeGaugefield(int interation);
-
-	void performMeasurementsForSpecificIteration(int interation);
-
-	virtual void performApplicationSpecificMeasurements() {};
-};
-
 #endif /* GENERALEXECUTABLE_H_ */
