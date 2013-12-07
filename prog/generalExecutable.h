@@ -16,6 +16,7 @@
 #include "meta/util.hpp"
 #include "./hardware/system.hpp"
 #include "physics/lattices/gaugefield.hpp"
+#include "physics/prng.hpp"
 
 class generalExecutable
 {

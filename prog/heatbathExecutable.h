@@ -7,10 +7,6 @@
 #define HEATBATHEXECUTABLE_H_
 
 #include "generationExecutable.h"
-
-#include "meta/util.hpp"
-#include "physics/prng.hpp"
-#include "physics/lattices/gaugefield.hpp"
 #include "physics/algorithms/heatbath.hpp"
 
 class heatbathExecutable: public generationExecutable
@@ -23,8 +19,14 @@ private:
 	int heatbathSteps;
 	int overrelaxSteps;
 
+	/*
+	 * Thermalize the system using the heatbath algorithm.
+	 */
 	void thermalizeAccordingToSpecificAlgorithm();
 
+	/*
+	 * Generate configurations using the heatbath algorithm.
+	 */
 	void generateAccordingToSpecificAlgorithm();
 
 	void writeHeatbathLogfile();
