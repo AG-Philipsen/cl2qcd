@@ -11,14 +11,6 @@ inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 	initializationTimer.add();
 }
 
-inline void heatbathExecutable::performHeatbathAndMeasureGaugeObservables()
-{
-	performanceTimer.reset();
-	performThermalization();
-	performHeatbathAndMeasurements();
-	performanceTimer.add();
-}
-
 inline void heatbathExecutable::writeHeatbathLogfile()
 {
 	outputToFile.open(filenameForHeatbathLogfile,
@@ -66,7 +58,7 @@ int main(int argc, const char* argv[])
 {
 	try {
 		heatbathExecutable heatbathInstance(argc, argv);
-		heatbathInstance.performHeatbathAndMeasureGaugeObservables();
+		heatbathInstance.generateConfigurations();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {

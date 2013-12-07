@@ -13,6 +13,8 @@ class generationExecutable : public generalExecutable
 public:
 	generationExecutable(int argc, const char* argv[]);
 
+	void generateConfigurations();
+
 protected:
 	int writeFrequency;
 	int saveFrequency;
@@ -37,6 +39,10 @@ protected:
 	void writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename);
 
 	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration);
+
+	void virtual thermalize() {};
+
+	void virtual generate() {};
 };
 
 

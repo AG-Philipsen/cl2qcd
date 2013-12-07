@@ -77,3 +77,11 @@ void generationExecutable::writeTransportcoefficientKappaToFile(hmc_float kappa,
 		File_Exception(filename.c_str());
 	}
 }
+
+void generationExecutable::generateConfigurations()
+{
+	performanceTimer.reset();
+	thermalize();
+	generate();
+	performanceTimer.add();
+}
