@@ -16,30 +16,20 @@
 class heatbathExecutable: public generationExecutable
 {
 public:
-	/**
-	 * Constructor.
-	 * Initializes generalExecutable object, Random Number Generator and Iteration variables.
-	 */
 	heatbathExecutable(int argc, const char* argv[]);
 
-	/**
-	 * Performs heatbath algorithms (including thermalization) on gaugefield object and
-	 * measures of gauge observables on each iteration (not during thermalization).
-	 */
-	void performHeatbathAndMeasureGaugeObservables();
-
 private:
-	const std::string 	filenameForHeatbathLogfile 		= "heatbath.log";
+	const std::string filenameForHeatbathLogfile = "heatbath.log";
 	int heatbathSteps;
 	int overrelaxSteps;
+
+	void thermalizeAccordingToSpecificAlgorithm();
+
+	void generateAccordingToSpecificAlgorithm();
 
 	void writeHeatbathLogfile();
 
 	void setIterationParameters();
-
-	void thermalize();
-
-	void generate();
 };
 
 #endif /* HEATBATHEXECUTABLE_H_ */

@@ -30,28 +30,12 @@ void heatbathExecutable::setIterationParameters()
 	overrelaxSteps = parameters.get_overrelaxsteps();
 }
 
-void heatbathExecutable::thermalize()
-{
-	logger.info() << "Start thermalization";
-	int iteration = 0;
-	writeGaugeObservablesToScreen(iteration);
-	for (; iteration < thermalizationSteps; iteration++)
-	{
-		physics::algorithms::heatbath(*gaugefield, *prng);
-	}
-	logger.info() << "thermalization done";
+void heatbathExecutable::thermalizeAccordingToSpecificAlgorithm() {
+	physics::algorithms::heatbath(*gaugefield, *prng);
 }
 
-inline void heatbathExecutable::generate()
-{
-	logger.info() << "Start heatbath";
-	for (int iteration = 0; iteration < generationSteps; iteration++)
-	{
-		physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
-		measureGaugeObservables(iteration);
-		saveGaugefield(iteration);
-	}
-	logger.info() << "heatbath done";
+void heatbathExecutable::generateAccordingToSpecificAlgorithm() {
+	physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
 }
 
 int main(int argc, const char* argv[])

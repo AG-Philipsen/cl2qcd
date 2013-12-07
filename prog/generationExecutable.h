@@ -40,9 +40,13 @@ protected:
 
 	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration);
 
-	void virtual thermalize() {};
+	void thermalize();
 
-	void virtual generate() {};
+	void generate();
+
+	void virtual thermalizeAccordingToSpecificAlgorithm() {};
+
+	void virtual generateAccordingToSpecificAlgorithm() {};
 };
 
 

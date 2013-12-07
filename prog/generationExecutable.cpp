@@ -85,3 +85,29 @@ void generationExecutable::generateConfigurations()
 	generate();
 	performanceTimer.add();
 }
+
+void generationExecutable::thermalize()
+{
+	logger.info() << "Start thermalization";
+	int iteration = 0;
+	writeGaugeObservablesToScreen(iteration);
+	for (; iteration < thermalizationSteps; iteration++)
+	 {
+		thermalizeAccordingToSpecificAlgorithm();
+	}
+	logger.info() << "thermalization done";
+}
+
+void generationExecutable::generate()
+{
+	logger.info() << "Start generation of configurations";
+	for (int iteration = 0; iteration < generationSteps; iteration++)
+	 {
+		generateAccordingToSpecificAlgorithm();
+		measureGaugeObservables(iteration);
+		saveGaugefield(iteration);
+	}
+	logger.info() << "generation done";
+}
+
+
