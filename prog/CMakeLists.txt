@@ -140,6 +140,7 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 set_abs_paths(OPTIMAL_FILES
 	generalExecutable.cpp
 	measurementExecutable.cpp
+	generationExecutable.cpp
 	exceptions.cpp
 	host_geometry.cpp
 	host_operations_gaugefield.cpp
