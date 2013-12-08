@@ -46,9 +46,11 @@ void generationExecutable::measureGaugeObservables(int& iteration)
 
 void generationExecutable::saveGaugefield(int iteration)
 {
-	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)
-			|| (iteration == generationSteps - 1)) {
+	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		gaugefield->save(iteration + 1);
+	}
+	if (iteration == generationSteps - 1) {
+		gaugefield->save("conf.save", iteration + 1);
 	}
 }
 
@@ -88,26 +90,26 @@ void generationExecutable::generateConfigurations()
 
 void generationExecutable::thermalize()
 {
-	logger.info() << "Start thermalization";
+	logger.info() << "Start thermalization...";
 	int iteration = 0;
 	writeGaugeObservablesToScreen(iteration);
 	for (; iteration < thermalizationSteps; iteration++)
 	 {
 		thermalizeAccordingToSpecificAlgorithm();
 	}
-	logger.info() << "thermalization done";
+	logger.info() << "...thermalization done";
 }
 
 void generationExecutable::generate()
 {
-	logger.info() << "Start generation of configurations";
+	logger.info() << "Start generation of configurations...";
 	for (int iteration = 0; iteration < generationSteps; iteration++)
 	 {
 		generateAccordingToSpecificAlgorithm();
 		measureGaugeObservables(iteration);
 		saveGaugefield(iteration);
 	}
-	logger.info() << "generation done";
+	logger.info() << "...generation done";
 }
 
 
