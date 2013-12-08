@@ -9,6 +9,7 @@
 #define HMCEXECUTABLE_H_
 
 #include "generationExecutable.h"
+#include "physics/algorithms/hmc.hpp"
 
 class hmcExecutable : public generationExecutable
 {
@@ -17,6 +18,8 @@ public:
 
 protected:
 	const std::string filenameForHmcLogfile = "hmc.log";
+	double acceptanceRate = 0;
+	hmc_observables observables;
 
 	/*
 	 * Sets member variables that control the iterations during

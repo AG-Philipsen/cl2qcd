@@ -30,12 +30,14 @@ void hmcExecutable::setIterationParameters()
 
 void hmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 {
-
+	logger.warn() << "Thermalization is not yet implemented for HMC algorithm";
 }
 
 void hmcExecutable::generateAccordingToSpecificAlgorithm()
 {
-
+	const double randomNumber = prng->get_double();
+	observables = physics::algorithms::perform_hmc_step(gaugefield, iteration, randomNumber, *prng, *system);
+	acceptanceRate += observables.accept;
 }
 
 void hmcExecutable::performOnlineMeasurements(int iteration)
