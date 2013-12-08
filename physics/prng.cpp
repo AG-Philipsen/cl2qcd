@@ -232,6 +232,7 @@ void physics::gaussianComplexVector(hmc_complex * vector, int length, hmc_float 
 
 void physics::PRNG::store(const std::string filename) const
 {
+	logger.info() << "saving current prng state to file \"" << filename << "\"";
 	// TODO this misses a lot of error handling
 	std::ofstream file(filename.c_str(), std::ios_base::binary);
 	file << "OpTiMaL PRNG State\n";
@@ -256,7 +257,6 @@ void physics::PRNG::store(const std::string filename) const
 void physics::PRNG::save(int number)
 {
 	std::string outputfile = meta::create_prng_name(system.get_inputparameters());
-	logger.info() << "saving current prng state to file \"" << outputfile << "\"";
 	//TODO: Include trajectory number in file
 	store(outputfile);
 }
@@ -264,7 +264,6 @@ void physics::PRNG::save(int number)
 void physics::PRNG::saveToSpecificFile(int number)
 {
 	std::string outputfile = meta::create_prng_name(system.get_inputparameters(), number);
-	logger.info() << "saving current prng state to file \"" << outputfile << "\"";
 	//TODO: Include trajectory number in file
 	store(outputfile);
 }

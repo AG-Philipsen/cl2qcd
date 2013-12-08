@@ -268,7 +268,6 @@ std::string meta::create_configuration_name(const Inputparameters& parameters, i
 	stringstream outfilename;
 	outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
 	string outputfile = outfilename.str();
-	logger.info() << outputfile;
 	return outputfile;
 }
 
@@ -278,7 +277,6 @@ std::string meta::create_configuration_name(const Inputparameters& parameters) n
 	stringstream outfilename;
 	outfilename << parameters.get_config_prefix() << "save" << parameters.get_config_postfix();
 	string outputfile = outfilename.str();
-	logger.info() << outputfile;
 	return outputfile;
 }
 

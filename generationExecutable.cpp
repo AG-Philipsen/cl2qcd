@@ -49,11 +49,9 @@ void generationExecutable::measureGaugeObservables()
 
 void generationExecutable::saveGaugefield()
 {
+        gaugefield->save(iteration+1);
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
-		gaugefield->save(iteration + 1);
-	}
-	if (iteration == generationSteps - 1) {
-		gaugefield->save("conf.save", iteration + 1);
+		gaugefield->saveToSpecificFile(iteration + 1);
 	}
 }
 
