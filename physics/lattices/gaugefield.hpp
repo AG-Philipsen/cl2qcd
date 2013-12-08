@@ -70,10 +70,15 @@ namespace physics {
 			Gaugefield() = delete;
 
 			/**
-			 * Save gaugefield to a file with name conf.number
+			 * Save gaugefield to a file with name conf_prefix + save + conf_postfix
 			 * @param[in] number The trajectory number to be stored in the file
 			 */
 			void save(int number);
+			/**
+			 * Save gaugefield to a file with name conf_prefix + number + conf_postfix
+			 * @param[in] number The trajectory number to be stored in the file
+			 */
+			void saveToSpecificFile(int number);
 			/**
 			 * Save gaugefield to a file with given name
 			 * @param[in] outputfile name of file

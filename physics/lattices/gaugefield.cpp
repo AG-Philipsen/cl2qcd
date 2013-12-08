@@ -199,6 +199,12 @@ void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems)
 
 void physics::lattices::Gaugefield::save(int number)
 {
+	std::string outputfile = meta::create_configuration_name(system.get_inputparameters());
+	save(outputfile, number);
+}
+
+void physics::lattices::Gaugefield::saveToSpecificFile(int number)
+{
 	std::string outputfile = meta::create_configuration_name(system.get_inputparameters(), number);
 	save(outputfile, number);
 }
