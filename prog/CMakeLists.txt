@@ -183,7 +183,7 @@ target_link_libraries(heatbath optimal)
 add_executable(inverter inverterExecutable.cpp)
 target_link_libraries(inverter optimal)
 
-add_executable(hmc hmc.cpp)
+add_executable(hmc hmcExecutable.cpp)
 target_link_libraries(hmc optimal)
 
 add_executable(rhmc rhmc.cpp)
