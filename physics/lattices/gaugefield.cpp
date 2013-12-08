@@ -211,6 +211,7 @@ void physics::lattices::Gaugefield::saveToSpecificFile(int number)
 
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
+	logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
 	auto parameters = system.get_inputparameters();
 	const size_t NTIME = parameters.get_ntime();
 	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME * sizeof(hmc_float);
