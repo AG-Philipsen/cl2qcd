@@ -68,6 +68,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_overrelaxsteps(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_xi(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_measure_transportcoefficient_kappa(), false);
+	BOOST_REQUIRE_EQUAL(params.get_measure_rectangles(), false);
 
 	//fermionic parameters
 	BOOST_REQUIRE_EQUAL(params.get_fermact(), Inputparameters::wilson);

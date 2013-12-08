@@ -108,6 +108,7 @@ public:
 	int get_overrelaxsteps() const noexcept;
 	int get_xi() const noexcept;
 	bool get_measure_transportcoefficient_kappa() const noexcept;
+	bool get_measure_rectangles() const noexcept;
 
 	//fermionic parameters
 	action get_fermact() const noexcept;
@@ -254,6 +255,7 @@ private:
 	int overrelaxsteps;
 	int xi;
 	bool measure_transportcoefficient_kappa;
+        bool measure_rectangles;
 
 	//fermionic parameters
 	action fermact;

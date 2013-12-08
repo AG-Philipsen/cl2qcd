@@ -191,6 +191,10 @@ bool Inputparameters::get_measure_transportcoefficient_kappa() const noexcept
 {
 	return measure_transportcoefficient_kappa;
 }
+bool Inputparameters::get_measure_rectangles() const noexcept
+{
+  return measure_rectangles;
+}
 
 //fermionic parameters
 Inputparameters::action Inputparameters::get_fermact() const noexcept
@@ -630,6 +634,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
 	("xi", po::value<int>(&xi)->default_value(1))
 	("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
+	("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) )
 
 	//fermionic parameters
 	("fermact", po::value<std::string>()->default_value("wilson"))
