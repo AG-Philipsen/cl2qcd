@@ -24,6 +24,7 @@
 add_library(physics
 	prng.cpp
 	sources.cpp
+	gaugeObservables.cpp
 	../host_random.cpp
 )
 add_modules(physics
