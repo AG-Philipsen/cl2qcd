@@ -25,7 +25,7 @@ inline void heatbathExecutable::writeHeatbathLogfile()
 void heatbathExecutable::setIterationParameters()
 {
 	generationExecutable::setIterationParameters();
-	generationSteps = parameters.get_heatbathsteps();
+	generationSteps += parameters.get_heatbathsteps();
 	overrelaxSteps = parameters.get_overrelaxsteps();
 }
 

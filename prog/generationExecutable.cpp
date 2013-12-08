@@ -9,10 +9,12 @@ generationExecutable::generationExecutable(int argc, const char* argv[]) : gener
 
 void generationExecutable::setIterationParameters()
 {
-	thermalizationSteps 	= parameters.get_thermalizationsteps();
+	//NOTE: this is 0 in case of cold or hot start
+	iteration 				= gaugefield->get_parameters_source().trajectorynr_source;
+	thermalizationSteps 	= iteration + parameters.get_thermalizationsteps();
+	generationSteps 		= thermalizationSteps;
 	writeFrequency 			= parameters.get_writefrequency();
 	saveFrequency 			= parameters.get_savefrequency();
-	generationSteps 		= 0;
 }
 
 void generationExecutable::writeGaugeObservablesToFile(int& iteration)
@@ -100,7 +102,6 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization...";
-	int iteration = 0;
 	writeGaugeObservablesToScreen(iteration);
 	for (; iteration < thermalizationSteps; iteration++)
 	 {
@@ -112,7 +113,7 @@ void generationExecutable::thermalize()
 void generationExecutable::generate()
 {
 	logger.info() << "Start generation of configurations...";
-	for (int iteration = 0; iteration < generationSteps; iteration++)
+	for (; iteration < generationSteps; iteration++)
 	 {
 		generateAccordingToSpecificAlgorithm();
 		performOnlineMeasurements(iteration);

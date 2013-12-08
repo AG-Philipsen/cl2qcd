@@ -20,6 +20,7 @@ protected:
 	int saveFrequency;
 	int thermalizationSteps;
 	int generationSteps;
+	int iteration;
 	std::string filenameForGaugeobservables;
 
 	/**
