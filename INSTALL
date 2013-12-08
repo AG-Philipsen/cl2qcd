@@ -1,0 +1,51 @@
+The hmc code uses CMake for build configuration and can in principle be build
+via the usual steps:
+
+mkdir build
+cd build
+cmake -i ..
+make
+
+
+Note that the build will not happen in the source directory. This is a desired
+behaviour as it makes accidently adding build or execution results to the
+version control system less likely.
+
+The following libraries will be required:
+* OpenCL (http://www.khronos.org/opencl)
+* LIME (http://usqcd.jlab.org/usqcd-docs/c-lime/)
+* libxml2 (http://xmlsoft.org)
+* Boost (http://www.boost.org/)
+* GMP (http://gmplib.org/)
+* MPFR (http://www.mpfr.org/)
+* Nettle (http://www.lysator.liu.se/~nisse/nettle/)
+
+The compiler must be capable of basic C++11 features. Using one of the following
+compilers is recommended:
+* GCC >= 4.7
+* Clang >= 3.2
+
+The following software is not required, but used to build documentation and by
+auxiliary scripts:
+* doxygen (http://www.stack.nl/~dimitri/doxygen/)
+* Python 2 (http://python.org)
+
+The build configuration uses some non-standard cmake scripts.
+
+To find the OpenCL library a script calld FindOpenCL.cmake is used. You can
+download the script from http://gitorious.org/findopencl. Make sure it can be
+found by CMake. One option is to symlink it into some path searched for by
+CMake, e.g.:
+
+mkdir -p .cmake/modules
+cd .cmake/modules
+wget http://gitorious.org/findopencl/findopencl/blobs/raw/master/FindOpenCL.cmake
+
+and adding the following to .bashrc:
+alias cmake='cmake -DCMAKE_MODULE_PATH=~/.cmake/modules'
+
+If you have the LIME-Library installed in some non-standard location you should
+add it to your LIBRARY_PATH:
+export LIBRARY_PATH=/path/to/lime/lib
+
+Note that that you of course also can simply inter the proper paths into CMake.
