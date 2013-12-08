@@ -17,34 +17,12 @@ void generationExecutable::setIterationParameters()
 	saveFrequency 			= parameters.get_savefrequency();
 }
 
-void generationExecutable::writeGaugeObservablesToFile()
-{
-	if (((iteration + 1) % writeFrequency) == 0) {
-		filenameForGaugeobservables = meta::get_gauge_obs_file_name(parameters,
-				"");
-		print_gaugeobservables(*gaugefield, iteration,
-				filenameForGaugeobservables);
-	}
-}
-
-void generationExecutable::writeGaugeObservablesToScreen()
-{
-	if (parameters.get_print_to_screen() || (iteration == 0)) {
-		print_gaugeobservables(*gaugefield, iteration);
-	}
-}
-
-void generationExecutable::writeGaugeObservablesToScreenAndFile() {
-	writeGaugeObservablesToScreen();
-	writeGaugeObservablesToFile();
-}
-
 void generationExecutable::measureGaugeObservables()
 {
-	writeGaugeObservablesToScreenAndFile();
-	if ( parameters.get_measure_transportcoefficient_kappa() ) {
-		measureTransportcoefficientKappa();
-	}
+  measurePlaqAndPoly(*gaugefield, iteration, parameters);
+  if ( parameters.get_measure_transportcoefficient_kappa() ) {
+    measureTransportcoefficientKappa();
+  }
 }
 
 void generationExecutable::saveGaugefield()
@@ -100,7 +78,7 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization...";
-	writeGaugeObservablesToScreen();
+	measureGaugeObservables();
 	for (; iteration < thermalizationSteps; iteration++)
 	 {
 		thermalizeAccordingToSpecificAlgorithm();

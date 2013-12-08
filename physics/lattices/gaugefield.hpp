@@ -28,6 +28,7 @@
 #include "../prng.hpp"
 #include "../../host_readgauge.h"
 #include "../../hardware/code/gaugefield.hpp"
+#include "../../meta/inputparameters.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -175,6 +176,12 @@ namespace physics {
 		 * Print the gaugeobservables of the given gaugefield to the given file
 		 */
 		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename);
+
+		/**
+		 * Measures plaquette and polyakov loop and writes them to file
+		 */
+	  void measurePlaqAndPoly(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename, meta::Inputparameters params);
+	  void measurePlaqAndPoly(const physics::lattices::Gaugefield& gf, int iter, meta::Inputparameters params);
 	}
 }
 

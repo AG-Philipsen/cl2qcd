@@ -43,12 +43,6 @@ protected:
 	 **/
 	void savePrng();
 
-	void writeGaugeObservablesToFile();
-
-	void writeGaugeObservablesToScreen();
-
-	void writeGaugeObservablesToScreenAndFile();
-
 	void measureGaugeObservables();
 
 	void measureTransportcoefficientKappa();
