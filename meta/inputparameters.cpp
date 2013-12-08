@@ -480,6 +480,14 @@ std::string Inputparameters::get_prng_prefix() const noexcept
 {
   return prng_prefix;
 }
+std::string Inputparameters::get_rectanglesFilename() const noexcept
+{
+  return rectanglesFilename;
+}
+std::string Inputparameters::get_transportcoefficientKappaFilename() const noexcept
+{
+  return transportcoefficientKappaFilename;
+}
 std::string Inputparameters::get_prng_postfix() const noexcept
 {
   return prng_postfix;
@@ -725,6 +733,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")
 	("prng_prefix", po::value<std::string>(&prng_prefix)->default_value("prng."), "Prefix for PRNG configuration")
 	("prng_postfix", po::value<std::string>(&prng_postfix)->default_value(""), "Postfix for PRNG configuration")
+	("rectanglesFilename", po::value<std::string>(&rectanglesFilename)->default_value("gaugeObsRectangles.dat"), "Filename for rectangles measurements")
+	("transportcoefficientKappaFilename", po::value<std::string>(&transportcoefficientKappaFilename)->default_value("GaugeObsKappa"), "Filename for transportcoefficient kappa measurements")
 
 	//parameters to write out observables
 	("gauge_obs_to_single_file", po::value<bool>(&gauge_obs_to_single_file)->default_value(true), "Save gauge observables to one single file")

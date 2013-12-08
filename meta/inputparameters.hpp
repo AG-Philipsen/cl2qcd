@@ -205,6 +205,9 @@ public:
 	bool get_measure_correlators() const noexcept;
 	bool get_measure_pbp() const noexcept;
 
+	std::string get_rectanglesFilename() const noexcept;
+	std::string get_transportcoefficientKappaFilename() const noexcept;
+
 	std::string get_log_level() const noexcept;
 
 	sourcetypes get_sourcetype() const noexcept;
@@ -341,6 +344,9 @@ private:
 
 	std::string prng_prefix;
 	std::string prng_postfix;
+
+	std::string rectanglesFilename;
+	std::string transportcoefficientKappaFilename;
 
 	//parameters to write out observables
 	bool gauge_obs_to_single_file;
