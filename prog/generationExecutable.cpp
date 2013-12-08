@@ -9,9 +9,10 @@ generationExecutable::generationExecutable(int argc, const char* argv[]) : gener
 
 void generationExecutable::setIterationParameters()
 {
-	thermalizationSteps = parameters.get_thermalizationsteps();
-	writeFrequency = parameters.get_writefrequency();
-	saveFrequency = parameters.get_savefrequency();
+	thermalizationSteps 	= parameters.get_thermalizationsteps();
+	writeFrequency 			= parameters.get_writefrequency();
+	saveFrequency 			= parameters.get_savefrequency();
+	generationSteps 		= 0;
 }
 
 void generationExecutable::writeGaugeObservablesToFile(int& iteration)

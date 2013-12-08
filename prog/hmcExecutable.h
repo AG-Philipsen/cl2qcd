@@ -16,11 +16,15 @@ public:
 	hmcExecutable(int argc, const char* argv[]);
 
 protected:
+	const std::string filenameForHmcLogfile = "hmc.log";
+
 	/*
 	 * Sets member variables that control the iterations during
 	 * the generation of gaugefield configurations.
 	 */
 	void setIterationParameters();
+
+	void writeHmcLogfile();
 
 	void thermalizeAccordingToSpecificAlgorithm();
 

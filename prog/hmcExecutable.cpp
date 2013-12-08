@@ -3,7 +3,23 @@
 hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
 	generationExecutable(argc, argv)
 {
+	initializationTimer.reset();
+	meta::print_info_hmc(ownName, parameters);
+	writeHmcLogfile();
+	setIterationParameters();
+	initializationTimer.add();
+}
 
+inline void hmcExecutable::writeHmcLogfile()
+{
+	outputToFile.open(filenameForHmcLogfile,
+			std::ios::out | std::ios::app);
+	if (outputToFile.is_open()) {
+		meta::print_info_heatbath(ownName, &outputToFile, parameters);
+		outputToFile.close();
+	} else {
+		throw File_Exception(filenameForHmcLogfile);
+	}
 }
 
 void hmcExecutable::setIterationParameters()
