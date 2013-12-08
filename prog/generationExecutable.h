@@ -22,7 +22,18 @@ protected:
 	int generationSteps;
 	std::string filenameForGaugeobservables;
 
+	/*
+	 * Sets member variables that control the iterations during
+	 * the generation of gaugefield configurations.
+	 */
 	void setIterationParameters();
+
+	/*
+	 * Saves current gaugefield configuration to disk if current iteration
+	 * is a multiple of the inputparameter save_frequency or if it is the
+	 * last iteration.
+	 */
+	void saveGaugefield(int iteration);
 
 	void writeGaugeObservablesToFile(int& iteration);
 
@@ -32,16 +43,24 @@ protected:
 
 	void measureGaugeObservables(int& iteration);
 
-	void saveGaugefield(int iteration);
-
 	void measureTransportcoefficientKappa(int iteration);
 
 	void writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename);
 
 	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration);
 
+	/*
+	 * Performs thermalization of the physical system according to the algorithm
+	 * specified in the "thermalizeAccordingToSpecificAlgorithm" function.
+	 */
 	void thermalize();
 
+	/*
+	 * Generates a new gauge configuration according to the algorithm
+	 * specified in the "generateAccordingToSpecificAlgorithm" function.
+	 * Performs measurements on this configuration according to the
+	 * function "performOnlineMeasurements".
+	 */
 	void generate();
 
 	void virtual thermalizeAccordingToSpecificAlgorithm() {};
