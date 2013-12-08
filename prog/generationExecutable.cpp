@@ -125,6 +125,8 @@ void generationExecutable::generate()
 
 void generationExecutable::performOnlineMeasurements()
 {
-	measureGaugeObservables();
+	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
+		measureGaugeObservables();
+	}
 }
 
