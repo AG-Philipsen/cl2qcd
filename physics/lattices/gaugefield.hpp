@@ -177,11 +177,6 @@ namespace physics {
 		 */
 		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename);
 
-		/**
-		 * Measures plaquette and polyakov loop and writes them to file
-		 */
-	  void measurePlaqAndPoly(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename, meta::Inputparameters params);
-	  void measurePlaqAndPoly(const physics::lattices::Gaugefield& gf, int iter, meta::Inputparameters params);
 	}
 }
 

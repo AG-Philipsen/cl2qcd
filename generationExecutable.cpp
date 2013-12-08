@@ -19,7 +19,7 @@ void generationExecutable::setIterationParameters()
 
 void generationExecutable::measureGaugeObservables()
 {
-  measurePlaqAndPoly(*gaugefield, iteration, parameters);
+  gaugeObservablesInstance.measurePlaqAndPoly(*gaugefield, iteration, parameters);
   if ( parameters.get_measure_transportcoefficient_kappa() ) {
     measureTransportcoefficientKappa();
   }
