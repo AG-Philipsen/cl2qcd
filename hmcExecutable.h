@@ -17,6 +17,7 @@ class hmcExecutable : public generationExecutable
 public:
 	hmcExecutable(int argc, const char* argv[]);
 
+	~hmcExecutable();
 protected:
 	const std::string filenameForHmcLogfile = "hmc.log";
 	double acceptanceRate = 0;

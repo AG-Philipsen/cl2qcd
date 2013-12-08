@@ -10,6 +10,12 @@ hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
 	initializationTimer.add();
 }
 
+hmcExecutable::~hmcExecutable()
+{
+  using namespace std;
+  logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acceptanceRate, parameters.get_hmcsteps()) << "%";
+}
+
 inline void hmcExecutable::writeHmcLogfile()
 {
 	outputToFile.open(filenameForHmcLogfile,
