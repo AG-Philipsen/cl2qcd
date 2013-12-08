@@ -32,7 +32,7 @@ private:
 
 	void setIterationParameters();
 
-	void performOnlineMeasurements(int iteration);
+	void performOnlineMeasurements();
 };
 
 #endif /* HEATBATHEXECUTABLE_H_ */

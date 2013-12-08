@@ -37,9 +37,9 @@ void heatbathExecutable::generateAccordingToSpecificAlgorithm() {
 	physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
 }
 
-void heatbathExecutable::performOnlineMeasurements(int iteration)
+void heatbathExecutable::performOnlineMeasurements()
 {
-	measureGaugeObservables(iteration);
+	measureGaugeObservables();
 }
 
 int main(int argc, const char* argv[])

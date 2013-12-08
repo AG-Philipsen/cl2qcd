@@ -40,17 +40,17 @@ void hmcExecutable::generateAccordingToSpecificAlgorithm()
 	acceptanceRate += observables.accept;
 }
 
-void hmcExecutable::performOnlineMeasurements(int iteration)
+void hmcExecutable::performOnlineMeasurements()
 {
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
 		std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
-		print_hmcobservables(observables, iteration, gaugeout_name, parameters);
+		print_hmcobservables(gaugeout_name, parameters);
 	} else if(parameters.get_print_to_screen() ) {
-		print_hmcobservables(observables, iteration);
+		print_hmcobservables();
 	}
 }
 
-void hmcExecutable::print_hmcobservables(const hmc_observables& observables, const int iter, const std::string& filename, const meta::Inputparameters& params)
+void hmcExecutable::print_hmcobservables(const std::string& filename, const meta::Inputparameters& params)
 {
 	const hmc_float exp_deltaH = std::exp(observables.deltaH);
 	std::fstream hmcout(filename.c_str(), std::ios::out | std::ios::app);
@@ -83,14 +83,14 @@ void hmcExecutable::print_hmcobservables(const hmc_observables& observables, con
 	hmcout.close();
 
 	//print to screen
-	print_hmcobservables(observables, iter);
+	print_hmcobservables();
 }
 
-void hmcExecutable::print_hmcobservables(const hmc_observables& obs, const int iter)
+void hmcExecutable::print_hmcobservables()
 {
 	using namespace std;
 	//short version of output, all obs are collected in the output file anyways...
-	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
+	logger.info() << "\tHMC [OBS]:\t" << iteration << setw(8) << setfill(' ') << "\t" << setprecision(15) << observables.plaq << "\t" << observables.poly.re << "\t" << observables.poly.im;
 }
 
 int main(int argc, const char* argv[])

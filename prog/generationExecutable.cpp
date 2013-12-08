@@ -17,7 +17,7 @@ void generationExecutable::setIterationParameters()
 	saveFrequency 			= parameters.get_savefrequency();
 }
 
-void generationExecutable::writeGaugeObservablesToFile(int& iteration)
+void generationExecutable::writeGaugeObservablesToFile()
 {
 	if (((iteration + 1) % writeFrequency) == 0) {
 		filenameForGaugeobservables = meta::get_gauge_obs_file_name(parameters,
@@ -27,27 +27,27 @@ void generationExecutable::writeGaugeObservablesToFile(int& iteration)
 	}
 }
 
-void generationExecutable::writeGaugeObservablesToScreen(int& iteration)
+void generationExecutable::writeGaugeObservablesToScreen()
 {
 	if (parameters.get_print_to_screen() || (iteration == 0)) {
 		print_gaugeobservables(*gaugefield, iteration);
 	}
 }
 
-void generationExecutable::writeGaugeObservablesToScreenAndFile(int iteration) {
-	writeGaugeObservablesToScreen(iteration);
-	writeGaugeObservablesToFile(iteration);
+void generationExecutable::writeGaugeObservablesToScreenAndFile() {
+	writeGaugeObservablesToScreen();
+	writeGaugeObservablesToFile();
 }
 
-void generationExecutable::measureGaugeObservables(int& iteration)
+void generationExecutable::measureGaugeObservables()
 {
-	writeGaugeObservablesToScreenAndFile(iteration);
+	writeGaugeObservablesToScreenAndFile();
 	if ( parameters.get_measure_transportcoefficient_kappa() ) {
-		measureTransportcoefficientKappa(iteration);
+		measureTransportcoefficientKappa();
 	}
 }
 
-void generationExecutable::saveGaugefield(int iteration)
+void generationExecutable::saveGaugefield()
 {
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		gaugefield->save(iteration + 1);
@@ -57,7 +57,7 @@ void generationExecutable::saveGaugefield(int iteration)
 	}
 }
 
-void generationExecutable::savePrng(int iteration)
+void generationExecutable::savePrng()
 {
 	prng->save(iteration + 1);
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
@@ -65,25 +65,25 @@ void generationExecutable::savePrng(int iteration)
 	}
 }
 
-void generationExecutable::measureTransportcoefficientKappa(int iteration)
+void generationExecutable::measureTransportcoefficientKappa()
 {
 	double kappa = 0;
 	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters.get_beta());
-	writeTransportcoefficientKappaToFile(kappa, iteration, "kappa_clover.dat");
+	writeTransportcoefficientKappaToFile(kappa, "kappa_clover.dat");
 }
 
-void generationExecutable::writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration)
+void generationExecutable::writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa)
 {
 	outputToFile.width(8);
 	outputToFile.precision(15);
 	outputToFile << iteration << "\t" << kappa << std::endl;
 }
 
-void generationExecutable::writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename)
+void generationExecutable::writeTransportcoefficientKappaToFile(hmc_float kappa, std::string filename)
 {
 	outputToFile.open(filename.c_str(), std::ios::app);
 	if ( outputToFile.is_open() ) {
-		writeTransportcoefficientKappaToFileUsingOpenOutputStream(kappa, iteration);
+		writeTransportcoefficientKappaToFileUsingOpenOutputStream(kappa);
 		outputToFile.close();
 	} else {
 		logger.warn() << "Could not open " << filename;
@@ -102,7 +102,7 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization...";
-	writeGaugeObservablesToScreen(iteration);
+	writeGaugeObservablesToScreen();
 	for (; iteration < thermalizationSteps; iteration++)
 	 {
 		thermalizeAccordingToSpecificAlgorithm();
@@ -116,9 +116,9 @@ void generationExecutable::generate()
 	for (; iteration < generationSteps; iteration++)
 	 {
 		generateAccordingToSpecificAlgorithm();
-		performOnlineMeasurements(iteration);
-		saveGaugefield(iteration);
-		savePrng(iteration);
+		performOnlineMeasurements();
+		saveGaugefield();
+		savePrng();
 	}
 	logger.info() << "...generation done";
 }

@@ -34,28 +34,28 @@ protected:
 	 * is a multiple of the inputparameter save_frequency or if it is the
 	 * last iteration.
 	 **/
-	void saveGaugefield(int iteration);
+	void saveGaugefield();
 
 	/**
 	 * Saves current prng configuration to disk if current iteration
 	 * is a multiple of the inputparameter save_frequency or if it is the
 	 * last iteration.
 	 **/
-	void savePrng(int iteration);
+	void savePrng();
 
-	void writeGaugeObservablesToFile(int& iteration);
+	void writeGaugeObservablesToFile();
 
-	void writeGaugeObservablesToScreen(int& iteration);
+	void writeGaugeObservablesToScreen();
 
-	void writeGaugeObservablesToScreenAndFile(int iteration);
+	void writeGaugeObservablesToScreenAndFile();
 
-	void measureGaugeObservables(int& iteration);
+	void measureGaugeObservables();
 
-	void measureTransportcoefficientKappa(int iteration);
+	void measureTransportcoefficientKappa();
 
-	void writeTransportcoefficientKappaToFile(hmc_float kappa, int iteration, std::string filename);
+	void writeTransportcoefficientKappaToFile(hmc_float kappa, std::string filename);
 
-	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa, int iteration);
+	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa);
 
 	/*
 	 * Performs thermalization of the physical system according to the algorithm
@@ -75,7 +75,7 @@ protected:
 
 	void virtual generateAccordingToSpecificAlgorithm() {};
 
-	void virtual performOnlineMeasurements(int iteration) {};
+	void virtual performOnlineMeasurements() {};
 };
 
 

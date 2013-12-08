@@ -34,11 +34,11 @@ protected:
 
 	void generateAccordingToSpecificAlgorithm();
 
-	void performOnlineMeasurements(int iteration);
+	void performOnlineMeasurements();
 
-	void print_hmcobservables(const hmc_observables& obs, int iter, const std::string& filename, const meta::Inputparameters& params);
+	void print_hmcobservables(const std::string& filename, const meta::Inputparameters& params);
 
-	void print_hmcobservables(const hmc_observables& obs, int iter);
+	void print_hmcobservables();
 };
 
 #endif /* HMCEXECUTABLE_H_ */
