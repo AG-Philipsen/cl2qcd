@@ -232,7 +232,7 @@ private:
 	int heatbathsteps;
 	int overrelaxsteps;
 	int xi;
-//	bool measure_transportcoefficient_kappa;
+	bool measure_transportcoefficient_kappa;
 
 	//fermionic parameters
 	action fermact;
