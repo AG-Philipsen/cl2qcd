@@ -123,4 +123,8 @@ void generationExecutable::generate()
 	logger.info() << "...generation done";
 }
 
+void generationExecutable::performOnlineMeasurements()
+{
+	measureGaugeObservables();
+}
 

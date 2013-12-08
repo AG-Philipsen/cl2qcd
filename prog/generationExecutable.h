@@ -57,25 +57,30 @@ protected:
 
 	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa);
 
-	/*
+	/**
 	 * Performs thermalization of the physical system according to the algorithm
 	 * specified in the "thermalizeAccordingToSpecificAlgorithm" function.
-	 */
+	 **/
 	void thermalize();
 
-	/*
+	/**
 	 * Generates a new gauge configuration according to the algorithm
 	 * specified in the "generateAccordingToSpecificAlgorithm" function.
 	 * Performs measurements on this configuration according to the
 	 * function "performOnlineMeasurements".
-	 */
+	 **/
 	void generate();
 
 	void virtual thermalizeAccordingToSpecificAlgorithm() {};
 
 	void virtual generateAccordingToSpecificAlgorithm() {};
 
-	void virtual performOnlineMeasurements() {};
+	/**
+	 * Measurements to be performed after each step of configuration generation.
+	 * By default this measures the gauge observables.
+	 * This function can be replaced by a more specific one for each specific algorithm.
+	 */
+	void virtual performOnlineMeasurements();
 };
 
 
