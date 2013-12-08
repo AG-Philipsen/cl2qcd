@@ -55,7 +55,7 @@ void measurementExecutable::performMeasurementsForSpecificIteration(int iteratio
 {
 	initializeGaugefield(iteration);
 	performApplicationSpecificMeasurements();
-	saveCurrentPrngStateToFile();
+	prng->save(iteration);
 	delete gaugefield;
 }
 

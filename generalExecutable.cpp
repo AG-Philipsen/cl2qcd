@@ -53,9 +53,3 @@ void generalExecutable::printGeneralTimesToFile()
 	return;
 }
 
-void generalExecutable::saveCurrentPrngStateToFile()
-{
-	logger.info() << "saving current prng state to \"" << filenameForCurrentPrngState << "\"";
-	prng->store(filenameForCurrentPrngState);
-}
-

@@ -52,8 +52,6 @@ protected:
 	void printGeneralTimesToScreen();
 
 	void printGeneralTimesToFile();
-
-	void saveCurrentPrngStateToFile();
 };
 
 #endif /* GENERALEXECUTABLE_H_ */
