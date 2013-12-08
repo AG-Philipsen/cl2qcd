@@ -17,14 +17,6 @@ void generationExecutable::setIterationParameters()
 	saveFrequency 			= parameters.get_savefrequency();
 }
 
-void generationExecutable::measureGaugeObservables()
-{
-  gaugeObservablesInstance.measurePlaqAndPoly(*gaugefield, iteration, parameters);
-  if ( parameters.get_measure_transportcoefficient_kappa() ) {
-    measureTransportcoefficientKappa();
-  }
-}
-
 void generationExecutable::saveGaugefield()
 {
         gaugefield->save(iteration+1);
@@ -41,32 +33,6 @@ void generationExecutable::savePrng()
 	}
 }
 
-void generationExecutable::measureTransportcoefficientKappa()
-{
-	double kappa = 0;
-	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters.get_beta());
-	writeTransportcoefficientKappaToFile(kappa, "kappa_clover.dat");
-}
-
-void generationExecutable::writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa)
-{
-	outputToFile.width(8);
-	outputToFile.precision(15);
-	outputToFile << iteration << "\t" << kappa << std::endl;
-}
-
-void generationExecutable::writeTransportcoefficientKappaToFile(hmc_float kappa, std::string filename)
-{
-	outputToFile.open(filename.c_str(), std::ios::app);
-	if ( outputToFile.is_open() ) {
-		writeTransportcoefficientKappaToFileUsingOpenOutputStream(kappa);
-		outputToFile.close();
-	} else {
-		logger.warn() << "Could not open " << filename;
-		File_Exception(filename.c_str());
-	}
-}
-
 void generationExecutable::generateConfigurations()
 {
 	performanceTimer.reset();
@@ -78,7 +44,7 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization...";
-	measureGaugeObservables();
+	gaugeObservablesInstance.measureGaugeObservables(*gaugefield, iteration, parameters);
 	for (; iteration < thermalizationSteps; iteration++)
 	 {
 		thermalizeAccordingToSpecificAlgorithm();
@@ -102,7 +68,7 @@ void generationExecutable::generate()
 void generationExecutable::performOnlineMeasurements()
 {
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
-		measureGaugeObservables();
+	  gaugeObservablesInstance.measureGaugeObservables(*gaugefield, iteration, parameters);
 	}
 }
 

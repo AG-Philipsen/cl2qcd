@@ -6,7 +6,6 @@
  **/
 
 #include "generalExecutable.h"
-#include "physics/algorithms/kappa_clover.hpp"
 
 class generationExecutable : public generalExecutable
 {
@@ -42,14 +41,6 @@ protected:
 	 * last iteration.
 	 **/
 	void savePrng();
-
-	void measureGaugeObservables();
-
-	void measureTransportcoefficientKappa();
-
-	void writeTransportcoefficientKappaToFile(hmc_float kappa, std::string filename);
-
-	void writeTransportcoefficientKappaToFileUsingOpenOutputStream(hmc_float kappa);
 
 	/**
 	 * Performs thermalization of the physical system according to the algorithm
