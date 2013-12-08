@@ -255,7 +255,6 @@ std::string meta::create_prng_name(const Inputparameters& parameters, int number
 	outfilename << "prng." << strnumber.str() << "";
 	//outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
 	string outputfile = outfilename.str();
-	logger.info() << outputfile;
 	return outputfile;
 }
 
@@ -265,6 +264,5 @@ std::string meta::create_prng_name(const Inputparameters& parameters) noexcept
 	stringstream outfilename;
 	outfilename << "prng." << "save" << "";
 	string outputfile = outfilename.str();
-	logger.info() << outputfile;
 	return outputfile;
 }
