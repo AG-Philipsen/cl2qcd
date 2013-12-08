@@ -1,29 +1,24 @@
 #include "gaugeObservables.h"
 
-void physics::gaugeObservables::writePlaqAndPolyToFile(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter,  const std::string& filename)
+void physics::gaugeObservables::writePlaqAndPolyToFile(int iter,  const std::string& filename)
 {
-	std::ofstream outputFile(filename.c_str(), std::ios::app);
-	if(!outputFile.is_open()) throw File_Exception(filename);
-	outputFile.width(8);
-	outputFile << iter << "\t";
-	outputFile.precision(15);
-	outputFile << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
-	outputFile.close();
+	outputToFile.open(filename.c_str(), std::ios::app);
+	if(!outputToFile.is_open()) throw File_Exception(filename);
+	outputToFile.width(8);
+	outputToFile << iter << "\t";
+	outputToFile.precision(15);
+	outputToFile << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
+	outputToFile.close();
 }
 
 void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield& gf, int iter, const std::string& filename, meta::Inputparameters params)
 {
-	hmc_float plaq;
-	hmc_float tplaq;
-	hmc_float splaq;
-	hmc_complex pol;
-
 	gf.gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 
 	if ( params.get_print_to_screen() ){
 	  logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 	}
-	writePlaqAndPolyToFile(plaq, tplaq, splaq, pol, iter, filename);
+	writePlaqAndPolyToFile(iter, filename);
 }
 
 void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield& gf, int iter, meta::Inputparameters params)
@@ -39,7 +34,6 @@ void physics::gaugeObservables::measureGaugeObservables(physics::lattices::Gauge
     measureTransportcoefficientKappa(gaugefield, iteration, parameters);
   }
 }
-
 
 void physics::gaugeObservables::measureTransportcoefficientKappa(physics::lattices::Gaugefield& gaugefield, int iteration, meta::Inputparameters parameters)
 {

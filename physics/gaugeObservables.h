@@ -29,9 +29,13 @@ namespace physics{
 
 
   private:
+    hmc_float plaq;
+    hmc_float tplaq;
+    hmc_float splaq;
+    hmc_complex pol;
     std::ofstream outputToFile;
 
-    void writePlaqAndPolyToFile(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter,  const std::string& filename);
+    void writePlaqAndPolyToFile(int iter,  const std::string& filename);
     
   };
 }
