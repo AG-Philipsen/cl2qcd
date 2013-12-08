@@ -42,7 +42,55 @@ void hmcExecutable::generateAccordingToSpecificAlgorithm()
 
 void hmcExecutable::performOnlineMeasurements(int iteration)
 {
+	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
+		std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
+		print_hmcobservables(observables, iteration, gaugeout_name, parameters);
+	} else if(parameters.get_print_to_screen() ) {
+		print_hmcobservables(observables, iteration);
+	}
+}
 
+void hmcExecutable::print_hmcobservables(const hmc_observables& observables, const int iter, const std::string& filename, const meta::Inputparameters& params)
+{
+	const hmc_float exp_deltaH = std::exp(observables.deltaH);
+	std::fstream hmcout(filename.c_str(), std::ios::out | std::ios::app);
+	if(!hmcout.is_open()) throw File_Exception(filename);
+	hmcout << iteration << "\t";
+	hmcout.width(8);
+	hmcout.precision(15);
+	//print plaquette (plaq, tplaq, splaq)
+	hmcout << observables.plaq << "\t" << observables.tplaq << "\t" << observables.splaq;
+	//print polyakov loop (re, im, abs)
+	hmcout << "\t" << observables.poly.re << "\t" << observables.poly.im << "\t" << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im);
+	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
+	hmcout <<  "\t" << observables.deltaH << "\t" << exp_deltaH << "\t" << observables.prob << "\t" << observables.accept;
+	//print number of iterations used in inversions with full and force precision
+	/**
+	 * @todo: The counters should be implemented once the solver class is used!"
+	 * until then, only write "0"!
+	 */
+	int iter0 = 0;
+	int iter1 = 0;
+	hmcout << "\t" << iter0 << "\t" << iter1;
+	if(params.get_use_mp() ) {
+		hmcout << "\t" << iter0 << "\t" << iter1;
+	}
+	if(meta::get_use_rectangles(params) ) {
+		//print rectangle value
+		hmcout << "\t" << observables.rectangles;
+	}
+	hmcout << std::endl;
+	hmcout.close();
+
+	//print to screen
+	print_hmcobservables(observables, iter);
+}
+
+void hmcExecutable::print_hmcobservables(const hmc_observables& obs, const int iter)
+{
+	using namespace std;
+	//short version of output, all obs are collected in the output file anyways...
+	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
 }
 
 int main(int argc, const char* argv[])

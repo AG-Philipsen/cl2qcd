@@ -10,6 +10,7 @@
 
 #include "generationExecutable.h"
 #include "physics/algorithms/hmc.hpp"
+#include <cmath>
 
 class hmcExecutable : public generationExecutable
 {
@@ -34,6 +35,10 @@ protected:
 	void generateAccordingToSpecificAlgorithm();
 
 	void performOnlineMeasurements(int iteration);
+
+	void print_hmcobservables(const hmc_observables& obs, int iter, const std::string& filename, const meta::Inputparameters& params);
+
+	void print_hmcobservables(const hmc_observables& obs, int iter);
 };
 
 #endif /* HMCEXECUTABLE_H_ */
