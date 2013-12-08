@@ -106,7 +106,7 @@ void generationExecutable::generate()
 	for (int iteration = 0; iteration < generationSteps; iteration++)
 	 {
 		generateAccordingToSpecificAlgorithm();
-		measureGaugeObservables(iteration);
+		performOnlineMeasurements(iteration);
 		saveGaugefield(iteration);
 	}
 	logger.info() << "...generation done";

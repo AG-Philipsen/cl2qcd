@@ -47,6 +47,8 @@ protected:
 	void virtual thermalizeAccordingToSpecificAlgorithm() {};
 
 	void virtual generateAccordingToSpecificAlgorithm() {};
+
+	void virtual performOnlineMeasurements(int iteration) {};
 };
 
 

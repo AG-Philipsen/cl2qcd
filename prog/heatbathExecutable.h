@@ -32,6 +32,8 @@ private:
 	void writeHeatbathLogfile();
 
 	void setIterationParameters();
+
+	void performOnlineMeasurements(int iteration);
 };
 
 #endif /* HEATBATHEXECUTABLE_H_ */
