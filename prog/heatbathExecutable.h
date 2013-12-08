@@ -16,7 +16,6 @@ public:
 
 private:
 	const std::string filenameForHeatbathLogfile = "heatbath.log";
-	int heatbathSteps;
 	int overrelaxSteps;
 
 	/*

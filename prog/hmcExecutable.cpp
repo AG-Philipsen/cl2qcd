@@ -25,6 +25,7 @@ inline void hmcExecutable::writeHmcLogfile()
 void hmcExecutable::setIterationParameters()
 {
 	generationExecutable::setIterationParameters();
+	generationSteps = parameters.get_hmcsteps();
 }
 
 void hmcExecutable::thermalizeAccordingToSpecificAlgorithm()
