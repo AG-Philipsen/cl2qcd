@@ -472,6 +472,14 @@ int Inputparameters::get_config_number_digits() const noexcept
 {
   return config_number_digits;
 }
+std::string Inputparameters::get_prng_prefix() const noexcept
+{
+  return prng_prefix;
+}
+std::string Inputparameters::get_prng_postfix() const noexcept
+{
+  return prng_postfix;
+}
 std::string Inputparameters::get_config_prefix() const noexcept
 {
   return config_prefix;
@@ -710,6 +718,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
 	("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
 	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")
+	("prng_prefix", po::value<std::string>(&prng_prefix)->default_value("prng."), "Prefix for PRNG configuration")
+	("prng_postfix", po::value<std::string>(&prng_postfix)->default_value(""), "Postfix for PRNG configuration")
 
 	//parameters to write out observables
 	("gauge_obs_to_single_file", po::value<bool>(&gauge_obs_to_single_file)->default_value(true), "Save gauge observables to one single file")

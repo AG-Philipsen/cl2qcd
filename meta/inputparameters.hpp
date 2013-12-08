@@ -183,6 +183,8 @@ public:
 	int get_config_read_end() const noexcept;
 	int get_config_read_incr() const noexcept;
 	int get_config_number_digits() const noexcept;
+	std::string get_prng_prefix() const noexcept;
+	std::string get_prng_postfix() const noexcept;
 	std::string get_config_prefix() const noexcept;
 	std::string get_config_postfix() const noexcept;
 	std::string get_ferm_obs_corr_prefix() const noexcept;
@@ -334,6 +336,9 @@ private:
 	int config_number_digits;
 	std::string config_prefix;
 	std::string config_postfix;
+
+	std::string prng_prefix;
+	std::string prng_postfix;
 
 	//parameters to write out observables
 	bool gauge_obs_to_single_file;
