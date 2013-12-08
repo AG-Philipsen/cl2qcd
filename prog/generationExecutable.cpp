@@ -55,6 +55,14 @@ void generationExecutable::saveGaugefield(int iteration)
 	}
 }
 
+void generationExecutable::savePrng(int iteration)
+{
+	prng->save(iteration + 1);
+	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
+		prng->saveToSpecificFile(iteration + 1);
+	}
+}
+
 void generationExecutable::measureTransportcoefficientKappa(int iteration)
 {
 	double kappa = 0;
@@ -109,6 +117,7 @@ void generationExecutable::generate()
 		generateAccordingToSpecificAlgorithm();
 		performOnlineMeasurements(iteration);
 		saveGaugefield(iteration);
+		savePrng(iteration);
 	}
 	logger.info() << "...generation done";
 }

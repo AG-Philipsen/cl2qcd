@@ -234,3 +234,37 @@ std::string meta::create_configuration_name(const Inputparameters& parameters, i
 	return outputfile;
 }
 
+std::string meta::create_configuration_name(const Inputparameters& parameters) noexcept
+{
+	using namespace std;
+	stringstream outfilename;
+	outfilename << parameters.get_config_prefix() << "save" << parameters.get_config_postfix();
+	string outputfile = outfilename.str();
+	logger.info() << outputfile;
+	return outputfile;
+}
+
+std::string meta::create_prng_name(const Inputparameters& parameters, int number) noexcept
+{
+	using namespace std;
+	std::stringstream strnumber;
+	strnumber.fill('0');
+	strnumber.width(parameters.get_config_number_digits());
+	strnumber << right << number;
+	stringstream outfilename;
+	outfilename << "prng." << strnumber.str() << "";
+	//outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
+	string outputfile = outfilename.str();
+	logger.info() << outputfile;
+	return outputfile;
+}
+
+std::string meta::create_prng_name(const Inputparameters& parameters) noexcept
+{
+	using namespace std;
+	stringstream outfilename;
+	outfilename << "prng." << "save" << "";
+	string outputfile = outfilename.str();
+	logger.info() << outputfile;
+	return outputfile;
+}

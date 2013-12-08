@@ -54,6 +54,9 @@ namespace meta {
   std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string create_configuration_name(const Inputparameters& parameters, int number) noexcept;
+  std::string create_prng_name(const Inputparameters& parameters, int number) noexcept;
+  std::string create_configuration_name(const Inputparameters& parameters) noexcept;
+  std::string create_prng_name(const Inputparameters& parameters) noexcept;
   void print_info_flavour_doublet_correlators(const meta::Inputparameters params);
   void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
 }
