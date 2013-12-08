@@ -290,8 +290,7 @@ std::string meta::create_prng_name(const Inputparameters& parameters, int number
 	strnumber.width(parameters.get_config_number_digits());
 	strnumber << right << number;
 	stringstream outfilename;
-	outfilename << "prng." << strnumber.str() << "";
-	//outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
+	outfilename << parameters.get_prng_prefix() << strnumber.str() << parameters.get_prng_postfix();
 	string outputfile = outfilename.str();
 	return outputfile;
 }
@@ -300,7 +299,7 @@ std::string meta::create_prng_name(const Inputparameters& parameters) noexcept
 {
 	using namespace std;
 	stringstream outfilename;
-	outfilename << "prng." << "save" << "";
+	outfilename << parameters.get_prng_prefix() << "save" << parameters.get_prng_postfix();
 	string outputfile = outfilename.str();
 	return outputfile;
 }
