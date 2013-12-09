@@ -189,7 +189,6 @@ void meta::print_info_heatbath(std::ostream* os, const Inputparameters& params)
 static void print_info_fermion(const meta::Inputparameters& params)
 {
 	using namespace meta;
-
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Fermionic parameters:";
 	logger.info() << "##" ;
@@ -1072,3 +1071,9 @@ void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta:
 		*os << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" << std::endl;
 	}
 }
+
+std::string meta::createLogfileName(const char* name)
+{
+  return std::string(name) + std::string(".log");
+}
+

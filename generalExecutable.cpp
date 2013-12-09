@@ -18,17 +18,12 @@ void generalExecutable::printParametersToScreenAndFile()
 	}
 }
 
-std::string createLogfileName(const char* name)
-{
-  return std::string(name) + std::string(".log");
-}
-
 generalExecutable::generalExecutable(int argc, const char* argv[]) : parameters(argc, argv)
 {
 	totalRuntimeOfExecutable.reset();
 	initializationTimer.reset();
 	ownName = argv[0];
-	filenameForLogfile = createLogfileName(ownName);
+	filenameForLogfile = meta::createLogfileName(ownName);
 	switchLogLevel(parameters.get_log_level());
 	printParametersToScreenAndFile();
 	system = new hardware::System(parameters);

@@ -57,7 +57,6 @@ namespace meta {
 	size_t get_flop_spinor_sqnorm() noexcept;
 	size_t get_flop_su3vec_sqnorm() noexcept;
 
-
   void print_info_global(const meta::Inputparameters& params);
   void print_info_global(std::ostream* os, const meta::Inputparameters& params);
   void print_info_configs_io(const meta::Inputparameters& params);
@@ -66,14 +65,12 @@ namespace meta {
   void print_info_prng_io(std::ostream * os, const meta::Inputparameters& params);
   void print_info_observables_gauge_io(const meta::Inputparameters& params);
   void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
-
-
-	void print_info_heatbath(const Inputparameters& params);
-	void print_info_heatbath(std::ostream* os, const Inputparameters& params);
-	void print_info_inverter(const Inputparameters& params);
-	void print_info_inverter(std::ostream* os, const Inputparameters& params);
-	void print_info_hmc(const Inputparameters& params);
-	void print_info_hmc(std::ostream* os, const Inputparameters& params);
+  void print_info_heatbath(const Inputparameters& params);
+  void print_info_heatbath(std::ostream* os, const Inputparameters& params);
+  void print_info_inverter(const Inputparameters& params);
+  void print_info_inverter(std::ostream* os, const Inputparameters& params);
+  void print_info_hmc(const Inputparameters& params);
+  void print_info_hmc(std::ostream* os, const Inputparameters& params);
   void print_info_rhmc(const char* progname, const Inputparameters& params);
   void print_info_rhmc(const char* progname, std::ostream* os, const Inputparameters& params);
   std::string get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
@@ -87,6 +84,7 @@ namespace meta {
   std::string create_prng_name(const Inputparameters& parameters) noexcept;
   void print_info_flavour_doublet_correlators(const meta::Inputparameters params);
   void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
+  std::string createLogfileName(const char* name);
 }
 
 #endif /* META_UTIL_ */
