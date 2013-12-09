@@ -22,12 +22,6 @@
 
 gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
-	logger.info() << "This executable requires the following parameter value(s) to work properly:";
-	logger.info() << "startcondition:\tcontinue";
-	if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ) {
-		logger.fatal() << "Found wrong startcondition! Aborting..";
-		throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
-	}
 	printParametersToScreenAndFile();
 }
 

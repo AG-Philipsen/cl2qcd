@@ -1,9 +1,22 @@
 #include "measurementExecutable.h"
 
+void measurementExecutable::checkStartconditions()
+{
+  if(parameters.get_read_multiple_configs() ){
+    logger.info() << "To work on multiple configurations, this executable requires the following parameter value(s) to work properly:";
+    logger.info() << "startcondition:\tcontinue";
+    if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ) {
+      logger.fatal() << "Found wrong startcondition! Aborting..";
+      throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
+    }
+  }
+}
+
 measurementExecutable::measurementExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 {
 	initializationTimer.reset();
 	setIterationVariables();
+	checkStartconditions();
 	initializationTimer.add();
 }
 
@@ -43,7 +56,7 @@ void measurementExecutable::performMeasurements()
 	performanceTimer.reset();
 	logger.trace() << "Perform inversion(s) on device..";
 
-	for (iteration; iteration < iterationEnd; iteration += iterationIncrement)
+	for (;iteration < iterationEnd; iteration += iterationIncrement)
 	{
 		performMeasurementsForSpecificIteration();
 	}

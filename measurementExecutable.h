@@ -25,6 +25,8 @@ protected:
 
 	void setIterationVariables();
 
+	void checkStartconditions();
+
 	void initializeGaugefieldAccordingToIterationVariable();
 
 	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
