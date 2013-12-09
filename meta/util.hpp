@@ -70,8 +70,6 @@ namespace meta {
 
 	void print_info_heatbath(const char* progname, const Inputparameters& params);
 	void print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params);
-	void print_info_tkkappa(const char* progname, std::ostream* os, const Inputparameters& params);
-	void print_info_tkkappa(const char* progname, const Inputparameters& params);
 	void print_info_inverter(const char* progname, const Inputparameters& params);
 	void print_info_inverter(const char* progname, std::ostream* os, const Inputparameters& params);
 	void print_info_hmc(const char* progname, const Inputparameters& params);

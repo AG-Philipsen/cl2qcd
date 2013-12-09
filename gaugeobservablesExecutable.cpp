@@ -22,23 +22,24 @@
 
 gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
-	printParametersToScreenAndFile();
+  	printParametersToScreenAndFile();
 }
 
 inline void gaugeobservablesExecutable::writeGaugeobservablesLogfile()
 {
-	outputToFile.open(filenameForGaugeobservablesLogfile);
+  outputToFile.open(filenameForLogfile,
+		    std::ios::out | std::ios::app);
 	if (outputToFile.is_open()) {
-		meta::print_info_inverter(ownName, &outputToFile, parameters);
+		meta::print_info_observables_gauge_io(&outputToFile, parameters);
 		outputToFile.close();
 	} else {
-		throw File_Exception(filenameForGaugeobservablesLogfile);
+		throw File_Exception(filenameForLogfile);
 	}
 }
 
 void gaugeobservablesExecutable::printParametersToScreenAndFile()
 {
-	meta::print_info_gaugeobservables(ownName, parameters);
+	meta::print_info_observables_gauge_io(parameters);
 	writeGaugeobservablesLogfile();
 }
 

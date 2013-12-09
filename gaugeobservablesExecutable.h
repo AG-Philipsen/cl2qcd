@@ -33,7 +33,6 @@ public:
 
 protected:
 	std::string filenameForGaugeobservables;
-	const std::string 	filenameForGaugeobservablesLogfile = "gaugeobservables.log";
 
 	void writeGaugeobservablesLogfile();
 

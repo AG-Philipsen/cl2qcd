@@ -24,11 +24,16 @@ inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 		generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
-	meta::print_info_observables_gauge_io(parameters);
-	meta::print_info_heatbath(ownName, parameters);
-	writeHeatbathLogfile();
 	setIterationParameters();
+	printParametersToScreenAndFile();
 	initializationTimer.add();
+}
+
+void heatbathExecutable::printParametersToScreenAndFile()
+{
+  meta::print_info_observables_gauge_io(parameters);
+  meta::print_info_heatbath(ownName, parameters);
+  writeHeatbathLogfile();
 }
 
 inline void heatbathExecutable::writeHeatbathLogfile()

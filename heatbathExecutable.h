@@ -30,7 +30,6 @@ public:
 	heatbathExecutable(int argc, const char* argv[]);
 
 private:
-	const std::string filenameForHeatbathLogfile = "heatbath.log";
 	int overrelaxSteps;
 
 	/*
@@ -44,6 +43,8 @@ private:
 	void generateAccordingToSpecificAlgorithm();
 
 	void writeHeatbathLogfile();
+
+	void printParametersToScreenAndFile();
 
 	void setIterationParameters();
 };

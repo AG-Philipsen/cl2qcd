@@ -464,9 +464,6 @@ void meta::print_info_hmc(const char* progname, const Inputparameters& params)
 {
 
 	logger.info() << "## Starting hmc program, executable name: " << progname ;
-	print_info_global(params);
-	print_info_configs_io(params);
-	print_info_prng_io(params);
 	print_info_observables_hmc_io(params);
 	print_info_fermion(params);
 	print_info_gauge(params);
@@ -528,9 +525,6 @@ void meta::print_info_hmc(const char* progname, const Inputparameters& params)
 void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputparameters& params)
 {
 	*os << "## Starting hmc program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
-	print_info_prng_io(os, params);
 	print_info_observables_hmc_io(os, params);
 	print_info_fermion(os, params);
 	print_info_gauge(os, params);
