@@ -12,9 +12,10 @@ void measurementExecutable::setIterationVariables()
 	iterationStart =		(parameters.get_read_multiple_configs()) ? parameters.get_config_read_start() : 0;
 	iterationEnd = 			(parameters.get_read_multiple_configs()) ? parameters.get_config_read_end() + 1 : 1;
 	iterationIncrement =	(parameters.get_read_multiple_configs()) ? parameters.get_config_read_incr() : 1;
+	iteration = iterationStart;
 }
 
-void measurementExecutable::initializeGaugefieldAccordingToIterationVariable(int iteration)
+void measurementExecutable::initializeGaugefieldAccordingToIterationVariable()
 {
 	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
@@ -26,11 +27,11 @@ void measurementExecutable::initializeGaugefieldAccordingToConfigurationGivenInS
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
 
-void measurementExecutable::initializeGaugefield(int iteration)
+void measurementExecutable::initializeGaugefield()
 {
 	initializationTimer.reset();
 	if (parameters.get_read_multiple_configs()) {
-		initializeGaugefieldAccordingToIterationVariable(iteration);
+		initializeGaugefieldAccordingToIterationVariable();
 	} else {
 		initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
 	}
@@ -42,18 +43,17 @@ void measurementExecutable::performMeasurements()
 	performanceTimer.reset();
 	logger.trace() << "Perform inversion(s) on device..";
 
-	int iteration = 0;
-	for (iteration = iterationStart; iteration < iterationEnd; iteration += iterationIncrement)
+	for (iteration; iteration < iterationEnd; iteration += iterationIncrement)
 	{
-		performMeasurementsForSpecificIteration(iteration);
+		performMeasurementsForSpecificIteration();
 	}
 	logger.trace() << "Inversion(s) done";
 	performanceTimer.add();
 }
 
-void measurementExecutable::performMeasurementsForSpecificIteration(int iteration)
+void measurementExecutable::performMeasurementsForSpecificIteration()
 {
-	initializeGaugefield(iteration);
+	initializeGaugefield();
 	performApplicationSpecificMeasurements();
 	prng->save(iteration);
 	delete gaugefield;

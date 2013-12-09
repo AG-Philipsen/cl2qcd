@@ -28,6 +28,7 @@ gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* arg
 		logger.fatal() << "Found wrong startcondition! Aborting..";
 		throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
 	}
+	printParametersToScreenAndFile();
 }
 
 inline void gaugeobservablesExecutable::writeGaugeobservablesLogfile()
@@ -49,12 +50,7 @@ void gaugeobservablesExecutable::printParametersToScreenAndFile()
 
 inline void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
 {
-	logger.info() << "Measure gauge observables on configuration: " << currentConfigurationName;
-	if(parameters.get_print_to_screen() ) {
-		print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
-	}
-	filenameForGaugeobservables = get_gauge_obs_file_name(parameters, currentConfigurationName);
-	print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source, filenameForGaugeobservables);
+  gaugeObservablesInstance.measureGaugeObservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source, parameters);
 }
 
 int main(int argc, const char* argv[])

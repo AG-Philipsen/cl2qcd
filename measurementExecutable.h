@@ -21,16 +21,17 @@ protected:
 	int iterationStart;
 	int iterationEnd;
 	int iterationIncrement;
+	int iteration;
 
 	void setIterationVariables();
 
-	void initializeGaugefieldAccordingToIterationVariable(int interation);
+	void initializeGaugefieldAccordingToIterationVariable();
 
 	void initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter();
 
-	void initializeGaugefield(int interation);
+	void initializeGaugefield();
 
-	void performMeasurementsForSpecificIteration(int interation);
+	void performMeasurementsForSpecificIteration();
 
 	virtual void performApplicationSpecificMeasurements() {};
 };
