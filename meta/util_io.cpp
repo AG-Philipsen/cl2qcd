@@ -28,20 +28,10 @@
 
 using namespace std;
 
-static void print_info_global(const meta::Inputparameters& params);
-static void print_info_global(std::ostream* os, const meta::Inputparameters& params);
-static void print_info_fermion(const meta::Inputparameters& params);
-static void print_info_fermion(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_gauge(std::ostream* os, const meta::Inputparameters& params);
 static void print_info_gauge(const meta::Inputparameters& params);
 static void print_info_integrator(int number, const meta::Inputparameters& params);
 static void print_info_integrator(std::ostream* os, int number, const meta::Inputparameters& params);
-static void print_info_configs_io(const meta::Inputparameters& params);
-static void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params);
-static void print_info_prng_io(const meta::Inputparameters& params);
-static void print_info_prng_io(std::ostream * os, const meta::Inputparameters& params);
-static void print_info_observables_gauge_io(const meta::Inputparameters& params);
-static void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_fermion_io(const meta::Inputparameters& params);
 static void print_info_observables_fermion_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(const meta::Inputparameters& params);
@@ -51,7 +41,7 @@ static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputp
 static void print_info_source(const meta::Inputparameters params);
 static void print_info_source(std::ostream * os, const meta::Inputparameters params);
 
-static void print_info_global(const meta::Inputparameters& params)
+void meta::print_info_global(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -110,7 +100,7 @@ static void print_info_global(const meta::Inputparameters& params)
 	}
 }
 
-static void print_info_global(std::ostream* os, const meta::Inputparameters& params)
+void meta::print_info_global(std::ostream* os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -172,11 +162,6 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 
 void meta::print_info_heatbath(const char* progname, const Inputparameters& params)
 {
-	logger.info() << "## Starting heatbath program, executable name: " << progname;
-	print_info_global(params);
-	print_info_configs_io(params);
-	print_info_prng_io(params);
-	print_info_observables_gauge_io(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << params.get_beta();
@@ -188,35 +173,12 @@ void meta::print_info_heatbath(const char* progname, const Inputparameters& para
 	return;
 }
 
-void meta::print_info_gaugeobservables(const char* progname, std::ostream* os, const Inputparameters& params)
-{
-	*os  << "## Starting gaugeobservables program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
-	print_info_prng_io(os, params);
-	return;
-}
-
-void meta::print_info_gaugeobservables(const char* progname, const Inputparameters& params)
-{
-	logger.info() << "## Starting gaugeobservables program, executable name: " << progname;
-	print_info_global(params);
-	print_info_configs_io(params);
-	print_info_prng_io(params);
-	return;
-}
-
 void meta::print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params)
 {
-	*os  << "## Starting heatbath program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
-	print_info_prng_io(os, params);
-	print_info_observables_gauge_io(os, params);
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << params.get_beta() << endl;
-	*os  << "## xi             = " << params.get_xi();
+	*os  << "## xi             = " << params.get_xi() << endl;
 	*os  << "## thermsteps     = " << params.get_thermalizationsteps() << endl;
 	*os  << "## heatbathsteps  = " << params.get_heatbathsteps() << endl;
 	*os  << "## overrelaxsteps = " << params.get_overrelaxsteps() << endl;
@@ -809,11 +771,7 @@ void meta::print_info_rhmc(const char* progname, std::ostream* os, const Inputpa
 	return;
 }
 
-
-
-
-
-static void print_info_configs_io(const meta::Inputparameters& params)
+void meta::print_info_configs_io(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -832,7 +790,7 @@ static void print_info_configs_io(const meta::Inputparameters& params)
 	}
 }
 
-static void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params)
+void meta::print_info_configs_io(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -851,7 +809,7 @@ static void print_info_configs_io(std::ostream * os, const meta::Inputparameters
 	}
 }
 
-static void print_info_prng_io(const meta::Inputparameters& params)
+void meta::print_info_prng_io(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -862,7 +820,7 @@ static void print_info_prng_io(const meta::Inputparameters& params)
 	logger.info() << "## name postfix:   " << params.get_prng_postfix();
 }
 
-static void print_info_prng_io(std::ostream * os, const meta::Inputparameters& params)
+void meta::print_info_prng_io(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -874,7 +832,7 @@ static void print_info_prng_io(std::ostream * os, const meta::Inputparameters& p
 }
 
 
-static void print_info_observables_gauge_io(const meta::Inputparameters& params)
+void meta::print_info_observables_gauge_io(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -889,7 +847,7 @@ static void print_info_observables_gauge_io(const meta::Inputparameters& params)
 	}
 }
 
-static void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params)
+void meta::print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 

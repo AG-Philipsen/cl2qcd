@@ -24,6 +24,7 @@ inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 		generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
+	meta::print_info_observables_gauge_io(parameters);
 	meta::print_info_heatbath(ownName, parameters);
 	writeHeatbathLogfile();
 	setIterationParameters();
@@ -32,13 +33,14 @@ inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 
 inline void heatbathExecutable::writeHeatbathLogfile()
 {
-	outputToFile.open(filenameForHeatbathLogfile,
+	outputToFile.open(filenameForLogfile,
 			std::ios::out | std::ios::app);
 	if (outputToFile.is_open()) {
+		meta::print_info_observables_gauge_io(&outputToFile, parameters);
 		meta::print_info_heatbath(ownName, &outputToFile, parameters);
 		outputToFile.close();
 	} else {
-		throw File_Exception(filenameForHeatbathLogfile);
+		throw File_Exception(filenameForLogfile);
 	}
 }
 

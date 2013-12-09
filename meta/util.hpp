@@ -56,8 +56,18 @@ namespace meta {
 	size_t get_flop_spinor_spinor() noexcept;
 	size_t get_flop_spinor_sqnorm() noexcept;
 	size_t get_flop_su3vec_sqnorm() noexcept;
-	void print_info_gaugeobservables(const char* progname, const Inputparameters& params);
-	void print_info_gaugeobservables(const char* progname, std::ostream* os, const Inputparameters& params);
+
+
+  void print_info_global(const meta::Inputparameters& params);
+  void print_info_global(std::ostream* os, const meta::Inputparameters& params);
+  void print_info_configs_io(const meta::Inputparameters& params);
+  void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params);
+  void print_info_prng_io(const meta::Inputparameters& params);
+  void print_info_prng_io(std::ostream * os, const meta::Inputparameters& params);
+  void print_info_observables_gauge_io(const meta::Inputparameters& params);
+  void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
+
+
 	void print_info_heatbath(const char* progname, const Inputparameters& params);
 	void print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params);
 	void print_info_tkkappa(const char* progname, std::ostream* os, const Inputparameters& params);

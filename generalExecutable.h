@@ -35,7 +35,7 @@ public:
 
 protected:
 	const char* ownName;
-	const std::string 	filenameForCurrentPrngState 	= "prng.inverter.save";
+	std::string filenameForLogfile;
 	usetimer totalRuntimeOfExecutable;
 	usetimer initializationTimer;
 	usetimer performanceTimer;
@@ -52,6 +52,8 @@ protected:
 	void printGeneralTimesToScreen();
 
 	void printGeneralTimesToFile();
+
+	void printParametersToScreenAndFile();
 };
 
 #endif /* GENERALEXECUTABLE_H_ */
