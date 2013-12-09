@@ -41,7 +41,7 @@ public:
 	TestMolecularDynamics(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
 		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
 		auto inputfile = system->get_inputparameters();
-		meta::print_info_hmc("test program", inputfile);
+		meta::print_info_hmc(inputfile);
 	};
 
 	const hardware::code::Molecular_Dynamics * get_device();

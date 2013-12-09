@@ -56,7 +56,7 @@ public:
 class Dummyfield {
 public:
 	Dummyfield(const hardware::System& system) : device(system.get_devices().at(0)), params(system.get_inputparameters()), code(params, device), prng(system), gf(system, prng) {
-		meta::print_info_hmc(exec_name.c_str(), system.get_inputparameters());
+		meta::print_info_hmc(system.get_inputparameters());
 		fill_buffers();
 	};
 	~Dummyfield() {

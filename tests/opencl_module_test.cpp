@@ -36,7 +36,7 @@ public:
 		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
 		auto inputfile = system->get_inputparameters();
 		std::string name = "test program";
-		meta::print_info_hmc(name.c_str(), inputfile);
+		meta::print_info_hmc(inputfile);
 		logger.info() << "gaugeobservables: ";
 		print_gaugeobservables();
 	};
