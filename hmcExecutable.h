@@ -29,6 +29,8 @@ protected:
 	 */
 	void setIterationParameters();
 
+	void printParametersToScreenAndFile();
+
 	void writeHmcLogfile();
 
 	void thermalizeAccordingToSpecificAlgorithm();

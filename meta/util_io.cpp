@@ -160,7 +160,7 @@ void meta::print_info_global(std::ostream* os, const meta::Inputparameters& para
 }
 
 
-void meta::print_info_heatbath(const char* progname, const Inputparameters& params)
+void meta::print_info_heatbath(const Inputparameters& params)
 {
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
@@ -173,7 +173,7 @@ void meta::print_info_heatbath(const char* progname, const Inputparameters& para
 	return;
 }
 
-void meta::print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params)
+void meta::print_info_heatbath(std::ostream* os, const Inputparameters& params)
 {
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
@@ -386,12 +386,8 @@ static void print_info_gauge(const meta::Inputparameters& params)
 	}
 }
 
-void meta::print_info_inverter(const char* progname, const Inputparameters& params)
+void meta::print_info_inverter(const Inputparameters& params)
 {
-	logger.info() << "## Starting inverter program, executable name: " << progname;
-	print_info_global(params);
-	print_info_configs_io(params);
-	print_info_prng_io(params);
 	print_info_observables_fermion_io(params);
 	print_info_fermion(params);
 	print_info_source(params);
@@ -399,12 +395,8 @@ void meta::print_info_inverter(const char* progname, const Inputparameters& para
 	return;
 }
 
-void meta::print_info_inverter(const char* progname, std::ostream* os, const Inputparameters& params)
+void meta::print_info_inverter(std::ostream* os, const Inputparameters& params)
 {
-	*os << "## Starting inverter program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
-	print_info_prng_io(os, params);
 	print_info_observables_fermion_io(os, params);
 	print_info_fermion(os, params);
 	print_info_source(os, params);
@@ -460,10 +452,8 @@ static void print_info_integrator(std::ostream* os, int number, const meta::Inpu
 	if(print_lambda) *os << "## lambda" << number << " = " << params.get_lambda(number) << endl;
 }
 
-void meta::print_info_hmc(const char* progname, const Inputparameters& params)
+void meta::print_info_hmc(const Inputparameters& params)
 {
-
-	logger.info() << "## Starting hmc program, executable name: " << progname ;
 	print_info_observables_hmc_io(params);
 	print_info_fermion(params);
 	print_info_gauge(params);
@@ -522,9 +512,8 @@ void meta::print_info_hmc(const char* progname, const Inputparameters& params)
 	return;
 }
 
-void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputparameters& params)
+void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
 {
-	*os << "## Starting hmc program, executable name: " << progname << endl;
 	print_info_observables_hmc_io(os, params);
 	print_info_fermion(os, params);
 	print_info_gauge(os, params);

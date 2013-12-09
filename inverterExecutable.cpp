@@ -29,18 +29,19 @@ inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : me
 
 inline void inverterExecutable::writeInverterLogfile()
 {
-	outputToFile.open(filenameForInverterLogfile);
+  outputToFile.open(filenameForLogfile,
+		    std::ios::out | std::ios::app);
 	if (outputToFile.is_open()) {
-		meta::print_info_inverter(ownName, &outputToFile, parameters);
+		meta::print_info_inverter(&outputToFile, parameters);
 		outputToFile.close();
 	} else {
-		throw File_Exception(filenameForInverterLogfile);
+		throw File_Exception(filenameForLogfile);
 	}
 }
 
 void inverterExecutable::printParametersToScreenAndFile()
 {
-	meta::print_info_inverter(ownName, parameters);
+	meta::print_info_inverter(parameters);
 	writeInverterLogfile();
 }
 

@@ -4,7 +4,7 @@ hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
 	generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
-	meta::print_info_hmc(ownName, parameters);
+	printParametersToScreenAndFile();
 	writeHmcLogfile();
 	setIterationParameters();
 	initializationTimer.add();
@@ -16,15 +16,21 @@ hmcExecutable::~hmcExecutable()
   logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acceptanceRate, parameters.get_hmcsteps()) << "%";
 }
 
+void hmcExecutable::printParametersToScreenAndFile()
+{
+  meta::print_info_hmc(parameters);
+  writeHmcLogfile();
+}
+
 inline void hmcExecutable::writeHmcLogfile()
 {
-	outputToFile.open(filenameForHmcLogfile,
+	outputToFile.open(filenameForLogfile,
 			std::ios::out | std::ios::app);
 	if (outputToFile.is_open()) {
-		meta::print_info_heatbath(ownName, &outputToFile, parameters);
+		meta::print_info_heatbath(&outputToFile, parameters);
 		outputToFile.close();
 	} else {
-		throw File_Exception(filenameForHmcLogfile);
+		throw File_Exception(filenameForLogfile);
 	}
 }
 

@@ -32,7 +32,7 @@ inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 void heatbathExecutable::printParametersToScreenAndFile()
 {
   meta::print_info_observables_gauge_io(parameters);
-  meta::print_info_heatbath(ownName, parameters);
+  meta::print_info_heatbath(parameters);
   writeHeatbathLogfile();
 }
 
@@ -42,7 +42,7 @@ inline void heatbathExecutable::writeHeatbathLogfile()
 			std::ios::out | std::ios::app);
 	if (outputToFile.is_open()) {
 		meta::print_info_observables_gauge_io(&outputToFile, parameters);
-		meta::print_info_heatbath(ownName, &outputToFile, parameters);
+		meta::print_info_heatbath(&outputToFile, parameters);
 		outputToFile.close();
 	} else {
 		throw File_Exception(filenameForLogfile);
