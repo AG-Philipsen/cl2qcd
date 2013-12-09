@@ -37,9 +37,11 @@ protected:
 
 	void performOnlineMeasurements();
 
-	void print_hmcobservables(const std::string& filename, const meta::Inputparameters& params);
+	void printHmcObservables(const std::string& filename);
 
-	void print_hmcobservables();
+	void printHmcObservablesToFile(const std::string& filename);
+
+	void printHmcObservablesToScreen();
 };
 
 #endif /* HMCEXECUTABLE_H_ */

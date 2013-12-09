@@ -50,26 +50,27 @@ void hmcExecutable::performOnlineMeasurements()
 {
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
 		std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
-		print_hmcobservables(gaugeout_name, parameters);
-	} else if(parameters.get_print_to_screen() ) {
-		print_hmcobservables();
+		printHmcObservables(gaugeout_name);
 	}
 }
 
-void hmcExecutable::print_hmcobservables(const std::string& filename, const meta::Inputparameters& params)
+void hmcExecutable::printHmcObservables(const std::string& filename)
+{
+  printHmcObservablesToFile(filename);
+  printHmcObservablesToScreen();
+}
+
+void hmcExecutable::printHmcObservablesToFile(const std::string& filename)
 {
 	const hmc_float exp_deltaH = std::exp(observables.deltaH);
-	std::fstream hmcout(filename.c_str(), std::ios::out | std::ios::app);
-	if(!hmcout.is_open()) throw File_Exception(filename);
-	hmcout << iteration << "\t";
-	hmcout.width(8);
-	hmcout.precision(15);
-	//print plaquette (plaq, tplaq, splaq)
-	hmcout << observables.plaq << "\t" << observables.tplaq << "\t" << observables.splaq;
-	//print polyakov loop (re, im, abs)
-	hmcout << "\t" << observables.poly.re << "\t" << observables.poly.im << "\t" << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im);
-	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
-	hmcout <<  "\t" << observables.deltaH << "\t" << exp_deltaH << "\t" << observables.prob << "\t" << observables.accept;
+	outputToFile.open(filename.c_str(), std::ios::out | std::ios::app);
+	if(!outputToFile.is_open()) throw File_Exception(filename);
+	outputToFile << iteration << "\t";
+	outputToFile.width(8);
+	outputToFile.precision(15);
+	outputToFile << observables.plaq << "\t" << observables.tplaq << "\t" << observables.splaq;
+	outputToFile << "\t" << observables.poly.re << "\t" << observables.poly.im << "\t" << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im);
+	outputToFile <<  "\t" << observables.deltaH << "\t" << exp_deltaH << "\t" << observables.prob << "\t" << observables.accept;
 	//print number of iterations used in inversions with full and force precision
 	/**
 	 * @todo: The counters should be implemented once the solver class is used!"
@@ -77,26 +78,21 @@ void hmcExecutable::print_hmcobservables(const std::string& filename, const meta
 	 */
 	int iter0 = 0;
 	int iter1 = 0;
-	hmcout << "\t" << iter0 << "\t" << iter1;
-	if(params.get_use_mp() ) {
-		hmcout << "\t" << iter0 << "\t" << iter1;
+	outputToFile << "\t" << iter0 << "\t" << iter1;
+	if(parameters.get_use_mp() ) {
+		outputToFile << "\t" << iter0 << "\t" << iter1;
 	}
-	if(meta::get_use_rectangles(params) ) {
-		//print rectangle value
-		hmcout << "\t" << observables.rectangles;
+	if(meta::get_use_rectangles(parameters) ) {
+		outputToFile << "\t" << observables.rectangles;
 	}
-	hmcout << std::endl;
-	hmcout.close();
-
-	//print to screen
-	print_hmcobservables();
+	outputToFile << std::endl;
+	outputToFile.close();
 }
 
-void hmcExecutable::print_hmcobservables()
+void hmcExecutable::printHmcObservablesToScreen()
 {
-	using namespace std;
-	//short version of output, all obs are collected in the output file anyways...
-	logger.info() << "\tHMC [OBS]:\t" << iteration << setw(8) << setfill(' ') << "\t" << setprecision(15) << observables.plaq << "\t" << observables.poly.re << "\t" << observables.poly.im;
+	logger.info() << "\tHMC [OBS]:\t" << iteration << std::setw(8) << std::setfill(' ') << "\t" << std::setprecision(15) 
+		      << observables.plaq << "\t" << observables.poly.re << "\t" << observables.poly.im;
 }
 
 int main(int argc, const char* argv[])
