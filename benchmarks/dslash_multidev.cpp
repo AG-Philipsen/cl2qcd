@@ -38,7 +38,12 @@ int main(int argc, const char* argv[])
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
 
-		meta::print_info_inverter(argv[0], parameters);
+		//NOTE: This is inserted here because of the refactoring of the other executables
+		logger.info() << "## Starting executable: " << argv[0];
+		meta::print_info_global(parameters);
+		meta::print_info_configs_io(parameters);
+		meta::print_info_prng_io(parameters);
+		meta::print_info_inverter(parameters);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
