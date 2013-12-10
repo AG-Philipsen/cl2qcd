@@ -25,7 +25,7 @@ gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* arg
   	printParametersToScreenAndFile();
 }
 
-inline void gaugeobservablesExecutable::writeGaugeobservablesLogfile()
+void gaugeobservablesExecutable::writeGaugeobservablesLogfile()
 {
   outputToFile.open(filenameForLogfile,
 		    std::ios::out | std::ios::app);
@@ -43,33 +43,8 @@ void gaugeobservablesExecutable::printParametersToScreenAndFile()
 	writeGaugeobservablesLogfile();
 }
 
-inline void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
+void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
 {
   gaugeObservablesInstance.measureGaugeObservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source, parameters);
-}
-
-int main(int argc, const char* argv[])
-{
-	try{
-		gaugeobservablesExecutable gaugeobservablesInstance(argc, argv);
-		gaugeobservablesInstance.performMeasurements();
-	} //try
-	//exceptions from Opencl classes
-	catch (Opencl_Error& e) {
-		logger.fatal() << e.what();
-		exit(1);
-	} catch (File_Exception& fe) {
-		logger.fatal() << "Could not open file: " << fe.get_filename();
-		logger.fatal() << "Aborting.";
-		exit(1);
-	} catch (Print_Error_Message& em) {
-		logger.fatal() << em.what();
-		exit(1);
-	} catch (Invalid_Parameters& es) {
-		logger.fatal() << es.what();
-		exit(1);
-	}
-
-	return 0;
 }
 

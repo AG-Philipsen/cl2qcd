@@ -26,6 +26,7 @@ add_library(executables
 	generationExecutable.cpp
 	measurementExecutable.cpp
 	heatbathExecutable.cpp
+	gaugeobservablesExecutable.cpp
 )
 
 target_link_libraries(executables

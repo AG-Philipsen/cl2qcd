@@ -1,7 +1,4 @@
-/** @file
- *
- * Everything required by gaugeobservable's main()
- *
+/*
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
@@ -21,27 +18,29 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GAUGEOBSERVABLESEXECUTABLE_H_
-#define GAUGEOBSERVABLESEXECUTABLE_H_
+#include "./executables/gaugeobservablesExecutable.h"
 
-#include "./executables/measurementExecutable.h"
-
-class gaugeobservablesExecutable : public measurementExecutable
+int main(int argc, const char* argv[])
 {
-public:
-	gaugeobservablesExecutable(int argc, const char* argv[]);
+	try{
+		gaugeobservablesExecutable gaugeobservablesInstance(argc, argv);
+		gaugeobservablesInstance.performMeasurements();
+	} //try
+	//exceptions from Opencl classes
+	catch (Opencl_Error& e) {
+		logger.fatal() << e.what();
+		exit(1);
+	} catch (File_Exception& fe) {
+		logger.fatal() << "Could not open file: " << fe.get_filename();
+		logger.fatal() << "Aborting.";
+		exit(1);
+	} catch (Print_Error_Message& em) {
+		logger.fatal() << em.what();
+		exit(1);
+	} catch (Invalid_Parameters& es) {
+		logger.fatal() << es.what();
+		exit(1);
+	}
 
-protected:
-	std::string filenameForGaugeobservables;
-
-	void writeGaugeobservablesLogfile();
-
-	void printParametersToScreenAndFile();
-
-	/**
-	 * Performs measurements of gauge observables on possibly multiple gaugefield configurations.
-	 */
-	void performApplicationSpecificMeasurements();
-};
-
-#endif /* GAUGEOBSERVABLESEXECUTABLE_H_ */
+	return 0;
+}
