@@ -41,7 +41,13 @@ int main(int argc, const char* argv[])
 	meta::Inputparameters parameters(argc, argv);
 	switchLogLevel(parameters.get_log_level());
 
-	meta::print_info_heatbath(argv[0], parameters);
+	//NOTE: This is inserted here because of the refactoring of the other executables
+	logger.info() << "## Starting executable: " << argv[0];
+	meta::print_info_global(parameters);
+	meta::print_info_configs_io(parameters);
+	meta::print_info_prng_io(parameters);
+	meta::print_info_observables_gauge_io(parameters);
+	meta::print_info_heatbath(parameters);
 
 	//name of file to store gauge observables
 	stringstream gaugeout_name;
@@ -50,8 +56,11 @@ int main(int argc, const char* argv[])
 	fstream logfile;
 	logfile.open("heatbath.log", std::ios::out | std::ios::app);
 	if(logfile.is_open()) {
-		meta::print_info_heatbath(argv[0], &logfile, parameters);
-		logfile.close();
+	  meta::print_info_global(&logfile,parameters);
+	  meta::print_info_configs_io(&logfile,parameters);
+	  meta::print_info_prng_io(&logfile,parameters);
+	  meta::print_info_heatbath(&logfile, parameters);
+	  logfile.close();
 	} else {
 		logger.warn() << "Could not open heatbath.log";
 	}
@@ -105,8 +114,11 @@ int main(int argc, const char* argv[])
 	fstream prof_file;
 	prof_file.open(profiling_out.c_str(), std::ios::out | std::ios::app);
 	if(prof_file.is_open()) {
-		meta::print_info_heatbath(argv[0], &prof_file, parameters);
-		prof_file.close();
+	  meta::print_info_global(&prof_file,parameters);
+	  meta::print_info_configs_io(&prof_file,parameters);
+	  meta::print_info_prng_io(&prof_file,parameters);
+	  meta::print_info_heatbath(&prof_file, parameters);
+	  prof_file.close();
 	} else {
 		logger.warn() << "Could not open " << profiling_out;
 	}
