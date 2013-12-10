@@ -190,7 +190,7 @@ set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
 add_executable(gaugeobservables gaugeobservablesExecutable.cpp)
 target_link_libraries(gaugeobservables optimal)
 
-add_executable(heatbath heatbathExecutable.cpp)
+add_executable(heatbath heatbathMain.cpp)
 target_link_libraries(heatbath optimal)
 
 add_executable(inverter inverterExecutable.cpp)

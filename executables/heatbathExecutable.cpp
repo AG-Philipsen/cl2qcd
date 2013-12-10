@@ -20,7 +20,7 @@
 
 #include "heatbathExecutable.h"
 
-inline heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
+heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 		generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
@@ -64,28 +64,3 @@ void heatbathExecutable::generateAccordingToSpecificAlgorithm() {
 	physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
 }
 
-int main(int argc, const char* argv[])
-{
-	try {
-		heatbathExecutable heatbathInstance(argc, argv);
-		heatbathInstance.generateConfigurations();
-	} //try
-	//exceptions from Opencl classes
-	catch (Opencl_Error& e) {
-		logger.fatal() << e.what();
-		exit(1);
-	} catch (File_Exception& fe) {
-		logger.fatal() << "Could not open file: " << fe.get_filename();
-		logger.fatal() << "Aborting.";
-		exit(1);
-	} catch (Print_Error_Message& em) {
-		logger.fatal() << em.what();
-		exit(1);
-	} catch (Invalid_Parameters& es) {
-		logger.fatal() << es.what();
-		exit(1);
-	}
-
-	return 0;
-
-}
