@@ -8,8 +8,8 @@
 #ifndef HMCEXECUTABLE_H_
 #define HMCEXECUTABLE_H_
 
-#include "./executables/generationExecutable.h"
-#include "physics/algorithms/hmc.hpp"
+#include "generationExecutable.h"
+#include "../physics/algorithms/hmc.hpp"
 #include <cmath>
 
 class hmcExecutable : public generationExecutable
