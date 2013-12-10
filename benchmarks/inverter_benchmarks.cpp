@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../inverter.h"
+#include "../general_header.h"
 
 #include "../meta/util.hpp"
 #include "../physics/algorithms/inversion.hpp"
@@ -38,13 +38,20 @@ int main(int argc, const char* argv[])
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
 
-		meta::print_info_inverter(argv[0], parameters);
+		logger.info() << "## Starting executable: " << argv[0];
+		meta::print_info_global(parameters);
+		meta::print_info_configs_io(parameters);
+		meta::print_info_prng_io(parameters);
+		meta::print_info_inverter(parameters);
 
 		ofstream ofile;
 		ofile.open("inverter.log");
 		if(ofile.is_open()) {
-			meta::print_info_inverter(argv[0], &ofile, parameters);
-			ofile.close();
+		  meta::print_info_global(&ofile,parameters);
+		  meta::print_info_configs_io(&ofile,parameters);
+		  meta::print_info_prng_io(&ofile,parameters);
+		  meta::print_info_inverter(&ofile, parameters);
+		  ofile.close();
 		} else {
 			logger.warn() << "Could not log file for inverter.";
 		}
@@ -120,12 +127,14 @@ int main(int argc, const char* argv[])
 		fstream prof_file;
 		prof_file.open(profiling_out.c_str(), std::ios::out | std::ios::app);
 		if(prof_file.is_open()) {
-			meta::print_info_inverter(argv[0], &prof_file, parameters);
-			prof_file.close();
+		  meta::print_info_global(&prof_file,parameters);
+		  meta::print_info_configs_io(&prof_file,parameters);
+		  meta::print_info_prng_io(&prof_file,parameters);
+		  meta::print_info_inverter(&prof_file, parameters);
+		  prof_file.close();
 		} else {
 			logger.warn() << "Could not open " << profiling_out;
-		}
-		print_solver_profiling(profiling_out);
+		} 
 		print_profiling(system, profiling_out);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
