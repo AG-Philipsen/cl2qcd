@@ -24,7 +24,7 @@
 #ifndef GAUGEOBSERVABLESEXECUTABLE_H_
 #define GAUGEOBSERVABLESEXECUTABLE_H_
 
-#include "measurementExecutable.h"
+#include "./executables/measurementExecutable.h"
 
 class gaugeobservablesExecutable : public measurementExecutable
 {

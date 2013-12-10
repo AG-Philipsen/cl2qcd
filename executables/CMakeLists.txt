@@ -23,5 +23,12 @@
 
 add_library(executables
 	generalExecutable.cpp
+	generationExecutable.cpp
+	measurementExecutable.cpp
 )
+
+target_link_libraries(executables
+	physics
+)
+
 

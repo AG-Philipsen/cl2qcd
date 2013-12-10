@@ -152,8 +152,6 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
-	measurementExecutable.cpp
-	generationExecutable.cpp
 	exceptions.cpp
 	host_geometry.cpp
 	host_operations_gaugefield.cpp

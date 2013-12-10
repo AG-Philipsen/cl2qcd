@@ -21,7 +21,7 @@
 #ifndef HEATBATHEXECUTABLE_H_
 #define HEATBATHEXECUTABLE_H_
 
-#include "generationExecutable.h"
+#include "./executables/generationExecutable.h"
 #include "physics/algorithms/heatbath.hpp"
 
 class heatbathExecutable: public generationExecutable
