@@ -20,14 +20,14 @@
 
 #include "inverterExecutable.h"
 
-inline inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
+inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();
 	initializationTimer.add();
 }
 
-inline void inverterExecutable::writeInverterLogfile()
+void inverterExecutable::writeInverterLogfile()
 {
   outputToFile.open(filenameForLogfile,
 		    std::ios::out | std::ios::app);
@@ -45,7 +45,7 @@ void inverterExecutable::printParametersToScreenAndFile()
 	writeInverterLogfile();
 }
 
-inline void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield() {
+void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield() {
 	filenameForTwoFlavourDoubletCorrelatorData = meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
 	// for the correlator calculation, all sources are needed on the device
 	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parameters.get_num_sources());
@@ -61,7 +61,7 @@ inline void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield(
 	release_spinorfields(sources);
 }
 
-inline void inverterExecutable::measureTwoFlavourDoubletChiralCondensateOnGaugefield() {
+void inverterExecutable::measureTwoFlavourDoubletChiralCondensateOnGaugefield() {
 	filenameForTwoFlavourDoubletChiralCondensateData = meta::get_ferm_obs_pbp_file_name(parameters, currentConfigurationName);
 	int sourceNumber = 0;
 	for (; sourceNumber < parameters.get_num_sources(); sourceNumber++) {
@@ -74,7 +74,7 @@ inline void inverterExecutable::measureTwoFlavourDoubletChiralCondensateOnGaugef
 	}
 }
 
-inline void inverterExecutable::performApplicationSpecificMeasurements() {
+void inverterExecutable::performApplicationSpecificMeasurements() {
 	logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 	if (parameters.get_print_to_screen()) {
 		print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
@@ -85,30 +85,5 @@ inline void inverterExecutable::performApplicationSpecificMeasurements() {
 	if (parameters.get_measure_pbp()) {
 		measureTwoFlavourDoubletChiralCondensateOnGaugefield();
 	}
-}
-
-int main(int argc, const char* argv[])
-{
-	try{
-		inverterExecutable inverterInstance(argc, argv);
-		inverterInstance.performMeasurements();
-	} //try
-	//exceptions from Opencl classes
-	catch (Opencl_Error& e) {
-		logger.fatal() << e.what();
-		exit(1);
-	} catch (File_Exception& fe) {
-		logger.fatal() << "Could not open file: " << fe.get_filename();
-		logger.fatal() << "Aborting.";
-		exit(1);
-	} catch (Print_Error_Message& em) {
-		logger.fatal() << em.what();
-		exit(1);
-	} catch (Invalid_Parameters& es) {
-		logger.fatal() << es.what();
-		exit(1);
-	}
-
-	return 0;
 }
 

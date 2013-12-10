@@ -20,11 +20,11 @@
 #ifndef _INVERTERH_
 #define _INVERTERH_
 
-#include "executables/measurementExecutable.h"
-#include "physics/lattices/spinorfield.hpp"
-#include "physics/sources.hpp"
-#include "physics/algorithms/flavour_doublet.hpp"
-#include "physics/algorithms/inversion.hpp"
+#include "measurementExecutable.h"
+#include "../physics/lattices/spinorfield.hpp"
+#include "../physics/sources.hpp"
+#include "../physics/algorithms/flavour_doublet.hpp"
+#include "../physics/algorithms/inversion.hpp"
 
 /**
  * Inverter executable which measures fermionic observables on gaugefield configurations.

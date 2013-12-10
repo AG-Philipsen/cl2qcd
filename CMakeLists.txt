@@ -193,7 +193,7 @@ target_link_libraries(gaugeobservables optimal)
 add_executable(heatbath heatbathMain.cpp)
 target_link_libraries(heatbath optimal)
 
-add_executable(inverter inverterExecutable.cpp)
+add_executable(inverter inverterMain.cpp)
 target_link_libraries(inverter optimal)
 
 add_executable(hmc hmcExecutable.cpp)
