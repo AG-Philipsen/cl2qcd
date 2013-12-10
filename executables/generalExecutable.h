@@ -9,15 +9,15 @@
 
 #include <fstream>
 
-#include "types.h"
-#include "host_use_timer.h"
-#include "exceptions.h"
-#include "logger.hpp"
-#include "meta/util.hpp"
-#include "./hardware/system.hpp"
-#include "physics/lattices/gaugefield.hpp"
-#include "physics/prng.hpp"
-#include "physics/gaugeObservables.h"
+#include "../types.h"
+#include "../host_use_timer.h"
+#include "../exceptions.h"
+#include "../logger.hpp"
+#include "../meta/util.hpp"
+#include "../hardware/system.hpp"
+#include "../physics/lattices/gaugefield.hpp"
+#include "../physics/prng.hpp"
+#include "../physics/gaugeObservables.h"
 
 class generalExecutable
 {

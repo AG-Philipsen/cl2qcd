@@ -5,7 +5,7 @@
  * according to certain algorithms.
  **/
 
-#include "generalExecutable.h"
+#include "./executables/generalExecutable.h"
 
 class generationExecutable : public generalExecutable
 {

@@ -152,7 +152,6 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
-	generalExecutable.cpp
 	measurementExecutable.cpp
 	generationExecutable.cpp
 	exceptions.cpp
@@ -175,6 +174,7 @@ set(OPTIMAL_USED_LIBS
 	einhard
 	${PRNG_LIBRARIES}
 	crypto
+	executables
 )
 
 add_library(optimal ${OPTIMAL_FILES})
@@ -183,6 +183,7 @@ add_modules(optimal
 	meta
 	hardware
 	physics
+	executables
 )
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
 set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
