@@ -30,7 +30,11 @@
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	using namespace physics::algorithms;
+	if(boost::unit_test::framework::master_test_suite().argc !=2)
+	  logger.error() << "In the initialization test the sourcefile for the approx. is needed!";
+	BOOST_REQUIRE_EQUAL(boost::unit_test::framework::master_test_suite().argc, 2);
+	
+        using namespace physics::algorithms;
 	
 	Rational_Approximation approx(6,1,2,1e-5,1);
 	logger.info() << approx;
@@ -52,7 +56,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 		BOOST_CHECK_CLOSE(b[i], b2[i], 1.e-8);
 	}
 	
-	Rational_Approximation approx_file("approx_test");
+	Rational_Approximation approx_file(boost::unit_test::framework::master_test_suite().argv[1]);
 	int ord3 = approx_file.Get_order();
 	hmc_float a03 = approx_file.Get_a0();
 	std::vector<hmc_float> a3 = approx_file.Get_a();
