@@ -32,7 +32,7 @@
 #include <memory>
 #include "../../klepsydra/klepsydra.hpp"
 
-template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const physics::algorithms::Rational_Approximation& approx1, const physics::algorithms::Rational_Approximation& approx2, const physics::algorithms::Rational_Approximation& approx3, const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system);
+// template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const physics::algorithms::Rational_Approximation& approx1, const physics::algorithms::Rational_Approximation& approx2, const physics::algorithms::Rational_Approximation& approx3, const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system);
 
 template <class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi, hmc_float * const spinor_energy_init, const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system);
 //Mass preconditioning not yet implemented!
