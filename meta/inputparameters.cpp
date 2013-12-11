@@ -405,6 +405,22 @@ int Inputparameters::get_rhmcsteps() const noexcept
 {
   return rhmcsteps;
 }
+std::string Inputparameters::get_approx_heatbath_file() const noexcept
+{
+  return approx_heatbath_file;
+}
+std::string Inputparameters::get_approx_md_file() const noexcept
+{
+  return approx_md_file;
+}
+std::string Inputparameters::get_approx_metropolis_file() const noexcept
+{
+  return approx_metropolis_file;
+}
+bool Inputparameters::get_read_rational_approximations_from_file() const noexcept
+{
+  return read_rational_approximations_from_file;
+}
 
 //direction for the correlator
 int Inputparameters::get_corr_dir() const noexcept
@@ -683,6 +699,10 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("approx_lower", po::value<double>(&approx_lower)->default_value(1.e-5))
 	("approx_upper", po::value<double>(&approx_upper)->default_value(1.))
 	("rhmcsteps", po::value<int>(&rhmcsteps)->default_value(10))
+	("approx_heatbath_file", po::value<std::string>(&approx_heatbath_file)->default_value("Approx_Heatbath"))
+	("approx_md_file", po::value<std::string>(&approx_md_file)->default_value("Approx_MD"))
+	("approx_metropolis_file", po::value<std::string>(&approx_metropolis_file)->default_value("Approx_Metropolis"))
+	("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true))
 
 	("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
 

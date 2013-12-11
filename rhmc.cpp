@@ -90,21 +90,26 @@ int main(int argc, const char* argv[])
 		
 		logger.info() << "";
 		logger.info() << "Generation of Rational Approximations...";
-		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		/*Rational_Approximation approx_hb(parameters.get_metro_approx_ord(),
-						  parameters.get_num_tastes(), 8, parameters.get_approx_lower(),
-						  parameters.get_approx_upper(), false);*/
-		Rational_Approximation approx_hb("Approx_Heatbath");
-		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		/*Rational_Approximation approx_md(parameters.get_md_approx_ord(),
-						  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
-						  parameters.get_approx_upper(), true);*/
-		Rational_Approximation approx_md("Approx_MD");
-		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		/*Rational_Approximation approx_met(parameters.get_metro_approx_ord(),
-						  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
-						  parameters.get_approx_upper(), true);*/
-		Rational_Approximation approx_met("Approx_Metropolis");
+		Rational_Approximation *approx_hb, *approx_md, *approx_met;
+		if(parameters.get_read_rational_approximations_from_file()){
+			approx_hb  = new Rational_Approximation(parameters.get_approx_heatbath_file());
+			approx_md  = new Rational_Approximation(parameters.get_approx_md_file());
+			approx_met = new Rational_Approximation(parameters.get_approx_metropolis_file());
+		}else{
+			//This is the approx. to be used to generate the initial (pseudo)fermionic field
+			approx_hb = new Rational_Approximation(parameters.get_metro_approx_ord(),
+					parameters.get_num_tastes(), 8, parameters.get_approx_lower(),
+					parameters.get_approx_upper(), false);
+			//This is the approx. to be used to generate the initial (pseudo)fermionic field
+			approx_md = new Rational_Approximation(parameters.get_md_approx_ord(),
+					parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
+					parameters.get_approx_upper(), true);
+			//This is the approx. to be used to generate the initial (pseudo)fermionic field
+			approx_met = new Rational_Approximation(parameters.get_metro_approx_ord(),
+					  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
+					  parameters.get_approx_upper(), true);
+		}
+		
 		
 		logger.info() << "";
 		logger.info() << "Perform RHMC on device(s)... ";
@@ -114,7 +119,7 @@ int main(int argc, const char* argv[])
 			//generate new random-number for Metropolis step
 			const hmc_float rnd_number = prng.get_double();
 			
-			obs = perform_rhmc_step(approx_hb, approx_md, approx_met,
+			obs = perform_rhmc_step(*approx_hb, *approx_md, *approx_met,
 						 &gaugefield, iter, rnd_number, prng, system);
 
 			acc_rate += obs.accept;
