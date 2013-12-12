@@ -94,6 +94,39 @@ hmc_complex get_modified_stagg_phase(const int n, const int dir)
 {
 	coord_spatial coord = get_coord_spatial(n);
 	hmc_complex out;
+
+	out.re = (dir==XDIR)*(1.*SPATIAL_RE) +
+		 (dir==YDIR)*((1-2.*((coord.x)%2))*SPATIAL_RE) +
+		 (dir==ZDIR)*((1-2.*((coord.x+coord.y)%2))*SPATIAL_RE) +
+		 (dir==TDIR)*((1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE);
+	out.im = (dir==XDIR)*(1.*SPATIAL_IM) +
+		 (dir==YDIR)*((1-2.*((coord.x)%2))*SPATIAL_IM) +
+		 (dir==ZDIR)*((1-2.*((coord.x+coord.y)%2))*SPATIAL_IM) +
+		 (dir==TDIR)*((1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM);
+	
+	/*
+	if(dir==XDIR){
+	  out.re = 1.*SPATIAL_RE;
+	  out.im = 1.*SPATIAL_IM;
+	  return out;
+	}
+	if(dir==YDIR){  
+	  out.re = (1-2.*((coord.x)%2))*SPATIAL_RE;
+	  out.im = (1-2.*((coord.x)%2))*SPATIAL_IM;
+	  return out;
+	}
+	if(dir==ZDIR){  
+	  out.re = (1-2.*((coord.x+coord.y)%2))*SPATIAL_RE;
+	  out.im = (1-2.*((coord.x+coord.y)%2))*SPATIAL_IM;
+	  return out;
+	}
+	if(dir==TDIR){  
+	  out.re = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_RE;
+	  out.im = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM;
+	  return out;
+	}
+	*/
+	/*
 	switch(dir) { //Note that the 2. (instead of 2) is crucial to have a float
 	  case YDIR:
 	    out.re = (1-2.*((coord.x)%2))*SPATIAL_RE;
@@ -108,11 +141,11 @@ hmc_complex get_modified_stagg_phase(const int n, const int dir)
 	    out.im = (1-2.*((coord.x+coord.y+coord.z)%2))*TEMPORAL_IM;
 	    break;
 	  default:
-	    printf("Assuming dir=XDIR");
+	    //printf("Assuming dir=XDIR");
 	    out.re = 1.*SPATIAL_RE;
 	    out.im = 1.*SPATIAL_IM;
 	    break;
-	}
+	}*/
 
 	return out;
 }
