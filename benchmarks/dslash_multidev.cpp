@@ -93,6 +93,7 @@ int main(int argc, const char* argv[])
 		double gbytes = static_cast<double>(byte_count) * 2 * hmc_iter / elapsed_mus / 1e3;
 		logger.info() << "Dslash performance: " << gflops << " GFLOPS";
 		logger.info() << "Dslash memory: " << gbytes << " GB/S";
+		logger.info() << "Measured TIME: " << elapsed_mus / 1.e3 << "msec";
 
 	} //try
 	//exceptions from Opencl classes
