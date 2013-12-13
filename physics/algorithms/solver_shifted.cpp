@@ -39,6 +39,25 @@ static void compare_sqnorm(const std::vector<hmc_float> a, const std::vector<phy
 
 int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Staggeredfield_eo *> x, const std::vector<hmc_float> sigma, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& b, const hardware::System& system, hmc_float prec)
 {
+	using namespace physics::lattices;
+	using physics::algorithms::solvers::SolverStuck;
+	using physics::algorithms::solvers::SolverDidNotSolve;
+	
+	auto params = system.get_inputparameters();
+  
+	/// @todo start timer synchronized with device(s)
+	klepsydra::Monotonic timer;
+	klepsydra::Monotonic timer_noWarmup;
+	/// @todo make configurable from outside
+	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
+	const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
+	if(USE_ASYNC_COPY) {
+		logger.warn() << "Asynchroneous copying in the CG-M is currently unimplemented!";
+	}
+	if(MINIMUM_ITERATIONS) {
+		logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for CGM benchmarking!";
+	}
+	
 	if(squarenorm(b)==0){
 	  for(uint i=0; i<sigma.size(); i++)
 		x[i]->set_zero();   
@@ -50,20 +69,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	if(sigma.size() != x.size())
 		throw std::invalid_argument("Wrong size of multi-shifted inverter parameters!");
 	
-	using namespace physics::lattices;
-	using physics::algorithms::solvers::SolverStuck;
-	using physics::algorithms::solvers::SolverDidNotSolve;
-
-	auto params = system.get_inputparameters();
-	
-	/// @todo start timer synchronized with device(s)
-	klepsydra::Monotonic timer;
-	/// @todo make configurable from outside
-	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
-	if(USE_ASYNC_COPY) {
-		logger.warn() << "Asynchroneous copying in the CG-M is currently unimplemented!";
-	}
-
 	//The number of values of constants sigma as well as the number of fields x
 	const int Neqs = sigma.size();
 	
@@ -145,7 +150,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	
 	//NOTE: Here, most of the complex numbers may also be just hmc_floats.
 	//      However, for this one would need some additional functions in hardware::code...
-	for(iter = 0; iter < params.get_cgmax(); iter ++) {
+	for(iter = 0; iter < params.get_cgmax() || iter < MINIMUM_ITERATIONS; iter ++) {
 		//Update beta_scalar: v=A.p and tmp1=(r,r) and tmp3=(p,v) ---> beta_scalar=(-1)*tmp1/tmp3
 		copyData(&beta_scalar_prev,beta_scalar);  //before updating beta_scalar its value is saved
 		A(v, gf, *p);
@@ -248,22 +253,24 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
 				throw SolverStuck(iter, __FILE__, __LINE__);
 			}
-			if(resid < prec) {
+			if(resid < prec && iter >= MINIMUM_ITERATIONS) {
 				logger.debug() << create_log_prefix_cgm(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
 				// report on performance
 				if(logger.beInfo()) {
 					// we are always synchroneous here, as we had to recieve the residuum from the device
 					const uint64_t duration = timer.getTime();
+					const uint64_t duration_noWarmup = timer_noWarmup.getTime();
 					// calculate flops
 					const cl_ulong matrix_flops = A.get_flops();
 					const int sum_of_partial_iter = std::accumulate(single_system_iter.begin(), single_system_iter.end(),0);
 					logger.debug() << "matrix_flops: " << matrix_flops;
-					cl_ulong total_flops = iter * (matrix_flops +
+					
+					cl_ulong flops_per_iter_no_inner_loop=(matrix_flops +
 						2 * get_flops<Staggeredfield_eo, scalar_product>(system) +
 						2 * ::get_flops<hmc_complex, complexdivide>() +
 						    ::get_flops<hmc_complex, complexsubtract>() +
-						2 * get_flops<Staggeredfield_eo, saxpy>(system)) +
-						sum_of_partial_iter * (
+						2 * get_flops<Staggeredfield_eo, saxpy>(system));
+					cl_ulong flops_per_iter_only_inner_loop=(
 							 3 * ::get_flops<hmc_complex, complexdivide>() +
 							11 * ::get_flops<hmc_complex, complexmult>() +
 							     ::get_flops<hmc_complex, complexadd>() +
@@ -272,9 +279,15 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 							       get_flops<Staggeredfield_eo, saxpby>(system) +
 							       get_flops<Staggeredfield_eo, sax>(system) +
 							   5 * get_flops<Staggeredfield_eo, squarenorm>(system));
+					
+					cl_ulong total_flops = iter * flops_per_iter_no_inner_loop +
+						sum_of_partial_iter * flops_per_iter_only_inner_loop;
+					cl_ulong noWarmup_flops = (iter-1) * flops_per_iter_no_inner_loop +
+									      flops_per_iter_only_inner_loop;
+					
 					logger.debug() << "total_flops: " << total_flops;
 					// report performance
-					logger.info() << create_log_prefix_cgm(iter) << "CG-M completed in " << std::setprecision(6) << duration / 1000.f << " ms @ " << ((hmc_float)total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations.";
+					logger.info() << create_log_prefix_cgm(iter) << "CG-M completed in " << std::setprecision(6) << duration / 1000.f << " ms @ " << ((hmc_float)total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << ((hmc_float)noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
 				}
 				// report on solution
 				log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (final): ", x, report_num);
@@ -286,6 +299,9 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		}
 		//Set tmp1 from tmp2 for following iteration
 		copyData(&tmp1, tmp2);
+		if(iter == 0) {
+			timer_noWarmup.reset();
+		}
 	}
 	
 	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << tmp2.get().re;

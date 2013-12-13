@@ -179,15 +179,15 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	}
 }
 
-/*//This are just to play with cg_m to optimize it
+//This are just to play with cg_m to optimize it
 BOOST_AUTO_TEST_CASE(cgm_4)
 {
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
 	
-	const char * _params[] = {"foo", "--nspace=16", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(4, _params);
+	const char * _params[] = {"foo", "--nspace=4", "--ntime=4", "--fermact=rooted_stagg", "--cgmax=100000", "--cg_minimum_iteration_count=0" };
+	meta::Inputparameters params(6, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	
@@ -215,6 +215,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	}
 }
 
+/*
 BOOST_AUTO_TEST_CASE(cgm_5)
 {
 	using physics::fermionmatrix::DKS_eo;
