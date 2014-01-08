@@ -740,10 +740,10 @@ void hardware::code::Spinors_staggered::saxpy_eoprec_device(const hardware::buff
 	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 2, sizeof(cl_mem), &alpha.re);
+	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 2, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
-	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 3, sizeof(cl_mem), &alpha.im);
+	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 3, sizeof(hmc_float), &alpha.im);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 4, sizeof(cl_mem), out->get_cl_buffer());
