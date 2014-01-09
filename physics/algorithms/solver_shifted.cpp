@@ -176,11 +176,12 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		saxpy(p, alpha_scalar, *p, *r);
 		//saxpy(p, alpha_scalar, *p, *r);
 		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", *p);
+
 		//Loop over the system equations, namely over the set of sigma values
 		for(int k=0; k<Neqs; k++){
 			if(single_system_converged[k]==false){
 				//Update zeta_iii[k]: num = zeta_i[k]*zeta_ii[k]*beta_scalar_prev
-				//                    den = beta_scalar*alpha_scalar*(zeta_i[k]-zeta_ii[k])+
+				//                    den = beta_scalar*alpha_scalar_prev*(zeta_i[k]-zeta_ii[k])+
 				//                        + zeta_i[k]*beta_scalar_prev*(1-sigma[k]*beta_scalar)
 				// ---> zeta_iii[k] = num/den
 				//I calculate before the denominator to can use num as auxiliary variable
@@ -213,11 +214,13 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				divide(alpha[k], num, den);
 				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
 				saxpby(ps[k], *zeta_iii[k], *r, *alpha[k], *ps[k]);
-				//Check fields squarenorm form possible nan
-				if((squarenorm(*x[k]) != squarenorm(*x[k])) ||
-				   (squarenorm(*ps[k]) != squarenorm(*ps[k]))){
-					logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
-					throw SolverStuck(iter, __FILE__, __LINE__);
+				//Check fields squarenorm for possible nan
+				if(logger.beDebug()){
+					if((squarenorm(*x[k]) != squarenorm(*x[k])) ||
+					  (squarenorm(*ps[k]) != squarenorm(*ps[k]))){
+						logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
+						throw SolverStuck(iter, __FILE__, __LINE__);
+					}
 				}
 				//Check if single system converged: ||zeta_iii[k] * r||^2 < prec
 				// ---> v = zeta_iii[k] * r
@@ -236,6 +239,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				copyData(zeta_ii[k], zeta_iii[k]);
 			}
 		}
+
 		if(single_system_iter.size()==(uint)Neqs)
 			converged = true;
 		if(logger.beDebug()){
@@ -294,6 +298,21 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				
 				//for(Staggeredfield_eo* i : x)
 				//  logger.warn() << "sqnorm(x[i]) = " << squarenorm(*i);
+				
+				//Before returning I have to clean all the memory!!!
+				delete r;
+				delete p;
+				delete v;
+				for(int i=0; i<Neqs; i++){
+				  delete ps[i];
+				  delete alpha[i];
+				  delete beta[i];
+				  delete zeta_i[i];
+				  delete zeta_ii[i];
+				  delete zeta_iii[i];
+				  delete shift[i];
+				}
+				
 				return iter;
 			}
 		}
@@ -302,6 +321,8 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		if(iter == 0) {
 			timer_noWarmup.reset();
 		}
+	//logger.info() << "cgm not properly executed in " << timer.getTime() / 1000.f << " ms";
+	//return 0;
 	}
 	
 	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << tmp2.get().re;
