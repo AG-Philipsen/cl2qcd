@@ -35,15 +35,14 @@ def main():
 	#print '%f' % float(reference.readline())
 	#print '%f' % float(reference.readline())
 
-	#rm existing hmc_output file
+	#rm existing rhmc_output file
 	# NOTE: the "-f" will suppress an error if the file does not exist
 	os.system('rm -f rhmc_output')
 
-	# perform HMC with given input file
-	# open tmp file to save the output of the hmc
+	# perform RHMC with given input file
+	# open tmp file to save the output of the rhmc
 	# NOTE: stdout=PIPE does not work here, apparently no output file is created then
 	subject = Popen(['../rhmc'] + sys.argv[2:], stdout = PIPE)
-	#subject = Popen(['../build/rhmc'] + sys.argv[2:], stdout = PIPE)
 	
 
 	for line in subject.stdout:
@@ -58,7 +57,7 @@ def main():
 		print "Program terminated with exit code %i" % ( subject.returncode )
 		return subject.returncode
 
-	#now the value of interest is in the 2nd row of "hmc_output"
+	#now the value of interest is in the 1st row of "rhmc_output"
 	candidate = open('rhmc_output')
 
 	#get reference value, this is given in the first line of the reference file
@@ -72,6 +71,7 @@ def main():
 		return 127
 
 	# no check failed
+	print "Test done! No errors detected!"
 	return 0
 
 if __name__ == '__main__':

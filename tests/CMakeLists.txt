@@ -335,7 +335,7 @@ add_test(HMC17_CPU_TM_EO_2MN_3TS_ANTI ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURC
 ## ANTI: antiperiodic boundary conditions
 ### All these tests are with: EO preconditioning, fermact=rooted_stagg
 ## The options for the Rational Approximation files are given here to have a global path!!
-set(APPROX_FILES "--approx_heatbath_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_Heatbath --approx_md_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_MD --approx_metropolis_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_Metropolis")
+set(APPROX_FILES "--approx_heatbath_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_Heatbath" "--approx_md_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_MD" "--approx_metropolis_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_Metropolis")
 add_test(RHMC_01_CPU_LF_1TS_COLD        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_1 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_01 ${APPROX_FILES})
 add_test(RHMC_02_CPU_LF_1TS_COLD_ANTI   ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_2 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_02 ${APPROX_FILES})
 add_test(RHMC_03_CPU_LF_1TS_CONF        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_3 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_03 ${APPROX_FILES})
