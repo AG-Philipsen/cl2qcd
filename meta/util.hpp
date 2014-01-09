@@ -76,6 +76,20 @@ namespace meta {
   std::string create_configuration_name(const Inputparameters& parameters, int number) noexcept;
   void print_info_flavour_doublet_correlators(const meta::Inputparameters params);
   void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
+  template<typename Container> void free_container(Container& c) noexcept;
+  
+/*
+* TEMPLATE IMPLEMENTATIONS
+*/
+template<typename Container> void free_container(Container& c) noexcept
+{
+	while(!c.empty()){
+		delete c.back();
+		c.pop_back();
+	}
+}
+
+
 }
 
 #endif /* META_UTIL_ */
