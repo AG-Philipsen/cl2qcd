@@ -28,6 +28,7 @@ add_library(code
 		heatbath.cpp
 		kappa.cpp
 		correlator.cpp
+		real.cpp
 		complex.cpp
 		spinors.cpp
 		spinors_staggered.cpp
