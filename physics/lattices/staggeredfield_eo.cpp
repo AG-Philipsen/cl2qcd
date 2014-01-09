@@ -59,7 +59,6 @@ static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const har
 
 physics::lattices::Staggeredfield_eo::~Staggeredfield_eo()
 {
-  logger.warn() << "In physics::lattices::Staggeredfield_eo::~Staggeredfield_eo";
 for(auto buffer: buffers) {
 		delete buffer;
 	}
