@@ -227,6 +227,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 		saxpy(&tmp, {(phi.Get_a())[i], 0.}, *X[i], tmp);
 	}
 	
+	meta::free_container(X);
 	return scalar_product(phi, tmp).re;
   
 }

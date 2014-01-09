@@ -32,7 +32,6 @@
 #include <sstream>
 #include <vector>
 #include <numeric>
-#include <memory>
 
 static std::string create_log_prefix_cgm(int number) noexcept;
 static void log_squarenorm_aux(const std::string& msg, const std::vector<physics::lattices::Staggeredfield_eo *> x, const int n) noexcept;

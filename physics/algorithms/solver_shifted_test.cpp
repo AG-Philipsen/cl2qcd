@@ -23,6 +23,7 @@
 #include "rational_approximation.hpp"
 #include "../../logger.hpp"
 #include "../lattices/util.hpp"
+#include "../../meta/util.hpp"
 #include "../lattices/scalar_complex.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
 
@@ -75,6 +76,8 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 		logger.info() << "sqnorm((matrix + sigma[" << i << "]) * out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
 		BOOST_CHECK_CLOSE(sqnorm_b, sqnorm_out[i], 1.e-8);
 	}
+	meta::free_container(out);
+	meta::free_container(aux);
 }
 
 BOOST_AUTO_TEST_CASE(cgm_2)
@@ -122,6 +125,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 		logger.info() << "sqnorm(out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
 		BOOST_CHECK_CLOSE(sqnorms_ref[i], sqnorm_out[i], 1.e-8);
 	}
+	meta::free_container(out);
 }
 
 BOOST_AUTO_TEST_CASE(cgm_3)
@@ -177,6 +181,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 		logger.info() << "sqnorm(out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
 		BOOST_CHECK_CLOSE(sqnorms_ref[i], sqnorm_out[i], 1.e-8);
 	}
+	meta::free_container(out);
 }
 
 //This are just to play with cg_m to optimize it
@@ -213,6 +218,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 		sqnorm_out.push_back(squarenorm(*out[i]));
 		logger.info() << "sqnorm(out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
 	}
+	meta::free_container(out);
 }
 
 /*

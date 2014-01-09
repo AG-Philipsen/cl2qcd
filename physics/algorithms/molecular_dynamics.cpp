@@ -102,6 +102,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
 		physics::lattices::saxpy(out, {(out->Get_a())[i], 0.}, *X[i], *out);
 	
 	log_squarenorm("Staggeredfield_eo after update", *out);
+	meta::free_container(X);
 }
 
 /**
