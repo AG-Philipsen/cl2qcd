@@ -51,6 +51,7 @@ namespace code {
 // forward decleration to improve decoupling and speed up compilation
 class Gaugefield;
 class PRNG;
+class Real;
 class Complex;
 class Spinors;
 class Spinors_staggered;
@@ -185,6 +186,11 @@ public:
 	const hardware::code::PRNG * get_prng_code();
 
 	/**
+	 * Get access to the real kernels on this device.
+	 */
+	const hardware::code::Real * get_real_code();
+	
+	/**
 	 * Get access to the complex kernels on this device.
 	 */
 	const hardware::code::Complex * get_complex_code();
@@ -314,6 +320,12 @@ private:
 	 */
 	const hardware::code::PRNG * prng_code;
 
+	/**
+	 * Pointer to the real code.
+	 * Initialized on demand.
+	 */
+	const hardware::code::Real * real_code;
+	
 	/**
 	 * Pointer to the complex code.
 	 * Initialized on demand.

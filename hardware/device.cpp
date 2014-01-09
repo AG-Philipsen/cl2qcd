@@ -24,6 +24,7 @@
 #include "../logger.hpp"
 #include "code/gaugefield.hpp"
 #include "code/prng.hpp"
+#include "code/real.hpp"
 #include "code/complex.hpp"
 #include "code/spinors.hpp"
 #include "code/spinors_staggered.hpp"
@@ -47,6 +48,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  profiling_data(),
 	  gaugefield_code(nullptr),
 	  prng_code(nullptr),
+	  real_code(nullptr),
 	  complex_code(nullptr),
 	  spinor_code(nullptr),
 	  spinor_staggered_code(nullptr),
@@ -104,6 +106,9 @@ hardware::Device::~Device()
 	if(gaugemomentum_code) {
 		delete gaugemomentum_code;
 	}
+	if(molecular_dynamics_code) {
+		delete gaugemomentum_code;
+	}
 	if(fermion_code) {
 		delete fermion_code;
 	}
@@ -115,6 +120,9 @@ hardware::Device::~Device()
 	}
 	if(spinor_staggered_code) {
 		delete spinor_staggered_code;
+	}
+	if(real_code) {
+		delete real_code;
 	}
 	if(complex_code) {
 		delete complex_code;
@@ -337,6 +345,14 @@ const hardware::code::PRNG * hardware::Device::get_prng_code()
 		prng_code = new hardware::code::PRNG(params, this);
 	}
 	return prng_code;
+}
+
+const hardware::code::Real * hardware::Device::get_real_code()
+{
+	if(!real_code) {
+		real_code = new hardware::code::Real(params, this);
+	}
+	return real_code;
 }
 
 const hardware::code::Complex * hardware::Device::get_complex_code()
