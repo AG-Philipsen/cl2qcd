@@ -142,6 +142,14 @@ target_link_libraries(opencl_module_complex_test
 add_test(Opencl_module_complex_CPU       opencl_module_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(Opencl_module_complex_GPU       opencl_module_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
+add_executable(opencl_module_real_test opencl_module_real_test.cpp)
+target_link_libraries(opencl_module_real_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_real_CPU       opencl_module_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_real_GPU       opencl_module_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 add_executable(opencl_module_fermions_test_merged_kernels opencl_module_fermions_test_merged_kernels.cpp)
 target_link_libraries(opencl_module_fermions_test_merged_kernels
 	optimal
