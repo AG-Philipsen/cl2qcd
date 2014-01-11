@@ -179,6 +179,9 @@ public:
 	bool get_use_merge_kernels_spinor() const noexcept;
 	bool get_use_rec12() const noexcept;
 
+  std::string get_profiling_data_prefix() const noexcept;
+  std::string get_profiling_data_postfix() const noexcept;
+
 	//parameters to read in gauge configurations
 	bool get_read_multiple_configs() const noexcept;
 	int get_config_read_start() const noexcept;
@@ -349,6 +352,9 @@ private:
 
 	std::string rectanglesFilename;
 	std::string transportcoefficientKappaFilename;
+
+	std::string profiling_data_prefix;
+	std::string profiling_data_postfix;
 
 	//parameters to write out observables
 	bool gauge_obs_to_single_file;
