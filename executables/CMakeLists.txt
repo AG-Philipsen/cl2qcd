@@ -25,6 +25,7 @@ add_library(executables
 	generalExecutable.cpp
 	generationExecutable.cpp
 	measurementExecutable.cpp
+	benchmarkExecutable.cpp
 	heatbathExecutable.cpp
 	gaugeobservablesExecutable.cpp
 	inverterExecutable.cpp
