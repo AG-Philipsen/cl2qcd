@@ -68,6 +68,7 @@ reversibility_check = true
 integrationsteps0 = 103
 integrationsteps1 = 5
 hmcsteps = 98
+benchmarksteps = 10
 num_timescales = 3
 integrator0 = TWOMN
 integrator1 = LEAPFROG

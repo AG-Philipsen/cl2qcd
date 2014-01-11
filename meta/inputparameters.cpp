@@ -345,6 +345,10 @@ int Inputparameters::get_hmcsteps() const noexcept
 {
   return hmcsteps;
 }
+int Inputparameters::get_benchmarksteps() const noexcept
+{
+  return benchmarksteps;
+}
 int Inputparameters::get_num_timescales() const noexcept
 {
   return num_timescales;
@@ -702,6 +706,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
 	("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
 	("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
+	("benchmarksteps", po::value<int>(&benchmarksteps)->default_value(500))
 	("num_timescales", po::value<int>(&num_timescales)->default_value(1))
 	("integrator0", po::value<std::string>()->default_value("leapfrog"))
 	("integrator1", po::value<std::string>()->default_value("leapfrog"))

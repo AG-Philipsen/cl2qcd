@@ -149,6 +149,7 @@ public:
 	bool get_reversibility_check() const noexcept;
 	int get_integrationsteps(size_t timescale) const noexcept;
 	int get_hmcsteps() const noexcept;
+	int get_benchmarksteps() const noexcept;
 	int get_num_timescales() const noexcept;
 	integrator get_integrator(size_t timescale) const noexcept;
 	//this is the optimal value...
@@ -305,6 +306,7 @@ private:
 	int integrationsteps1;
 	int integrationsteps2;
 	int hmcsteps;
+	int benchmarksteps;
 	int num_timescales;
 	integrator integrator0;
 	integrator integrator1;

@@ -25,7 +25,7 @@
 benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 {
 	initializationTimer.reset();
-	benchmarkSteps = 0;
+	benchmarkSteps = parameters.get_benchmarksteps();;
 	initializationTimer.add();
 }
 
