@@ -301,3 +301,12 @@ std::string meta::create_prng_name(const Inputparameters& parameters) noexcept
 	string outputfile = outfilename.str();
 	return outputfile;
 }
+
+std::string meta::create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept
+{
+	using namespace std;
+	stringstream outfilename;
+	outfilename << parameters.get_profiling_data_prefix() << executableName << parameters.get_profiling_data_postfix();
+	string outputfile = outfilename.str();
+	return outputfile;
+}
