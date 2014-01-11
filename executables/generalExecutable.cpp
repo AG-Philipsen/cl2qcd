@@ -27,7 +27,7 @@ generalExecutable::generalExecutable(int argc, const char* argv[], bool enablePr
 	filenameForLogfile = meta::createLogfileName(ownName);
 	switchLogLevel(parameters.get_log_level());
 	printParametersToScreenAndFile();
-	system = new hardware::System(parameters);
+	system = new hardware::System(parameters, enableProfiling);
 	prng = new physics::PRNG(*system);
 	initializationTimer.add();
 }
