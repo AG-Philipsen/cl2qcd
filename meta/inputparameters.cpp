@@ -89,6 +89,10 @@ bool Inputparameters::get_use_cpu() const noexcept
 {
   return use_cpu;
 }
+bool Inputparameters::get_enable_profiling() const noexcept
+{
+  return enable_profiling;
+}
 
 bool Inputparameters::get_use_aniso() const noexcept
 {
@@ -612,6 +616,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("num_dev", po::value<int>(&device_count)->default_value(0), "Maximum number of devices to use.")
 	("use_gpu", po::value<bool>(&use_gpu)->default_value(true), "Use GPUs")
 	("use_cpu", po::value<bool>(&use_cpu)->default_value(true), "Use CPUs")
+	("enable_profiling", po::value<bool>(&enable_profiling)->default_value(false), "Enable profiling of kernel execution. Implies slower performance due to synchronization after each kernel call.")
 
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false))
 	("use_chem_pot_re", po::value<bool>(&use_chem_pot_re)->default_value(false))
