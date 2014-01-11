@@ -125,6 +125,9 @@ hardware::Device::~Device()
 	if(gaugefield_code) {
 		delete gaugefield_code;
 	}
+	if(molecular_dynamics_code) {
+		delete molecular_dynamics_code;
+	}
 
 	clFinish(command_queue);
 	clReleaseCommandQueue(command_queue);
@@ -461,6 +464,12 @@ void hardware::print_profiling(Device * device, const std::string& filename, int
 	}
 	if(device->buffer_code) {
 		device->buffer_code->print_profiling(filename, id);
+	}
+	if(device->molecular_dynamics_code) {
+		device->molecular_dynamics_code->print_profiling(filename, id);
+	}
+	if(device->gaugemomentum_code) {
+		device->gaugemomentum_code->print_profiling(filename, id);
 	}
 }
 
