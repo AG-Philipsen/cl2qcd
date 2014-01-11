@@ -22,6 +22,15 @@ void generalExecutable::printProfilingDataToFile()
 {
 	if ( parameters.get_enable_profiling() )
 	  {
+	    logger.info() << "## writing general times to file: \"" << filenameForProfilingData << "\"";
+	    // For benchmarking one might need the lattice sizes
+	    outputToFile.open(filenameForProfilingData);
+	    if (outputToFile.is_open()) {
+		meta::print_info_global(&outputToFile, parameters);
+		outputToFile.close();
+	    } else {
+	      throw File_Exception(filenameForLogfile);
+	    }
 	    print_profiling(system, filenameForProfilingData);
 	  }
 }
