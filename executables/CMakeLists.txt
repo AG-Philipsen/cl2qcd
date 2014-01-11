@@ -30,6 +30,7 @@ add_library(executables
 	gaugeobservablesExecutable.cpp
 	inverterExecutable.cpp
 	hmcExecutable.cpp
+	dslashBenchmark.cpp
 )
 
 target_link_libraries(executables
