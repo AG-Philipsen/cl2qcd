@@ -36,6 +36,7 @@ public:
 protected:
 	const char* ownName;
 	std::string filenameForLogfile;
+	std::string filenameForProfilingData;
 	usetimer totalRuntimeOfExecutable;
 	usetimer initializationTimer;
 	usetimer performanceTimer;
@@ -54,6 +55,8 @@ protected:
 	void printGeneralTimesToFile();
 
 	void printParametersToScreenAndFile();
+
+	void printProfilingDataToFile();
 };
 
 #endif /* GENERALEXECUTABLE_H_ */
