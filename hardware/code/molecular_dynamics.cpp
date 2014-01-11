@@ -548,6 +548,8 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), md_update_gaugefield (0), gauge_force (0),
 	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
+	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0), 
+	  gauge_force_tlsym_4 (0), gauge_force_tlsym_5 (0), gauge_force_tlsym_6 (0), 
 	  fermion_stagg_partial_force_eo(0), gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
 {
 	fill_kernels();
