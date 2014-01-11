@@ -18,11 +18,12 @@ void generalExecutable::printParametersToScreenAndFile()
 	}
 }
 
-generalExecutable::generalExecutable(int argc, const char* argv[]) : parameters(argc, argv)
+generalExecutable::generalExecutable(int argc, const char* argv[], bool enableProfilingIn) : parameters(argc, argv)
 {
 	totalRuntimeOfExecutable.reset();
 	initializationTimer.reset();
 	ownName = argv[0];
+	enableProfiling = enableProfilingIn;
 	filenameForLogfile = meta::createLogfileName(ownName);
 	switchLogLevel(parameters.get_log_level());
 	printParametersToScreenAndFile();
