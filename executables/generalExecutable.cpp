@@ -18,16 +18,15 @@ void generalExecutable::printParametersToScreenAndFile()
 	}
 }
 
-generalExecutable::generalExecutable(int argc, const char* argv[], bool enableProfilingIn) : parameters(argc, argv)
+generalExecutable::generalExecutable(int argc, const char* argv[]) : parameters(argc, argv)
 {
 	totalRuntimeOfExecutable.reset();
 	initializationTimer.reset();
 	ownName = argv[0];
-	enableProfiling = enableProfilingIn;
 	filenameForLogfile = meta::createLogfileName(ownName);
 	switchLogLevel(parameters.get_log_level());
 	printParametersToScreenAndFile();
-	system = new hardware::System(parameters, enableProfiling);
+	system = new hardware::System(parameters, parameters.get_enable_profiling());
 	prng = new physics::PRNG(*system);
 	initializationTimer.add();
 }
@@ -35,6 +34,16 @@ generalExecutable::~generalExecutable()
 {
 	totalRuntimeOfExecutable.add();
 	printRuntimeInformationToScreenAndFile();
+
+	if ( parameters.get_enable_profiling() )
+	  {
+	    std::string profiling_out;
+	    profiling_out = std::string(ownName) + std::string("_profiling_data");
+	    
+	    std::fstream prof_file;
+	    prof_file.open(profiling_out.c_str(), std::ios::out | std::ios::app);
+	    print_profiling(system, profiling_out);
+	  }
 }
 
 void generalExecutable::printRuntimeInformationToScreenAndFile()

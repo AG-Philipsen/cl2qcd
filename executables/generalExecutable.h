@@ -26,7 +26,7 @@ public:
 	/**
 	 * Initialize meta::Inputparametes and hardware::System objects
 	 */
-  generalExecutable(int argc, const char* argv[], bool enableProfilingIn = false);
+  generalExecutable(int argc, const char* argv[]);
 
 	/**
 	 * Destructor. Prints runtime information to screen and file.
@@ -34,7 +34,6 @@ public:
 	~generalExecutable();
 
 protected:
-	bool enableProfiling;
 	const char* ownName;
 	std::string filenameForLogfile;
 	usetimer totalRuntimeOfExecutable;
