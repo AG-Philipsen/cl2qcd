@@ -20,8 +20,8 @@
 
 #include "hmcExecutable.h"
 
-hmcExecutable::hmcExecutable(int argc, const char* argv[], bool enableProfilingIn) :
-  generationExecutable(argc, argv, enableProfilingIn)
+hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
+  generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();
@@ -47,7 +47,7 @@ void hmcExecutable::writeHmcLogfile()
 	outputToFile.open(filenameForLogfile,
 			std::ios::out | std::ios::app);
 	if (outputToFile.is_open()) {
-		meta::print_info_heatbath(&outputToFile, parameters);
+		meta::print_info_hmc(&outputToFile, parameters);
 		outputToFile.close();
 	} else {
 		throw File_Exception(filenameForLogfile);

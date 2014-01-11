@@ -23,8 +23,8 @@
 int main(int argc, const char* argv[])
 {
 	try {
-		hmcExecutable hmcInstance(argc, argv);
-		hmcInstance.generateConfigurations();
+	  hmcExecutable hmcInstance(argc, argv);
+	  hmcInstance.generateConfigurations();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {

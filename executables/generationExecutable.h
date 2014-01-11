@@ -10,7 +10,7 @@
 class generationExecutable : public generalExecutable
 {
 public:
-	generationExecutable(int argc, const char* argv[], bool enableProfilingIn = false);
+	generationExecutable(int argc, const char* argv[]);
 
 	void generateConfigurations();
 

@@ -20,7 +20,7 @@
 
 #include "gaugeobservablesExecutable.h"
 
-gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[], bool enableProfilingIn) : measurementExecutable(argc, argv, enableProfilingIn)
+gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
   	printParametersToScreenAndFile();
 }

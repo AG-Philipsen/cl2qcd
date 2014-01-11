@@ -23,7 +23,7 @@
 int main(int argc, const char* argv[])
 {
 	try{
-		inverterExecutable inverterInstance(argc, argv);
+	  inverterExecutable inverterInstance(argc, argv);
 		inverterInstance.performMeasurements();
 	} //try
 	//exceptions from Opencl classes
