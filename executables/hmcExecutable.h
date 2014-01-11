@@ -15,7 +15,7 @@
 class hmcExecutable : public generationExecutable
 {
 public:
-	hmcExecutable(int argc, const char* argv[]);
+  hmcExecutable(int argc, const char* argv[], bool enableProfilingIn = false);
 
 	~hmcExecutable();
 protected:

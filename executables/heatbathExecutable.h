@@ -27,7 +27,7 @@
 class heatbathExecutable: public generationExecutable
 {
 public:
-	heatbathExecutable(int argc, const char* argv[]);
+	heatbathExecutable(int argc, const char* argv[], bool enableProfilingIn = false);
 
 private:
 	int overrelaxSteps;

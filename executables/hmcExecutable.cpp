@@ -20,8 +20,8 @@
 
 #include "hmcExecutable.h"
 
-hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
-	generationExecutable(argc, argv)
+hmcExecutable::hmcExecutable(int argc, const char* argv[], bool enableProfilingIn) :
+  generationExecutable(argc, argv, enableProfilingIn)
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();

@@ -20,8 +20,8 @@
 
 #include "heatbathExecutable.h"
 
-heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
-		generationExecutable(argc, argv)
+heatbathExecutable::heatbathExecutable(int argc, const char* argv[], bool enableProfilingIn) :
+  generationExecutable(argc, argv, enableProfilingIn)
 {
 	initializationTimer.reset();
 	setIterationParameters();

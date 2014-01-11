@@ -1,6 +1,6 @@
 #include "generationExecutable.h"
 
-generationExecutable::generationExecutable(int argc, const char* argv[]) : generalExecutable(argc, argv)
+generationExecutable::generationExecutable(int argc, const char* argv[], bool enableProfilingIn) : generalExecutable(argc, argv, enableProfilingIn)
 {
 	initializationTimer.reset();
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
