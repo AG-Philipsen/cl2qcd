@@ -20,7 +20,7 @@
 
 #include "inverterExecutable.h"
 
-inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
+inverterExecutable::inverterExecutable(int argc, const char* argv[], bool enableProfilingIn) : measurementExecutable(argc, argv, enableProfilingIn)
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();

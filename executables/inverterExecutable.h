@@ -36,7 +36,7 @@ public:
 	 * Constructor.
 	 * Writes Logfile.
 	 */
-	inverterExecutable(int argc, const char* argv[]);
+	inverterExecutable(int argc, const char* argv[], bool enableProfilingIn = false);
 
 protected:
 	const std::string 	filenameForInverterLogfile = "inverter.log";

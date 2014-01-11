@@ -29,7 +29,7 @@
 class gaugeobservablesExecutable : public measurementExecutable
 {
 public:
-	gaugeobservablesExecutable(int argc, const char* argv[]);
+	gaugeobservablesExecutable(int argc, const char* argv[], bool enableProfilingIn = false);
 
 protected:
 	std::string filenameForGaugeobservables;

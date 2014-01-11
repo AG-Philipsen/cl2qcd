@@ -12,7 +12,7 @@
 class measurementExecutable : public generalExecutable
 {
 public:
-	measurementExecutable(int argc, const char* argv[]);
+	measurementExecutable(int argc, const char* argv[], bool enableProfilingIn = false);
 
 	void performMeasurements();
 

@@ -12,7 +12,7 @@ void measurementExecutable::checkStartconditions()
   }
 }
 
-measurementExecutable::measurementExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
+measurementExecutable::measurementExecutable(int argc, const char* argv[], bool enableProfilingIn) : generalExecutable (argc, argv, enableProfilingIn)
 {
 	initializationTimer.reset();
 	setIterationVariables();
