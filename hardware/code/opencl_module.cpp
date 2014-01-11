@@ -281,14 +281,8 @@ static void print_profiling(const std::string& filename, const std::string& kern
 	fstream out;
 	out.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!out.is_open()) File_Exception(filename.c_str());
-	//CP: this is set manually to fit the longest kernel name
 	out.width(32);
 	out.precision(15);
-	//to look like that
-	/*
-	logger.trace() << "*******************************************************************";
-	logger.trace() << "Fermion\t"<< setfill(' ') << setw(16)<< "BW[GB/s]\t" << setfill(' ') << setw(18) << "Re/Wr[MByte]\t" << setfill(' ') << setw(6)  << "Calls\t" << setfill(' ') << setw(10)  << "Time[mus]";
-	*/
 	out << kernelName << "\t" << data.get_total_time() << "\t" << data.get_num_values() << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
 	out.close();
 }
