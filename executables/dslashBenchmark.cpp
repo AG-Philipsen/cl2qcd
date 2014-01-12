@@ -31,6 +31,16 @@
 dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
   benchmarkExecutable(argc, argv)
 {
+  // expect there to be exactly one device
+  if(system->get_devices().size() != 1) {
+    logger.fatal() << "There must be exactly one device chosen for the dslash benchmark to be performed.";
+  }
+  // expect that profiling is enabled
+  if(! parameters.get_enable_profiling() )
+    {
+      throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
+    }
+  
 
 }
 
