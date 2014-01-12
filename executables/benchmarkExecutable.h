@@ -34,7 +34,18 @@ class benchmarkExecutable : public generalExecutable
 public:
 	benchmarkExecutable(int argc, const char* argv[]);
 
+	/**
+	 * performs to-be-specified kernels a number of times.
+	 * This should be used with profiling enabled.
+	 */
 	void benchmark();
+
+	/**
+	 * Calls a kernel on possibly multiple devices.
+	 * The total execution time is measured after a warm-up run.
+	 * Therefore, it should not be used with profiling enabled.
+	 */
+	virtual	void benchmarkMultipleDevices() {};
 
 protected:
   hardware::Device * device;

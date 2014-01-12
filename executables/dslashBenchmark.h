@@ -23,19 +23,22 @@
 
 #include "benchmarkExecutable.h"
 #include "../physics/lattices/gaugefield.hpp"
+#include "../physics/lattices/spinorfield_eo.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions.hpp"
 #include "../hardware/code/spinors.hpp"
+#include "../physics/fermionmatrix/fermionmatrix.hpp"
 
 class dslashBenchmark : public benchmarkExecutable
 {
 public:
   dslashBenchmark(int argc, const char* argv[]);
 
-protected:
-  const hardware::buffers::Spinor * spinorfield1;
-  const hardware::buffers::Spinor * spinorfield2;
+  void benchmarkMultipleDevices();
 
+protected:
+  const physics::lattices::Spinorfield_eo * spinorfield1;
+  const physics::lattices::Spinorfield_eo * spinorfield2;
 	/*
 	 * Calls the dslash_eo kernel.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.

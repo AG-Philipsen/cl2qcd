@@ -37,15 +37,60 @@ dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
     {
       throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
     }
-  spinorfield1 = new  hardware::buffers::Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
-  spinorfield2 = new  hardware::buffers::Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
+  spinorfield1 = new physics::lattices::Spinorfield_eo(*system);
+  spinorfield2 = new physics::lattices::Spinorfield_eo(*system);
 }
 
 void dslashBenchmark::performBenchmarkForSpecificKernels()
 {
-  auto gf_buffer = gaugefield->get_buffers().at(0);
+  auto gaugefield_buffer = gaugefield->get_buffers().at(0);
+  auto spinorfield1_buffer = spinorfield1->get_buffers().at(0);
+  auto spinorfield2_buffer = spinorfield2->get_buffers().at(0);
   auto fermion_code = device->get_fermion_code();
-  fermion_code->dslash_eo_device(spinorfield1, spinorfield2, gf_buffer, EVEN);
-  fermion_code->dslash_eo_device(spinorfield1, spinorfield2, gf_buffer, ODD);
+  fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, EVEN);
+  fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, ODD);
   device->synchronize();
+}
+
+void dslashBenchmark::benchmarkMultipleDevices()
+{
+  
+		// update gaugefield buffers once to have update links fully initialized
+		gaugefield->update_halo();
+
+		physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN);
+		physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD);
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// dslash-benchmark
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		for(auto dev: system->get_devices()) {
+			dev->synchronize();
+		}
+
+		logger.info() << "Perform dslash (EVEN + ODD) " << benchmarkSteps << " times.";
+		klepsydra::Monotonic timer;
+		for(int iteration = 0; iteration < benchmarkSteps; ++iteration) {
+		  physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN);
+		  physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD);
+		}
+		for(auto dev: system->get_devices()) {
+			dev->synchronize();
+		}
+		auto elapsed_mus = timer.getTime();
+		logger.trace() << "dslash benchmarking done" ;
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Final Output
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		auto fermion_code = system->get_devices()[0]->get_fermion_code();
+		size_t flop_count = fermion_code->get_flop_size("dslash_eo");
+		size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
+		double gflops = static_cast<double>(flop_count) * 2 * benchmarkSteps / elapsed_mus / 1e3;
+		double gbytes = static_cast<double>(byte_count) * 2 * benchmarkSteps / elapsed_mus / 1e3;
+		logger.info() << "Dslash performance: " << gflops << " GFLOPS";
+		logger.info() << "Dslash memory: " << gbytes << " GB/S";
+  
 }
