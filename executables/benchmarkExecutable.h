@@ -37,6 +37,7 @@ public:
 	void benchmark();
 
 protected:
+  hardware::Device * device;
 	int benchmarkSteps;
 
 	virtual void performBenchmarkForSpecificKernels() {};

@@ -18,14 +18,13 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "benchmarkExecutable.h"
-
 
 benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 {
 	initializationTimer.reset();
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+	device = system->get_devices().at(0);
 	benchmarkSteps = parameters.get_benchmarksteps();;
 	initializationTimer.add();
 }
@@ -34,7 +33,7 @@ void benchmarkExecutable::benchmark()
 {
 	performanceTimer.reset();
 	logger.info() << "Perform benchmarks..";
-	for (int iteration = 0; iteration < benchmarkSteps; iteration += 1)
+	for (int iteration = 0; iteration < benchmarkSteps; iteration ++)
 	{
 		performBenchmarkForSpecificKernels();
 	}

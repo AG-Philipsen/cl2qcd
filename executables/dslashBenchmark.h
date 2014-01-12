@@ -40,7 +40,6 @@ public:
   dslashBenchmark(int argc, const char* argv[]);
 
 protected:
-  hardware::Device * device;
   const hardware::buffers::Spinor * spinorfield1;
   const hardware::buffers::Spinor * spinorfield2;
 

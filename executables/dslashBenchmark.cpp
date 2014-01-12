@@ -37,7 +37,6 @@ dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
     {
       throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
     }
-  device = system->get_devices().at(0);
   spinorfield1 = new  hardware::buffers::Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
   spinorfield2 = new  hardware::buffers::Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
 }
