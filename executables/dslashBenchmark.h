@@ -44,6 +44,8 @@ protected:
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
 	void performBenchmarkForSpecificKernels();
+	void enqueueSpecificKernelForBenchmarking();
+	void synchronizeAllDevices();
 };
 
 #endif /* DSLASHBENCHMARK_H_ */
