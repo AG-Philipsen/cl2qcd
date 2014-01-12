@@ -45,48 +45,20 @@ void dslashBenchmark::performBenchmarkForSpecificKernels()
   device->synchronize();
 }
 
-void dslashBenchmark::enqueueSpecificKernelForBenchmarking()
+void dslashBenchmark::enqueueSpecificKernelForBenchmarkingMultipleDevices()
 {
   physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN);
   physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD);
 }
 
-void dslashBenchmark::synchronizeAllDevices()
-{
-  for(auto dev: system->get_devices()) {
-    dev->synchronize();
-  }
-}
-
-void dslashBenchmark::printProfilingDataToScreen(uint64_t time)
+void dslashBenchmark::printProfilingDataToScreen()
 {
   auto fermion_code = system->get_devices()[0]->get_fermion_code();
   size_t flop_count = fermion_code->get_flop_size("dslash_eo");
   size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
-  double gflops = static_cast<double>(flop_count) * 2 * benchmarkSteps / time / 1e3;
-  double gbytes = static_cast<double>(byte_count) * 2 * benchmarkSteps / time / 1e3;
+  double gflops = static_cast<double>(flop_count) * 2 * benchmarkSteps / executionTime / 1e3;
+  double gbytes = static_cast<double>(byte_count) * 2 * benchmarkSteps / executionTime / 1e3;
   logger.info() << "Dslash performance: " << gflops << " GFLOPS";
   logger.info() << "Dslash memory: " << gbytes << " GB/S";
 }
 
-void dslashBenchmark::benchmarkMultipleDevices()
-{
-  // update gaugefield buffers once to have update links fully initialized
-  gaugefield->update_halo();
-  // ensure that the kernels are already built
-  enqueueSpecificKernelForBenchmarking();
-  
-  synchronizeAllDevices();
-  
-  logger.info() << "Perform " << benchmarkSteps << " benchmarking steps.";
-  klepsydra::Monotonic timer;
-  for(int iteration = 0; iteration < benchmarkSteps; ++iteration) {
-    enqueueSpecificKernelForBenchmarking();
-  }
-  synchronizeAllDevices();
-  
-  auto elapsed_mus = timer.getTime();
-  logger.info() << "Benchmarking done" ;
-  
-  printProfilingDataToScreen(elapsed_mus);
-}

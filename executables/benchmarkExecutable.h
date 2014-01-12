@@ -28,6 +28,7 @@
 #define BENCHMARKEXECUTABLE_H_
 
 #include "generalExecutable.h"
+#include "../hardware/device.hpp"
 
 class benchmarkExecutable : public generalExecutable
 {
@@ -45,13 +46,17 @@ public:
 	 * The total execution time is measured after a warm-up run.
 	 * Therefore, it should not be used with profiling enabled.
 	 */
-	virtual	void benchmarkMultipleDevices() {};
+	void benchmarkMultipleDevices();
 
 protected:
-  hardware::Device * device;
+	hardware::Device * device;
 	int benchmarkSteps;
+	uint64_t executionTime;
 
 	virtual void performBenchmarkForSpecificKernels() {};
+	virtual void enqueueSpecificKernelForBenchmarkingMultipleDevices() {};
+	void synchronizeAllDevices();
+	virtual void printProfilingDataToScreen() {};
 };
 
 #endif /* BENCHMARKEXECUTABLE_H_ */

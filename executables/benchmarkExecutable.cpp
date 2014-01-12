@@ -48,3 +48,33 @@ void benchmarkExecutable::benchmark()
     logger.info() << "Benchmarks done";
     performanceTimer.add();
 }
+
+void benchmarkExecutable::benchmarkMultipleDevices()
+{
+  // update gaugefield buffers once to have update links fully initialized
+  gaugefield->update_halo();
+  // ensure that the kernels are already built
+  enqueueSpecificKernelForBenchmarkingMultipleDevices();
+  
+  synchronizeAllDevices();
+  
+  logger.info() << "Perform " << benchmarkSteps << " benchmarking steps.";
+  klepsydra::Monotonic timer;
+  for(int iteration = 0; iteration < benchmarkSteps; ++iteration) {
+    enqueueSpecificKernelForBenchmarkingMultipleDevices();
+  }
+  synchronizeAllDevices();
+  
+  executionTime = timer.getTime();
+  logger.info() << "Benchmarking done" ;
+  
+  printProfilingDataToScreen();
+}
+
+void benchmarkExecutable::synchronizeAllDevices()
+{
+  for(auto dev: system->get_devices()) {
+    dev->synchronize();
+  }
+}
+
