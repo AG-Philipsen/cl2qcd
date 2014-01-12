@@ -22,7 +22,6 @@
 #define DSLASHBENCHMARK_H_
 
 #include "benchmarkExecutable.h"
-#include "../physics/lattices/gaugefield.hpp"
 #include "../physics/lattices/spinorfield_eo.hpp"
 #include "../hardware/code/fermions.hpp"
 #include "../hardware/code/spinors.hpp"
