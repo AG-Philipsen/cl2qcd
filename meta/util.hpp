@@ -29,6 +29,7 @@
 #include "../types.h"
 #include <iostream>
 #include <sstream>
+#include <string.h>
 
 namespace meta {
 	size_t get_volspace(const Inputparameters&);
@@ -86,6 +87,7 @@ namespace meta {
   void print_info_flavour_doublet_correlators(const meta::Inputparameters params);
   void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
   std::string createLogfileName(const char* name);
+  char** addOptionToArgv(const char * option, int argc, const char** argv);
 }
 
 #endif /* META_UTIL_ */
