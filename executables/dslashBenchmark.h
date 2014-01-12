@@ -46,6 +46,7 @@ protected:
 	void performBenchmarkForSpecificKernels();
 	void enqueueSpecificKernelForBenchmarking();
 	void synchronizeAllDevices();
+	void printProfilingDataToScreen(uint64_t time);
 };
 
 #endif /* DSLASHBENCHMARK_H_ */

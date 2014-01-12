@@ -31,12 +31,20 @@ benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : general
 
 void benchmarkExecutable::benchmark()
 {
-	performanceTimer.reset();
-	logger.info() << "Perform benchmarks..";
-	for (int iteration = 0; iteration < benchmarkSteps; iteration ++)
-	{
-		performBenchmarkForSpecificKernels();
-	}
-	logger.info() << "Benchmarks done";
-	performanceTimer.add();
+    if(! parameters.get_enable_profiling() )
+    {
+      throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
+    }
+    if(system->get_devices().size() != 1) 
+      {
+	throw Print_Error_Message("There must be exactly one device chosen for this benchmark to be performed. Aborting...\n", __FILE__, __LINE__);
+      }
+    performanceTimer.reset();
+    logger.info() << "Perform benchmarks..";
+    for (int iteration = 0; iteration < benchmarkSteps; iteration ++)
+      {
+	performBenchmarkForSpecificKernels();
+      }
+    logger.info() << "Benchmarks done";
+    performanceTimer.add();
 }

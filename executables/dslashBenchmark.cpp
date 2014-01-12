@@ -30,13 +30,6 @@
 dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
   benchmarkExecutable(argc, argv)
 {
-  if(system->get_devices().size() != 1) {
-    logger.fatal() << "There must be exactly one device chosen for the dslash benchmark to be performed.";
-  }
-  if(! parameters.get_enable_profiling() )
-    {
-      throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
-    }
   spinorfield1 = new physics::lattices::Spinorfield_eo(*system);
   spinorfield2 = new physics::lattices::Spinorfield_eo(*system);
 }
@@ -65,30 +58,35 @@ void dslashBenchmark::synchronizeAllDevices()
   }
 }
 
+void dslashBenchmark::printProfilingDataToScreen(uint64_t time)
+{
+  auto fermion_code = system->get_devices()[0]->get_fermion_code();
+  size_t flop_count = fermion_code->get_flop_size("dslash_eo");
+  size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
+  double gflops = static_cast<double>(flop_count) * 2 * benchmarkSteps / time / 1e3;
+  double gbytes = static_cast<double>(byte_count) * 2 * benchmarkSteps / time / 1e3;
+  logger.info() << "Dslash performance: " << gflops << " GFLOPS";
+  logger.info() << "Dslash memory: " << gbytes << " GB/S";
+}
+
 void dslashBenchmark::benchmarkMultipleDevices()
 {
-  		// update gaugefield buffers once to have update links fully initialized
-		gaugefield->update_halo();
-		// ensure that the kernels are already built
-		enqueueSpecificKernelForBenchmarking();
-
-		synchronizeAllDevices();
-
-		logger.info() << "Perform dslash (EVEN + ODD) " << benchmarkSteps << " times.";
-		klepsydra::Monotonic timer;
-		for(int iteration = 0; iteration < benchmarkSteps; ++iteration) {
-		  enqueueSpecificKernelForBenchmarking();
-		}
-		synchronizeAllDevices();
-
-		auto elapsed_mus = timer.getTime();
-		logger.trace() << "dslash benchmarking done" ;
-
-		auto fermion_code = system->get_devices()[0]->get_fermion_code();
-		size_t flop_count = fermion_code->get_flop_size("dslash_eo");
-		size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
-		double gflops = static_cast<double>(flop_count) * 2 * benchmarkSteps / elapsed_mus / 1e3;
-		double gbytes = static_cast<double>(byte_count) * 2 * benchmarkSteps / elapsed_mus / 1e3;
-		logger.info() << "Dslash performance: " << gflops << " GFLOPS";
-		logger.info() << "Dslash memory: " << gbytes << " GB/S";
+  // update gaugefield buffers once to have update links fully initialized
+  gaugefield->update_halo();
+  // ensure that the kernels are already built
+  enqueueSpecificKernelForBenchmarking();
+  
+  synchronizeAllDevices();
+  
+  logger.info() << "Perform " << benchmarkSteps << " benchmarking steps.";
+  klepsydra::Monotonic timer;
+  for(int iteration = 0; iteration < benchmarkSteps; ++iteration) {
+    enqueueSpecificKernelForBenchmarking();
+  }
+  synchronizeAllDevices();
+  
+  auto elapsed_mus = timer.getTime();
+  logger.info() << "Benchmarking done" ;
+  
+  printProfilingDataToScreen(elapsed_mus);
 }
