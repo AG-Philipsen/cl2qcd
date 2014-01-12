@@ -18,30 +18,22 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DSLASHBENCHMARK_H_
-#define DSLASHBENCHMARK_H_
 
-#include "benchmarkExecutable.h"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/fermions.hpp"
-#include "../hardware/code/spinors.hpp"
+#include "heatbathBenchmark.h"
 
-class dslashBenchmark : public benchmarkExecutable
+heatbathBenchmark::heatbathBenchmark(int argc, const char* argv[]) :
+  benchmarkExecutable(argc, argv)
 {
-public:
-  dslashBenchmark(int argc, const char* argv[]);
+  if(system->get_devices().size() != 1) {
+    logger.fatal() << "There must be exactly one device chosen for the heatbath benchmark to be performed.";
+  }
+  if(! parameters.get_enable_profiling() )
+    {
+      throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
+    }
+}
 
-protected:
-  const hardware::buffers::Spinor * spinorfield1;
-  const hardware::buffers::Spinor * spinorfield2;
-
-	/*
-	 * Calls the dslash_eo kernel.
-	 * Per iteration, the kernel is called with EVEN and ODD parameters.
-	 */
-	void performBenchmarkForSpecificKernels();
-};
-
-#endif /* DSLASHBENCHMARK_H_ */
-
+void heatbathBenchmark::performBenchmarkForSpecificKernels()
+{
+  physics::algorithms::heatbath(*gaugefield, *prng, 1);
+}

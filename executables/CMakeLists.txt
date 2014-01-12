@@ -31,6 +31,7 @@ add_library(executables
 	inverterExecutable.cpp
 	hmcExecutable.cpp
 	dslashBenchmark.cpp
+	heatbathBenchmark.cpp
 )
 
 target_link_libraries(executables
