@@ -19,8 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
-# the folowing are pure profiling benchmarks
-add_executable(heatbath_benchmarks heatbath_benchmarks.cpp)
+add_executable(heatbath_benchmarks heatbathBenchmarkMain.cpp)
 target_link_libraries(heatbath_benchmarks optimal)
 
 add_executable(dslash_benchmark dslashBenchmarkMain.cpp)
