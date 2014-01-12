@@ -23,8 +23,8 @@
 add_executable(heatbath_benchmarks heatbath_benchmarks.cpp)
 target_link_libraries(heatbath_benchmarks optimal)
 
-add_executable(dslash_benchmark2 dslashBenchmarkMain.cpp)
-target_link_libraries(dslash_benchmark2 optimal)
+add_executable(dslash_benchmark dslashBenchmarkMain.cpp)
+target_link_libraries(dslash_benchmark optimal)
 
 add_executable(dslash_multidev dslash_multidev.cpp)
 target_link_libraries(dslash_multidev optimal)
