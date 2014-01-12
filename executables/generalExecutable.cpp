@@ -45,7 +45,8 @@ void generalExecutable::printProfilingDataToFile()
 	  {
 	    logger.info() << "## writing general times to file: \"" << filenameForProfilingData << "\"";
 	    // For benchmarking one might need the lattice sizes
-	    outputToFile.open(filenameForProfilingData);
+	    outputToFile.open(filenameForProfilingData,
+		    std::ios::out | std::ios::app);
 	    if (outputToFile.is_open()) {
 		meta::print_info_global(&outputToFile, parameters);
 		outputToFile.close();
