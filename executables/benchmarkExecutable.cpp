@@ -25,6 +25,7 @@
 benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 {
 	initializationTimer.reset();
+	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 	benchmarkSteps = parameters.get_benchmarksteps();;
 	initializationTimer.add();
 }
@@ -32,11 +33,11 @@ benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : general
 void benchmarkExecutable::benchmark()
 {
 	performanceTimer.reset();
-	logger.trace() << "Perform benchmarks..";
+	logger.info() << "Perform benchmarks..";
 	for (int iteration = 0; iteration < benchmarkSteps; iteration += 1)
 	{
 		performBenchmarkForSpecificKernels();
 	}
-	logger.trace() << "Benchmarks done";
+	logger.info() << "Benchmarks done";
 	performanceTimer.add();
 }

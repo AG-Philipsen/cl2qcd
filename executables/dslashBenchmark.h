@@ -29,7 +29,10 @@
 #define DSLASHBENCHMARK_H_
 
 #include "benchmarkExecutable.h"
-//#include "../physics/algorithms/hmc.hpp"
+#include "../physics/lattices/gaugefield.hpp"
+#include "../hardware/device.hpp"
+#include "../hardware/code/fermions.hpp"
+#include "../hardware/code/spinors.hpp"
 
 class dslashBenchmark : public benchmarkExecutable
 {
@@ -37,8 +40,12 @@ public:
   dslashBenchmark(int argc, const char* argv[]);
 
 protected:
+  hardware::Device * device;
+  const hardware::buffers::Spinor * spinorfield1;
+  const hardware::buffers::Spinor * spinorfield2;
+
 	/*
-	 * Calls the dslash_eo kernel a certain number of times.
+	 * Calls the dslash_eo kernel.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
 	void performBenchmarkForSpecificKernels();

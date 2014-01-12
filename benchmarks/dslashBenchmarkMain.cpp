@@ -21,7 +21,6 @@
 #include "../executables/dslashBenchmark.h"
 #include "../meta/util.hpp"
 
-
 int main(int argc, const char* argv[])
 {
 	try {

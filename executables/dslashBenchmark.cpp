@@ -25,26 +25,28 @@
  * according to the Hybrid Monte Carlo (HMC) algorithm.
  */
 
-
 #include "dslashBenchmark.h"
 
 dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
   benchmarkExecutable(argc, argv)
 {
-  // expect there to be exactly one device
   if(system->get_devices().size() != 1) {
     logger.fatal() << "There must be exactly one device chosen for the dslash benchmark to be performed.";
   }
-  // expect that profiling is enabled
   if(! parameters.get_enable_profiling() )
     {
       throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
     }
-  
-
+  device = system->get_devices().at(0);
+  spinorfield1 = new  hardware::buffers::Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
+  spinorfield2 = new  hardware::buffers::Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device);
 }
 
 void dslashBenchmark::performBenchmarkForSpecificKernels()
 {
-
+  auto gf_buffer = gaugefield->get_buffers().at(0);
+  auto fermion_code = device->get_fermion_code();
+  fermion_code->dslash_eo_device(spinorfield1, spinorfield2, gf_buffer, EVEN);
+  fermion_code->dslash_eo_device(spinorfield1, spinorfield2, gf_buffer, ODD);
+  device->synchronize();
 }
