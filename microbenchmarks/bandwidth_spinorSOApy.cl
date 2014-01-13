@@ -28,8 +28,8 @@
 #endif /* cl_amd_fp64 */
 #endif /* cl_khr_fp64 */
 
-#include "types.h"
-#include "types_fermions.h"
+//#include "types.h"
+//#include "types_fermions.h"
 
 //typedef struct { hmc_float re; hmc_float im; } __attribute__((aligned (16))) alignedDpComplex;
 
