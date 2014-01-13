@@ -786,5 +786,5 @@ static ip::file_lock get_lock_file(std::string md5)
 static fs::path get_source_file_path(std::string filename)
 {
 	const fs::path sourceDir(SOURCEDIR);
-	return sourceDir / filename;
+	return sourceDir / "ocl_kernel" / filename;
 }
