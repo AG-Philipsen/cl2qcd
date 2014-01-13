@@ -51,6 +51,10 @@ void benchmarkExecutable::benchmark()
 
 void benchmarkExecutable::benchmarkMultipleDevices()
 {
+	 if( parameters.get_enable_profiling() )
+    {
+      throw Print_Error_Message( "Profiling is enabled. Aborting...\n", __FILE__, __LINE__);
+    }
   // update gaugefield buffers once to have update links fully initialized
   gaugefield->update_halo();
   // ensure that the kernels are already built
