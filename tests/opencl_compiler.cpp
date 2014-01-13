@@ -131,9 +131,9 @@ BOOST_AUTO_TEST_CASE( KernelCreation )
 	// TESTCASE
 	//
 
-	ClSourcePackage dummyFunctions = ClSourcePackage() << "tests/dummyFunctions.cl";
+	ClSourcePackage dummyFunctions = ClSourcePackage() << "../tests/dummyFunctions.cl";
 
-	cl_kernel testKernel = TmpClKernel("dummyKernel", "", context, device) << dummyFunctions << "tests/dummyKernel.cl";
+	cl_kernel testKernel = TmpClKernel("dummyKernel", "", context, device) << dummyFunctions << "../tests/dummyKernel.cl";
 
 	// to verify try to get name from kernel object
 	char kernel_name[64];
