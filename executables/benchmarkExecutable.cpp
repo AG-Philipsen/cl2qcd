@@ -31,6 +31,7 @@ benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : general
 
 void benchmarkExecutable::benchmark()
 {
+    performanceTimer.reset();
     if(! parameters.get_enable_profiling() )
     {
       throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
@@ -39,7 +40,6 @@ void benchmarkExecutable::benchmark()
       {
 	throw Print_Error_Message("There must be exactly one device chosen for this benchmark to be performed. Aborting...\n", __FILE__, __LINE__);
       }
-    performanceTimer.reset();
     logger.info() << "Perform benchmarks..";
     for (int iteration = 0; iteration < benchmarkSteps; iteration ++)
       {
@@ -51,7 +51,8 @@ void benchmarkExecutable::benchmark()
 
 void benchmarkExecutable::benchmarkMultipleDevices()
 {
-	 if( parameters.get_enable_profiling() )
+    performanceTimer.reset();
+    if( parameters.get_enable_profiling() )
     {
       throw Print_Error_Message( "Profiling is enabled. Aborting...\n", __FILE__, __LINE__);
     }
@@ -73,6 +74,7 @@ void benchmarkExecutable::benchmarkMultipleDevices()
   logger.info() << "Benchmarking done" ;
   
   printProfilingDataToScreen();
+  performanceTimer.add();
 }
 
 void benchmarkExecutable::synchronizeAllDevices()
