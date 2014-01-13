@@ -90,7 +90,7 @@ void Dummyfield::fill_buffers()
 
 void Code::fill_kernels()
 {
-	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "/tests/staple_test.cl";
+	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "../tests/staple_test.cl";
 }
 
 void Dummyfield::clear_buffers()
