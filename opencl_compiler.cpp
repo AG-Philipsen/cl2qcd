@@ -24,28 +24,6 @@
 
 #include "opencl_compiler.hpp"
 
-#include "logger.hpp"
-
-#include <sstream>
-#include <fstream>
-#include <boost/regex.hpp>
-#include <cstring>
-#include <boost/algorithm/string.hpp>
-#include "crypto/md5.hpp"
-
-#define BOOST_FILESYSTEM_VERSION 3
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-namespace fs = boost::filesystem;
-/// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
-
-#include <boost/interprocess/sync/file_lock.hpp>
-#include <boost/interprocess/sync/sharable_lock.hpp>
-#include <boost/interprocess/sync/scoped_lock.hpp>
-namespace ip = boost::interprocess;
-
-const std::string CACHE_DIR_NAME("OpTiMaL/ocl_cache");
-
 /**
  * Get the path on which to store a binary with the given md5
  *
@@ -65,7 +43,6 @@ static ip::file_lock get_lock_file(std::string md5);
  * Get the absolute path to a sourcefile of the given name.
  */
 static fs::path get_source_file_path(std::string filename);
-
 
 ClSourcePackage ClSourcePackage::operator <<(const std::string& file)
 {
@@ -783,8 +760,28 @@ static ip::file_lock get_lock_file(std::string md5)
 	return ip::file_lock(lock_file_name.c_str());
 }
 
+std::string getDirectoryBasedOnExtension(std::string filename)
+{
+	const fs::path filenamePath(filename);
+	auto fileExtension = filenamePath.extension();
+	if( fileExtension.string().compare(KERNEL_EXTENSION) == 0)
+	  {
+	    return KERNEL_DIRECTORY;
+	  }
+	else if( fileExtension.string().compare(HEADER_EXTENSION) == 0 || fileExtension.string().compare(HEADER_EXTENSION2) == 0 )
+	  {
+	    return HEADER_DIRECTORY;
+	  }
+	else
+	  {
+	    std::string errorMessage = "The file " + filename + " does not seem to have an extension known to the opencl compiler. Aborting...";
+	    throw Print_Error_Message(errorMessage, __FILE__, __LINE__);
+	  }
+}
+
 static fs::path get_source_file_path(std::string filename)
 {
 	const fs::path sourceDir(SOURCEDIR);
-	return sourceDir / "ocl_kernel" / filename;
+	std::string directoryName = getDirectoryBasedOnExtension(filename);
+	return sourceDir / directoryName / filename;
 }
