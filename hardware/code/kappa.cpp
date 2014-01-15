@@ -29,7 +29,7 @@ using namespace std;
 
 void hardware::code::Kappa::fill_kernels()
 {
-	ClSourcePackage sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+	ClSourcePackage sources = get_basic_sources() << "operations_geometry.cl" << "../operations_complex.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	logger.debug() << "Creating TK clover kernels...";
 	

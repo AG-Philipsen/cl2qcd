@@ -46,7 +46,7 @@ hardware::code::Gaugemomentum::~Gaugemomentum()
 
 void hardware::code::Gaugemomentum::fill_kernels()
 {
-	basic_gaugemomentum_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "../types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_gaugemomentum_code = get_basic_sources() << "operations_geometry.cl" << "../operations_complex.h" << "../types_hmc.h" << "operations_gaugemomentum.cl";
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	

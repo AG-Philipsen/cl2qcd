@@ -30,7 +30,7 @@ using namespace std;
 
 void hardware::code::Correlator::fill_kernels()
 {
-	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "../types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "../operations_complex.h" << "../types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
