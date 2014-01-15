@@ -20,20 +20,9 @@
 
 #include "opencl_module.hpp"
 
-#include <fstream>
-#include <cmath>
-
-#include "../../logger.hpp"
-#include "../../meta/util.hpp"
-#include "../device.hpp"
 //from here on the files are needed for collect_build_options
+///@todo: this is currently needed because of the "get_spinorfieldsize*" fcts. These should better be moved to meta!
 #include "spinors.hpp"
-#include "../buffers/3x3.hpp"
-#include "../buffers/su3.hpp"
-#include "../buffers/prng_buffer.hpp"
-#include "../buffers/spinor.hpp"
-#include "../buffers/su3vec.hpp"
-#include "../buffers/gaugemomentum.hpp"
 
 using namespace std;
 
@@ -200,6 +189,8 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::vector<std::string> collect_build_files()
 {
 	std::vector<std::string> out;
+	out.push_back("../globaldefs.h");
+	out.push_back("../types.h");
 	out.push_back("opencl_header.cl");
 
 	return out;

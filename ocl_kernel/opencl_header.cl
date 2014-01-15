@@ -19,7 +19,7 @@
  */
 
 /** @file
- * Inclusion and definition of types and definitions required in the Device code.
+ * Definitions required in the Device code.
  */
 
 //opencl_header.cl
@@ -39,10 +39,7 @@
 #endif
 #endif
 
-
-#include "globaldefs.h" //NDIM, NSPIN, NC
-#include "types.h"
-
+/// this requires "globaldefs.h" and  "types.h"
 #ifdef _USE_BLOCKED_LOOPS_
 #define PARALLEL_FOR(VAR, LIMIT) \
 size_t _block_size = (LIMIT + get_global_size(0) - 1) / get_global_size(0); \

@@ -21,11 +21,23 @@
 #ifndef _HARDWARE_CODE_OPENCLMODULE_
 #define _HARDWARE_CODE_OPENCLMODULE_
 
-#include <string>
-#include <limits>
-
 #include "../../meta/inputparameters.hpp"
 #include "../../opencl_compiler.hpp"
+#include "../../logger.hpp"
+#include "../../meta/util.hpp"
+#include "../device.hpp"
+
+#include "../buffers/3x3.hpp"
+#include "../buffers/su3.hpp"
+#include "../buffers/prng_buffer.hpp"
+#include "../buffers/spinor.hpp"
+#include "../buffers/su3vec.hpp"
+#include "../buffers/gaugemomentum.hpp"
+
+#include <string>
+#include <limits>
+#include <fstream>
+#include <cmath>
 
 // predeclaration as headers only use pointers and friend to this
 namespace hardware {
