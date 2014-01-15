@@ -18,11 +18,11 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "host_readgauge.h"
+#include "ildg_read_gaugefield.h"
 
-#include "meta/exceptions.h"
+#include "../meta/exceptions.h"
 
-#include "logger.hpp"
+#include "../logger.hpp"
 #include <sstream>
 #include "checksum.h"
 

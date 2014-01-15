@@ -18,11 +18,11 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "host_writegaugefield.h"
+#include "ildg_write_gaugefield.h"
 
 #include <assert.h>
 
-#include "logger.hpp"
+#include "../logger.hpp"
 #include <sstream>
 
 void write_gaugefield (

@@ -23,8 +23,8 @@
 #ifndef _WRITEGAUGEFIELDH_
 #define _WRITEGAUGEFIELDH_
 
-#include "common_header_files/types.h"
-#include "meta/exceptions.h"
+#include "../common_header_files/types.h"
+#include "../meta/exceptions.h"
 
 extern "C" {
 #include <lime.h>

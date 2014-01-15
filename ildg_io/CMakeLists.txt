@@ -1,4 +1,4 @@
-# Build specifications for the host functionality
+# Build specifications for the ildg I/O functionality
 #
 # Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de> 
 #
@@ -21,8 +21,7 @@
 # Collect all code in this part of the source tree
 #
 
-add_library(host_functionality
-	host_geometry.cpp
-	host_operations_gaugefield.cpp
-	host_use_timer.cpp
+add_library(ildg_io
+	ildg_read_gaugefield.cpp
+	ildg_write_gaugefield.cpp
 )

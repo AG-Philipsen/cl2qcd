@@ -23,7 +23,7 @@
 #ifndef _CHECKSUM_H_
 #define _CHECKSUM_H_
 
-#include "common_header_files/types.h"
+#include "../common_header_files/types.h"
 
 #include <boost/crc.hpp>
 #include <ostream>

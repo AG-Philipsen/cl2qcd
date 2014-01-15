@@ -26,7 +26,7 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
-#include "../../host_readgauge.h"
+#include "../../ildg_io/ildg_read_gaugefield.h"
 #include "../../hardware/code/gaugefield.hpp"
 #include "../../meta/inputparameters.hpp"
 

@@ -25,10 +25,9 @@
 #include "../../meta/util.hpp"
 #include "../../logger.hpp"
 #include "../../host_functionality/host_operations_gaugefield.h"
-#include "../../host_writegaugefield.h"
-#include "../../host_readgauge.h"
+#include "../../ildg_io/ildg_write_gaugefield.h"
 #include <cassert>
-#include "../../checksum.h"
+#include "../../ildg_io/checksum.h"
 #include <fstream>
 #include "../../hardware/device.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
