@@ -24,7 +24,6 @@
 #include "../../meta/size_4.hpp"
 #include "../../meta/util.hpp"
 #include "plain.hpp"
-#include "../../exceptions.h"
 #include "../device.hpp"
 #include <vector>
 #include <map>

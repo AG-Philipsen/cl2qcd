@@ -22,7 +22,7 @@
 #include "async_ocl_copy.hpp"
 
 #include <stdexcept>
-#include "../../exceptions.h"
+#include "../../meta/exceptions.h"
 #include "../device.hpp"
 #include "../system.hpp"
 

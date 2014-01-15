@@ -28,7 +28,6 @@
 #include <iostream>
 #include <cmath>
 #include "find_minmax_eigenvalue.hpp"
-#include "../../exceptions.h"
 #include "../../logger.hpp"
 
 namespace physics {

@@ -23,7 +23,7 @@
 #define _PHYSICS_ALGORITHMS_SOLVER_
 
 #include "../fermionmatrix/fermionmatrix.hpp"
-#include "../../exceptions.h"
+#include "../../meta/exceptions.h"
 
 namespace physics {
 namespace algorithms {

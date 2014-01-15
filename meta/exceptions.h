@@ -23,7 +23,7 @@
 #ifndef _FILE_EXCEPTIONH_
 #define _FILE_EXCEPTIONH_
 
-#include "common_header_files/globaldefs.h"
+#include "../common_header_files/globaldefs.h"
 #include <stdexcept>
 
 #include <string>

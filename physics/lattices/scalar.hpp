@@ -26,7 +26,7 @@
 #include <functional>
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/plain.hpp"
-#include "../../exceptions.h"
+#include "../../meta/exceptions.h"
 
 namespace physics {
 	namespace lattices {

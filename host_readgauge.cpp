@@ -20,7 +20,7 @@
 
 #include "host_readgauge.h"
 
-#include "exceptions.h"
+#include "meta/exceptions.h"
 
 #include "logger.hpp"
 #include <sstream>
