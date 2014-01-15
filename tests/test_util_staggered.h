@@ -25,9 +25,7 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
 #include "../hardware/code/spinors.hpp"
-#include "../general_header.h"
 #include <vector>
-
 
 class TestGaugefield_stagg {
 

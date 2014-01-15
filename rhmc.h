@@ -23,8 +23,8 @@
 #define _RHMCH_
 
 //this includes header used by all executables
-#include "general_header.h"
-
+//#include "general_header.h"
+//#include "executables/generalExecutable.h"
 #include "physics/algorithms/rhmc.hpp"
 #include "physics/algorithms/rational_approximation.hpp"
 
