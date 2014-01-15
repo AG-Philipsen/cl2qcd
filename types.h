@@ -23,7 +23,8 @@
 #ifndef _TYPESH_
 #define _TYPESH_
 
-#include "globaldefs.h"
+/// this definitions rely on "globaldefs.h"
+
 #ifndef _INKERNEL_
 #ifdef __APPLE__
 #include <OpenCL/cl.h>

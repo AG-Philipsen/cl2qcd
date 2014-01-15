@@ -26,10 +26,12 @@
 
 #include "inputparameters.hpp"
 
+#include "../globaldefs.h"
 #include "../types.h"
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include "../host_geometry.h"
 
 namespace meta {
 	size_t get_volspace(const Inputparameters&);

@@ -23,8 +23,6 @@
 
 #include "util.hpp"
 
-#include "../host_geometry.h"
-
 size_t meta::get_volspace(const Inputparameters& params)
 {
 	size_t ns = params.get_nspace();
