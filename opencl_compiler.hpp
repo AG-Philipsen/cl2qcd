@@ -48,7 +48,7 @@ namespace ip = boost::interprocess;
 
 const std::string CACHE_DIR_NAME("OpTiMaL/ocl_cache");
 const std::string KERNEL_DIRECTORY("ocl_kernel");
-const std::string HEADER_DIRECTORY("ocl_kernel");
+const std::string HEADER_DIRECTORY("common_header_files");
 const std::string KERNEL_EXTENSION(".cl");
 const std::string HEADER_EXTENSION(".h");
 const std::string HEADER_EXTENSION2(".hpp");

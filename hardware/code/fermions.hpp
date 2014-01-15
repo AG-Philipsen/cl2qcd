@@ -1,4 +1,4 @@
-/** @file
+ /** @file
  * Basic OpenCL functionality
  *
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,

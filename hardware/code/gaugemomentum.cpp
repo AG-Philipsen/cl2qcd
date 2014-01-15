@@ -46,13 +46,13 @@ hardware::code::Gaugemomentum::~Gaugemomentum()
 
 void hardware::code::Gaugemomentum::fill_kernels()
 {
-	basic_gaugemomentum_code = get_basic_sources() << "operations_geometry.cl" << "../operations_complex.h" << "../types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_gaugemomentum_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_hmc.h" << "operations_gaugemomentum.cl";
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	
 	logger.debug() << "Creating Gaugemomentum kernels...";
 
-	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "../types.h" << "gaugemomentum_squarenorm_reduction.cl";
+	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "gaugemomentum_squarenorm_reduction.cl";
 
 	_set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_gaugemomentum_code <<  "gaugemomentum_zero.cl";
 	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_gaugemomentum_code << prng_code << "gaugemomentum_gaussian.cl";

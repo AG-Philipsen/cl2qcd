@@ -31,7 +31,7 @@ using namespace std;
 
 void hardware::code::Gaugefield::fill_kernels()
 {
-	basic_opencl_code = get_basic_sources() << "operations_geometry.cl" << "../operations_complex.h"
+	basic_opencl_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 	
 	logger.debug() << "Creating Gaugefield kernels...";
