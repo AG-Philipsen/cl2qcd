@@ -23,7 +23,7 @@
 #define _HARDWARE_BUFFERS_GAUGEMOMENTUM_
 
 #include "buffer.hpp"
-#include "../../types.h"
+#include "../../common_header_files/types.h"
 
 namespace hardware {
 namespace buffers {

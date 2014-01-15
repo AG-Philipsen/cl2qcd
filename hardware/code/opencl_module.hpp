@@ -21,6 +21,8 @@
 #ifndef _HARDWARE_CODE_OPENCLMODULE_
 #define _HARDWARE_CODE_OPENCLMODULE_
 
+#include "../../common_header_files/types.h"
+
 #include "../../meta/inputparameters.hpp"
 #include "../../opencl_compiler.hpp"
 #include "../../logger.hpp"

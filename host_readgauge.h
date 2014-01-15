@@ -23,7 +23,7 @@
 #ifndef _READGAUGEH_
 #define _READGAUGEH_
 
-#include "types.h"
+#include "common_header_files/types.h"
 #include "checksum.h"
 
 /**

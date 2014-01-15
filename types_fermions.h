@@ -23,9 +23,8 @@
 #ifndef _TYPES_FERMIONSH_
 #define _TYPES_FERMIONSH_
 
-#include "types.h"
+// relies on "types.h"
 
-//CP: new defs for spinors
 typedef struct {
 	hmc_complex e0;
 	hmc_complex e1;

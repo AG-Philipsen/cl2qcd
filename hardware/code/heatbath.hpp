@@ -23,8 +23,6 @@
 #define _HARDWARE_CODE_HEATBATH_
 
 #include "opencl_module.hpp"
-#include "../../types.h"
-#include "../../meta/inputparameters.hpp"
 #include "../buffers/su3.hpp"
 #include "../buffers/prng_buffer.hpp"
 

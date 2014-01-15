@@ -23,6 +23,7 @@
 #define _HARDWARE_BUFFERS_SPINOR_
 
 #include "buffer.hpp"
+#include "../../common_header_files/types.h"
 #include "../../types_fermions.h"
 
 namespace hardware {

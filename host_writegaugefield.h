@@ -23,7 +23,7 @@
 #ifndef _WRITEGAUGEFIELDH_
 #define _WRITEGAUGEFIELDH_
 
-#include "types.h"
+#include "common_header_files/types.h"
 #include "exceptions.h"
 
 extern "C" {

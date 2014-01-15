@@ -22,12 +22,14 @@
 #ifndef _PHYSICS_ALGORITHMS_RATIONAL_APPROX_
 #define _PHYSICS_ALGORITHMS_RATIONAL_APPROX_
 
-#include "../../types.h"
+#include "../../common_header_files/types.h"
 #include"alg_remez.h"
 #include "../fermionmatrix/fermionmatrix_stagg.hpp"
 #include <iostream>
 #include <cmath>
 #include "find_minmax_eigenvalue.hpp"
+#include "../../exceptions.h"
+#include "../../logger.hpp"
 
 namespace physics {
 namespace algorithms {

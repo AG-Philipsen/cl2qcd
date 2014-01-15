@@ -30,7 +30,7 @@
 
 #include <fstream>
 
-#include "../types.h"
+#include "../common_header_files/types.h"
 #include "../host_use_timer.h"
 #include "../exceptions.h"
 #include "../logger.hpp"

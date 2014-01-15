@@ -26,7 +26,7 @@
 
 #include "inputparameters.hpp"
 
-#include "../types.h"
+#include "../common_header_files/types.h"
 
 using namespace meta;
 

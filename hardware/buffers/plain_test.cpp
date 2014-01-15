@@ -22,7 +22,7 @@
 #include "plain.hpp"
 #include "../system.hpp"
 #include "../device.hpp"
-#include "../../types.h"
+#include "../../common_header_files/types.h"
 #include "../../meta/type_ops.hpp"
 
 // use the boost test framework
