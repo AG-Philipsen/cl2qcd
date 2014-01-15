@@ -24,7 +24,7 @@
 
 #include "../lattices/gaugefield.hpp"
 #include "../prng.hpp"
-#include "../../types_hmc.h"
+#include "../../common_header_files/types_hmc.h"
 #include "rational_approximation.hpp"
 
 namespace physics {
