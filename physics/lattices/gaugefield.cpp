@@ -24,7 +24,7 @@
 #include "../../meta/version.hpp"
 #include "../../meta/util.hpp"
 #include "../../logger.hpp"
-#include "../../host_operations_gaugefield.h"
+#include "../../host_functionality/host_operations_gaugefield.h"
 #include "../../host_writegaugefield.h"
 #include "../../host_readgauge.h"
 #include <cassert>

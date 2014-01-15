@@ -28,8 +28,8 @@
 #include <CL/cl.h>
 #endif
 
-#include "common_header_files/globaldefs.h"
-#include "klepsydra/klepsydra.hpp"
+#include "../common_header_files/globaldefs.h"
+#include "../klepsydra/klepsydra.hpp"
 
 extern char * benchmark_id;
 

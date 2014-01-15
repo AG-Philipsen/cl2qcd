@@ -22,7 +22,7 @@
 
 #include "prng.hpp"
 
-#include "../host_random.h"
+#include "../host_functionality/host_random.h"
 #include "../hardware/buffers/prng_buffer.hpp"
 #include <fstream>
 #include <stdexcept>

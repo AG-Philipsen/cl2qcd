@@ -21,12 +21,12 @@
 #include "host_random.h"
 
 #include <cstdio>
-#include "logger.hpp"
-#include "meta/exceptions.h"
+#include "../logger.hpp"
+#include "../meta/exceptions.h"
 
 #ifdef USE_PRNG_RANLUX
 extern "C" {
-#include "ranlux/ranlxd.h"
+#include "../ranlux/ranlxd.h"
 }
 #endif // USE_PRNG_RANLUX
 

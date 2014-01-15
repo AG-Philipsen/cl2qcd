@@ -27,7 +27,7 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/su3.hpp"
 #include "../buffers/su3vec.hpp"
-#include "../../host_use_timer.h"
+#include "../../host_functionality/host_use_timer.h"
 
 namespace hardware {
 

@@ -20,7 +20,7 @@
 
 #include "host_geometry.h"
 
-#include "meta/util.hpp"
+#include "../meta/util.hpp"
 
 int get_nspace(int* coord, const meta::Inputparameters& params)
 {

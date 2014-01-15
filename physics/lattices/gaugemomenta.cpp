@@ -26,7 +26,7 @@
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/gaugemomentum.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
-#include "../../host_geometry.h"
+#include "../../host_functionality/host_geometry.h"
 #include <cstring>
 
 static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);

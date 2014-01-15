@@ -152,11 +152,7 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
-	host_geometry.cpp
-	host_operations_gaugefield.cpp
-#host_random.cpp
 	host_readgauge.cpp
-	host_use_timer.cpp
 	host_writegaugefield.cpp
 	opencl_compiler.cpp
 )
@@ -179,6 +175,7 @@ add_library(optimal ${OPTIMAL_FILES})
 add_modules(optimal
 	meta
 	hardware
+	host_functionality
 	physics
 	executables
 )

@@ -24,7 +24,6 @@
 
 #include "../../hardware/code/fermions_staggered.hpp"
 
-#include "../../host_use_timer.h"
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/gaugefield.hpp"
 #include "../../hardware/device.hpp"

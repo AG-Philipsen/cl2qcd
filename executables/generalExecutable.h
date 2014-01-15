@@ -31,7 +31,7 @@
 #include <fstream>
 
 #include "../common_header_files/types.h"
-#include "../host_use_timer.h"
+#include "../host_functionality/host_use_timer.h"
 #include "../meta/exceptions.h"
 #include "../logger.hpp"
 #include "../meta/util.hpp"

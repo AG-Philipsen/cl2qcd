@@ -33,7 +33,7 @@
 
 #include "test_util.h"
 #include "test_util_staggered.h"
-#include "../host_random.h"
+#include "../host_functionality/host_random.h"
 
 class TestMolecularDynamics {
 
