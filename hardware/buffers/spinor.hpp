@@ -24,7 +24,7 @@
 
 #include "buffer.hpp"
 #include "../../common_header_files/types.h"
-#include "../../types_fermions.h"
+#include "../../common_header_files/types_fermions.h"
 
 namespace hardware {
 namespace buffers {
