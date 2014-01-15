@@ -26,7 +26,7 @@
 
 #include "inputparameters.hpp"
 
-#include "../globaldefs.h"
+#include "../common_header_files/globaldefs.h"
 #include "../types.h"
 #include <iostream>
 #include <sstream>

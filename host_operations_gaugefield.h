@@ -25,7 +25,7 @@
 #ifndef _OPERATIONS_GAUGEFIELDH_
 #define _OPERATIONS_GAUGEFIELDH_
 #include <iostream>
-#include "globaldefs.h"
+#include "common_header_files/globaldefs.h"
 #include "types.h"
 #include "host_geometry.h"
 #include "meta/inputparameters.hpp"

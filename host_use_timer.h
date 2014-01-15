@@ -28,7 +28,7 @@
 #include <CL/cl.h>
 #endif
 
-#include "globaldefs.h"
+#include "common_header_files/globaldefs.h"
 #include "klepsydra/klepsydra.hpp"
 
 extern char * benchmark_id;

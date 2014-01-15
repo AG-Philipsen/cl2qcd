@@ -24,7 +24,7 @@
 #ifndef _GEOMETRYH_
 #define _GEOMETRYH_
 
-#include "globaldefs.h"
+#include "common_header_files/globaldefs.h"
 #include <cmath>
 #include "meta/inputparameters.hpp"
 #include "meta/size_4.hpp"
