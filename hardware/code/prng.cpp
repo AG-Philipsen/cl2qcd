@@ -44,7 +44,7 @@ hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device
 	logger.debug() << "Creating PRNG kernels...";
 	// the ranluxcl lies in the main directory, other than the remaining kernel
 	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "../ranluxcl/ranluxcl.cl" << "random.cl";
-	init_kernel = createKernel("prng_ranlux_init") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_") << get_basic_sources() <<  prng_code << "random_ranlux_init.cl";
+	init_kernel = createKernel("prng_ranlux_init") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_") << "globaldefs.h" << "types.h" << "opencl_header.cl" <<  prng_code << "random_ranlux_init.cl";
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
