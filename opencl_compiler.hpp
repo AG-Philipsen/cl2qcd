@@ -28,31 +28,6 @@
 #include "meta/exceptions.h"
 #include "logger.hpp"
 
-#include <sstream>
-#include <fstream>
-#include <boost/regex.hpp>
-#include <cstring>
-#include <boost/algorithm/string.hpp>
-#include "crypto/md5.hpp"
-
-#define BOOST_FILESYSTEM_VERSION 3
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-namespace fs = boost::filesystem;
-/// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
-
-#include <boost/interprocess/sync/file_lock.hpp>
-#include <boost/interprocess/sync/sharable_lock.hpp>
-#include <boost/interprocess/sync/scoped_lock.hpp>
-namespace ip = boost::interprocess;
-
-const std::string CACHE_DIR_NAME("OpTiMaL/ocl_cache");
-const std::string KERNEL_DIRECTORY("ocl_kernel");
-const std::string HEADER_DIRECTORY("common_header_files");
-const std::string KERNEL_EXTENSION(".cl");
-const std::string HEADER_EXTENSION(".h");
-const std::string HEADER_EXTENSION2(".hpp");
-
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else
