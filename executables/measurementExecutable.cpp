@@ -74,23 +74,23 @@ void measurementExecutable::initializeGaugefield()
 
 void measurementExecutable::performMeasurements()
 {
-	performanceTimer.reset();
 	logger.trace() << "Perform inversion(s) on device..";
-
+	
 	for (;iteration < iterationEnd; iteration += iterationIncrement)
 	{
-		performMeasurementsForSpecificIteration();
+	  performMeasurementsForSpecificIteration();
 	}
 	logger.trace() << "Inversion(s) done";
-	performanceTimer.add();
 }
 
 void measurementExecutable::performMeasurementsForSpecificIteration()
 {
 	initializeGaugefield();
+	performanceTimer.reset();
 	performApplicationSpecificMeasurements();
 	prng->save(iteration);
 	delete gaugefield;
+	performanceTimer.add();
 }
 
 
