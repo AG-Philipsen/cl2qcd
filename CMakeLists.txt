@@ -152,9 +152,6 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
-#	host_readgauge.cpp
-#	host_writegaugefield.cpp
-#	opencl_compiler.cpp
 )
 set(OPTIMAL_USED_LIBS
 	${OPENCL_LIBRARIES}
