@@ -154,7 +154,7 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 set_abs_paths(OPTIMAL_FILES
 #	host_readgauge.cpp
 #	host_writegaugefield.cpp
-	opencl_compiler.cpp
+#	opencl_compiler.cpp
 )
 set(OPTIMAL_USED_LIBS
 	${OPENCL_LIBRARIES}

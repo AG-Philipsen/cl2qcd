@@ -25,8 +25,8 @@
 #include <vector>
 #include <string>
 
-#include "executables/exceptions.h"
-#include "logger.hpp"
+#include "../executables/exceptions.h"
+#include "../logger.hpp"
 
 #ifdef __APPLE__
 #include <OpenCL/cl.h>

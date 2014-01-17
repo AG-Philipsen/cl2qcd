@@ -24,13 +24,12 @@
 
 #include "opencl_compiler.hpp"
 
-
 #include <sstream>
 #include <fstream>
 #include <boost/regex.hpp>
 #include <cstring>
 #include <boost/algorithm/string.hpp>
-#include "crypto/md5.hpp"
+#include "../crypto/md5.hpp"
 
 #define BOOST_FILESYSTEM_VERSION 3
 #include <boost/filesystem.hpp>

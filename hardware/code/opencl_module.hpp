@@ -24,7 +24,7 @@
 #include "../../common_header_files/types.h"
 
 #include "../../meta/inputparameters.hpp"
-#include "../../opencl_compiler.hpp"
+#include "../opencl_compiler.hpp"
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"

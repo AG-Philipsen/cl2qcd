@@ -27,6 +27,7 @@ add_library(hardware
 	device_info.cpp
 	profiling_data.cpp
 	synchronization_event.cpp
+	opencl_compiler.cpp
 )
 target_link_libraries(hardware optimal)
 add_modules(hardware
