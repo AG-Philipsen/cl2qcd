@@ -268,7 +268,7 @@ void Device::fill_kernels()
 	su3SOcplxAKernel = createKernel("copySU3SOcplxA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
 	spinorKernel = createKernel("copySpinor") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
 	spinorSOAKernel = createKernel("copySpinorSOA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	spinorSOApyKernel = createKernel("copyDpSpinorFullestSOARestricted") << "types.h" << "types_fermions.h" << "../microbenchmarks/bandwidth_spinorSOApy.cl";
+	spinorSOApyKernel = createKernel("copyDpSpinorFullestSOARestricted") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth_spinorSOApy.cl";
 	spinorSOcplxAKernel = createKernel("copySpinorSOcplxA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
 	spinorLocalKernel = createKernel("copySpinorLocal") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
 }
