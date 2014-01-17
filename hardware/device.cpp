@@ -21,7 +21,7 @@
 
 #include "device.hpp"
 #include "system.hpp"
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 #include "code/gaugefield.hpp"
 #include "code/prng.hpp"
 #include "code/complex.hpp"

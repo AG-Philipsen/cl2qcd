@@ -26,7 +26,7 @@
 #include <string>
 
 #include "../executables/exceptions.h"
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 
 #ifdef __APPLE__
 #include <OpenCL/cl.h>

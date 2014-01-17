@@ -20,7 +20,7 @@
 
 #include "spinors.hpp"
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <cassert>

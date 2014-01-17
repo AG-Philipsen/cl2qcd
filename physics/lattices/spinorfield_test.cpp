@@ -27,7 +27,7 @@
 #define BOOST_TEST_MODULE physics::lattice::Spinorfield
 #include <boost/test/unit_test.hpp>
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>
 

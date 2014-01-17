@@ -27,7 +27,7 @@
 #include <vector>
 #include <string>
 
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 
 /**
  * This namespace contains generic utility code required by the other packages.

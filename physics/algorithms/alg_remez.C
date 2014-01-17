@@ -16,7 +16,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include"alg_remez.h"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 
 // Constructor
 physics::algorithms::AlgRemez::AlgRemez(double lower, double upper, long precision) 

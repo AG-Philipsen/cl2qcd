@@ -25,4 +25,5 @@ add_library(host_functionality
 	host_geometry.cpp
 	host_operations_gaugefield.cpp
 	host_use_timer.cpp
+	logger.cpp
 )

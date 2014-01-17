@@ -25,7 +25,7 @@
 
 #include "../../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 

@@ -21,7 +21,7 @@
 #include "host_random.h"
 
 #include <cstdio>
-#include "../logger.hpp"
+#include "logger.hpp"
 #include "../executables/exceptions.h"
 
 #ifdef USE_PRNG_RANLUX

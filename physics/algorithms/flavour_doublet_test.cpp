@@ -28,7 +28,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../lattices/util.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 
 void test_correlator(const char* params[], const std::vector<hmc_float>& ps_ref, const std::vector<hmc_float>& sc_ref, const std::vector<hmc_float>& vx_ref, const std::vector<hmc_float>& vy_ref, const std::vector<hmc_float>& vz_ref, const std::vector<hmc_float>& ax_ref, const std::vector<hmc_float>& ay_ref, const std::vector<hmc_float>& az_ref);
 

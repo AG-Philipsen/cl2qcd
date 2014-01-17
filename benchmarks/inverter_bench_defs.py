@@ -20,7 +20,7 @@
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
 #name of the executable
-executable = 'inverter_benchmarks'
+executable = 'inverter'
 
 #debugging options:
 #print more information
@@ -34,6 +34,7 @@ input_glob = """#global settings
 prec=64
 use_gpu=true
 num_dev=2
+enable_profiling=true
 
 startcondition=cold
 

@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include "gitcommitid.h"
 #include "util.hpp"
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 
 using namespace std;
 

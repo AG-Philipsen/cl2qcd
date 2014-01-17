@@ -28,7 +28,7 @@ add_library(meta
 	counter.cpp
 	config_file_normalizer.cpp
 	type_ops.cpp
-	../logger.cpp
+	../host_functionality/logger.cpp	
 )
 add_dependencies(meta git_commit_id_header)
 target_link_libraries(meta

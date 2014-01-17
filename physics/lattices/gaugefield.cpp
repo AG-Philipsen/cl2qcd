@@ -23,7 +23,7 @@
 #include "gaugefield.hpp"
 #include "../../meta/version.hpp"
 #include "../../meta/util.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../host_functionality/host_operations_gaugefield.h"
 #include "../../ildg_io/ildg_write_gaugefield.h"
 #include <cassert>

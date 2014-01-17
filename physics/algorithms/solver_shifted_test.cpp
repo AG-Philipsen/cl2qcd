@@ -21,7 +21,7 @@
 
 #include "solver_shifted.hpp"
 #include "rational_approximation.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../lattices/util.hpp"
 #include "../lattices/scalar_complex.hpp"
 #include "../lattices/staggeredfield_eo.hpp"

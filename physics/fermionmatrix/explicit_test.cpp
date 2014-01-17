@@ -28,7 +28,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../lattices/util.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 
 BOOST_AUTO_TEST_CASE(M_wilson)
 {

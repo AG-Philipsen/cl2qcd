@@ -22,7 +22,7 @@
 
 #include "../executables/exceptions.h"
 
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 #include <sstream>
 #include "checksum.h"
 

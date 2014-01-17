@@ -25,7 +25,7 @@
 #ifndef _LOGGERHPP_
 #define _LOGGERHPP_
 
-#include "einhard/einhard.hpp"
+#include "../einhard/einhard.hpp"
 
 /**
  * Singleton logger instance for logging to stdout.

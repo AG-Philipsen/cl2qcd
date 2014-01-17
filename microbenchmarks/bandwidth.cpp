@@ -29,7 +29,7 @@
 #include "../hardware/system.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/gaugefield.hpp"
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 #include "../executables/exceptions.h"
 #include "../klepsydra/klepsydra.hpp"
 

@@ -22,7 +22,7 @@
 
 #include "solver.hpp"
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../common_header_files/operations_complex.h"
 #include "../../meta/type_ops.hpp"
 #include "../lattices/util.hpp"

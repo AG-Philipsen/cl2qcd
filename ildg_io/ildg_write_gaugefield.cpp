@@ -22,7 +22,7 @@
 
 #include <assert.h>
 
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 #include <sstream>
 
 void write_gaugefield (
