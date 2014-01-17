@@ -262,15 +262,15 @@ void Test::fill_buffers()
 void Device::fill_kernels()
 {
 	ClSourcePackage basic_opencl_code = get_device()->get_gaugefield_code()->get_sources();
-	floatKernel = createKernel("copyFloat") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	su3Kernel = createKernel("copySU3") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	su3SOAKernel = createKernel("copySU3SOA") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	su3SOcplxAKernel = createKernel("copySU3SOcplxA") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	spinorKernel = createKernel("copySpinor") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	spinorSOAKernel = createKernel("copySpinorSOA") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	spinorSOApyKernel = createKernel("copyDpSpinorFullestSOARestricted") << "../types.h" << "../types_fermions.h" << "../microbenchmarks/bandwidth_spinorSOApy.cl";
-	spinorSOcplxAKernel = createKernel("copySpinorSOcplxA") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
-	spinorLocalKernel = createKernel("copySpinorLocal") << basic_opencl_code << "../types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	su3SOAKernel = createKernel("copySU3SOA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	su3SOcplxAKernel = createKernel("copySU3SOcplxA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	spinorKernel = createKernel("copySpinor") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	spinorSOAKernel = createKernel("copySpinorSOA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	spinorSOApyKernel = createKernel("copyDpSpinorFullestSOARestricted") << "types.h" << "types_fermions.h" << "../microbenchmarks/bandwidth_spinorSOApy.cl";
+	spinorSOcplxAKernel = createKernel("copySpinorSOcplxA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
+	spinorLocalKernel = createKernel("copySpinorLocal") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
 }
 
 Test::~Test()
