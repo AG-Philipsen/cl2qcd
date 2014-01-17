@@ -27,7 +27,7 @@ from tempfile import NamedTemporaryFile
 
 # benchmark configuration
 
-EXECUTABLE = "heatbath_benchmarks"
+EXECUTABLE = "su3heatbath_benchmarks"
 
 NS = (16, 24, 32, 48)
 NT = (4, 8, 12, 16, 24, 32, 48)
