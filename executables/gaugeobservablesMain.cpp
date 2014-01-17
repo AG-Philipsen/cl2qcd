@@ -18,13 +18,13 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./executables/su3heatbathExecutable.h"
+#include "gaugeobservablesExecutable.h"
 
 int main(int argc, const char* argv[])
 {
-	try {
-		su3heatbathExecutable su3heatbathInstance(argc, argv);
-		su3heatbathInstance.generateConfigurations();
+	try{
+		gaugeobservablesExecutable gaugeobservablesInstance(argc, argv);
+		gaugeobservablesInstance.performMeasurements();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {
@@ -41,5 +41,6 @@ int main(int argc, const char* argv[])
 		logger.fatal() << es.what();
 		exit(1);
 	}
+
 	return 0;
 }

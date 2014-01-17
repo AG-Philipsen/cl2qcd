@@ -21,7 +21,7 @@
 
 #include "rhmc.h"
 
-#include "meta/util.hpp"
+#include "../meta/util.hpp"
 #include <cmath>
 
 //inserted from former general_header.h

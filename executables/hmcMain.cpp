@@ -18,13 +18,13 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./executables/inverterExecutable.h"
+#include "hmcExecutable.h"
 
 int main(int argc, const char* argv[])
 {
-	try{
-	  inverterExecutable inverterInstance(argc, argv);
-		inverterInstance.performMeasurements();
+	try {
+	  hmcExecutable hmcInstance(argc, argv);
+	  hmcInstance.generateConfigurations();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {
@@ -43,5 +43,5 @@ int main(int argc, const char* argv[])
 	}
 
 	return 0;
-}
 
+}
