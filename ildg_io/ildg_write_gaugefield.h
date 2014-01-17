@@ -24,7 +24,7 @@
 #define _WRITEGAUGEFIELDH_
 
 #include "../common_header_files/types.h"
-#include "../meta/exceptions.h"
+#include "../executables/exceptions.h"
 
 extern "C" {
 #include <lime.h>

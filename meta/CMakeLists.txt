@@ -29,7 +29,6 @@ add_library(meta
 	config_file_normalizer.cpp
 	type_ops.cpp
 	../logger.cpp
-	exceptions.cpp
 )
 add_dependencies(meta git_commit_id_header)
 target_link_libraries(meta

@@ -20,7 +20,7 @@
 
 #include "ildg_read_gaugefield.h"
 
-#include "../meta/exceptions.h"
+#include "../executables/exceptions.h"
 
 #include "../logger.hpp"
 #include <sstream>

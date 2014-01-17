@@ -20,7 +20,7 @@
 
 #include "exceptions.h"
 
-#include "inputparameters.hpp"
+#include "../meta/inputparameters.hpp"
 #include <sstream>
 
 File_Exception::File_Exception(const char* name) : std::runtime_error(name)

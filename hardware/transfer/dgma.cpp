@@ -24,7 +24,7 @@
 #ifdef CL_MEM_BUS_ADDRESSABLE_AMD // make sure definitions for DGMA are available
 
 #include <stdexcept>
-#include "../../exceptions.h"
+#include "../../executables/exceptions.h"
 #include "../device.hpp"
 #include "../system.hpp"
 

@@ -25,7 +25,7 @@
 #include <vector>
 #include <string>
 
-#include "meta/exceptions.h"
+#include "executables/exceptions.h"
 #include "logger.hpp"
 
 #ifdef __APPLE__

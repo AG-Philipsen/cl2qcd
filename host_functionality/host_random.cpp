@@ -22,7 +22,7 @@
 
 #include <cstdio>
 #include "../logger.hpp"
-#include "../meta/exceptions.h"
+#include "../executables/exceptions.h"
 
 #ifdef USE_PRNG_RANLUX
 extern "C" {

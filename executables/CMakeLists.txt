@@ -22,6 +22,7 @@
 #
 
 add_library(executables
+	exceptions.cpp
 	generalExecutable.cpp
 	generationExecutable.cpp
 	measurementExecutable.cpp
