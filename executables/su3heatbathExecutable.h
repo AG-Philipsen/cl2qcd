@@ -18,22 +18,35 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SU3HEATBATHEXECUTABLE_H_
+#define SU3HEATBATHEXECUTABLE_H_
 
-#include "heatbathBenchmark.h"
+#include "generationExecutable.h"
+#include "../physics/algorithms/su3heatbath.hpp"
 
-heatbathBenchmark::heatbathBenchmark(int argc, const char* argv[]) :
-  benchmarkExecutable(argc, argv)
+class su3heatbathExecutable: public generationExecutable
 {
-  if(system->get_devices().size() != 1) {
-    logger.fatal() << "There must be exactly one device chosen for the heatbath benchmark to be performed.";
-  }
-  if(! parameters.get_enable_profiling() )
-    {
-      throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
-    }
-}
+public:
+	su3heatbathExecutable(int argc, const char* argv[]);
 
-void heatbathBenchmark::performBenchmarkForSpecificKernels()
-{
-  physics::algorithms::heatbath(*gaugefield, *prng, 1);
-}
+private:
+	int overrelaxSteps;
+
+	/*
+	 * Thermalize the system using the heatbath algorithm.
+	 */
+	void thermalizeAccordingToSpecificAlgorithm();
+
+	/*
+	 * Generate configurations using the heatbath algorithm.
+	 */
+	void generateAccordingToSpecificAlgorithm();
+
+	void writeSu3heatbathLogfile();
+
+	void printParametersToScreenAndFile();
+
+	void setIterationParameters();
+};
+
+#endif /* SU3HEATBATHEXECUTABLE_H_ */

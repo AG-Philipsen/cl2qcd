@@ -18,35 +18,25 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HEATBATHEXECUTABLE_H_
-#define HEATBATHEXECUTABLE_H_
+#ifndef SU3HEATBATHBENCHMARK_H_
+#define SU3HEATBATHBENCHMARK_H_
 
-#include "generationExecutable.h"
-#include "../physics/algorithms/heatbath.hpp"
+#include "benchmarkExecutable.h"
+#include "../physics/lattices/gaugefield.hpp"
+#include "../physics/algorithms/su3heatbath.hpp"
 
-class heatbathExecutable: public generationExecutable
+class su3heatbathBenchmark : public benchmarkExecutable
 {
 public:
-	heatbathExecutable(int argc, const char* argv[]);
+  su3heatbathBenchmark(int argc, const char* argv[]);
 
-private:
-	int overrelaxSteps;
-
+protected:
 	/*
-	 * Thermalize the system using the heatbath algorithm.
+	 * Calls the heatbath and overrelax kernels.
+	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
-	void thermalizeAccordingToSpecificAlgorithm();
-
-	/*
-	 * Generate configurations using the heatbath algorithm.
-	 */
-	void generateAccordingToSpecificAlgorithm();
-
-	void writeHeatbathLogfile();
-
-	void printParametersToScreenAndFile();
-
-	void setIterationParameters();
+  void performBenchmarkForSpecificKernels() override;
 };
 
-#endif /* HEATBATHEXECUTABLE_H_ */
+#endif /* SU3HEATBATHBENCHMARK_H_ */
+

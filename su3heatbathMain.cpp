@@ -18,25 +18,28 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HEATBATHBENCHMARK_H_
-#define HEATBATHBENCHMARK_H_
+#include "./executables/su3heatbathExecutable.h"
 
-#include "benchmarkExecutable.h"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../physics/algorithms/heatbath.hpp"
-
-class heatbathBenchmark : public benchmarkExecutable
+int main(int argc, const char* argv[])
 {
-public:
-  heatbathBenchmark(int argc, const char* argv[]);
-
-protected:
-	/*
-	 * Calls the heatbath and overrelax kernels.
-	 * Per iteration, the kernel is called with EVEN and ODD parameters.
-	 */
-  void performBenchmarkForSpecificKernels() override;
-};
-
-#endif /* HEATBATHBENCHMARK_H_ */
-
+	try {
+		su3heatbathExecutable su3heatbathInstance(argc, argv);
+		su3heatbathInstance.generateConfigurations();
+	} //try
+	//exceptions from Opencl classes
+	catch (Opencl_Error& e) {
+		logger.fatal() << e.what();
+		exit(1);
+	} catch (File_Exception& fe) {
+		logger.fatal() << "Could not open file: " << fe.get_filename();
+		logger.fatal() << "Aborting.";
+		exit(1);
+	} catch (Print_Error_Message& em) {
+		logger.fatal() << em.what();
+		exit(1);
+	} catch (Invalid_Parameters& es) {
+		logger.fatal() << es.what();
+		exit(1);
+	}
+	return 0;
+}

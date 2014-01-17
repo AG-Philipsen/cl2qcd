@@ -18,28 +18,22 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./executables/heatbathExecutable.h"
 
-int main(int argc, const char* argv[])
+#include "su3heatbathBenchmark.h"
+
+su3heatbathBenchmark::su3heatbathBenchmark(int argc, const char* argv[]) :
+  benchmarkExecutable(argc, argv)
 {
-	try {
-		heatbathExecutable heatbathInstance(argc, argv);
-		heatbathInstance.generateConfigurations();
-	} //try
-	//exceptions from Opencl classes
-	catch (Opencl_Error& e) {
-		logger.fatal() << e.what();
-		exit(1);
-	} catch (File_Exception& fe) {
-		logger.fatal() << "Could not open file: " << fe.get_filename();
-		logger.fatal() << "Aborting.";
-		exit(1);
-	} catch (Print_Error_Message& em) {
-		logger.fatal() << em.what();
-		exit(1);
-	} catch (Invalid_Parameters& es) {
-		logger.fatal() << es.what();
-		exit(1);
-	}
-	return 0;
+  if(system->get_devices().size() != 1) {
+    logger.fatal() << "There must be exactly one device chosen for the heatbath benchmark to be performed.";
+  }
+  if(! parameters.get_enable_profiling() )
+    {
+      throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
+    }
+}
+
+void su3heatbathBenchmark::performBenchmarkForSpecificKernels()
+{
+  physics::algorithms::su3heatbath(*gaugefield, *prng, 1);
 }

@@ -23,7 +23,7 @@
 
 add_library(algorithms
 	solver.cpp
-	heatbath.cpp
+	su3heatbath.cpp
 	kappa_clover.cpp
 	flavour_doublet.cpp
 	inversion.cpp

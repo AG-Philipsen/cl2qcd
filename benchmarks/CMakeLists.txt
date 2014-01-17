@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
-add_executable(heatbath_benchmarks heatbathBenchmarkMain.cpp)
-target_link_libraries(heatbath_benchmarks optimal)
+add_executable(su3heatbath_benchmarks su3heatbathBenchmarkMain.cpp)
+target_link_libraries(su3heatbath_benchmarks optimal)
 
 add_executable(dslash_benchmark dslashBenchmarkMain.cpp)
 target_link_libraries(dslash_benchmark optimal)

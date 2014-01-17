@@ -1,5 +1,5 @@
 /** @file
- * Implementation of the heatbath algorithm
+ * Implementation of the su3heatbath algorithm
  *
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
@@ -20,18 +20,18 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "heatbath.hpp"
+#include "su3heatbath.hpp"
 
 #include <cassert>
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/heatbath.hpp"
 
-void physics::algorithms::heatbath(physics::lattices::Gaugefield& gf, physics::PRNG& prng, int overrelax)
+void physics::algorithms::su3heatbath(physics::lattices::Gaugefield& gf, physics::PRNG& prng, int overrelax)
 {
 	assert(overrelax >= 0);
 	assert(gf.get_buffers().size() == 1);
 
-	// run heatbath
+	// run su3heatbath
 	auto gf_dev = gf.get_buffers()[0];
 	auto prng_dev = prng.get_buffers()[0];
 	auto code = gf_dev->get_device()->get_heatbath_code();

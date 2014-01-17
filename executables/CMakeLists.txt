@@ -26,12 +26,12 @@ add_library(executables
 	generationExecutable.cpp
 	measurementExecutable.cpp
 	benchmarkExecutable.cpp
-	heatbathExecutable.cpp
+	su3heatbathExecutable.cpp
 	gaugeobservablesExecutable.cpp
 	inverterExecutable.cpp
 	hmcExecutable.cpp
 	dslashBenchmark.cpp
-	heatbathBenchmark.cpp
+	su3heatbathBenchmark.cpp
 )
 
 target_link_libraries(executables

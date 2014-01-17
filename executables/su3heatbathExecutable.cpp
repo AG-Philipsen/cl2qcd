@@ -18,9 +18,9 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "heatbathExecutable.h"
+#include "su3heatbathExecutable.h"
 
-heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
+su3heatbathExecutable::su3heatbathExecutable(int argc, const char* argv[]) :
   generationExecutable(argc, argv)
 {
 	initializationTimer.reset();
@@ -29,14 +29,14 @@ heatbathExecutable::heatbathExecutable(int argc, const char* argv[]) :
 	initializationTimer.add();
 }
 
-void heatbathExecutable::printParametersToScreenAndFile()
+void su3heatbathExecutable::printParametersToScreenAndFile()
 {
   meta::print_info_observables_gauge_io(parameters);
   meta::print_info_heatbath(parameters);
-  writeHeatbathLogfile();
+  writeSu3heatbathLogfile();
 }
 
-inline void heatbathExecutable::writeHeatbathLogfile()
+inline void su3heatbathExecutable::writeSu3heatbathLogfile()
 {
 	outputToFile.open(filenameForLogfile,
 			std::ios::out | std::ios::app);
@@ -49,18 +49,18 @@ inline void heatbathExecutable::writeHeatbathLogfile()
 	}
 }
 
-void heatbathExecutable::setIterationParameters()
+void su3heatbathExecutable::setIterationParameters()
 {
 	generationExecutable::setIterationParameters();
 	generationSteps += parameters.get_heatbathsteps();
 	overrelaxSteps = parameters.get_overrelaxsteps();
 }
 
-void heatbathExecutable::thermalizeAccordingToSpecificAlgorithm() {
-	physics::algorithms::heatbath(*gaugefield, *prng);
+void su3heatbathExecutable::thermalizeAccordingToSpecificAlgorithm() {
+	physics::algorithms::su3heatbath(*gaugefield, *prng);
 }
 
-void heatbathExecutable::generateAccordingToSpecificAlgorithm() {
-	physics::algorithms::heatbath(*gaugefield, *prng, overrelaxSteps);
+void su3heatbathExecutable::generateAccordingToSpecificAlgorithm() {
+	physics::algorithms::su3heatbath(*gaugefield, *prng, overrelaxSteps);
 }
 

@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../executables/heatbathBenchmark.h"
+#include "../executables/su3heatbathBenchmark.h"
 #include "../meta/util.hpp"
 
 int main(int argc, const char* argv[])
@@ -26,8 +26,8 @@ int main(int argc, const char* argv[])
 	try {
 	  std::string profilingOption = "--enable_profiling=true";
 	  char ** argvWithProfilingOption = meta::addOptionToArgv(profilingOption.c_str(), argc, argv);
-	  heatbathBenchmark heatbathBenchmarkInstance(argc + 1, (const char**) argvWithProfilingOption);
-	  heatbathBenchmarkInstance.benchmark();
+	  su3heatbathBenchmark su3heatbathBenchmarkInstance(argc + 1, (const char**) argvWithProfilingOption);
+	  su3heatbathBenchmarkInstance.benchmark();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {

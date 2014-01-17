@@ -20,8 +20,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _PHYSICS_ALGORITHMS_HEATBATH_
-#define _PHYSICS_ALGORITHMS_HEATBATH_
+#ifndef _PHYSICS_ALGORITHMS_SU3HEATBATH_
+#define _PHYSICS_ALGORITHMS_SU3HEATBATH_
 
 #include "../prng.hpp"
 #include "../lattices/gaugefield.hpp"
@@ -39,7 +39,7 @@ namespace algorithms {
  * @param[in,out] prng The PRNG to use
  * @param[in] overrelax The number of overrelaxation steps to perform. Default is none.
  */
-void heatbath(physics::lattices::Gaugefield& gf, physics::PRNG& prng, int overrelax = 0);
+void su3heatbath(physics::lattices::Gaugefield& gf, physics::PRNG& prng, int overrelax = 0);
 
 /**
  * Perform one overrelaxation step on the given gaugefield.
@@ -54,4 +54,4 @@ void overrelax(physics::lattices::Gaugefield& gf, physics::PRNG& prng, int steps
 
 }
 
-#endif /* _PHYSICS_ALGORITHMS_HEATBATH_ */
+#endif /* _PHYSICS_ALGORITHMS_SU3HEATBATH_ */
