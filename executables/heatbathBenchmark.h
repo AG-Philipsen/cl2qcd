@@ -35,7 +35,7 @@ protected:
 	 * Calls the heatbath and overrelax kernels.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
-  void performBenchmarkForSpecificKernels();
+  void performBenchmarkForSpecificKernels() override;
 };
 
 #endif /* HEATBATHBENCHMARK_H_ */

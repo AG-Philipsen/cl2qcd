@@ -40,14 +40,14 @@ protected:
 	 * Calls the dslash_eo kernel.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
-	void performBenchmarkForSpecificKernels();
+	void performBenchmarkForSpecificKernels() override;
 	/*
 	 * Calls dslash__eo on all devices in the system.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
-	void enqueueSpecificKernelForBenchmarkingMultipleDevices();
+	void enqueueSpecificKernelForBenchmarkingMultipleDevices()  override;
 
-	void printProfilingDataToScreen();
+	void printProfilingDataToScreen() override;
 };
 
 #endif /* DSLASHBENCHMARK_H_ */

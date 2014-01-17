@@ -53,9 +53,14 @@ protected:
 	int benchmarkSteps;
 	uint64_t executionTime;
 
+	void synchronizeAllDevices();
+
+	/**
+	 * Functions to call specific kernels.
+	 * As this can be done for a single of multiple devices, they are not purely virtual.
+	 */
 	virtual void performBenchmarkForSpecificKernels() {};
 	virtual void enqueueSpecificKernelForBenchmarkingMultipleDevices() {};
-	void synchronizeAllDevices();
 	virtual void printProfilingDataToScreen() {};
 };
 

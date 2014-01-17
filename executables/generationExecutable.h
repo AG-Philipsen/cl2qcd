@@ -77,9 +77,9 @@ protected:
 	 **/
 	void generate();
 
-	void virtual thermalizeAccordingToSpecificAlgorithm() {};
+	void virtual thermalizeAccordingToSpecificAlgorithm() = 0;
 
-	void virtual generateAccordingToSpecificAlgorithm() {};
+	void virtual generateAccordingToSpecificAlgorithm() = 0;
 
 	/**
 	 * Measurements to be performed after each step of configuration generation.

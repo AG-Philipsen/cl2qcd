@@ -56,7 +56,7 @@ protected:
 
 	void performMeasurementsForSpecificIteration();
 
-	virtual void performApplicationSpecificMeasurements() {};
+	virtual void performApplicationSpecificMeasurements() = 0;
 };
 
 

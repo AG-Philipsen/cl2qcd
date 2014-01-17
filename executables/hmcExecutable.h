@@ -57,7 +57,10 @@ protected:
 
 	void generateAccordingToSpecificAlgorithm();
 
-	void performOnlineMeasurements();
+	/**
+	 * Measures HMC related observables
+	 */
+	void performOnlineMeasurements() override;
 
 	void printHmcObservables(const std::string& filename);
 
