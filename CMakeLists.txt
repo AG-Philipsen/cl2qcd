@@ -181,19 +181,19 @@ target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
 set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
 
 # The actual executables (frontends)
-add_executable(gaugeobservables gaugeobservablesMain.cpp)
+add_executable(gaugeobservables executables/gaugeobservablesMain.cpp)
 target_link_libraries(gaugeobservables optimal)
 
-add_executable(su3heatbath su3heatbathMain.cpp)
+add_executable(su3heatbath executables/su3heatbathMain.cpp)
 target_link_libraries(su3heatbath optimal)
 
-add_executable(inverter inverterMain.cpp)
+add_executable(inverter executables/inverterMain.cpp)
 target_link_libraries(inverter optimal)
 
-add_executable(hmc hmcMain.cpp)
+add_executable(hmc executables/hmcMain.cpp)
 target_link_libraries(hmc optimal)
 
-add_executable(rhmc rhmc.cpp)
+add_executable(rhmc executables/rhmc.cpp)
 target_link_libraries(rhmc optimal)
 
 # Utilities
