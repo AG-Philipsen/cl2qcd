@@ -63,12 +63,12 @@ int main(int argc, const char* argv[])
 		//Check if inputparameters has reasonable parameters
 		check_rhmc_parameters(parameters);
 		
-		meta::print_info_rhmc(argv[0], parameters);
+		meta::print_info_rhmc(parameters);
 
 		ofstream ofile;
 		ofile.open("rhmc.log");
 		if(ofile.is_open()) {
-			meta::print_info_rhmc(argv[0], &ofile, parameters);
+			meta::print_info_rhmc(&ofile, parameters);
 			ofile.close();
 		} else {
 			logger.warn() << "Could not log file for rhmc.";

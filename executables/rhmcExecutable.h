@@ -29,11 +29,11 @@
 #define RHMCEXECUTABLE_H_
 
 #include "generationExecutable.h"
-#include "../physics/algorithms/hmc.hpp"
+#include "../physics/algorithms/rhmc.hpp"
+#include "../physics/algorithms/rational_approximation.hpp"
 #include <cmath>
 
-class rhmcExecutable : public generationExecutable
-{
+class rhmcExecutable : public generationExecutable {
 public:
 	rhmcExecutable(int argc, const char* argv[]);
 	~rhmcExecutable();
@@ -66,6 +66,9 @@ protected:
 	void printRhmcObservablesToFile(const std::string& filename);
 
 	void printRhmcObservablesToScreen();
+	
+private:
+	physics::algorithms::Rational_Approximation *approx_hb, *approx_md, *approx_met;
 };
 
 #endif /* RHMCEXECUTABLE_H_ */

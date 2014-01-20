@@ -74,8 +74,8 @@ namespace meta {
   void print_info_inverter(std::ostream* os, const Inputparameters& params);
   void print_info_hmc(const Inputparameters& params);
   void print_info_hmc(std::ostream* os, const Inputparameters& params);
-  void print_info_rhmc(const char* progname, const Inputparameters& params);
-  void print_info_rhmc(const char* progname, std::ostream* os, const Inputparameters& params);
+  void print_info_rhmc(const Inputparameters& params);
+  void print_info_rhmc(std::ostream* os, const Inputparameters& params);
   std::string get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
