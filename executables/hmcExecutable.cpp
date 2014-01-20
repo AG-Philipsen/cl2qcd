@@ -25,7 +25,6 @@ hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();
-	writeHmcLogfile();
 	setIterationParameters();
 	initializationTimer.add();
 }

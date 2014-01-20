@@ -31,11 +31,11 @@ generationExecutable::generationExecutable(int argc, const char* argv[]) : gener
 void generationExecutable::setIterationParameters()
 {
 	//NOTE: this is 0 in case of cold or hot start
-	iteration 				= gaugefield->get_parameters_source().trajectorynr_source;
-	thermalizationSteps 	= iteration + parameters.get_thermalizationsteps();
-	generationSteps 		= thermalizationSteps;
-	writeFrequency 			= parameters.get_writefrequency();
-	saveFrequency 			= parameters.get_savefrequency();
+	iteration           = gaugefield->get_parameters_source().trajectorynr_source;
+	thermalizationSteps = iteration + parameters.get_thermalizationsteps();
+	generationSteps     = thermalizationSteps; //this is temp.: in each child it is incremented by the nr of tr.
+	writeFrequency      = parameters.get_writefrequency();
+	saveFrequency       = parameters.get_savefrequency();
 }
 
 void generationExecutable::saveGaugefield()

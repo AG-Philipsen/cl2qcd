@@ -39,7 +39,7 @@ public:
 
 	~hmcExecutable();
 protected:
-	const std::string filenameForHmcLogfile = "hmc.log";
+// 	const std::string filenameForHmcLogfile = "hmc.log";
 	double acceptanceRate = 0;
 	hmc_observables observables;
 
@@ -53,9 +53,9 @@ protected:
 
 	void writeHmcLogfile();
 
-	void thermalizeAccordingToSpecificAlgorithm();
+	void thermalizeAccordingToSpecificAlgorithm() override;
 
-	void generateAccordingToSpecificAlgorithm();
+	void generateAccordingToSpecificAlgorithm() override;
 
 	/**
 	 * Measures HMC related observables

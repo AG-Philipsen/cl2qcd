@@ -45,16 +45,17 @@ class generalExecutable
 
 public:
 	/**
-	 * Initialize meta::Inputparametes and hardware::System objects
-	 */
-  generalExecutable(int argc, const char* argv[]);
-
-	/**
 	 * Destructor. Prints runtime information to screen and file.
 	 */
-	~generalExecutable();
+	virtual ~generalExecutable();
 
 protected:
+	/**
+	* Initialize meta::Inputparametes and hardware::System objects
+	 */
+	//Protected since it makes no sense to allow the user to instatiate this class
+	generalExecutable(int argc, const char* argv[]); 
+
 	const char* ownName;
 	std::string filenameForLogfile;
 	std::string filenameForProfilingData;
