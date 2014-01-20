@@ -101,7 +101,7 @@ int main(int argc, const char* argv[])
 		int iter = gaugefield.get_parameters_source().trajectorynr_source;
 		const int rhmc_iter = iter + parameters.get_rhmcsteps();
 		if(iter >= rhmc_iter)
-		  logger.warn() << "The total number of RHMC iterations is NOT smaller than those already done.\nNO further iteration will be performed!";
+		  logger.warn() << "The total number of RHMC iterations is SMALLER than those already done.\nNO further iteration will be performed!";
 		hmc_float acc_rate = 0.;
 		const int writefreq = parameters.get_writefrequency();
 		const int savefreq = parameters.get_savefrequency();
