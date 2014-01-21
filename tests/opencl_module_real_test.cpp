@@ -19,7 +19,6 @@
  */
 
 #include "../meta/util.hpp"
-// #include "../host_random.h"
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/real.hpp"
