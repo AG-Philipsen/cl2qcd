@@ -18,8 +18,6 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OPERATIONS_REAL
-#define OPERATIONS_REAL
 
 inline hmc_float update_zeta_cgm_alg(hmc_float a, hmc_float b, hmc_float c, hmc_float d, hmc_float e, hmc_float f)
 {
@@ -42,4 +40,3 @@ inline hmc_float update_alpha_cgm_alg(hmc_float a, hmc_float b, hmc_float c, hmc
 	return out;
 }
 
-#endif /* OPERATIONS_REAL */
