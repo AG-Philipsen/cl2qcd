@@ -28,5 +28,11 @@ target_link_libraries(dslash_benchmark optimal)
 add_executable(dslash_multidev dslashBenchmarkMultipleDevicesMain.cpp)
 target_link_libraries(dslash_multidev optimal)
 
-add_executable(dks_multidev dks_multidev.cpp)
+add_executable(dks_multidev_old dks_multidev.cpp)
+target_link_libraries(dks_multidev_old optimal)
+
+add_executable(dks_benchmark dksBenchmarkMain.cpp)
+target_link_libraries(dks_benchmark optimal)
+
+add_executable(dks_multidev dksBenchmarkMultipleDevicesMain.cpp)
 target_link_libraries(dks_multidev optimal)

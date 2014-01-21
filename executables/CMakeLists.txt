@@ -33,6 +33,7 @@ add_library(executables
 	hmcExecutable.cpp
 	rhmcExecutable.cpp
 	dslashBenchmark.cpp
+	dksBenchmark.cpp
 	su3heatbathBenchmark.cpp
 )
 
