@@ -19,7 +19,7 @@
  */
 
 #include "../meta/util.hpp"
-#include "../host_random.h"
+#include "../host_functionality/host_random.h"
 #include "../hardware/system.hpp"
 #include "../hardware/device.hpp"
 #include "../hardware/code/spinors.hpp"

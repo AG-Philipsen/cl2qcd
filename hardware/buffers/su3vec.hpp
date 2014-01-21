@@ -24,7 +24,8 @@
 #define _HARDWARE_BUFFERS_SU3VEC_
 
 #include "buffer.hpp"
-#include "../../types_fermions.h"
+#include "../../common_header_files/types.h"
+#include "../../common_header_files/types_fermions.h"
 
 namespace hardware {
 namespace buffers {

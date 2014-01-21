@@ -23,7 +23,7 @@
 #include "ocl_copy.hpp"
 #include "async_ocl_copy.hpp"
 #include "dgma.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include <array>
 #include "../../klepsydra/klepsydra.hpp"
 #include "../device.hpp"

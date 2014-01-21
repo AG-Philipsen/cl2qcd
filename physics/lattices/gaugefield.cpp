@@ -23,12 +23,11 @@
 #include "gaugefield.hpp"
 #include "../../meta/version.hpp"
 #include "../../meta/util.hpp"
-#include "../../logger.hpp"
-#include "../../host_operations_gaugefield.h"
-#include "../../host_writegaugefield.h"
-#include "../../host_readgauge.h"
+#include "../../host_functionality/logger.hpp"
+#include "../../host_functionality/host_operations_gaugefield.h"
+#include "../../ildg_io/ildg_write_gaugefield.h"
 #include <cassert>
-#include "../../checksum.h"
+#include "../../ildg_io/checksum.h"
 #include <fstream>
 #include "../../hardware/device.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
@@ -199,12 +198,19 @@ void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems)
 
 void physics::lattices::Gaugefield::save(int number)
 {
+	std::string outputfile = meta::create_configuration_name(system.get_inputparameters());
+	save(outputfile, number);
+}
+
+void physics::lattices::Gaugefield::saveToSpecificFile(int number)
+{
 	std::string outputfile = meta::create_configuration_name(system.get_inputparameters(), number);
 	save(outputfile, number);
 }
 
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
+	logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
 	auto parameters = system.get_inputparameters();
 	const size_t NTIME = parameters.get_ntime();
 	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME * sizeof(hmc_float);

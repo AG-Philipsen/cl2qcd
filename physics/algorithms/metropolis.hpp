@@ -30,7 +30,7 @@
 #include "../lattices/spinorfield_eo.hpp"
 #include "../lattices/rooted_staggeredfield_eo.hpp"
 #include "../lattices/gaugemomenta.hpp"
-#include "../../types_hmc.h"
+#include "../../common_header_files/types_hmc.h"
 
 namespace physics {
 namespace algorithms {

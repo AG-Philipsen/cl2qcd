@@ -67,6 +67,6 @@ BOOST_AUTO_TEST_CASE(compile)
 
 	// query some data
 for(const Device * device : devices) {
-		cl_kernel foo = device->create_kernel("foo", "") << "hardware/device_test.cl";
+		cl_kernel foo = device->create_kernel("foo", "") << "../hardware/device_test.cl";
 	}
 }

@@ -27,7 +27,7 @@
 
 #include "../buffers/plain.hpp"
 #include "../buffers/prng_buffer.hpp"
-#include "../../types_fermions.h"
+#include "../../common_header_files/types_fermions.h"
 
 namespace hardware {
 

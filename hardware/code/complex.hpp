@@ -26,7 +26,6 @@
 #include "opencl_module.hpp"
 
 #include "../buffers/plain.hpp"
-#include "../../types.h"
 
 namespace hardware {
 

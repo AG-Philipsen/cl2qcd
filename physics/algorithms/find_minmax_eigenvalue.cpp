@@ -23,7 +23,7 @@
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/util.hpp"
 #include "../lattices/scalar.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "cmath"
 #include "sstream"
 #include "solver.hpp" //For exceptions

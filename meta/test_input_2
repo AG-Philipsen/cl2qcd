@@ -2,6 +2,7 @@ prec = 32
 num_dev = 1
 use_gpu = false
 use_cpu = false
+enable_profiling = true
 
 use_aniso = true
 use_chem_pot_re = true
@@ -30,6 +31,7 @@ thermalizationsteps = 10
 heatbathsteps = 100
 overrelaxsteps = 10
 xi = 2
+measure_transportcoefficient_kappa = true
 
 # fermionic parameters
 fermact = TLSYM
@@ -66,6 +68,7 @@ reversibility_check = true
 integrationsteps0 = 103
 integrationsteps1 = 5
 hmcsteps = 98
+benchmarksteps = 10
 num_timescales = 3
 integrator0 = TWOMN
 integrator1 = LEAPFROG

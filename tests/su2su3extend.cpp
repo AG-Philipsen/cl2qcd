@@ -145,7 +145,7 @@ void Test::fill_buffers()
 
 void Device::fill_kernels()
 {
-	extendKernel = createKernel("extendKernel") << get_device()->get_gaugefield_code()->get_sources() << "tests/su2su3extend.cl";
+	extendKernel = createKernel("extendKernel") << get_device()->get_gaugefield_code()->get_sources() << "../tests/su2su3extend.cl";
 }
 
 void Test::clear_buffers()

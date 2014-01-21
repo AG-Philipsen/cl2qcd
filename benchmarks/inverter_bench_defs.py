@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding=utf8
+#
 # Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
 # Matthias Bach, Christian Schaefer, Stefano Lottini, Alessandro Sciarra
 #
@@ -31,13 +34,14 @@ input_glob = """#global settings
 prec=64
 use_gpu=true
 num_dev=2
+enable_profiling=true
 
 startcondition=cold
 
 #fermion settings
 fermact=TWISTEDMASS
-kappa=0.05
-mu=0.2
+kappa=0.2
+mu=0.02
 corr_dir=3
 ThetaT=1.
 
@@ -47,59 +51,62 @@ savefrequency=10
 fermact=TWISTEDMASS
 use_evenodd=yes
 
-solver=BICGSTAB
+hmcsteps=1
+
+solver=CG
+# solver=BICGSTAB
 """
 
 #arrays for the different tests, this is not nice, but a quick workaround
 #the programm will perform tests with all members of this list if no input-file is given
-input_var1 = ["""
+input_var1 = [#"""
 #variable settings depending on test
-NS=16
-""",
+#NS=16
+#"""#,
 """
 #variable settings depending on test
 NS=24
-""",
-"""
+"""#,
+#"""
 #variable settings depending on test
-NS=32
-""",
-"""
-#variable settings depending on test
-NS=48
-"""
+#NS=32
+#""",
+#"""
+##variable settings depending on test
+#NS=48
+#"""
 ]
 
-input_var2 = ["""
+input_var2 = [#"""
 #variable settings depending on test
-NT=4
-""",
-"""
+#NT=4
+#""",
+#"""
 #variable settings depending on test
-NT=8
-""",
+#NT=8
+#""",
 """
 #variable settings depending on test
 NT=12
-""",
-"""
+"""#,
+#"""
 #variable settings depending on test
-NT=16
-""",
-"""
+#NT=16
+#""",
+#"""
 #variable settings depending on test
-NT=20
-""",
-"""
+#NT=20
+#""",
+#"""
 #variable settings depending on test
-NT=24
-""",
-"""
+#NT=24
+#""",
+#"""
 #variable settings depending on test
-NT=28
-""",
-"""
+#NT=28
+#""",
+#"""
 #variable settings depending on test
-NT=32
-"""
+#NT=32
+#"""
 ]

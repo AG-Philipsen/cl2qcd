@@ -20,7 +20,7 @@
 
 #include "fermions.hpp"
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "spinors.hpp"
@@ -32,7 +32,7 @@ using namespace std;
 
 void hardware::code::Fermions::fill_kernels()
 {
-	sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
 		sources = sources << "operations_spinorfield_eo.cl";
 	}
@@ -859,6 +859,8 @@ void hardware::code::Fermions::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus);
 	Opencl_Module::print_profiling(filename, M_tm_inverse_sitediagonal_minus);
 	Opencl_Module::print_profiling(filename, dslash_eo);
+	Opencl_Module::print_profiling(filename, _dslash_eo_boundary);
+	Opencl_Module::print_profiling(filename, _dslash_eo_inner);
 	Opencl_Module::print_profiling(filename, dslash_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_eo);
 	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_minus_eo);
@@ -877,6 +879,8 @@ hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware
 	  M_tm_sitediagonal_minus(0),
 	  M_tm_inverse_sitediagonal_minus(0),
 	  dslash_eo(0),
+	  _dslash_eo_boundary(0),
+          _dslash_eo_inner(0),
 	  dslash_AND_gamma5_eo(0),
 	  dslash_AND_M_tm_inverse_sitediagonal_eo(0),
 	  dslash_AND_M_tm_inverse_sitediagonal_minus_eo(0),

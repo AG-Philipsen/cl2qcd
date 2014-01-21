@@ -26,8 +26,9 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
-#include "../../host_readgauge.h"
+#include "../../ildg_io/ildg_read_gaugefield.h"
 #include "../../hardware/code/gaugefield.hpp"
+#include "../../meta/inputparameters.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -70,10 +71,15 @@ namespace physics {
 			Gaugefield() = delete;
 
 			/**
-			 * Save gaugefield to a file with name conf.number
+			 * Save gaugefield to a file with name conf_prefix + save + conf_postfix
 			 * @param[in] number The trajectory number to be stored in the file
 			 */
 			void save(int number);
+			/**
+			 * Save gaugefield to a file with name conf_prefix + number + conf_postfix
+			 * @param[in] number The trajectory number to be stored in the file
+			 */
+			void saveToSpecificFile(int number);
 			/**
 			 * Save gaugefield to a file with given name
 			 * @param[in] outputfile name of file
@@ -170,6 +176,7 @@ namespace physics {
 		 * Print the gaugeobservables of the given gaugefield to the given file
 		 */
 		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename);
+
 	}
 }
 

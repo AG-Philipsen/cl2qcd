@@ -25,7 +25,6 @@
 
 #include "../../hardware/code/fermions.hpp"
 
-#include "../../host_use_timer.h"
 #include "../lattices/spinorfield.hpp"
 #include "../lattices/spinorfield_eo.hpp"
 #include "../lattices/gaugefield.hpp"

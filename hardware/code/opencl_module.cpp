@@ -20,20 +20,9 @@
 
 #include "opencl_module.hpp"
 
-#include <fstream>
-#include <cmath>
-
-#include "../../logger.hpp"
-#include "../../meta/util.hpp"
-#include "../device.hpp"
 //from here on the files are needed for collect_build_options
+///@todo: this is currently needed because of the "get_spinorfieldsize*" fcts. These should better be moved to meta!
 #include "spinors.hpp"
-#include "../buffers/3x3.hpp"
-#include "../buffers/su3.hpp"
-#include "../buffers/prng_buffer.hpp"
-#include "../buffers/spinor.hpp"
-#include "../buffers/su3vec.hpp"
-#include "../buffers/gaugemomentum.hpp"
 
 using namespace std;
 
@@ -203,6 +192,8 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::vector<std::string> collect_build_files()
 {
 	std::vector<std::string> out;
+	out.push_back("globaldefs.h");
+	out.push_back("types.h");
 	out.push_back("opencl_header.cl");
 
 	return out;
@@ -284,14 +275,8 @@ static void print_profiling(const std::string& filename, const std::string& kern
 	fstream out;
 	out.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!out.is_open()) File_Exception(filename.c_str());
-	//CP: this is set manually to fit the longest kernel name
 	out.width(32);
 	out.precision(15);
-	//to look like that
-	/*
-	logger.trace() << "*******************************************************************";
-	logger.trace() << "Fermion\t"<< setfill(' ') << setw(16)<< "BW[GB/s]\t" << setfill(' ') << setw(18) << "Re/Wr[MByte]\t" << setfill(' ') << setw(6)  << "Calls\t" << setfill(' ') << setw(10)  << "Time[mus]";
-	*/
 	out << kernelName << "\t" << data.get_total_time() << "\t" << data.get_num_values() << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
 	out.close();
 }

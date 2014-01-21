@@ -28,7 +28,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)

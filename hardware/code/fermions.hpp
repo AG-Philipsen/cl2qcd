@@ -1,4 +1,4 @@
-/** @file
+ /** @file
  * Basic OpenCL functionality
  *
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
@@ -28,7 +28,7 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/su3.hpp"
 #include "../buffers/spinor.hpp"
-#include "../../host_use_timer.h"
+#include "../../host_functionality/host_use_timer.h"
 
 namespace hardware {
 

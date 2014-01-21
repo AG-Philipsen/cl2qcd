@@ -23,7 +23,10 @@
 #define _HARDWARE_CODE_PRNG_
 
 #include "opencl_module.hpp"
-
+#include "../../host_functionality/logger.hpp"
+#include "../device.hpp"
+#include <sstream>
+#include "gaugefield.hpp"
 #include "../buffers/prng_buffer.hpp"
 
 namespace hardware {

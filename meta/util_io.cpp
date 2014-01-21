@@ -24,22 +24,14 @@
 #include <stdexcept>
 #include "gitcommitid.h"
 #include "util.hpp"
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 
 using namespace std;
 
-static void print_info_global(const meta::Inputparameters& params);
-static void print_info_global(std::ostream* os, const meta::Inputparameters& params);
-static void print_info_fermion(const meta::Inputparameters& params);
-static void print_info_fermion(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_gauge(std::ostream* os, const meta::Inputparameters& params);
 static void print_info_gauge(const meta::Inputparameters& params);
 static void print_info_integrator(int number, const meta::Inputparameters& params);
 static void print_info_integrator(std::ostream* os, int number, const meta::Inputparameters& params);
-static void print_info_configs_io(const meta::Inputparameters& params);
-static void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params);
-static void print_info_observables_gauge_io(const meta::Inputparameters& params);
-static void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_fermion_io(const meta::Inputparameters& params);
 static void print_info_observables_fermion_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(const meta::Inputparameters& params);
@@ -49,7 +41,7 @@ static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputp
 static void print_info_source(const meta::Inputparameters params);
 static void print_info_source(std::ostream * os, const meta::Inputparameters params);
 
-static void print_info_global(const meta::Inputparameters& params)
+void meta::print_info_global(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -81,6 +73,8 @@ static void print_info_global(const meta::Inputparameters& params)
 	}
 	logger.info() << "## Number of devices demanded for calculations: " << params.get_device_count()  ;
 	logger.info() << "## PRNG SEED:\t" << params.get_host_seed();
+	if (! ( params.get_initial_prng_state() == "" ) )
+		logger.info() << "## INITIAL PRNG STATE:\t" << params.get_initial_prng_state();
 	logger.info() << "## **********************************************************";
 	logger.info() << "## I/O parameters:";
 	logger.info() << "## Writefrequency:  " << params.get_writefrequency();
@@ -106,7 +100,7 @@ static void print_info_global(const meta::Inputparameters& params)
 	}
 }
 
-static void print_info_global(std::ostream* os, const meta::Inputparameters& params)
+void meta::print_info_global(std::ostream* os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -138,6 +132,8 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 	}
 	*os  << "## Number of devices demanded for calculations: " << params.get_device_count()  << endl;
 	*os  << "## PRNG SEED:\t" << params.get_host_seed() << endl;
+	if (! ( params.get_initial_prng_state() == "" ) )
+	  *os << "## INITIAL PRNG STATE:\t" << params.get_initial_prng_state() << endl;
 	*os  << "## **********************************************************" << endl;
 	*os  << "## I/O parameters:" << endl;
 	*os  << "## Writefrequency:  " << params.get_writefrequency() << endl;
@@ -164,12 +160,8 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 }
 
 
-void meta::print_info_heatbath(const char* progname, const Inputparameters& params)
+void meta::print_info_heatbath(const Inputparameters& params)
 {
-	logger.info() << "## Starting heatbath program, executable name: " << progname;
-	print_info_global(params);
-	print_info_configs_io(params);
-	print_info_observables_gauge_io(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << params.get_beta();
@@ -181,80 +173,22 @@ void meta::print_info_heatbath(const char* progname, const Inputparameters& para
 	return;
 }
 
-void meta::print_info_gaugeobservables(const char* progname, std::ostream* os, const Inputparameters& params)
+void meta::print_info_heatbath(std::ostream* os, const Inputparameters& params)
 {
-	*os  << "## Starting gaugeobservables program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
-	return;
-}
-
-void meta::print_info_gaugeobservables(const char* progname, const Inputparameters& params)
-{
-	logger.info() << "## Starting gaugeobservables program, executable name: " << progname;
-	print_info_global(params);
-	print_info_configs_io(params);
-	return;
-}
-
-void meta::print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params)
-{
-	*os  << "## Starting heatbath program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
-	print_info_observables_gauge_io(os, params);
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << params.get_beta() << endl;
-	*os  << "## xi             = " << params.get_xi();
+	*os  << "## xi             = " << params.get_xi() << endl;
 	*os  << "## thermsteps     = " << params.get_thermalizationsteps() << endl;
 	*os  << "## heatbathsteps  = " << params.get_heatbathsteps() << endl;
 	*os  << "## overrelaxsteps = " << params.get_overrelaxsteps() << endl;
 	*os  << "## **********************************************************" << endl;
 	return;
 }
-
-void meta::print_info_tkkappa(const char* progname, std::ostream* os, const Inputparameters& params)
-{
-	*os << "## Starting tk_kappa program, " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
-	print_info_observables_gauge_io(os, params);
-	*os  << "## **********************************************************" << endl;
-	*os  << "## Simulation parameters:" << endl;
-	*os  << "## beta           = " << params.get_beta() << endl;
-	*os  << "## xi             = " << params.get_xi();
-	*os  << "## thermsteps     = " << params.get_thermalizationsteps() << endl;
-	*os  << "## heatbathsteps  = " << params.get_heatbathsteps() << endl;
-	*os  << "## overrelaxsteps = " << params.get_overrelaxsteps() << endl;
-	*os  << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!" << endl;
-	*os  << "## **********************************************************" << endl;
-	return;
-}
-
-void meta::print_info_tkkappa(const char* progname, const Inputparameters& params)
-{
-	logger.info() << "## Starting tk_kappa program, " << progname ;
-	print_info_global(params);
-	print_info_configs_io(params);
-	print_info_observables_gauge_io(params);
-	logger.info() << "## **********************************************************";
-	logger.info() << "## Simulation parameters:";
-	logger.info() << "## beta           = " << params.get_beta();
-	logger.info() << "## xi             = " << params.get_xi();
-	logger.info() << "## thermsteps     = " << params.get_thermalizationsteps() ;
-	logger.info() << "## heatbathsteps  = " << params.get_heatbathsteps();
-	logger.info() << "## overrelaxsteps = " << params.get_overrelaxsteps();
-	logger.info() << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!";
-	logger.info() << "## **********************************************************";
-	return;
-}
-
 
 static void print_info_fermion(const meta::Inputparameters& params)
 {
 	using namespace meta;
-
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Fermionic parameters:";
 	logger.info() << "##" ;
@@ -451,11 +385,8 @@ static void print_info_gauge(const meta::Inputparameters& params)
 	}
 }
 
-void meta::print_info_inverter(const char* progname, const Inputparameters& params)
+void meta::print_info_inverter(const Inputparameters& params)
 {
-	logger.info() << "## Starting inverter program, executable name: " << progname;
-	print_info_global(params);
-	print_info_configs_io(params);
 	print_info_observables_fermion_io(params);
 	print_info_fermion(params);
 	print_info_source(params);
@@ -463,11 +394,8 @@ void meta::print_info_inverter(const char* progname, const Inputparameters& para
 	return;
 }
 
-void meta::print_info_inverter(const char* progname, std::ostream* os, const Inputparameters& params)
+void meta::print_info_inverter(std::ostream* os, const Inputparameters& params)
 {
-	*os << "## Starting inverter program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
 	print_info_observables_fermion_io(os, params);
 	print_info_fermion(os, params);
 	print_info_source(os, params);
@@ -523,12 +451,8 @@ static void print_info_integrator(std::ostream* os, int number, const meta::Inpu
 	if(print_lambda) *os << "## lambda" << number << " = " << params.get_lambda(number) << endl;
 }
 
-void meta::print_info_hmc(const char* progname, const Inputparameters& params)
+void meta::print_info_hmc(const Inputparameters& params)
 {
-
-	logger.info() << "## Starting hmc program, executable name: " << progname ;
-	print_info_global(params);
-	print_info_configs_io(params);
 	print_info_observables_hmc_io(params);
 	print_info_fermion(params);
 	print_info_gauge(params);
@@ -587,11 +511,8 @@ void meta::print_info_hmc(const char* progname, const Inputparameters& params)
 	return;
 }
 
-void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputparameters& params)
+void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
 {
-	*os << "## Starting hmc program, executable name: " << progname << endl;
-	print_info_global(os, params);
-	print_info_configs_io(os, params);
 	print_info_observables_hmc_io(os, params);
 	print_info_fermion(os, params);
 	print_info_gauge(os, params);
@@ -655,6 +576,7 @@ void meta::print_info_rhmc(const char* progname, const Inputparameters& params)
 	logger.info() << "## Starting RHMC program, executable name: " << progname ;
 	print_info_global(params);
 	print_info_configs_io(params);
+	print_info_prng_io(params);
 	print_info_observables_rhmc_io(params);
 	print_info_gauge(params);
 	print_info_fermion(params);
@@ -745,6 +667,7 @@ void meta::print_info_rhmc(const char* progname, std::ostream* os, const Inputpa
 	*os << "## Starting RHMC program, executable name: " << progname << endl;
 	print_info_global(os, params);
 	print_info_configs_io(os, params);
+	print_info_prng_io(os, params);
 	print_info_observables_rhmc_io(os, params);
 	print_info_gauge(os, params);
 	print_info_fermion(os, params);
@@ -830,11 +753,7 @@ void meta::print_info_rhmc(const char* progname, std::ostream* os, const Inputpa
 	return;
 }
 
-
-
-
-
-static void print_info_configs_io(const meta::Inputparameters& params)
+void meta::print_info_configs_io(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -853,7 +772,7 @@ static void print_info_configs_io(const meta::Inputparameters& params)
 	}
 }
 
-static void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params)
+void meta::print_info_configs_io(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -872,7 +791,30 @@ static void print_info_configs_io(std::ostream * os, const meta::Inputparameters
 	}
 }
 
-static void print_info_observables_gauge_io(const meta::Inputparameters& params)
+void meta::print_info_prng_io(const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	logger.info() << "## **********************************************************";
+	logger.info() << "## PRNG naming parameters:";
+	logger.info() << "## digits in name:  " << params.get_config_number_digits();
+	logger.info() << "## name prefix:   " << params.get_prng_prefix();
+	logger.info() << "## name postfix:   " << params.get_prng_postfix();
+}
+
+void meta::print_info_prng_io(std::ostream * os, const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	*os << "## **********************************************************" << endl;
+	*os << "## Configuration naming parameters:" << endl;
+	*os << "## digits in name:  " << params.get_config_number_digits() << endl;
+	*os << "## name prefix:   " << params.get_prng_prefix() << endl;
+	*os << "## name postfix:   " << params.get_prng_postfix() << endl;
+}
+
+
+void meta::print_info_observables_gauge_io(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -887,7 +829,7 @@ static void print_info_observables_gauge_io(const meta::Inputparameters& params)
 	}
 }
 
-static void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params)
+void meta::print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -1129,3 +1071,9 @@ void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta:
 		*os << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" << std::endl;
 	}
 }
+
+std::string meta::createLogfileName(const char* name)
+{
+  return std::string(name) + std::string(".log");
+}
+

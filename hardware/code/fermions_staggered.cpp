@@ -21,7 +21,7 @@
 
 #include "fermions_staggered.hpp"
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "spinors_staggered.hpp"
@@ -34,7 +34,7 @@ using namespace std;
 
 void hardware::code::Fermions_staggered::fill_kernels()
 {
-	sources = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.cl"  << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_staggered.cl";
+	sources = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.h"  << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_staggered.cl";
 	if(get_parameters().get_use_eo()) {
 		sources = sources << "spinorfield_staggered_eo.cl";;
 	} else {

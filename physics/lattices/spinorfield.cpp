@@ -28,7 +28,7 @@
 #include "../../hardware/code/fermions.hpp"
 #include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
-#include "../../host_geometry.h"
+#include "../../host_functionality/host_geometry.h"
 
 static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
 

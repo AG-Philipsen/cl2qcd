@@ -20,7 +20,7 @@
  */
 
 #include "rational_approximation.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

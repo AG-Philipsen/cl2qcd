@@ -25,9 +25,9 @@
 #include "device_info.hpp"
 #include <map>
 #include "../meta/inputparameters.hpp"
-#include "../opencl_compiler.hpp"
+#include "opencl_compiler.hpp"
 #include "profiling_data.hpp"
-#include "../types.h"
+#include "../common_header_files/types.h"
 #include "../meta/size_4.hpp"
 
 class MemObjectAllocationTracer;

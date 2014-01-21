@@ -28,15 +28,16 @@ add_library(meta
 	counter.cpp
 	config_file_normalizer.cpp
 	type_ops.cpp
-	../logger.cpp
+	../host_functionality/logger.cpp	
 )
 add_dependencies(meta git_commit_id_header)
 target_link_libraries(meta
 	einhard
+	${Boost_LIBRARIES}
 )
 
 #
-# Definition of tets
+# Definition of tests
 #
 
 configure_file(test_input_1 test_input_1 COPYONLY)

@@ -26,7 +26,7 @@
 
 #include "inputparameters.hpp"
 
-#include "../types.h"
+#include "../common_header_files/types.h"
 
 using namespace meta;
 
@@ -38,6 +38,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_device_count(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_use_gpu(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_cpu(), true);
+	BOOST_REQUIRE_EQUAL(params.get_enable_profiling(), false);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_aniso(), false);
 	BOOST_REQUIRE_EQUAL(params.get_use_chem_pot_re(), false);
@@ -67,6 +68,8 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_heatbathsteps(), 1000);
 	BOOST_REQUIRE_EQUAL(params.get_overrelaxsteps(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_xi(), 1);
+	BOOST_REQUIRE_EQUAL(params.get_measure_transportcoefficient_kappa(), false);
+	BOOST_REQUIRE_EQUAL(params.get_measure_rectangles(), false);
 
 	//fermionic parameters
 	BOOST_REQUIRE_EQUAL(params.get_fermact(), Inputparameters::wilson);
@@ -101,6 +104,8 @@ void checkDefaults(const Inputparameters params)
 #endif
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh_mp(), 100);
+
+	BOOST_REQUIRE_EQUAL(params.get_benchmarksteps(), 500);
 
 	//HMC specific parameters
 	BOOST_REQUIRE_EQUAL(params.get_tau(), 0.5);
@@ -159,6 +164,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_device_count(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_use_gpu(), false);
 	BOOST_REQUIRE_EQUAL(params.get_use_cpu(), false);
+	BOOST_REQUIRE_EQUAL(params.get_enable_profiling(), true);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_aniso(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_chem_pot_re(), true);
@@ -188,6 +194,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_heatbathsteps(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_overrelaxsteps(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_xi(), 2);
+	BOOST_REQUIRE_EQUAL(params.get_measure_transportcoefficient_kappa(), true);
 
 	//fermionic parameters
 	BOOST_REQUIRE_EQUAL(params.get_fermact(), Inputparameters::tlsym);
@@ -217,6 +224,8 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_force_prec(), 1e-16);
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh(), 105);
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh_mp(), 107);
+
+	BOOST_REQUIRE_EQUAL(params.get_benchmarksteps(), 10);
 
 	//HMC specific parameters
 	BOOST_REQUIRE_EQUAL(params.get_tau(), 0.51234);

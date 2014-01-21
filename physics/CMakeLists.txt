@@ -24,7 +24,8 @@
 add_library(physics
 	prng.cpp
 	sources.cpp
-	../host_random.cpp
+	gaugeObservables.cpp
+	../host_functionality/host_random.cpp
 )
 add_modules(physics
 	lattices

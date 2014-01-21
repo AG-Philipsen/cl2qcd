@@ -22,8 +22,6 @@
 #ifndef _HARDWARE_CODE_KAPPA_
 #define _HARDWARE_CODE_KAPPA_
 
-#include "../../types.h"
-
 #include "opencl_module.hpp"
 #include "../buffers/plain.hpp"
 #include "../buffers/su3.hpp"

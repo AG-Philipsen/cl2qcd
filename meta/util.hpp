@@ -26,9 +26,12 @@
 
 #include "inputparameters.hpp"
 
-#include "../types.h"
+#include "../common_header_files/globaldefs.h"
+#include "../common_header_files/types.h"
 #include <iostream>
 #include <sstream>
+#include <string.h>
+#include "../host_functionality/host_geometry.h"
 
 namespace meta {
 	size_t get_volspace(const Inputparameters&);
@@ -56,27 +59,38 @@ namespace meta {
 	size_t get_flop_spinor_spinor() noexcept;
 	size_t get_flop_spinor_sqnorm() noexcept;
 	size_t get_flop_su3vec_sqnorm() noexcept;
-	void print_info_gaugeobservables(const char* progname, const Inputparameters& params);
-	void print_info_gaugeobservables(const char* progname, std::ostream* os, const Inputparameters& params);
-	void print_info_heatbath(const char* progname, const Inputparameters& params);
-	void print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params);
-	void print_info_tkkappa(const char* progname, std::ostream* os, const Inputparameters& params);
-	void print_info_tkkappa(const char* progname, const Inputparameters& params);
-	void print_info_inverter(const char* progname, const Inputparameters& params);
-	void print_info_inverter(const char* progname, std::ostream* os, const Inputparameters& params);
-	void print_info_hmc(const char* progname, const Inputparameters& params);
-	void print_info_hmc(const char* progname, std::ostream* os, const Inputparameters& params);
-	void print_info_rhmc(const char* progname, const Inputparameters& params);
-	void print_info_rhmc(const char* progname, std::ostream* os, const Inputparameters& params);
+
+  void print_info_global(const meta::Inputparameters& params);
+  void print_info_global(std::ostream* os, const meta::Inputparameters& params);
+  void print_info_configs_io(const meta::Inputparameters& params);
+  void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params);
+  void print_info_prng_io(const meta::Inputparameters& params);
+  void print_info_prng_io(std::ostream * os, const meta::Inputparameters& params);
+  void print_info_observables_gauge_io(const meta::Inputparameters& params);
+  void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
+  void print_info_heatbath(const Inputparameters& params);
+  void print_info_heatbath(std::ostream* os, const Inputparameters& params);
+  void print_info_inverter(const Inputparameters& params);
+  void print_info_inverter(std::ostream* os, const Inputparameters& params);
+  void print_info_hmc(const Inputparameters& params);
+  void print_info_hmc(std::ostream* os, const Inputparameters& params);
+  void print_info_rhmc(const char* progname, const Inputparameters& params);
+  void print_info_rhmc(const char* progname, std::ostream* os, const Inputparameters& params);
   std::string get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string create_configuration_name(const Inputparameters& parameters, int number) noexcept;
+  std::string create_prng_name(const Inputparameters& parameters, int number) noexcept;
+  std::string create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept;
+  std::string create_configuration_name(const Inputparameters& parameters) noexcept;
+  std::string create_prng_name(const Inputparameters& parameters) noexcept;
   void print_info_flavour_doublet_correlators(const meta::Inputparameters params);
   void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
   template<typename Container> void free_container(Container& c) noexcept;
+  std::string createLogfileName(const char* name);
+  char** addOptionToArgv(const char * option, int argc, const char** argv);
   
 /*
 * TEMPLATE IMPLEMENTATIONS

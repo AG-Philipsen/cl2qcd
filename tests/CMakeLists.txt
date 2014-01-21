@@ -36,7 +36,7 @@ add_test(Boost_ARGC_1 Boost_test --run_test=BOOST_ARGC_1)
 add_test(Boost_ARGC_2 Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --run_test=BOOST_ARGC_2)
 add_test(Boost_ARGV Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false   --run_test=BOOST_ARGV )
 
-add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
+add_executable(openclCompiler opencl_compiler.cpp ../hardware/opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(OpenclCompiler openclCompiler)
 

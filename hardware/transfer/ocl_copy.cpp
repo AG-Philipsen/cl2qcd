@@ -22,7 +22,7 @@
 #include "ocl_copy.hpp"
 
 #include <stdexcept>
-#include "../../exceptions.h"
+#include "../../executables/exceptions.h"
 #include "../device.hpp"
 
 namespace {

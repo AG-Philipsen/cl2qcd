@@ -23,8 +23,6 @@
 
 #include "util.hpp"
 
-#include "../host_geometry.h"
-
 size_t meta::get_volspace(const Inputparameters& params)
 {
 	size_t ns = params.get_nspace();
@@ -268,7 +266,70 @@ std::string meta::create_configuration_name(const Inputparameters& parameters, i
 	stringstream outfilename;
 	outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
 	string outputfile = outfilename.str();
-	logger.info() << outputfile;
 	return outputfile;
+}
+
+std::string meta::create_configuration_name(const Inputparameters& parameters) noexcept
+{
+	using namespace std;
+	stringstream outfilename;
+	outfilename << parameters.get_config_prefix() << "save" << parameters.get_config_postfix();
+	string outputfile = outfilename.str();
+	return outputfile;
+}
+
+std::string meta::create_prng_name(const Inputparameters& parameters, int number) noexcept
+{
+	using namespace std;
+	std::stringstream strnumber;
+	strnumber.fill('0');
+	strnumber.width(parameters.get_config_number_digits());
+	strnumber << right << number;
+	stringstream outfilename;
+	outfilename << parameters.get_prng_prefix() << strnumber.str() << parameters.get_prng_postfix();
+	string outputfile = outfilename.str();
+	return outputfile;
+}
+
+std::string meta::create_prng_name(const Inputparameters& parameters) noexcept
+{
+	using namespace std;
+	stringstream outfilename;
+	outfilename << parameters.get_prng_prefix() << "save" << parameters.get_prng_postfix();
+	string outputfile = outfilename.str();
+	return outputfile;
+}
+
+std::string meta::create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept
+{
+	using namespace std;
+	stringstream outfilename;
+	outfilename << parameters.get_profiling_data_prefix() << executableName << parameters.get_profiling_data_postfix();
+	string outputfile = outfilename.str();
+	return outputfile;
+}
+
+char** meta::addOptionToArgv(const char * option, int argc, const char** argv)
+{
+  int numberOfNewOptions = 1;
+  char ** argvNew;
+  argvNew = (char**) malloc(sizeof(char*) * (argc + numberOfNewOptions + 1)  );
+
+  for (int i = 0; i < argc; i++)
+    {
+      int length = strlen(argv[i]);
+      argvNew[i] = (char*) malloc((length+1) * sizeof(char));
+      for (int j = 0; j < length; j++)
+	{
+	  argvNew[i][j] = argv[i][j];
+	}
+    }
+  int length = strlen(option);
+  argvNew[argc] = (char*) malloc((length+1) * sizeof(char));
+  for (int j = 0; j < length; j++)
+    {
+      argvNew[argc][j] = option[j];
+    }
+  return argvNew;
 }
 

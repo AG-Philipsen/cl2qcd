@@ -23,7 +23,7 @@
 
 #include <list>
 #include <sstream>
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 #include <stdexcept>
 #include "device.hpp"
 #include "transfer/transfer.hpp"

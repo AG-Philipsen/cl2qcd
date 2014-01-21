@@ -19,20 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
-# the folowing are pure profiling benchmarks
-add_executable(heatbath_benchmarks heatbath_benchmarks.cpp)
-target_link_libraries(heatbath_benchmarks optimal)
+add_executable(su3heatbath_benchmarks su3heatbathBenchmarkMain.cpp)
+target_link_libraries(su3heatbath_benchmarks optimal)
 
-add_executable(inverter_benchmarks inverter_benchmarks.cpp)
-target_link_libraries(inverter_benchmarks optimal)
-
-add_executable(dslash_benchmark dslash_benchmark.cpp)
+add_executable(dslash_benchmark dslashBenchmarkMain.cpp)
 target_link_libraries(dslash_benchmark optimal)
 
-add_executable(hmc_benchmarks hmc_benchmarks.cpp)
-target_link_libraries(hmc_benchmarks optimal)
-
-add_executable(dslash_multidev dslash_multidev.cpp)
+add_executable(dslash_multidev dslashBenchmarkMultipleDevicesMain.cpp)
 target_link_libraries(dslash_multidev optimal)
 
 add_executable(dks_multidev dks_multidev.cpp)

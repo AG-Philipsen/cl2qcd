@@ -67,6 +67,13 @@ public:
 	//Methods added exclusively for staggered fermions
 	void fermion_staggered_partial_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3vec * A, const hardware::buffers::SU3vec * B, const hardware::buffers::Gaugemomentum * out, int evenodd) const;
 
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 */
+	void virtual print_profiling(const std::string& filename, int number) const override;
+
 protected:
 
 	/**
@@ -78,13 +85,6 @@ protected:
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
-
-	/**
-	 * Print the profiling information to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 */
-	void virtual print_profiling(const std::string& filename, int number) const override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.

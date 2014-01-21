@@ -89,6 +89,10 @@ bool Inputparameters::get_use_cpu() const noexcept
 {
   return use_cpu;
 }
+bool Inputparameters::get_enable_profiling() const noexcept
+{
+  return enable_profiling;
+}
 
 bool Inputparameters::get_use_aniso() const noexcept
 {
@@ -186,6 +190,14 @@ int Inputparameters::get_overrelaxsteps() const noexcept
 int Inputparameters::get_xi() const noexcept
 {
   return xi;
+}
+bool Inputparameters::get_measure_transportcoefficient_kappa() const noexcept
+{
+	return measure_transportcoefficient_kappa;
+}
+bool Inputparameters::get_measure_rectangles() const noexcept
+{
+  return measure_rectangles;
 }
 
 //fermionic parameters
@@ -332,6 +344,10 @@ throw std::out_of_range("No such timescale");
 int Inputparameters::get_hmcsteps() const noexcept
 {
   return hmcsteps;
+}
+int Inputparameters::get_benchmarksteps() const noexcept
+{
+  return benchmarksteps;
 }
 int Inputparameters::get_num_timescales() const noexcept
 {
@@ -484,6 +500,30 @@ int Inputparameters::get_config_number_digits() const noexcept
 {
   return config_number_digits;
 }
+std::string Inputparameters::get_profiling_data_prefix() const noexcept
+{
+  return profiling_data_prefix;
+}
+std::string Inputparameters::get_profiling_data_postfix() const noexcept
+{
+  return profiling_data_postfix;
+}
+std::string Inputparameters::get_prng_prefix() const noexcept
+{
+  return prng_prefix;
+}
+std::string Inputparameters::get_rectanglesFilename() const noexcept
+{
+  return rectanglesFilename;
+}
+std::string Inputparameters::get_transportcoefficientKappaFilename() const noexcept
+{
+  return transportcoefficientKappaFilename;
+}
+std::string Inputparameters::get_prng_postfix() const noexcept
+{
+  return prng_postfix;
+}
 std::string Inputparameters::get_config_prefix() const noexcept
 {
   return config_prefix;
@@ -604,6 +644,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("num_dev", po::value<int>(&device_count)->default_value(0), "Maximum number of devices to use.")
 	("use_gpu", po::value<bool>(&use_gpu)->default_value(true), "Use GPUs")
 	("use_cpu", po::value<bool>(&use_cpu)->default_value(true), "Use CPUs")
+	("enable_profiling", po::value<bool>(&enable_profiling)->default_value(false), "Enable profiling of kernel execution. Implies slower performance due to synchronization after each kernel call.")
 
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false))
 	("use_chem_pot_re", po::value<bool>(&use_chem_pot_re)->default_value(false))
@@ -633,6 +674,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
 	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
 	("xi", po::value<int>(&xi)->default_value(1))
+	("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
+	("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) )
 
 	//fermionic parameters
 	("fermact", po::value<std::string>()->default_value("wilson"))
@@ -679,6 +722,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
 	("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
 	("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
+	("benchmarksteps", po::value<int>(&benchmarksteps)->default_value(500))
 	("num_timescales", po::value<int>(&num_timescales)->default_value(1))
 	("integrator0", po::value<std::string>()->default_value("leapfrog"))
 	("integrator1", po::value<std::string>()->default_value("leapfrog"))
@@ -725,6 +769,13 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
 	("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
 	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")
+	("prng_prefix", po::value<std::string>(&prng_prefix)->default_value("prng."), "Prefix for PRNG configuration")
+	("prng_postfix", po::value<std::string>(&prng_postfix)->default_value(""), "Postfix for PRNG configuration")
+	("rectanglesFilename", po::value<std::string>(&rectanglesFilename)->default_value("gaugeObsRectangles.dat"), "Filename for rectangles measurements")
+	("transportcoefficientKappaFilename", po::value<std::string>(&transportcoefficientKappaFilename)->default_value("GaugeObsKappa"), "Filename for transportcoefficient kappa measurements")
+
+	("profiling_data_prefix", po::value<std::string>(&profiling_data_prefix)->default_value(""), "Prefix for profiling data filename")
+	("profiling_data_postfix", po::value<std::string>(&profiling_data_postfix)->default_value("_profiling_data"), "Postfix for profiling data filename")
 
 	//parameters to write out observables
 	("gauge_obs_to_single_file", po::value<bool>(&gauge_obs_to_single_file)->default_value(true), "Save gauge observables to one single file")

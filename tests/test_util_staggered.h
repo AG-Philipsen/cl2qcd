@@ -21,13 +21,11 @@
 #include "../physics/lattices/gaugefield.hpp"
 #include "../physics/lattices/staggeredfield_eo.hpp"
 #include "../meta/util.hpp"
-#include "../operations_complex.h"
+#include "../common_header_files/operations_complex.h"
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
 #include "../hardware/code/spinors.hpp"
-#include "../general_header.h"
 #include <vector>
-
 
 class TestGaugefield_stagg {
 
@@ -35,7 +33,7 @@ class TestGaugefield_stagg {
  TestGaugefield_stagg(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
     auto inputfile = system->get_inputparameters();
-    meta::print_info_hmc("test program", inputfile);
+    meta::print_info_hmc(inputfile);
   };
 
   const hardware::code::Fermions_staggered * get_device();

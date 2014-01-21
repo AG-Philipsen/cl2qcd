@@ -22,7 +22,7 @@
 
 #include "molecular_dynamics.hpp"
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "fermions.hpp"
@@ -42,7 +42,7 @@ static bool use_multipass_gauge_force_tlsym(hardware::Device * device)
 
 void hardware::code::Molecular_Dynamics::fill_kernels()
 {
-	basic_molecular_dynamics_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "types_hmc.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_gaugemomentum.cl";
+	basic_molecular_dynamics_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "types_hmc.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_gaugemomentum.cl";
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	
@@ -548,6 +548,8 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), md_update_gaugefield (0), gauge_force (0),
 	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
+	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0), 
+	  gauge_force_tlsym_4 (0), gauge_force_tlsym_5 (0), gauge_force_tlsym_6 (0), 
 	  fermion_stagg_partial_force_eo(0), gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
 {
 	fill_kernels();

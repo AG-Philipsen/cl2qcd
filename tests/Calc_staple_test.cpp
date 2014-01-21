@@ -56,7 +56,7 @@ public:
 class Dummyfield {
 public:
 	Dummyfield(const hardware::System& system) : device(system.get_devices().at(0)), params(system.get_inputparameters()), code(params, device), prng(system), gf(system, prng) {
-		meta::print_info_hmc(exec_name.c_str(), system.get_inputparameters());
+		meta::print_info_hmc(system.get_inputparameters());
 		fill_buffers();
 	};
 	~Dummyfield() {
@@ -90,7 +90,7 @@ void Dummyfield::fill_buffers()
 
 void Code::fill_kernels()
 {
-	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "/tests/staple_test.cl";
+	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "../tests/staple_test.cl";
 }
 
 void Dummyfield::clear_buffers()

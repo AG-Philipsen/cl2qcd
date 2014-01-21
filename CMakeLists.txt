@@ -152,14 +152,6 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
-	exceptions.cpp
-	host_geometry.cpp
-	host_operations_gaugefield.cpp
-#host_random.cpp
-	host_readgauge.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	opencl_compiler.cpp
 )
 set(OPTIMAL_USED_LIBS
 	${OPENCL_LIBRARIES}
@@ -172,6 +164,7 @@ set(OPTIMAL_USED_LIBS
 	einhard
 	${PRNG_LIBRARIES}
 	crypto
+	executables
 )
 
 add_library(optimal ${OPTIMAL_FILES})
@@ -179,28 +172,28 @@ add_library(optimal ${OPTIMAL_FILES})
 add_modules(optimal
 	meta
 	hardware
+	host_functionality
+	ildg_io
 	physics
+	executables
 )
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
 set_target_properties(optimal PROPERTIES LINK_INTERFACE_MULTIPLICITY 4)
 
 # The actual executables (frontends)
-add_executable(gaugeobservables gaugeobservables.cpp)
+add_executable(gaugeobservables executables/gaugeobservablesMain.cpp)
 target_link_libraries(gaugeobservables optimal)
 
-add_executable(heatbath heatbath.cpp)
-target_link_libraries(heatbath optimal)
+add_executable(su3heatbath executables/su3heatbathMain.cpp)
+target_link_libraries(su3heatbath optimal)
 
-add_executable(transportcoefficient transportcoefficient.cpp)
-target_link_libraries(transportcoefficient optimal)
-
-add_executable(inverter inverter.cpp)
+add_executable(inverter executables/inverterMain.cpp)
 target_link_libraries(inverter optimal)
 
-add_executable(hmc hmc.cpp)
+add_executable(hmc executables/hmcMain.cpp)
 target_link_libraries(hmc optimal)
 
-add_executable(rhmc rhmc.cpp)
+add_executable(rhmc executables/rhmc.cpp)
 target_link_libraries(rhmc optimal)
 
 # Utilities

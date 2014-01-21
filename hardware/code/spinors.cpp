@@ -20,7 +20,7 @@
 
 #include "spinors.hpp"
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <cassert>
@@ -31,7 +31,7 @@ using namespace std;
 
 void hardware::code::Spinors::fill_kernels()
 {
-	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}
@@ -42,7 +42,7 @@ void hardware::code::Spinors::fill_kernels()
 	
 	//Reductions are really small kernels, so few needed options loaded by hands
 	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_squarenorm_reduction.cl";
-	scalar_product_reduction = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.cl" << "spinorfield_scalar_product_reduction.cl";
+	scalar_product_reduction = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_scalar_product_reduction.cl";
 	
 	if(get_parameters().get_use_eo() ) {
 		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";

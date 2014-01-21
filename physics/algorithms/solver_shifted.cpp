@@ -22,7 +22,7 @@
 #include "solver.hpp"
 #include "solver_shifted.hpp"
 
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 //#include "../../operations_complex.h"
 #include "../../meta/type_ops.hpp"
 #include "../../meta/util.hpp"

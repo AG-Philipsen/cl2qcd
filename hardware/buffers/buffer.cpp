@@ -23,7 +23,7 @@
 
 #include "../system.hpp"
 #include "../device.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../crypto/md5.hpp"
 #include "../code/buffer.hpp"
 

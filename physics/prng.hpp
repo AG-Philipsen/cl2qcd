@@ -25,6 +25,7 @@
 
 #include "../hardware/system.hpp"
 #include "../hardware/buffers/prng_buffer.hpp"
+#include "../meta/util.hpp"
 
 /**
  * This package contains the actual "business" logic of the library.
@@ -68,6 +69,18 @@ namespace physics {
 			 * \param filename The name of the file to store the random state in
 			 */
 			void store(const std::string filename) const;
+
+			/**
+			 * Save current PRNG state to a file with name prng_prefix + number + prng_postfix
+			 * @param[in] number The trajectory number to be stored in the file
+			 */
+			void save(int number);
+			/**
+			 * Save current PRNG state to a file with specific name based on
+			 * current trajectory number.
+			 * @param[in] number The trajectory number to be stored in the file
+			 */
+			void saveToSpecificFile(int number);
 
 		private:
 			/**

@@ -27,7 +27,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../lattices/util.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include "../../tests/test_util_staggered.h"
 #include "../../hardware/code/spinors.hpp"
 

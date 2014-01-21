@@ -33,7 +33,7 @@
 
 #include "test_util.h"
 #include "test_util_staggered.h"
-#include "../host_random.h"
+#include "../host_functionality/host_random.h"
 
 class TestMolecularDynamics {
 
@@ -41,7 +41,7 @@ public:
 	TestMolecularDynamics(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
 		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
 		auto inputfile = system->get_inputparameters();
-		meta::print_info_hmc("test program", inputfile);
+		meta::print_info_hmc(inputfile);
 	};
 
 	const hardware::code::Molecular_Dynamics * get_device();

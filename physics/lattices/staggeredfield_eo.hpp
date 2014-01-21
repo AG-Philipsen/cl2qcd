@@ -27,7 +27,7 @@
 #include "../prng.hpp"
 //#include "spinorfield.hpp"
 #include "scalar.hpp"
-#include "../../types_fermions.h"
+#include "../../common_header_files/types_fermions.h"
 //This is to make the template pseudo_randomize friend of this class
 #include "util.hpp"
 

@@ -27,7 +27,7 @@
 #include <vector>
 #include <string>
 
-#include "../logger.hpp"
+#include "../host_functionality/logger.hpp"
 
 /**
  * This namespace contains generic utility code required by the other packages.
@@ -77,6 +77,7 @@ public:
 	int get_device_count() const noexcept;
 	bool get_use_gpu() const noexcept;
 	bool get_use_cpu() const noexcept;
+	bool get_enable_profiling() const noexcept;
 
 	bool get_use_aniso() const noexcept;
 	bool get_use_chem_pot_re() const noexcept;
@@ -107,6 +108,8 @@ public:
 	int get_heatbathsteps() const noexcept;
 	int get_overrelaxsteps() const noexcept;
 	int get_xi() const noexcept;
+	bool get_measure_transportcoefficient_kappa() const noexcept;
+	bool get_measure_rectangles() const noexcept;
 
 	//fermionic parameters
 	action get_fermact() const noexcept;
@@ -146,6 +149,7 @@ public:
 	bool get_reversibility_check() const noexcept;
 	int get_integrationsteps(size_t timescale) const noexcept;
 	int get_hmcsteps() const noexcept;
+	int get_benchmarksteps() const noexcept;
 	int get_num_timescales() const noexcept;
 	integrator get_integrator(size_t timescale) const noexcept;
 	//this is the optimal value...
@@ -180,12 +184,17 @@ public:
 	bool get_use_merge_kernels_spinor() const noexcept;
 	bool get_use_rec12() const noexcept;
 
+  std::string get_profiling_data_prefix() const noexcept;
+  std::string get_profiling_data_postfix() const noexcept;
+
 	//parameters to read in gauge configurations
 	bool get_read_multiple_configs() const noexcept;
 	int get_config_read_start() const noexcept;
 	int get_config_read_end() const noexcept;
 	int get_config_read_incr() const noexcept;
 	int get_config_number_digits() const noexcept;
+	std::string get_prng_prefix() const noexcept;
+	std::string get_prng_postfix() const noexcept;
 	std::string get_config_prefix() const noexcept;
 	std::string get_config_postfix() const noexcept;
 	std::string get_ferm_obs_corr_prefix() const noexcept;
@@ -205,6 +214,9 @@ public:
 	bool get_measure_correlators() const noexcept;
 	bool get_measure_pbp() const noexcept;
 
+	std::string get_rectanglesFilename() const noexcept;
+	std::string get_transportcoefficientKappaFilename() const noexcept;
+
 	std::string get_log_level() const noexcept;
 
 	sourcetypes get_sourcetype() const noexcept;
@@ -223,7 +235,8 @@ private:
 	std::vector<int> selected_devices;
 	int device_count;
 	bool use_gpu;
-	bool use_cpu;
+        bool use_cpu;
+        bool enable_profiling;
 
 	bool use_aniso;
 	bool use_chem_pot_re;
@@ -254,6 +267,8 @@ private:
 	int heatbathsteps;
 	int overrelaxsteps;
 	int xi;
+	bool measure_transportcoefficient_kappa;
+        bool measure_rectangles;
 
 	//fermionic parameters
 	action fermact;
@@ -295,6 +310,7 @@ private:
 	int integrationsteps1;
 	int integrationsteps2;
 	int hmcsteps;
+	int benchmarksteps;
 	int num_timescales;
 	integrator integrator0;
 	integrator integrator1;
@@ -346,6 +362,15 @@ private:
 	int config_number_digits;
 	std::string config_prefix;
 	std::string config_postfix;
+
+	std::string prng_prefix;
+	std::string prng_postfix;
+
+	std::string rectanglesFilename;
+	std::string transportcoefficientKappaFilename;
+
+	std::string profiling_data_prefix;
+	std::string profiling_data_postfix;
 
 	//parameters to write out observables
 	bool gauge_obs_to_single_file;

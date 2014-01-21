@@ -22,7 +22,7 @@
 #include "find_minmax_eigenvalue.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/util.hpp"
-#include "../../logger.hpp"
+#include "../../host_functionality/logger.hpp"
 
 
 // use the boost test framework
