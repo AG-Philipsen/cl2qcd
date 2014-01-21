@@ -23,7 +23,12 @@
 int main(int argc, const char* argv[])
 {
 	try {
-	  rhmcExecutable rhmcInstance(argc, argv);
+	  //I build a vector from argv so that I can manually add parameters that I would
+	  //always add (e.g. fermact=rooted_stagg) without modifying default values in Inputparameters
+	  std::vector<const char*> w(argv, argv + argc);
+	  w.push_back("--fermact=rooted_stagg");
+	  const char ** _argv = &w[0];
+	  rhmcExecutable rhmcInstance(w.size(), _argv);
 	  rhmcInstance.generateConfigurations();
 	} //try
 	//exceptions from Opencl classes

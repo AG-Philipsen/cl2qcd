@@ -69,6 +69,8 @@ protected:
 	
 private:
 	physics::algorithms::Rational_Approximation *approx_hb, *approx_md, *approx_met;
+	void checkRhmcParameters(const meta::Inputparameters& p);
+
 };
 
 #endif /* RHMCEXECUTABLE_H_ */

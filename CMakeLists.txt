@@ -193,8 +193,6 @@ target_link_libraries(inverter optimal)
 add_executable(hmc executables/hmcMain.cpp)
 target_link_libraries(hmc optimal)
 
-add_executable(rhmc_old executables/rhmc.cpp)
-target_link_libraries(rhmc_old optimal)
 add_executable(rhmc executables/rhmcMain.cpp)
 target_link_libraries(rhmc optimal)
 
