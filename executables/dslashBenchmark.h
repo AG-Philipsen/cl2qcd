@@ -42,7 +42,7 @@ protected:
 	 */
 	void performBenchmarkForSpecificKernels() override;
 	/*
-	 * Calls dslash__eo on all devices in the system.
+	 * Calls dslash_eo on all devices in the system.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
 	void enqueueSpecificKernelForBenchmarkingMultipleDevices()  override;
