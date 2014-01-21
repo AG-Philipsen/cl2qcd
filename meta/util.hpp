@@ -31,6 +31,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <utility>
 #include "../host_functionality/host_geometry.h"
 
 namespace meta {
@@ -90,8 +91,8 @@ namespace meta {
   void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
   template<typename Container> void free_container(Container& c) noexcept;
   std::string createLogfileName(const char* name);
-  char** addOptionToArgv(const char * option, int argc, const char** argv);
-  
+  std::pair<int,std::vector<const char*>> addOptionsToArgv(int argc, const char** argv, std::vector<const char*> op);
+    
 /*
 * TEMPLATE IMPLEMENTATIONS
 */

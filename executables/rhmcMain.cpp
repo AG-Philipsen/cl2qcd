@@ -35,12 +35,8 @@ int main(int argc, const char* argv[])
 	logger.warn() << "***************************************************************************";
 	sleep(1);
 	try {
-	  //I build a vector from argv so that I can manually add parameters that I would
-	  //always add (e.g. fermact=rooted_stagg) without modifying default values in Inputparameters
-	  std::vector<const char*> w(argv, argv + argc);
-	  w.push_back("--fermact=rooted_stagg");
-	  const char ** _argv = &w[0];
-	  rhmcExecutable rhmcInstance(w.size(), _argv);
+	  std::pair<int,std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv, {"--fermact=rooted_stagg"});
+	  rhmcExecutable rhmcInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
 	  rhmcInstance.generateConfigurations();
 	} //try
 	//exceptions from Opencl classes

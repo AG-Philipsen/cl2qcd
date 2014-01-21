@@ -309,27 +309,11 @@ std::string meta::create_profiling_data_filename(const Inputparameters& paramete
 	return outputfile;
 }
 
-char** meta::addOptionToArgv(const char * option, int argc, const char** argv)
+std::pair<int,std::vector<const char*>> meta::addOptionsToArgv(int argc, const char** argv, std::vector<const char*> new_options)
 {
-  int numberOfNewOptions = 1;
-  char ** argvNew;
-  argvNew = (char**) malloc(sizeof(char*) * (argc + numberOfNewOptions + 1)  );
+	std::vector<const char*> argv_new(argv, argv + argc);
+	argc += new_options.size();
+	argv_new.insert(argv_new.end(), new_options.begin(), new_options.end());
 
-  for (int i = 0; i < argc; i++)
-    {
-      int length = strlen(argv[i]);
-      argvNew[i] = (char*) malloc((length+1) * sizeof(char));
-      for (int j = 0; j < length; j++)
-	{
-	  argvNew[i][j] = argv[i][j];
-	}
-    }
-  int length = strlen(option);
-  argvNew[argc] = (char*) malloc((length+1) * sizeof(char));
-  for (int j = 0; j < length; j++)
-    {
-      argvNew[argc][j] = option[j];
-    }
-  return argvNew;
+	return std::make_pair(argc, argv_new);
 }
-
