@@ -96,8 +96,8 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	///////////////////////////////////
 	// mu = -dir
 	///////////////////////////////////
-	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
+	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);//transform normal indices to eoprec index
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_neigh));
 	//chi=U^dagger * plus

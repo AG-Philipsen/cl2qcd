@@ -41,26 +41,18 @@ __kernel void saxpy_staggered_eoprec(__global const staggeredStorageType * const
 	}
 }
 
-
-
-//For the moment this kernel is not needed. 
-//Uncomment out the region and adapt to staggered fermions (i.e. spinors <---> su3vec) if needed.
-/*
-__kernel void saxpy_arg_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const out)
+__kernel void saxpy_arg_staggered_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const out)
 {
 	const int id = get_global_id(0);
 	const int global_size = get_global_size(0);
 
-	const hmc_complex alpha = (hmc_complex) {
-		alpha_re, alpha_im
-	};
+	const hmc_complex alpha = (hmc_complex) {alpha_re, alpha_im};
 
 	for(int id_mem = id; id_mem < EOPREC_SPINORFIELDSIZE_MEM; id_mem += global_size) {
-		spinor x_tmp = getSpinor_eo(x, id_mem);
-		spinor y_tmp = getSpinor_eo(y, id_mem);
-		x_tmp = spinor_times_complex(x_tmp, alpha);
-		x_tmp = spinor_dim(y_tmp, x_tmp);
-		putSpinor_eo(out, id_mem, x_tmp);
+		su3vec x_tmp = get_su3vec_from_field_eo(x, id_mem);
+		su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
+		x_tmp = su3vec_times_complex(x_tmp, alpha);
+		x_tmp = su3vec_acc(y_tmp, x_tmp);
+		put_su3vec_to_field_eo(out, id_mem, x_tmp);
 	}
 }
-*/

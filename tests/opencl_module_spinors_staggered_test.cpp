@@ -925,12 +925,15 @@ void test_sf_scalar_product_staggered_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_sax_staggered_eo(std::string inputfile)
+void test_sf_sax_staggered_eo(std::string inputfile, bool switcher=true)
 {
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "sax_staggered_eoprec";
+	if(switcher)
+	  kernelName = "sax_staggered_eoprec";
+	else
+	  kernelName = "sax_arg_staggered_eoprec";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -970,8 +973,11 @@ void test_sf_sax_staggered_eo(std::string inputfile)
 	alpha.load(&alpha_host);
 
 	logger.info() << "Run kernel";
-	device->sax_eoprec_device(&in, &alpha, &out);
-
+	if(switcher)
+	  device->sax_eoprec_device(&in, &alpha, &out);
+	else
+	  device->sax_eoprec_device(&in, alpha_host, &out);
+	
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
@@ -982,19 +988,17 @@ void test_sf_sax_staggered_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_saxpy_staggered_eo(std::string inputfile, bool switcher)
+void test_sf_saxpy_staggered_eo(std::string inputfile, bool switcher=true)
 {
   //switcher chooses between saxpy and saxpy_arg kernel, which have the same functionality
   //Observe that so far saxpy_stagg_arg doesn't exist, so switcher==false is a meaningless test
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	if( switcher)
+	if(switcher)
 	  kernelName = "saxpy_staggered_eoprec";
-	else {
-	  //kernelName = "saxpy_staggered_eoprec_arg";
-	  ;
-	}
+	else
+	  kernelName = "saxpy_arg_staggered_eoprec";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -1046,8 +1050,7 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, bool switcher)
 	if (switcher)
 	  device->saxpy_eoprec_device(&in, &in2, &alpha, &out);
 	else{
-	  logger.error() << "The kernel saxpy_stagg_arg doesn't exist yet, this is a meaningless test!";
-	  //device->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
+	  device->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
 	}
 
 	logger.info() << "result:";
@@ -1060,12 +1063,15 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, bool switcher)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_saxpby_staggered_eo(std::string inputfile)
+void test_sf_saxpby_staggered_eo(std::string inputfile, bool switcher=true)
 {
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "saxpby_staggered_eoprec";
+	if(switcher)
+	  kernelName = "saxpby_staggered_eoprec";
+	else
+	  kernelName = "saxpby_arg_staggered_eoprec";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -1118,7 +1124,10 @@ void test_sf_saxpby_staggered_eo(std::string inputfile)
 	beta.load(&beta_host);
 
 	logger.info() << "Run kernel";
-	device->saxpby_eoprec_device(&in, &in2, &alpha, &beta, &out);
+	if(switcher)
+	  device->saxpby_eoprec_device(&in, &in2, &alpha, &beta, &out);
+	else
+	  device->saxpby_eoprec_device(&in, &in2, alpha_host, beta_host, &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -1130,12 +1139,15 @@ void test_sf_saxpby_staggered_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_saxpbypz_staggered_eo(std::string inputfile)
+void test_sf_saxpbypz_staggered_eo(std::string inputfile, bool switcher=true)
 {
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "saxpbypz_staggered_eoprec";
+	if(switcher)
+	  kernelName = "saxpbypz_staggered_eoprec";
+	else
+	  kernelName = "saxpbypz_arg_staggered_eoprec";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -1197,7 +1209,10 @@ void test_sf_saxpbypz_staggered_eo(std::string inputfile)
 	beta.load(&beta_host);
 
 	logger.info() << "Run kernel";
-	device->saxpbypz_eoprec_device(&in, &in2, &in3, &alpha, &beta, &out);
+	if(switcher)
+	  device->saxpbypz_eoprec_device(&in, &in2, &in3, &alpha, &beta, &out);
+	else
+	  device->saxpbypz_eoprec_device(&in, &in2, &in3, alpha_host, beta_host, &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -1914,100 +1929,239 @@ BOOST_AUTO_TEST_CASE( SF_SAX_EO_8 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SF_SAX_ARG_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_1 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_1", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_2 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_2", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_3 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_3", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_4 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_4", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_5 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_5", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_6 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_6", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_7 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_7", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAX_ARG_EO_8 )
+{
+  test_sf_sax_staggered_eo("/sf_sax_staggered_eo_input_8", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE(SF_SAXPY_EO)
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_1 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_1", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_2 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_2", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_3 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_3", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_4 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_4", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_4");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_5 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_5", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_5");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_6 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_6", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_6");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_7 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_7", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_7");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_8 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_8", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_8");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_9 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_9", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_9");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_10 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_10", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_10");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_11 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_11", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_11");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_12 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_12", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_12");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_13 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_13", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_13");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_14 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_14", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_14");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_15 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_15", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_15");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_16 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_16", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_16");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_17 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_17", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_17");
 }
 
 BOOST_AUTO_TEST_CASE( SF_SAXPY_EO_18 )
 {
-  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_18", true);
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_18");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SAXPY_ARG_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_1 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_1", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_2 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_2", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_3 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_3", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_4 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_4", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_5 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_5", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_6 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_6", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_7 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_7", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_8 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_8", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_9 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_9", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_10 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_10", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_11 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_11", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_12 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_12", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_13 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_13", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_14 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_14", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_15 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_15", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_16 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_16", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_17 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_17", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_18 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_18", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 
 BOOST_AUTO_TEST_SUITE(SF_SAXPBY_EO)
@@ -2180,6 +2334,180 @@ BOOST_AUTO_TEST_CASE( SF_SAXPBY_EO_33 )
 BOOST_AUTO_TEST_CASE( SF_SAXPBY_EO_34 )
 {
   test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_34");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SAXPBY_ARG_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_1 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_1", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_2 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_2", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_3 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_3", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_4 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_4", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_5 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_5", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_6 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_6", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_7 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_7", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_8 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_8", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_9 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_9", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_10 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_10", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_11 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_11", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_12 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_12", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_13 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_13", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_14 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_14", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_15 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_15", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_16 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_16", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_17 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_17", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_18 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_18", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_19 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_19", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_20 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_20", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_21 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_21", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_22 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_22", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_23 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_23", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_24 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_24", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_25 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_25", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_26 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_26", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_27 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_27", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_28 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_28", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_29 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_29", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_30 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_30", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_31 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_31", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_32 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_32", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_33 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_33", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_ARG_EO_34 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_34", false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -2359,6 +2687,180 @@ BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_34 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SF_SAXPBYPZ_ARG_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_1 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_1", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_2 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_2", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_3 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_3", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_4 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_4", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_5 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_5", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_6 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_6", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_7 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_7", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_8 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_8", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_9 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_9", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_10 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_10", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_11 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_11", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_12 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_12", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_13 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_13", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_14 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_14", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_15 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_15", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_16 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_16", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_17 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_17", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_18 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_18", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_19 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_19", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_20 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_20", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_21 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_21", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_22 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_22", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_23 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_23", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_24 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_24", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_25 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_25", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_26 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_26", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_27 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_27", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_28 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_28", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_29 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_29", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_30 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_30", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_31 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_31", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_32 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_32", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_33 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_33", false);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_34 )
+{
+  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_34", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN_EO)
 
@@ -2461,85 +2963,6 @@ BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_14 )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
-
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(SF_SAXPY_ARG_EO)
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_1 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_1", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_2 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_2", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_3 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_3", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_4 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_4", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_5 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_5", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_6 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_6", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_7 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_7", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_8 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_8", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_9 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_9", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_10 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_10", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_11 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_11", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_12 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_12", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_13 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_13", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_EO_14 )
-{
-  test_sf_saxpy_eo("/sf_saxpy_eo_input_14", false);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 
 
 */

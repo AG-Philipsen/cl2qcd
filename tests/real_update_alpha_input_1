@@ -1,0 +1,20 @@
+NS=4
+NT=4
+
+# this specifies variable_1
+beta=1.35
+# this specifies variable_2
+rho=3.4
+# this specifies variable_3
+kappa=-1.25
+# this specifies variable_4
+mu=-2.
+# this specifies variable_5
+mass=4.5
+
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=0.6375
+

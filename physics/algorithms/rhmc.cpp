@@ -32,7 +32,7 @@
 #include <memory>
 #include "../../klepsydra/klepsydra.hpp"
 
-template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const physics::algorithms::Rational_Approximation& approx1, const physics::algorithms::Rational_Approximation& approx2, const physics::algorithms::Rational_Approximation& approx3, const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system);
+// template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const physics::algorithms::Rational_Approximation& approx1, const physics::algorithms::Rational_Approximation& approx2, const physics::algorithms::Rational_Approximation& approx3, const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system);
 
 template <class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi, hmc_float * const spinor_energy_init, const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system);
 //Mass preconditioning not yet implemented!
@@ -48,7 +48,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 
 	const auto params = system.get_inputparameters();
 
-	logger.trace() << "\tRHMC:\tinit spinorfield and gaugemomentum" ;
+	logger.debug() << "\tRHMC:\tinit spinorfield and gaugemomentum" ;
 	const Gaugemomenta p(system);
 	p.gaussian(prng);
 
@@ -62,13 +62,13 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	if(!params.get_use_gauge_only()) {
 		if(params.get_use_mp()) {
 			throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!", __FILE__, __LINE__);
-		}
-		//init_spinorfield_mp(&phi, &spinor_energy_init, phi_mp.get(), &spinor_energy_init_mp, *gf, prng, system);
+			//init_spinorfield_mp(&phi, &spinor_energy_init, phi_mp.get(), &spinor_energy_init_mp, *gf, prng, system);
 		} else {
 			init_spinorfield(&phi, &spinor_energy_init, *gf, prng, system);
+		}
 	}
 	
-	logger.trace() << "\tRHMC:\tupdate gaugefield and gaugemomentum" ;
+	logger.debug() << "\tRHMC:\tupdate gaugefield and gaugemomentum" ;
 	const Gaugefield new_u(system, prng, false);
 	const Gaugemomenta new_p(system);
 	// copy u->u' p->p' for the integrator
@@ -76,7 +76,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	copyData(&new_p, p);
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
-	logger.trace() << "\tRHMC:\tcall integrator" ;
+	logger.debug() << "\tRHMC:\tcall integrator" ;
 	//Before MD the coefficients of phi have to be set to the rescaled ones on the base of approx2
 	phi.Rescale_Coefficients(approx2, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
 	if(params.get_use_mp()) {
@@ -87,7 +87,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	}
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
-	logger.trace() << "\tRHMC [MET]:\tperform Metropolis step: ";
+	logger.debug() << "\tRHMC [MET]:\tperform Metropolis step: ";
 	//Before Metropolis test the coeff. of phi have to be set to the rescaled ones on the base of approx3
 	phi.Rescale_Coefficients(approx3, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
 	//this call calculates also the HMC-Observables
@@ -131,8 +131,8 @@ template <class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * ph
 	initial.set_gaussian(prng);
 	//calc init energy for spinorfield
 	*spinor_energy_init = squarenorm(initial);
-	//update spinorfield: det(kappa, mu)
-	md_update_spinorfield(phi, gf, initial, system, params.get_kappa(), meta::get_mubar(params));
+	//update spinorfield
+	md_update_spinorfield(phi, gf, initial, system, params.get_mass(), meta::get_mubar(params));
 }
 
 //Mass preconditioning not yet implemented!

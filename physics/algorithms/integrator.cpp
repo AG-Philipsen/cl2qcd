@@ -542,7 +542,7 @@ static void check_integrator_params(const meta::Inputparameters& params)
 		}
 	}
 	//CP: check if one of the integrationsteps is 0. This would lead to a divison by zero!
-	logger.info() << timescales;
+	logger.debug() << "timescales = " << timescales;
 	switch(timescales ) {
 		case 1:
 			if( params.get_integrationsteps(0) == 0 ) {

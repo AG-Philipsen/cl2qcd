@@ -53,7 +53,18 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 			tmp = gaussianNormalPair(&rnd);
 			new_ae.e6 =  tmp.re;
 			new_ae.e7 =  tmp.im;
-
+			
+#ifdef _RHMC_
+		// multiply by sigma because gaussianNormalPair generates a couple
+		// of real gaussian number distributed with variance 1. In the RHMC
+		// the gaugemomenta part of the action is -1/2\sum_{n,\mu}Tr[H_\mu(n)H_\mu(n)]
+		// that is -1/4\sum_{n,\mu}\sum_{k=1}^8\omega^k\omega^k given that
+		// H_\mu(n)=\sum_{k=1}^8\omega^k \lambda_k/2 and Tr[\lambda_j\lambda_k]=2\delta_{j,k}.
+		// Then we must draw the coefficients \omega_k according to P(x)=const.\exp(-1/4 x^2)
+		// that means sigma^2=2 and hence sigma=sqrt(2).
+			new_ae = ae_times_factor(new_ae, sqrt(2.));
+#endif
+			
 			putAe(out, id_mem, new_ae);
 		}
 	}

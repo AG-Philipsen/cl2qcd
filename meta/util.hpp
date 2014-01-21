@@ -88,8 +88,22 @@ namespace meta {
   std::string create_prng_name(const Inputparameters& parameters) noexcept;
   void print_info_flavour_doublet_correlators(const meta::Inputparameters params);
   void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
+  template<typename Container> void free_container(Container& c) noexcept;
   std::string createLogfileName(const char* name);
   char** addOptionToArgv(const char * option, int argc, const char** argv);
+  
+/*
+* TEMPLATE IMPLEMENTATIONS
+*/
+template<typename Container> void free_container(Container& c) noexcept
+{
+	while(!c.empty()){
+		delete c.back();
+		c.pop_back();
+	}
+}
+
+
 }
 
 #endif /* META_UTIL_ */

@@ -489,6 +489,11 @@ inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	//Here, the stepsize factor is multiplied in right away!!
 	//Also, a factor of 0.5 is taken out to fit the different trace-definition from tmqlcd
 	hmc_float halfeps = epsilon;// *F_1_2;
+	
+	#ifdef _RHMC_
+	halfeps/=2.;
+	#endif //_RHMC_
+	
 	//CP: this performs 25 flops
 	const Matrixsu3 v = build_su3_from_ae_times_i_times_real(inn, halfeps);
 
@@ -560,6 +565,7 @@ inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	vr.e21.im =         a1.re * v.e21.im + a1.im * v.e21.re + a2.re * v2.e21.im + a2.im * v2.e21.re;
 	vr.e22.re = a0.re + a1.re * v.e22.re - a1.im * v.e22.im + a2.re * v2.e22.re - a2.im * v2.e22.im;
 	vr.e22.im = a0.im + a1.re * v.e22.im + a1.im * v.e22.re + a2.re * v2.e22.im + a2.im * v2.e22.re;
+	
 	return vr;
 
 }

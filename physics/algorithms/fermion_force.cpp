@@ -347,6 +347,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		physics::lattices::saxpy(force, -1.*(phi.Get_a())[i], tmp);
 	}
 	
+	meta::free_container(X);
+	meta::free_container(Y);
 	logger.debug() << "\t\t...end calc_fermion_force!";
 }
 

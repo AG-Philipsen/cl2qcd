@@ -2,7 +2,7 @@
 # coding=utf8
 #
 # Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
-# Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+# Matthias Bach, Christian Schaefer, Stefano Lottini, Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #

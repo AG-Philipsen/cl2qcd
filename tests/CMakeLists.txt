@@ -134,6 +134,22 @@ add_test(Opencl_module_fermions_CPU_REC12 opencl_module_fermions_test ${CMAKE_CU
 add_test(Opencl_module_fermions_GPU       opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(Opencl_module_fermions_GPU_REC12 opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
+add_executable(opencl_module_complex_test opencl_module_complex_test.cpp)
+target_link_libraries(opencl_module_complex_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_complex_CPU       opencl_module_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_complex_GPU       opencl_module_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+add_executable(opencl_module_real_test opencl_module_real_test.cpp)
+target_link_libraries(opencl_module_real_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_real_CPU       opencl_module_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_real_GPU       opencl_module_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 add_executable(opencl_module_fermions_test_merged_kernels opencl_module_fermions_test_merged_kernels.cpp)
 target_link_libraries(opencl_module_fermions_test_merged_kernels
 	optimal
@@ -310,5 +326,31 @@ add_test(HMC13_CPU_PGT_NONEO_LF_1TS_COLD ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SO
 add_test(HMC14_CPU_PGT_RECT_NONEO_LF_1TS_COLD ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref4 ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_14)
 add_test(HMC15_CPU_TM_EO_2MN_2TS_ANTI ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_15)
 add_test(HMC17_CPU_TM_EO_2MN_3TS_ANTI ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_17)
+
+# Test the RHMC
+## LF: Leapfrog
+## 2MN: 2min-norm
+## XTS: X timescales
+## CONF: starting from config COLD: starting from cold config
+## ANTI: antiperiodic boundary conditions
+### All these tests are with: EO preconditioning, fermact=rooted_stagg
+## The options for the Rational Approximation files are given here to have a global path!!
+set(APPROX_FILES "--approx_heatbath_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_Heatbath" "--approx_md_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_MD" "--approx_metropolis_file=${CMAKE_CURRENT_SOURCE_DIR}/Approx_Metropolis")
+add_test(RHMC_01_CPU_LF_1TS_COLD        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_1 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_01 ${APPROX_FILES})
+add_test(RHMC_02_CPU_LF_1TS_COLD_ANTI   ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_2 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_02 ${APPROX_FILES})
+add_test(RHMC_03_CPU_LF_1TS_CONF        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_3 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_03 ${APPROX_FILES})
+add_test(RHMC_04_CPU_LF_1TS_CONF_ANTI   ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_4 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_04 ${APPROX_FILES})
+add_test(RHMC_05_CPU_LF_2TS_COLD        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_1 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_05 ${APPROX_FILES})
+add_test(RHMC_06_CPU_LF_2TS_COLD_ANTI   ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_2 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_06 ${APPROX_FILES})
+add_test(RHMC_07_CPU_LF_2TS_CONF        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_3 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_07 ${APPROX_FILES})
+add_test(RHMC_08_CPU_LF_2TS_CONF_ANTI   ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_4 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_08 ${APPROX_FILES})
+add_test(RHMC_09_CPU_2MN_1TS_COLD       ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_1 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_09 ${APPROX_FILES})
+add_test(RHMC_10_CPU_2MN_1TS_COLD_ANTI  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_2 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_10 ${APPROX_FILES})
+add_test(RHMC_11_CPU_2MN_1TS_CONF       ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_3 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_11 ${APPROX_FILES})
+add_test(RHMC_12_CPU_2MN_1TS_CONF_ANTI  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_4 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_12 ${APPROX_FILES})
+add_test(RHMC_13_CPU_2MN_2TS_COLD       ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_1 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_13 ${APPROX_FILES})
+add_test(RHMC_14_CPU_2MN_2TS_COLD_ANTI  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_2 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_14 ${APPROX_FILES})
+add_test(RHMC_15_CPU_2MN_2TS_CONF       ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_3 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_15 ${APPROX_FILES})
+add_test(RHMC_16_CPU_2MN_2TS_CONF_ANTI  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testRhmc.py ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_ref_4 ${CMAKE_CURRENT_SOURCE_DIR}/rhmc_test_input_16 ${APPROX_FILES})
 
 
