@@ -20,8 +20,20 @@
 
 #include "rhmcExecutable.h"
 
+/**
+ * @attention The RHMC algorithm is still under development. Its physical correctness is
+ *            being tested and the performance is not optimized at all. Take it into account
+ *            if you want to use it. 
+ */
+
 int main(int argc, const char* argv[])
 {
+	logger.warn() << "***************************************************************************";
+	logger.warn() << "*  The RHMC algorithm is still under development.                         *";
+	logger.warn() << "*  Its physical correctness is being tested and the performance           *";
+	logger.warn() << "*  is not optimized at all. Take it into account if you want to use it.   *";
+	logger.warn() << "***************************************************************************";
+	sleep(1);
 	try {
 	  //I build a vector from argv so that I can manually add parameters that I would
 	  //always add (e.g. fermact=rooted_stagg) without modifying default values in Inputparameters
