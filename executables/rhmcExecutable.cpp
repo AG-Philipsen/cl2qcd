@@ -22,32 +22,31 @@
 
 rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecutable(argc, argv)
 {
+	using namespace physics::algorithms;
+	
 	initializationTimer.reset();
 	printParametersToScreenAndFile();
 	setIterationParameters();
 	initializationTimer.add();
 	logger.info() << "Generation of Rational Approximations...";
-	/*
-	 * The following lines will be uncommented when the Inputparameters file is ready
-	 */
-	//if(parameters.get_read_rational_approximations_from_file()){
-	//	approx_hb  = new Rational_Approximation(parameters.get_approx_heatbath_file());
-	//	approx_md  = new Rational_Approximation(parameters.get_approx_md_file());
-	//	approx_met = new Rational_Approximation(parameters.get_approx_metropolis_file());
-	//}else{
+	if(parameters.get_read_rational_approximations_from_file()){
+		approx_hb  = new Rational_Approximation(parameters.get_approx_heatbath_file());
+		approx_md  = new Rational_Approximation(parameters.get_approx_md_file());
+		approx_met = new Rational_Approximation(parameters.get_approx_metropolis_file());
+	}else{
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		approx_hb = new physics::algorithms::Rational_Approximation(parameters.get_metro_approx_ord(),
+		approx_hb = new Rational_Approximation(parameters.get_metro_approx_ord(),
 				parameters.get_num_tastes(), 8, parameters.get_approx_lower(),
 				parameters.get_approx_upper(), false);
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		approx_md = new physics::algorithms::Rational_Approximation(parameters.get_md_approx_ord(),
+		approx_md = new Rational_Approximation(parameters.get_md_approx_ord(),
 				parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
 				parameters.get_approx_upper(), true);
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
-		approx_met = new physics::algorithms::Rational_Approximation(parameters.get_metro_approx_ord(),
+		approx_met = new Rational_Approximation(parameters.get_metro_approx_ord(),
 				  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
 				  parameters.get_approx_upper(), true);
-	//}
+	}
 }
 
 rhmcExecutable::~rhmcExecutable()
