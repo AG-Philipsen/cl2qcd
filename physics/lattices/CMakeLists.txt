@@ -26,6 +26,7 @@ add_library(lattices
 	spinorfield.cpp
 	spinorfield_eo.cpp
 	scalar_complex.cpp
+	algebra_real.cpp
 	swappable_spinorfield.cpp
 	gaugemomenta.cpp
 	staggeredfield_eo.cpp
@@ -47,3 +48,5 @@ add_unit_test(physics::lattices::SwappableSpinorfield swappable_spinorfield_test
 add_unit_test(physics::lattices::Gaugemomenta gaugemomenta_test)
 add_unit_test(physics::lattices::Staggeredfield_eo staggeredfield_eo_test)
 add_unit_test(physics::lattices::Rooted_Staggeredfield_eo rooted_staggeredfield_eo_test)
+add_unit_test(physics::lattices::Algebra_Real algebra_real_test)
+add_unit_test(physics::lattices::Vector vector_test)
