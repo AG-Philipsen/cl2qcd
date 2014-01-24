@@ -19,6 +19,9 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _PHYSICS_LATTICES_SCALAR_COMPLEX_
+#define _PHYSICS_LATTICES_SCALAR_COMPLEX_
+
 #include "scalar.hpp"
 #include "../../common_header_files/types.h"
 
@@ -36,3 +39,5 @@ void convert(const Scalar<hmc_complex>* dest, const Scalar<hmc_float>& src);
 }
 
 }
+
+#endif /* _PHYSICS_LATTICES_SCALAR_COMPLEX_ */
