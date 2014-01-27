@@ -24,84 +24,72 @@
 
 #include <stdexcept>
 #include "../../hardware/device.hpp"
-#include "../../hardware/code/complex.hpp"
+#include "../../hardware/code/real.hpp"
 
-/*
-void physics::lattices::add(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)
+
+void physics::lattices::update_zeta_cgm(const Vector<hmc_float>* out, const Vector<hmc_float>& zeta_prev, const Vector<hmc_float>& zeta_prev_prev, const Scalar<hmc_float>& sbeta_prev, const Scalar<hmc_float>& sbeta_pres, const Scalar<hmc_float>& salpha_prev, const Vector<hmc_float>& sigma, const int numeq)
 {
-	auto dest_bufs = dest->get_buffers();
-	size_t num_bufs = dest_bufs.size();
-	auto left_bufs = left.get_buffers();
-	auto right_bufs = right.get_buffers();
+	auto out_bufs = out->get_buffers();
+	size_t num_bufs = out_bufs.size();
+	auto zeta_prev_bufs = zeta_prev.get_buffers();
+	auto zeta_prev_prev_bufs = zeta_prev_prev.get_buffers();
+	auto sbeta_prev_bufs = sbeta_prev.get_buffers();
+	auto sbeta_pres_bufs = sbeta_pres.get_buffers();
+	auto salpha_prev_bufs = salpha_prev.get_buffers();
+	auto sigma_bufs = sigma.get_buffers();
 
-	if(num_bufs != left_bufs.size() || num_bufs != right_bufs.size()) {
+	if(num_bufs != zeta_prev_bufs.size() || num_bufs != zeta_prev_prev_bufs.size() ||
+	   num_bufs != sbeta_prev_bufs.size() || num_bufs != sbeta_pres_bufs.size() ||
+	   num_bufs != salpha_prev_bufs.size() || num_bufs != sigma_bufs.size()) {
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
+	
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_complex_code();
-		code->set_complex_to_sum_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
+		auto code = out_bufs[i]->get_device()->get_real_code();
+		code->update_zeta_cgm_device(zeta_prev_bufs[i], zeta_prev_prev_bufs[i], sbeta_prev_bufs[i], sbeta_pres_bufs[i], salpha_prev_bufs[i], sigma_bufs[i], numeq, out_bufs[i]);
 	}
 }
 
-void physics::lattices::subtract(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& minuend, const Scalar<hmc_complex>& subtrahend)
-{
-	auto dest_bufs = dest->get_buffers();
-	size_t num_bufs = dest_bufs.size();
-	auto minuend_bufs = minuend.get_buffers();
-	auto subtrahend_bufs = subtrahend.get_buffers();
 
-	if(num_bufs != minuend_bufs.size() || num_bufs != subtrahend_bufs.size()) {
+void physics::lattices::update_beta_cgm(const Vector<hmc_float>* out, const Scalar<hmc_float>& sbeta_pres, const Vector<hmc_float>& zeta_pres, const Vector<hmc_float>& zeta_prev, const int numeq)
+{
+	auto out_bufs = out->get_buffers();
+	size_t num_bufs = out_bufs.size();
+	auto sbeta_pres_bufs = sbeta_pres.get_buffers();
+	auto zeta_pres_bufs = zeta_pres.get_buffers();
+	auto zeta_prev_bufs = zeta_prev.get_buffers();
+
+	if(num_bufs != zeta_pres_bufs.size() || num_bufs != zeta_prev_bufs.size() ||
+	   num_bufs != sbeta_pres_bufs.size()) {
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
+	
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_complex_code();
-		code->set_complex_to_difference_device(minuend_bufs[i], subtrahend_bufs[i], dest_bufs[i]);
+		auto code = out_bufs[i]->get_device()->get_real_code();
+		code->update_beta_cgm_device(sbeta_pres_bufs[i], zeta_pres_bufs[i], zeta_prev_bufs[i], numeq, out_bufs[i]);
 	}
 }
 
-void physics::lattices::multiply(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& left, const Scalar<hmc_complex>& right)
-{
-	auto dest_bufs = dest->get_buffers();
-	size_t num_bufs = dest_bufs.size();
-	auto left_bufs = left.get_buffers();
-	auto right_bufs = right.get_buffers();
 
-	if(num_bufs != left_bufs.size() || num_bufs != right_bufs.size()) {
+void physics::lattices::update_alpha_cgm(const Vector<hmc_float>* out, const Scalar<hmc_float>& salpha_pres, const Vector<hmc_float>& zeta_pres, const Vector<hmc_float>& beta_pres, const Vector<hmc_float>& zeta_prev, const Scalar<hmc_float>& sbeta_pres, const int numeq)
+{
+	auto out_bufs = out->get_buffers();
+	size_t num_bufs = out_bufs.size();
+	auto salpha_pres_bufs = salpha_pres.get_buffers();
+	auto zeta_pres_bufs = zeta_pres.get_buffers();
+	auto beta_pres_bufs = beta_pres.get_buffers();
+	auto zeta_prev_bufs = zeta_prev.get_buffers();
+	auto sbeta_pres_bufs = sbeta_pres.get_buffers();
+	
+	if(num_bufs != salpha_pres_bufs.size() || num_bufs != zeta_pres_bufs.size() ||
+	   num_bufs != beta_pres_bufs.size() || num_bufs != zeta_prev_bufs.size() ||
+	   num_bufs != sbeta_pres_bufs.size()) {
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
+	
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_complex_code();
-		code->set_complex_to_product_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
-	}
-}
-void physics::lattices::divide(const Scalar<hmc_complex>* dest, const Scalar<hmc_complex>& numerator, const Scalar<hmc_complex>& denominator)
-{
-	auto dest_bufs = dest->get_buffers();
-	size_t num_bufs = dest_bufs.size();
-	auto numerator_bufs = numerator.get_buffers();
-	auto denominator_bufs = denominator.get_buffers();
-
-	if(num_bufs != numerator_bufs.size() || num_bufs != denominator_bufs.size()) {
-		throw std::invalid_argument("All arguments must use the same number of devices.");
-	}
-	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_complex_code();
-		code->set_complex_to_ratio_device(numerator_bufs[i], denominator_bufs[i], dest_bufs[i]);
+		auto code = out_bufs[i]->get_device()->get_real_code();
+		code->update_alpha_cgm_device(salpha_pres_bufs[i], zeta_pres_bufs[i], beta_pres_bufs[i], zeta_prev_bufs[i], sbeta_pres_bufs[i], numeq, out_bufs[i]);
 	}
 }
 
-void physics::lattices::convert(const Scalar<hmc_complex>* dest, const Scalar<hmc_float>& src)
-{
-	auto dest_bufs = dest->get_buffers();
-	size_t num_bufs = dest_bufs.size();
-	auto src_bufs = src.get_buffers();
-
-	if(num_bufs != src_bufs.size()) {
-		throw std::invalid_argument("All arguments must use the same number of devices.");
-	}
-	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_complex_code();
-		code->set_complex_to_float_device(src_bufs[i], dest_bufs[i]);
-	}
-}
-*/
