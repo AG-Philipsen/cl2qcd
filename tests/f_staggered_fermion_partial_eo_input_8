@@ -1,3 +1,5 @@
+fermact=rooted_stagg
+
 startcondition=cold
 
 use_eo=true

@@ -1,3 +1,5 @@
+fermact=rooted_stagg
+
 NS=16
 NT=16
 
@@ -10,4 +12,3 @@ solver_prec=1e-8
 test_ref_val=98304
 
 #This input file must not be modified!
-

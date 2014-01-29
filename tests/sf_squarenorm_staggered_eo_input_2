@@ -1,3 +1,5 @@
+fermact=rooted_stagg
+
 NS=4
 NT=4
 
@@ -12,5 +14,3 @@ solver_prec=1e-8
 test_ref_val=260.72409295932851592
 
 #This imput file must not be modified!
-
-
