@@ -38,7 +38,7 @@ __kernel void global_squarenorm_staggered_eoprec( __global const staggeredStorag
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int group_id = get_group_id (0);
+	int group_id = get_group_id(0);
 	int idx = get_local_id(0);
 
 	hmc_float sum;

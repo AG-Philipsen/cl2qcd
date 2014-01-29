@@ -139,7 +139,7 @@ public:
 private:
 
 	/**
-	 * The size of the buffer in bytes.
+	 * The size of the buffer in elements.
 	 */
 	const size_t elems;
 
@@ -152,4 +152,4 @@ private:
 }
 
 
-#endif /* _HARDWARE_BUFFERS_SPINOR_ */
+#endif /* _HARDWARE_BUFFERS_SU3VEC_ */
