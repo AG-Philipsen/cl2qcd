@@ -222,6 +222,26 @@ public:
 	 */
 	void set_complex_to_scalar_product_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::SU3vec * b, const hardware::buffers::Plain<hmc_complex> * out) const;
 	
+	/**
+	 * This function returns the squarenorms of the input staggered field with even-odd
+	 * preconditioning multiplied by a set of differente real constants.
+	 * @param x The input staggered field (one su3vec per site even or odd)
+	 * @param alpha The real constants vector
+	 * @param numeqs The number of real constants
+	 * @param out The output vector of squarenorms: ||alpha[i]*x||^2
+	 */
+	void sax_vectorized_and_squarenorm_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_float> * alpha, const int numeqs, const hardware::buffers::Plain<hmc_float> * out) const;
+	/**
+	 * This function completes the reduction to calculate the squarenorms
+	 * of the sax staggered fields. It should be called after that the kernel
+	 * "sax_vectorized_and_squarenorm_eoprec" ended.
+	 * @param out The result of the reduction
+	 * @param tmp_buf The vector containing the results of the local (i.e. within each group)
+	 *                reductions.
+	 * @param numeqs The number of different squarenorms
+	 */
+	void sax_vectorized_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf, const int numeqs) const;
+	
 	//////////////////////////////////
 	//      Setting operations      //
 	//////////////////////////////////
@@ -404,6 +424,10 @@ private:
 	cl_kernel saxpy_arg_stagg_eoprec;
 	cl_kernel saxpby_arg_stagg_eoprec;
 	cl_kernel saxpbypz_arg_stagg_eoprec;
+	
+	//Mixed kernels
+	cl_kernel sax_vectorized_and_squarenorm_eoprec;
+	cl_kernel sax_vectorized_and_squarenorm_reduction;
 	
 	/******************************************************/
 	/****************  GENERAL KERNELS  *******************/

@@ -150,6 +150,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 			break;
 		case meta::Inputparameters::rooted_stagg :
 			options << " -D _RHMC_";
+			options << " -D RA_MAX_ORDER=" << std::max(params.get_metro_approx_ord(), params.get_md_approx_ord());
 			break;
 	}
 
