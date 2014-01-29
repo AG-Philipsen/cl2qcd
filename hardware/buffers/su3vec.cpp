@@ -139,7 +139,7 @@ hardware::SynchronizationEvent hardware::buffers::Spinor::dumpRect_rawAsync(void
 
 size_t hardware::buffers::SU3vec::get_storage_type_size() const noexcept
 {
-	return soa ? sizeof(soa_storage_t) : sizeof(spinor);
+	return soa ? sizeof(soa_storage_t) : sizeof(su3vec);
 }
 
 size_t hardware::buffers::SU3vec::get_lane_stride() const noexcept

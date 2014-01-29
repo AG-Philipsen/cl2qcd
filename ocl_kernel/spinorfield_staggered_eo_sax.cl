@@ -37,7 +37,7 @@ __kernel void sax_staggered_eoprec(__global const staggeredStorageType * const x
 	}
 }
 
-__kernel void sax_arg_staggered_eoprec(__global const spinorStorageType * const x, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const out)
+__kernel void sax_arg_staggered_eoprec(__global const staggeredStorageType * const x, const hmc_float alpha_re, const hmc_float alpha_im, __global staggeredStorageType * const out)
 {
 	const int id = get_global_id(0);
 	const int global_size = get_global_size(0);
