@@ -302,6 +302,30 @@ void physics::lattices::saxpbypz(const Staggeredfield_eo* out, const Scalar<hmc_
 	}
 }
 
+void physics::lattices::sax_vec_and_squarenorm(const Vector<hmc_float>* res, const Vector<hmc_float>& alpha, const Staggeredfield_eo& x)
+{
+	auto x_buffers = x.get_buffers();
+	auto alpha_buffers = alpha.get_buffers();
+	auto res_buffers = res->get_buffers();
+	size_t num_buffers = x_buffers.size();
+
+	if(num_buffers != res_buffers.size() || num_buffers != alpha_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
+	}
+
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto x_buf = x_buffers[i];
+		auto alpha_buf = alpha_buffers[i];
+		auto res_buf = res_buffers[i];
+		auto device = x_buf->get_device();
+		auto spinor_code = device->get_spinor_staggered_code();
+
+		spinor_code->sax_vectorized_and_squarenorm_eoprec_device(x_buf, alpha_buf, alpha.get_vector_size(), res_buf);
+	}
+	//res->sum();
+}
+
+
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::scalar_product>(const hardware::System& system)
 {
 	// assert single system

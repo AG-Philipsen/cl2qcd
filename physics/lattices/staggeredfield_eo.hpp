@@ -27,6 +27,7 @@
 #include "../prng.hpp"
 //#include "spinorfield.hpp"
 #include "scalar.hpp"
+#include "vector.hpp"
 #include "../../common_header_files/types_fermions.h"
 //This is to make the template pseudo_randomize friend of this class
 #include "util.hpp"
@@ -164,6 +165,16 @@ void saxpbypz(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, co
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpbypz>(const hardware::System&);
+
+/**
+ * Perform the BLAS (Basic Linear Algebra Subroutine) operation sax + the squarenorm
+ * with a set of real values of alpha.
+ *
+ * \\out\\^2 = ||alpha[i] * x||^2
+ */
+void sax_vec_and_squarenorm(const Vector<hmc_float>* res, const Vector<hmc_float>& alpha, const Staggeredfield_eo& x);
+
+
 
 /**
  * A utility function to log the tracenorm.
