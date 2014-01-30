@@ -99,3 +99,37 @@ BOOST_AUTO_TEST_CASE(update_alpha)
 {
 	test_cgm_update(2);
 }
+
+BOOST_AUTO_TEST_CASE(base_operations)
+{
+	using namespace physics::lattices;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	logger.debug() << "Devices: " << system.get_devices().size();
+
+	Scalar<hmc_float> left(system);
+	Scalar<hmc_float> right(system);
+	Scalar<hmc_float> res(system);
+
+	left.store(1.13);
+	right.store(3.14);
+	
+	hmc_float ref_sum = {4.27};
+	hmc_float ref_difference = {-2.01};
+	hmc_float ref_product = {3.5482};
+	hmc_float ref_ratio = {0.3598726114649681};
+
+	add(&res, left, right);
+	BOOST_REQUIRE_CLOSE(ref_sum, res.get(), 1.e-8);
+	
+	subtract(&res, left, right);
+	BOOST_REQUIRE_CLOSE(ref_difference, res.get(), 1.e-8);
+	
+	multiply(&res, left, right);
+	BOOST_REQUIRE_CLOSE(ref_product, res.get(), 1.e-8);
+	
+	divide(&res, left, right);
+	BOOST_REQUIRE_CLOSE(ref_ratio, res.get(), 1.e-8);
+}
