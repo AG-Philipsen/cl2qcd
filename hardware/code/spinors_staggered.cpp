@@ -171,6 +171,8 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		clerr = clReleaseKernel(saxpbypz_arg_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Mixed kernels
+		clerr = clReleaseKernel(sax_vectorized_and_squarenorm_reduction);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(sax_vectorized_and_squarenorm_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	} else {
