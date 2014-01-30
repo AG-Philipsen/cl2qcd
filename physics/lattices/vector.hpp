@@ -67,14 +67,19 @@ namespace physics {
 			Vector() = delete;
 
 			/**
-			 * Retrieve the value
+			 * Retrieve the values
 			 */
 			std::vector<SCALAR> get() const;
 
 			/**
-			 * Store a value
+			 * Store values
 			 */
 			void store(const std::vector<SCALAR> val) const;
+			
+			/**
+			 * Retrieve the number of elements of each buffer
+			 */
+			size_t get_vector_size() const noexcept;
 
 			/**
 			 * Get the buffers containing the vectors on the devices.
@@ -137,7 +142,7 @@ for(auto buffer: buffers) {
 
 template<typename SCALAR> std::vector<SCALAR> physics::lattices::Vector<SCALAR>::get() const
 {
-	// if this is a scalar we can read from any buffer
+	// We can read from any buffer
 	auto buffer = buffers[0];
 	std::vector<SCALAR> host_vec(N);
 	buffer->dump(&host_vec[0]);
@@ -161,6 +166,11 @@ template<typename SCALAR> void physics::lattices::Vector<SCALAR>::store(const st
 template<typename SCALAR> const std::vector<const hardware::buffers::Plain<SCALAR> *> physics::lattices::Vector<SCALAR>::get_buffers() const noexcept
 {
 	return buffers;
+}
+
+template<typename SCALAR> size_t physics::lattices::Vector<SCALAR>::get_vector_size() const noexcept
+{
+	return N;
 }
 
 #endif /* _PHYSICS_LATTICES_SCALAR_ */
