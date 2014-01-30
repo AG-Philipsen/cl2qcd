@@ -18,16 +18,18 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Description of variables of saxpby:
+// Description of variables of saxpbypz:
 //  - x: The first input staggered field (an su3vec per each site => vector of VOL4D/2
 //       components that are su3vec varibles)
 //  - y: The second input staggered field (an su3vec per each site => vector of VOL4D/2
 //       components that are su3vec varibles)
+//  - z: The third input staggered field (an su3vec per each site => vector of VOL4D/2
+//       components that are su3vec varibles)
 //  - alpha: The complex number by which x has to be multiplied
 //  - beta:  The complex number by which y has to be multiplied
-//  - out: The output staggered field: alpha*x+beta*y (site by site)
+//  - out: The output staggered field: alpha*x+beta*y+z (site by site)
 
-__kernel void saxpby_staggered_eoprec(__global const staggeredStorageType * const x, __global const staggeredStorageType * const y, __global const hmc_complex * const alpha, __global hmc_complex * beta, __global staggeredStorageType * const out)
+__kernel void saxpbypz_cplx_staggered_eoprec(__global const staggeredStorageType * const x, __global const staggeredStorageType * const y, __global const staggeredStorageType * const z, __global const hmc_complex * const alpha, __global hmc_complex * beta, __global staggeredStorageType * const out)
 {
 	const int id = get_global_id(0);
 	const int global_size = get_global_size(0);
@@ -39,15 +41,16 @@ __kernel void saxpby_staggered_eoprec(__global const staggeredStorageType * cons
 		x_tmp = su3vec_times_complex(x_tmp, alpha_tmp);
 		su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
 		y_tmp = su3vec_times_complex(y_tmp, beta_tmp);
+		su3vec z_tmp = get_su3vec_from_field_eo(z, id_mem);
 
-		su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
+		su3vec out_tmp = su3vec_acc_acc(y_tmp, x_tmp, z_tmp);
 		put_su3vec_to_field_eo(out, id_mem, out_tmp);
 	}
 
 	return;
 }
 
-__kernel void saxpby_arg_staggered_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, const hmc_float alpha_re, const hmc_float alpha_im, const hmc_float beta_re, const hmc_float beta_im, __global spinorStorageType * const out)
+__kernel void saxpbypz_cplx_arg_staggered_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, __global const staggeredStorageType * const z, const hmc_float alpha_re, const hmc_float alpha_im, const hmc_float beta_re, const hmc_float beta_im, __global spinorStorageType * const out)
 {
 	const int id = get_global_id(0);
 	const int global_size = get_global_size(0);
@@ -60,8 +63,9 @@ __kernel void saxpby_arg_staggered_eoprec(__global const spinorStorageType * con
 		x_tmp = su3vec_times_complex(x_tmp, alpha);
 		su3vec y_tmp = get_su3vec_from_field_eo(y, id_mem);
 		y_tmp = su3vec_times_complex(y_tmp, beta);
+		su3vec z_tmp = get_su3vec_from_field_eo(z, id_mem);
 		
-		su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
+		su3vec out_tmp = su3vec_acc_acc(y_tmp, x_tmp, z_tmp);
 		put_su3vec_to_field_eo(out, id_mem, out_tmp);
 	}
 }

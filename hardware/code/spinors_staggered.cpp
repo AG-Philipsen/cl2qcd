@@ -69,15 +69,17 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		set_cold_spinorfield_stagg_eoprec = createKernel("set_cold_spinorfield_stagg_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_set_cold.cl";
 		set_gaussian_spinorfield_stagg_eoprec = createKernel("set_gaussian_spinorfield_stagg_eoprec") << basic_fermion_code << prng_code << "spinorfield_staggered_eo_gaussian.cl";
 		//Fields algebra operations
-		sax_stagg_eoprec = createKernel("sax_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax.cl";
-		saxpy_stagg_eoprec = createKernel("saxpy_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy.cl";
-		saxpby_stagg_eoprec = createKernel("saxpby_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpby.cl";
-		saxpbypz_stagg_eoprec = createKernel("saxpbypz_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpbypz.cl";
+		sax_cplx_stagg_eoprec = createKernel("sax_cplx_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax_cplx.cl";
+		saxpy_cplx_stagg_eoprec = createKernel("saxpy_cplx_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy_cplx.cl";
+		saxpy_real_stagg_eoprec = createKernel("saxpy_real_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy_real.cl";
+		saxpby_cplx_stagg_eoprec = createKernel("saxpby_cplx_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpby_cplx.cl";
+		saxpby_real_stagg_eoprec = createKernel("saxpby_real_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpby_real.cl";
+		saxpbypz_cplx_stagg_eoprec = createKernel("saxpbypz_cplx_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpbypz_cplx.cl";
 		//Fields algebra operations with hmc_complex arguments
-		sax_arg_stagg_eoprec = createKernel("sax_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax.cl";
-		saxpy_arg_stagg_eoprec = createKernel("saxpy_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy.cl";
-		saxpby_arg_stagg_eoprec = createKernel("saxpby_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpby.cl";
-		saxpbypz_arg_stagg_eoprec = createKernel("saxpbypz_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpbypz.cl";
+		sax_cplx_arg_stagg_eoprec = createKernel("sax_cplx_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_sax_cplx.cl";
+		saxpy_cplx_arg_stagg_eoprec = createKernel("saxpy_cplx_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpy_cplx.cl";
+		saxpby_cplx_arg_stagg_eoprec = createKernel("saxpby_cplx_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpby_cplx.cl";
+		saxpbypz_cplx_arg_stagg_eoprec = createKernel("saxpbypz_cplx_arg_staggered_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_saxpbypz_cplx.cl";
 		//Mixed kernels
 		sax_vectorized_and_squarenorm_reduction = createKernel("sax_vectorized_and_squarenorm_reduction") << basic_fermion_code << "spinorfield_staggered_eo_vectorized_blas.cl";
 		sax_vectorized_and_squarenorm_eoprec = createKernel("sax_vectorized_and_squarenorm_eoprec") << basic_fermion_code << "spinorfield_staggered_eo_vectorized_blas.cl";
@@ -90,14 +92,16 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		scalar_product_stagg_eoprec = 0;
 		set_zero_spinorfield_stagg_eoprec = 0;
 		set_cold_spinorfield_stagg_eoprec = 0;
-		sax_stagg_eoprec = 0;
-		saxpy_stagg_eoprec = 0;
-		saxpby_stagg_eoprec = 0;
-		saxpbypz_stagg_eoprec = 0;
-		sax_arg_stagg_eoprec = 0;
-		saxpy_arg_stagg_eoprec = 0;
-		saxpby_arg_stagg_eoprec = 0;
-		saxpbypz_arg_stagg_eoprec = 0;
+		sax_cplx_stagg_eoprec = 0;
+		saxpy_cplx_stagg_eoprec = 0;
+		saxpy_real_stagg_eoprec = 0;
+		saxpby_cplx_stagg_eoprec = 0;
+		saxpby_real_stagg_eoprec = 0;
+		saxpbypz_cplx_stagg_eoprec = 0;
+		sax_cplx_arg_stagg_eoprec = 0;
+		saxpy_cplx_arg_stagg_eoprec = 0;
+		saxpby_cplx_arg_stagg_eoprec = 0;
+		saxpbypz_cplx_arg_stagg_eoprec = 0;
 		set_gaussian_spinorfield_stagg_eoprec = 0;
 		sax_vectorized_and_squarenorm_reduction = 0;
 		sax_vectorized_and_squarenorm_eoprec = 0;
@@ -153,22 +157,26 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		clerr = clReleaseKernel(set_gaussian_spinorfield_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Fields algebra operations
-		clerr = clReleaseKernel(sax_stagg_eoprec);
+		clerr = clReleaseKernel(sax_cplx_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpy_stagg_eoprec);
+		clerr = clReleaseKernel(saxpy_cplx_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpby_stagg_eoprec);
+		clerr = clReleaseKernel(saxpy_real_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpbypz_stagg_eoprec);
+		clerr = clReleaseKernel(saxpby_cplx_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxpby_real_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(saxpbypz_cplx_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Fields algebra operations with hmc_complex arguments
-		clerr = clReleaseKernel(sax_arg_stagg_eoprec);
+		clerr = clReleaseKernel(sax_cplx_arg_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpy_arg_stagg_eoprec);
+		clerr = clReleaseKernel(saxpy_cplx_arg_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpby_arg_stagg_eoprec);
+		clerr = clReleaseKernel(saxpby_cplx_arg_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(saxpbypz_arg_stagg_eoprec);
+		clerr = clReleaseKernel(saxpbypz_cplx_arg_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Mixed kernels
 		clerr = clReleaseKernel(sax_vectorized_and_squarenorm_reduction);
@@ -683,18 +691,18 @@ void hardware::code::Spinors_staggered::sax_eoprec_device(const hardware::buffer
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(sax_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(sax_cplx_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(sax_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(sax_cplx_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(sax_stagg_eoprec, 1, sizeof(cl_mem), alpha->get_cl_buffer());
+	clerr = clSetKernelArg(sax_cplx_stagg_eoprec, 1, sizeof(cl_mem), alpha->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(sax_stagg_eoprec, 2, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(sax_cplx_stagg_eoprec, 2, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(sax_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(sax_cplx_stagg_eoprec, gs2, ls2);
 }
 
 void hardware::code::Spinors_staggered::sax_eoprec_device(const hardware::buffers::SU3vec * x, const hmc_complex alpha, const hardware::buffers::SU3vec * out) const
@@ -702,21 +710,21 @@ void hardware::code::Spinors_staggered::sax_eoprec_device(const hardware::buffer
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(sax_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(sax_cplx_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(sax_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(sax_cplx_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(sax_arg_stagg_eoprec, 1, sizeof(hmc_float), &alpha.re);
+	clerr = clSetKernelArg(sax_cplx_arg_stagg_eoprec, 1, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
-	clerr = clSetKernelArg(sax_arg_stagg_eoprec, 2, sizeof(hmc_float), &alpha.im);
+	clerr = clSetKernelArg(sax_cplx_arg_stagg_eoprec, 2, sizeof(hmc_float), &alpha.im);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(sax_arg_stagg_eoprec, 3, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(sax_cplx_arg_stagg_eoprec, 3, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(sax_arg_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(sax_cplx_arg_stagg_eoprec, gs2, ls2);
 }
 
 
@@ -725,21 +733,43 @@ void hardware::code::Spinors_staggered::saxpy_eoprec_device(const hardware::buff
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(saxpy_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(saxpy_cplx_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(saxpy_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(saxpy_cplx_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_cplx_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_stagg_eoprec, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_cplx_stagg_eoprec, 2, sizeof(cl_mem), alpha->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_stagg_eoprec, 3, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_cplx_stagg_eoprec, 3, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(saxpy_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(saxpy_cplx_stagg_eoprec, gs2, ls2);
+}
+
+void hardware::code::Spinors_staggered::saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::SU3vec * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(saxpy_real_stagg_eoprec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpy_real_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_real_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_real_stagg_eoprec, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_real_stagg_eoprec, 3, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(saxpy_real_stagg_eoprec, gs2, ls2);
 }
 
 void hardware::code::Spinors_staggered::saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_complex alpha, const hardware::buffers::SU3vec * out) const
@@ -747,24 +777,24 @@ void hardware::code::Spinors_staggered::saxpy_eoprec_device(const hardware::buff
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(saxpy_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(saxpy_cplx_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(saxpy_cplx_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_cplx_arg_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 2, sizeof(hmc_float), &alpha.re);
+	clerr = clSetKernelArg(saxpy_cplx_arg_stagg_eoprec, 2, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
-	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 3, sizeof(hmc_float), &alpha.im);
+	clerr = clSetKernelArg(saxpy_cplx_arg_stagg_eoprec, 3, sizeof(hmc_float), &alpha.im);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_arg_stagg_eoprec, 4, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_cplx_arg_stagg_eoprec, 4, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(saxpy_arg_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(saxpy_cplx_arg_stagg_eoprec, gs2, ls2);
 }
 
 
@@ -773,24 +803,49 @@ void hardware::code::Spinors_staggered::saxpby_eoprec_device(const hardware::buf
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(saxpby_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(saxpby_cplx_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(saxpby_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(saxpby_cplx_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	clerr = clSetKernelArg(saxpby_cplx_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_stagg_eoprec, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	clerr = clSetKernelArg(saxpby_cplx_stagg_eoprec, 2, sizeof(cl_mem), alpha->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_stagg_eoprec, 3, sizeof(cl_mem), beta->get_cl_buffer());
+	clerr = clSetKernelArg(saxpby_cplx_stagg_eoprec, 3, sizeof(cl_mem), beta->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_stagg_eoprec, 4, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpby_cplx_stagg_eoprec, 4, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(saxpby_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(saxpby_cplx_stagg_eoprec, gs2, ls2);
+}
+
+void hardware::code::Spinors_staggered::saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::Plain<hmc_float> * beta, const hardware::buffers::SU3vec * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(saxpby_real_stagg_eoprec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpby_real_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpby_real_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpby_real_stagg_eoprec, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpby_real_stagg_eoprec, 3, sizeof(cl_mem), beta->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpby_real_stagg_eoprec, 4, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(saxpby_real_stagg_eoprec, gs2, ls2);
 }
 
 void hardware::code::Spinors_staggered::saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_complex alpha, const hmc_complex beta, const hardware::buffers::SU3vec * out) const
@@ -798,30 +853,30 @@ void hardware::code::Spinors_staggered::saxpby_eoprec_device(const hardware::buf
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(saxpby_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(saxpby_cplx_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(saxpby_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(saxpby_cplx_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_arg_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	clerr = clSetKernelArg(saxpby_cplx_arg_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_arg_stagg_eoprec, 2, sizeof(hmc_float), &alpha.re);
+	clerr = clSetKernelArg(saxpby_cplx_arg_stagg_eoprec, 2, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
-	clerr = clSetKernelArg(saxpby_arg_stagg_eoprec, 3, sizeof(hmc_float), &alpha.im);
+	clerr = clSetKernelArg(saxpby_cplx_arg_stagg_eoprec, 3, sizeof(hmc_float), &alpha.im);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_arg_stagg_eoprec, 4, sizeof(hmc_float), &beta.re);
+	clerr = clSetKernelArg(saxpby_cplx_arg_stagg_eoprec, 4, sizeof(hmc_float), &beta.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
-	clerr = clSetKernelArg(saxpby_arg_stagg_eoprec, 5, sizeof(hmc_float), &beta.im);
+	clerr = clSetKernelArg(saxpby_cplx_arg_stagg_eoprec, 5, sizeof(hmc_float), &beta.im);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpby_arg_stagg_eoprec, 6, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpby_cplx_arg_stagg_eoprec, 6, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(saxpby_arg_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(saxpby_cplx_arg_stagg_eoprec, gs2, ls2);
 }
 
 
@@ -830,27 +885,27 @@ void hardware::code::Spinors_staggered::saxpbypz_eoprec_device(const hardware::b
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(saxpbypz_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(saxpbypz_cplx_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(saxpbypz_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(saxpbypz_cplx_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_stagg_eoprec, 2, sizeof(cl_mem), z->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_stagg_eoprec, 2, sizeof(cl_mem), z->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_stagg_eoprec, 3, sizeof(cl_mem), alpha->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_stagg_eoprec, 3, sizeof(cl_mem), alpha->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_stagg_eoprec, 4, sizeof(cl_mem), beta->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_stagg_eoprec, 4, sizeof(cl_mem), beta->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_stagg_eoprec, 5, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_stagg_eoprec, 5, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(saxpbypz_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(saxpbypz_cplx_stagg_eoprec, gs2, ls2);
 }
 
 void hardware::code::Spinors_staggered::saxpbypz_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::SU3vec * z, const hmc_complex alpha, const hmc_complex beta, const hardware::buffers::SU3vec * out) const
@@ -858,33 +913,33 @@ void hardware::code::Spinors_staggered::saxpbypz_eoprec_device(const hardware::b
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(saxpbypz_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(saxpbypz_cplx_arg_stagg_eoprec, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
+	int clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 0, sizeof(cl_mem), x->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 2, sizeof(cl_mem), z->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 2, sizeof(cl_mem), z->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 3, sizeof(hmc_float), &alpha.re);
+	clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 3, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
-	clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 4, sizeof(hmc_float), &alpha.im);
+	clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 4, sizeof(hmc_float), &alpha.im);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 5, sizeof(hmc_float), &beta.re);
+	clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 5, sizeof(hmc_float), &beta.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 6, sizeof(hmc_float), &beta.im);
+	clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 6, sizeof(hmc_float), &beta.im);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
-	clerr = clSetKernelArg(saxpbypz_arg_stagg_eoprec, 7, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpbypz_cplx_arg_stagg_eoprec, 7, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(saxpbypz_arg_stagg_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(saxpbypz_cplx_arg_stagg_eoprec, gs2, ls2);
 }
 
 
@@ -1069,19 +1124,27 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel writes 1 su3vec per site (eo)
 		return C * NC * D * Seo;
 	}
-	if (in == "sax_stagg_eoprec" || in == "sax_arg_stagg_eoprec") {
+	if (in == "sax_cplx_stagg_eoprec" || in == "sax_cplx_arg_stagg_eoprec") {
 		//this kernel reads 1 su3vec, 1 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (1 + 1) + 1);
 	}
-	if (in == "saxpy_stagg_eoprec" || in == "saxpy_arg_stagg_eoprec") {
+	if (in == "saxpy_cplx_stagg_eoprec" || in == "saxpy_cplx_arg_stagg_eoprec") {
 		//this kernel reads 2 su3vec, 1 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (2 + 1) + 1);
 	}
-	if (in == "saxpby_stagg_eoprec" || in == "saxpby_arg_stagg_eoprec") {
+	if (in == "saxpy_real_stagg_eoprec") {
+		//this kernel reads 2 su3vec, 1 real number and writes 1 su3vec per site (eo)
+		return D * Seo * (C * NC * (2 + 1) + 1);
+	}
+	if (in == "saxpby_cplx_stagg_eoprec" || in == "saxpby_cplx_arg_stagg_eoprec") {
 		//this kernel reads 2 su3vec, 2 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (2 + 1) + 2);
 	}
-	if (in == "saxpbypz_stagg_eoprec" || in == "saxpbypz_arg_stagg_eoprec") {
+	if (in == "saxpby_real_stagg_eoprec") {
+		//this kernel reads 2 su3vec, 2 complex number and writes 1 su3vec per site (eo)
+		return D * Seo * (C * NC * (2 + 1) + 2);
+	}
+	if (in == "saxpbypz_cplx_stagg_eoprec" || in == "saxpbypz_cplx_arg_stagg_eoprec") {
 		//this kernel reads 3 su3vec, 2 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (3 + 1) + 2);
 	}
@@ -1187,19 +1250,27 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//this kernel performs 1. / sqrt((3.f * VOL4D)) and su3vec_times_real for each site
 		return Seo * ( 3 + NC * 2);
 	}
-	if (in == "sax_stagg_eoprec" || in == "sax_arg_stagg_eoprec") {
+	if (in == "sax_cplx_stagg_eoprec" || in == "sax_cplx_arg_stagg_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_complex
 		return Seo * (NC * (meta::get_flop_complex_mult()));
 	}
-	if (in == "saxpy_stagg_eoprec" || in == "saxpy_arg_stagg_eoprec") {
+	if (in == "saxpy_cplx_stagg_eoprec" || in == "saxpy_cplx_arg_stagg_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_complex and su3vec_acc
 		return Seo * (NC * (meta::get_flop_complex_mult() + 2));
 	}
-	if (in == "saxpby_stagg_eoprec" || in == "saxpby_arg_stagg_eoprec") {
+	if (in == "saxpy_real_stagg_eoprec") {
+		//this kernel performs on each site (eo) su3vec_times_real and su3vec_acc
+		return Seo * (NC * (2 + 2));
+	}
+	if (in == "saxpby_cplx_stagg_eoprec" || in == "saxpby_cplx_arg_stagg_eoprec") {
 		//this kernel performs on each site (eo) 2*su3vec_times_complex and 1*su3vec_acc
 		return Seo * (NC * (2 * meta::get_flop_complex_mult() + 2));
 	}
-	if (in == "saxpbypz_stagg_eoprec" || in == "saxpbypz_arg_stagg_eoprec") {
+	if (in == "saxpby_real_stagg_eoprec") {
+		//this kernel performs on each site (eo) 2*su3vec_times_real and 1*su3vec_acc
+		return Seo * (NC * (4 + 2));
+	}
+	if (in == "saxpbypz_cplx_stagg_eoprec" || in == "saxpbypz_cplx_arg_stagg_eoprec") {
 		//this kernel performs on each site (eo) 2*su3vec_times_complex and 2*su3vec_acc
 		return Seo * (NC * 2 * (meta::get_flop_complex_mult() + 2));
 	}
@@ -1240,14 +1311,16 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, set_gaussian_spinorfield_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, sax_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, saxpy_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, saxpby_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, saxpbypz_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, sax_arg_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, saxpy_arg_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, saxpby_arg_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, saxpbypz_arg_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, sax_cplx_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpy_cplx_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpy_real_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpby_cplx_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpby_real_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpbypz_cplx_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, sax_cplx_arg_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpy_cplx_arg_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpby_cplx_arg_stagg_eoprec);
+	Opencl_Module::print_profiling(filename, saxpbypz_cplx_arg_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_eoprec);
 	Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_reduction);
 }
