@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace physics::lattices;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
@@ -48,8 +48,8 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(zero)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -82,8 +82,8 @@ BOOST_AUTO_TEST_CASE(cold)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE(gaussian)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -113,8 +113,8 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -145,8 +145,8 @@ BOOST_AUTO_TEST_CASE(sax)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -173,8 +173,8 @@ BOOST_AUTO_TEST_CASE(saxpy)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -198,8 +198,8 @@ BOOST_AUTO_TEST_CASE(saxpby)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -227,8 +227,8 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
@@ -252,12 +252,54 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 1.49, 1.e-8);
 }
 
+BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
+{
+	using physics::lattices::Staggeredfield_eo;
+
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	physics::lattices::Vector<hmc_float> zeros(3, system);
+	physics::lattices::Vector<hmc_float> ones(3, system);
+	physics::lattices::Vector<hmc_float> alpha(3, system);
+	physics::lattices::Vector<hmc_float> result(3, system);
+	std::vector<hmc_float> zeros_host(3, 0.);
+	std::vector<hmc_float> ones_host(3, 1.);
+	std::vector<hmc_float> alpha_host = {1., 1.25, 1.5};
+	std::vector<hmc_float> reference = {0.5, 0.78125, 1.125};
+	zeros.store(zeros_host);
+	ones.store(ones_host);
+	alpha.store(alpha_host);
+	
+	Staggeredfield_eo cold(system);
+	cold.set_cold();
+	Staggeredfield_eo rnd(system);
+	physics::lattices::pseudo_randomize<Staggeredfield_eo, su3vec>(&rnd, 123);
+
+	physics::lattices::sax_vec_and_squarenorm(&result, zeros, rnd);
+	std::vector<hmc_float> result_host = result.get();
+	for(uint i=0; i<result_host.size(); i++)
+	  BOOST_CHECK_EQUAL(result_host[i], 0);
+	
+ 	physics::lattices::sax_vec_and_squarenorm(&result, ones, cold);
+ 	result_host = result.get();
+ 	for(uint i=0; i<result_host.size(); i++)
+ 	  BOOST_CHECK_CLOSE(result_host[i], 0.5, 1.e-8);
+
+	physics::lattices::sax_vec_and_squarenorm(&result, alpha, cold);
+	result_host = result.get();
+	for(uint i=0; i<result_host.size(); i++)
+	  BOOST_CHECK_CLOSE(result_host[i], reference[i], 1.e-8);	
+}
+
 BOOST_AUTO_TEST_CASE(pseudorandomize)
 {
 	using physics::lattices::Staggeredfield_eo;
 	
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	
@@ -267,6 +309,13 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 	physics::lattices::pseudo_randomize<Staggeredfield_eo, su3vec>(&sf, 123);
 	logger.info() << "The squarenorm of the pseudorandomized field is " << physics::lattices::squarenorm(sf);
 }
+
+
+
+
+
+
+
 
 //To be added (so far only single GPU and only EO preconditioning)...
 #if 0
@@ -278,7 +327,7 @@ BOOST_AUTO_TEST_CASE(conversion)
 	using physics::lattices::squarenorm;
 
 	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
