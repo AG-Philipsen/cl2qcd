@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-__kernel void sum(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out)
+__kernel void complex_sum(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out)
 {
 	if(get_global_id(0) == 0) {
 		hmc_complex tmp1 = complexLoadHack(a);

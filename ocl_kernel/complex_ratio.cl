@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-__kernel void ratio(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out)
+__kernel void complex_ratio(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out)
 {
 	//!!CP: complexdivide cannot handle __global
 	if(get_global_id(0) == 0) {

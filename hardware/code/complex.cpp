@@ -35,10 +35,10 @@ void hardware::code::Complex::fill_kernels()
 	logger.debug() << "Creating Complex kernels...";
 	
 	convert = createKernel("convert_float_to_complex") << basic_complex_code << "complex_convert.cl";
-	ratio = createKernel("ratio") << basic_complex_code << "complex_ratio.cl";
-	product = createKernel("product") << basic_complex_code << "complex_product.cl";
-	sum = createKernel("sum") << basic_complex_code << "complex_sum.cl";
-	difference = createKernel("subtraction") << basic_complex_code << "complex_subtraction.cl";
+	ratio = createKernel("complex_ratio") << basic_complex_code << "complex_ratio.cl";
+	product = createKernel("complex_product") << basic_complex_code << "complex_product.cl";
+	sum = createKernel("complex_sum") << basic_complex_code << "complex_sum.cl";
+	difference = createKernel("complex_subtraction") << basic_complex_code << "complex_subtraction.cl";
 }
 
 void hardware::code::Complex::clear_kernels()
@@ -71,22 +71,22 @@ void hardware::code::Complex::get_work_sizes(const cl_kernel kernel, size_t * ls
 		*gs = 1;
 		*num_groups = 1;
 	}
-	if(kernelname.compare("ratio") == 0) {
+	if(kernelname.compare("complex_ratio") == 0) {
 		*ls = 1;
 		*gs = 1;
 		*num_groups = 1;
 	}
-	if(kernelname.compare("product") == 0) {
+	if(kernelname.compare("complex_product") == 0) {
 		*ls = 1;
 		*gs = 1;
 		*num_groups = 1;
 	}
-	if(kernelname.compare("sum") == 0) {
+	if(kernelname.compare("complex_sum") == 0) {
 		*ls = 1;
 		*gs = 1;
 		*num_groups = 1;
 	}
-	if(kernelname.compare("subtraction") == 0) {
+	if(kernelname.compare("complex_subtraction") == 0) {
 		*ls = 1;
 		*gs = 1;
 		*num_groups = 1;
@@ -194,22 +194,12 @@ size_t hardware::code::Complex::get_read_write_size(const std::string& in) const
 		//this kernel reads 1 float and writes 1 complex number
 		return (C + 1) * D;
 	}
-	if (in == "ratio") {
+	if (in == "ratio" || in == "product" || in == "sum" || in == "subtraction") {
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
 	}
-	if (in == "product") {
-		//this kernel reads 2 complex numbers and writes 1 complex number
-		return C * D * (2 + 1);
-	}
-	if (in == "sum") {
-		//this kernel reads 2 complex numbers and writes 1 complex number
-		return C * D * (2 + 1);
-	}
-	if (in == "subtraction") {
-		//this kernel reads 2 complex numbers and writes 1 complex number
-		return C * D * (2 + 1);
-	}
+
+	logger.warn() << "No if entered in Complex::get_read_write_size, returning 0...";
 	return 0;
 }
 
@@ -227,6 +217,8 @@ uint64_t hardware::code::Complex::get_flop_size(const std::string& in) const
 	if (in == "subtraction") {
 		return 2;
 	}
+	
+	logger.warn() << "No if entered in Complex::get_flop_size, returning 0...";
 	return 0;
 }
 
