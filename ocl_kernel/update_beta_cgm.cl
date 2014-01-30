@@ -22,18 +22,6 @@
  * Device code implementing real numbers algebra functionalities
  */
 
-__kernel void update_zeta_cgm(__global const hmc_float * zeta_prev, __global const hmc_float * zeta_prev_prev, __global const hmc_float * sbeta_prev, __global const hmc_float * sbeta_pres, __global const hmc_float * salpha_prev, __global const hmc_float * sigma, const int numeq, __global hmc_float * out)
-{
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	
-	for(int id_mem = id; id_mem < numeq; id_mem += global_size) 
-	   out[id_mem] = update_zeta_cgm_alg(zeta_prev[id_mem], zeta_prev_prev[id_mem], *sbeta_prev,
-					      *sbeta_pres, *salpha_prev, sigma[id_mem]);
-	
-}
-
-
 __kernel void update_beta_cgm(__global const hmc_float * sbeta_pres, __global const hmc_float * zeta_pres, __global const hmc_float * zeta_prev, const int numeq, __global hmc_float * out)
 {
 	int global_size = get_global_size(0);
@@ -43,19 +31,3 @@ __kernel void update_beta_cgm(__global const hmc_float * sbeta_pres, __global co
 	   out[id_mem] = update_beta_cgm_alg(*sbeta_pres, zeta_pres[id_mem], zeta_prev[id_mem]);
 	
 }
-
-
-__kernel void update_alpha_cgm(__global const hmc_float * salpha_pres, __global const hmc_float * zeta_pres, __global const hmc_float * beta_pres, __global const hmc_float * zeta_prev, __global const hmc_float * sbeta_pres, const int numeq, __global hmc_float * out)
-{
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	
-	for(int id_mem = id; id_mem < numeq; id_mem += global_size) 
-	   out[id_mem] = update_alpha_cgm_alg(*salpha_pres, zeta_pres[id_mem], beta_pres[id_mem],
-					        zeta_prev[id_mem], *sbeta_pres);
-	
-}
-
-
-
-
