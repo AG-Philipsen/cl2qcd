@@ -26,6 +26,70 @@
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/real.hpp"
 
+void physics::lattices::add(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& left, const Scalar<hmc_float>& right)
+{
+	auto dest_bufs = dest->get_buffers();
+	size_t num_bufs = dest_bufs.size();
+	auto left_bufs = left.get_buffers();
+	auto right_bufs = right.get_buffers();
+
+	if(num_bufs != left_bufs.size() || num_bufs != right_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = dest_bufs[i]->get_device()->get_real_code();
+		code->set_real_to_sum_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
+	}
+}
+
+void physics::lattices::subtract(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& minuend, const Scalar<hmc_float>& subtrahend)
+{
+	auto dest_bufs = dest->get_buffers();
+	size_t num_bufs = dest_bufs.size();
+	auto minuend_bufs = minuend.get_buffers();
+	auto subtrahend_bufs = subtrahend.get_buffers();
+
+	if(num_bufs != minuend_bufs.size() || num_bufs != subtrahend_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = dest_bufs[i]->get_device()->get_real_code();
+		code->set_real_to_difference_device(minuend_bufs[i], subtrahend_bufs[i], dest_bufs[i]);
+	}
+}
+
+void physics::lattices::multiply(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& left, const Scalar<hmc_float>& right)
+{
+	auto dest_bufs = dest->get_buffers();
+	size_t num_bufs = dest_bufs.size();
+	auto left_bufs = left.get_buffers();
+	auto right_bufs = right.get_buffers();
+
+	if(num_bufs != left_bufs.size() || num_bufs != right_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = dest_bufs[i]->get_device()->get_real_code();
+		code->set_real_to_product_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
+	}
+}
+
+void physics::lattices::divide(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& numerator, const Scalar<hmc_float>& denominator)
+{
+	auto dest_bufs = dest->get_buffers();
+	size_t num_bufs = dest_bufs.size();
+	auto numerator_bufs = numerator.get_buffers();
+	auto denominator_bufs = denominator.get_buffers();
+
+	if(num_bufs != numerator_bufs.size() || num_bufs != denominator_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = dest_bufs[i]->get_device()->get_real_code();
+		code->set_real_to_ratio_device(numerator_bufs[i], denominator_bufs[i], dest_bufs[i]);
+	}
+}
+
 
 void physics::lattices::update_zeta_cgm(const Vector<hmc_float>* out, const Vector<hmc_float>& zeta_prev, const Vector<hmc_float>& zeta_prev_prev, const Scalar<hmc_float>& sbeta_prev, const Scalar<hmc_float>& sbeta_pres, const Scalar<hmc_float>& salpha_prev, const Vector<hmc_float>& sigma, const int numeq)
 {
