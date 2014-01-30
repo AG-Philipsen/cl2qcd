@@ -25,7 +25,7 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_COMPLEX
+#define BOOST_TEST_MODULE OPENCL_MODULE_REAL
 #include <boost/test/unit_test.hpp>
 
 //some functionality
@@ -42,6 +42,72 @@ void test_build(std::string inputfile)
 	}
 	BOOST_MESSAGE("Test done");
 }
+
+void test_base_operations(std::string inputfile, int switcher, bool hard=false)
+{
+  //switcher chooses between product, ratio, sum, subtraction and convert
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	if (switcher == 0)
+	  kernelName = "product";
+	else if(switcher == 1)
+	  kernelName = "ratio";
+	else if(switcher == 2)
+	  kernelName = "sum";
+	else if(switcher == 3)
+	  kernelName = "subtraction";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	auto * device = system.get_devices().at(0)->get_real_code();
+
+	logger.info() << "Fill buffers...";
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> alpha(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> beta(1, device->get_device());
+
+	hmc_float alpha_host = params.get_beta();
+	logger.info() << "Use alpha = " << alpha_host;
+	hmc_float beta_host = params.get_kappa();
+	logger.info() << "Use beta = " << beta_host;
+
+	alpha.load(&alpha_host);
+	beta.load(&beta_host);
+
+	logger.info() << "Run kernel";
+	if(switcher == 0){
+	  device->set_real_to_product_device(&alpha, &beta, &sqnorm);
+	  if(hard)
+	    device->set_real_to_product_device(&alpha, &sqnorm, &sqnorm);
+	}
+	else if (switcher ==1){
+	  device->set_real_to_ratio_device(&alpha, &beta, &sqnorm);
+	  if(hard)
+	    device->set_real_to_ratio_device(&sqnorm, &beta, &sqnorm);
+	}
+	else if (switcher ==2){
+	  device->set_real_to_sum_device(&alpha, &beta, &sqnorm);
+	  if(hard)
+	    device->set_real_to_sum_device(&alpha, &sqnorm, &sqnorm);
+	}
+	else if (switcher ==3){
+	  device->set_real_to_difference_device(&alpha, &beta, &sqnorm);
+	  if(hard)
+	    device->set_real_to_difference_device(&sqnorm, &beta, &sqnorm);
+	}
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	hmc_float tmp;
+	sqnorm.dump(&tmp);
+	cpu_res = tmp;
+	logger.info() << cpu_res;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
 
 void test_update(std::string inputfile, int switcher)
 {
@@ -124,6 +190,184 @@ BOOST_AUTO_TEST_CASE( BUILD_2 )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE(REAL_PRODUCT)
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_1 )
+{
+  test_base_operations("/real_product_input_1", 0);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_2 )
+{
+  test_base_operations("/real_product_input_2", 0);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_3 )
+{
+  test_base_operations("/real_product_input_3", 0);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_4 )
+{
+  test_base_operations("/real_product_input_4", 0);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_5 )
+{
+  test_base_operations("/real_product_input_5", 0);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_6 )
+{
+  test_base_operations("/real_product_input_6", 0);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_7 )
+{
+  test_base_operations("/real_product_input_7", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_8 )
+{
+  test_base_operations("/real_product_input_8", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_9 )
+{
+  test_base_operations("/real_product_input_9", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_10 )
+{
+  test_base_operations("/real_product_input_10", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_11 )
+{
+  test_base_operations("/real_product_input_11", 0, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_PRODUCT_12 )
+{
+  test_base_operations("/real_product_input_12", 0, true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(REAL_RATIO)
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_1 )
+{
+  test_base_operations("/real_ratio_input_1", 1);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_2 )
+{
+  test_base_operations("/real_ratio_input_2", 1);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_3 )
+{
+  test_base_operations("/real_ratio_input_3", 1);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_4 )
+{
+  test_base_operations("/real_ratio_input_4", 1);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_5 )
+{
+  test_base_operations("/real_ratio_input_5", 1, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_6 )
+{
+  test_base_operations("/real_ratio_input_6", 1, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_7 )
+{
+  test_base_operations("/real_ratio_input_7", 1, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_RATIO_8 )
+{
+  test_base_operations("/real_ratio_input_8", 1, true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(REAL_SUM)
+
+BOOST_AUTO_TEST_CASE( REAL_SUM_1 )
+{
+  test_base_operations("/real_sum_input_1", 2);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_SUM_2 )
+{
+  test_base_operations("/real_sum_input_2", 2);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_SUM_3 )
+{
+  test_base_operations("/real_sum_input_3", 2);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_SUM_4 )
+{
+  test_base_operations("/real_sum_input_4", 2, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_SUM_5 )
+{
+  test_base_operations("/real_sum_input_5", 2, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_SUM_6 )
+{
+  test_base_operations("/real_sum_input_6", 2, true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(REAL_DIFFERENCE)
+
+BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_1 )
+{
+  test_base_operations("/real_difference_input_1", 3);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_2 )
+{
+  test_base_operations("/real_difference_input_2", 3);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_3 )
+{
+  test_base_operations("/real_difference_input_3", 3);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_4 )
+{
+  test_base_operations("/real_difference_input_4", 3, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_5 )
+{
+  test_base_operations("/real_difference_input_5", 3, true);
+}
+
+BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_6 )
+{
+  test_base_operations("/real_difference_input_6", 3, true);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE(REAL_UPDATE)
 

@@ -1,0 +1,13 @@
+NS=4
+NT=4
+
+# this specifies alpha
+beta=1.
+# this specifies beta
+kappa=-1.
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=-1.
+
