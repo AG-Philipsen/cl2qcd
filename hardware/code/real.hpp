@@ -42,6 +42,34 @@ public:
 	friend hardware::Device;
 
 	virtual ~Real();
+	
+	/**
+	 * @param a The numerator of the fraction
+	 * @param b The denominator of the fraction
+	 * @param out A real number containing a/b
+	 */
+	void set_real_to_ratio_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const;
+	
+	/**
+	 * @param a The first term of the multiplication
+	 * @param b The second term of the multiplication
+	 * @param out A real number containing a * b
+	 */
+	void set_real_to_product_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const;
+	
+	/**
+	 * @param a The first term of the addition
+	 * @param b The second term of the addition
+	 * @param out A real number containing a + b
+	 */
+	void set_real_to_sum_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const;
+
+	/**
+	 * @param a The first term of the aubtraction
+	 * @param b The second term of the subtraction
+	 * @param out A real number containing a - b
+	 */
+	void set_real_to_difference_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const;
 
 	/**
 	 * Tool for the multimass conjugate gradient algorithm.
@@ -137,7 +165,13 @@ private:
 
 	ClSourcePackage basic_real_code;
 
-	//Single
+	//Single operations
+	cl_kernel ratio;
+	cl_kernel product;
+	cl_kernel sum;
+	cl_kernel difference;
+	
+	//Update cgm kernels
 	cl_kernel update_alpha_cgm;
 	cl_kernel update_beta_cgm;
 	cl_kernel update_zeta_cgm;

@@ -29,13 +29,19 @@
 
 void hardware::code::Real::fill_kernels()
 {
-	basic_real_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_real.cl" << "real_algebra.cl";
+	basic_real_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_real.cl";
 	
 	logger.debug() << "Creating Real kernels...";
 	
-	update_alpha_cgm = createKernel("update_alpha_cgm") << basic_real_code;
-	update_beta_cgm = createKernel("update_beta_cgm") << basic_real_code;
-	update_zeta_cgm = createKernel("update_zeta_cgm") << basic_real_code;
+	//Single operations kernels
+	ratio = createKernel("real_ratio") << basic_real_code << "real_ratio.cl";
+	product = createKernel("real_product") << basic_real_code << "real_product.cl";
+	sum = createKernel("real_sum") << basic_real_code << "real_sum.cl";
+	difference = createKernel("real_subtraction") << basic_real_code << "real_subtraction.cl";
+	//Update cgm kernels
+	update_alpha_cgm = createKernel("update_alpha_cgm") << basic_real_code << "update_alpha_cgm.cl";
+	update_beta_cgm = createKernel("update_beta_cgm") << basic_real_code << "update_beta_cgm.cl";
+	update_zeta_cgm = createKernel("update_zeta_cgm") << basic_real_code << "update_zeta_cgm.cl";
 }
 
 void hardware::code::Real::clear_kernels()
@@ -44,6 +50,16 @@ void hardware::code::Real::clear_kernels()
 
 	logger.debug() << "Clearing Real kernels...";
 	
+	//Single operations kernels
+	clerr = clReleaseKernel(ratio);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(product);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(sum);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(difference);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	//Update cgm kernels
 	clerr = clReleaseKernel(update_alpha_cgm);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(update_beta_cgm);
@@ -59,6 +75,26 @@ void hardware::code::Real::get_work_sizes(const cl_kernel kernel, size_t * ls, s
 
 	//Query specific sizes for kernels if needed
 	std::string kernelname = get_kernel_name(kernel);
+	if(kernelname.compare("real_ratio") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
+	if(kernelname.compare("real_product") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
+	if(kernelname.compare("real_sum") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
+	if(kernelname.compare("real_subtraction") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
 	if(kernelname.compare("update_alpha_cgm") == 0) {
 		*ls = 16;
 		*gs = 16;
@@ -75,6 +111,84 @@ void hardware::code::Real::get_work_sizes(const cl_kernel kernel, size_t * ls, s
 		*num_groups = 1;
 	}
 }
+
+void hardware::code::Real::set_real_to_ratio_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(ratio, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(ratio, 0, sizeof(cl_mem), a->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(ratio, 1, sizeof(cl_mem), b->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(ratio, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(ratio, gs2, ls2);
+}
+
+void hardware::code::Real::set_real_to_product_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(product, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(product, 0, sizeof(cl_mem), a->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(product, 1, sizeof(cl_mem), b->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(product, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(product, gs2, ls2);
+}
+
+void hardware::code::Real::set_real_to_sum_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(sum, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(sum, 0, sizeof(cl_mem), a->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(sum, 1, sizeof(cl_mem), b->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(sum, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(sum, gs2, ls2);
+}
+
+void hardware::code::Real::set_real_to_difference_device(const hardware::buffers::Plain<hmc_float> * a, const hardware::buffers::Plain<hmc_float> * b, const hardware::buffers::Plain<hmc_float> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(difference, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(difference, 0, sizeof(cl_mem), a->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(difference, 1, sizeof(cl_mem), b->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(difference, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(difference, gs2, ls2);
+}
+
+
 
 void hardware::code::Real::update_zeta_cgm_device(const hardware::buffers::Plain<hmc_float> * zeta_prev, const hardware::buffers::Plain<hmc_float> * zeta_prev_prev, const hardware::buffers::Plain<hmc_float> * sbeta_prev, const hardware::buffers::Plain<hmc_float> * sbeta_pres, const hardware::buffers::Plain<hmc_float> * salpha_prev, const hardware::buffers::Plain<hmc_float> * sigma, const int numeq, const hardware::buffers::Plain<hmc_float> * out) const
 {
@@ -170,12 +284,22 @@ void hardware::code::Real::update_alpha_cgm_device(const hardware::buffers::Plai
 
 size_t hardware::code::Real::get_read_write_size(const std::string& in) const
 {
-	throw Print_Error_Message("get_read_write_size without methods!", __FILE__, __LINE__);
+	size_t D = meta::get_float_size(get_parameters());
+	if (in == "ratio" || in == "product" || in == "sum" || in == "subtraction") {
+		//this kernel reads 2 real numbers and writes 1 real number
+		return D * (2 + 1);
+	}
+	
+	logger.warn() << "No if entered in Real::get_read_write_size, returning 0...";
 	return 0;
 }
 uint64_t hardware::code::Real::get_flop_size(const std::string& in) const
 {
-	throw Print_Error_Message("get_flop_size without methods!", __FILE__, __LINE__);
+	if (in == "ratio" || in == "product" || in == "sum" || in == "subtraction") {
+		return 1;
+	}
+	
+	logger.warn() << "No if entered in Real::get_flop_size, returning 0...";
 	return 0;
 }
 
@@ -225,13 +349,19 @@ uint64_t hardware::code::Real::get_flop_size_update(const std::string& in, const
 
 void hardware::code::Real::print_profiling(const std::string& filename, int number) const
 {
+	Opencl_Module::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, ratio);
+	Opencl_Module::print_profiling(filename, product);
+	Opencl_Module::print_profiling(filename, sum);
+	Opencl_Module::print_profiling(filename, difference);
 	Opencl_Module::print_profiling(filename, update_alpha_cgm);
 	Opencl_Module::print_profiling(filename, update_beta_cgm);
 	Opencl_Module::print_profiling(filename, update_zeta_cgm);
 }
 
 hardware::code::Real::Real(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), update_alpha_cgm(0), update_beta_cgm(0), update_zeta_cgm(0)
+	: Opencl_Module(params, device), ratio(0), product(0), sum(0), difference(0), update_alpha_cgm(0),
+	                                 update_beta_cgm(0), update_zeta_cgm(0)
 {
 	fill_kernels();
 }
