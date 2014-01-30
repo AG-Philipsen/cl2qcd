@@ -45,6 +45,7 @@ BOOST_AUTO_TEST_CASE(vector_float)
 	foo.store(ref);
 	std::vector<hmc_float> got = foo.get();
 	
+	BOOST_REQUIRE_EQUAL(foo.get_vector_size(), 3);
 	BOOST_REQUIRE_EQUAL(ref.size(), got.size());
 	for(uint i=0; i<got.size(); i++)
 	  BOOST_REQUIRE_EQUAL(got[i], ref[i]);
@@ -61,13 +62,11 @@ BOOST_AUTO_TEST_CASE(vector_complex)
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Vector<hmc_complex> foo(3, system);
-	logger.info() << "Vector created!";
 	std::vector<hmc_complex> ref(3, {13., 3.1415});
 	foo.store(ref);
-	logger.info() << "Store done!";
 	std::vector<hmc_complex> got = foo.get();
-	logger.info() << "Store done!";
 	
+	BOOST_REQUIRE_EQUAL(foo.get_vector_size(), 3);
 	BOOST_REQUIRE_EQUAL(ref.size(), got.size());
 	for(uint i=0; i<got.size(); i++){
 	  BOOST_REQUIRE_EQUAL(got[i].re, ref[i].re);
@@ -86,13 +85,11 @@ BOOST_AUTO_TEST_CASE(vector_char)
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Vector<char> foo(3, system);
-	logger.info() << "Vector created!";
 	std::vector<char> ref(3, 'a');
 	foo.store(ref);
-	logger.info() << "Store done!";
 	std::vector<char> got = foo.get();
-	logger.info() << "Store done!";
 	
+	BOOST_REQUIRE_EQUAL(foo.get_vector_size(), 3);
 	BOOST_REQUIRE_EQUAL(ref.size(), got.size());
 	for(uint i=0; i<got.size(); i++){
 	  BOOST_REQUIRE_EQUAL(got[i], ref[i]);
