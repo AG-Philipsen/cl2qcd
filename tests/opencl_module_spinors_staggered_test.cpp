@@ -1000,6 +1000,9 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, int switcher=0)
 	  kernelName = "saxpy_cplx_arg_staggered_eoprec";
 	if(switcher==2)
 	  kernelName = "saxpy_real_staggered_eoprec";
+	if(switcher==3)
+	  kernelName = "saxpy_real_arg_staggered_eoprec";
+	
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -1014,10 +1017,10 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, int switcher=0)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	
 	//Here we waste a bit of memory, but in the test is not a problem!!
-	//Used if switcher==2
+	//Used if switcher==2 || ==3
 	hardware::buffers::Plain<hmc_float> alpha_real(1, device->get_device());
 	hmc_float alpha_host_real = params.get_beta();
-	//Used if switcher!=2
+	//Used if switcher==0 || ==1
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
 	
@@ -1049,7 +1052,7 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, int switcher=0)
 	
 	in.load(sf_in);
 	in2.load(sf_in2);
-	if(switcher==2){
+	if(switcher==2 || switcher==3){
 	  logger.info() << "Use alpha = " << alpha_host_real;
 	  alpha_real.load(&alpha_host_real);
 	}else{
@@ -1064,6 +1067,8 @@ void test_sf_saxpy_staggered_eo(std::string inputfile, int switcher=0)
 	  device->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
 	if(switcher==2)
 	  device->saxpy_eoprec_device(&in, &in2, &alpha_real, &out);
+	if(switcher==3)
+	  device->saxpy_eoprec_device(&in, &in2, alpha_host_real, &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -1085,6 +1090,8 @@ void test_sf_saxpby_staggered_eo(std::string inputfile, int switcher=0)
 	if(switcher==1)
 	  kernelName = "saxpby_cplx_arg_staggered_eoprec";
 	if(switcher==2)
+	  kernelName = "saxpby_real_staggered_eoprec";
+	if(switcher==3)
 	  kernelName = "saxpby_real_arg_staggered_eoprec";
 	
 	printKernelInfo(kernelName);
@@ -1101,12 +1108,12 @@ void test_sf_saxpby_staggered_eo(std::string inputfile, int switcher=0)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	
 	//Here we waste a bit of memory, but in the test is not a problem!!
-	//Used if switcher==2
+	//Used if switcher==2 || ==3
 	hardware::buffers::Plain<hmc_float> alpha_real(1, device->get_device());
 	hardware::buffers::Plain<hmc_float> beta_real(1, device->get_device());
 	hmc_float alpha_host_real = params.get_beta();
 	hmc_float beta_host_real = params.get_kappa();
-	//Used if switcher!=2
+	//Used if switcher==0 || ==1
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
@@ -1141,7 +1148,7 @@ void test_sf_saxpby_staggered_eo(std::string inputfile, int switcher=0)
 	in.load(sf_in);
 	in2.load(sf_in2);
 	
-	if(switcher==2){
+	if(switcher==2 || switcher==3){
 	  logger.info() << "Use alpha = " << alpha_host_real;
 	  logger.info() << "Use beta = " << beta_host_real;
 	  alpha_real.load(&alpha_host_real);
@@ -1160,6 +1167,8 @@ void test_sf_saxpby_staggered_eo(std::string inputfile, int switcher=0)
 	  device->saxpby_eoprec_device(&in, &in2, alpha_host, beta_host, &out);
 	if(switcher==2)
 	  device->saxpby_eoprec_device(&in, &in2, &alpha_real, &beta_real, &out);
+	if(switcher==3)
+	  device->saxpby_eoprec_device(&in, &in2, alpha_host_real, beta_host_real, &out);
 	
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -2290,6 +2299,40 @@ BOOST_AUTO_TEST_CASE( SF_SAXPY_REAL_EO_6 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SF_SAXPY_REAL_ARG_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_REAL_ARG_EO_1 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_1", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_REAL_ARG_EO_2 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_2", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_REAL_ARG_EO_3 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_6", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_REAL_ARG_EO_4 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_10", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_REAL_ARG_EO_5 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_11", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPY_REAL_ARG_EO_6 )
+{
+  test_sf_saxpy_staggered_eo("/sf_saxpy_staggered_eo_input_15", 3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE(SF_SAXPBY_EO)
 
 BOOST_AUTO_TEST_CASE( SF_SAXPBY_EO_1 )
@@ -2678,6 +2721,50 @@ BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_EO_7 )
 BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_EO_8 )
 {
   test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_28", 2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SAXPBY_REAL_ARG_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_1 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_1", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_2 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_3", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_3 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_9", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_4 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_11", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_5 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_18", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_6 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_20", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_7 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_26", 3);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SAXPBY_REAL_ARG_EO_8 )
+{
+  test_sf_saxpby_staggered_eo("/sf_saxpby_staggered_eo_input_28", 3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
