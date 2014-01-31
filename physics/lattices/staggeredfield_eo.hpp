@@ -140,9 +140,12 @@ template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::latti
  */
 void saxpy(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const Staggeredfield_eo& y);
 void saxpy(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, const Staggeredfield_eo& x, const Staggeredfield_eo& y);
+void saxpy(const Staggeredfield_eo* out, const Scalar<hmc_float>& alpha, const Staggeredfield_eo& x, const Staggeredfield_eo& y);
+void saxpy(const Staggeredfield_eo* out, const hmc_float alpha, const Staggeredfield_eo& x, const Staggeredfield_eo& y);
 
-template<typename S, void (*T)(const S*, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
-template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpy>(const hardware::System&);
+template<typename S, typename U, void (*T)(const S*, const U, const S&, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, hmc_complex, physics::lattices::saxpy>(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, hmc_float, physics::lattices::saxpy>(const hardware::System&);
 
 /**
  * Perform the BLAS (Basic Linear Algebra Subroutine) operation saxpby.
@@ -151,9 +154,12 @@ template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::latti
  */
 void saxpby(const Staggeredfield_eo* out, const hmc_complex alpha, const Staggeredfield_eo& x, const hmc_complex beta, const Staggeredfield_eo& y);
 void saxpby(const Staggeredfield_eo* out, const Scalar<hmc_complex>& alpha, const Staggeredfield_eo& x, const Scalar<hmc_complex>& beta, const Staggeredfield_eo& y);
+void saxpby(const Staggeredfield_eo* out, const hmc_float alpha, const Staggeredfield_eo& x, const hmc_float beta, const Staggeredfield_eo& y);
+void saxpby(const Staggeredfield_eo* out, const Scalar<hmc_float>& alpha, const Staggeredfield_eo& x, const Scalar<hmc_float>& beta, const Staggeredfield_eo& y);
 
-template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&)> size_t get_flops(const hardware::System&);
-template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpby>(const hardware::System&);
+template<typename S, typename U, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, hmc_complex, physics::lattices::saxpby>(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, hmc_float, physics::lattices::saxpby>(const hardware::System&);
 
 /**
  * Perform the BLAS (Basic Linear Algebra Subroutine) operation saxpbypz.
@@ -170,7 +176,7 @@ template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::latti
  * Perform the BLAS (Basic Linear Algebra Subroutine) operation sax + the squarenorm
  * with a set of real values of alpha.
  *
- * \\out\\^2 = ||alpha[i] * x||^2
+ * ||out||^2 = ||alpha[i] * x||^2
  */
 void sax_vec_and_squarenorm(const Vector<hmc_float>* res, const Vector<hmc_float>& alpha, const Staggeredfield_eo& x);
 

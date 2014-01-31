@@ -185,13 +185,25 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	Staggeredfield_eo zero(system);
 	zero.set_zero();
 	Staggeredfield_eo sf(system);
+	physics::lattices::Scalar<hmc_complex> cplx(system);
+	physics::lattices::Scalar<hmc_float> real(system);
+	cplx.store({0.3, 0.1});
+	real.store(0.3);
 
+	//Complex
 	physics::lattices::saxpy(&sf, {1., 0.}, gaussian, zero);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
 	physics::lattices::saxpy(&sf, {0., 0.}, gaussian, cold);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(cold), 1.e-8);
-	physics::lattices::saxpy(&sf, {.3, .1}, cold, cold);
+	physics::lattices::saxpy(&sf, cplx, cold, cold);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .85, 1.e-8);
+	//Real
+	physics::lattices::saxpy(&sf, 1.0, gaussian, zero);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpy(&sf, 0.0, gaussian, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(cold), 1.e-8);
+	physics::lattices::saxpy(&sf, real, cold, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .845, 1.e-8);
 }
 
 BOOST_AUTO_TEST_CASE(saxpby)
@@ -210,17 +222,35 @@ BOOST_AUTO_TEST_CASE(saxpby)
 	Staggeredfield_eo zero(system);
 	zero.set_zero();
 	Staggeredfield_eo sf(system);
+	physics::lattices::Scalar<hmc_complex> cplx(system);
+	physics::lattices::Scalar<hmc_float> real(system);
 
+	//Complex
 	physics::lattices::saxpby(&sf, {1., 0.}, gaussian, {0., 0.}, cold);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
 	physics::lattices::saxpby(&sf, {0., 0.}, cold, {1., 0.}, gaussian);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
 	physics::lattices::saxpby(&sf, {0., 0.}, gaussian, {0., 0.}, gaussian);
 	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
-	physics::lattices::saxpby(&sf, {.3, .7}, cold, {1., 0.}, zero);
+	cplx.store({0.3, 0.7});
+	physics::lattices::saxpby(&sf, cplx, cold, cplx, zero);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.29, 1.e-8);
-	physics::lattices::saxpby(&sf, {.1, .3}, zero, {.56, .65}, cold);
+	cplx.store({0.56, 0.65});
+	physics::lattices::saxpby(&sf, cplx, zero, cplx, cold);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.36805, 1.e-8);
+	//Real
+	physics::lattices::saxpby(&sf, {1., 0.}, gaussian, {0., 0.}, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpby(&sf, {0., 0.}, cold, {1., 0.}, gaussian);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
+	physics::lattices::saxpby(&sf, {0., 0.}, gaussian, {0., 0.}, gaussian);
+	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
+	real.store(0.3);
+	physics::lattices::saxpby(&sf, real, cold, real, zero);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.045, 1.e-8);
+	real.store(-0.56);
+	physics::lattices::saxpby(&sf, real, zero, real, cold);
+	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.1568, 1.e-8);
 }
 
 BOOST_AUTO_TEST_CASE(saxpbypz)
