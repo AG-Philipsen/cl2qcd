@@ -175,6 +175,7 @@ public:
 	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const;
 	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_complex alpha, const hardware::buffers::SU3vec * out) const;
 	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::SU3vec * out) const;
+	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_float alpha, const hardware::buffers::SU3vec * out) const;
 	
 	/**
 	 * This function returns a linear combination of the input staggered fields
@@ -188,6 +189,7 @@ public:
 	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::SU3vec * out) const;
 	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_complex alpha, const hmc_complex beta, const hardware::buffers::SU3vec * out) const;
 	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::Plain<hmc_float> * beta, const hardware::buffers::SU3vec * out) const;
+	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_float alpha, const hmc_float beta, const hardware::buffers::SU3vec * out) const;
 	
 	/**
 	 * This function returns a linear combination of the input staggered fields
@@ -426,7 +428,9 @@ private:
 	//Algebra on staggered fields with hmc_complex arguments instead of buffers
 	cl_kernel sax_cplx_arg_stagg_eoprec;
 	cl_kernel saxpy_cplx_arg_stagg_eoprec;
+	cl_kernel saxpy_real_arg_stagg_eoprec;
 	cl_kernel saxpby_cplx_arg_stagg_eoprec;
+	cl_kernel saxpby_real_arg_stagg_eoprec;
 	cl_kernel saxpbypz_cplx_arg_stagg_eoprec;
 	
 	//Mixed kernels

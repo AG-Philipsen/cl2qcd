@@ -43,8 +43,6 @@ __kernel void saxpby_cplx_staggered_eoprec(__global const staggeredStorageType *
 		su3vec out_tmp = su3vec_acc(y_tmp, x_tmp);
 		put_su3vec_to_field_eo(out, id_mem, out_tmp);
 	}
-
-	return;
 }
 
 __kernel void saxpby_cplx_arg_staggered_eoprec(__global const spinorStorageType * const x, __global const spinorStorageType * const y, const hmc_float alpha_re, const hmc_float alpha_im, const hmc_float beta_re, const hmc_float beta_im, __global spinorStorageType * const out)
