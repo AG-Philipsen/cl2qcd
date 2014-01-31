@@ -37,5 +37,16 @@ __kernel void scalar_product_reduction(__global hmc_complex* result_tmp, __globa
 		}
 		(*result) = tmp2;
 	}
-	return;
+}
+
+__kernel void scalar_product_real_reduction(__global hmc_float* result_tmp, __global hmc_float* result, const uint num_values)
+{
+	int id = get_global_id(0);
+	if(id == 0) {
+		hmc_float tmp = result_tmp[0];
+		for (int i = 1; i < num_values; i++) {
+			tmp += result_tmp[i];
+		}
+		(*result) = tmp;
+	}
 }

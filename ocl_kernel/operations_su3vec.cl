@@ -52,6 +52,16 @@ hmc_complex su3vec_scalarproduct(su3vec in1, su3vec in2)
 	return tmp;
 }
 
+hmc_float su3vec_scalarproduct_real_part(su3vec in1, su3vec in2)
+{
+	hmc_float tmp;
+	tmp =
+	  in1.e0.re * in2.e0.re + in1.e0.im * in2.e0.im +
+	  in1.e1.re * in2.e1.re + in1.e1.im * in2.e1.im +
+	  in1.e2.re * in2.e2.re + in1.e2.im * in2.e2.im;
+	return tmp;
+}
+
 su3vec set_su3vec_zero()
 {
 	su3vec tmp;

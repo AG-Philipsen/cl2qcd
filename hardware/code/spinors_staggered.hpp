@@ -222,9 +222,11 @@ public:
 	 * of each su3vec per site (even or odd)
 	 * @param a The first staggered field (one su3vec per site even or odd)
 	 * @param b The second staggered field (one su3vec per site even or odd)
-	 * @param out The result of the scalarproduct
+	 * @param out The result of the scalarproduct (it could be real)
 	 */
 	void set_complex_to_scalar_product_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::SU3vec * b, const hardware::buffers::Plain<hmc_complex> * out) const;
+	///@note If this function is called and out is complex an exception is thrown!
+	void set_float_to_scalar_product_real_part_eoprec_device(const hardware::buffers::SU3vec * a, const hardware::buffers::SU3vec * b, const hardware::buffers::Plain<hmc_float> * out) const;
 	
 	/**
 	 * This function returns the squarenorms of the input staggered field with even-odd
@@ -388,6 +390,7 @@ private:
 	//Scalar Product
 	cl_kernel scalar_product_stagg;
 	cl_kernel scalar_product_reduction_stagg;
+	cl_kernel scalar_product_real_reduction_stagg;
 	
 	//Squarenorm
 	cl_kernel global_squarenorm_stagg;
@@ -409,6 +412,7 @@ private:
 	
 	//Scalar Product
 	cl_kernel scalar_product_stagg_eoprec;
+	cl_kernel scalar_product_real_part_stagg_eoprec;
 	
 	//Squarenorm
 	cl_kernel global_squarenorm_stagg_eoprec;
