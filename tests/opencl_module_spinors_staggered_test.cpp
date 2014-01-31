@@ -866,7 +866,7 @@ void test_sf_cold_staggered_eo(std::string inputfile, bool switcher)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_sf_scalar_product_staggered_eo(std::string inputfile)
+void test_sf_scalar_product_staggered_eo(std::string inputfile, bool real_part=false)
 {
 	using namespace hardware::buffers;
 
@@ -882,7 +882,9 @@ void test_sf_scalar_product_staggered_eo(std::string inputfile)
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
 	const SU3vec in(NUM_ELEMENTS_SF, device->get_device());
 	const SU3vec in2(NUM_ELEMENTS_SF, device->get_device());
+	//Here I waste a bit of memory but in a test this is not so serious
 	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> sqnorm_real(1, device->get_device());
 
 	su3vec * sf_in;
 	sf_in = new su3vec[NUM_ELEMENTS_SF];
@@ -916,9 +918,15 @@ void test_sf_scalar_product_staggered_eo(std::string inputfile)
 	logger.info() << "Run kernel";
 	logger.info() << "result:";
 	hmc_complex cpu_res_tmp;
-	device->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
-	sqnorm.dump(&cpu_res_tmp);
-	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
+	hmc_float cpu_res;
+	if(real_part == false){
+	  device->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
+	  sqnorm.dump(&cpu_res_tmp);
+	  cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
+	}else{
+	  device->set_float_to_scalar_product_real_part_eoprec_device(&in, &in2, &sqnorm_real);
+	  sqnorm_real.dump(&cpu_res);
+	}
 	logger.info() << cpu_res;
 
 	testFloatAgainstInputparameters(cpu_res, params);
@@ -1944,6 +1952,30 @@ BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_1 )
 BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_2 )
 {
   test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_REAL_EO)
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_1 )
+{
+  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_input_1", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_2 )
+{
+  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_1", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_3 )
+{
+  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_2", true);
+}
+
+BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_4 )
+{
+  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_3", true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
