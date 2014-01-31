@@ -139,6 +139,11 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(zero, gaussian), hmc_complex_zero);
 	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(zero, cold), hmc_complex_zero);
 	BOOST_CHECK_EQUAL(physics::lattices::scalar_product(cold, zero), hmc_complex_zero);
+	//Real part function
+	BOOST_CHECK_EQUAL(physics::lattices::scalar_product_real_part(gaussian, gaussian),
+			   physics::lattices::squarenorm(gaussian));
+	BOOST_CHECK_EQUAL(physics::lattices::scalar_product_real_part(gaussian, cold), gaussian_scalar_cold.re);
+	BOOST_CHECK_EQUAL(physics::lattices::scalar_product_real_part(cold, gaussian), cold_scalar_gaussian.re);
 }
 
 BOOST_AUTO_TEST_CASE(sax)

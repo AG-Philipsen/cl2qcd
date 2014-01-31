@@ -99,6 +99,7 @@ private:
 	void import(const su3vec * const host) const;
 
 	friend hmc_complex scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
+	friend hmc_float scalar_product_real_part(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
 	friend hmc_float squarenorm(const Staggeredfield_eo& field);
 	friend void pseudo_randomize<Staggeredfield_eo, su3vec>(const Staggeredfield_eo* to, int seed);
 };
@@ -109,9 +110,12 @@ private:
  */
 hmc_complex scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
 void scalar_product(const Scalar<hmc_complex>* res, const Staggeredfield_eo& left, const Staggeredfield_eo& right);
+hmc_float scalar_product_real_part(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
+void scalar_product_real_part(const Scalar<hmc_float>* res, const Staggeredfield_eo& left, const Staggeredfield_eo& right);
 
-template<typename S, hmc_complex (*T)(const S&, const S&)> size_t get_flops(const hardware::System&);
-template<> size_t get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::scalar_product>(const hardware::System&);
+template<typename S, typename U, U (*T)(const S&, const S&)> size_t get_flops(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, hmc_complex, physics::lattices::scalar_product>(const hardware::System&);
+template<> size_t get_flops<physics::lattices::Staggeredfield_eo, hmc_float, physics::lattices::scalar_product_real_part>(const hardware::System&);
 
 /**
  * Calculate the squarenorm of the spinorfield

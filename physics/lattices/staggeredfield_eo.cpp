@@ -76,6 +76,13 @@ hmc_complex physics::lattices::scalar_product(const Staggeredfield_eo& left, con
 	return res.get();
 }
 
+hmc_float physics::lattices::scalar_product_real_part(const Staggeredfield_eo& left, const Staggeredfield_eo& right)
+{
+	const Scalar<hmc_float> res(left.system);
+	scalar_product_real_part(&res, left, right);
+	return res.get();
+}
+
 void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Staggeredfield_eo& left, const Staggeredfield_eo& right)
 {
 	auto res_buffers = res->get_buffers();
@@ -95,6 +102,29 @@ void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Sta
 		auto spinor_code = device->get_spinor_staggered_code();
 
 		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
+	}
+	res->sum();
+}
+
+void physics::lattices::scalar_product_real_part(const Scalar<hmc_float>* res, const Staggeredfield_eo& left, const Staggeredfield_eo& right)
+{
+	auto res_buffers = res->get_buffers();
+	auto left_buffers = left.get_buffers();
+	auto right_buffers = right.get_buffers();
+	size_t num_buffers = res_buffers.size();
+
+	if(num_buffers != left_buffers.size() || num_buffers != right_buffers.size()) {
+		throw std::invalid_argument("The given lattices do not use the same number of devices.");
+	}
+
+	for(size_t i = 0; i < num_buffers; ++i) {
+		auto res_buf = res_buffers[i];
+		auto left_buf = left_buffers[i];
+		auto right_buf = right_buffers[i];
+		auto device = res_buf->get_device();
+		auto spinor_code = device->get_spinor_staggered_code();
+
+		spinor_code->set_float_to_scalar_product_real_part_eoprec_device(left_buf, right_buf, res_buf);
 	}
 	res->sum();
 }
@@ -397,12 +427,20 @@ void physics::lattices::sax_vec_and_squarenorm(const Vector<hmc_float>* res, con
 }
 
 
-template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::scalar_product>(const hardware::System& system)
+template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, hmc_complex, physics::lattices::scalar_product>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
 	return spinor_code->get_flop_size("scalar_product_staggered_eoprec");
+}
+
+template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, hmc_float, physics::lattices::scalar_product_real_part>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_staggered_code();
+	return spinor_code->get_flop_size("scalar_product_real_part_staggered_eoprec");
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::squarenorm>(const hardware::System& system)
