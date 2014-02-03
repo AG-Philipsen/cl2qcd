@@ -160,9 +160,14 @@ public:
 	 * @param x The input staggered field (one su3vec per site even or odd)
 	 * @param alpha The constant
 	 * @param out The output staggered field: alpha*x (one su3vec per site even or odd)
+	 * 
+	 * @note If alpha is a vector of constants, the index of that to be used must be specified!
 	 */
 	void sax_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const;
 	void sax_eoprec_device(const hardware::buffers::SU3vec * x, const hmc_complex alpha, const hardware::buffers::SU3vec * out) const;
+	void sax_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::SU3vec * out) const;
+	void sax_eoprec_device(const hardware::buffers::SU3vec * x, const hmc_float alpha, const hardware::buffers::SU3vec * out) const;
+	void sax_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_float> * alpha, const int index_alpha, const hardware::buffers::SU3vec * out) const;
 	
 	/**
 	 * This function returns the input staggered field x multiplied by alpha
@@ -171,11 +176,14 @@ public:
 	 * @param y The second input staggered field (one su3vec per site even or odd)
 	 * @param alpha The constant
 	 * @param out The output staggered field alpha*x + y (one su3vec per site even or odd)
+	 * 
+	 * @note If alpha is a vector of constants, the index of that to be used must be specified!
 	 */
 	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::SU3vec * out) const;
 	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_complex alpha, const hardware::buffers::SU3vec * out) const;
 	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::SU3vec * out) const;
 	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_float alpha, const hardware::buffers::SU3vec * out) const;
+	void saxpy_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const int index_alpha, const hardware::buffers::SU3vec * out) const;
 	
 	/**
 	 * This function returns a linear combination of the input staggered fields
@@ -185,11 +193,14 @@ public:
 	 * @param alpha The first constant
 	 * @param beta The second constant
 	 * @param out The output staggered field alpha*x + beta*y (one su3vec per site even or odd)
+	 * 
+	 * @note If alpha and beta are vectors of constants, the indices of those to be used must be specified!
 	 */
 	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::SU3vec * out) const;
 	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_complex alpha, const hmc_complex beta, const hardware::buffers::SU3vec * out) const;
 	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::Plain<hmc_float> * beta, const hardware::buffers::SU3vec * out) const;
 	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hmc_float alpha, const hmc_float beta, const hardware::buffers::SU3vec * out) const;
+	void saxpby_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::SU3vec * y, const hardware::buffers::Plain<hmc_float> * alpha, const hardware::buffers::Plain<hmc_float> * beta, const int index_alpha, const int index_beta, const hardware::buffers::SU3vec * out) const;
 	
 	/**
 	 * This function returns a linear combination of the input staggered fields
@@ -424,13 +435,18 @@ private:
 	
 	//Algebra on staggered fields
 	cl_kernel sax_cplx_stagg_eoprec;
+	cl_kernel sax_real_stagg_eoprec;
+	cl_kernel sax_real_vec_stagg_eoprec;
 	cl_kernel saxpy_cplx_stagg_eoprec;
 	cl_kernel saxpy_real_stagg_eoprec;
+	cl_kernel saxpy_real_vec_stagg_eoprec;
 	cl_kernel saxpby_cplx_stagg_eoprec;
 	cl_kernel saxpby_real_stagg_eoprec;
+	cl_kernel saxpby_real_vec_stagg_eoprec;
 	cl_kernel saxpbypz_cplx_stagg_eoprec;
 	//Algebra on staggered fields with hmc_complex arguments instead of buffers
 	cl_kernel sax_cplx_arg_stagg_eoprec;
+	cl_kernel sax_real_arg_stagg_eoprec;
 	cl_kernel saxpy_cplx_arg_stagg_eoprec;
 	cl_kernel saxpy_real_arg_stagg_eoprec;
 	cl_kernel saxpby_cplx_arg_stagg_eoprec;
