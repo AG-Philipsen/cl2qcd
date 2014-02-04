@@ -44,6 +44,11 @@ public:
 	virtual ~Real();
 	
 	/**
+	 * Function to get one element of a buffer
+	 */
+	void set_real_to_vector_element_device(const hardware::buffers::Plain<hmc_float> * in, const int index, const hardware::buffers::Plain<hmc_float> * out) const;
+	
+	/**
 	 * @param a The numerator of the fraction
 	 * @param b The denominator of the fraction
 	 * @param out A real number containing a/b
@@ -165,6 +170,9 @@ private:
 
 	ClSourcePackage basic_real_code;
 
+	//Setting operations
+	cl_kernel set_elem_vec;
+	
 	//Single operations
 	cl_kernel ratio;
 	cl_kernel product;

@@ -43,6 +43,42 @@ void test_build(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_access_element(std::string inputfile)
+{
+	using namespace hardware::buffers;
+	
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	auto * device = system.get_devices().at(0)->get_real_code();
+	
+	logger.info() << "Fill buffers...";
+	hardware::buffers::Plain<hmc_float> out(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> in(4, device->get_device());
+	
+	std::vector<hmc_float> in_host;
+	in_host.push_back(params.get_beta());
+	in_host.push_back(params.get_kappa());
+	in_host.push_back(params.get_rho());
+	in_host.push_back(params.get_mu());
+	logger.info() << "Using:";
+	for(uint i=0; i<in_host.size(); i++)
+	  logger.info() << "in[" << i << "] = " << in_host[i];
+	
+	in.load(&in_host[0]);
+	
+	logger.info() << "Run kernel";
+	for(uint i=0; i<in_host.size(); i++){
+	  device->set_real_to_vector_element_device(&in, i, &out);
+	  hmc_float cpu_res;
+	  out.dump(&cpu_res);
+	  logger.info() << "element " << i << " = " << cpu_res;
+	  BOOST_REQUIRE_CLOSE(cpu_res, in_host[i], 1.e-8);
+	}
+	
+	BOOST_MESSAGE("Test done");
+}
+
 void test_base_operations(std::string inputfile, int switcher, bool hard=false)
 {
   //switcher chooses between product, ratio, sum, subtraction and convert
@@ -99,9 +135,7 @@ void test_base_operations(std::string inputfile, int switcher, bool hard=false)
 	}
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	hmc_float tmp;
-	sqnorm.dump(&tmp);
-	cpu_res = tmp;
+	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 
 	testFloatAgainstInputparameters(cpu_res, params);
@@ -187,6 +221,16 @@ BOOST_AUTO_TEST_CASE( BUILD_1 )
 BOOST_AUTO_TEST_CASE( BUILD_2 )
 {
 	test_build("/opencl_module_spinors_build_input_2"); //Just to use an inputfile
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
+
+BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_1 )
+{
+	test_access_element("/real_access_element_vector_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,0 +1,17 @@
+fermact=rooted_stagg
+
+NS=4
+NT=4
+
+# this specifies in[0]
+beta=1.1
+# this specifies in[0]
+kappa=2.2
+# this specifies in[0]
+rho=3.3
+# this specifies in[0]
+mu=4.4
+
+#reference values not given for this test because they are the four above!
+
+#This input file must not be modified!
