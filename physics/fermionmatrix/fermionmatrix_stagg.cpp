@@ -89,7 +89,7 @@ cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
 	auto fermion_code = devices[0]->get_fermion_staggered_code();
 	cl_ulong res;
 	res = 2*fermion_code->get_flop_size("D_KS_eo");
-	res += spinor_code->get_flop_size("saxpby_stagg_eoprec");
+	res += spinor_code->get_flop_size("saxpby_cplx_stagg_eoprec");
 	
 	return res;
 }
