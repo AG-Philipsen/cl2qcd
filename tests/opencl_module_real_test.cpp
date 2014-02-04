@@ -43,37 +43,60 @@ void test_build(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_access_element(std::string inputfile)
+void test_access_element(std::string inputfile, bool get=true)
 {
 	using namespace hardware::buffers;
 	
+	std::string kernelName;
+	if (get)
+	  kernelName = "get_vector_element";
+	else
+	  kernelName = "set_vector_element";
+	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	auto * device = system.get_devices().at(0)->get_real_code();
 	
 	logger.info() << "Fill buffers...";
-	hardware::buffers::Plain<hmc_float> out(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> in(4, device->get_device());
+	hardware::buffers::Plain<hmc_float> scalar_buf(1, device->get_device());
+	hardware::buffers::Plain<hmc_float> vector_buf(4, device->get_device());
+	std::vector<hmc_float> vector_host;
+	hmc_float scalar_host;
 	
-	std::vector<hmc_float> in_host;
-	in_host.push_back(params.get_beta());
-	in_host.push_back(params.get_kappa());
-	in_host.push_back(params.get_rho());
-	in_host.push_back(params.get_mu());
-	logger.info() << "Using:";
-	for(uint i=0; i<in_host.size(); i++)
-	  logger.info() << "in[" << i << "] = " << in_host[i];
-	
-	in.load(&in_host[0]);
+	vector_host.push_back(params.get_beta());
+	vector_host.push_back(params.get_kappa());
+	vector_host.push_back(params.get_rho());
+	vector_host.push_back(params.get_mu());
+	vector_buf.load(&vector_host[0]);
+	if(get){
+	  logger.info() << "Using:";
+	  for(uint i=0; i<vector_host.size(); i++)
+	    logger.info() << "vector_buf[" << i << "] = " << vector_host[i];
+	}else{
+	  scalar_host = params.get_beta() + params.get_kappa() + params.get_rho() + params.get_mu();
+	  logger.info() << "Using scalar = " << scalar_host;
+	  scalar_buf.load(&scalar_host);
+	}
 	
 	logger.info() << "Run kernel";
-	for(uint i=0; i<in_host.size(); i++){
-	  device->set_real_to_vector_element_device(&in, i, &out);
-	  hmc_float cpu_res;
-	  out.dump(&cpu_res);
-	  logger.info() << "element " << i << " = " << cpu_res;
-	  BOOST_REQUIRE_CLOSE(cpu_res, in_host[i], 1.e-8);
+	
+	if(get){
+	  for(uint i=0; i<vector_host.size(); i++){
+	    device->set_real_to_vector_element_device(&vector_buf, i, &scalar_buf);
+	    hmc_float cpu_res;
+	    scalar_buf.dump(&cpu_res);
+	    logger.info() << "element " << i << " = " << cpu_res;
+	    BOOST_REQUIRE_CLOSE(cpu_res, vector_host[i], 1.e-8);
+	  }
+	}else{
+	  for(uint i=0; i<vector_host.size(); i++){
+	    device->set_vector_element_to_real_device(&scalar_buf, i, &vector_buf);
+	    std::vector<hmc_float> cpu_res(4);
+	    vector_buf.dump(&cpu_res[0]);
+	    logger.info() << "element " << i << " = " << cpu_res[i];
+	    BOOST_REQUIRE_CLOSE(cpu_res[i], scalar_host, 1.e-8);
+	  }
 	}
 	
 	BOOST_MESSAGE("Test done");
@@ -230,7 +253,12 @@ BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 
 BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_1 )
 {
-	test_access_element("/real_access_element_vector_input_1");
+	test_access_element("/real_access_element_vector_input_1", true);
+}
+
+BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_2 )
+{
+	test_access_element("/real_access_element_vector_input_1", false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -22,8 +22,14 @@
  * Device code implementing real numbers algebra functionalities
  */
 
-__kernel void set_elem_vector(__global hmc_float * in, const int index, __global hmc_float * out)
+__kernel void get_elem_vector(__global hmc_float * in, const int index, __global hmc_float * out)
 {
 	if(get_global_id(0) == 0) 
 	  (*out) =  in[index];
+}
+
+__kernel void set_elem_vector(__global hmc_float * in, const int index, __global hmc_float * out)
+{
+	if(get_global_id(0) == 0) 
+	  out[index] =  (*in);
 }

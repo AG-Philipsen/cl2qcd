@@ -34,6 +34,7 @@ void hardware::code::Real::fill_kernels()
 	logger.debug() << "Creating Real kernels...";
 	
 	//Setting operations kernel
+	get_elem_vec = createKernel("get_elem_vector") << basic_real_code << "real_access_vector_element.cl";
 	set_elem_vec = createKernel("set_elem_vector") << basic_real_code << "real_access_vector_element.cl";
 	//Single operations kernels
 	ratio = createKernel("real_ratio") << basic_real_code << "real_ratio.cl";
@@ -53,6 +54,8 @@ void hardware::code::Real::clear_kernels()
 	logger.debug() << "Clearing Real kernels...";
 	
 	//Setting operations kernel
+	clerr = clReleaseKernel(get_elem_vec);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(set_elem_vec);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	//Single operations kernels
@@ -80,6 +83,11 @@ void hardware::code::Real::get_work_sizes(const cl_kernel kernel, size_t * ls, s
 
 	//Query specific sizes for kernels if needed
 	std::string kernelname = get_kernel_name(kernel);
+	if(kernelname.compare("get_elem_vector") == 0) {
+		*ls = 1;
+		*gs = 1;
+		*num_groups = 1;
+	}
 	if(kernelname.compare("set_elem_vector") == 0) {
 		*ls = 1;
 		*gs = 1;
@@ -123,6 +131,25 @@ void hardware::code::Real::get_work_sizes(const cl_kernel kernel, size_t * ls, s
 }
 
 void hardware::code::Real::set_real_to_vector_element_device(const hardware::buffers::Plain<hmc_float> * in, const int index, const hardware::buffers::Plain<hmc_float> * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(get_elem_vec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(get_elem_vec, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(get_elem_vec, 1, sizeof(cl_int), &index);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
+	clerr = clSetKernelArg(get_elem_vec, 2, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(get_elem_vec, gs2, ls2);
+}
+
+void hardware::code::Real::set_vector_element_to_real_device(const hardware::buffers::Plain<hmc_float> * in, const int index, const hardware::buffers::Plain<hmc_float> * out) const
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -318,7 +345,7 @@ size_t hardware::code::Real::get_read_write_size(const std::string& in) const
 		//this kernel reads 2 real numbers and writes 1 real number
 		return D * (2 + 1);
 	}
-	if (in == "set_elem_vector") {
+	if (in == "get_elem_vector" || in == "set_elem_vector") {
 		//this kernel reads 1 real number and writes 1 real number
 		return D * (1 + 1);
 	}
@@ -331,7 +358,7 @@ uint64_t hardware::code::Real::get_flop_size(const std::string& in) const
 	if (in == "ratio" || in == "product" || in == "sum" || in == "subtraction") {
 		return 1;
 	}
-	if (in == "set_elem_vector") {
+	if (in == "get_elem_vector" || in == "set_elem_vector") {
 		return 0;
 	}
 	
@@ -386,6 +413,7 @@ uint64_t hardware::code::Real::get_flop_size_update(const std::string& in, const
 void hardware::code::Real::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, get_elem_vec);
 	Opencl_Module::print_profiling(filename, set_elem_vec);
 	Opencl_Module::print_profiling(filename, ratio);
 	Opencl_Module::print_profiling(filename, product);
@@ -397,8 +425,8 @@ void hardware::code::Real::print_profiling(const std::string& filename, int numb
 }
 
 hardware::code::Real::Real(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), set_elem_vec(0), ratio(0), product(0), sum(0), difference(0),
-	                                 update_alpha_cgm(0), update_beta_cgm(0), update_zeta_cgm(0)
+	: Opencl_Module(params, device), get_elem_vec(0), set_elem_vec(0), ratio(0), product(0), sum(0),
+	                                 difference(0), update_alpha_cgm(0), update_beta_cgm(0), update_zeta_cgm(0)
 {
 	fill_kernels();
 }
