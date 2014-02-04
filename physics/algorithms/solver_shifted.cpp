@@ -182,25 +182,30 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		Vector<hmc_float> zeta_foll(Neqs, system);
 		Vector<hmc_float> masses(Neqs, system);
 		Vector<hmc_float> beta_vec(Neqs, system);
-		std::vector<hmc_float> aux1, aux2, aux3, aux4;
+		Vector<hmc_float> alpha_vec(Neqs, system);
+		std::vector<hmc_float> aux1, aux2, aux3, aux4, aux5;
 		for(int k=0; k<Neqs; k++){
 		  aux1.push_back(zeta_i[k]->get());
 		  aux2.push_back(zeta_ii[k]->get());
 		  aux3.push_back(zeta_iii[k]->get());
 		  aux4.push_back(beta[k]->get());
+		  aux5.push_back(alpha[k]->get());
 		}
 		zeta_prev.store(aux1);
 		zeta.store(aux2);
 		zeta_foll.store(aux3);
 		beta_vec.store(aux4);
+		alpha_vec.store(aux5);
 		masses.store(sigma);
 		
 		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, masses, Neqs);
 		update_beta_cgm(&beta_vec, beta_scalar, zeta_foll, zeta, Neqs);
+		update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
 		
 		for(int k=0; k<Neqs; k++){
 		  zeta_iii[k]->store((zeta_foll.get())[k]);
 		  beta[k]->store((beta_vec.get())[k]);
+		  alpha[k]->store((alpha_vec.get())[k]);
 		}
 		
 		//Loop over the system equations, namely over the set of sigma values
@@ -235,10 +240,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				//Update alpha[k]: num = alpha_scalar*zeta_iii[k]*beta[k]
 				//                 den = zeta_ii[k]*beta_scalar
 				// ---> alpha[k] = num/den
-				multiply(&num, alpha_scalar, *zeta_iii[k]);
-				multiply(&num, num, *beta[k]);
-				multiply(&den, *zeta_ii[k], beta_scalar);
-				divide(alpha[k], num, den);
+// 				multiply(&num, alpha_scalar, *zeta_iii[k]);
+// 				multiply(&num, num, *beta[k]);
+// 				multiply(&den, *zeta_ii[k], beta_scalar);
+// 				divide(alpha[k], num, den);
 				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
 				saxpby(ps[k], *zeta_iii[k], r, *alpha[k], *ps[k]);
 				//Check fields squarenorm for possible nan
