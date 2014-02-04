@@ -149,8 +149,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (initial)", x, report_num);
 	log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps (initial)", ps, report_num);
 	
-	//NOTE: Here, most of the complex numbers may also be just hmc_floats.
-	//      However, for this one would need some additional functions in hardware::code...
 	for(iter = 0; iter < params.get_cgmax() || iter < MINIMUM_ITERATIONS; iter ++) {
 		//Update beta_scalar: v=A.p and tmp1=(r,r) and tmp3=(p,v) ---> beta_scalar=(-1)*tmp1/tmp3
 		copyData(&beta_scalar_prev,beta_scalar);  //before updating beta_scalar its value is saved
@@ -178,6 +176,27 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		//saxpy(p, alpha_scalar, *p, *r);
 		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", p);
 
+
+		Vector<hmc_float> zeta_prev(Neqs, system);
+		Vector<hmc_float> zeta(Neqs, system);
+		Vector<hmc_float> zeta_foll(Neqs, system);
+		Vector<hmc_float> masses(Neqs, system);
+		std::vector<hmc_float> aux1, aux2, aux3;
+		for(int k=0; k<Neqs; k++){
+		  aux1.push_back(zeta_i[k]->get());
+		  aux2.push_back(zeta_ii[k]->get());
+		  aux3.push_back(zeta_iii[k]->get());
+		}
+		zeta_prev.store(aux1);
+		zeta.store(aux2);
+		zeta_foll.store(aux3);
+		masses.store(sigma);
+		
+		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, masses, Neqs);
+		
+		for(int k=0; k<Neqs; k++)
+		  zeta_iii[k]->store((zeta_foll.get())[k]);
+		
 		//Loop over the system equations, namely over the set of sigma values
 		for(int k=0; k<Neqs; k++){
 			if(single_system_converged[k]==false){
@@ -186,19 +205,20 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				//                        + zeta_i[k]*beta_scalar_prev*(1-sigma[k]*beta_scalar)
 				// ---> zeta_iii[k] = num/den
 				//I calculate before the denominator to can use num as auxiliary variable
-				subtract(&num, *zeta_i[k], *zeta_ii[k]);
-				multiply(&num, num, alpha_scalar_prev);
-				multiply(&num, num, beta_scalar);
-				multiply(&den, *shift[k], beta_scalar);
-				subtract(&den, one, den);
-				multiply(&den, den, beta_scalar_prev);
-				multiply(&den, den, *zeta_i[k]);
-				add(&den, num, den);
-				//Calculation of the numerator
-				multiply(&num, *zeta_i[k], *zeta_ii[k]);
-				multiply(&num, num, beta_scalar_prev);
-				//Update of zeta_iii[k]
-				divide(zeta_iii[k], num, den);
+// 				subtract(&num, *zeta_i[k], *zeta_ii[k]);
+// 				multiply(&num, num, alpha_scalar_prev);
+// 				multiply(&num, num, beta_scalar);
+// 				multiply(&den, *shift[k], beta_scalar);
+// 				subtract(&den, one, den);
+// 				multiply(&den, den, beta_scalar_prev);
+// 				multiply(&den, den, *zeta_i[k]);
+// 				add(&den, num, den);
+// 				//Calculation of the numerator
+// 				multiply(&num, *zeta_i[k], *zeta_ii[k]);
+// 				multiply(&num, num, beta_scalar_prev);
+// 				//Update of zeta_iii[k]
+// 				divide(zeta_iii[k], num, den);
+// 				logger.warn() << "zeta_iii[" << k << "] = " << zeta_iii[k]
 				//Update beta[k]: beta[k] = beta_scalar*zeta_iii[k]/zeta_ii[k]
 				multiply(beta[k], beta_scalar, *zeta_iii[k]);
 				divide(beta[k], *beta[k], *zeta_ii[k]);
