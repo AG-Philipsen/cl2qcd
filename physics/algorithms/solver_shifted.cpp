@@ -79,11 +79,15 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	std::vector<Staggeredfield_eo*> ps;
 	
 	//Auxiliary scalar vectors
+	const Vector<hmc_float> zeta_prev(Neqs, system);           //This is zeta at the step iter-1
+	const Vector<hmc_float> zeta(Neqs, system);                //This is zeta at the step iter
+	const Vector<hmc_float> zeta_foll(Neqs, system);           //This is zeta at the step iter+1
+	
 	std::vector<const Scalar<hmc_float>*> alpha;
 	std::vector<const Scalar<hmc_float>*> beta;
-	std::vector<const Scalar<hmc_float>*> zeta_i;   //This is zeta at the step iter-1
-	std::vector<const Scalar<hmc_float>*> zeta_ii;  //This is zeta at the step iter
-	std::vector<const Scalar<hmc_float>*> zeta_iii; //This is zeta at the step iter+1
+// 	std::vector<const Scalar<hmc_float>*> zeta_i;   //This is zeta at the step iter-1
+// 	std::vector<const Scalar<hmc_float>*> zeta_ii;  //This is zeta at the step iter
+// 	std::vector<const Scalar<hmc_float>*> zeta_iii; //This is zeta at the step iter+1
 	std::vector<const Scalar<hmc_float>*> shift;    //This is to store constants sigma
 	std::vector<bool> single_system_converged;        //This is to stop calculation on single system
 	std::vector<uint> single_system_iter;             //This is to calculate performance properly
@@ -113,6 +117,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	int iter = 0;
 	
 	//Initialization auxilary and output quantities
+	zeta_prev.store(std::vector<hmc_float>(Neqs, 1.));  // zeta_prev[i] = 1
+	zeta.store(std::vector<hmc_float>(Neqs, 1.));       // zeta[i] = 1
+	
+	//Initialization auxilary and output quantities
 	for(int i=0; i<Neqs; i++){
 		x[i]->set_zero();                                     // x[i] = 0 
 		ps.push_back(new Staggeredfield_eo(system));    
@@ -120,11 +128,11 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		beta.push_back(new Scalar<hmc_float>(system));
 		alpha.push_back(new Scalar<hmc_float>(system));
 		alpha[i]->store(0.0);                    // alpha[i] = 0
-		zeta_i.push_back(new Scalar<hmc_float>(system));
-		zeta_ii.push_back(new Scalar<hmc_float>(system));
-		zeta_iii.push_back(new Scalar<hmc_float>(system));
-		zeta_i[i]->store(1.0);                    // zeta_i[i] = 1
-		zeta_ii[i]->store(1.0);                   // zeta_ii[i] = 1
+// 		zeta_i.push_back(new Scalar<hmc_float>(system));
+// 		zeta_ii.push_back(new Scalar<hmc_float>(system));
+// 		zeta_iii.push_back(new Scalar<hmc_float>(system));
+// 		zeta_i[i]->store(1.0);                    // zeta_i[i] = 1
+// 		zeta_ii[i]->store(1.0);                   // zeta_ii[i] = 1
 		shift.push_back(new Scalar<hmc_float>(system));
 		shift[i]->store(sigma[i]);
 		single_system_converged.push_back(false);             //no system converged
@@ -177,23 +185,15 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", p);
 
 
-		Vector<hmc_float> zeta_prev(Neqs, system);
-		Vector<hmc_float> zeta(Neqs, system);
-		Vector<hmc_float> zeta_foll(Neqs, system);
+		
 		Vector<hmc_float> masses(Neqs, system);
 		Vector<hmc_float> beta_vec(Neqs, system);
 		Vector<hmc_float> alpha_vec(Neqs, system);
 		std::vector<hmc_float> aux1, aux2, aux3, aux4, aux5;
 		for(int k=0; k<Neqs; k++){
-		  aux1.push_back(zeta_i[k]->get());
-		  aux2.push_back(zeta_ii[k]->get());
-		  aux3.push_back(zeta_iii[k]->get());
 		  aux4.push_back(beta[k]->get());
 		  aux5.push_back(alpha[k]->get());
 		}
-		zeta_prev.store(aux1);
-		zeta.store(aux2);
-		zeta_foll.store(aux3);
 		beta_vec.store(aux4);
 		alpha_vec.store(aux5);
 		masses.store(sigma);
@@ -203,7 +203,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
 		
 		for(int k=0; k<Neqs; k++){
-		  zeta_iii[k]->store((zeta_foll.get())[k]);
 		  beta[k]->store((beta_vec.get())[k]);
 		  alpha[k]->store((alpha_vec.get())[k]);
 		}
@@ -245,7 +244,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 // 				multiply(&den, *zeta_ii[k], beta_scalar);
 // 				divide(alpha[k], num, den);
 				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
-				saxpby(ps[k], *zeta_iii[k], r, *alpha[k], *ps[k]);
+				
+				saxpby(ps[k], zeta_foll, k, r, alpha_vec, k, *ps[k]);
+				//saxpby(ps[k], *zeta_iii[k], r, *alpha[k], *ps[k]);
+				
 				//Check fields squarenorm for possible nan
 				if(logger.beDebug()){
 					if((squarenorm(*x[k]) != squarenorm(*x[k])) ||
@@ -256,7 +258,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				}
 				//Check if single system converged: ||zeta_iii[k] * r||^2 < prec
 				// ---> v = zeta_iii[k] * r
-				sax(&v, *zeta_iii[k], r);
+				
+				sax(&v, zeta_foll.get()[k], r);
+				//sax(&v, *zeta_iii[k], r);
+
 				//Check if single system converged: (zeta_ii[k] * zeta_ii[k] * tmp1) < prec
 				//multiply(&tmp3, *zeta_ii[k], *zeta_ii[k]);
 				//multiply(&tmp3, tmp3, tmp1);
@@ -266,11 +271,14 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 					single_system_iter.push_back((uint)iter);
 					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
 				}
-				//Adjust zeta for the following iteration
-				copyData(zeta_i[k], zeta_ii[k]);
-				copyData(zeta_ii[k], zeta_iii[k]);
+// 				//Adjust zeta for the following iteration
+// 				copyData(zeta_i[k], zeta_ii[k]);
+// 				copyData(zeta_ii[k], zeta_iii[k]);
 			}
 		}
+		//Adjust zeta for the following iteration
+		copyData(&zeta_prev, zeta);
+		copyData(&zeta, zeta_foll);
 
 		if(single_system_iter.size()==(uint)Neqs)
 			converged = true;
@@ -335,9 +343,9 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				meta::free_container(ps);
 				meta::free_container(alpha);
 				meta::free_container(beta);
-				meta::free_container(zeta_i);
-				meta::free_container(zeta_ii);
-				meta::free_container(zeta_iii);
+// 				meta::free_container(zeta_i);
+// 				meta::free_container(zeta_ii);
+// 				meta::free_container(zeta_iii);
 				meta::free_container(shift);
 				
 				return iter;
