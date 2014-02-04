@@ -27,6 +27,7 @@
 #include "../../meta/type_ops.hpp"
 #include "../../meta/util.hpp"
 #include "../lattices/scalar_complex.hpp"
+#include "../lattices/algebra_real.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
 //#include <cmath>
 #include <sstream>
@@ -78,34 +79,34 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	std::vector<Staggeredfield_eo*> ps;
 	
 	//Auxiliary scalar vectors
-	std::vector<const Scalar<hmc_complex>*> alpha;
-	std::vector<const Scalar<hmc_complex>*> beta;
-	std::vector<const Scalar<hmc_complex>*> zeta_i;   //This is zeta at the step iter-1
-	std::vector<const Scalar<hmc_complex>*> zeta_ii;  //This is zeta at the step iter
-	std::vector<const Scalar<hmc_complex>*> zeta_iii; //This is zeta at the step iter+1
-	std::vector<const Scalar<hmc_complex>*> shift;    //This is to store constants sigma
+	std::vector<const Scalar<hmc_float>*> alpha;
+	std::vector<const Scalar<hmc_float>*> beta;
+	std::vector<const Scalar<hmc_float>*> zeta_i;   //This is zeta at the step iter-1
+	std::vector<const Scalar<hmc_float>*> zeta_ii;  //This is zeta at the step iter
+	std::vector<const Scalar<hmc_float>*> zeta_iii; //This is zeta at the step iter+1
+	std::vector<const Scalar<hmc_float>*> shift;    //This is to store constants sigma
 	std::vector<bool> single_system_converged;        //This is to stop calculation on single system
 	std::vector<uint> single_system_iter;             //This is to calculate performance properly
 	//Auxiliary scalars
-	const Scalar<hmc_complex> alpha_scalar_prev(system);   //This is alpha_scalar at the step iter-1
-	const Scalar<hmc_complex> alpha_scalar(system);        //This is alpha_scalar at the step iter
-	const Scalar<hmc_complex> beta_scalar_prev(system);    //This is beta_scalar at the step iter-1
-	const Scalar<hmc_complex> beta_scalar(system);         //This is beta_scalar at the step iter
+	const Scalar<hmc_float> alpha_scalar_prev(system);   //This is alpha_scalar at the step iter-1
+	const Scalar<hmc_float> alpha_scalar(system);        //This is alpha_scalar at the step iter
+	const Scalar<hmc_float> beta_scalar_prev(system);    //This is beta_scalar at the step iter-1
+	const Scalar<hmc_float> beta_scalar(system);         //This is beta_scalar at the step iter
 	
 	//Auxiliary containers for temporary saving
 	const Staggeredfield_eo v(system); //this is to store A.p
-	const Scalar<hmc_complex> tmp1(system);                     //this is to store (r,r) before updating r
-	const Scalar<hmc_complex> tmp2(system);                     //this is to store (r,r) after updating r
-	const Scalar<hmc_complex> tmp3(system);                     //this is to store (p,v) as Scalar
-	const Scalar<hmc_complex> num(system);                      //this is to store constants numerators
-	const Scalar<hmc_complex> den(system);                      //this is to store constants denumerators
+	const Scalar<hmc_float> tmp1(system);                     //this is to store (r,r) before updating r
+	const Scalar<hmc_float> tmp2(system);                     //this is to store (r,r) after updating r
+	const Scalar<hmc_float> tmp3(system);                     //this is to store (p,v) as Scalar
+	const Scalar<hmc_float> num(system);                      //this is to store constants numerators
+	const Scalar<hmc_float> den(system);                      //this is to store constants denumerators
 	bool converged=false;                                       //this is to start to check the residuum
 
 	//Auxiliary constants as Scalar
-	const Scalar<hmc_complex> zero(system);
-	zero.store(hmc_complex_zero);
-	const Scalar<hmc_complex> one(system);
-	one.store(hmc_complex_one);
+	const Scalar<hmc_float> zero(system);
+	zero.store(0.0);
+	const Scalar<hmc_float> one(system);
+	one.store(1.0);
 	
 	
 	hmc_float resid;
@@ -116,25 +117,25 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		x[i]->set_zero();                                     // x[i] = 0 
 		ps.push_back(new Staggeredfield_eo(system));    
 		copyData(ps[i], b);                                    // ps[i] = b
-		beta.push_back(new Scalar<hmc_complex>(system));
-		alpha.push_back(new Scalar<hmc_complex>(system));
-		alpha[i]->store(hmc_complex_zero);                    // alpha[i] = 0
-		zeta_i.push_back(new Scalar<hmc_complex>(system));
-		zeta_ii.push_back(new Scalar<hmc_complex>(system));
-		zeta_iii.push_back(new Scalar<hmc_complex>(system));
-		zeta_i[i]->store(hmc_complex_one);                    // zeta_i[i] = 1
-		zeta_ii[i]->store(hmc_complex_one);                   // zeta_ii[i] = 1
-		shift.push_back(new Scalar<hmc_complex>(system));
-		shift[i]->store({sigma[i],0.});
+		beta.push_back(new Scalar<hmc_float>(system));
+		alpha.push_back(new Scalar<hmc_float>(system));
+		alpha[i]->store(0.0);                    // alpha[i] = 0
+		zeta_i.push_back(new Scalar<hmc_float>(system));
+		zeta_ii.push_back(new Scalar<hmc_float>(system));
+		zeta_iii.push_back(new Scalar<hmc_float>(system));
+		zeta_i[i]->store(1.0);                    // zeta_i[i] = 1
+		zeta_ii[i]->store(1.0);                   // zeta_ii[i] = 1
+		shift.push_back(new Scalar<hmc_float>(system));
+		shift[i]->store(sigma[i]);
 		single_system_converged.push_back(false);             //no system converged
 	}
 	copyData(&r, b);                          // r = b
 	copyData(&p, b);                          // p = b
-	scalar_product(&tmp1, r, r);           // set tmp1 = (r, r) for the first iteration
-	beta_scalar.store(hmc_complex_one);      // beta_scalar = 1, here I should set beta_scalar_prev
+	scalar_product_real_part(&tmp1, r, r);           // set tmp1 = (r, r) for the first iteration
+	beta_scalar.store(1.0);      // beta_scalar = 1, here I should set beta_scalar_prev
 						  // but in this way I can set beta_scalar_prev at the begin
 						  // of the loop over iter recursively.
-	alpha_scalar.store(hmc_complex_zero);    // alpha_scalar = 0. The same as beta_scalar above.
+	alpha_scalar.store(0.0);    // alpha_scalar = 0. The same as beta_scalar above.
 	
 	//At first, in the log string I will report all the data about the system.
 	//To avoid to print to shell tens of lines per time, since Neqs can be 
@@ -155,7 +156,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		copyData(&beta_scalar_prev,beta_scalar);  //before updating beta_scalar its value is saved
 		A(&v, gf, p);
 		log_squarenorm(create_log_prefix_cgm(iter) + "v: ", v);
-		scalar_product(&tmp3, p, v); 
+		scalar_product_real_part(&tmp3, p, v); 
 		divide(&beta_scalar, tmp1, tmp3);  //tmp1 is set from previous iteration
 		subtract(&beta_scalar, zero, beta_scalar);
 		//Update field r: r+=beta_scalar*A.p ---> r = r + beta_scalar*v
@@ -163,7 +164,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		log_squarenorm(create_log_prefix_cgm(iter) + "r: ", r);
 		//We store in tmp2 the quantity (r,r) that we use later. When we check
 		//the residuum, then it is already calculated.
-		scalar_product(&tmp2, r, r);
+		scalar_product_real_part(&tmp2, r, r);
 		if(logger.beDebug()){
 			//Calculate squarenorm of the output field
 			for(uint i=0; i<x.size(); i++)
@@ -232,7 +233,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				//if(tmp3.get().re < prec){
 					single_system_converged[k] = true;
 					single_system_iter.push_back((uint)iter);
-					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get().re;
+					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
 				}
 				//Adjust zeta for the following iteration
 				copyData(zeta_i[k], zeta_ii[k]);
@@ -250,7 +251,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		//Check whether the algorithm converged
 		if(converged) {
 			//Calculate resid: 
-			resid = tmp2.get().re;
+			resid = tmp2.get();
 			logger.debug() << create_log_prefix_cgm(iter) << "resid: " << resid;
 			//test if resid is NAN
 			if(resid != resid) {
@@ -270,18 +271,18 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 					logger.debug() << "matrix_flops: " << matrix_flops;
 					
 					cl_ulong flops_per_iter_no_inner_loop=(matrix_flops +
-						2 * get_flops<Staggeredfield_eo, scalar_product>(system) +
-						2 * ::get_flops<hmc_complex, complexdivide>() +
-						    ::get_flops<hmc_complex, complexsubtract>() +
-						2 * get_flops<Staggeredfield_eo, saxpy>(system));
+						2 * get_flops<Staggeredfield_eo, hmc_float, scalar_product_real_part>(system) +
+						2 * 1 +
+						    1 +
+						2 * get_flops<Staggeredfield_eo, hmc_float, saxpy>(system));
 					cl_ulong flops_per_iter_only_inner_loop=(
-							 3 * ::get_flops<hmc_complex, complexdivide>() +
-							11 * ::get_flops<hmc_complex, complexmult>() +
-							     ::get_flops<hmc_complex, complexadd>() +
-							 3 * ::get_flops<hmc_complex, complexsubtract>() +
-							       get_flops<Staggeredfield_eo, saxpy>(system) +
-							       get_flops<Staggeredfield_eo, saxpby>(system) +
-							       get_flops<Staggeredfield_eo, sax>(system) +
+							 3 * 1 +
+							11 * 1 +
+							     1 +
+							 3 * 1 +
+							       get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
+							       get_flops<Staggeredfield_eo, hmc_float, saxpby>(system) +
+							       get_flops<Staggeredfield_eo, hmc_float, sax>(system) +
 							   5 * get_flops<Staggeredfield_eo, squarenorm>(system));
 					
 					cl_ulong total_flops = iter * flops_per_iter_no_inner_loop +
@@ -320,7 +321,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	//return 0;
 	}
 	
-	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << tmp2.get().re;
+	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << tmp2.get();
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
