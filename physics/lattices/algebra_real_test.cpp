@@ -143,13 +143,18 @@ BOOST_AUTO_TEST_CASE(access_element)
 	hardware::System system(params);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Vector<hmc_float> in(6, system);
+	Vector<hmc_float> vec(6, system);
 	Scalar<hmc_float> res(system);
 
-	in.store(std::vector<hmc_float>(6, 1.13));
-	
+	vec.store(std::vector<hmc_float>(6, 1.13));
 	for(int i=0; i<6; i++){
-	  access_real_vector_element(&res, in, i);
+	  access_real_vector_element(&res, vec, i);
 	  BOOST_REQUIRE_EQUAL(res.get(), 1.13);
+	}
+	
+	res.store(3.1415);
+	for(int i=0; i<6; i++){
+	  access_real_vector_element(&vec, res, i);
+	  BOOST_REQUIRE_EQUAL((vec.get())[i], 3.1415);
 	}
 }
