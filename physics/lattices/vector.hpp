@@ -151,6 +151,8 @@ template<typename SCALAR> std::vector<SCALAR> physics::lattices::Vector<SCALAR>:
 
 template<typename SCALAR> void physics::lattices::Vector<SCALAR>::store(const std::vector<SCALAR> vec) const
 {
+	if(vec.size() != N)
+	  throw Invalid_Parameters("The vector given to Vector::store has the wrong size!", N, vec.size());
 	size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
 		std::vector<hardware::SynchronizationEvent> events(num_buffers);
@@ -173,4 +175,4 @@ template<typename SCALAR> size_t physics::lattices::Vector<SCALAR>::get_vector_s
 	return N;
 }
 
-#endif /* _PHYSICS_LATTICES_SCALAR_ */
+#endif /* _PHYSICS_LATTICES_VECTOR_ */
