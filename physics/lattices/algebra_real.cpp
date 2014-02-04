@@ -26,6 +26,21 @@
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/real.hpp"
 
+void physics::lattices::access_real_vector_element(const Scalar<hmc_float>* out, const Vector<hmc_float>& in, const int index)
+{
+	auto out_bufs = out->get_buffers();
+	size_t num_bufs = out_bufs.size();
+	auto in_bufs = in.get_buffers();
+
+	if(num_bufs != in_bufs.size()) {
+		throw std::invalid_argument("All arguments must use the same number of devices.");
+	}
+	for(size_t i = 0; i < num_bufs; ++i) {
+		auto code = out_bufs[i]->get_device()->get_real_code();
+		code->set_real_to_vector_element_device(in_bufs[i], index, out_bufs[i]);
+	}
+}  
+
 void physics::lattices::add(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& left, const Scalar<hmc_float>& right)
 {
 	auto dest_bufs = dest->get_buffers();

@@ -31,6 +31,9 @@ namespace physics {
 
 namespace lattices {
 
+///@todo This function should be replaced by a more general one in the Vector class!!!
+void access_real_vector_element(const Scalar<hmc_float>* out, const Vector<hmc_float>& in, const int index);
+  
 void add(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& left, const Scalar<hmc_float>& right);
 void subtract(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& minuend, const Scalar<hmc_float>& subtrahend);
 void multiply(const Scalar<hmc_float>* dest, const Scalar<hmc_float>& left, const Scalar<hmc_float>& right);

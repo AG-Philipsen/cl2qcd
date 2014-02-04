@@ -133,3 +133,23 @@ BOOST_AUTO_TEST_CASE(base_operations)
 	divide(&res, left, right);
 	BOOST_REQUIRE_CLOSE(ref_ratio, res.get(), 1.e-8);
 }
+
+BOOST_AUTO_TEST_CASE(access_element)
+{
+	using namespace physics::lattices;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+	logger.debug() << "Devices: " << system.get_devices().size();
+
+	Vector<hmc_float> in(6, system);
+	Scalar<hmc_float> res(system);
+
+	in.store(std::vector<hmc_float>(6, 1.13));
+	
+	for(int i=0; i<6; i++){
+	  access_real_vector_element(&res, in, i);
+	  BOOST_REQUIRE_EQUAL(res.get(), 1.13);
+	}
+}
