@@ -181,21 +181,27 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		Vector<hmc_float> zeta(Neqs, system);
 		Vector<hmc_float> zeta_foll(Neqs, system);
 		Vector<hmc_float> masses(Neqs, system);
-		std::vector<hmc_float> aux1, aux2, aux3;
+		Vector<hmc_float> beta_vec(Neqs, system);
+		std::vector<hmc_float> aux1, aux2, aux3, aux4;
 		for(int k=0; k<Neqs; k++){
 		  aux1.push_back(zeta_i[k]->get());
 		  aux2.push_back(zeta_ii[k]->get());
 		  aux3.push_back(zeta_iii[k]->get());
+		  aux4.push_back(beta[k]->get());
 		}
 		zeta_prev.store(aux1);
 		zeta.store(aux2);
 		zeta_foll.store(aux3);
+		beta_vec.store(aux4);
 		masses.store(sigma);
 		
 		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, masses, Neqs);
+		update_beta_cgm(&beta_vec, beta_scalar, zeta_foll, zeta, Neqs);
 		
-		for(int k=0; k<Neqs; k++)
+		for(int k=0; k<Neqs; k++){
 		  zeta_iii[k]->store((zeta_foll.get())[k]);
+		  beta[k]->store((beta_vec.get())[k]);
+		}
 		
 		//Loop over the system equations, namely over the set of sigma values
 		for(int k=0; k<Neqs; k++){
@@ -220,8 +226,8 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 // 				divide(zeta_iii[k], num, den);
 // 				logger.warn() << "zeta_iii[" << k << "] = " << zeta_iii[k]
 				//Update beta[k]: beta[k] = beta_scalar*zeta_iii[k]/zeta_ii[k]
-				multiply(beta[k], beta_scalar, *zeta_iii[k]);
-				divide(beta[k], *beta[k], *zeta_ii[k]);
+// 				multiply(beta[k], beta_scalar, *zeta_iii[k]);
+// 				divide(beta[k], *beta[k], *zeta_ii[k]);
 				//Update x[k]: x[k] = x[k] - beta[k]*ps[k]
 				// ---> use num to store (- beta[k]) for saxpy
 				subtract(&num, zero, *beta[k]);
