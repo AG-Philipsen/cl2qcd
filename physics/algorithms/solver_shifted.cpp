@@ -84,14 +84,15 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	const Vector<hmc_float> zeta_foll(Neqs, system);           //This is zeta at the step iter+1
 	Vector<hmc_float> beta_vec(Neqs, system);
 	Vector<hmc_float> alpha_vec(Neqs, system);
+	Vector<hmc_float> shift(Neqs, system);                     //This is to store constants sigma
 	
 // 	std::vector<const Scalar<hmc_float>*> alpha;
 // 	std::vector<const Scalar<hmc_float>*> beta;
 // 	std::vector<const Scalar<hmc_float>*> zeta_i;   //This is zeta at the step iter-1
 // 	std::vector<const Scalar<hmc_float>*> zeta_ii;  //This is zeta at the step iter
 // 	std::vector<const Scalar<hmc_float>*> zeta_iii; //This is zeta at the step iter+1
-	std::vector<const Scalar<hmc_float>*> shift;    //This is to store constants sigma
-	std::vector<bool> single_system_converged;        //This is to stop calculation on single system
+// 	std::vector<const Scalar<hmc_float>*> shift;    //This is to store constants sigma
+	std::vector<bool> single_system_converged(Neqs, false);  //This is to stop calculation on single system
 	std::vector<uint> single_system_iter;             //This is to calculate performance properly
 	//Auxiliary scalars
 	const Scalar<hmc_float> alpha_scalar_prev(system);   //This is alpha_scalar at the step iter-1
@@ -122,6 +123,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	zeta_prev.store(std::vector<hmc_float>(Neqs, 1.));  // zeta_prev[i] = 1
 	zeta.store(std::vector<hmc_float>(Neqs, 1.));       // zeta[i] = 1
 	alpha_vec.store(std::vector<hmc_float>(Neqs, 0.));  // alpha[i] = 0
+	shift.store(sigma);
 	
 	//Initialization auxilary and output quantities
 	for(int i=0; i<Neqs; i++){
@@ -136,9 +138,9 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 // 		zeta_iii.push_back(new Scalar<hmc_float>(system));
 // 		zeta_i[i]->store(1.0);                    // zeta_i[i] = 1
 // 		zeta_ii[i]->store(1.0);                   // zeta_ii[i] = 1
-		shift.push_back(new Scalar<hmc_float>(system));
-		shift[i]->store(sigma[i]);
-		single_system_converged.push_back(false);             //no system converged
+// 		shift.push_back(new Scalar<hmc_float>(system));
+// 		shift[i]->store(sigma[i]);
+// 		single_system_converged.push_back(false);             //no system converged
 	}
 	copyData(&r, b);                          // r = b
 	copyData(&p, b);                          // p = b
@@ -187,24 +189,11 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		//saxpy(p, alpha_scalar, *p, *r);
 		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", p);
 
-
-		Vector<hmc_float> masses(Neqs, system);
-		
-// 		std::vector<hmc_float> aux5;
-// 		for(int k=0; k<Neqs; k++){
-// 		  aux5.push_back(alpha[k]->get());
-// 		}
-// 		alpha_vec.store(aux5);
-		masses.store(sigma);
-		
-		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, masses, Neqs);
+		//Update auxilary quantities
+		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, shift, Neqs);
 		update_beta_cgm(&beta_vec, beta_scalar, zeta_foll, zeta, Neqs);
 		update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
-		
-// 		for(int k=0; k<Neqs; k++){
-// 		  alpha[k]->store((alpha_vec.get())[k]);
-// 		}
-		
+
 		//Loop over the system equations, namely over the set of sigma values
 		for(int k=0; k<Neqs; k++){
 			if(single_system_converged[k]==false){
@@ -351,7 +340,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 // 				meta::free_container(zeta_i);
 // 				meta::free_container(zeta_ii);
 // 				meta::free_container(zeta_iii);
-				meta::free_container(shift);
+// 				meta::free_container(shift);
 				
 				return iter;
 			}
