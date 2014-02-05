@@ -26,6 +26,7 @@
 #include "scalar.hpp"
 #include "vector.hpp"
 #include "../../common_header_files/types.h"
+#include "../../hardware/system.hpp"
 
 namespace physics {
 
@@ -46,6 +47,8 @@ void update_zeta_cgm(const Vector<hmc_float>* out, const Vector<hmc_float>& zeta
 void update_beta_cgm(const Vector<hmc_float>* out, const Scalar<hmc_float>& sbeta_pres, const Vector<hmc_float>& zeta_pres, const Vector<hmc_float>& zeta_prev, const int numeq);
 
 void update_alpha_cgm(const Vector<hmc_float>* out, const Scalar<hmc_float>& salpha_pres, const Vector<hmc_float>& zeta_pres, const Vector<hmc_float>& beta_pres, const Vector<hmc_float>& zeta_prev, const Scalar<hmc_float>& sbeta_pres, const int numeq);
+
+size_t get_flops_update_cgm(const std::string quantity, const int Neqs, const hardware::System&);
 
 }
 

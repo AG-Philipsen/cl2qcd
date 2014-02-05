@@ -187,3 +187,20 @@ void physics::lattices::update_alpha_cgm(const Vector<hmc_float>* out, const Sca
 	}
 }
 
+size_t physics::lattices::get_flops_update_cgm(const std::string quantity, const int Neqs, const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto real_code = devices[0]->get_real_code();
+	if(quantity == "alpha")
+	  return real_code->get_flop_size_update("update_alpha_cgm", Neqs);
+	else if(quantity == "beta")
+	  return real_code->get_flop_size_update("update_beta_cgm", Neqs);
+	else if(quantity == "zeta")
+	  return real_code->get_flop_size_update("update_zeta_cgm", Neqs);
+	else
+	  throw Invalid_Parameters("Quantity unknown in get_flops_update_cgm", "alpha, beta or zeta", quantity);
+}
+
+
+
