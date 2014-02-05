@@ -29,14 +29,14 @@ inline hmc_float update_zeta_cgm_alg(hmc_float a, hmc_float b, hmc_float c, hmc_
 inline hmc_float update_beta_cgm_alg(hmc_float a, hmc_float b, hmc_float c)
 {
 	hmc_float out;
-	out = a * b / c;
+	out = - a * b / c;
 	return out;
 }
 
 inline hmc_float update_alpha_cgm_alg(hmc_float a, hmc_float b, hmc_float c, hmc_float d, hmc_float e)
 {
 	hmc_float out;
-	out = a * b * c / (d * e);
+	out = - a * b * c / (d * e);
 	return out;
 }
 

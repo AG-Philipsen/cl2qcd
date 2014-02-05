@@ -162,7 +162,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		divide(&alpha_scalar, tmp2, tmp1);
 		//Update field p: p = r + alpha_scalar*p
 		saxpy(&p, alpha_scalar, p, r);
-		//saxpy(p, alpha_scalar, *p, *r);
 		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", p);
 
 		//Update auxilary quantities
@@ -174,10 +173,8 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		for(int k=0; k<Neqs; k++){
 			if(single_system_converged[k]==false){
 				//Update x[k]: x[k] = x[k] - beta[k]*ps[k]
-				// ---> use num to store (- beta[k]) for saxpy
-				access_real_vector_element(&num, beta_vec, k);
-				subtract(&num, zero, num);
-				saxpy(x[k], num, *ps[k], *x[k]);
+				// --->  remember that in beta_vec we store (- beta[k])
+				saxpy(x[k], beta_vec, k, *ps[k], *x[k]);
 				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
 				saxpby(ps[k], zeta_foll, k, r, alpha_vec, k, *ps[k]);
 				//Check fields squarenorm for possible nan
@@ -230,25 +227,22 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 					const int sum_of_partial_iter = std::accumulate(single_system_iter.begin(), single_system_iter.end(),0);
 					logger.debug() << "matrix_flops: " << matrix_flops;
 					
-					cl_ulong flops_per_iter_no_inner_loop=(matrix_flops +
-						2 * get_flops<Staggeredfield_eo, hmc_float, scalar_product_real_part>(system) +
-						2 * 1 +
-						    1 +
-						2 * get_flops<Staggeredfield_eo, hmc_float, saxpy>(system));
-					cl_ulong flops_per_iter_only_inner_loop=(
-							 3 * 1 +
-							11 * 1 +
-							     1 +
-							 3 * 1 +
-							       get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
-							       get_flops<Staggeredfield_eo, hmc_float, saxpby>(system) +
-							       get_flops<Staggeredfield_eo, hmc_float, sax>(system) +
-							   5 * get_flops<Staggeredfield_eo, squarenorm>(system));
+					cl_ulong flops_per_iter_no_inner_loop= matrix_flops +
+						2 * get_flops<Staggeredfield_eo, hmc_float, scalar_product_real_part>(system) + 3 +
+						2 * get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
+						get_flops_update_cgm("alpha", Neqs, system) +
+						get_flops_update_cgm("beta", Neqs, system) +
+						get_flops_update_cgm("zeta", Neqs, system);
+					cl_ulong flops_per_iter_only_inner_loop=
+						get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
+						get_flops<Staggeredfield_eo, hmc_float, saxpby>(system) +
+						get_flops<Staggeredfield_eo, hmc_float, sax>(system) +
+						get_flops<Staggeredfield_eo, squarenorm>(system);
 					
 					cl_ulong total_flops = iter * flops_per_iter_no_inner_loop +
 						sum_of_partial_iter * flops_per_iter_only_inner_loop;
 					cl_ulong noWarmup_flops = (iter-1) * flops_per_iter_no_inner_loop +
-						       sum_of_partial_iter * flops_per_iter_only_inner_loop;
+						(sum_of_partial_iter-Neqs) * flops_per_iter_only_inner_loop;
 					
 					logger.debug() << "total_flops: " << total_flops;
 					// report performance
