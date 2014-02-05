@@ -83,8 +83,9 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	const Vector<hmc_float> zeta(Neqs, system);                //This is zeta at the step iter
 	const Vector<hmc_float> zeta_foll(Neqs, system);           //This is zeta at the step iter+1
 	Vector<hmc_float> beta_vec(Neqs, system);
+	Vector<hmc_float> alpha_vec(Neqs, system);
 	
-	std::vector<const Scalar<hmc_float>*> alpha;
+// 	std::vector<const Scalar<hmc_float>*> alpha;
 // 	std::vector<const Scalar<hmc_float>*> beta;
 // 	std::vector<const Scalar<hmc_float>*> zeta_i;   //This is zeta at the step iter-1
 // 	std::vector<const Scalar<hmc_float>*> zeta_ii;  //This is zeta at the step iter
@@ -120,6 +121,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	//Initialization auxilary and output quantities
 	zeta_prev.store(std::vector<hmc_float>(Neqs, 1.));  // zeta_prev[i] = 1
 	zeta.store(std::vector<hmc_float>(Neqs, 1.));       // zeta[i] = 1
+	alpha_vec.store(std::vector<hmc_float>(Neqs, 0.));  // alpha[i] = 0
 	
 	//Initialization auxilary and output quantities
 	for(int i=0; i<Neqs; i++){
@@ -127,8 +129,8 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		ps.push_back(new Staggeredfield_eo(system));    
 		copyData(ps[i], b);                                    // ps[i] = b
 // 		beta.push_back(new Scalar<hmc_float>(system));
-		alpha.push_back(new Scalar<hmc_float>(system));
-		alpha[i]->store(0.0);                    // alpha[i] = 0
+// 		alpha.push_back(new Scalar<hmc_float>(system));
+// 		alpha[i]->store(0.0);                    // alpha[i] = 0
 // 		zeta_i.push_back(new Scalar<hmc_float>(system));
 // 		zeta_ii.push_back(new Scalar<hmc_float>(system));
 // 		zeta_iii.push_back(new Scalar<hmc_float>(system));
@@ -188,21 +190,20 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 
 		Vector<hmc_float> masses(Neqs, system);
 		
-		Vector<hmc_float> alpha_vec(Neqs, system);
-		std::vector<hmc_float> aux5;
-		for(int k=0; k<Neqs; k++){
-		  aux5.push_back(alpha[k]->get());
-		}
-		alpha_vec.store(aux5);
+// 		std::vector<hmc_float> aux5;
+// 		for(int k=0; k<Neqs; k++){
+// 		  aux5.push_back(alpha[k]->get());
+// 		}
+// 		alpha_vec.store(aux5);
 		masses.store(sigma);
 		
 		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, masses, Neqs);
 		update_beta_cgm(&beta_vec, beta_scalar, zeta_foll, zeta, Neqs);
 		update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
 		
-		for(int k=0; k<Neqs; k++){
-		  alpha[k]->store((alpha_vec.get())[k]);
-		}
+// 		for(int k=0; k<Neqs; k++){
+// 		  alpha[k]->store((alpha_vec.get())[k]);
+// 		}
 		
 		//Loop over the system equations, namely over the set of sigma values
 		for(int k=0; k<Neqs; k++){
@@ -331,7 +332,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 					cl_ulong total_flops = iter * flops_per_iter_no_inner_loop +
 						sum_of_partial_iter * flops_per_iter_only_inner_loop;
 					cl_ulong noWarmup_flops = (iter-1) * flops_per_iter_no_inner_loop +
-									      flops_per_iter_only_inner_loop;
+						       sum_of_partial_iter * flops_per_iter_only_inner_loop;
 					
 					logger.debug() << "total_flops: " << total_flops;
 					// report performance
@@ -345,7 +346,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				
 				//Before returning I have to clean all the memory!!!
 				meta::free_container(ps);
-				meta::free_container(alpha);
+// 				meta::free_container(alpha);
 // 				meta::free_container(beta);
 // 				meta::free_container(zeta_i);
 // 				meta::free_container(zeta_ii);
