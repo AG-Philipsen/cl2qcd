@@ -82,9 +82,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	const Vector<hmc_float> zeta_prev(Neqs, system);           //This is zeta at the step iter-1
 	const Vector<hmc_float> zeta(Neqs, system);                //This is zeta at the step iter
 	const Vector<hmc_float> zeta_foll(Neqs, system);           //This is zeta at the step iter+1
+	Vector<hmc_float> beta_vec(Neqs, system);
 	
 	std::vector<const Scalar<hmc_float>*> alpha;
-	std::vector<const Scalar<hmc_float>*> beta;
+// 	std::vector<const Scalar<hmc_float>*> beta;
 // 	std::vector<const Scalar<hmc_float>*> zeta_i;   //This is zeta at the step iter-1
 // 	std::vector<const Scalar<hmc_float>*> zeta_ii;  //This is zeta at the step iter
 // 	std::vector<const Scalar<hmc_float>*> zeta_iii; //This is zeta at the step iter+1
@@ -125,7 +126,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		x[i]->set_zero();                                     // x[i] = 0 
 		ps.push_back(new Staggeredfield_eo(system));    
 		copyData(ps[i], b);                                    // ps[i] = b
-		beta.push_back(new Scalar<hmc_float>(system));
+// 		beta.push_back(new Scalar<hmc_float>(system));
 		alpha.push_back(new Scalar<hmc_float>(system));
 		alpha[i]->store(0.0);                    // alpha[i] = 0
 // 		zeta_i.push_back(new Scalar<hmc_float>(system));
@@ -185,16 +186,13 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", p);
 
 
-		
 		Vector<hmc_float> masses(Neqs, system);
-		Vector<hmc_float> beta_vec(Neqs, system);
+		
 		Vector<hmc_float> alpha_vec(Neqs, system);
-		std::vector<hmc_float> aux1, aux2, aux3, aux4, aux5;
+		std::vector<hmc_float> aux5;
 		for(int k=0; k<Neqs; k++){
-		  aux4.push_back(beta[k]->get());
 		  aux5.push_back(alpha[k]->get());
 		}
-		beta_vec.store(aux4);
 		alpha_vec.store(aux5);
 		masses.store(sigma);
 		
@@ -203,7 +201,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
 		
 		for(int k=0; k<Neqs; k++){
-		  beta[k]->store((beta_vec.get())[k]);
 		  alpha[k]->store((alpha_vec.get())[k]);
 		}
 		
@@ -234,8 +231,14 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 // 				divide(beta[k], *beta[k], *zeta_ii[k]);
 				//Update x[k]: x[k] = x[k] - beta[k]*ps[k]
 				// ---> use num to store (- beta[k]) for saxpy
-				subtract(&num, zero, *beta[k]);
+				
+				access_real_vector_element(&num, beta_vec, k);
+				subtract(&num, zero, num);
 				saxpy(x[k], num, *ps[k], *x[k]);
+				
+				//subtract(&num, zero, *beta[k]);
+				//saxpy(x[k], num, *ps[k], *x[k]);
+				
 				//Update alpha[k]: num = alpha_scalar*zeta_iii[k]*beta[k]
 				//                 den = zeta_ii[k]*beta_scalar
 				// ---> alpha[k] = num/den
@@ -246,6 +249,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
 				
 				saxpby(ps[k], zeta_foll, k, r, alpha_vec, k, *ps[k]);
+				
 				//saxpby(ps[k], *zeta_iii[k], r, *alpha[k], *ps[k]);
 				
 				//Check fields squarenorm for possible nan
@@ -342,7 +346,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				//Before returning I have to clean all the memory!!!
 				meta::free_container(ps);
 				meta::free_container(alpha);
-				meta::free_container(beta);
+// 				meta::free_container(beta);
 // 				meta::free_container(zeta_i);
 // 				meta::free_container(zeta_ii);
 // 				meta::free_container(zeta_iii);
