@@ -72,83 +72,59 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	
 	//The number of values of constants sigma as well as the number of fields x
 	const int Neqs = sigma.size();
-	
+
 	//Auxiliary staggered fields
 	const Staggeredfield_eo r(system);
 	const Staggeredfield_eo p(system);
 	std::vector<Staggeredfield_eo*> ps;
 	
 	//Auxiliary scalar vectors
-	const Vector<hmc_float> zeta_prev(Neqs, system);           //This is zeta at the step iter-1
-	const Vector<hmc_float> zeta(Neqs, system);                //This is zeta at the step iter
-	const Vector<hmc_float> zeta_foll(Neqs, system);           //This is zeta at the step iter+1
+	const Vector<hmc_float> zeta_prev(Neqs, system);         //This is zeta at the step iter-1
+	const Vector<hmc_float> zeta(Neqs, system);              //This is zeta at the step iter
+	const Vector<hmc_float> zeta_foll(Neqs, system);         //This is zeta at the step iter+1
 	Vector<hmc_float> beta_vec(Neqs, system);
 	Vector<hmc_float> alpha_vec(Neqs, system);
-	Vector<hmc_float> shift(Neqs, system);                     //This is to store constants sigma
-	
-// 	std::vector<const Scalar<hmc_float>*> alpha;
-// 	std::vector<const Scalar<hmc_float>*> beta;
-// 	std::vector<const Scalar<hmc_float>*> zeta_i;   //This is zeta at the step iter-1
-// 	std::vector<const Scalar<hmc_float>*> zeta_ii;  //This is zeta at the step iter
-// 	std::vector<const Scalar<hmc_float>*> zeta_iii; //This is zeta at the step iter+1
-// 	std::vector<const Scalar<hmc_float>*> shift;    //This is to store constants sigma
+	Vector<hmc_float> shift(Neqs, system);                   //This is to store constants sigma
 	std::vector<bool> single_system_converged(Neqs, false);  //This is to stop calculation on single system
-	std::vector<uint> single_system_iter;             //This is to calculate performance properly
+	std::vector<uint> single_system_iter;                    //This is to calculate performance properly
+
 	//Auxiliary scalars
-	const Scalar<hmc_float> alpha_scalar_prev(system);   //This is alpha_scalar at the step iter-1
-	const Scalar<hmc_float> alpha_scalar(system);        //This is alpha_scalar at the step iter
-	const Scalar<hmc_float> beta_scalar_prev(system);    //This is beta_scalar at the step iter-1
-	const Scalar<hmc_float> beta_scalar(system);         //This is beta_scalar at the step iter
+	const Scalar<hmc_float> alpha_scalar_prev(system);       //This is alpha_scalar at the step iter-1
+	const Scalar<hmc_float> alpha_scalar(system);            //This is alpha_scalar at the step iter
+	const Scalar<hmc_float> beta_scalar_prev(system);        //This is beta_scalar at the step iter-1
+	const Scalar<hmc_float> beta_scalar(system);             //This is beta_scalar at the step iter
 	
 	//Auxiliary containers for temporary saving
-	const Staggeredfield_eo v(system); //this is to store A.p
-	const Scalar<hmc_float> tmp1(system);                     //this is to store (r,r) before updating r
-	const Scalar<hmc_float> tmp2(system);                     //this is to store (r,r) after updating r
-	const Scalar<hmc_float> tmp3(system);                     //this is to store (p,v) as Scalar
-	const Scalar<hmc_float> num(system);                      //this is to store constants numerators
-	const Scalar<hmc_float> den(system);                      //this is to store constants denumerators
-	bool converged=false;                                       //this is to start to check the residuum
+	const Staggeredfield_eo v(system);                       //This is to store A.p
+	const Scalar<hmc_float> tmp1(system);                    //This is to store (r,r) before updating r
+	const Scalar<hmc_float> tmp2(system);                    //This is to store (r,r) after updating r
+	const Scalar<hmc_float> tmp3(system);                    //This is to store (p,v) as Scalar
+	const Scalar<hmc_float> num(system);                     //This is to store constants numerators
+	const Scalar<hmc_float> den(system);                     //This is to store constants denumerators
 
 	//Auxiliary constants as Scalar
 	const Scalar<hmc_float> zero(system);
 	zero.store(0.0);
-	const Scalar<hmc_float> one(system);
-	one.store(1.0);
-	
 	
 	hmc_float resid;
 	int iter = 0;
-	
 	//Initialization auxilary and output quantities
 	zeta_prev.store(std::vector<hmc_float>(Neqs, 1.));  // zeta_prev[i] = 1
 	zeta.store(std::vector<hmc_float>(Neqs, 1.));       // zeta[i] = 1
 	alpha_vec.store(std::vector<hmc_float>(Neqs, 0.));  // alpha[i] = 0
 	shift.store(sigma);
-	
-	//Initialization auxilary and output quantities
 	for(int i=0; i<Neqs; i++){
-		x[i]->set_zero();                                     // x[i] = 0 
+		x[i]->set_zero();    // x[i] = 0 
 		ps.push_back(new Staggeredfield_eo(system));    
-		copyData(ps[i], b);                                    // ps[i] = b
-// 		beta.push_back(new Scalar<hmc_float>(system));
-// 		alpha.push_back(new Scalar<hmc_float>(system));
-// 		alpha[i]->store(0.0);                    // alpha[i] = 0
-// 		zeta_i.push_back(new Scalar<hmc_float>(system));
-// 		zeta_ii.push_back(new Scalar<hmc_float>(system));
-// 		zeta_iii.push_back(new Scalar<hmc_float>(system));
-// 		zeta_i[i]->store(1.0);                    // zeta_i[i] = 1
-// 		zeta_ii[i]->store(1.0);                   // zeta_ii[i] = 1
-// 		shift.push_back(new Scalar<hmc_float>(system));
-// 		shift[i]->store(sigma[i]);
-// 		single_system_converged.push_back(false);             //no system converged
+		copyData(ps[i], b); // ps[i] = b
 	}
-	copyData(&r, b);                          // r = b
-	copyData(&p, b);                          // p = b
-	scalar_product_real_part(&tmp1, r, r);           // set tmp1 = (r, r) for the first iteration
-	beta_scalar.store(1.0);      // beta_scalar = 1, here I should set beta_scalar_prev
-						  // but in this way I can set beta_scalar_prev at the begin
-						  // of the loop over iter recursively.
-	alpha_scalar.store(0.0);    // alpha_scalar = 0. The same as beta_scalar above.
+	copyData(&r, b);                        // r = b
+	copyData(&p, b);                        // p = b
+	scalar_product_real_part(&tmp1, r, r);  // set tmp1 = (r, r) for the first iteration
+	beta_scalar.store(1.0);                 // beta_scalar = 1, here I should set beta_scalar_prev
+						 // but in this way I can set beta_scalar_prev at the begin
+						 // of the loop over iter recursively.
+	alpha_scalar.store(0.0);                // alpha_scalar = 0. The same as beta_scalar above.
 	
 	//At first, in the log string I will report all the data about the system.
 	//To avoid to print to shell tens of lines per time, since Neqs can be 
@@ -197,51 +173,13 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		//Loop over the system equations, namely over the set of sigma values
 		for(int k=0; k<Neqs; k++){
 			if(single_system_converged[k]==false){
-				//Update zeta_iii[k]: num = zeta_i[k]*zeta_ii[k]*beta_scalar_prev
-				//                    den = beta_scalar*alpha_scalar_prev*(zeta_i[k]-zeta_ii[k])+
-				//                        + zeta_i[k]*beta_scalar_prev*(1-sigma[k]*beta_scalar)
-				// ---> zeta_iii[k] = num/den
-				//I calculate before the denominator to can use num as auxiliary variable
-// 				subtract(&num, *zeta_i[k], *zeta_ii[k]);
-// 				multiply(&num, num, alpha_scalar_prev);
-// 				multiply(&num, num, beta_scalar);
-// 				multiply(&den, *shift[k], beta_scalar);
-// 				subtract(&den, one, den);
-// 				multiply(&den, den, beta_scalar_prev);
-// 				multiply(&den, den, *zeta_i[k]);
-// 				add(&den, num, den);
-// 				//Calculation of the numerator
-// 				multiply(&num, *zeta_i[k], *zeta_ii[k]);
-// 				multiply(&num, num, beta_scalar_prev);
-// 				//Update of zeta_iii[k]
-// 				divide(zeta_iii[k], num, den);
-// 				logger.warn() << "zeta_iii[" << k << "] = " << zeta_iii[k]
-				//Update beta[k]: beta[k] = beta_scalar*zeta_iii[k]/zeta_ii[k]
-// 				multiply(beta[k], beta_scalar, *zeta_iii[k]);
-// 				divide(beta[k], *beta[k], *zeta_ii[k]);
 				//Update x[k]: x[k] = x[k] - beta[k]*ps[k]
 				// ---> use num to store (- beta[k]) for saxpy
-				
 				access_real_vector_element(&num, beta_vec, k);
 				subtract(&num, zero, num);
 				saxpy(x[k], num, *ps[k], *x[k]);
-				
-				//subtract(&num, zero, *beta[k]);
-				//saxpy(x[k], num, *ps[k], *x[k]);
-				
-				//Update alpha[k]: num = alpha_scalar*zeta_iii[k]*beta[k]
-				//                 den = zeta_ii[k]*beta_scalar
-				// ---> alpha[k] = num/den
-// 				multiply(&num, alpha_scalar, *zeta_iii[k]);
-// 				multiply(&num, num, *beta[k]);
-// 				multiply(&den, *zeta_ii[k], beta_scalar);
-// 				divide(alpha[k], num, den);
 				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
-				
 				saxpby(ps[k], zeta_foll, k, r, alpha_vec, k, *ps[k]);
-				
-				//saxpby(ps[k], *zeta_iii[k], r, *alpha[k], *ps[k]);
-				
 				//Check fields squarenorm for possible nan
 				if(logger.beDebug()){
 					if((squarenorm(*x[k]) != squarenorm(*x[k])) ||
@@ -252,37 +190,26 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				}
 				//Check if single system converged: ||zeta_iii[k] * r||^2 < prec
 				// ---> v = zeta_iii[k] * r
-				
 				sax(&v, zeta_foll.get()[k], r);
-				//sax(&v, *zeta_iii[k], r);
-
-				//Check if single system converged: (zeta_ii[k] * zeta_ii[k] * tmp1) < prec
-				//multiply(&tmp3, *zeta_ii[k], *zeta_ii[k]);
-				//multiply(&tmp3, tmp3, tmp1);
 				if(squarenorm(v) < prec){
-				//if(tmp3.get().re < prec){
 					single_system_converged[k] = true;
 					single_system_iter.push_back((uint)iter);
 					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
 				}
-// 				//Adjust zeta for the following iteration
-// 				copyData(zeta_i[k], zeta_ii[k]);
-// 				copyData(zeta_ii[k], zeta_iii[k]);
 			}
 		}
 		//Adjust zeta for the following iteration
 		copyData(&zeta_prev, zeta);
 		copyData(&zeta, zeta_foll);
-
-		if(single_system_iter.size()==(uint)Neqs)
-			converged = true;
+		
 		if(logger.beDebug()){
 			compare_sqnorm(xsq, x);
 		}
 		log_squarenorm_aux(create_log_prefix_cgm(iter) + "x", x, report_num);
 		log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps", ps, report_num);
+		
 		//Check whether the algorithm converged
-		if(converged) {
+		if(single_system_iter.size() == (uint)Neqs) {
 			//Calculate resid: 
 			resid = tmp2.get();
 			logger.debug() << create_log_prefix_cgm(iter) << "resid: " << resid;
@@ -330,18 +257,9 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				// report on solution
 				log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (final): ", x, report_num);
 				
-				//for(Staggeredfield_eo* i : x)
-				//  logger.warn() << "sqnorm(x[i]) = " << squarenorm(*i);
-				
 				//Before returning I have to clean all the memory!!!
 				meta::free_container(ps);
-// 				meta::free_container(alpha);
-// 				meta::free_container(beta);
-// 				meta::free_container(zeta_i);
-// 				meta::free_container(zeta_ii);
-// 				meta::free_container(zeta_iii);
-// 				meta::free_container(shift);
-				
+
 				return iter;
 			}
 		}
