@@ -99,9 +99,15 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	const Scalar<hmc_float> tmp1(system);                    //This is to store (r,r) before updating r
 	const Scalar<hmc_float> tmp2(system);                    //This is to store (r,r) after updating r
 	const Scalar<hmc_float> tmp3(system);                    //This is to store (p,v) as Scalar
-	const Scalar<hmc_float> num(system);                     //This is to store constants numerators
-	const Scalar<hmc_float> den(system);                     //This is to store constants denumerators
-
+	
+	//Only if merged kernels are used (this is to store the single eq. residuum all at once)
+	const Vector<hmc_float>* single_eq_resid;
+	std::vector<hmc_float>* single_eq_resid_host;
+	if(params.get_use_merge_kernels_spinor() == true){
+		single_eq_resid = new Vector<hmc_float>(Neqs, system);
+		single_eq_resid_host = new std::vector<hmc_float>;
+	}
+	
 	//Auxiliary constants as Scalar
 	const Scalar<hmc_float> zero(system);
 	zero.store(0.0);
@@ -168,6 +174,13 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, shift, Neqs);
 		update_beta_cgm(&beta_vec, beta_scalar, zeta_foll, zeta, Neqs);
 		update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
+		
+		//Check if single system converged: ||zeta_foll[k] * r||^2 < prec
+		// ---> v = zeta_foll[k] * r
+		if(params.get_use_merge_kernels_spinor() == true) {
+			sax_vec_and_squarenorm(single_eq_resid, zeta_foll, r);
+			*single_eq_resid_host = single_eq_resid->get();
+		}
 
 		//Loop over the system equations, namely over the set of sigma values
 		for(int k=0; k<Neqs; k++){
@@ -187,8 +200,11 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				}
 				//Check if single system converged: ||zeta_iii[k] * r||^2 < prec
 				// ---> v = zeta_iii[k] * r
-				sax(&v, zeta_foll.get()[k], r);
-				if(squarenorm(v) < prec){
+				if(params.get_use_merge_kernels_spinor() == false)
+					sax(&v, zeta_foll.get()[k], r);
+				
+				if((!params.get_use_merge_kernels_spinor() && (squarenorm(v) < prec)) ||
+				    (params.get_use_merge_kernels_spinor() && ((*single_eq_resid_host)[k] < prec))){
 					single_system_converged[k] = true;
 					single_system_iter.push_back((uint)iter);
 					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
@@ -253,6 +269,10 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				
 				//Before returning I have to clean all the memory!!!
 				meta::free_container(ps);
+				if(params.get_use_merge_kernels_spinor() == true){
+					delete single_eq_resid;
+					delete single_eq_resid_host;
+				}
 
 				return iter;
 			}
