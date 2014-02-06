@@ -31,7 +31,9 @@ add_library(executables
 	gaugeobservablesExecutable.cpp
 	inverterExecutable.cpp
 	hmcExecutable.cpp
+	rhmcExecutable.cpp
 	dslashBenchmark.cpp
+	dksBenchmark.cpp
 	su3heatbathBenchmark.cpp
 )
 

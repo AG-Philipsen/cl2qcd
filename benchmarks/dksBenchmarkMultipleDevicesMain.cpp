@@ -18,15 +18,14 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../executables/su3heatbathBenchmark.h"
+#include "../executables/dksBenchmark.h"
 #include "../meta/util.hpp"
-
 int main(int argc, const char* argv[])
 {
 	try {
-	  std::pair<int,std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv, {"--enable_profiling=true"});
-	  su3heatbathBenchmark su3heatbathBenchmarkInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
-	  su3heatbathBenchmarkInstance.benchmark();
+	  std::pair<int,std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv, {"--fermact=rooted_stagg"});
+	  dksBenchmark dksBenchmarkInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
+	  dksBenchmarkInstance.benchmarkMultipleDevices();
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {

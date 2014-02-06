@@ -20,28 +20,27 @@
 
 /*
  * @file
- * Declaration of the hmcExecutable class.
+ * Declaration of the rhmcExecutable class.
  * This class provides features for the generation of gauge configurations
- * according to the Hybrid Monte Carlo (HMC) algorithm.
+ * according to the Rational Hybrid Monte Carlo (RHMC) algorithm.
  */
 
-#ifndef HMCEXECUTABLE_H_
-#define HMCEXECUTABLE_H_
+#ifndef RHMCEXECUTABLE_H_
+#define RHMCEXECUTABLE_H_
 
 #include "generationExecutable.h"
-#include "../physics/algorithms/hmc.hpp"
+#include "../physics/algorithms/rhmc.hpp"
+#include "../physics/algorithms/rational_approximation.hpp"
 #include <cmath>
 
-class hmcExecutable : public generationExecutable
-{
+class rhmcExecutable : public generationExecutable {
 public:
-  hmcExecutable(int argc, const char* argv[]);
-
-	~hmcExecutable();
+	rhmcExecutable(int argc, const char* argv[]);
+	~rhmcExecutable();
+	
 protected:
-// 	const std::string filenameForHmcLogfile = "hmc.log";
 	double acceptanceRate = 0;
-	hmc_observables observables;
+	hmc_observables observables; 
 
 	/*
 	 * Sets member variables that control the iterations during
@@ -51,22 +50,27 @@ protected:
 
 	void printParametersToScreenAndFile();
 
-	void writeHmcLogfile();
+	void writeRhmcLogfile();
 
 	void thermalizeAccordingToSpecificAlgorithm() override;
 
 	void generateAccordingToSpecificAlgorithm() override;
 
 	/**
-	 * Measures HMC related observables
+	 * Measures RHMC related observables
 	 */
 	void performOnlineMeasurements() override;
 
-	void printHmcObservables(const std::string& filename);
+	void printRhmcObservables(const std::string& filename);
 
-	void printHmcObservablesToFile(const std::string& filename);
+	void printRhmcObservablesToFile(const std::string& filename);
 
-	void printHmcObservablesToScreen();
+	void printRhmcObservablesToScreen();
+	
+private:
+	physics::algorithms::Rational_Approximation *approx_hb, *approx_md, *approx_met;
+	void checkRhmcParameters(const meta::Inputparameters& p);
+
 };
 
-#endif /* HMCEXECUTABLE_H_ */
+#endif /* RHMCEXECUTABLE_H_ */

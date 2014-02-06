@@ -31,17 +31,18 @@
 class generationExecutable : public generalExecutable
 {
 public:
-	generationExecutable(int argc, const char* argv[]);
-
 	void generateConfigurations();
 
 protected:
+	//Protected since it makes no sense to allow the user to instatiate this class
+	generationExecutable(int argc, const char* argv[]);
+	
 	int writeFrequency;
 	int saveFrequency;
 	int thermalizationSteps;
 	int generationSteps;
 	int iteration;
-	std::string filenameForGaugeobservables;
+// 	std::string filenameForGaugeobservables;
 
 	/**
 	 * Sets member variables that control the iterations during

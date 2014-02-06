@@ -18,31 +18,30 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DSLASHBENCHMARK_H_
-#define DSLASHBENCHMARK_H_
+#ifndef DKSBENCHMARK_H_
+#define DKSBENCHMARK_H_
 
 #include "benchmarkExecutable.h"
-#include "../physics/lattices/spinorfield_eo.hpp"
-#include "../hardware/code/fermions.hpp"
-#include "../hardware/code/spinors.hpp"
-#include "../physics/fermionmatrix/fermionmatrix.hpp"
+#include "../physics/lattices/staggeredfield_eo.hpp"
+#include "../hardware/code/fermions_staggered.hpp"
+#include "../hardware/code/spinors_staggered.hpp"
+#include "../physics/fermionmatrix/fermionmatrix_stagg.hpp"
 
-class dslashBenchmark : public benchmarkExecutable
-{
+class dksBenchmark : public benchmarkExecutable {
 public:
-  dslashBenchmark(int argc, const char* argv[]);
+  dksBenchmark(int argc, const char* argv[]);
 
 protected:
-  const physics::lattices::Spinorfield_eo * spinorfield1;
-  const physics::lattices::Spinorfield_eo * spinorfield2;
+	const physics::lattices::Staggeredfield_eo * staggeredfield1;
+	const physics::lattices::Staggeredfield_eo * staggeredfield2;
 
 	/*
-	 * Calls the dslash_eo kernel.
+	 * Calls the dks_eo kernel.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
 	void performBenchmarkForSpecificKernels() override;
 	/*
-	 * Calls dslash_eo on all devices in the system.
+	 * Calls dks_eo on all devices in the system.
 	 * Per iteration, the kernel is called with EVEN and ODD parameters.
 	 */
 	void enqueueSpecificKernelForBenchmarkingMultipleDevices()  override;

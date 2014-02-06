@@ -571,9 +571,8 @@ void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
 	return;
 }
 
-void meta::print_info_rhmc(const char* progname, const Inputparameters& params)
+void meta::print_info_rhmc(const Inputparameters& params)
 {
-	logger.info() << "## Starting RHMC program, executable name: " << progname ;
 	print_info_global(params);
 	print_info_configs_io(params);
 	print_info_prng_io(params);
@@ -662,9 +661,8 @@ void meta::print_info_rhmc(const char* progname, const Inputparameters& params)
 	return;
 }
 
-void meta::print_info_rhmc(const char* progname, std::ostream* os, const Inputparameters& params)
+void meta::print_info_rhmc(std::ostream* os, const Inputparameters& params)
 {
-	*os << "## Starting RHMC program, executable name: " << progname << endl;
 	print_info_global(os, params);
 	print_info_configs_io(os, params);
 	print_info_prng_io(os, params);

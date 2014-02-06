@@ -45,6 +45,7 @@ void hardware::code::Fermions_staggered::fill_kernels()
 
 	if(get_parameters().get_fermact() == meta::Inputparameters::rooted_stagg) {
 	      if(get_parameters().get_use_eo()){
+			M_staggered = 0;
 			D_KS_eo = createKernel("D_KS_eo") << sources << "fermionmatrix_staggered_eo_DKS_local.cl" << "fermionmatrix_staggered_eo_DKS.cl";
 	      } else {
 			D_KS_eo = 0;
@@ -247,8 +248,10 @@ uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in
 void hardware::code::Fermions_staggered::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
-	Opencl_Module::print_profiling(filename, M_staggered);
-	Opencl_Module::print_profiling(filename, D_KS_eo);
+	if(M_staggered)
+		Opencl_Module::print_profiling(filename, M_staggered);
+	if(D_KS_eo)
+		Opencl_Module::print_profiling(filename, D_KS_eo);
 }
 
 hardware::code::Fermions_staggered::Fermions_staggered(const meta::Inputparameters& params, hardware::Device * device)
