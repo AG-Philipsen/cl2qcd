@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	  std::vector<Staggeredfield_eo*> out;
 	  for(uint i=0; i<sigma.size(); i++)
 	    out.push_back(new Staggeredfield_eo(system));
-	  //This field is that of the test explicit_stagg, part 2 (D_KS_eo)
+	  //This field is that of the test explicit_stagg, part 2 (D_KS_eo) (ref_vec_odd because the seed is 123)
 	  pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
 	  
 	  //These are the sqnorms of the output of the CG-M algorithm from the reference code
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	  for(uint i=0; i<sigma.size(); i++){
 	    sqnorm_out.push_back(squarenorm(*out[i]));
 	    logger.info() << "sqnorm(out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
-	    BOOST_CHECK_CLOSE(sqnorms_ref[i], sqnorm_out[i], 1.e-8);	    
+	    BOOST_CHECK_CLOSE(sqnorms_ref[i], sqnorm_out[i], 1.e-8); 
 	  }
 	  meta::free_container(out);
 	  delete params;
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	std::vector<Staggeredfield_eo*> out;
 	for(uint i=0; i<sigma.size(); i++)
 		out.push_back(new Staggeredfield_eo(system));
-	//This field is that of the test explicit_stagg, part 2 (D_KS_eo)
+	//This field is that of the test explicit_stagg, part 2 (D_KS_eo) (ref_vec_odd because the seed is 123)
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
 	
 	//These are the sqnorms of the output of the CG-M algorithm from the reference code
@@ -206,9 +206,69 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	meta::free_container(out);
 }
 
+//This test is to test if the cgm works correctly in the case it is used
+//as a standard CG. This means that here we set the shift to zero and the
+//number if equations to 1. In the reference code we will produce the result with
+//the standard CG, because it is there available. The reason for this test is that,
+//until a standard CG for staggered field will be available, the cgm will be
+//used in the chiral condensate evaluation as a standard CG.
+BOOST_AUTO_TEST_CASE(cgm_4)
+{
+	using namespace physics::lattices;
+	using namespace physics::algorithms::solvers;
+	using namespace physics::algorithms;
+	
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+	meta::Inputparameters params(3, _params);
+	hardware::System system(params);
+	physics::PRNG prng(system);
+	
+	//These are some possible values of sigma
+// 	Rational_Approximation approx(16, 1,2, 1.e-5,1);
+	
+	std::vector<hmc_float> sigma(1, 0.0);
+	physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
+	
+	//This configuration for the Ref.Code is the same as for example dks_input_5
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Staggeredfield_eo b(system);
+	std::vector<Staggeredfield_eo*> out;
+	for(uint i=0; i<sigma.size(); i++)
+		out.push_back(new Staggeredfield_eo(system));
+	
+	{
+	//Cold b
+	b.set_cold();
+	//These is the sqnorm of the output of the CG algorithm from the reference code
+	hmc_float sqnorms_ref = 9.0597433493689383255;
+	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-24);
+	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
+	
+	hmc_float sqnorm_out = squarenorm(*out[0]);
+	logger.info() << "sqnorm(out)=" << std::setprecision(16) << sqnorm_out;
+	BOOST_CHECK_CLOSE(sqnorms_ref, sqnorm_out, 1.e-8);
+	}
+	
+	{
+	//This field is that of the test explicit_stagg, part 2 (D_KS_eo) (ref_vec_odd because the seed is 123)
+	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
+	//These is the sqnorm of the output of the CG algorithm from the reference code
+	hmc_float sqnorms_ref = 3790.3193634090343949;
+	int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-24);
+	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
+	
+	hmc_float sqnorm_out = squarenorm(*out[0]);
+	logger.info() << "sqnorm(out)=" << std::setprecision(16) << sqnorm_out;
+	BOOST_CHECK_CLOSE(sqnorms_ref, sqnorm_out, 1.e-8);
+	}
+
+	meta::free_container(out);
+}
+
+
 //This are just to play with cg_m to optimize it
 /*
-BOOST_AUTO_TEST_CASE(cgm_4)
+BOOST_AUTO_TEST_CASE(cgm_5)
 {
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
@@ -217,10 +277,10 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	meta::Inputparameters* params;
 	for(int i=0; i<2; i++){
 	  if(i==0){
-	    const char * _params[] = {"foo", "--nspace=64", "--ntime=4", "--fermact=rooted_stagg", "--cgmax=100000", "--cg_minimum_iteration_count=0", "--use_merge_kernels_spinor=false"};
+	    const char * _params[] = {"foo", "--nspace=24", "--ntime=24", "--fermact=rooted_stagg", "--cgmax=100000", "--cg_minimum_iteration_count=0", "--use_merge_kernels_spinor=false"};
 	    params = new meta::Inputparameters(6, _params);
 	  }else{
-	    const char * _params[] = {"foo", "--nspace=64", "--ntime=4", "--fermact=rooted_stagg", "--cgmax=100000", "--cg_minimum_iteration_count=0", "--use_merge_kernels_spinor=true"};
+	    const char * _params[] = {"foo", "--nspace=24", "--ntime=24", "--fermact=rooted_stagg", "--cgmax=100000", "--cg_minimum_iteration_count=0", "--use_merge_kernels_spinor=true"};
 	    params = new meta::Inputparameters(6, _params);
 	  }
 	  hardware::System system(*params);
@@ -230,7 +290,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	  Rational_Approximation approx(1, 1,2, 1.e-5,1);
 	  
 	  std::vector<hmc_float> sigma = approx.Get_b();
-	  physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
+	  physics::fermionmatrix::MdagM_eo matrix(system, 0.5);
 	  
 	  Gaugefield gf(system, prng, "hot");
 	  Staggeredfield_eo b(system);
@@ -240,7 +300,8 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	  //This field is that of the test explicit_stagg, part 2 (D_KS_eo)
 	  pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
 	  
-	  int iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-24);
+	  int iter = cg_m(out, sigma, matrix, gf, b, system, 1);
+	  iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-23);
 	  logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 	  
 	  std::vector<hmc_float> sqnorm_out;
@@ -253,7 +314,8 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(cgm_5)
+/*
+BOOST_AUTO_TEST_CASE(cgm_6)
 {
 	using physics::fermionmatrix::DKS_eo;
 	
