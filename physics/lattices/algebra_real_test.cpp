@@ -73,13 +73,13 @@ void test_cgm_update(int switcher)
 	  update_beta_cgm(&out, s1, v1, v2, numeq);
 	  out_got = out.get();
 	  for(int i=0; i<numeq; i++)
-	    BOOST_REQUIRE_CLOSE(out_got[i], 1.57, 1.e-8);
+	    BOOST_REQUIRE_CLOSE(out_got[i], -1.57, 1.e-8);
 	}
 	if(switcher == 2){ //alpha
 	  update_alpha_cgm(&out, s1, v1, v2, v3, s2, numeq);
 	  out_got = out.get();
 	  for(int i=0; i<numeq; i++)
-	    BOOST_REQUIRE_CLOSE(out_got[i], 0.666666666667, 1.e-8);
+	    BOOST_REQUIRE_CLOSE(out_got[i], -0.666666666667, 1.e-8);
 	}
 	
 }
