@@ -1,0 +1,310 @@
+/*
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ #include "correlator_staggered.hpp"
+
+#include "../../host_functionality/logger.hpp"
+#include "../../meta/util.hpp"
+#include "../device.hpp"
+#include "spinors.hpp" //for hardware::code::get_eoprec_spinorfieldsize();
+#include "spinors_staggered.hpp"
+#include "prng.hpp"
+
+using namespace std;
+
+void hardware::code::Correlator_staggered::fill_kernels()
+{
+	if(get_parameters().get_fermact() != meta::Inputparameters::rooted_stagg){
+		throw Print_Error_Message("Correlator_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
+	}
+	
+	//When some noneo method will be introduced, remove this check!
+	if(!get_parameters().get_use_eo()){
+		throw Print_Error_Message("Correlator_staggered module asked to be built but without even-odd preconditionig! Aborting... ", __FILE__, __LINE__);
+	}	
+  
+	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl";// << "operations_spinor.cl" << "spinorfield.cl";
+	
+	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+
+	logger.debug() << "Creating Correlator_staggered kernels...";
+
+	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
+		throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
+	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
+		create_volume_source_stagg_eoprec = createKernel("create_volume_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_volume_source.cl";
+	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
+		throw Print_Error_Message("Timeslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
+	else if (get_parameters().get_sourcetype() == meta::Inputparameters::zslice)
+		throw Print_Error_Message("Zslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
+
+}
+
+void hardware::code::Correlator_staggered::clear_kernels()
+{
+	int clerr = CL_SUCCESS;
+	
+	logger.debug() << "Clearing Correlator_staggered kernels...";
+	
+// 	if(create_point_source) {
+// 		clerr = clReleaseKernel(create_point_source);
+// 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+// 	}
+	if(create_volume_source_stagg_eoprec) {
+		clerr = clReleaseKernel(create_volume_source_stagg_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+// 	if(create_timeslice_source) {
+// 		clerr = clReleaseKernel(create_timeslice_source);
+// 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+// 	}
+// 	if(create_zslice_source) {
+// 		clerr = clReleaseKernel(create_zslice_source);
+// 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+// 	}
+}
+
+void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+{
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
+
+	//LZ: should be valid for all kernels for correlators, i.e. for names that look like correlator_??_?
+	string kernelname = get_kernel_name(kernel);
+	if( kernelname.find("correlator") == 0 ) {
+		if(get_device()->get_device_type() == CL_DEVICE_TYPE_GPU) {
+			*ls = get_parameters().get_nspace();
+			*gs = *ls;
+			*num_groups = 1;
+		} else {
+			*ls = 1;
+			*gs = *ls;
+			*num_groups = 1;
+		}
+	}
+
+	return;
+}
+
+/*
+void hardware::code::Correlator_staggered::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_point_source, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_point_source, 1, sizeof(int), &i);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_point_source, 2, sizeof(int), &spacepos);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_point_source, 3, sizeof(int), &timepos);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
+
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+
+}
+*/
+
+void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_volume_source_stagg_eoprec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(create_volume_source_stagg_eoprec, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_volume_source_stagg_eoprec, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(create_volume_source_stagg_eoprec, gs2, ls2);
+
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_eoprec_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+}
+
+/*
+void hardware::code::Correlator_staggered::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_timeslice_source, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(create_timeslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_timeslice_source, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	int tmp = timeslice;
+	clerr = clSetKernelArg(create_timeslice_source, 2, sizeof(int), &tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( create_timeslice_source, gs2, ls2);
+
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+}
+
+void hardware::code::Correlator_staggered::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_zslice_source, &ls2, &gs2, &num_groups);
+	//set arguments
+
+	int clerr = clSetKernelArg(create_zslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_zslice_source, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	int tmp = zslice;
+	clerr = clSetKernelArg(create_zslice_source, 2, sizeof(int), &tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( create_zslice_source, gs2, ls2);
+
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+}
+*/
+
+
+size_t hardware::code::Correlator_staggered::get_read_write_size(const std::string& in) const
+{
+	//Depending on the compile-options, one has different sizes...
+	size_t D = meta::get_float_size(get_parameters());
+	//this returns the number of entries in an su3-matrix
+	size_t R = meta::get_mat_size(get_parameters());
+	size_t Seo = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
+	//factor for complex numbers
+	int C = 2;
+	//this is the same as in the function above
+	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
+	if (in == "create_point_source_stagg_eoprec") {
+		return module_metric_not_implemented<size_t>();
+	}
+	if (in == "create_volume_source_stagg_eoprec") {
+		return module_metric_not_implemented<size_t>();
+	}
+	if (in == "create_timeslice_source_stagg_eoprec") {
+		return module_metric_not_implemented<size_t>();
+	}
+	if (in == "create_zslice_source_stagg_eoprec") {
+		return module_metric_not_implemented<size_t>();
+	}
+	
+	logger.warn() << "No if entered in get_read_write_size(), in = " << in << ". Returning 0 bytes...";
+	return 0;
+}
+
+uint64_t hardware::code::Correlator_staggered::get_flop_size(const std::string& in) const
+{
+	size_t Seo = hardware::code::get_eoprec_spinorfieldsize(get_parameters());
+	//this is the same as in the function above
+	if (in == "create_point_source_stagg_eoprec") {
+		return module_metric_not_implemented<uint64_t>();
+	}
+	if (in == "create_volume_source_stagg_eoprec") {
+		return module_metric_not_implemented<uint64_t>();
+	}
+	if (in == "create_timeslice_source_stagg_eoprec") {
+		return module_metric_not_implemented<uint64_t>();
+	}
+	if (in == "create_zslice_source_stagg_eoprec") {
+		return module_metric_not_implemented<uint64_t>();
+	}
+
+	logger.warn() << "No if entered in get_flop_size(), in = " << in << ". Returning 0 flop...";
+	return 0;
+}
+
+void hardware::code::Correlator_staggered::print_profiling(const std::string& filename, int number) const
+{
+	Opencl_Module::print_profiling(filename, number);
+// 	if(create_point_source_stagg_eoprec) {
+// 		Opencl_Module::print_profiling(filename, create_point_source);
+// 	}
+	if(create_volume_source_stagg_eoprec) {
+		Opencl_Module::print_profiling(filename, create_volume_source_stagg_eoprec);
+	}
+// 	if(create_timeslice_source_stagg_eoprec) {
+// 		Opencl_Module::print_profiling(filename, create_timeslice_source);
+// 	}
+// 	if(create_zslice_source_stagg_eoprec) {
+// 		Opencl_Module::print_profiling(filename, create_zslice_source);
+// 	}
+}
+
+hardware::code::Correlator_staggered::Correlator_staggered(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module(params, device), create_volume_source_stagg_eoprec(0)
+// 	, create_point_source(0), create_timeslice_source(0), create_zslice_source(0),
+{
+	fill_kernels();
+}
+
+hardware::code::Correlator_staggered::~Correlator_staggered()
+{
+	clear_kernels();
+}
