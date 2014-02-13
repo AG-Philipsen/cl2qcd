@@ -1,0 +1,9 @@
+NS=4
+NT=4
+
+use_eo=true
+fermact=rooted_stagg
+use_merge_kernels_fermion=true
+
+sourcetype=volume
+sourcecontent=z4
