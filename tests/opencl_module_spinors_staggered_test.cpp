@@ -654,7 +654,7 @@ void test_sf_gaussian_staggered(std::string inputfile)
 	}
 	
 	//Here we test if cpu_res is smaller than ref_value: in this case the test passes
-	testFloatSizeAgainstInputparameters(fabs(cpu_res), params);
+	testFloatSizeAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
 
