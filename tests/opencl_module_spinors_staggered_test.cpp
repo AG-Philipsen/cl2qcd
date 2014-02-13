@@ -135,7 +135,7 @@ void fill_sf_with_one_eo(su3vec * sf_in, int size, bool eo, meta::Inputparameter
   return;
 }
 
-//This function fills the field sf_in in the following way
+//This function works in the following way
 // eo==true  ---> sum of all components of sf_in[even] is returned
 // eo==false ---> sum of all components of sf_in[odd]  is returned
 hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo, meta::Inputparameters &params)
