@@ -58,6 +58,7 @@ class Spinors_staggered;
 class Fermions;
 class Fermions_staggered;
 class Correlator;
+class Correlator_staggered;
 class Heatbath;
 class Kappa;
 class Gaugemomentum;
@@ -229,6 +230,11 @@ public:
 	 * Get access to the correlator kernels on this device.
 	 */
 	const hardware::code::Correlator * get_correlator_code();
+	
+	/**
+	 * Get access to the correlator_staggered kernels on this device.
+	 */
+	const hardware::code::Correlator_staggered * get_correlator_staggered_code();
 
 	/**
 	 * Get access to the heatbath kernels on this device.
@@ -373,6 +379,12 @@ private:
 	 * Initialized on demand.
 	 */
 	const hardware::code::Correlator * correlator_code;
+	
+	/**
+	 * Pointer to the staggered correlator code.
+	 * Initialized on demand.
+	 */
+	const hardware::code::Correlator_staggered * correlator_staggered_code;
 
 	/**
 	 * Pointer to the heatbath code.

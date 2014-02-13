@@ -31,6 +31,7 @@
 #include "code/fermions.hpp"
 #include "code/fermions_staggered.hpp"
 #include "code/correlator.hpp"
+#include "code/correlator_staggered.hpp"
 #include "code/heatbath.hpp"
 #include "code/kappa.hpp"
 #include "code/gaugemomentum.hpp"
@@ -57,6 +58,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  gaugemomentum_code(nullptr),
 	  molecular_dynamics_code(nullptr),
 	  correlator_code(nullptr),
+	  correlator_staggered_code(nullptr),
 	  heatbath_code(nullptr),
 	  kappa_code(nullptr),
 	  buffer_code(nullptr),
@@ -102,6 +104,9 @@ hardware::Device::~Device()
 	}
 	if(correlator_code) {
 		delete correlator_code;
+	}
+	if(correlator_staggered_code) {
+		delete correlator_staggered_code;
 	}
 	if(gaugemomentum_code) {
 		delete gaugemomentum_code;
@@ -419,6 +424,14 @@ const hardware::code::Correlator * hardware::Device::get_correlator_code()
 	return correlator_code;
 }
 
+const hardware::code::Correlator_staggered * hardware::Device::get_correlator_staggered_code()
+{
+	if(!correlator_staggered_code) {
+		correlator_staggered_code = new hardware::code::Correlator_staggered(params, this);
+	}
+	return correlator_staggered_code;
+}
+
 const hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 {
 	if(!heatbath_code) {
@@ -453,6 +466,9 @@ void hardware::print_profiling(Device * device, const std::string& filename, int
 	}
 	if(device->correlator_code) {
 		device->correlator_code->print_profiling(filename, id);
+	}
+	if(device->correlator_staggered_code) {
+		device->correlator_staggered_code->print_profiling(filename, id);
 	}
 	if(device->fermion_code) {
 		device->fermion_code->print_profiling(filename, id);
