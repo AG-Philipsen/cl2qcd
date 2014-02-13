@@ -12,5 +12,5 @@ kappa=-2.5
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=6.4752
+test_ref_val=-6.4752
 

@@ -16,5 +16,5 @@ mass=4.5
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.6375
+test_ref_val=-0.6375
 
