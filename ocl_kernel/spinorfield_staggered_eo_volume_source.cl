@@ -33,7 +33,8 @@ __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * 
 	su3vec out_tmp;
 	hmc_complex tmp;
 	
-	for(int n = id; n < EOPREC_SPINORFIELDSIZE_MEM; n += global_size) {
+	for(int id_local = id; id_local < EOPREC_SPINORFIELDSIZE_LOCAL; id_local += global_size) {
+	  site_idx id_mem = get_eo_site_idx_from_st_idx(get_even_st_idx_local(id_local));
 	  switch(SOURCE_CONTENT){
 		case 1:  //"one"
 		  out_tmp = set_su3vec_cold();
@@ -43,11 +44,11 @@ __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * 
 		  out_tmp.e0.re = tmp.re;
 		  out_tmp.e0.im = tmp.im;
 		  tmp = Z4_complex_number(&rnd);
-		  out_tmp.e0.re = tmp.re;
-		  out_tmp.e0.im = tmp.im;
+		  out_tmp.e1.re = tmp.re;
+		  out_tmp.e1.im = tmp.im;
 		  tmp = Z4_complex_number(&rnd);
-		  out_tmp.e0.re = tmp.re;
-		  out_tmp.e0.im = tmp.im;
+		  out_tmp.e2.re = tmp.re;
+		  out_tmp.e2.im = tmp.im;
 		  break;
 		case 3: //"gaussian"
 		  /** @todo what is the norm here? */
@@ -55,11 +56,11 @@ __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * 
 		  out_tmp.e0.re = tmp.re;
 		  out_tmp.e0.im = tmp.im;
 		  tmp = gaussianNormalPair(&rnd);
-		  out_tmp.e0.re = tmp.re;
-		  out_tmp.e0.im = tmp.im;
+		  out_tmp.e1.re = tmp.re;
+		  out_tmp.e1.im = tmp.im;
 		  tmp = gaussianNormalPair(&rnd);
-		  out_tmp.e0.re = tmp.re;
-		  out_tmp.e0.im = tmp.im;
+		  out_tmp.e2.re = tmp.re;
+		  out_tmp.e2.im = tmp.im;
 		  //multiply by sigma = 0.5f
 		  out_tmp = su3vec_times_real(out_tmp, sqrt(0.5f));
 		  break;
@@ -67,7 +68,7 @@ __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * 
 		  if(id == 0) printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
 		  out_tmp = set_su3vec_zero();
 	  }
-	  put_su3vec_to_field_eo(inout, n, out_tmp);
+	  put_su3vec_to_field_eo(inout, id_mem, out_tmp);
 	}
 	prng_storeState(rngStates, &rnd);
 }

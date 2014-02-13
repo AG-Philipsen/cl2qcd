@@ -1,0 +1,20 @@
+NS=4
+NT=4
+
+fermact=rooted_stagg
+
+# this specifies the number of times the kernel is run
+integrationsteps0=4000
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=0.001
+
+use_eo=true
+sourcetype=volume
+sourcecontent=z4
+
+#read_multiple_configs==true  ---> the mean is tested (it should be 0)
+#read_multiple_configs==false ---> the standard deviation is tested (it should be sqrt(0.5))
+read_multiple_configs=true

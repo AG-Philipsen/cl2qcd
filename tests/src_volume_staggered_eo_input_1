@@ -1,0 +1,18 @@
+NS=4
+NT=4
+
+fermact=rooted_stagg
+
+# this specifies the number of times the kernel is run
+integrationsteps0=1
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=0.5
+
+use_eo=true
+read_multiple_configs=true
+
+sourcetype=volume
+sourcecontent=one

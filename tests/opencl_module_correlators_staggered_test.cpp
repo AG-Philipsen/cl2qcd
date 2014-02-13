@@ -22,8 +22,7 @@
 #include "../host_functionality/host_random.h"
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
-#include "../hardware/code/correlator.hpp"
-#include "../hardware/code/spinors.hpp"
+#include "../hardware/code/correlator_staggered.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -209,58 +208,56 @@ void test_build(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-/*void test_src_volume(std::string inputfile)
+void test_src_volume(std::string inputfile)
 {
 	using namespace hardware::buffers;
 
 	std::string kernelName;
-	kernelName = "create_volume_source";
+	kernelName = "create_staggered_eo_volume_source";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 
 	physics::PRNG prng(system);
-	cl_int err = CL_SUCCESS;
-	auto * device = system.get_devices().at(0)->get_correlator_code();
+	auto * device = system.get_devices().at(0)->get_correlator_staggered_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
+	const SU3vec out(NUM_ELEMENTS_SF, device->get_device());
 
-	//CP: run the kernel a couple of times times
+	//The number of times the kernel is run
 	int iterations = params.get_integrationsteps(0);
-
-	spinor * sf_out;
-	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
+	
+	su3vec * sf_out;
+	sf_out = new su3vec[NUM_ELEMENTS_SF * iterations];
 	BOOST_REQUIRE(sf_out);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
 	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
-	  logger.info() << "Run kernel";
+	  if(i%200==0)logger.info() << "Run kernel for the " << i << "th time";
 	  out.clear();
-	  device->create_volume_source_device(&out, prng_buf);
+	  device->create_volume_source_stagg_eoprec_device(&out, prng_buf);
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
+	  //Here we sum the entries to calculate the mean later
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
 	}
 	logger.info() << "result: mean";
-	hmc_float cpu_res = 0.;
-	sum = sum/iterations/NUM_ELEMENTS_SF/24;	
+	hmc_float cpu_res;
+	//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real numbers
+	sum = sum/iterations/NUM_ELEMENTS_SF/6;
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
 	if(params.get_read_multiple_configs()  == false){
-	  //CP: calc std derivation
+	  //Calc std derivation
 	  hmc_float var=0.;
 	  for (int i=0; i<iterations; i++){
 	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
 	  }
-	  var=var/iterations/NUM_ELEMENTS_SF/24;
+	  //var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
+	  var=var/iterations/NUM_ELEMENTS_SF/6;
 	  
 	  cpu_res = sqrt(var);
 	  logger.info() << "result: variance";
@@ -273,7 +270,7 @@ void test_build(std::string inputfile)
 	  testFloatSizeAgainstInputparameters(cpu_res, params);
 	}
 	BOOST_MESSAGE("Test done");
-}*/
+}
 
 
 
@@ -292,32 +289,32 @@ BOOST_AUTO_TEST_CASE( BUILD_2 )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-/*BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
+BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 
 BOOST_AUTO_TEST_CASE( SRC_VOLUME_1 )
 {
-  test_src_volume("/src_volume_input_1");
+  test_src_volume("/src_volume_staggered_eo_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( SRC_VOLUME_2 )
 {
-  test_src_volume("/src_volume_input_2");
+  test_src_volume("/src_volume_staggered_eo_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( SRC_VOLUME_3 )
 {
-  test_src_volume("/src_volume_input_3");
+  test_src_volume("/src_volume_staggered_eo_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( SRC_VOLUME_4 )
 {
-  test_src_volume("/src_volume_input_4");
+  test_src_volume("/src_volume_staggered_eo_input_4");
 }
 
 BOOST_AUTO_TEST_CASE( SRC_VOLUME_5 )
 {
-  test_src_volume("/src_volume_input_5");
+  test_src_volume("/src_volume_staggered_eo_input_5");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-*/
+
