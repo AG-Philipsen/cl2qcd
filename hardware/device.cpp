@@ -107,7 +107,7 @@ hardware::Device::~Device()
 		delete gaugemomentum_code;
 	}
 	if(molecular_dynamics_code) {
-		delete gaugemomentum_code;
+		delete molecular_dynamics_code;
 	}
 	if(fermion_code) {
 		delete fermion_code;
@@ -132,9 +132,6 @@ hardware::Device::~Device()
 	}
 	if(gaugefield_code) {
 		delete gaugefield_code;
-	}
-	if(molecular_dynamics_code) {
-		delete molecular_dynamics_code;
 	}
 
 	clFinish(command_queue);
