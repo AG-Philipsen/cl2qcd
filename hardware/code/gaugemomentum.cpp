@@ -71,8 +71,10 @@ void hardware::code::Gaugemomentum::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
 	
-	logger.debug() << "Clearing Gaugefield kernels...";
+	logger.debug() << "Clearing Gaugemomentum kernels...";
 	
+	clerr = clReleaseKernel(gaugemomentum_squarenorm_reduction);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(generate_gaussian_gaugemomenta);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(_set_zero_gaugemomentum);
