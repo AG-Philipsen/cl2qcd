@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-__kernel void create_volume_source_stagg_eoprec(__global su3vec * const restrict inout, __global rngStateStorageType * const restrict rngStates)
+__kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * const restrict inout, __global rngStateStorageType * const restrict rngStates)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -40,33 +40,32 @@ __kernel void create_volume_source_stagg_eoprec(__global su3vec * const restrict
 		  break;
 		case 2: //"z4"
 		  tmp = Z4_complex_number(&rnd);
-		  out_tmp.e0.e0.re = tmp.re;
-		  out_tmp.e0.e0.im = tmp.im;
+		  out_tmp.e0.re = tmp.re;
+		  out_tmp.e0.im = tmp.im;
 		  tmp = Z4_complex_number(&rnd);
-		  out_tmp.e0.e1.re = tmp.re;
-		  out_tmp.e0.e1.im = tmp.im;
+		  out_tmp.e0.re = tmp.re;
+		  out_tmp.e0.im = tmp.im;
 		  tmp = Z4_complex_number(&rnd);
-		  out_tmp.e0.e2.re = tmp.re;
-		  out_tmp.e0.e2.im = tmp.im;
+		  out_tmp.e0.re = tmp.re;
+		  out_tmp.e0.im = tmp.im;
 		  break;
 		case 3: //"gaussian"
 		  /** @todo what is the norm here? */
-		  hmc_float sigma = 0.5f;
 		  tmp = gaussianNormalPair(&rnd);
-		  out_tmp.e0.e0.re = tmp.re;
-		  out_tmp.e0.e0.im = tmp.im;
+		  out_tmp.e0.re = tmp.re;
+		  out_tmp.e0.im = tmp.im;
 		  tmp = gaussianNormalPair(&rnd);
-		  out_tmp.e0.e1.re = tmp.re;
-		  out_tmp.e0.e1.im = tmp.im;
+		  out_tmp.e0.re = tmp.re;
+		  out_tmp.e0.im = tmp.im;
 		  tmp = gaussianNormalPair(&rnd);
-		  out_tmp.e0.e2.re = tmp.re;
-		  out_tmp.e0.e2.im = tmp.im;
-		  //multiply by sigma
-		  out_tmp = su3vec_times_real(out_tmp, sqrt(sigma));
+		  out_tmp.e0.re = tmp.re;
+		  out_tmp.e0.im = tmp.im;
+		  //multiply by sigma = 0.5f
+		  out_tmp = su3vec_times_real(out_tmp, sqrt(0.5f));
 		  break;
 		default:
 		  if(id == 0) printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
-		  out_tmp = set_spinor_zero();
+		  out_tmp = set_su3vec_zero();
 	  }
 	  put_su3vec_to_field_eo(inout, n, out_tmp);
 	}

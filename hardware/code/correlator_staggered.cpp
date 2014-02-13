@@ -38,9 +38,9 @@ void hardware::code::Correlator_staggered::fill_kernels()
 	//When some noneo method will be introduced, remove this check!
 	if(!get_parameters().get_use_eo()){
 		throw Print_Error_Message("Correlator_staggered module asked to be built but without even-odd preconditionig! Aborting... ", __FILE__, __LINE__);
-	}	
+	}
   
-	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl";// << "operations_spinor.cl" << "spinorfield.cl";
+	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "spinorfield_staggered_eo.cl";
 	
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
