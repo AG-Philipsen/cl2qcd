@@ -9,7 +9,7 @@ integrationsteps0=4000
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1.2
+test_ref_val=0.71
 
 use_eo=true
 sourcetype=volume

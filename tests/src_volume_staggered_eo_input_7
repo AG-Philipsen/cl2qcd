@@ -9,12 +9,12 @@ integrationsteps0=4000
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.71
+test_ref_val=1.0
 
 use_eo=true
 sourcetype=volume
-sourcecontent=gaussian
+sourcecontent=z2
 
 #read_multiple_configs==true  ---> the mean is tested (it should be 0)
-#read_multiple_configs==false ---> the standard deviation is tested (it should be sqrt(0.5))
+#read_multiple_configs==false ---> the standard deviation is tested (it should be sqrt(1))
 read_multiple_configs=false

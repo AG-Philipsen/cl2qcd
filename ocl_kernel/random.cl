@@ -260,3 +260,29 @@ hmc_complex inline Z4_complex_number(prng_state * const restrict rnd)
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
 }
+
+/**
+ * Get a Z(2) distributed complex random number
+ * Meaning it has entries +-1 ONLY in real part (immaginary part set to 0)
+ */
+hmc_complex inline Z2_complex_number(prng_state * const restrict rnd)
+{
+#ifdef USE_PRNG_RANLUX
+	// TODO update to current ranluxcl!
+	//double4 tmp = ranluxcl64norm(state);
+	//return (hmc_complex) {tmp.x, tmp.y};
+
+	// LEGEACY CODE
+	float4 rands = ranluxcl(rnd);
+	//just use the first float
+	hmc_complex tmp;
+	if(rands.x > 0.5)
+	  tmp.re = 1.0;
+	else
+	  tmp.re = -1.0;
+	tmp.im = 0.0;
+	return tmp;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}

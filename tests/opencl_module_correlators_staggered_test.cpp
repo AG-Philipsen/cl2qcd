@@ -246,7 +246,10 @@ void test_src_volume(std::string inputfile)
 	logger.info() << "result: mean";
 	hmc_float cpu_res;
 	//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real numbers
-	sum = sum/iterations/NUM_ELEMENTS_SF/6;
+	if(params.get_sourcecontent() == meta::Inputparameters::z2)
+	  sum = sum/iterations/NUM_ELEMENTS_SF/3;//because immaginary part is not randomly drawn, it is 0.0 always
+	else
+	  sum = sum/iterations/NUM_ELEMENTS_SF/6;
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
@@ -257,14 +260,22 @@ void test_src_volume(std::string inputfile)
 	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
 	  }
 	  //var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
-	  var=var/iterations/NUM_ELEMENTS_SF/6;
+	  if(params.get_sourcecontent() == meta::Inputparameters::z2)
+	    var=var/iterations/NUM_ELEMENTS_SF/3;//because immaginary part is not randomly drawn, it is 0.0 always
+	  else
+	    var=var/iterations/NUM_ELEMENTS_SF/6;
 	  
 	  cpu_res = sqrt(var);
 	  logger.info() << "result: variance";
 	  logger.info() << cpu_res;
 	}
 
-	if(params.get_sourcecontent() == meta::Inputparameters::one){
+	if(params.get_sourcecontent() == meta::Inputparameters::z2){
+	  if(params.get_read_multiple_configs()  == false)
+	    testFloatAgainstInputparameters(cpu_res, params);
+	  else
+	    testFloatSizeAgainstInputparameters(cpu_res, params);	  
+	}else if(params.get_sourcecontent() == meta::Inputparameters::one){
 	  testFloatAgainstInputparameters(cpu_res, params);
 	} else{
 	  testFloatSizeAgainstInputparameters(cpu_res, params);
@@ -314,6 +325,16 @@ BOOST_AUTO_TEST_CASE( SRC_VOLUME_4 )
 BOOST_AUTO_TEST_CASE( SRC_VOLUME_5 )
 {
   test_src_volume("/src_volume_staggered_eo_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( SRC_VOLUME_6 )
+{
+  test_src_volume("/src_volume_staggered_eo_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( SRC_VOLUME_7 )
+{
+  test_src_volume("/src_volume_staggered_eo_input_7");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

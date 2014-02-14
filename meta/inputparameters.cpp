@@ -943,6 +943,7 @@ static Inputparameters::sourcecontents get_sourcecontent(std::string s)
 	m["one"] = Inputparameters::one;
 	m["z4"] = Inputparameters::z4;
 	m["gaussian"] = Inputparameters::gaussian;
+	m["z2"] = Inputparameters::z2;
 
 	Inputparameters::sourcecontents a = m[s];
 	if(a) { // map returns 0 if element is not found

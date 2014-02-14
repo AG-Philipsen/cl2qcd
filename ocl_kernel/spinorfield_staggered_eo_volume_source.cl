@@ -64,6 +64,17 @@ __kernel void create_volume_source_stagg_eoprec(__global staggeredStorageType * 
 		  //multiply by sigma = 0.5f
 		  out_tmp = su3vec_times_real(out_tmp, sqrt(0.5f));
 		  break;
+		case 4: //"z2"
+		  tmp = Z2_complex_number(&rnd);
+		  out_tmp.e0.re = tmp.re;
+		  out_tmp.e0.im = tmp.im;
+		  tmp = Z2_complex_number(&rnd);
+		  out_tmp.e1.re = tmp.re;
+		  out_tmp.e1.im = tmp.im;
+		  tmp = Z2_complex_number(&rnd);
+		  out_tmp.e2.re = tmp.re;
+		  out_tmp.e2.im = tmp.im;
+		  break;
 		default:
 		  if(id == 0) printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
 		  out_tmp = set_su3vec_zero();
