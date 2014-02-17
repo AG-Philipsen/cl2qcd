@@ -26,6 +26,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "sources.hpp"
+#include "../tests/test_util_staggered.h"
 #include <sstream>
 
 void test_sources(std::string type, int num_sources)
@@ -49,10 +50,60 @@ void test_sources(std::string type, int num_sources)
 	release_spinorfields(sources);
 }
 
+void test_volume_source_stagg(std::string content)
+{
+	using namespace physics::lattices;
+
+	std::vector<const char*> options(1, "foo");
+	options.push_back("--nspace=8");
+	options.push_back("--fermact=rooted_stagg");
+ 	options.push_back("--sourcetype=volume");
+	std::string tmp = "--sourcecontent=" + content;
+	options.push_back(tmp.c_str());
+	
+	meta::Inputparameters params(5, &(options[0]));
+	hardware::System system(params);
+	physics::PRNG prng(system);
+
+	Staggeredfield_eo source(system);
+	set_volume_source(&source, prng);
+	
+	//The following lines are to be used to produce the ref_vec file needed to get the ref_value
+	//---> Comment them out when the reference values have been obtained!
+	/*
+	if(content == "gaussian"){
+	  print_staggeredfield_eo_to_textfile("ref_vec_even", &source, system);
+	  logger.info() << "Produced the ref_vec_even text file with the staggered field for the ref. code. Returning...";
+	}
+	return;
+	// */
+	
+	hmc_float sqnorm = squarenorm(source);
+	//Lattice is here 8^4 and we have even-odd preconditioning
+	logger.info() << "source content: " << content << " and squarnorm of volume source is " << sqnorm;
+	if(content == "one")
+	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8);
+	else if(content == "z4")
+	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8);
+	else if(content == "gaussian")
+	  BOOST_CHECK_CLOSE(sqnorm, 6194.3961400489661173, 1.e-8);
+	else if(content == "z2")
+	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8);
+
+}
+
 BOOST_AUTO_TEST_CASE(sources)
 {
 	test_sources("point", 15);
 	test_sources("volume", 2);
 	test_sources("timeslice", 3);
 	test_sources("zslice", 1);
+}
+
+BOOST_AUTO_TEST_CASE(sources_stagg)
+{
+	test_volume_source_stagg("one");
+	test_volume_source_stagg("z4");
+	test_volume_source_stagg("gaussian");
+	test_volume_source_stagg("z2");
 }
