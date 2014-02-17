@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include "../host_functionality/host_geometry.h"
 #include "../hardware/code/correlator.hpp"
+#include "../hardware/code/correlator_staggered.hpp"
 
 void physics::set_point_source(const physics::lattices::Spinorfield * spinorfield, int k, const meta::Inputparameters& params)
 {
@@ -96,6 +97,22 @@ void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfie
 	}
 
 	spinorfield->update_halo();
+}
+
+//Steggered source
+void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * inout, PRNG& prng)
+{
+	auto buffers = inout->get_buffers();
+
+	for(size_t i = 0; i < buffers.size(); ++i) {
+		auto buffer = buffers[i];
+		auto prng_buffer = prng.get_buffers().at(i);
+
+		buffer->get_device()->get_correlator_staggered_code()->create_volume_source_stagg_eoprec_device(buffer, prng_buffer);
+	}
+
+	if(buffers.size()!=1)
+	  inout->update_halo();
 }
 
 static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, physics::PRNG& prng, const meta::Inputparameters& params);

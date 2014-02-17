@@ -27,6 +27,7 @@
 #include "prng.hpp"
 #include "lattices/spinorfield.hpp"
 #include "lattices/swappable_spinorfield.hpp"
+#include "lattices/staggeredfield_eo.hpp"
 
 namespace physics {
 
@@ -46,6 +47,8 @@ namespace physics {
 	void set_volume_source(const physics::lattices::Spinorfield *, PRNG& prng);
 	void set_timeslice_source(const physics::lattices::Spinorfield *, PRNG& prng, int t);
 	void set_zslice_source(const physics::lattices::Spinorfield *, PRNG& prng, int z);
+	//Staggered sources
+	void set_volume_source(const physics::lattices::Staggeredfield_eo *, PRNG& prng);
 
 }
 
