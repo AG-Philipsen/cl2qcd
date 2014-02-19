@@ -30,7 +30,14 @@
 #include "../prng.hpp"
 #include "../../host_functionality/logger.hpp"
 
-void test_chiral_condensate_stagg(std::string content, hmc_complex pbp_ref, bool cold, bool thetaT)
+/* Here pbp_ref_im_minmax are the minimum and maximum pbp immaginary part obtained in the reference
+ * code in 100 measurements. This is done because of big fluctuations: a check of the closeness of
+ * the values up to 300% or even more is nonsense.
+ *  - pbp_ref_re is the mean of the ref code 100 measurements
+ *  - pbp_ref_im_minmax.im is maximum
+ *  - pbp_ref_im_minmax.re is minimum
+ */
+void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc_complex pbp_ref_im_minmax, bool cold, bool thetaT)
 {
 	using namespace physics::lattices;
 
@@ -60,40 +67,60 @@ void test_chiral_condensate_stagg(std::string content, hmc_complex pbp_ref, bool
 	
 	hmc_complex pbp = physics::algorithms::chiral_condensate_staggered(*gf, prng, system);
 	
-	logger.info() << "Chiral condensate pbp = (" << std::setprecision(12) << pbp.re << "," << pbp.im << ")";
-	BOOST_CHECK_CLOSE(pbp.re, pbp_ref.re, 1.e-8);
-	BOOST_CHECK_CLOSE(pbp.im, pbp_ref.im, 1.e-8);
+	logger.info() << "Chiral condensate pbp = (" << std::setprecision(12) << pbp.re << ", " << pbp.im << ")";
+	if(content == "one"){
+	  BOOST_CHECK_CLOSE(pbp.re, pbp_ref_re, 1.e-8);
+	  BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.re, 1.e-8);
+	  BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.im, 1.e-8);
+	}else{
+	  BOOST_CHECK_CLOSE(pbp.re, pbp_ref_re, 10); //10% is needed because rand num. are not the same in ref code
+	  BOOST_CHECK_PREDICATE( std::less_equal<hmc_float>(), (pbp.im)(pbp_ref_im_minmax.im) );
+	  BOOST_CHECK_PREDICATE( std::greater_equal<hmc_float>(), (pbp.im)(pbp_ref_im_minmax.re) );
+	}
 }
 
 
 BOOST_AUTO_TEST_CASE(volume_source_one)
 {
-	test_chiral_condensate_stagg("one", {15.0, 0.0}, true, 0);
-	test_chiral_condensate_stagg("one", {0.29411764705882464943, 0.0}, true, 1);
-// 	test_chiral_condensate_stagg("one", {1.0,0.0}, false, 0);
-// 	test_chiral_condensate_stagg("one", {1.0,0.0}, false, 1);
+	test_chiral_condensate_stagg("one", 15.0, {0.0, 0.0}, true, 0);
+	test_chiral_condensate_stagg("one", 0.29411764705882464943, {0.0, 0.0}, true, 1);
+	test_chiral_condensate_stagg("one", 0.20344039707296779351, 
+				     {-0.0065506178486867301658, -0.0065506178486867301658}, false, 0);
+	test_chiral_condensate_stagg("one", 0.25968115501530797395,
+				     {-0.021963576512093983817, -0.021963576512093983817}, false, 1);
 }
 
 BOOST_AUTO_TEST_CASE(volume_source_z4)
 {
-// 	test_chiral_condensate_stagg("z4", {1.0,0.0}, true, 0);
-// 	test_chiral_condensate_stagg("z4", {1.0,0.0}, true, 1);
-// 	test_chiral_condensate_stagg("z4", {1.0,0.0}, false, 0);
-// 	test_chiral_condensate_stagg("z4", {1.0,0.0}, false, 1);
+	test_chiral_condensate_stagg("z4", 1.0194940543945434364,
+				     {-0.030501775469794135953, 0.024558907459382613159}, true, 0);
+ 	test_chiral_condensate_stagg("z4", 0.10173717281774301291,
+				     {-0.05257050359883207874, 0.038588374094059074704}, true, 1);
+	test_chiral_condensate_stagg("z4", 0.21838899047431276079,
+				     {-0.051483155453766353549, 0.046625129123589938163}, false, 0);
+	test_chiral_condensate_stagg("z4", 0.25388166919474708383,
+				     {-0.055589254436301166473, 0.059235978143224822523}, false, 1);
 }
 
 BOOST_AUTO_TEST_CASE(volume_source_gaussian)
 {
-// 	test_chiral_condensate_stagg("gaussian", {1.0,0.0}, true, 0);
-// 	test_chiral_condensate_stagg("gaussian", {1.0,0.0}, true, 1);
-// 	test_chiral_condensate_stagg("gaussian", {1.0,0.0}, false, 0);
-// 	test_chiral_condensate_stagg("gaussian", {1.0,0.0}, false, 1);
+	test_chiral_condensate_stagg("gaussian", 1.0125526769942891914,
+				     {-0.037359420873174425948, 0.029119643958998853162}, true, 0);
+	test_chiral_condensate_stagg("gaussian", 0.10181163880167679037,
+				     {-0.033993182981299545353, 0.030919993128422099127}, true, 1);
+	test_chiral_condensate_stagg("gaussian", 0.21950471423558026718,
+				     {-0.058332954616782443924, 0.042412447314374657203}, false, 0);
+	test_chiral_condensate_stagg("gaussian", 0.25382073751894007607,
+				     {-0.06509237221358404879, 0.050458791308785347351}, false, 1);
 }
 
 BOOST_AUTO_TEST_CASE(volume_source_z2)
 {
-// 	test_chiral_condensate_stagg("z2", {1.0,0.0}, true, 0);
-// 	test_chiral_condensate_stagg("z2", {1.0,0.0}, true, 1);
-// 	test_chiral_condensate_stagg("z2", {1.0,0.0}, false, 0);
-// 	test_chiral_condensate_stagg("z2", {1.0,0.0}, false, 1);
+	test_chiral_condensate_stagg("z2", 1.0215954074131750051, {0.0, 0.0}, true, 0);
+	test_chiral_condensate_stagg("z2", 0.10167935377929424035,
+				     {-0.023941038345876981125, 0.024737496665225969239}, true, 1);
+	test_chiral_condensate_stagg("z2", 0.21903384850763127356, 
+				     {-0.051079063817292484628, 0.051362451897559530112}, false, 0);
+	test_chiral_condensate_stagg("z2", 0.25440057886149292088,
+				     {-0.045645403465476366844, 0.051219156998163921368}, false, 1);
 }
