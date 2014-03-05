@@ -57,8 +57,10 @@
   *       it a complex number. Then we have to multiply each link separately by the staggered
   *       phase, in order to take correctly the complex conjugated. This makes the code more
   *       symmetric and raises the performance.
-  * 
-  * @todo If a chemical potential is introduced, this kernel has to be modified!
+  * \par 
+  * @note If an imaginary chemical potential is used, then the links in time direction have to
+  *       be multiplied by the phases exp(i\mu) and exp(-i\mu). Actually we multiply temporal
+  *       links only by exp(i\mu) because then, backward in time, we use U dagger.
   */
 su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __global const Matrixsu3StorageType * const restrict field, const st_idx idx_arg, const dir_idx dir)
 {
@@ -84,6 +86,12 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);//transform normal indices to eoprec index
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_arg));
+#ifdef _CP_IMAG_
+	if(dir == TDIR){ //Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid if
+	  hmc_complex cpi_tmp = {COSCPI, SINCPI};
+	  U = multiply_matrixsu3_by_complex(U, cpi_tmp);
+	}
+#endif
 	//chi=U*plus
 	chi = su3matrix_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
@@ -100,6 +108,12 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);//transform normal indices to eoprec index
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_neigh));
+#ifdef _CP_IMAG_
+	if(dir == TDIR){ //Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid if
+	  hmc_complex cpi_tmp = {COSCPI, SINCPI};
+	  U = multiply_matrixsu3_by_complex(U, cpi_tmp);
+	}
+#endif
 	//chi=U^dagger * plus
 	chi = su3matrix_dagger_times_su3vec(U, plus);
 	eta_mod = get_modified_stagg_phase(idx_arg.space, dir);
