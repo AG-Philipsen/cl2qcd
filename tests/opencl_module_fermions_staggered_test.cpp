@@ -381,5 +381,85 @@ BOOST_AUTO_TEST_CASE( DKS_EO_16)
 	test_DKS_eo("/dks_input_16");
 }
 
+BOOST_AUTO_TEST_CASE( DKS_EO_17)
+{
+	test_DKS_eo("/dks_input_17");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_18)
+{
+	test_DKS_eo("/dks_input_18");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_19)
+{
+	test_DKS_eo("/dks_input_19");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_20)
+{
+	test_DKS_eo("/dks_input_20");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_21)
+{
+	test_DKS_eo("/dks_input_21");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_22)
+{
+	test_DKS_eo("/dks_input_22");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_23)
+{
+	test_DKS_eo("/dks_input_23");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_24)
+{
+	test_DKS_eo("/dks_input_24");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_25)
+{
+	test_DKS_eo("/dks_input_25");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_26)
+{
+	test_DKS_eo("/dks_input_26");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_27)
+{
+	test_DKS_eo("/dks_input_27");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_28)
+{
+	test_DKS_eo("/dks_input_28");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_29)
+{
+	test_DKS_eo("/dks_input_29");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_30)
+{
+	test_DKS_eo("/dks_input_30");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_31)
+{
+	test_DKS_eo("/dks_input_31");
+}
+
+BOOST_AUTO_TEST_CASE( DKS_EO_32)
+{
+	test_DKS_eo("/dks_input_32");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
