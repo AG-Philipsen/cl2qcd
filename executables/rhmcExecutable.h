@@ -31,6 +31,7 @@
 #include "generationExecutable.h"
 #include "../physics/algorithms/rhmc.hpp"
 #include "../physics/algorithms/rational_approximation.hpp"
+#include "../physics/algorithms/chiral_condensate_staggered.hpp"
 #include <cmath>
 
 class rhmcExecutable : public generationExecutable {

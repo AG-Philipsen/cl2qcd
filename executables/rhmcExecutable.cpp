@@ -116,6 +116,11 @@ void rhmcExecutable::printRhmcObservablesToFile(const std::string& filename)
 	outputToFile.precision(15);
 	outputToFile << observables.plaq << "\t" << observables.tplaq << "\t" << observables.splaq;
 	outputToFile << "\t" << observables.poly.re << "\t" << observables.poly.im << "\t" << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im);
+	std::vector<hmc_complex> pbp(4);
+	for(size_t i=0; i<pbp.size(); i++){
+	  pbp[i] = physics::algorithms::chiral_condensate_staggered(*gaugefield, *prng, *system);
+	  outputToFile <<  "\t" << pbp[i].re << "\t" << pbp[i].im;
+	}
 	outputToFile <<  "\t" << observables.deltaH << "\t" << exp_deltaH << "\t" << observables.prob << "\t" << observables.accept;
 	//print number of iterations used in inversions with full and force precision
 	/**
