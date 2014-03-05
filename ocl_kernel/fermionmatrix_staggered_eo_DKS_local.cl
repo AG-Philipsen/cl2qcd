@@ -87,7 +87,11 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_arg));
 #ifdef _CP_IMAG_
-	if(dir == TDIR){ //Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid if
+	//Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid the if.
+	//Actually one could also think to include the imaginary chemical potential
+	//in the staggered phases as done for the boundary conditions. In this case one
+	//should move cpi_tmp to the file operations_staggered.cl
+	if(dir == TDIR){ 
 	  hmc_complex cpi_tmp = {COSCPI, SINCPI};
 	  U = multiply_matrixsu3_by_complex(U, cpi_tmp);
 	}
@@ -109,7 +113,11 @@ su3vec D_KS_eo_local(__global const staggeredStorageType * const restrict in, __
 	plus = get_su3vec_from_field_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx(dir, idx_neigh));
 #ifdef _CP_IMAG_
-	if(dir == TDIR){ //Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid if
+	//Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid the if.
+	//Actually one could also think to include the imaginary chemical potential
+	//in the staggered phases as done for the boundary conditions. In this case one
+	//should move cpi_tmp to the file operations_staggered.cl
+	if(dir == TDIR){
 	  hmc_complex cpi_tmp = {COSCPI, SINCPI};
 	  U = multiply_matrixsu3_by_complex(U, cpi_tmp);
 	}
