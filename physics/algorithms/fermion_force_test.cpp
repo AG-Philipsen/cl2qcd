@@ -289,6 +289,61 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, ODD);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 3977.231580060397846, 1.e-8);
 	}
+	
+	//These are with imaginary chemical potential different from zero
+	{
+		using namespace physics::lattices;
+		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
+		meta::Inputparameters params(5, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+		
+		Gaugefield gf(system, prng, false);
+		Staggeredfield_eo sf1(system);
+		Staggeredfield_eo sf2(system);
+		Gaugemomenta gm(system);
+
+		sf1.set_cold();
+		sf2.set_cold();
+		gm.zero();
+		
+		//If links are one and fermionic fields are set to cold, one can analitically
+		//calculate the result: it is 2*sin(chem_pot_im)^2 / (3 * vol^2) for each time direction
+		//for the norm of the su3 matrix. Then here gm is the 8 component vector with the
+		//algebra coefficients and then we have still a factor 2 in the squarenorm.
+		BOOST_REQUIRE_EQUAL(squarenorm(gm), 0);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, EVEN);
+		//Here, for example: 2*[2*sin(chem_pot_im)^2 / (3 * vol^2)] * vol/2
+		BOOST_REQUIRE_CLOSE(squarenorm(gm), 0.0000470712535699, 1.e-8);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, ODD);
+		BOOST_REQUIRE_CLOSE(squarenorm(gm), 0.0000941425071398, 1.e-8);
+	}
+	
+	{
+		using namespace physics::lattices;
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678", "--theta_fermion_temporal=1."};
+		meta::Inputparameters params(6, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Staggeredfield_eo sf1(system);
+		Staggeredfield_eo sf2(system);
+		Gaugemomenta gm(system);
+		
+		//These are the same fields of the excplicit test D_KS_eo (second test)
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+		gm.zero();
+
+		BOOST_REQUIRE_EQUAL(squarenorm(gm), 0);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, EVEN);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 1950.7859609652412018, 1.e-8);
+		//Note that now the ODD part is added to the EVEN one
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, ODD);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 3919.7908258193665461, 1.e-8);
+	}
+	
 }
 
 
