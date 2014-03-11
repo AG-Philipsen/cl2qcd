@@ -1,0 +1,24 @@
+fermact=rooted_stagg
+
+startcondition=cold
+
+use_eo=true
+NS=4
+NT=4
+
+use_chem_pot_im=true
+chem_pot_im=0.1234
+
+#with BICGSTAB, this set the init-spinorfield to random values
+solver=BICGSTAB
+
+#with read_multiple_configs one can switch between "EVEN" and "ODD" as parameter for the kernel
+# true = EVEN, false = ODD
+read_multiple_configs=true
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=823.50272761626376905
+
+#This input file must not be modified!

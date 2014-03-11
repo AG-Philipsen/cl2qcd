@@ -999,6 +999,66 @@ BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_20 )
 	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_20");
 }
 
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_21 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_21");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_22 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_22");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_23 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_23");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_24 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_24");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_25 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_25");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_26 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_26");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_27 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_27");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_28 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_28");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_29 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_29");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_30 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_30");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_31 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_31");
+}
+
+BOOST_AUTO_TEST_CASE( F_STAGG_FERMION_EO_32 )
+{
+	test_f_stagg_fermion_eo("/f_staggered_fermion_partial_eo_input_32");
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
