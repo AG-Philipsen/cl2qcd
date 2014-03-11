@@ -228,4 +228,29 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		BOOST_CHECK_CLOSE(squarenorm(gm), 58492.589653369606822, 1.e-6);
 	}
 	
+	{
+		const char * _params[] = {"foo", "--ntime=4", "--theta_fermion_temporal=1",
+		                          "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
+		meta::Inputparameters params(6, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+		
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Rooted_Staggeredfield_eo sf1(approx, system);
+		Rooted_Staggeredfield_eo sf2(approx, system);
+		Gaugemomenta gm(system);
+		
+		//These are the same fields of the excplicit test D_KS_eo (second test)
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+		
+		gm.zero();
+		calc_total_force(&gm, gf, sf1, system, 0.125);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 57415.997451495910354, 1.e-6);
+		
+		gm.zero();
+		calc_total_force(&gm, gf, sf2, system, 0.125);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 57338.140878283666098, 1.e-6);
+	}
+	
 }

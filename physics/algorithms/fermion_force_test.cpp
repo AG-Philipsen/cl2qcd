@@ -351,28 +351,58 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 {
 	using namespace physics::lattices;
 	using namespace physics::algorithms;
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(3, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
-
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-	Gaugemomenta gm(system);
+	
 	Rational_Approximation approx(8, 1,2, 1.e-5,1);
-	Rooted_Staggeredfield_eo sf1(approx, system);
-	Rooted_Staggeredfield_eo sf2(approx, system);
 	
-	//These are the same fields of the excplicit test D_KS_eo (second test)
-	pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
-	pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+	{
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
+		meta::Inputparameters params(3, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugemomenta gm(system);
+		Rooted_Staggeredfield_eo sf1(approx, system);
+		Rooted_Staggeredfield_eo sf2(approx, system);
 	
-	gm.zero();
-	physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, 0.125);
-	BOOST_CHECK_CLOSE(squarenorm(gm), 2214.9003939576623452, 1.e-6);
+		//These are the same fields of the excplicit test D_KS_eo (second test)
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
 	
-	gm.zero();
-	physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, 0.125);
-	BOOST_CHECK_CLOSE(squarenorm(gm), 1845.6513833002247793, 1.e-6);
+		gm.zero();
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, 0.125);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 2214.9003939576623452, 1.e-6);
+	
+		gm.zero();
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, 0.125);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 1845.6513833002247793, 1.e-6);
+	}
+	
+	{
+		using namespace physics::lattices;
+		using namespace physics::algorithms;
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
+		meta::Inputparameters params(5, _params);
+		hardware::System system(params);
+		physics::PRNG prng(system);
+
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugemomenta gm(system);
+		Rooted_Staggeredfield_eo sf1(approx, system);
+		Rooted_Staggeredfield_eo sf2(approx, system);
+	
+		//These are the same fields of the excplicit test D_KS_eo (second test)
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+	
+		gm.zero();
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, 0.125);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 2315.4175592593164765, 1.e-6);
+	
+		gm.zero();
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, 0.125);
+		BOOST_CHECK_CLOSE(squarenorm(gm), 1932.6440761489629949, 1.e-6);
+	}	
 }
 
 
