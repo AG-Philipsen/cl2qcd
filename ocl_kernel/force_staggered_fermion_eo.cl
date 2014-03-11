@@ -32,8 +32,9 @@
  * 
  * To make the code understandable, let us summarize the notation here. The force term here calculated
  * is not exactely the total fermion force (this explains the partial adjective), because of the rational
- * approximation. This kernel will be then used to reconstruct the whole force term. In the RHMC the
- * time derivative of the momenta conjugated to links is
+ * approximation. This kernel will be then used to reconstruct the whole force term (see fermion_force.cpp
+ * file documentation in physics/algorithms to further informations).
+ * In the RHMC the time derivative of the momenta conjugated to links is
  * @code
  *  i*Hdot_\mu(n)=[U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA 
  * @endcode
@@ -43,7 +44,7 @@
  *  Q^i_\mu(n) = | 
  *               | -eta_\mu(n) (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
  * 
- * => return -i*[U_\mu(n)*Q^i_\mu(n)]_TA
+ * => this kernel will return -i*[U_\mu(n)*Q^i_\mu(n)]_TA
  * @endcode
  *
  * In this kernel only U_\mu(n)*Q^i_\mu(n) is evaluated and not the \sum. In the expression
@@ -58,7 +59,23 @@
  * 
  * => return -i*[U_\mu(n)*Q^i_\mu(n)]_TA
  * @endcode
- * @todo If a chemical potential is introduced, probably this kernel has to be modified!
+ * 
+ * If an imaginary chemical potential is introduced, the time derivative of the momenta conjugated to links
+ * modifies due to a prefactor of the sum:
+ * @code
+ *  i*Hdot_\mu(n)=[U_\mu(n)* (1+\delta_{\mu,4}*(exp(\imath \mu_I)-1)) *\sum_{i=1}^k c_i Q^i_\mu(n)]_TA 
+ * @endcode
+ * that basically means that we have to multiply Q^i_\mu(n) by exp(\imath \mu_I) if dir==TDIR before 
+ * taking the traceless_antihermitian_part. This is important because the factor is in general
+ * not real. Then this kernel, if the imaginary chemical potential is used, returns
+ * @code
+ *  -i*[U_\mu(n)* (1+\delta_{\mu,4}*(exp(\imath \mu_I)-1)) *Q^i_\mu(n)]_TA
+ * @endcode
+ * 
+ * @note Without imaginary chemical potential, Q^i_\mu(n) is evaluated, then the product
+ *       U_\mu(n)*Q^i_\mu(n) is calculated and in the end the traceless_antihermitian_part
+ *       is taken. If chem_pot_im is different from zero, the multiplication by the factor
+ *       (1+\delta_{\mu,4}*(exp(\imath \mu_I)-1)) is added just before the TA operation.
  */
 
 ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType * const restrict field, __global const staggeredStorageType * const restrict A, __global const staggeredStorageType * const restrict B, const st_index pos, const dir_idx dir)
@@ -84,6 +101,16 @@ ae fermion_staggered_partial_force_eo_local(__global const Matrixsu3StorageType 
 	
 	b = get_su3vec_from_field_eo(B, get_n_eoprec(n, t));
 	tmp = multiply_matrix3x3(matrix_su3to3x3(U),u_times_v_dagger(a, b));
+#ifdef _CP_IMAG_
+	//Simplest code, if low performance try something like (dir==TDIR)*cpi_tmp to avoid the if.
+	//Actually one could also think to include the imaginary chemical potential
+	//in the staggered phases as done for the boundary conditions. In this case one
+	//should move cpi_tmp to the file operations_staggered.cl
+	if(dir == TDIR){
+	  hmc_complex cpi_tmp = {COSCPI, SINCPI};
+	  tmp = multiply_matrix3x3_by_complex(tmp, cpi_tmp);
+	}
+#endif
 	tmp = traceless_antihermitian_part(tmp);
 	aux = matrix_3x3tosu3(multiply_matrix3x3_by_complex(tmp, hmc_complex_minusi));
 	////////////////////////////////////////////////

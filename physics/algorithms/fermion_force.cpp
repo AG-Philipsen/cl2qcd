@@ -312,6 +312,10 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
  * 
  * @warning Remember that this function add to the Gaugemomenta field "force" the fermionic
  *          contribution. Therefore such a field must be properly initialized.
+ * 
+ * @attention If an imaginary chemical potential is used, this kernel is not modified,
+ *            because chem_pot_im is included in the kernel. See force_staggered_fermion_eo.cl
+ *            file documentation for further information.
  */
 void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
 {
