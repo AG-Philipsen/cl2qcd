@@ -24,7 +24,6 @@
 
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "solver.hpp"
-#include "solver_shifted.hpp"
 #include "../lattices/util.hpp"
 #include "molecular_dynamics.hpp"
 #include "../../meta/util.hpp"
@@ -261,99 +260,6 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	fermion_force(force, phi_inv, solution, gf, kappa);
-}
-
-/**
- * This function reconstructs the fermionic contribution to the force (in the RHMC). Now, here
- * it is particularly easy to get lost beacuse of minus signs. What is called force is somehow
- * arbitrary. For sure, instead, there is no doubts about the definition of the time derivative
- * of the momentum field conjugated to the gaugefield, it is -dS/dq. Now, if we refer to the
- * Gattringer (page 197) notation (as done in the Wilson code), we choose to call force F_\mu(n)
- * only dS/dq and later, in the update of the gaugemomentum, we will take into account the minus sign.
- * Indicating the gaugemomentum field as H_\mu(n), we have that F_\mu(n) = - Hdot_\mu(n). To be
- * coherent with the Wilson code, we have to add here a minus sign to obtain F_\mu(n) from Hdot_\mu(n).
- * Starting from the field Hdot, we have
- * @code
- * Hdot_\mu(n) = -i * [U_\mu(n)*\sum_{i=1}^k c_i Q^i_\mu(n)]_TA
- * @endcode
- * where k is the order of rational approximation, c_i are the numerators and
- * @code
- *               | +eta_\mu(n) (D_oe X_e^i)_{n+\mu} (X_e^i^\dag)_n     if evenodd = EVEN 
- *  Q^i_\mu(n) = | 
- *               | -eta_\mu(n) (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
- * 
- * @endcode
- * If we put U_\mu(n) into Q^i_\mu(n) we have
- * @code
- * F_\mu(n) = -i * [\sum_{i=1}^k c_i QQ^i_\mu(n)]_TA
- *          = -i * \sum_{i=1}^k [c_i QQ^i_\mu(n)]_TA
- *          = \sum_{i=1}^k {c_i * (-i) * [QQ^i_\mu(n)]_TA}
- * @endcode
- * with
- * @code
- *                | +eta_\mu(n) U_\mu(n) * (D_oe X_e^i)_{n+\mu} (X_e^i^\dag)_n     if evenodd = EVEN 
- *  QQ^i_\mu(n) = | 
- *                | -eta_\mu(n) U_\mu(n) * (X_e^i)_{n+\mu} ((D_oe X_e^i)^\dag)_n   if evenodd = ODD 
- * 
- * @endcode
- * Now, (-i) * [QQ^i_\mu(n)]_TA is exactely what the function fermion_force calculates, given the fields
- * (D_oe X_e^i) and (X_e^i). So, basically, here we have to calculate them with the
- * multi-shifted inverter:
- * @code
- *  X^i_e = (M^\dagM + p_i)^{-1} * phi_e  ==>  D_oe X_e^i
- * @endcode
- * and then reconstruct the force, using the Rational Coefficients:
- * @code
- * Hdot_\mu(n) = \sum_{i=1}^k {c_i * out_fermion_force} ==> F_\mu(n) = \sum_{i=1}^k {-c_i * out_fermion_force}
- * @endcode
- * where we add a minus sign to pass from Hdot_\mu(n) to F_\mu(n).
- * 
- * @note To perform the sum above, the saxpy operation of the gaugemomenta is used.
- * 
- * @warning Remember that this function add to the Gaugemomenta field "force" the fermionic
- *          contribution. Therefore such a field must be properly initialized.
- * 
- * @attention If an imaginary chemical potential is used, this kernel is not modified,
- *            because chem_pot_im is included in the kernel. See force_staggered_fermion_eo.cl
- *            file documentation for further information.
- */
-void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
-{
-	using physics::lattices::Staggeredfield_eo;
-	using namespace physics::algorithms::solvers;
-	using namespace physics::fermionmatrix;
-	
-	auto params = system.get_inputparameters();	
-	logger.debug() << "\t\tcalc_fermion_force...";
-	
-	logger.debug() << "\t\t\tstart solver";
-	std::vector<Staggeredfield_eo *> X;
-	std::vector<Staggeredfield_eo *> Y;
-	for(int i=0; i<phi.Get_order(); i++){
-		X.push_back(new Staggeredfield_eo(system));
-		Y.push_back(new Staggeredfield_eo(system));
-	}
-	const MdagM_eo fm(system, mass);
-	const int iterations = cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_force_prec());
-	logger.debug() << "\t\t\t  end solver";
-	
-	//Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
-	//reconstruct the force. I will use a temporary Gaugemomenta to calculate the
-	//partial force (on the whole lattice) that will be later added to "force"
-	const D_KS_eo Doe(system, ODD); //with ODD it is the Doe operator
-	physics::lattices::Gaugemomenta tmp(system);
-	
-	for(int i=0; i<phi.Get_order(); i++){
-		Doe(Y[i], gf, *X[i]);
-		tmp.zero();
-		fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
-		fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
-		physics::lattices::saxpy(force, -1.*(phi.Get_a())[i], tmp);
-	}
-	
-	meta::free_container(X);
-	meta::free_container(Y);
-	logger.debug() << "\t\t...end calc_fermion_force!";
 }
 
 
@@ -718,11 +624,6 @@ void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemome
 	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
 }
 
-void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
-{
-	::calc_fermion_forces(force, gf, phi, system, mass, mubar);
-}
-
 void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
 {
 	auto gm_bufs = gm->get_buffers();
@@ -768,28 +669,6 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 		code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
 	}
 
-	gm->update_halo();
-}
-
-void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Staggeredfield_eo& A, const physics::lattices::Staggeredfield_eo& B, const physics::lattices::Gaugefield& gf, const int evenodd)
-{
-	auto gm_bufs = gm->get_buffers();
-	auto A_bufs = A.get_buffers();
-	auto B_bufs = B.get_buffers();
-	auto gf_bufs = gf.get_buffers();
-	size_t num_bufs = gm_bufs.size();
-	if(num_bufs != A_bufs.size() || num_bufs != B_bufs.size() || num_bufs != gf_bufs.size()) {
-		throw Print_Error_Message(std::string(__func__) + " is only implemented for a single device.", __FILE__, __LINE__);
-	}
-
-	for(size_t i = 0; i < num_bufs; ++i) {
-		auto gm_buf = gm_bufs[i];
-		auto A_buf = A_bufs[i];
-		auto B_buf = B_bufs[i];
-		auto gf_buf = gf_bufs[i];
-		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
-		code->fermion_staggered_partial_force_device(gf_buf, A_buf, B_buf, gm_buf, evenodd);
-	}
 	gm->update_halo();
 }
 

@@ -30,6 +30,7 @@ add_library(algorithms
 	molecular_dynamics.cpp
 	metropolis.cpp
 	fermion_force.cpp
+	fermion_force_staggered.cpp
 	forces.cpp
 	integrator.cpp
 	hmc.cpp
@@ -51,6 +52,7 @@ target_link_libraries(algorithms
 
 add_unit_test(physics::algorithms::flavour_doublet flavour_doublet_test)
 add_unit_test(physics::algorithms::<fermion_force> fermion_force_test)
+add_unit_test(physics::algorithms::<fermion_force_staggered> fermion_force_staggered_test)
 add_unit_test(physics::algorithms::<forces> forces_test)
 add_unit_test(physics::algorithms::<molecular_dynamics> molecular_dynamics_test)
 add_unit_test(physics::algorithms::<rational_approximation> rational_approximation_test ${CMAKE_CURRENT_SOURCE_DIR}/rational_approximation_test_input)

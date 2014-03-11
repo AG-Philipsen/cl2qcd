@@ -76,7 +76,7 @@ template<class SPINORFIELD> static void calc_total_force(const physics::lattices
 	using namespace physics::algorithms;
 
 	force->zero();
-	if(!system.get_inputparameters().get_use_gauge_only() )
+	if(!system.get_inputparameters().get_use_gauge_only())
 		calc_fermion_forces(force, gf, phi, system, kappa, mubar);
 	calc_gauge_force(force, gf, system);
 }
@@ -90,8 +90,14 @@ void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta
 	::calc_total_force(force, gf, phi, system, kappa, mubar);
 }
 
-void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
+
+//Here we do not need the last argument mubar and than we do not use the template above
+void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass)
 {
-	::calc_total_force(force, gf, phi, system, mass, mubar);
+	using namespace physics::algorithms;
+	force->zero();
+	if(!system.get_inputparameters().get_use_gauge_only())
+		calc_fermion_forces(force, gf, phi, system, mass);
+	calc_gauge_force(force, gf, system);
 }
 

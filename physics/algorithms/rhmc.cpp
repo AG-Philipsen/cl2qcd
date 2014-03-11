@@ -132,7 +132,7 @@ template <class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * ph
 	//calc init energy for spinorfield
 	*spinor_energy_init = squarenorm(initial);
 	//update spinorfield
-	md_update_spinorfield(phi, gf, initial, system, params.get_mass(), meta::get_mubar(params));
+	md_update_spinorfield(phi, gf, initial, system, params.get_mass());
 }
 
 //Mass preconditioning not yet implemented!
