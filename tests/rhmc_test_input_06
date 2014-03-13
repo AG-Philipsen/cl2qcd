@@ -32,6 +32,7 @@ rhmcsteps=1
 cgmax=1000
 tau=0.01
 savefrequency=10
+sourcetype=volume
 
 #NOTE: tau so small is to make the algorithm accept the new configuration and have
 #      then the plaquette value slightly changed. It would be better to increase the
