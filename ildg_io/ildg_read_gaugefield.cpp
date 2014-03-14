@@ -332,6 +332,7 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size, const ch
 	char field[100];
 
 	reader = xmlReaderForMemory(buffer, size, filename, nullptr, 0);
+
 	if (reader != NULL) {
 		ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
@@ -442,12 +443,13 @@ void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
   }
 }
 
-void createBufferAndReadLimeDataIntoIt(char * buffer, LimeReader * r, size_t nbytes)
+char *createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 {
-  buffer = new char[nbytes + 1];
+  char * buffer = new char[nbytes + 1];
   int error = limeReaderReadData(buffer, &nbytes, r);
   if(error != 0) 
     throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+  return buffer;
 }
 
 void createTemporaryFileToStoreStreamFromLimeReader(char * tmp_file_name, LimeReader *r, size_t nbytes)
@@ -455,7 +457,7 @@ void createTemporaryFileToStoreStreamFromLimeReader(char * tmp_file_name, LimeRe
   char * buffer = 0;
   FILE * tmp;
 
-  createBufferAndReadLimeDataIntoIt(buffer, r, nbytes);
+  buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
   tmp = fopen(tmp_file_name, "w");
   if(tmp == NULL) 
     throw Print_Error_Message("\t\terror in creating tmp file\n", __FILE__, __LINE__);
@@ -533,15 +535,11 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int 
   //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
   if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && switcher < 2 ) {
     logger.trace() << "\tfound XML-infos as lime_type" << lime_type;
-    //!!create tmporary file to read in data, this can be done better
-    char * buffer = new char[nbytes + 1];
-    int error = limeReaderReadData(buffer, &nbytes, r);
-    if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-    
+    char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
+
     //todo: why is sourceFilename needed here?
     get_XML_infos(buffer, nbytes, sourceFilename.c_str(), field_out );
     delete[] buffer;
-    buffer = 0;
     logger.trace() << "\tsuccesfully read XMLInfos";
     
     num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_out);
@@ -552,10 +550,10 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int 
 void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes, std::string sourceFilename)
 {
   if("scidac-checksum" == lime_type) {
-    char * buffer = new char[nbytes + 1];
-    int error = limeReaderReadData (buffer, &nbytes, r);
-    if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+    logger.trace() << "\tfound scidac-checksum as lime_type" << lime_type;
+    char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
     buffer[nbytes] = 0;
+
     //todo: why is sourceFilename needed here?
     checksum = get_checksum(buffer, nbytes, sourceFilename.c_str());
     delete[] buffer;
