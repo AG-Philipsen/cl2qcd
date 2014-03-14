@@ -31,6 +31,15 @@ extern "C" {
 #include <lime.h>
 }
 
+/*
+ //todo: use these instead of hardcoded strings.
+//possible limeEntryTypes
+const char * limeEntryTypes[] = {
+  "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
+  "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
+};
+*/
+
 class LimeHeaderData
 {
 public:
@@ -99,6 +108,8 @@ public:
 	void checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename);
 	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes,  std::string sourceFilename);
+	void goThroughLimeRecord(std::string sourceFilename, LimeReader * r);
+
 	int numberOfFermionFieldsRead;
 };
 

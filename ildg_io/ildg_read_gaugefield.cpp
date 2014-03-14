@@ -585,23 +585,9 @@ void sourcefileparameters::checkLimeEntry(std::string sourceFilename, int *  num
   checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes, sourceFilename);
 }
 
-void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
+void sourcefileparameters::goThroughLimeRecord(std::string sourceFilename, LimeReader * r)
 {
-  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
-  FILE *fp;
-  LimeReader *r;
   int numberOfLimeEntries = 0, statusOfLimeReader = 0, numberOfFermionEntries = 0;
-  
-  //possible limeEntryTypes
-  const char * limeEntryTypes[] = {
-    "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
-    "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
-  };
-  
-  //read lime file
-  fp = fopen (sourceFilename.c_str(), "r");
-  r = limeCreateReader(fp);
-  //go through the lime-entries
   while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
     checkLimeRecordReadForFailure(statusOfLimeReader);
     LimeHeaderData limeHeaderData(r);
@@ -611,16 +597,27 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
     }
   }
   logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
+}
+
+void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
+{
+  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
+  FILE *fp;
+  LimeReader *r;
+  
+  fp = fopen (sourceFilename.c_str(), "r");
+  r = limeCreateReader(fp);
+
+  goThroughLimeRecord(sourceFilename, r);
+
   limeDestroyReader(r);
   fclose(fp);
-  
-  return;
 }
 
 void sourcefileparameters::checkPrecision(int desiredPrecision)
 {
-	if(desiredPrecision != prec_source) 
-		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
+  if(desiredPrecision != prec_source) 
+    throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
 }
 
 void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes)
