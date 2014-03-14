@@ -31,6 +31,24 @@ extern "C" {
 #include <lime.h>
 }
 
+class LimeHeaderData
+{
+public:
+  LimeHeaderData(LimeReader *r)
+  {
+    numberOfBytes    = limeReaderBytes(r);
+    limeEntryType = (limeReaderType(r));
+    bytes_pad = limeReaderPadBytes(r);
+    MB_flag   = limeReaderMBFlag(r);
+    ME_flag   = limeReaderMEFlag(r);
+  }
+
+  n_uint64_t numberOfBytes;
+  size_t bytes_pad;
+  int MB_flag, ME_flag;
+  std::string limeEntryType;
+};
+
 /**
  * Parser class for a stored gaugefield.
  *
@@ -76,6 +94,7 @@ public:
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
 	int calcNumberOfEntriesForGaugefield();
+	void checkLimeEntry(std::string sourceFilename, int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData);
 	void checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename);

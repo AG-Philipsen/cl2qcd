@@ -433,11 +433,11 @@ int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(char * fieldType)
   }
 }
 
-void checkStatus(int status)
+void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
 {
-  if( status != LIME_SUCCESS ) {
+  if( returnValueFromLimeRecordRead != LIME_SUCCESS ) {
     std::ostringstream errorMessage;
-    errorMessage << "\t\tlimeReaderNextRecord returned status = "  << status;
+    errorMessage << "\t\tlimeReaderNextRecord returned status = "  << returnValueFromLimeRecordRead;
     throw Print_Error_Message( errorMessage.str(), __FILE__, __LINE__);
   }
 }
@@ -558,62 +558,63 @@ void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type
   }
 }
 
-// get XML Infos: file to be read + parameters
+int checkLimeEntryForFermionInformations(std::string lime_type, int switcher)
+{
+  if("propagator-type" == lime_type) {
+    if (switcher == 0) {
+      logger.info() << "\tfile contains fermion informations" ;
+    } else {
+      logger.info() << "\tfile contains informations about more than one fermion: " << switcher;
+    }
+    return 1;
+  }
+  else 
+    return 0;
+}
+
+void sourcefileparameters::checkLimeEntry(std::string sourceFilename, int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData)
+{
+  *numberOfFermionEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType, *numberOfFermionEntries);
+    
+  checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes);
+  
+  checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes);
+  
+  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes, sourceFilename);
+  
+  checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes, sourceFilename);
+}
+
 void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
-	logger.info() << "Reading gaugefield configuration from file " << sourceFilename << "...";
-	FILE *fp;
-	int MB_flag, ME_flag, msg, rec, status, first, switcher = 0;
-	size_t bytes_pad;
-	n_uint64_t nbytes;
-
-	//possible lime_types
-	const char * lime_types[] = {
-		"propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
-		"scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
-	};
-
-	//read lime file
-	fp = fopen (sourceFilename.c_str(), "r");
-	LimeReader *r;
-	r = limeCreateReader(fp);
-	first = 1;
-	msg = 0;
-	//go through the lime-entries
-	while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
-	  checkStatus(status);
-		if (MB_flag == 1 || first) {
-			first = 0;
-			rec = 0;
-			msg++;
-		}
-		rec++;
-		//read header data
-		nbytes    = limeReaderBytes(r);
-		std::string lime_type(limeReaderType(r));
-		bytes_pad = limeReaderPadBytes(r);
-		MB_flag   = limeReaderMBFlag(r);
-		ME_flag   = limeReaderMEFlag(r);
-		if("propagator-type" == lime_type) {
-			if (switcher == 0) {
-				logger.info() << "\tfile contains fermion informations" ;
-			} else {
-				logger.info() << "\tfile contains informations about more than one fermion: " << switcher;
-			}
-			switcher ++;
-		}
-		checkLimeEntryForInverterInfos(lime_type, switcher, r, nbytes);
-		
-		checkLimeEntryForXlfInfos(lime_type, switcher, r, nbytes);
-
-		checkLimeEntryForXlmInfos(lime_type, switcher, r, nbytes, sourceFilename);
-
-		checkLimeEntryForScidacChecksum(lime_type, r, nbytes, sourceFilename);
-	}
-	limeDestroyReader(r);
-	fclose(fp);
-
-	return;
+  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
+  FILE *fp;
+  LimeReader *r;
+  int numberOfLimeEntries = 0, statusOfLimeReader = 0, numberOfFermionEntries = 0;
+  
+  //possible limeEntryTypes
+  const char * limeEntryTypes[] = {
+    "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
+    "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
+  };
+  
+  //read lime file
+  fp = fopen (sourceFilename.c_str(), "r");
+  r = limeCreateReader(fp);
+  //go through the lime-entries
+  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
+    checkLimeRecordReadForFailure(statusOfLimeReader);
+    LimeHeaderData limeHeaderData(r);
+    if (limeHeaderData.MB_flag == 1) {
+      numberOfLimeEntries++;
+      checkLimeEntry(sourceFilename, &numberOfFermionEntries, r, limeHeaderData);
+    }
+  }
+  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
+  limeDestroyReader(r);
+  fclose(fp);
+  
+  return;
 }
 
 void sourcefileparameters::checkPrecision(int desiredPrecision)
