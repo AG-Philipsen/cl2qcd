@@ -28,7 +28,27 @@
 
 void checkDefaults(sourcefileparameters toCheck)
 {
-  BOOST_REQUIRE_EQUAL(toCheck.lx_source, sizeof(double) * 8);
+  BOOST_REQUIRE_EQUAL(toCheck.lx_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.ly_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.lz_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.lt_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.prec_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.num_entries_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.flavours_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.trajectorynr_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.time_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.time_solver_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.beta_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mu_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.c2_rec_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mubar_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epsilonbar_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mu_solver_source, 0);
 }
 
 BOOST_AUTO_TEST_CASE(defaults)
