@@ -406,11 +406,18 @@ Checksum get_checksum(const char * buffer, int size, const char * filename)
 // since tmLQCD always saves data with BigEndian one has to be careful
 
 // get XML Infos: file to be read + parameters
-void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
-                    int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
-                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, Checksum * checksum)
+void sourcefileparameters::read_meta_data(std::string sourceFilename)
 {
-	logger.info() << "Reading gaugefield configuration from file " << file << "...";
+	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
+	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
+	char field_out[100];
+	char hmcversion[50];
+	char date[50];
+	char solvertype[50];
+	char hmcversion_solver[50];
+	char date_solver[50];
+
+	logger.info() << "Reading gaugefield configuration from file " << sourceFilename << "...";
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, switcher = 0;
 	size_t bytes_pad;
@@ -423,7 +430,7 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 	};
 
 	//read lime file
-	fp = fopen (file, "r");
+	fp = fopen (sourceFilename.c_str(), "r");
 	LimeReader *r;
 	r = limeCreateReader(fp);
 	first = 1;
@@ -474,7 +481,7 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 			delete [] buffer;
 			buffer = 0;
 
-			get_inverter_infos(tmp_file_name, solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver);
+			get_inverter_infos(tmp_file_name, solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver);
 			logger.trace() << "\tsuccesfully read InverterInfos" ;
 
 			remove(tmp_file_name);
@@ -497,7 +504,7 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 			delete [] buffer;
 			buffer = 0;
 
-			get_XLF_infos(tmp_file_name, plaquettevalue, trajectorynr, beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date);
+			get_XLF_infos(tmp_file_name, &plaquettevalue, &trajectorynr, &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date);
 			logger.trace() << "\tsuccesfully read XLFInfos";
 
 			remove(tmp_file_name);
@@ -510,7 +517,7 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 			int error = limeReaderReadData(buffer, &nbytes, r);
 			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
 
-			get_XML_infos(buffer, nbytes, file, prec, lx, ly, lz, lt, flavours, field_out );
+			get_XML_infos(buffer, nbytes, sourceFilename.c_str(), &prec, &lx, &ly, &lz, &lt, &flavours, field_out );
 			delete[] buffer;
 			buffer = 0;
 			logger.trace() << "\tsuccesfully read XMLInfos";
@@ -518,10 +525,10 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 			// different sizes for fermions or gauge fields
 			if(strcmp(field_out, "diracFermion") == 0) {
 				//latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
-				*num_entries = (int) (*lx) * (*ly) * (*lz) * (*lt) * NC * NSPIN * 2;
+				num_entries = (int) (lx) * (ly) * (lz) * (lt) * NC * NSPIN * 2;
 			} else if(strcmp(field_out, "su3gauge") == 0) {
 				// latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
-				*num_entries = (int) (*lx) * (*ly) * (*lz) * (*lt) * 2 * 4 * 9;
+				num_entries = (int) (lx) * (ly) * (lz) * (lt) * 2 * 4 * 9;
 			} else {
 				throw Print_Error_Message("\tError in read_meta_infos()");
 			}
@@ -531,12 +538,41 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 			int error = limeReaderReadData (buffer, &nbytes, r);
 			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
 			buffer[nbytes] = 0;
-			*checksum = get_checksum(buffer, nbytes, file);
+			checksum = get_checksum(buffer, nbytes, sourceFilename.c_str());
 			delete[] buffer;
 		}
 	}
 	limeDestroyReader(r);
 	fclose(fp);
+
+	lx_source = lx;
+	ly_source = ly;
+	lz_source = lz;
+	lt_source = lt;
+	prec_source = prec;
+	strcpy(field_source, field_out);
+	num_entries_source = num_entries;
+	flavours_source = flavours;
+	plaquettevalue_source = plaquettevalue;
+	trajectorynr_source = trajectorynr;
+	beta_source = beta;
+	kappa_source = kappa;
+	mu_source = mu;
+	c2_rec_source = c2_rec;
+	time_source = time;
+	strcpy(hmcversion_source, hmcversion);
+	mubar_source = mubar;
+	epsilonbar_source = epsilonbar;
+	strcpy(date_source, date);
+	strcpy(solvertype_source, solvertype);
+	epssq_source = epssq;
+	noiter_source = noiter;
+	kappa_solver_source = kappa_solver;
+	mu_solver_source = mu_solver;
+	time_solver_source = time_solver;
+	strcpy(hmcversion_solver_source, hmcversion_solver);
+	strcpy(date_solver_source, date_solver);
+
 	return;
 }
 
@@ -689,51 +725,11 @@ void sourcefileparameters::set_defaults()
 
 void sourcefileparameters::readsourcefile(std::string sourceFilename, int desiredPrecision, char ** array)
 {
-	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
-	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
-	char field_out[100];
-	char hmcversion[50];
-	char date[50];
-	char solvertype[50];
-	char hmcversion_solver[50];
-	char date_solver[50];
-
-	checkIfFileExists(sourceFilename);
-	read_meta_data(sourceFilename.c_str(), &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours, &plaquettevalue, &trajectorynr,
-	               &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
-	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, &checksum);
-
-	lx_source = lx;
-	ly_source = ly;
-	lz_source = lz;
-	lt_source = lt;
-	prec_source = prec;
-	strcpy(field_source, field_out);
-	num_entries_source = num_entries;
-	flavours_source = flavours;
-	plaquettevalue_source = plaquettevalue;
-	trajectorynr_source = trajectorynr;
-	beta_source = beta;
-	kappa_source = kappa;
-	mu_source = mu;
-	c2_rec_source = c2_rec;
-	time_source = time;
-	strcpy(hmcversion_source, hmcversion);
-	mubar_source = mubar;
-	epsilonbar_source = epsilonbar;
-	strcpy(date_source, date);
-	strcpy(solvertype_source, solvertype);
-	epssq_source = epssq;
-	noiter_source = noiter;
-	kappa_solver_source = kappa_solver;
-	mu_solver_source = mu_solver;
-	time_solver_source = time_solver;
-	strcpy(hmcversion_solver_source, hmcversion_solver);
-	strcpy(date_solver_source, date_solver);
-
-	printMetaData(sourceFilename);
-
-	size_t datasize = num_entries_source * sizeof(hmc_float);
-	*array = new char[datasize];
-	read_data(sourceFilename, *array, desiredPrecision, datasize);
+  checkIfFileExists(sourceFilename);
+  read_meta_data(sourceFilename);
+  printMetaData(sourceFilename);
+  
+  size_t datasize = num_entries_source * sizeof(hmc_float);
+  *array = new char[datasize];
+  read_data(sourceFilename, *array, desiredPrecision, datasize);
 }
