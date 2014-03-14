@@ -64,15 +64,13 @@ public:
 
  private:
 	void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date, char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, Checksum * checksum);
-	void read_tmlqcd_file(char ** array, int desiredPrecision);
+	void read_tmlqcd_file(std::string sourceFilename, char ** array, int desiredPrecision);
 	void get_XML_infos(const char * buffer, int size, const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out );
 	void printMetaData(std::string sourceFilename);
-	void setSourceFilename(std::string sourceFilenameIn);
-	void read_data(char * data, int desiredPrecision, size_t bytes);
+	void read_data(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes);
 	void checkPrecision(int desiredPrecision);
 
 	int numberOfFermionFieldsRead;
-	std::string sourceFilename;
 };
 
 #endif /* _READGAUGEH_ */

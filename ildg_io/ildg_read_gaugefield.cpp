@@ -546,7 +546,7 @@ void sourcefileparameters::checkPrecision(int desiredPrecision)
 		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
 }
 
-void sourcefileparameters::read_data(char * data, int desiredPrecision, size_t bytes)
+void sourcefileparameters::read_data(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes)
 {
   checkPrecision(desiredPrecision);
   logger.trace() << "reading data..";
@@ -661,7 +661,7 @@ void sourcefileparameters::printMetaData(std::string file)
   logger.info() << "*************************************************************" ;
 }
 
-void sourcefileparameters::read_tmlqcd_file(char ** array, int desiredPrecision)
+void sourcefileparameters::read_tmlqcd_file(std::string sourceFilename, char ** array, int desiredPrecision)
 {
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
 	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
@@ -709,7 +709,7 @@ void sourcefileparameters::read_tmlqcd_file(char ** array, int desiredPrecision)
 
 	size_t datasize = num_entries_source * sizeof(hmc_float);
 	*array = new char[datasize];
-	read_data(*array, desiredPrecision, datasize);
+	read_data(sourceFilename, *array, desiredPrecision, datasize);
 }
 
 void sourcefileparameters::set_defaults()
@@ -740,13 +740,5 @@ void sourcefileparameters::set_defaults()
 
 void sourcefileparameters::readsourcefile(std::string file, int desiredPrecision, char ** array)
 {
-  //todo: this can be removed easily, but one then has to touch calls outside this class...
-	setSourceFilename(file);
-	//todo: add test for checksum and remove as arg
-	read_tmlqcd_file(array, desiredPrecision);
-}
-
-void sourcefileparameters::setSourceFilename(std::string sourceFilenameIn)
-{
-  sourceFilename = sourceFilenameIn;
+	read_tmlqcd_file(file, array, desiredPrecision);
 }
