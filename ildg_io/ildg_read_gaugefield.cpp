@@ -345,9 +345,13 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size, const ch
 		}
 	} else throw File_Exception(filename);
 
-	*prec = tmpArray[0], *flavours = tmpArray[1];
-	*lx = tmpArray[2], *ly = tmpArray[3], *lz = tmpArray[4], *lt = tmpArray[5],
-	 strcpy(field_out, field);
+	prec_source = tmpArray[0];
+	flavours_source = tmpArray[1];
+	lx_source = tmpArray[2];
+	ly_source = tmpArray[3];
+	lz_source = tmpArray[4];
+	lt_source = tmpArray[5];
+	strcpy(field_out, field);
 	return;
 }
 
@@ -411,6 +415,7 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
 	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
 	char field_out[100];
+	char field_source[100];
 	char hmcversion[50];
 	char date[50];
 	char solvertype[50];
@@ -525,10 +530,10 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 			// different sizes for fermions or gauge fields
 			if(strcmp(field_out, "diracFermion") == 0) {
 				//latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
-				num_entries = (int) (lx) * (ly) * (lz) * (lt) * NC * NSPIN * 2;
+				num_entries = (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * NC * NSPIN * 2;
 			} else if(strcmp(field_out, "su3gauge") == 0) {
 				// latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
-				num_entries = (int) (lx) * (ly) * (lz) * (lt) * 2 * 4 * 9;
+				num_entries = (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * 2 * 4 * 9;
 			} else {
 				throw Print_Error_Message("\tError in read_meta_infos()");
 			}
@@ -545,14 +550,14 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 	limeDestroyReader(r);
 	fclose(fp);
 
-	lx_source = lx;
-	ly_source = ly;
-	lz_source = lz;
-	lt_source = lt;
-	prec_source = prec;
+	//	lx_source = lx;
+	//	ly_source = ly;
+	//lz_source = lz;
+	//lt_source = lt;
+	//prec_source = prec;
 	strcpy(field_source, field_out);
 	num_entries_source = num_entries;
-	flavours_source = flavours;
+	//flavours_source = flavours;
 	plaquettevalue_source = plaquettevalue;
 	trajectorynr_source = trajectorynr;
 	beta_source = beta;
