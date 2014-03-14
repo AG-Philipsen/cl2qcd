@@ -230,8 +230,7 @@ void sourcefileparameters::get_XLF_infos(const char * filename, char * hmcversio
 	return;
 }
 
-void get_inverter_infos(const char * filename, char * solver, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,
-                        int * time, char * hmcversion, char * date )
+void sourcefileparameters::get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date )
 {
 	FILE * reader;
 	reader = fopen(filename, "r");
@@ -241,10 +240,10 @@ void get_inverter_infos(const char * filename, char * solver, hmc_float * epssq,
 		char tmp1[512];
 		while ( fgets (tmp1, 512, reader) != NULL ) {
 			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_char(tmp1, strlen(tmparray[0]), strlen(tmp1), solver);
-			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[1]), strlen(tmp1), epssq);
-			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_int (tmp1, strlen(tmparray[2]), strlen(tmp1), noiter);
-			if(strncmp(tmparray[3], tmp1, strlen(tmparray[3])) == 0) extrInfo_kappa(tmp1, strlen(tmparray[3]), strlen(tmp1), kappa_solver, mu_solver);
-			if(strncmp(tmparray[5], tmp1, strlen(tmparray[5])) == 0) extrInfo_int (tmp1, strlen(tmparray[5]), strlen(tmp1), time);
+			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[1]), strlen(tmp1), &epssq_source);
+			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_int (tmp1, strlen(tmparray[2]), strlen(tmp1), &noiter_source);
+			if(strncmp(tmparray[3], tmp1, strlen(tmparray[3])) == 0) extrInfo_kappa(tmp1, strlen(tmparray[3]), strlen(tmp1), &kappa_solver_source, &mu_solver_source);
+			if(strncmp(tmparray[5], tmp1, strlen(tmparray[5])) == 0) extrInfo_int (tmp1, strlen(tmparray[5]), strlen(tmp1), &time_solver_source);
 			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_char(tmp1, strlen(tmparray[6]), strlen(tmp1), hmcversion);
 			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), date);
 		}
@@ -437,8 +436,7 @@ int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(char * fieldType)
 // get XML Infos: file to be read + parameters
 void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
-	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
-	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
+	hmc_float epssq, kappa_solver, mu_solver;
 	char field_out[100];
 	char field_source[100];
 	char hmcversion[50];
@@ -511,7 +509,7 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 			delete [] buffer;
 			buffer = 0;
 
-			get_inverter_infos(tmp_file_name, solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver);
+			get_inverter_infos(tmp_file_name, solvertype, hmcversion_solver, date_solver);
 			logger.trace() << "\tsuccesfully read InverterInfos" ;
 
 			remove(tmp_file_name);
@@ -552,7 +550,7 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 			buffer = 0;
 			logger.trace() << "\tsuccesfully read XMLInfos";
 
-			num_entries = calcNumberOfEntriesBasedOnFieldType(field_out);
+			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_out);
 		}
 		if("scidac-checksum" == lime_type) {
 			char * buffer = new char[nbytes + 1];
@@ -566,31 +564,11 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 	limeDestroyReader(r);
 	fclose(fp);
 
-	//	lx_source = lx;
-	//	ly_source = ly;
-	//lz_source = lz;
-	//lt_source = lt;
-	//prec_source = prec;
 	strcpy(field_source, field_out);
-	num_entries_source = num_entries;
-	//flavours_source = flavours;
-	//	plaquettevalue_source = plaquettevalue;
-	//trajectorynr_source = trajectorynr;
-	//beta_source = beta;
-	//	kappa_source = kappa;
-	//mu_source = mu;
-	//c2_rec_source = c2_rec;
-	//time_source = time;
 	strcpy(hmcversion_source, hmcversion);
-	//mubar_source = mubar;
-	//epsilonbar_source = epsilonbar;
 	strcpy(date_source, date);
 	strcpy(solvertype_source, solvertype);
-	//epssq_source = epssq;
-	noiter_source = noiter;
-	kappa_solver_source = kappa_solver;
-	mu_solver_source = mu_solver;
-	time_solver_source = time_solver;
+
 	strcpy(hmcversion_solver_source, hmcversion_solver);
 	strcpy(date_solver_source, date_solver);
 
