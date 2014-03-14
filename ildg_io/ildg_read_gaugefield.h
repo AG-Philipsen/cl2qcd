@@ -94,7 +94,7 @@ public:
 
  private:
 	void readMetaDataFromLimeFile(std::string sourceFilename);
-	void get_XML_infos(const char * buffer, int size, const char * filename, char * field_out );
+	void get_XML_infos(const char * buffer, int size, char * field_out );
 	void get_XLF_infos(const char * filename,char * hmcversion, char * date );
 	void get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date );
 	void printMetaDataToScreen(std::string sourceFilename);

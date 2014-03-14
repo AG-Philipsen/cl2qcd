@@ -227,6 +227,7 @@ void sourcefileparameters::get_XLF_infos(const char * filename, char * hmcversio
 		}
 	} else throw File_Exception(filename);
 
+	logger.trace() << "\tsuccesfully read XLFInfos";
 	return;
 }
 
@@ -324,26 +325,28 @@ void get_XML_info_simple(xmlTextReaderPtr reader, int numbers[6], char * field)
 	xmlFree(name);
 }
 
-void sourcefileparameters::get_XML_infos(const char * buffer, int size, const char * filename, char * field_out )
+void sourcefileparameters::get_XML_infos(const char * buffer, int size, char * field_out )
 {
 	xmlTextReaderPtr reader;
-	int ret;
+	int returnValue;
 	int tmpArray[6];
 	char field[100];
 
-	reader = xmlReaderForMemory(buffer, size, filename, nullptr, 0);
+	//This fct. takes a URL as 3rd argument, but this seems to be unimportant here, so it is left out.
+	//See http://xmlsoft.org/html/libxml-xmlreader.html#xmlReaderForMemory
+	reader = xmlReaderForMemory(buffer, size, NULL, NULL, 0);
 
 	if (reader != NULL) {
-		ret = xmlTextReaderRead(reader);
-		while (ret == 1) {
+		returnValue = xmlTextReaderRead(reader);
+		while (returnValue == 1) {
 			get_XML_info_simple(reader, tmpArray, field);
-			ret = xmlTextReaderRead(reader);
+			returnValue = xmlTextReaderRead(reader);
+		}
+		if (returnValue == -1) {
+		  throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
 		}
 		xmlFreeTextReader(reader);
-		if (ret != 0) {
-			logger.warn() << filename << ": failed to parse";
-		}
-	} else throw File_Exception(filename);
+	} else throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
 
 	prec_source = tmpArray[0];
 	flavours_source = tmpArray[1];
@@ -352,15 +355,16 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size, const ch
 	lz_source = tmpArray[4];
 	lt_source = tmpArray[5];
 	strcpy(field_out, field);
-	return;
 }
 
+//todo: merge with xml fcts. above!!
 Checksum get_checksum(const char * buffer, int size, const char * filename)
 {
 	uint32_t suma, sumb;
 
-	xmlTextReaderPtr reader = xmlReaderForMemory(buffer, size, filename, nullptr, 0);
-	if(reader == nullptr) {
+	// see comment in get_XML_infos(..)
+	xmlTextReaderPtr reader = xmlReaderForMemory(buffer, size, NULL, NULL, 0);
+	if(reader == NULL) {
 		throw File_Exception(filename);
 	}
 
@@ -398,7 +402,7 @@ Checksum get_checksum(const char * buffer, int size, const char * filename)
 
 		xml_state = xmlTextReaderRead(reader);
 	}
-	if(xml_state) {
+	if(xml_state == -1) {
 		logger.warn() << filename << ": failed to parse";
 	}
 	xmlFreeTextReader(reader);
@@ -502,25 +506,13 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int 
   if("xlf-info" == lime_type && switcher < 2) {
     char hmcversion[50];
     char date[50];
+    FILE * tmp;
 
     logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
-    //!!create tmporary file to read in data, this can be done better
-    FILE * tmp;
-    const char tmp_file_name[] = "tmpfilenametwo";
-    tmp = fopen(tmp_file_name, "w");
-    if(tmp == NULL) {
-      throw Print_Error_Message("\t\terror in creating tmp file\n");
-    }
-    char * buffer = new char[nbytes + 1];
-    int error = limeReaderReadData (buffer, &nbytes, r);
-    if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-    fwrite(buffer, 1, nbytes, tmp);
-    fclose(tmp);
-    delete [] buffer;
-    buffer = 0;
+    char tmp_file_name[] = "tmpfilenametwo";
+    createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
     
     get_XLF_infos(tmp_file_name, hmcversion, date);
-    logger.trace() << "\tsuccesfully read XLFInfos";
     
     remove(tmp_file_name);
 
@@ -537,8 +529,7 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int 
     logger.trace() << "\tfound XML-infos as lime_type" << lime_type;
     char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
 
-    //todo: why is sourceFilename needed here?
-    get_XML_infos(buffer, nbytes, sourceFilename.c_str(), field_out );
+    get_XML_infos(buffer, nbytes, field_out );
     delete[] buffer;
     logger.trace() << "\tsuccesfully read XMLInfos";
     
