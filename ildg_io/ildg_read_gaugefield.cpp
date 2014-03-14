@@ -540,9 +540,25 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 	return;
 }
 
-//LZ removed last, unused parameter char* field_out
-void read_data(const char * file, char * data, size_t bytes)
+void sourcefileparameters::checkPrecision(int desiredPrecision)
 {
+	if(desiredPrecision != prec_source) 
+		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
+}
+
+void sourcefileparameters::read_data(char * data, int desiredPrecision, size_t bytes)
+{
+  checkPrecision(desiredPrecision);
+  logger.trace() << "reading data..";
+  //!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
+  /*
+ size_t bytes = num_entries_source * sizeof(hmc_float);
+  *array = new char[bytes];
+  */
+  //  read_data(sourceFilename.c_str(), *array, datasize);
+  logger.trace() << "\tsuccesfully read in data";
+	logger.trace() << "\nsuccesfully read tmlqcd-file " << sourceFilename;
+
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
 	char *lime_type;
@@ -556,7 +572,7 @@ void read_data(const char * file, char * data, size_t bytes)
 	};
 
 	//read lime file
-	fp = fopen (file, "r");
+	fp = fopen (sourceFilename.c_str(), "r");
 	LimeReader *r;
 	r = limeCreateReader(fp);
 	first = 1;
@@ -614,7 +630,6 @@ void sourcefileparameters::printMetaData(std::string file)
   logger.info() << "\t\tfield type:\t" << field_source ;
   logger.info() << "\t\tprecision:\t" << prec_source ;
   logger.info() << "\t\tlx:\t\t" << lx_source ;
-  logger.info() << "\t\tlx:\t\t" << lx_source ;
   logger.info() << "\t\tly:\t\t" << ly_source ;
   logger.info() << "\t\tlz:\t\t" << lz_source ;
   logger.info() << "\t\tlt:\t\t" << lt_source ;
@@ -646,7 +661,7 @@ void sourcefileparameters::printMetaData(std::string file)
   logger.info() << "*************************************************************" ;
 }
 
-void sourcefileparameters::read_tmlqcd_file(char ** array, int * hmc_prec, Checksum * checksum)
+void sourcefileparameters::read_tmlqcd_file(char ** array, int desiredPrecision, Checksum * checksum)
 {
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
 	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
@@ -658,7 +673,6 @@ void sourcefileparameters::read_tmlqcd_file(char ** array, int * hmc_prec, Check
 	char date_solver[50];
 
 	checkIfFileExists(sourceFilename);
-
 	read_meta_data(sourceFilename.c_str(), &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours, &plaquettevalue, &trajectorynr,
 	               &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
 	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, checksum);
@@ -693,19 +707,10 @@ void sourcefileparameters::read_tmlqcd_file(char ** array, int * hmc_prec, Check
 
 	printMetaData(sourceFilename);
 
-	if(*hmc_prec != prec) {
-		throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
-	} else {
-		logger.trace() << "reading data..";
-		//!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
-		size_t datasize = num_entries * sizeof(hmc_float);
-		*array = new char[datasize];
-		read_data(sourceFilename.c_str(), *array, datasize);
-		logger.trace() << "\tsuccesfully read in data";
-	}
-	logger.trace() << "\nsuccesfully read tmlqcd-file " << sourceFilename;
+	size_t datasize = num_entries_source * sizeof(hmc_float);
+	*array = new char[datasize];
+	read_data(*array, desiredPrecision, datasize);
 }
-
 
 void sourcefileparameters::set_defaults()
 {
@@ -733,14 +738,12 @@ void sourcefileparameters::set_defaults()
 	return;
 }
 
-void sourcefileparameters::readsourcefile(std::string file, int precision, char ** array)
+void sourcefileparameters::readsourcefile(std::string file, int desiredPrecision, char ** array)
 {
-	int  prec_tmp;
-	prec_tmp = precision;
+  //todo: this can be removed easily, but one then has to touch calls outside this class...
 	setSourceFilename(file);
-	read_tmlqcd_file( array, &prec_tmp, &checksum);
-
-	return;
+	//todo: add test for checksum and remove as arg
+	read_tmlqcd_file(array, desiredPrecision, &checksum);
 }
 
 void sourcefileparameters::setSourceFilename(std::string sourceFilenameIn)
