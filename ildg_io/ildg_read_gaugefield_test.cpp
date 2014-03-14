@@ -26,6 +26,9 @@
 
 #include "ildg_read_gaugefield.h"
 
+int expectedPrecision = 64;
+std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
+
 void checkDefaults(sourcefileparameters toCheck)
 {
   BOOST_REQUIRE_EQUAL(toCheck.lx_source, 0);
@@ -89,9 +92,8 @@ BOOST_AUTO_TEST_CASE(defaults)
 BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithFileException)
 {
   sourcefileparameters srcFileParams;
-  char * bufferToStoreGaugefield;
   std::string nameOfNonexistingGaugefieldFile = "thisfileshouldnotbethere";
-  int expectedPrecision = 32;
+  char * bufferToStoreGaugefield;
   BOOST_CHECK_THROW(srcFileParams.readsourcefile(nameOfNonexistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), File_Exception);
 }
 
@@ -99,18 +101,14 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithWrongPrecision)
 {
   sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
-  int expectedPrecision = 27;
-  BOOST_CHECK_THROW(srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), std::exception);
+  int wrongPrecision = 27;
+  BOOST_CHECK_THROW(srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), wrongPrecision, &bufferToStoreGaugefield), std::exception);
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldSuccess)
 {
   sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  //todo: the explicit subdir is not nice!
-  std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
-  int expectedPrecision = 64;
   BOOST_REQUIRE_NO_THROW(srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield));
 }
 
@@ -118,9 +116,6 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckMetadata)
 {
   sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  //todo: the explicit subdir is not nice!
-  std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
-  int expectedPrecision = 64;
   srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   checkMetadataOfSpecificGaugefieldFile(srcFileParams);
 }
@@ -129,9 +124,6 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
 {
   sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  //todo: the explicit subdir is not nice!
-  std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
-  int expectedPrecision = 64;
   srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   size_t expectedSizeOfBuffer = srcFileParams.num_entries_source * sizeof(hmc_float);
   size_t actualSizeOfBuffer = sizeof(bufferToStoreGaugefield);
@@ -142,9 +134,6 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)
 {
   sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  //todo: the explicit subdir is not nice!
-  std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
-  int expectedPrecision = 64;
   uint32_t referenceChecksumA = 171641288;
   uint32_t referenceChecksumB = 3618036129;
   srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
