@@ -27,6 +27,9 @@
 #include "../executables/exceptions.h"
 
 #include "checksum.h"
+extern "C" {
+#include <lime.h>
+}
 
 /**
  * Parser class for a stored gaugefield.
@@ -73,7 +76,10 @@ public:
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
 	int calcNumberOfEntriesForGaugefield();
-
+	void checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
+	void checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
+	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename);
+	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes,  std::string sourceFilename);
 	int numberOfFermionFieldsRead;
 };
 

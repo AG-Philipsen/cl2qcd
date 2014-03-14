@@ -249,6 +249,7 @@ void sourcefileparameters::get_inverter_infos(const char * filename, char * solv
 		}
 	} else throw File_Exception(filename);
 
+	logger.trace() << "\tsuccesfully read InverterInfos" ;
 	return;
 }
 
@@ -441,17 +442,125 @@ void checkStatus(int status)
   }
 }
 
+
+
+void createTemporaryFileToStoreStreamFromLimeReader(char * tmp_file_name, LimeReader *r, size_t nbytes)
+{
+  FILE * tmp;
+  tmp = fopen(tmp_file_name, "w");
+  if(tmp == NULL) throw Print_Error_Message("\t\terror in creating tmp file\n", __FILE__, __LINE__);
+  
+  char * buffer = new char[nbytes + 1];
+  int error = limeReaderReadData(buffer, &nbytes, r);
+  if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+  fwrite(buffer, 1, nbytes, tmp);
+  fclose(tmp);
+  delete [] buffer;
+  buffer = 0;
+}
+
+void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
+{
+  if("inverter-info" == lime_type)
+    {
+      //!!read the inverter-infos for FIRST fermion infos only!!
+      if( switcher == 1)
+	{
+	  char solvertype[50];
+	  char hmcversion_solver[50];
+	  char date_solver[50];
+	  
+	  logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
+	  numberOfFermionFieldsRead++;
+	  
+	  char tmp_file_name[] = "tmpfilenameone";
+	  createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
+	  
+	  get_inverter_infos(tmp_file_name, solvertype, hmcversion_solver, date_solver);
+	  
+	  remove(tmp_file_name);
+	  
+	  strcpy(solvertype_source, solvertype);
+	  strcpy(hmcversion_solver_source, hmcversion_solver);
+	  strcpy(date_solver_source, date_solver);
+	}
+      else{
+	throw Print_Error_Message("Reading more than one fermion field is not implemented yet...", __FILE__, __LINE__);
+      }
+    }
+}
+
+void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
+{
+  //!!read XLF info, only FIRST fermion is read!!
+  if("xlf-info" == lime_type && switcher < 2) {
+    char hmcversion[50];
+    char date[50];
+
+    logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
+    //!!create tmporary file to read in data, this can be done better
+    FILE * tmp;
+    const char tmp_file_name[] = "tmpfilenametwo";
+    tmp = fopen(tmp_file_name, "w");
+    if(tmp == NULL) {
+      throw Print_Error_Message("\t\terror in creating tmp file\n");
+    }
+    char * buffer = new char[nbytes + 1];
+    int error = limeReaderReadData (buffer, &nbytes, r);
+    if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+    fwrite(buffer, 1, nbytes, tmp);
+    fclose(tmp);
+    delete [] buffer;
+    buffer = 0;
+    
+    get_XLF_infos(tmp_file_name, hmcversion, date);
+    logger.trace() << "\tsuccesfully read XLFInfos";
+    
+    remove(tmp_file_name);
+
+    strcpy(hmcversion_source, hmcversion);
+    strcpy(date_source, date);
+  }
+}
+
+void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename)
+{
+  char field_out[100];
+  //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
+  if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && switcher < 2 ) {
+    logger.trace() << "\tfound XML-infos as lime_type" << lime_type;
+    //!!create tmporary file to read in data, this can be done better
+    char * buffer = new char[nbytes + 1];
+    int error = limeReaderReadData(buffer, &nbytes, r);
+    if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+    
+    //todo: why is sourceFilename needed here?
+    get_XML_infos(buffer, nbytes, sourceFilename.c_str(), field_out );
+    delete[] buffer;
+    buffer = 0;
+    logger.trace() << "\tsuccesfully read XMLInfos";
+    
+    num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_out);
+  }
+  strcpy(field_source, field_out);
+}
+
+void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes, std::string sourceFilename)
+{
+  if("scidac-checksum" == lime_type) {
+    char * buffer = new char[nbytes + 1];
+    int error = limeReaderReadData (buffer, &nbytes, r);
+    if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+    buffer[nbytes] = 0;
+    //todo: why is sourceFilename needed here?
+    checksum = get_checksum(buffer, nbytes, sourceFilename.c_str());
+    delete[] buffer;
+  }
+}
+
 // get XML Infos: file to be read + parameters
 void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
-	char field_out[100];
-	char field_source[100];
-	char hmcversion[50];
-	char date[50];
-	char solvertype[50];
-	char hmcversion_solver[50];
-	char date_solver[50];
-
 	logger.info() << "Reading gaugefield configuration from file " << sourceFilename << "...";
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, switcher = 0;
@@ -493,86 +602,16 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 			}
 			switcher ++;
 		}
-		//!!read the inverter-infos for FIRST fermion infos only!!
-		if("inverter-info" == lime_type && switcher == 1) {
-			logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
-			numberOfFermionFieldsRead++;
-			//!!create tmporary file to read in data, this can be done better
-			FILE * tmp;
-			const char tmp_file_name[] = "tmpfilenameone";
-			tmp = fopen(tmp_file_name, "w");
-			if(tmp == NULL) throw Print_Error_Message("\t\terror in creating tmp file\n");
+		checkLimeEntryForInverterInfos(lime_type, switcher, r, nbytes);
+		
+		checkLimeEntryForXlfInfos(lime_type, switcher, r, nbytes);
 
-			char * buffer = new char[nbytes + 1];
-			int error = limeReaderReadData(buffer, &nbytes, r);
-			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-			fwrite(buffer, 1, nbytes, tmp);
-			fclose(tmp);
-			delete [] buffer;
-			buffer = 0;
+		checkLimeEntryForXlmInfos(lime_type, switcher, r, nbytes, sourceFilename);
 
-			get_inverter_infos(tmp_file_name, solvertype, hmcversion_solver, date_solver);
-			logger.trace() << "\tsuccesfully read InverterInfos" ;
-
-			remove(tmp_file_name);
-		}
-		//!!read XLF info, only FIRST fermion is read!!
-		if("xlf-info" == lime_type && switcher < 2) {
-			logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
-			//!!create tmporary file to read in data, this can be done better
-			FILE * tmp;
-			const char tmp_file_name[] = "tmpfilenametwo";
-			tmp = fopen(tmp_file_name, "w");
-			if(tmp == NULL) {
-				throw Print_Error_Message("\t\terror in creating tmp file\n");
-			}
-			char * buffer = new char[nbytes + 1];
-			int error = limeReaderReadData (buffer, &nbytes, r);
-			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-			fwrite(buffer, 1, nbytes, tmp);
-			fclose(tmp);
-			delete [] buffer;
-			buffer = 0;
-
-			get_XLF_infos(tmp_file_name, hmcversion, date);
-			logger.trace() << "\tsuccesfully read XLFInfos";
-
-			remove(tmp_file_name);
-		}
-		//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
-		if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && switcher < 2 ) {
-			logger.trace() << "\tfound XML-infos as lime_type" << lime_type;
-			//!!create tmporary file to read in data, this can be done better
-			char * buffer = new char[nbytes + 1];
-			int error = limeReaderReadData(buffer, &nbytes, r);
-			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-
-			get_XML_infos(buffer, nbytes, sourceFilename.c_str(), field_out );
-			delete[] buffer;
-			buffer = 0;
-			logger.trace() << "\tsuccesfully read XMLInfos";
-
-			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_out);
-		}
-		if("scidac-checksum" == lime_type) {
-			char * buffer = new char[nbytes + 1];
-			int error = limeReaderReadData (buffer, &nbytes, r);
-			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-			buffer[nbytes] = 0;
-			checksum = get_checksum(buffer, nbytes, sourceFilename.c_str());
-			delete[] buffer;
-		}
+		checkLimeEntryForScidacChecksum(lime_type, r, nbytes, sourceFilename);
 	}
 	limeDestroyReader(r);
 	fclose(fp);
-
-	strcpy(field_source, field_out);
-	strcpy(hmcversion_source, hmcversion);
-	strcpy(date_source, date);
-	strcpy(solvertype_source, solvertype);
-
-	strcpy(hmcversion_solver_source, hmcversion_solver);
-	strcpy(date_solver_source, date_solver);
 
 	return;
 }
