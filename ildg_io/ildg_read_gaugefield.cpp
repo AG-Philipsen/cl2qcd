@@ -204,8 +204,7 @@ void trim2(char * buff)
 }
 
 
-void get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu,
-                   hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date )
+void sourcefileparameters::get_XLF_infos(const char * filename, char * hmcversion, char * date )
 {
 	FILE * reader;
 	reader = fopen(filename, "r");
@@ -216,15 +215,15 @@ void get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int * traj
 
 		while ( fgets (tmp1, 512, reader) != NULL) {
 			trim2(tmp1);
-			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[0]), strlen(tmp1), plaquettevalue);
-			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_int(tmp1, strlen(tmparray[1]), strlen(tmp1), trajectorynr);
-			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_beta(tmp1, strlen(tmparray[2]), strlen(tmp1), beta, kappa, mu, c2_rec);
-			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_int(tmp1, strlen(tmparray[6]), strlen(tmp1), time);
+			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[0]), strlen(tmp1), &plaquettevalue_source);
+			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_int(tmp1, strlen(tmparray[1]), strlen(tmp1), &trajectorynr_source);
+			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_beta(tmp1, strlen(tmparray[2]), strlen(tmp1), &beta_source, &kappa_source, &mu_source, &c2_rec_source);
+			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_int(tmp1, strlen(tmparray[6]), strlen(tmp1), &time_source);
 			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), hmcversion);
-			if(strncmp(tmparray[8], tmp1, strlen(tmparray[8])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[8]), strlen(tmp1), mubar);
-			if(strncmp(tmparray[9], tmp1, strlen(tmparray[9])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[9]), strlen(tmp1), epsilonbar);
+			if(strncmp(tmparray[8], tmp1, strlen(tmparray[8])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[8]), strlen(tmp1), &mubar_source);
+			if(strncmp(tmparray[9], tmp1, strlen(tmparray[9])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[9]), strlen(tmp1), &epsilonbar_source);
 			if(strncmp(tmparray[10], tmp1, strlen(tmparray[10])) == 0) extrInfo_char(tmp1, strlen(tmparray[10]), strlen(tmp1), date);
-			if(strncmp(tmparray[11], tmp1, strlen(tmparray[11])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[11]), strlen(tmp1), plaquettevalue);
+			if(strncmp(tmparray[11], tmp1, strlen(tmparray[11])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[11]), strlen(tmp1), &plaquettevalue_source);
 		}
 	} else throw File_Exception(filename);
 
@@ -535,7 +534,7 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 			delete [] buffer;
 			buffer = 0;
 
-			get_XLF_infos(tmp_file_name, &plaquettevalue, &trajectorynr, &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date);
+			get_XLF_infos(tmp_file_name, hmcversion, date);
 			logger.trace() << "\tsuccesfully read XLFInfos";
 
 			remove(tmp_file_name);
@@ -575,19 +574,19 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 	strcpy(field_source, field_out);
 	num_entries_source = num_entries;
 	//flavours_source = flavours;
-	plaquettevalue_source = plaquettevalue;
-	trajectorynr_source = trajectorynr;
-	beta_source = beta;
-	kappa_source = kappa;
-	mu_source = mu;
-	c2_rec_source = c2_rec;
-	time_source = time;
+	//	plaquettevalue_source = plaquettevalue;
+	//trajectorynr_source = trajectorynr;
+	//beta_source = beta;
+	//	kappa_source = kappa;
+	//mu_source = mu;
+	//c2_rec_source = c2_rec;
+	//time_source = time;
 	strcpy(hmcversion_source, hmcversion);
-	mubar_source = mubar;
-	epsilonbar_source = epsilonbar;
+	//mubar_source = mubar;
+	//epsilonbar_source = epsilonbar;
 	strcpy(date_source, date);
 	strcpy(solvertype_source, solvertype);
-	epssq_source = epssq;
+	//epssq_source = epssq;
 	noiter_source = noiter;
 	kappa_solver_source = kappa_solver;
 	mu_solver_source = mu_solver;
