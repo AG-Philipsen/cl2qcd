@@ -406,7 +406,7 @@ Checksum get_checksum(const char * buffer, int size, const char * filename)
 // since tmLQCD always saves data with BigEndian one has to be careful
 
 // get XML Infos: file to be read + parameters
-void sourcefileparameters::read_meta_data(std::string sourceFilename)
+void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
 	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
@@ -582,7 +582,7 @@ void sourcefileparameters::checkPrecision(int desiredPrecision)
 		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
 }
 
-void sourcefileparameters::read_data(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes)
+void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes)
 {
   checkPrecision(desiredPrecision);
   logger.trace() << "reading data..";
@@ -657,7 +657,7 @@ void checkIfFileExists(std::string file)
   return;
 }
 
-void sourcefileparameters::printMetaData(std::string file)
+void sourcefileparameters::printMetaDataToScreen(std::string file)
 {
   logger.info() << "*************************************************************" ;
   logger.info() << "*************************************************************" ;
@@ -723,13 +723,13 @@ void sourcefileparameters::set_defaults()
 	return;
 }
 
-void sourcefileparameters::readsourcefile(std::string sourceFilename, int desiredPrecision, char ** array)
+void sourcefileparameters::readsourcefile(std::string sourceFilename, int desiredPrecision, char ** destination)
 {
   checkIfFileExists(sourceFilename);
-  read_meta_data(sourceFilename);
-  printMetaData(sourceFilename);
+  readMetaDataFromLimeFile(sourceFilename);
+  printMetaDataToScreen(sourceFilename);
   
   size_t datasize = num_entries_source * sizeof(hmc_float);
-  *array = new char[datasize];
-  read_data(sourceFilename, *array, desiredPrecision, datasize);
+  *destination = new char[datasize];
+  readDataFromLimeFile(sourceFilename, *destination, desiredPrecision, datasize);
 }

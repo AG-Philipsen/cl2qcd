@@ -63,10 +63,10 @@ public:
 	Checksum checksum;
 
  private:
-	void read_meta_data(std::string sourceFilename);
+	void readMetaDataFromLimeFile(std::string sourceFilename);
 	void get_XML_infos(const char * buffer, int size, const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out );
-	void printMetaData(std::string sourceFilename);
-	void read_data(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes);
+	void printMetaDataToScreen(std::string sourceFilename);
+	void readDataFromLimeFile(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes);
 	void checkPrecision(int desiredPrecision);
 
 	int numberOfFermionFieldsRead;
