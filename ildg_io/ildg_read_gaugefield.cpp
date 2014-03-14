@@ -408,7 +408,7 @@ Checksum get_checksum(const char * buffer, int size, const char * filename)
 // get XML Infos: file to be read + parameters
 void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
                     int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
-                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion, Checksum * checksum)
+                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, Checksum * checksum)
 {
 	logger.info() << "Reading gaugefield configuration from file " << file << "...";
 	FILE *fp;
@@ -459,7 +459,7 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
 		//!!read the inverter-infos for FIRST fermion infos only!!
 		if("inverter-info" == lime_type && switcher == 1) {
 			logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
-			*fermion = *fermion + 1;
+			numberOfFermionFieldsRead++;
 			//!!create tmporary file to read in data, this can be done better
 			FILE * tmp;
 			const char tmp_file_name[] = "tmpfilenameone";
@@ -594,10 +594,10 @@ void read_data(const char * file, char * data, size_t bytes)
 	fclose(fp);
 }
 
-void checkIfFileExists(const char * file)
+void checkIfFileExists(std::string file)
 {
   FILE * checker;
-  checker = fopen(file, "r");
+  checker = fopen(file.c_str(), "r");
   if(checker == 0) {
     throw File_Exception(file);
   }
@@ -605,7 +605,7 @@ void checkIfFileExists(const char * file)
   return;
 }
 
-void sourcefileparameters::printMetaData(const char * file, int fermion)
+void sourcefileparameters::printMetaData(std::string file)
 {
   logger.info() << "*************************************************************" ;
   logger.info() << "*************************************************************" ;
@@ -631,7 +631,7 @@ void sourcefileparameters::printMetaData(const char * file, int fermion)
   logger.debug() << "\t\tmubar:\t\t" << mubar_source;
   logger.debug() << "\t\tepsilonbar:\t" << epsilonbar_source;
   logger.info() << "\t\tdate:\t\t" << date_source;
-  if(fermion != 0) {
+  if(numberOfFermionFieldsRead != 0) {
     logger.info() << "\treading inverter-data gave:";
     logger.info() << "\t\tsolvertype:\t" << solvertype_source;
     logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << epssq_source;
@@ -646,7 +646,7 @@ void sourcefileparameters::printMetaData(const char * file, int fermion)
   logger.info() << "*************************************************************" ;
 }
 
-void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, int * hmc_prec, Checksum * checksum)
+void sourcefileparameters::read_tmlqcd_file(char ** array, int * hmc_prec, Checksum * checksum)
 {
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
 	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
@@ -657,12 +657,11 @@ void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, in
 	char hmcversion_solver[50];
 	char date_solver[50];
 
-	int fermion = 0;
-	checkIfFileExists(file);
+	checkIfFileExists(sourceFilename);
 
-	read_meta_data(file, &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours, &plaquettevalue, &trajectorynr,
+	read_meta_data(sourceFilename.c_str(), &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours, &plaquettevalue, &trajectorynr,
 	               &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
-	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, &fermion, checksum);
+	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, checksum);
 
 	lx_source = lx;
 	ly_source = ly;
@@ -692,7 +691,7 @@ void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, in
 	strcpy(hmcversion_solver_source, hmcversion_solver);
 	strcpy(date_solver_source, date_solver);
 
-	printMetaData(file, fermion);
+	printMetaData(sourceFilename);
 
 	if(*hmc_prec != prec) {
 		throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
@@ -701,10 +700,10 @@ void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, in
 		//!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
 		size_t datasize = num_entries * sizeof(hmc_float);
 		*array = new char[datasize];
-		read_data(file, *array, datasize);
+		read_data(sourceFilename.c_str(), *array, datasize);
 		logger.trace() << "\tsuccesfully read in data";
 	}
-	logger.trace() << "\nsuccesfully read tmlqcd-file " << file;
+	logger.trace() << "\nsuccesfully read tmlqcd-file " << sourceFilename;
 }
 
 
@@ -734,13 +733,17 @@ void sourcefileparameters::set_defaults()
 	return;
 }
 
-
-void sourcefileparameters::readsourcefile(const char * file, int precision, char ** array)
+void sourcefileparameters::readsourcefile(std::string file, int precision, char ** array)
 {
 	int  prec_tmp;
 	prec_tmp = precision;
-	read_tmlqcd_file( file, array, &prec_tmp, &checksum);
+	setSourceFilename(file);
+	read_tmlqcd_file( array, &prec_tmp, &checksum);
 
 	return;
 }
 
+void sourcefileparameters::setSourceFilename(std::string sourceFilenameIn)
+{
+  sourceFilename = sourceFilenameIn;
+}
