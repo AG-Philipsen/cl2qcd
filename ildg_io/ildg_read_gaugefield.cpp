@@ -604,7 +604,7 @@ void sourcefileparameters::read_tmlqcd_file(const char * file,
 	FILE * checker;
 	checker = fopen(file, "r");
 	if(checker == 0) {
-		throw Print_Error_Message("\tcould not open sourcefile!\n");
+	  throw File_Exception(file);//("\tcould not open sourcefile!\n");
 	} else {
 		logger.info() << " " ;
 		logger.info() << "*************************************************************" ;
