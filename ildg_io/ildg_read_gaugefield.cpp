@@ -410,6 +410,7 @@ void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly,
                     int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                     char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion, Checksum * checksum)
 {
+	logger.info() << "Reading gaugefield configuration from file " << file << "...";
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, switcher = 0;
 	size_t bytes_pad;
@@ -593,6 +594,58 @@ void read_data(const char * file, char * data, size_t bytes)
 	fclose(fp);
 }
 
+void checkIfFileExists(const char * file)
+{
+  FILE * checker;
+  checker = fopen(file, "r");
+  if(checker == 0) {
+    throw File_Exception(file);
+  }
+  fclose(checker);
+  return;
+}
+
+void sourcefileparameters::printMetaData(const char * file, int fermion)
+{
+  logger.info() << "*************************************************************" ;
+  logger.info() << "*************************************************************" ;
+  logger.info() << "Metadata from file " << file << ":";
+  logger.trace() << "\treading XML-data gave:";
+  logger.info() << "\t\tfield type:\t" << field_source ;
+  logger.info() << "\t\tprecision:\t" << prec_source ;
+  logger.info() << "\t\tlx:\t\t" << lx_source ;
+  logger.info() << "\t\tlx:\t\t" << lx_source ;
+  logger.info() << "\t\tly:\t\t" << ly_source ;
+  logger.info() << "\t\tlz:\t\t" << lz_source ;
+  logger.info() << "\t\tlt:\t\t" << lt_source ;
+  logger.info() << "\t\tflavours:\t" << flavours_source ;
+  logger.trace() << "\treading XLF-data gave:";
+  logger.info() << "\t\tplaquette:\t" << plaquettevalue_source;
+  logger.debug() << "\t\ttrajectorynr:\t" << trajectorynr_source;
+  logger.info() << "\t\tbeta:\t\t" << beta_source;
+  logger.info() << "\t\tkappa:\t\t" << kappa_source;
+  logger.info() << "\t\tmu:\t\t" << mu_source;
+  logger.debug() << "\t\tc2_rec:\t\t" << c2_rec_source;
+  logger.debug() << "\t\ttime:\t\t" << time_source;
+  logger.info() << "\t\thmc-version:\t" << hmcversion_source;
+  logger.debug() << "\t\tmubar:\t\t" << mubar_source;
+  logger.debug() << "\t\tepsilonbar:\t" << epsilonbar_source;
+  logger.info() << "\t\tdate:\t\t" << date_source;
+  if(fermion != 0) {
+    logger.info() << "\treading inverter-data gave:";
+    logger.info() << "\t\tsolvertype:\t" << solvertype_source;
+    logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << epssq_source;
+    logger.info() << "\t\tnoiter:\t\t" << noiter_source;
+    logger.info() << "\t\tkappa_solver:\t" << kappa_solver_source;
+    logger.info() << "\t\tmu_solver:\t" << mu_solver_source;
+    logger.info() << "\t\ttime_solver:\t" << time_solver_source;
+    logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver_source;
+    logger.info() << "\t\tdate_solver:\t" << date_solver_source;
+  }
+  logger.info() << "\tfile-checksum:\t" << checksum;
+  logger.info() << "*************************************************************" ;
+}
+
 void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, int * hmc_prec, Checksum * checksum)
 {
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
@@ -605,19 +658,8 @@ void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, in
 	char date_solver[50];
 
 	int fermion = 0;
-	FILE * checker;
-	checker = fopen(file, "r");
-	if(checker == 0) {
-	  throw File_Exception(file);
-	} else {
-		logger.info() << " " ;
-		logger.info() << "*************************************************************" ;
-		logger.info() << "*************************************************************" ;
-		logger.info() << "Reading gaugefield configuration from file " << file << "...";
-	}
-	fclose(checker);
+	checkIfFileExists(file);
 
-	logger.info() << "\tMetadata:" ;
 	read_meta_data(file, &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours, &plaquettevalue, &trajectorynr,
 	               &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
 	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, &fermion, checksum);
@@ -650,41 +692,8 @@ void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, in
 	strcpy(hmcversion_solver_source, hmcversion_solver);
 	strcpy(date_solver_source, date_solver);
 
-	
-	logger.trace() << "\treading XML-file gave:";
-	logger.info() << "\t\tfield type:\t" << field_out ;
-	logger.info() << "\t\tprecision:\t" << prec ;
-	logger.info() << "\t\tlx:\t\t" << lx_source ;
-	logger.info() << "\t\tlx:\t\t" << lx ;
-	logger.info() << "\t\tly:\t\t" << ly ;
-	logger.info() << "\t\tlz:\t\t" << lz ;
-	logger.info() << "\t\tlt:\t\t" << lt ;
-	logger.debug() << "\t\tflavours:\t" << flavours ;
-	logger.trace() << "\treading XLF-data gave:";
-	logger.info() << "\t\tplaquette:\t" << plaquettevalue;
-	logger.debug() << "\t\ttrajectorynr:\t" << trajectorynr;
-	logger.info() << "\t\tbeta:\t\t" << beta;
-	logger.info() << "\t\tkappa:\t\t" << kappa;
-	logger.info() << "\t\tmu:\t\t" << mu;
-	logger.debug() << "\t\tc2_rec:\t\t" << c2_rec;
-	logger.debug() << "\t\ttime:\t\t" << time;
-	logger.info() << "\t\thmc-version:\t" << hmcversion;
-	logger.debug() << "\t\tmubar:\t\t" << mubar;
-	logger.debug() << "\t\tepsilonbar:\t" << epsilonbar;
-	logger.info() << "\t\tdate:\t\t" << date;
-	if(fermion != 0) {
-		logger.info() << "\treading inverter-data gave:";
-		logger.info() << "\t\tsolvertype:\t" << solvertype;
-		logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << epssq;
-		logger.info() << "\t\tnoiter:\t\t" << noiter;
-		logger.info() << "\t\tkappa_solver:\t" << kappa_solver;
-		logger.info() << "\t\tmu_solver:\t" << mu_solver;
-		logger.info() << "\t\ttime_solver:\t" << time_solver;
-		logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver;
-		logger.info() << "\t\tdate_solver:\t" << date_solver;
-	}
-	logger.debug() << "\tfile-checksum:\t" << *checksum;
-	
+	printMetaData(file, fermion);
+
 	if(*hmc_prec != prec) {
 		throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
 	} else {
@@ -696,8 +705,6 @@ void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, in
 		logger.trace() << "\tsuccesfully read in data";
 	}
 	logger.trace() << "\nsuccesfully read tmlqcd-file " << file;
-	logger.info() << "*************************************************************" ;
-	logger.info() << " ";
 }
 
 
@@ -730,11 +737,7 @@ void sourcefileparameters::set_defaults()
 
 void sourcefileparameters::readsourcefile(const char * file, int precision, char ** array)
 {
-
 	int  prec_tmp;
-
-	//CP
-	//this was done because i am lazy
 	prec_tmp = precision;
 	read_tmlqcd_file( file, array, &prec_tmp, &checksum);
 
