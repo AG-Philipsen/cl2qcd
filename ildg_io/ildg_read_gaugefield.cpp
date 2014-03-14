@@ -39,6 +39,13 @@ extern "C" {
 
 #define ENDIAN (htons(1) == 1)
 
+//todo: use these instead of hardcoded strings.
+//todo: move to .h ?
+//possible limeEntryTypes
+const char * limeEntryTypes[] = {
+  "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
+  "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
+};
 
 void extrInfo_hmc_float(const char * in1, int len1, int len2, hmc_float * dest);
 
@@ -621,68 +628,70 @@ void sourcefileparameters::checkPrecision(int desiredPrecision)
     throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
 }
 
-void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes)
+size_t sourcefileparameters::sizeOfGaugefieldBuffer()
 {
+  return num_entries_source * sizeof(hmc_float);
+}
+
+char* sourcefileparameters::createBufferForGaugefield(int num_entries)
+{
+  size_t datasize = sizeOfGaugefieldBuffer();
+  char * buffer = new char[datasize];
+  return buffer;
+}
+
+void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char ** destination, int desiredPrecision)
+{
+  FILE *fp;
+  int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
+  char *lime_type;
+  size_t bytes_pad;
+  n_uint64_t nbytes;
+  LimeReader *r;
+  size_t bytes = sizeOfGaugefieldBuffer();
+  
   checkPrecision(desiredPrecision);
   logger.trace() << "reading data..";
-  //!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
-  /*
- size_t bytes = num_entries_source * sizeof(hmc_float);
-  *array = new char[bytes];
-  */
-  //  read_data(sourceFilename.c_str(), *array, datasize);
-  logger.trace() << "\tsuccesfully read in data";
-	logger.trace() << "\tsuccesfully read tmlqcd-file " << sourceFilename;
+  
+  *destination = createBufferForGaugefield(num_entries_source);
 
-	FILE *fp;
-	int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
-	char *lime_type;
-	size_t bytes_pad;
-	n_uint64_t nbytes;
-
-	//possible lime_types
-	const char * lime_types[] = {
-		"propagator-type", "xlf-info", " inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
-		"scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
-	};
-
-	//read lime file
-	fp = fopen (sourceFilename.c_str(), "r");
-	LimeReader *r;
-	r = limeCreateReader(fp);
-	first = 1;
-	msg = 0;
-	while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
-		if( status != LIME_SUCCESS ) {
-			char errmsg[256];
-			sprintf(errmsg, "\tlimeReaderNextRecord returned status = %d\n",
-			        status);
-			throw Print_Error_Message(errmsg);
-		}
-		if (MB_flag == 1 || first) {
-			first = 0;
-			rec = 0;
-			msg++;
-		}
-		rec++;
-		//read header data
-		nbytes    = limeReaderBytes(r);
-		lime_type = limeReaderType(r);
-		bytes_pad = limeReaderPadBytes(r);
-		MB_flag   = limeReaderMBFlag(r);
-		ME_flag   = limeReaderMEFlag(r);
-		//!! read data only for the FIRST entry!!
-		if( (strcmp (lime_types[5], lime_type) == 0 || strcmp (lime_types[8], lime_type) == 0 ) && cter < 1) {
-			if(nbytes != bytes) {
-				throw Invalid_Parameters("Binary data does not have expected size.", bytes, nbytes);
-			}
-			cter ++;
-			limeReaderReadData(data, &nbytes, r);
-		}
-	}
-
-	limeDestroyReader(r);
-	fclose(fp);
+  //read lime file
+  fp = fopen (sourceFilename.c_str(), "r");
+  r = limeCreateReader(fp);
+  first = 1;
+  msg = 0;
+  while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
+    if( status != LIME_SUCCESS ) {
+      char errmsg[256];
+      sprintf(errmsg, "\tlimeReaderNextRecord returned status = %d\n",
+	      status);
+      throw Print_Error_Message(errmsg);
+    }
+    if (MB_flag == 1 || first) {
+      first = 0;
+      rec = 0;
+      msg++;
+    }
+    rec++;
+    //read header data
+    nbytes    = limeReaderBytes(r);
+    lime_type = limeReaderType(r);
+    bytes_pad = limeReaderPadBytes(r);
+    MB_flag   = limeReaderMBFlag(r);
+    ME_flag   = limeReaderMEFlag(r);
+    //!! read data only for the FIRST entry!!
+    if( (strcmp (limeEntryTypes[5], lime_type) == 0 || strcmp (limeEntryTypes[8], lime_type) == 0 ) && cter < 1) {
+      if(nbytes != bytes) {
+	throw Invalid_Parameters("Binary data does not have expected size.", bytes, nbytes);
+      }
+      cter ++;
+      limeReaderReadData(*destination, &nbytes, r);
+    }
+  }
+  
+  limeDestroyReader(r);
+  fclose(fp);
+  logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
 }
 
 void checkIfFileExists(std::string file)
@@ -769,7 +778,5 @@ void sourcefileparameters::readsourcefile(std::string sourceFilename, int desire
   readMetaDataFromLimeFile(sourceFilename);
   printMetaDataToScreen(sourceFilename);
   
-  size_t datasize = num_entries_source * sizeof(hmc_float);
-  *destination = new char[datasize];
-  readDataFromLimeFile(sourceFilename, *destination, desiredPrecision, datasize);
+  readDataFromLimeFile(sourceFilename, destination, desiredPrecision);
 }

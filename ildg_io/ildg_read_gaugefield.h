@@ -31,15 +31,6 @@ extern "C" {
 #include <lime.h>
 }
 
-/*
- //todo: use these instead of hardcoded strings.
-//possible limeEntryTypes
-const char * limeEntryTypes[] = {
-  "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
-  "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
-};
-*/
-
 class LimeHeaderData
 {
 public:
@@ -98,7 +89,7 @@ public:
 	void get_XLF_infos(const char * filename,char * hmcversion, char * date );
 	void get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date );
 	void printMetaDataToScreen(std::string sourceFilename);
-	void readDataFromLimeFile(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes);
+	void readDataFromLimeFile(std::string sourceFilename, char ** destination, int desiredPrecision);
 	void checkPrecision(int desiredPrecision);
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
@@ -110,6 +101,8 @@ public:
 	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes,  std::string sourceFilename);
 	void goThroughLimeRecord(std::string sourceFilename, LimeReader * r);
 	int extractInformationFromLimeEntry(std::string sourceFilename, LimeReader * r);
+	size_t	sizeOfGaugefieldBuffer();
+	char* createBufferForGaugefield(int num_entries);
 
 	int numberOfFermionFieldsRead;
 };
