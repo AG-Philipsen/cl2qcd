@@ -432,11 +432,18 @@ int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(char * fieldType)
   }
 }
 
+void checkStatus(int status)
+{
+  if( status != LIME_SUCCESS ) {
+    std::ostringstream errorMessage;
+    errorMessage << "\t\tlimeReaderNextRecord returned status = "  << status;
+    throw Print_Error_Message( errorMessage.str(), __FILE__, __LINE__);
+  }
+}
 
 // get XML Infos: file to be read + parameters
 void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
-	hmc_float epssq, kappa_solver, mu_solver;
 	char field_out[100];
 	char field_source[100];
 	char hmcversion[50];
@@ -465,11 +472,7 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 	msg = 0;
 	//go through the lime-entries
 	while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
-		if( status != LIME_SUCCESS ) {
-			char errmsg[256];
-			sprintf(errmsg, "\t\tlimeReaderNextRecord returned status = %d\n", status);
-			throw Print_Error_Message(errmsg);
-		}
+	  checkStatus(status);
 		if (MB_flag == 1 || first) {
 			first = 0;
 			rec = 0;
@@ -485,11 +488,10 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 		if("propagator-type" == lime_type) {
 			if (switcher == 0) {
 				logger.info() << "\tfile contains fermion informations" ;
-				switcher ++;
 			} else {
 				logger.info() << "\tfile contains informations about more than one fermion: " << switcher;
-				switcher ++;
 			}
+			switcher ++;
 		}
 		//!!read the inverter-infos for FIRST fermion infos only!!
 		if("inverter-info" == lime_type && switcher == 1) {
