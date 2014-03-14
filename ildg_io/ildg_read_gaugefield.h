@@ -109,6 +109,7 @@ public:
 	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename);
 	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes,  std::string sourceFilename);
 	void goThroughLimeRecord(std::string sourceFilename, LimeReader * r);
+	int extractInformationFromLimeEntry(std::string sourceFilename, LimeReader * r);
 
 	int numberOfFermionFieldsRead;
 };

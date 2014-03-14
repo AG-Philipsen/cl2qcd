@@ -442,51 +442,55 @@ void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
   }
 }
 
-
+void createBufferAndReadLimeDataIntoIt(char * buffer, LimeReader * r, size_t nbytes)
+{
+  buffer = new char[nbytes + 1];
+  int error = limeReaderReadData(buffer, &nbytes, r);
+  if(error != 0) 
+    throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+}
 
 void createTemporaryFileToStoreStreamFromLimeReader(char * tmp_file_name, LimeReader *r, size_t nbytes)
 {
+  char * buffer = 0;
   FILE * tmp;
+
+  createBufferAndReadLimeDataIntoIt(buffer, r, nbytes);
   tmp = fopen(tmp_file_name, "w");
-  if(tmp == NULL) throw Print_Error_Message("\t\terror in creating tmp file\n", __FILE__, __LINE__);
-  
-  char * buffer = new char[nbytes + 1];
-  int error = limeReaderReadData(buffer, &nbytes, r);
-  if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+  if(tmp == NULL) 
+    throw Print_Error_Message("\t\terror in creating tmp file\n", __FILE__, __LINE__);
   fwrite(buffer, 1, nbytes, tmp);
   fclose(tmp);
   delete [] buffer;
-  buffer = 0;
 }
 
 void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
 {
   if("inverter-info" == lime_type)
     {
-      //!!read the inverter-infos for FIRST fermion infos only!!
-      if( switcher == 1)
+      if ( switcher > 1 )
 	{
-	  char solvertype[50];
-	  char hmcversion_solver[50];
-	  char date_solver[50];
-	  
-	  logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
-	  numberOfFermionFieldsRead++;
-	  
-	  char tmp_file_name[] = "tmpfilenameone";
-	  createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
-	  
-	  get_inverter_infos(tmp_file_name, solvertype, hmcversion_solver, date_solver);
-	  
-	  remove(tmp_file_name);
-	  
-	  strcpy(solvertype_source, solvertype);
-	  strcpy(hmcversion_solver_source, hmcversion_solver);
-	  strcpy(date_solver_source, date_solver);
+	  logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
+	  return;
 	}
-      else{
-	throw Print_Error_Message("Reading more than one fermion field is not implemented yet...", __FILE__, __LINE__);
-      }
+      
+      char solvertype[50];
+      char hmcversion_solver[50];
+      char date_solver[50];
+	  
+      logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
+      numberOfFermionFieldsRead++;
+      
+      char tmp_file_name[] = "tmpfilenameone";
+      createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
+      
+      get_inverter_infos(tmp_file_name, solvertype, hmcversion_solver, date_solver);
+      
+      remove(tmp_file_name);
+      
+      strcpy(solvertype_source, solvertype);
+      strcpy(hmcversion_solver_source, hmcversion_solver);
+      strcpy(date_solver_source, date_solver);
     }
 }
 
@@ -585,16 +589,24 @@ void sourcefileparameters::checkLimeEntry(std::string sourceFilename, int *  num
   checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes, sourceFilename);
 }
 
+int sourcefileparameters::extractInformationFromLimeEntry(std::string sourceFilename, LimeReader * r)
+{
+  int numberOfFermionEntries = 0;
+  LimeHeaderData limeHeaderData(r);
+  if (limeHeaderData.MB_flag == 1) {
+    checkLimeEntry(sourceFilename, &numberOfFermionEntries, r, limeHeaderData);
+    return 1;
+  }
+  return 0;
+}
+
 void sourcefileparameters::goThroughLimeRecord(std::string sourceFilename, LimeReader * r)
 {
-  int numberOfLimeEntries = 0, statusOfLimeReader = 0, numberOfFermionEntries = 0;
+  int numberOfLimeEntries = 0;
+  int statusOfLimeReader = 0;
   while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
     checkLimeRecordReadForFailure(statusOfLimeReader);
-    LimeHeaderData limeHeaderData(r);
-    if (limeHeaderData.MB_flag == 1) {
-      numberOfLimeEntries++;
-      checkLimeEntry(sourceFilename, &numberOfFermionEntries, r, limeHeaderData);
-    }
+    numberOfLimeEntries += extractInformationFromLimeEntry(sourceFilename, r);
   }
   logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
 }
@@ -602,16 +614,16 @@ void sourcefileparameters::goThroughLimeRecord(std::string sourceFilename, LimeR
 void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
   logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
-  FILE *fp;
-  LimeReader *r;
+  FILE *limeFileOpenedForReading;
+  LimeReader *limeReader;
   
-  fp = fopen (sourceFilename.c_str(), "r");
-  r = limeCreateReader(fp);
+  limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
+  limeReader = limeCreateReader(limeFileOpenedForReading);
 
-  goThroughLimeRecord(sourceFilename, r);
+  goThroughLimeRecord(sourceFilename, limeReader);
 
-  limeDestroyReader(r);
-  fclose(fp);
+  limeDestroyReader(limeReader);
+  fclose(limeFileOpenedForReading);
 }
 
 void sourcefileparameters::checkPrecision(int desiredPrecision)
@@ -764,6 +776,7 @@ void sourcefileparameters::set_defaults()
 void sourcefileparameters::readsourcefile(std::string sourceFilename, int desiredPrecision, char ** destination)
 {
   checkIfFileExists(sourceFilename);
+
   readMetaDataFromLimeFile(sourceFilename);
   printMetaDataToScreen(sourceFilename);
   
