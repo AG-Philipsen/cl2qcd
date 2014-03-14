@@ -64,10 +64,13 @@ public:
 
  private:
 	void readMetaDataFromLimeFile(std::string sourceFilename);
-	void get_XML_infos(const char * buffer, int size, const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out );
+	void get_XML_infos(const char * buffer, int size, const char * filename, char * field_out );
 	void printMetaDataToScreen(std::string sourceFilename);
 	void readDataFromLimeFile(std::string sourceFilename, char * data, int desiredPrecision, size_t bytes);
 	void checkPrecision(int desiredPrecision);
+	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
+	int calcNumberOfEntriesForDiracFermionfield();
+	int calcNumberOfEntriesForGaugefield();
 
 	int numberOfFermionFieldsRead;
 };

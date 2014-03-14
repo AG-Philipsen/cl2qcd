@@ -325,7 +325,7 @@ void get_XML_info_simple(xmlTextReaderPtr reader, int numbers[6], char * field)
 	xmlFree(name);
 }
 
-void sourcefileparameters::get_XML_infos(const char * buffer, int size, const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out )
+void sourcefileparameters::get_XML_infos(const char * buffer, int size, const char * filename, char * field_out )
 {
 	xmlTextReaderPtr reader;
 	int ret;
@@ -408,6 +408,32 @@ Checksum get_checksum(const char * buffer, int size, const char * filename)
 
 // read in binary file and save it as readable file
 // since tmLQCD always saves data with BigEndian one has to be careful
+
+//NOTE: these two functions are similar to some in the meta package,
+//      but I would rather not include the latter here.
+int sourcefileparameters::calcNumberOfEntriesForDiracFermionfield()
+{
+  //latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
+  return (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * NC * NSPIN * 2;
+}
+int sourcefileparameters::calcNumberOfEntriesForGaugefield()
+{
+  // latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
+  return (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * 2 * 4 * 9;
+}
+
+int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(char * fieldType)
+{
+  if(strcmp(fieldType, "diracFermion") == 0) {
+    return calcNumberOfEntriesForDiracFermionfield();
+  } else if(strcmp(fieldType, "su3gauge") == 0) {
+    return calcNumberOfEntriesForGaugefield();
+  } else {
+    throw Print_Error_Message("Unknown ildg field type...", __FILE__, __LINE__);
+    return 0; //to get rid of a warning
+  }
+}
+
 
 // get XML Infos: file to be read + parameters
 void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
@@ -522,21 +548,12 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 			int error = limeReaderReadData(buffer, &nbytes, r);
 			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
 
-			get_XML_infos(buffer, nbytes, sourceFilename.c_str(), &prec, &lx, &ly, &lz, &lt, &flavours, field_out );
+			get_XML_infos(buffer, nbytes, sourceFilename.c_str(), field_out );
 			delete[] buffer;
 			buffer = 0;
 			logger.trace() << "\tsuccesfully read XMLInfos";
 
-			// different sizes for fermions or gauge fields
-			if(strcmp(field_out, "diracFermion") == 0) {
-				//latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
-				num_entries = (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * NC * NSPIN * 2;
-			} else if(strcmp(field_out, "su3gauge") == 0) {
-				// latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
-				num_entries = (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * 2 * 4 * 9;
-			} else {
-				throw Print_Error_Message("\tError in read_meta_infos()");
-			}
+			num_entries = calcNumberOfEntriesBasedOnFieldType(field_out);
 		}
 		if("scidac-checksum" == lime_type) {
 			char * buffer = new char[nbytes + 1];
