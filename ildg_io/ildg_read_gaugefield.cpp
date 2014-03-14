@@ -557,7 +557,7 @@ void sourcefileparameters::read_data(char * data, int desiredPrecision, size_t b
   */
   //  read_data(sourceFilename.c_str(), *array, datasize);
   logger.trace() << "\tsuccesfully read in data";
-	logger.trace() << "\nsuccesfully read tmlqcd-file " << sourceFilename;
+	logger.trace() << "\tsuccesfully read tmlqcd-file " << sourceFilename;
 
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
@@ -661,7 +661,7 @@ void sourcefileparameters::printMetaData(std::string file)
   logger.info() << "*************************************************************" ;
 }
 
-void sourcefileparameters::read_tmlqcd_file(char ** array, int desiredPrecision, Checksum * checksum)
+void sourcefileparameters::read_tmlqcd_file(char ** array, int desiredPrecision)
 {
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
 	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
@@ -675,7 +675,7 @@ void sourcefileparameters::read_tmlqcd_file(char ** array, int desiredPrecision,
 	checkIfFileExists(sourceFilename);
 	read_meta_data(sourceFilename.c_str(), &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours, &plaquettevalue, &trajectorynr,
 	               &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
-	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, checksum);
+	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, &checksum);
 
 	lx_source = lx;
 	ly_source = ly;
@@ -743,7 +743,7 @@ void sourcefileparameters::readsourcefile(std::string file, int desiredPrecision
   //todo: this can be removed easily, but one then has to touch calls outside this class...
 	setSourceFilename(file);
 	//todo: add test for checksum and remove as arg
-	read_tmlqcd_file(array, desiredPrecision, &checksum);
+	read_tmlqcd_file(array, desiredPrecision);
 }
 
 void sourcefileparameters::setSourceFilename(std::string sourceFilenameIn)
