@@ -325,7 +325,7 @@ void get_XML_info_simple(xmlTextReaderPtr reader, int numbers[6], char * field)
 	xmlFree(name);
 }
 
-void get_XML_infos(const char * buffer, int size, const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out )
+void sourcefileparameters::get_XML_infos(const char * buffer, int size, const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out )
 {
 	xmlTextReaderPtr reader;
 	int ret;
@@ -593,18 +593,22 @@ void read_data(const char * file, char * data, size_t bytes)
 	fclose(fp);
 }
 
-void sourcefileparameters::read_tmlqcd_file(const char * file,
-                      int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
-                      hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
-                      char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
-                      char ** array, int * hmc_prec, Checksum * checksum)
+void sourcefileparameters::read_tmlqcd_file(const char * file, char ** array, int * hmc_prec, Checksum * checksum)
 {
+	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
+	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
+	char field_out[100];
+	char hmcversion[50];
+	char date[50];
+	char solvertype[50];
+	char hmcversion_solver[50];
+	char date_solver[50];
 
 	int fermion = 0;
 	FILE * checker;
 	checker = fopen(file, "r");
 	if(checker == 0) {
-	  throw File_Exception(file);//("\tcould not open sourcefile!\n");
+	  throw File_Exception(file);
 	} else {
 		logger.info() << " " ;
 		logger.info() << "*************************************************************" ;
@@ -614,49 +618,79 @@ void sourcefileparameters::read_tmlqcd_file(const char * file,
 	fclose(checker);
 
 	logger.info() << "\tMetadata:" ;
-	read_meta_data(file, lx, ly, lz, lt, prec, field_out, num_entries, flavours, plaquettevalue, trajectorynr,
-	               beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date,
-	               solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver, &fermion, checksum);
+	read_meta_data(file, &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours, &plaquettevalue, &trajectorynr,
+	               &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
+	               solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver, &fermion, checksum);
+
+	lx_source = lx;
+	ly_source = ly;
+	lz_source = lz;
+	lt_source = lt;
+	prec_source = prec;
+	strcpy(field_source, field_out);
+	num_entries_source = num_entries;
+	flavours_source = flavours;
+	plaquettevalue_source = plaquettevalue;
+	trajectorynr_source = trajectorynr;
+	beta_source = beta;
+	kappa_source = kappa;
+	mu_source = mu;
+	c2_rec_source = c2_rec;
+	time_source = time;
+	strcpy(hmcversion_source, hmcversion);
+	mubar_source = mubar;
+	epsilonbar_source = epsilonbar;
+	strcpy(date_source, date);
+	strcpy(solvertype_source, solvertype);
+	epssq_source = epssq;
+	noiter_source = noiter;
+	kappa_solver_source = kappa_solver;
+	mu_solver_source = mu_solver;
+	time_solver_source = time_solver;
+	strcpy(hmcversion_solver_source, hmcversion_solver);
+	strcpy(date_solver_source, date_solver);
+
+	
 	logger.trace() << "\treading XML-file gave:";
 	logger.info() << "\t\tfield type:\t" << field_out ;
-	logger.info() << "\t\tprecision:\t" << *prec ;
-	//	logger.info() << "\t\tlx:\t\t" << lx_source ;
-	logger.info() << "\t\tlx:\t\t" << *lx ;
-	logger.info() << "\t\tly:\t\t" << *ly ;
-	logger.info() << "\t\tlz:\t\t" << *lz ;
-	logger.info() << "\t\tlt:\t\t" << *lt ;
-	logger.debug() << "\t\tflavours:\t" << *flavours ;
+	logger.info() << "\t\tprecision:\t" << prec ;
+	logger.info() << "\t\tlx:\t\t" << lx_source ;
+	logger.info() << "\t\tlx:\t\t" << lx ;
+	logger.info() << "\t\tly:\t\t" << ly ;
+	logger.info() << "\t\tlz:\t\t" << lz ;
+	logger.info() << "\t\tlt:\t\t" << lt ;
+	logger.debug() << "\t\tflavours:\t" << flavours ;
 	logger.trace() << "\treading XLF-data gave:";
-	logger.info() << "\t\tplaquette:\t" << *plaquettevalue;
-	logger.debug() << "\t\ttrajectorynr:\t" << *trajectorynr;
-	logger.info() << "\t\tbeta:\t\t" << *beta;
-	logger.info() << "\t\tkappa:\t\t" << *kappa;
-	logger.info() << "\t\tmu:\t\t" << *mu;
-	logger.debug() << "\t\tc2_rec:\t\t" << *c2_rec;
-	logger.debug() << "\t\ttime:\t\t" << *time;
+	logger.info() << "\t\tplaquette:\t" << plaquettevalue;
+	logger.debug() << "\t\ttrajectorynr:\t" << trajectorynr;
+	logger.info() << "\t\tbeta:\t\t" << beta;
+	logger.info() << "\t\tkappa:\t\t" << kappa;
+	logger.info() << "\t\tmu:\t\t" << mu;
+	logger.debug() << "\t\tc2_rec:\t\t" << c2_rec;
+	logger.debug() << "\t\ttime:\t\t" << time;
 	logger.info() << "\t\thmc-version:\t" << hmcversion;
-	logger.debug() << "\t\tmubar:\t\t" << *mubar;
-	logger.debug() << "\t\tepsilonbar:\t" << *epsilonbar;
+	logger.debug() << "\t\tmubar:\t\t" << mubar;
+	logger.debug() << "\t\tepsilonbar:\t" << epsilonbar;
 	logger.info() << "\t\tdate:\t\t" << date;
 	if(fermion != 0) {
 		logger.info() << "\treading inverter-data gave:";
 		logger.info() << "\t\tsolvertype:\t" << solvertype;
-		logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << *epssq;
-		logger.info() << "\t\tnoiter:\t\t" << *noiter;
-		logger.info() << "\t\tkappa_solver:\t" << *kappa_solver;
-		logger.info() << "\t\tmu_solver:\t" << *mu_solver;
-		logger.info() << "\t\ttime_solver:\t" << *time_solver;
+		logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << epssq;
+		logger.info() << "\t\tnoiter:\t\t" << noiter;
+		logger.info() << "\t\tkappa_solver:\t" << kappa_solver;
+		logger.info() << "\t\tmu_solver:\t" << mu_solver;
+		logger.info() << "\t\ttime_solver:\t" << time_solver;
 		logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver;
 		logger.info() << "\t\tdate_solver:\t" << date_solver;
 	}
 	logger.debug() << "\tfile-checksum:\t" << *checksum;
-
-	if(*hmc_prec != *prec) {
+	
+	if(*hmc_prec != prec) {
 		throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
 	} else {
 		logger.trace() << "reading data..";
 		//!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
-		size_t datasize = *num_entries * sizeof(hmc_float);
+		size_t datasize = num_entries * sizeof(hmc_float);
 		*array = new char[datasize];
 		read_data(file, *array, datasize);
 		logger.trace() << "\tsuccesfully read in data";
@@ -697,65 +731,13 @@ void sourcefileparameters::set_defaults()
 void sourcefileparameters::readsourcefile(const char * file, int precision, char ** array)
 {
 
-	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
-	hmc_float plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
-	char field_out[100];
-	char hmcversion[50];
-	char date[50];
-	char solvertype[50];
-	char hmcversion_solver[50];
-	char date_solver[50];
 	int  prec_tmp;
 
 	//CP
 	//this was done because i am lazy
 	prec_tmp = precision;
-	read_tmlqcd_file( file,
-	                  &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours,
-	                  &plaquettevalue, &trajectorynr, &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
-	                  solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver,
-	                  array, &prec_tmp, &checksum);
-
-	//set the source parameters
-	val_assign_source(&lx_source, lx);
-	val_assign_source(&ly_source, ly);
-	val_assign_source(&lz_source, lz);
-	val_assign_source(&lt_source, lt);
-	val_assign_source(&prec_source, prec);
-	val_assign_source(&num_entries_source, num_entries);
-	val_assign_source(&flavours_source, flavours);
-	val_assign_source(&trajectorynr_source, trajectorynr);
-	val_assign_source(&time_source, time);
-	val_assign_source(&noiter_source, noiter);
-	val_assign_source(&time_solver_source, time_solver);
-	val_assign_source(&plaquettevalue_source, plaquettevalue);
-	val_assign_source(&beta_source, beta);
-	val_assign_source(&kappa_source, kappa);
-	val_assign_source(&mu_source, mu);
-	val_assign_source(&c2_rec_source, c2_rec);
-	val_assign_source(&mubar_source, mubar);
-	val_assign_source(&epsilonbar_source, epsilonbar);
-	val_assign_source(&epssq_source, epssq);
-	val_assign_source(&kappa_solver_source, kappa_solver);
-	val_assign_source(&mu_solver_source, mu_solver);
-	strcpy(field_source, field_out);
-	strcpy(hmcversion_source, hmcversion);
-	strcpy(date_source, date);
-	strcpy(solvertype_source, solvertype);
-	strcpy(hmcversion_solver_source, hmcversion_solver);
-	strcpy(date_solver_source, date_solver);
+	read_tmlqcd_file( file, array, &prec_tmp, &checksum);
 
 	return;
 }
 
-void sourcefileparameters::val_assign_source(int * out, int in)
-{
-	(*out) = in;
-	return;
-}
-
-void sourcefileparameters::val_assign_source(hmc_float * out, hmc_float in)
-{
-	(*out) = in;
-	return;
-}

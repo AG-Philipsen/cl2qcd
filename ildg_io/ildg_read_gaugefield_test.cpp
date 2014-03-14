@@ -69,7 +69,8 @@ void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters toCheck)
   //BOOST_REQUIRE_EQUAL(toCheck.time_solver_source, -1512993016);
   //BOOST_REQUIRE_CLOSE(toCheck.kappa_solver_source, 6.9533299623896868e-310, 1e-8);
   //BOOST_REQUIRE_EQUAL(toCheck.mu_solver_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 32767);
+  //BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 32767);
+  //BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
   BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue_source, 0.571077);
   BOOST_REQUIRE_EQUAL(toCheck.beta_source, 5.69);
   BOOST_REQUIRE_EQUAL(toCheck.kappa_source, 0.125);
@@ -77,7 +78,6 @@ void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters toCheck)
   BOOST_REQUIRE_EQUAL(toCheck.c2_rec_source, 0);
   BOOST_REQUIRE_EQUAL(toCheck.mubar_source, 0);
   BOOST_REQUIRE_EQUAL(toCheck.epsilonbar_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
 }
 
 BOOST_AUTO_TEST_CASE(defaults)
