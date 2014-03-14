@@ -138,6 +138,20 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
   BOOST_REQUIRE_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
 }
 
+BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)
+{
+  sourcefileparameters srcFileParams;
+  char * bufferToStoreGaugefield;
+  //todo: the explicit subdir is not nice!
+  std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
+  int expectedPrecision = 64;
+  uint32_t referenceChecksumA = 171641288;
+  uint32_t referenceChecksumB = 3618036129;
+  srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
+  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
+}
+
 
 
 
