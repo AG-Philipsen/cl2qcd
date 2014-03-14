@@ -406,7 +406,7 @@ Checksum get_checksum(const char * buffer, int size, const char * filename)
 // since tmLQCD always saves data with BigEndian one has to be careful
 
 // get XML Infos: file to be read + parameters
-void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
+void sourcefileparameters::read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
                     int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                     char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion, Checksum * checksum)
 {
@@ -593,7 +593,7 @@ void read_data(const char * file, char * data, size_t bytes)
 	fclose(fp);
 }
 
-void read_tmlqcd_file(const char * file,
+void sourcefileparameters::read_tmlqcd_file(const char * file,
                       int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
                       hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                       char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,

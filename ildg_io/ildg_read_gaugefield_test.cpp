@@ -57,3 +57,12 @@ BOOST_AUTO_TEST_CASE(defaults)
   checkDefaults(srcFileParams);
 }
 
+BOOST_AUTO_TEST_CASE(readInGaugefieldFileException)
+{
+  sourcefileparameters srcFileParams;
+  char * bufferToStoreGaugefield;
+  std::string nameOfNonexistingGaugefieldFile = "thisfileshouldnotbethere";
+  int expectedPrecision = 32;
+  BOOST_REQUIRE_THROW(srcFileParams.readsourcefile(nameOfNonexistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), std::exception);
+}
+

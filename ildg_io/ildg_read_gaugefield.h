@@ -60,6 +60,11 @@ public:
 	char hmcversion_solver_source[50];
 	char date_solver_source[50];
 	Checksum checksum;
+
+ private:
+	void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date, char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion, Checksum * checksum);
+	void read_tmlqcd_file(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date, char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,  char ** array, int * hmc_prec, Checksum * checksum);
+
 };
 
 #endif /* _READGAUGEH_ */
