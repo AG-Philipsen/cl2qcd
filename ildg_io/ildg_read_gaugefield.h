@@ -24,6 +24,8 @@
 #define _READGAUGEH_
 
 #include "../common_header_files/types.h"
+#include "../executables/exceptions.h"
+
 #include "checksum.h"
 
 /**

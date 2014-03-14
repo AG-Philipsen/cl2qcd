@@ -25,3 +25,9 @@ add_library(ildg_io
 	ildg_read_gaugefield.cpp
 	ildg_write_gaugefield.cpp
 )
+
+target_link_libraries(ildg_io
+	executables
+)
+
+add_unit_test(ildg_read_gaugefield ildg_read_gaugefield_test)

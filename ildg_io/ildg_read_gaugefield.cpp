@@ -20,8 +20,6 @@
 
 #include "ildg_read_gaugefield.h"
 
-#include "../executables/exceptions.h"
-
 #include "../host_functionality/logger.hpp"
 #include <sstream>
 #include "checksum.h"
@@ -622,6 +620,7 @@ void read_tmlqcd_file(const char * file,
 	logger.trace() << "\treading XML-file gave:";
 	logger.info() << "\t\tfield type:\t" << field_out ;
 	logger.info() << "\t\tprecision:\t" << *prec ;
+	//	logger.info() << "\t\tlx:\t\t" << lx_source ;
 	logger.info() << "\t\tlx:\t\t" << *lx ;
 	logger.info() << "\t\tly:\t\t" << *ly ;
 	logger.info() << "\t\tlz:\t\t" << *lz ;
