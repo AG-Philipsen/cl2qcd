@@ -403,26 +403,30 @@ LimeFileProperties sourcefileparameters::extractBinaryDataFromLimeEntry(LimeRead
     return limeFileProp;
 }
 
-int sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r)
+LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r)
 {
-  int numberOfFermionEntries = 0;
+  LimeFileProperties limeFileProp;
   LimeHeaderData limeHeaderData(r);
+
   if (limeHeaderData.MB_flag == 1) {
+    //todo: fix this!
+    int numberOfFermionEntries = 0;
     checkLimeEntry(&numberOfFermionEntries, r, limeHeaderData);
-    return 1;
+    limeFileProp.numberOfEntries += 1;
   }
-  return 0;
+
+  return limeFileProp;
 }
 
 void sourcefileparameters::goThroughLimeRecordForMetaData(LimeReader * r)
 {
-  int numberOfLimeEntries = 0;
+  LimeFilePropertiesCollector limeFileProp;
   int statusOfLimeReader = 0;
+
   while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
     checkLimeRecordReadForFailure(statusOfLimeReader);
-    numberOfLimeEntries += extractInformationFromLimeEntry(r);
+    limeFileProp += extractMetaDataFromLimeEntry(r);
   }
-  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
 }
 
 void sourcefileparameters::goThroughLimeRecordForData(LimeReader * r, char ** destination)
