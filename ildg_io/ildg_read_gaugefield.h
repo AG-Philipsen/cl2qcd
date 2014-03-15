@@ -49,6 +49,25 @@ public:
   std::string limeEntryType;
 };
 
+
+class LimeFileProperties
+{
+public:
+ LimeFileProperties() : numberOfEntries(0), numberOfBinaryDataEntries(0) {};
+ LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
+  numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) {};
+  
+  void operator+=(LimeFileProperties other);
+  int numberOfEntries;
+  int numberOfBinaryDataEntries;
+};
+
+class LimeFilePropertiesCollector: public LimeFileProperties
+{
+ public:
+  ~LimeFilePropertiesCollector();  
+};
+
 /**
  * Parser class for a stored gaugefield.
  *
@@ -106,7 +125,7 @@ public:
 	char* createBufferForGaugefield(int num_entries);
 	void checkSizeOfBinaryDataForGaugefield(size_t actualSize);
 	int extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries);
-	int extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int * numberOfBinaryDataEntries);
+	LimeFileProperties extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int numberOfBinaryDataEntries);
 	void readLimeFile(std::string sourceFilename, char ** destination, bool readMetaData);
 	void extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision);
 	void extractDataFromLimeFile(std::string sourceFilename, char ** destination);

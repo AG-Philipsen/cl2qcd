@@ -389,17 +389,18 @@ int sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(Lime
   return (numberOfBinaryDataEntries)+1;
 }
 
-int sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int * numberOfBinaryDataEntries)
+LimeFileProperties sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int numberOfBinaryDataEntries)
 {
     LimeHeaderData limeHeaderData(r);
+    LimeFileProperties limeFileProp;
     if (limeHeaderData.MB_flag == 1) {
       if( strcmp (limeEntryTypes[5], limeHeaderData.limeEntryType.c_str()) == 0 || strcmp (limeEntryTypes[8], limeHeaderData.limeEntryType.c_str()) == 0  )
 	{
-	  *numberOfBinaryDataEntries= extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, *numberOfBinaryDataEntries);
+	  limeFileProp.numberOfBinaryDataEntries += extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, numberOfBinaryDataEntries);
 	}
-      return 1;
+      limeFileProp.numberOfEntries += 1;
     }
-    return 0;
+    return limeFileProp;
 }
 
 int sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r)
@@ -426,15 +427,13 @@ void sourcefileparameters::goThroughLimeRecordForMetaData(LimeReader * r)
 
 void sourcefileparameters::goThroughLimeRecordForData(LimeReader * r, char ** destination)
 {
-  int numberOfLimeEntries = 0;
   int statusOfLimeReader = 0;
-  int numberOfBinaryDataEntries = 0;
+  LimeFilePropertiesCollector limeFileProp;
+
   while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
     checkLimeRecordReadForFailure(statusOfLimeReader);
-    numberOfLimeEntries += extractBinaryDataFromLimeEntry(r, destination, &numberOfBinaryDataEntries);
+    limeFileProp += extractBinaryDataFromLimeEntry(r, destination, limeFileProp.numberOfBinaryDataEntries);
   }
-  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
-  logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
 }
 
 void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** destination, bool readMetaData)
@@ -572,4 +571,16 @@ void sourcefileparameters::readsourcefile(std::string sourceFilename, int desire
   extractMetadataFromLimeFile(sourceFilename, desiredPrecision);
    
   extractDataFromLimeFile(sourceFilename, destination);
+}
+
+LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
+{
+  logger.trace() << "Found " << numberOfEntries << " LIME records.";
+  logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
+}
+
+void LimeFileProperties::operator+=(LimeFileProperties other)
+{
+  this->numberOfEntries += other.numberOfEntries;
+  this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
 }
