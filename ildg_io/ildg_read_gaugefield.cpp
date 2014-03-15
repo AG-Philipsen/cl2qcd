@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2014 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -607,21 +607,6 @@ void sourcefileparameters::goThroughLimeRecord(std::string sourceFilename, LimeR
   logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
 }
 
-void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
-{
-  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
-  FILE *limeFileOpenedForReading;
-  LimeReader *limeReader;
-  
-  limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
-  limeReader = limeCreateReader(limeFileOpenedForReading);
-
-  goThroughLimeRecord(sourceFilename, limeReader);
-
-  limeDestroyReader(limeReader);
-  fclose(limeFileOpenedForReading);
-}
-
 void sourcefileparameters::checkPrecision(int desiredPrecision)
 {
   if(desiredPrecision != prec_source) 
@@ -640,52 +625,59 @@ char* sourcefileparameters::createBufferForGaugefield(int num_entries)
   return buffer;
 }
 
+void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
+{
+  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
+  FILE *limeFileOpenedForReading;
+  LimeReader *limeReader;
+  
+  limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
+  limeReader = limeCreateReader(limeFileOpenedForReading);
+
+  goThroughLimeRecord(sourceFilename, limeReader);
+
+  limeDestroyReader(limeReader);
+  fclose(limeFileOpenedForReading);
+  logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
+}
+
+void checkSizeOfBinaryData(size_t expectedSize, size_t actualSize)
+{
+  if(actualSize != expectedSize) {
+    throw Invalid_Parameters("Binary data does not have expected size.", expectedSize, actualSize);
+  }
+}
+
 void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char ** destination, int desiredPrecision)
 {
+  logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
   FILE *fp;
-  int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
-  char *lime_type;
-  size_t bytes_pad;
-  n_uint64_t nbytes;
+  int msg, rec, status, cter = 0;
   LimeReader *r;
   size_t bytes = sizeOfGaugefieldBuffer();
   
   checkPrecision(desiredPrecision);
-  logger.trace() << "reading data..";
   
-  *destination = createBufferForGaugefield(num_entries_source);
-
   //read lime file
   fp = fopen (sourceFilename.c_str(), "r");
   r = limeCreateReader(fp);
-  first = 1;
+
   msg = 0;
   while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
-    if( status != LIME_SUCCESS ) {
-      char errmsg[256];
-      sprintf(errmsg, "\tlimeReaderNextRecord returned status = %d\n",
-	      status);
-      throw Print_Error_Message(errmsg);
-    }
-    if (MB_flag == 1 || first) {
-      first = 0;
+    checkLimeRecordReadForFailure(status);
+
+    LimeHeaderData limeHeaderData(r);
+    if (limeHeaderData.MB_flag == 1) {
       rec = 0;
       msg++;
     }
     rec++;
-    //read header data
-    nbytes    = limeReaderBytes(r);
-    lime_type = limeReaderType(r);
-    bytes_pad = limeReaderPadBytes(r);
-    MB_flag   = limeReaderMBFlag(r);
-    ME_flag   = limeReaderMEFlag(r);
     //!! read data only for the FIRST entry!!
-    if( (strcmp (limeEntryTypes[5], lime_type) == 0 || strcmp (limeEntryTypes[8], lime_type) == 0 ) && cter < 1) {
-      if(nbytes != bytes) {
-	throw Invalid_Parameters("Binary data does not have expected size.", bytes, nbytes);
-      }
+    if( (strcmp (limeEntryTypes[5], limeHeaderData.limeEntryType.c_str()) == 0 || strcmp (limeEntryTypes[8], limeHeaderData.limeEntryType.c_str()) == 0 ) && cter == 0) {
+      checkSizeOfBinaryData(bytes, limeHeaderData.numberOfBytes);
+      destination[cter] = createBufferForGaugefield(num_entries_source);
+      limeReaderReadData(destination[cter], &limeHeaderData.numberOfBytes, r);
       cter ++;
-      limeReaderReadData(*destination, &nbytes, r);
     }
   }
   
