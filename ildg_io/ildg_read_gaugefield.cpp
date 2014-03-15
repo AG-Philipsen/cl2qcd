@@ -418,28 +418,6 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
   return limeFileProp;
 }
 
-void sourcefileparameters::goThroughLimeRecordForMetaData(LimeReader * r)
-{
-  LimeFilePropertiesCollector limeFileProp;
-  int statusOfLimeReader = 0;
-
-  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
-    checkLimeRecordReadForFailure(statusOfLimeReader);
-    limeFileProp += extractMetaDataFromLimeEntry(r);
-  }
-}
-
-void sourcefileparameters::goThroughLimeRecordForData(LimeReader * r, char ** destination)
-{
-  int statusOfLimeReader = 0;
-  LimeFileProperties limeFileProp;
-
-  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
-    checkLimeRecordReadForFailure(statusOfLimeReader);
-    limeFileProp += extractBinaryDataFromLimeEntry(r, destination, limeFileProp.numberOfBinaryDataEntries);
-  }
-}
-
 LimeFileProperties sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries)
 {
   if( readMetaData)

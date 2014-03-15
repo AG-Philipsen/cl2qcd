@@ -118,8 +118,6 @@ public:
 	void checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes);
-	void goThroughLimeRecordForMetaData(LimeReader * r);
-	void goThroughLimeRecordForData(LimeReader * r, char ** destination);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeReader * r);
 	size_t	sizeOfGaugefieldBuffer();
 	char* createBufferForGaugefield(int num_entries);
