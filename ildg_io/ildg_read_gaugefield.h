@@ -89,7 +89,7 @@ public:
 	void get_XLF_infos(const char * filename,char * hmcversion, char * date );
 	void get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date );
 	void printMetaDataToScreen(std::string sourceFilename);
-	void readDataFromLimeFile(std::string sourceFilename, char ** destination, int desiredPrecision);
+	void readDataFromLimeFile(std::string sourceFilename, char ** destination);
 	void checkPrecision(int desiredPrecision);
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
@@ -100,9 +100,13 @@ public:
 	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename);
 	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes,  std::string sourceFilename);
 	void goThroughLimeRecord(std::string sourceFilename, LimeReader * r);
+	void goThroughLimeRecordForData(LimeReader * r, char ** destination);
 	int extractInformationFromLimeEntry(std::string sourceFilename, LimeReader * r);
 	size_t	sizeOfGaugefieldBuffer();
 	char* createBufferForGaugefield(int num_entries);
+	void checkSizeOfBinaryDataForGaugefield(size_t actualSize);
+	int extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries);
+	int extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int * numberOfBinaryDataEntries);
 
 	int numberOfFermionFieldsRead;
 };

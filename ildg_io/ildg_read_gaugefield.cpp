@@ -596,17 +596,6 @@ int sourcefileparameters::extractInformationFromLimeEntry(std::string sourceFile
   return 0;
 }
 
-void sourcefileparameters::goThroughLimeRecord(std::string sourceFilename, LimeReader * r)
-{
-  int numberOfLimeEntries = 0;
-  int statusOfLimeReader = 0;
-  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
-    checkLimeRecordReadForFailure(statusOfLimeReader);
-    numberOfLimeEntries += extractInformationFromLimeEntry(sourceFilename, r);
-  }
-  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
-}
-
 void sourcefileparameters::checkPrecision(int desiredPrecision)
 {
   if(desiredPrecision != prec_source) 
@@ -641,45 +630,77 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
   logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
 
-void checkSizeOfBinaryData(size_t expectedSize, size_t actualSize)
+void sourcefileparameters::checkSizeOfBinaryDataForGaugefield(size_t actualSize)
 {
+  size_t expectedSize = sizeOfGaugefieldBuffer();
   if(actualSize != expectedSize) {
     throw Invalid_Parameters("Binary data does not have expected size.", expectedSize, actualSize);
   }
 }
 
-void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char ** destination, int desiredPrecision)
+void sourcefileparameters::goThroughLimeRecord(std::string sourceFilename, LimeReader * r)
+{
+  int numberOfLimeEntries = 0;
+  int statusOfLimeReader = 0;
+  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
+    checkLimeRecordReadForFailure(statusOfLimeReader);
+    numberOfLimeEntries += extractInformationFromLimeEntry(sourceFilename, r);
+  }
+  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
+}
+
+int sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries)
+{
+  if (numberOfBinaryDataEntries == 0)
+    {
+      //todo: generalize for diff. field types..
+      checkSizeOfBinaryDataForGaugefield(limeHeaderData.numberOfBytes);
+      destination[numberOfBinaryDataEntries] = createBufferForGaugefield(num_entries_source);
+      limeReaderReadData(destination[numberOfBinaryDataEntries], &limeHeaderData.numberOfBytes, r);
+    }
+  else
+    {
+      logger.fatal() << "Reading of more than one binary data entry from LIME file not yet implemented...";
+    }
+  return numberOfBinaryDataEntries++;
+}
+
+int sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int * numberOfBinaryDataEntries)
+{
+    LimeHeaderData limeHeaderData(r);
+    if (limeHeaderData.MB_flag == 1) {
+      if( strcmp (limeEntryTypes[5], limeHeaderData.limeEntryType.c_str()) == 0 || strcmp (limeEntryTypes[8], limeHeaderData.limeEntryType.c_str()) == 0  )
+	{
+	*numberOfBinaryDataEntries = extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, *numberOfBinaryDataEntries);
+	}
+      return 1;
+    }
+    return 0;
+}
+
+void sourcefileparameters::goThroughLimeRecordForData(LimeReader * r, char ** destination)
+{
+  int numberOfLimeEntries = 0;
+  int statusOfLimeReader = 0;
+  int numberOfBinaryDataEntries = 0;
+  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
+    checkLimeRecordReadForFailure(statusOfLimeReader);
+    numberOfLimeEntries += extractBinaryDataFromLimeEntry(r, destination, &numberOfBinaryDataEntries);
+  }
+  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
+  logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
+}
+
+void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char ** destination)
 {
   logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
   FILE *fp;
-  int msg, rec, status, cter = 0;
   LimeReader *r;
-  size_t bytes = sizeOfGaugefieldBuffer();
   
-  checkPrecision(desiredPrecision);
-  
-  //read lime file
   fp = fopen (sourceFilename.c_str(), "r");
   r = limeCreateReader(fp);
 
-  msg = 0;
-  while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
-    checkLimeRecordReadForFailure(status);
-
-    LimeHeaderData limeHeaderData(r);
-    if (limeHeaderData.MB_flag == 1) {
-      rec = 0;
-      msg++;
-    }
-    rec++;
-    //!! read data only for the FIRST entry!!
-    if( (strcmp (limeEntryTypes[5], limeHeaderData.limeEntryType.c_str()) == 0 || strcmp (limeEntryTypes[8], limeHeaderData.limeEntryType.c_str()) == 0 ) && cter == 0) {
-      checkSizeOfBinaryData(bytes, limeHeaderData.numberOfBytes);
-      destination[cter] = createBufferForGaugefield(num_entries_source);
-      limeReaderReadData(destination[cter], &limeHeaderData.numberOfBytes, r);
-      cter ++;
-    }
-  }
+  goThroughLimeRecordForData(r, destination);
   
   limeDestroyReader(r);
   fclose(fp);
@@ -769,6 +790,9 @@ void sourcefileparameters::readsourcefile(std::string sourceFilename, int desire
 
   readMetaDataFromLimeFile(sourceFilename);
   printMetaDataToScreen(sourceFilename);
-  
-  readDataFromLimeFile(sourceFilename, destination, desiredPrecision);
+
+  //todo: this may be unified with a check against the inputparameters..
+  checkPrecision(desiredPrecision);
+   
+  readDataFromLimeFile(sourceFilename, destination);
 }
