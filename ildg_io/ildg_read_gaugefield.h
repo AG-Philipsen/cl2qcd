@@ -94,19 +94,22 @@ public:
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
 	int calcNumberOfEntriesForGaugefield();
-	void checkLimeEntry(std::string sourceFilename, int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData);
+	void checkLimeEntry(int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData);
 	void checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
-	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename);
-	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes,  std::string sourceFilename);
-	void goThroughLimeRecord(std::string sourceFilename, LimeReader * r);
+	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
+	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes);
+	void goThroughLimeRecordForMetaData(LimeReader * r);
 	void goThroughLimeRecordForData(LimeReader * r, char ** destination);
-	int extractInformationFromLimeEntry(std::string sourceFilename, LimeReader * r);
+	int extractInformationFromLimeEntry(LimeReader * r);
 	size_t	sizeOfGaugefieldBuffer();
 	char* createBufferForGaugefield(int num_entries);
 	void checkSizeOfBinaryDataForGaugefield(size_t actualSize);
 	int extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries);
 	int extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int * numberOfBinaryDataEntries);
+	void readLimeFile(std::string sourceFilename, char ** destination, bool readMetaData);
+	void extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision);
+	void extractDataFromLimeFile(std::string sourceFilename, char ** destination);
 
 	int numberOfFermionFieldsRead;
 };

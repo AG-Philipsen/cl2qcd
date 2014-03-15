@@ -365,14 +365,14 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size, char * f
 }
 
 //todo: merge with xml fcts. above!!
-Checksum get_checksum(const char * buffer, int size, const char * filename)
+Checksum get_checksum(const char * buffer, int size)
 {
 	uint32_t suma, sumb;
 
 	// see comment in get_XML_infos(..)
 	xmlTextReaderPtr reader = xmlReaderForMemory(buffer, size, NULL, NULL, 0);
 	if(reader == NULL) {
-		throw File_Exception(filename);
+	  throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
 	}
 
 	int xml_state = xmlTextReaderRead(reader);
@@ -410,7 +410,7 @@ Checksum get_checksum(const char * buffer, int size, const char * filename)
 		xml_state = xmlTextReaderRead(reader);
 	}
 	if(xml_state == -1) {
-		logger.warn() << filename << ": failed to parse";
+	  throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
 	}
 	xmlFreeTextReader(reader);
 
@@ -528,7 +528,7 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int 
   }
 }
 
-void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes, std::string sourceFilename)
+void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
 {
   char field_out[100];
   //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
@@ -545,15 +545,14 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int 
   strcpy(field_source, field_out);
 }
 
-void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes, std::string sourceFilename)
+void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes)
 {
   if("scidac-checksum" == lime_type) {
     logger.trace() << "\tfound scidac-checksum as lime_type" << lime_type;
     char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
     buffer[nbytes] = 0;
 
-    //todo: why is sourceFilename needed here?
-    checksum = get_checksum(buffer, nbytes, sourceFilename.c_str());
+    checksum = get_checksum(buffer, nbytes);
     delete[] buffer;
   }
 }
@@ -572,7 +571,7 @@ int checkLimeEntryForFermionInformations(std::string lime_type, int switcher)
     return 0;
 }
 
-void sourcefileparameters::checkLimeEntry(std::string sourceFilename, int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData)
+void sourcefileparameters::checkLimeEntry(int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData)
 {
   *numberOfFermionEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType, *numberOfFermionEntries);
     
@@ -580,17 +579,17 @@ void sourcefileparameters::checkLimeEntry(std::string sourceFilename, int *  num
   
   checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes);
   
-  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes, sourceFilename);
+  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes);
   
-  checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes, sourceFilename);
+  checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
 }
 
-int sourcefileparameters::extractInformationFromLimeEntry(std::string sourceFilename, LimeReader * r)
+int sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r)
 {
   int numberOfFermionEntries = 0;
   LimeHeaderData limeHeaderData(r);
   if (limeHeaderData.MB_flag == 1) {
-    checkLimeEntry(sourceFilename, &numberOfFermionEntries, r, limeHeaderData);
+    checkLimeEntry(&numberOfFermionEntries, r, limeHeaderData);
     return 1;
   }
   return 0;
@@ -614,39 +613,12 @@ char* sourcefileparameters::createBufferForGaugefield(int num_entries)
   return buffer;
 }
 
-void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
-{
-  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
-  FILE *limeFileOpenedForReading;
-  LimeReader *limeReader;
-  
-  limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
-  limeReader = limeCreateReader(limeFileOpenedForReading);
-
-  goThroughLimeRecord(sourceFilename, limeReader);
-
-  limeDestroyReader(limeReader);
-  fclose(limeFileOpenedForReading);
-  logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
-}
-
 void sourcefileparameters::checkSizeOfBinaryDataForGaugefield(size_t actualSize)
 {
   size_t expectedSize = sizeOfGaugefieldBuffer();
   if(actualSize != expectedSize) {
     throw Invalid_Parameters("Binary data does not have expected size.", expectedSize, actualSize);
   }
-}
-
-void sourcefileparameters::goThroughLimeRecord(std::string sourceFilename, LimeReader * r)
-{
-  int numberOfLimeEntries = 0;
-  int statusOfLimeReader = 0;
-  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
-    checkLimeRecordReadForFailure(statusOfLimeReader);
-    numberOfLimeEntries += extractInformationFromLimeEntry(sourceFilename, r);
-  }
-  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
 }
 
 int sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries)
@@ -662,7 +634,7 @@ int sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(Lime
     {
       logger.fatal() << "Reading of more than one binary data entry from LIME file not yet implemented...";
     }
-  return numberOfBinaryDataEntries++;
+  return (numberOfBinaryDataEntries)+1;
 }
 
 int sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int * numberOfBinaryDataEntries)
@@ -671,11 +643,22 @@ int sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char **
     if (limeHeaderData.MB_flag == 1) {
       if( strcmp (limeEntryTypes[5], limeHeaderData.limeEntryType.c_str()) == 0 || strcmp (limeEntryTypes[8], limeHeaderData.limeEntryType.c_str()) == 0  )
 	{
-	*numberOfBinaryDataEntries = extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, *numberOfBinaryDataEntries);
+	  *numberOfBinaryDataEntries= extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, *numberOfBinaryDataEntries);
 	}
       return 1;
     }
     return 0;
+}
+
+void sourcefileparameters::goThroughLimeRecordForMetaData(LimeReader * r)
+{
+  int numberOfLimeEntries = 0;
+  int statusOfLimeReader = 0;
+  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
+    checkLimeRecordReadForFailure(statusOfLimeReader);
+    numberOfLimeEntries += extractInformationFromLimeEntry(r);
+  }
+  logger.trace() << "Found " << numberOfLimeEntries << " LIME records.";
 }
 
 void sourcefileparameters::goThroughLimeRecordForData(LimeReader * r, char ** destination)
@@ -691,20 +674,39 @@ void sourcefileparameters::goThroughLimeRecordForData(LimeReader * r, char ** de
   logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
 }
 
+void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** destination, bool readMetaData)
+{
+  FILE *limeFileOpenedForReading;
+  LimeReader *limeReader;
+
+  limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
+  limeReader = limeCreateReader(limeFileOpenedForReading);
+
+  if( readMetaData)
+    {
+      goThroughLimeRecordForMetaData(limeReader);
+    }
+  else 
+    {
+      goThroughLimeRecordForData(limeReader, destination);
+    }
+
+  limeDestroyReader(limeReader);
+  fclose(limeFileOpenedForReading); 
+}
+
 void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char ** destination)
 {
   logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
-  FILE *fp;
-  LimeReader *r;
-  
-  fp = fopen (sourceFilename.c_str(), "r");
-  r = limeCreateReader(fp);
-
-  goThroughLimeRecordForData(r, destination);
-  
-  limeDestroyReader(r);
-  fclose(fp);
+  readLimeFile(sourceFilename, destination, false);
   logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
+}
+
+void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
+{
+  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
+  readLimeFile(sourceFilename, NULL, true);
+  logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
 
 void checkIfFileExists(std::string file)
@@ -784,15 +786,27 @@ void sourcefileparameters::set_defaults()
 	return;
 }
 
+void sourcefileparameters::extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision)
+{
+  readMetaDataFromLimeFile(sourceFilename);
+
+  printMetaDataToScreen(sourceFilename);
+
+  //todo: this may be unified with a check against the inputparameters..
+  checkPrecision(desiredPrecision);  
+}
+
+void sourcefileparameters::extractDataFromLimeFile(std::string sourceFilename, char ** destination)
+{
+  readDataFromLimeFile(sourceFilename, destination);
+  //todo: put conversion to numbers in here...
+}
+
 void sourcefileparameters::readsourcefile(std::string sourceFilename, int desiredPrecision, char ** destination)
 {
   checkIfFileExists(sourceFilename);
 
-  readMetaDataFromLimeFile(sourceFilename);
-  printMetaDataToScreen(sourceFilename);
-
-  //todo: this may be unified with a check against the inputparameters..
-  checkPrecision(desiredPrecision);
+  extractMetadataFromLimeFile(sourceFilename, desiredPrecision);
    
-  readDataFromLimeFile(sourceFilename, destination);
+  extractDataFromLimeFile(sourceFilename, destination);
 }
