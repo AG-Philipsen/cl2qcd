@@ -130,6 +130,8 @@ public:
 	void extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision);
 	void extractDataFromLimeFile(std::string sourceFilename, char ** destination);
 	Checksum get_checksum(const char * buffer, int size);
+	LimeFileProperties extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries);
+	void goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData);
 
 	int numberOfFermionFieldsRead;
 };

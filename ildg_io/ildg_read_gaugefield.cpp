@@ -432,11 +432,34 @@ void sourcefileparameters::goThroughLimeRecordForMetaData(LimeReader * r)
 void sourcefileparameters::goThroughLimeRecordForData(LimeReader * r, char ** destination)
 {
   int statusOfLimeReader = 0;
-  LimeFilePropertiesCollector limeFileProp;
+  LimeFileProperties limeFileProp;
 
   while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
     checkLimeRecordReadForFailure(statusOfLimeReader);
     limeFileProp += extractBinaryDataFromLimeEntry(r, destination, limeFileProp.numberOfBinaryDataEntries);
+  }
+}
+
+LimeFileProperties sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries)
+{
+  if( readMetaData)
+    {
+      return extractMetaDataFromLimeEntry(r);
+    }
+  else 
+    {
+      return extractBinaryDataFromLimeEntry(r, destination, numberOfBinaryDataEntries);
+    }
+}
+
+void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData)
+{
+  LimeFilePropertiesCollector limeFileProp;
+  int statusOfLimeReader = 0;
+
+  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
+    checkLimeRecordReadForFailure(statusOfLimeReader);
+    limeFileProp += extractInformationFromLimeEntry(r, destination, readMetaData, limeFileProp.numberOfBinaryDataEntries);
   }
 }
 
@@ -448,14 +471,7 @@ void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** dest
   limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
   limeReader = limeCreateReader(limeFileOpenedForReading);
 
-  if( readMetaData)
-    {
-      goThroughLimeRecordForMetaData(limeReader);
-    }
-  else 
-    {
-      goThroughLimeRecordForData(limeReader, destination);
-    }
+  goThroughLimeRecords(limeReader, destination, readMetaData);
 
   limeDestroyReader(limeReader);
   fclose(limeFileOpenedForReading); 
