@@ -40,6 +40,22 @@ add_executable(openclCompiler opencl_compiler.cpp ../hardware/opencl_compiler.cp
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(OpenclCompiler openclCompiler)
 
+### KernelTester tests
+
+add_library(kernelTests
+	kernelTester.cpp
+)
+
+target_link_libraries(kernelTests
+	${Boost_LIBRARIES}
+	host_functionality
+	meta
+)
+
+add_executable(kernelTester_test KernelTester_test.cpp)
+target_link_libraries(kernelTester_test kernelTests)
+add_test(KernelTester kernelTester_test)
+
 add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend
 	optimal

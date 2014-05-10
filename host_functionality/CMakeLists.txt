@@ -26,4 +26,5 @@ add_library(host_functionality
 	host_operations_gaugefield.cpp
 	host_use_timer.cpp
 	logger.cpp
+	host_random.cpp
 )

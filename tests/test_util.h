@@ -18,6 +18,13 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef TESTUTILS_H_
+#define TESTUTILS_H_
+
+#include <boost/test/unit_test.hpp>
+
+#include "../host_functionality/logger.hpp"
+
 std::string defaultGpuOption = "--use_gpu=false";
 std::string defaultRec12Option = "--use_rec12=false";
 std::string defaultSourceDirectory = "../../tests";
@@ -74,11 +81,11 @@ meta::Inputparameters create_parameters(std::string inputfile)
   
 	num_par = boost::unit_test::framework::master_test_suite().argc;
 	setArguments(inputfile_location, gpu_opt, rec12_opt, num_par, param_expect);
-	inputfile_location += inputfile;
+	inputfile_location += '/' + inputfile;
 	logger.info() << "inputfile used: " << inputfile_location;
 	
 	const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str(), "--device=0"};
-	meta::aInputparameters params(num_par + 1, _params_cpu);
+	meta::Inputparameters params(num_par + 1, _params_cpu);
 	return params;
 }
 
@@ -107,3 +114,5 @@ void testFloatSizeAgainstInputparameters(hmc_float cpu_res, meta::Inputparameter
 	logger.info() << "Compare result to reference value";
 	BOOST_REQUIRE_SMALL(cpu_res, ref_val);
 }
+
+#endif
