@@ -29,7 +29,7 @@ add_library(hardware
 	synchronization_event.cpp
 	opencl_compiler.cpp
 )
-target_link_libraries(hardware optimal)
+
 add_modules(hardware
 	buffers
 	code
