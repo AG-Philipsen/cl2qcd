@@ -18,8 +18,6 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_FAILURE_WORKAROUND 0
-
 //settings for workaround
 std::string use_gpu = "false";
 std::string use_rec12 = "false";
@@ -29,16 +27,6 @@ meta::Inputparameters create_parameters(std::string inputfile)
 {
 	std::string inputfile_location, gpu_opt , rec12_opt;
 	int num_par = 0;
-#if BOOST_FAILURE_WORKAROUND
-	//CP: this is a workaround in case the boost library is not able to pass arguments
-	//	in this case, always use standard args...
-	logger.warn() << "Passing of args with boost does not work! Use standard arguments:";
-	inputfile_location = std_sourcedir + inputfile;
-	gpu_opt = "--use_gpu=" + use_gpu;
-	rec12_opt = "--use_rec12=" + use_rec12;
-	num_par = 4;
-	logger.warn() << inputfile_location << " " << gpu_opt << " " << rec12_opt;
-#else
   const int param_expect = 4;
   logger.info() << "expect parameters:";
   logger.info() << "\texec_name\tsource-dir\tgpu_usage\trec12_usage";
@@ -91,7 +79,6 @@ meta::Inputparameters create_parameters(std::string inputfile)
     logger.info() << "rec12 usage: " << rec12_opt;
     break;
   }
-#endif
 	const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str(), "--device=0"};
   meta::Inputparameters params(num_par + 1, _params_cpu);
   return params;
