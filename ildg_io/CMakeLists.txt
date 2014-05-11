@@ -25,3 +25,8 @@ add_library(ildg_io
 	ildg_read_gaugefield.cpp
 	ildg_write_gaugefield.cpp
 )
+
+target_link_libraries(ildg_io
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+)

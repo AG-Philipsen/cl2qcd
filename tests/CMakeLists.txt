@@ -42,19 +42,23 @@ add_test(OpenclCompiler openclCompiler)
 
 ### KernelTester tests
 
-add_library(kernelTests
+add_library(kernelTestUtilities
 	kernelTester.cpp
 )
 
-target_link_libraries(kernelTests
+target_link_libraries(kernelTestUtilities
 	${Boost_LIBRARIES}
 	host_functionality
 	meta
+	hardware
 )
 
-add_executable(kernelTester_test KernelTester_test.cpp)
-target_link_libraries(kernelTester_test kernelTests)
-add_test(KernelTester kernelTester_test)
+# todo: perhaps one can remove the quite unspecific dependency on physics library
+add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities ildg_io physics)
+
+#add_executable(kernelTester_test KernelTester_test.cpp)
+#target_link_libraries(kernelTester_test kernelTestUtilities)
+#add_test(KernelTester kernelTester_test)
 
 add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend

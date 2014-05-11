@@ -1,6 +1,7 @@
 # Build specifications for the contents of the physics package
 #
-# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
+# 	        2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #
@@ -35,11 +36,14 @@ add_modules(physics
 target_link_libraries(physics
 	meta
 	hardware
+	host_functionality
+	ildg_io
+	ranlux
 )
 
 #
-# Definition of tets
+# Definition of tests
 #
 
-add_unit_test(physics::PRNG prng_test)
-add_unit_test(physics::<sources> sources_test)
+add_unit_test_withLibraries(physics::PRNG prng_test physics)
+add_unit_test_withLibraries(physics::<sources> sources_test physics)

@@ -37,7 +37,7 @@ add_modules(hardware
 	transfer
 )
 
-target_link_libraries(hardware 	${OPENCL_LIBRARIES} exceptions )
+target_link_libraries(hardware 	${OPENCL_LIBRARIES} exceptions crypto)
 
 #
 # Definition of tests

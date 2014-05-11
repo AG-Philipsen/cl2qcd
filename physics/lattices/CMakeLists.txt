@@ -38,7 +38,7 @@ target_link_libraries(lattices
 )
 
 #
-# Definition of tets
+# Definition of tests
 #
 add_unit_test(physics::lattices::Gaugefield gaugefield_test)
 add_unit_test(physics::lattices::Spinorfield spinorfield_test)
