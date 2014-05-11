@@ -49,7 +49,7 @@ KernelTesterDouble::~KernelTesterDouble()
 KernelTesterComplex::KernelTesterComplex(std::string kernelNameIn, std::string inputfileIn):
   KernelTester( kernelNameIn, inputfileIn), kernelResult({ 0., 0.})
 {
-  referenceValue = {parameters->get_test_ref_value(), parameters->get_test_ref_value() };
+  referenceValue = {parameters->get_test_ref_value(), parameters->get_test_ref_value2() };
 }
 
 KernelTesterComplex::~KernelTesterComplex()

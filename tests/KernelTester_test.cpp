@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_SUITE ( COMPLEX )
 	   KernelTesterComplex(kernelNameIn, inputfileIn) {};
 	 void callSpecificKernel()
 	 {
-	   kernelResult = {1., 1.};
+	   kernelResult = {1., 2.};
 	 }
        };
 

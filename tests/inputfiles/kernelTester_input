@@ -11,3 +11,4 @@ beta= 5.69
 solver_prec=1e-8
 #reference value
 test_ref_val=1
+test_ref_val2=2
