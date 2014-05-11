@@ -14,4 +14,4 @@ NT=4
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.57107711169452713
+test_ref_val=877.17444356279361

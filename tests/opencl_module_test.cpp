@@ -30,8 +30,6 @@ public:
   }
   void callSpecificKernel() override
   {
-    hmc_float dev_plaq, dev_tplaq, dev_splaq;
-    
     auto device = this->system->get_devices()[0];
     auto * code = device->get_gaugefield_code(); 
     
@@ -63,6 +61,7 @@ public:
   }
 private:
   int typeOfPlaquette;
+  hmc_float dev_plaq, dev_tplaq, dev_splaq;
 };
 
 class RectanglesTester : public KernelTester
@@ -82,6 +81,36 @@ public:
     code->gaugeobservables_rectangles(this->gaugefield->get_buffers()[0], &cpu_rect);
     kernelResult = cpu_rect;
   }
+};
+
+class StoutSmearTester : public KernelTester
+{
+public:
+  StoutSmearTester(std::string inputfile):
+    KernelTester("plaquette", inputfile)
+  {
+    callSpecificKernel();
+  }
+  void callSpecificKernel() override
+  {
+    auto device = this->system->get_devices()[0];
+    auto * code = device->get_gaugefield_code(); 
+
+    const hardware::buffers::Plain<hmc_float> plaq(1, device );
+    const hardware::buffers::Plain<hmc_float> splaq(1, device);
+    const hardware::buffers::Plain<hmc_float> tplaq(1, device);
+    const hardware::buffers::SU3 out(this->gaugefield->get_buffers()[0]->get_elements(), device);
+
+    code->stout_smear_device( this->gaugefield->get_buffers()[0], &out);
+
+    code->plaquette_device( &out, &plaq, &tplaq, &splaq);
+    plaq.dump(&dev_plaq);
+
+    kernelResult = dev_plaq;
+ }
+private:
+  hmc_float dev_plaq, dev_tplaq, dev_splaq;
+  hmc_complex dev_pol;
 };
 
 
@@ -175,27 +204,6 @@ void gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, h
 	pol_out->im = tmp_pol.im;
 }
 
-
-
-void test_rectangles(std::string inputfile)
-{
-	std::string kernelName = "rectangles";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	auto * device = cpu.get_device();
-
-	logger.info() << "calc rectangles value:";
-	hmc_float cpu_rect;
-	device->gaugeobservables_rectangles(cpu.get_gaugefield(), &cpu_rect);
-	logger.info() << cpu_rect;
-
-	testFloatAgainstInputparameters(cpu_rect, params);
-	BOOST_MESSAGE("Test done");
-}
-
 void test_polyakov(std::string inputfile, hmc_complex ref_pol)
 {
 	std::string kernelName = "plaquette";
@@ -217,41 +225,6 @@ void test_polyakov(std::string inputfile, hmc_complex ref_pol)
 	// verify
 	BOOST_CHECK_CLOSE(ref_pol.re, dev_pol.re,   prec);
 	BOOST_CHECK_CLOSE(ref_pol.im, dev_pol.im,   prec);
-}
-
-void test_stout_smear(std::string inputfile)
-{
-	std::string kernelName = "stout_smear";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-
-	TestGaugefield dummy2(&system);
-	auto * device = dummy2.get_device();
-	auto gf_code = device->get_device()->get_gaugefield_code();
-	//out buffer
-	const hardware::buffers::SU3 out(dummy2.get_gaugefield()->get_elements(), device->get_device());
-
-	logger.info() << "gaugeobservables of in field before: ";
-	dummy2.print_gaugeobservables();
-	logger.info() << "gaugeobservables of out field before: ";
-	hmc_float dev_plaq, dev_tplaq, dev_splaq;
-	hmc_complex dev_pol;
-	gaugeobservables(&out, &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol, params);
-	logger.info() << "plaq: " << dev_plaq << "\t" << dev_tplaq  << "\t" << dev_splaq  << "\t" << dev_pol.re  << "\t" << dev_pol.im ;
-
-	gf_code->stout_smear_device( dummy2.get_gaugefield(), &out);
-
-	logger.info() << "gaugeobservables of in field after: ";
-	dummy2.print_gaugeobservables();
-	logger.info() << "gaugeobservables of out field after: ";
-	gaugeobservables(&out, &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol, params);
-	logger.info() << "plaq: " << dev_plaq << "\t" << dev_tplaq  << "\t" << dev_splaq  << "\t" << dev_pol.re  << "\t" << dev_pol.im ;
-
-	testFloatAgainstInputparameters(dev_plaq, params);
-	BOOST_MESSAGE("Test done");
-
 }
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
@@ -382,27 +355,27 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
 {
-	test_stout_smear("/stout_smear_input_1");
+  StoutSmearTester StoutSmearTester("stout_smear_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
 {
-	test_stout_smear("/stout_smear_input_2");
+  StoutSmearTester StoutSmearTester("stout_smear_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
 {
-	test_stout_smear("/stout_smear_input_3");
+  StoutSmearTester StoutSmearTester("stout_smear_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR_4 )
 {
-	test_stout_smear("/stout_smear_input_4");
+  StoutSmearTester StoutSmearTester("stout_smear_input_4");
 }
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR_5 )
 {
-	test_stout_smear("/stout_smear_input_5");
+  StoutSmearTester StoutSmearTester("stout_smear_input_5");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

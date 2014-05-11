@@ -1,10 +1,9 @@
-startcondition=continue
-sourcefile=conf.00200
+startcondition=cold
 
 use_smearing=true
 
 rho_iter=1
-rho=0.001538
+rho=0.
 
 prec=64
 
@@ -14,4 +13,4 @@ NT=4
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.57601689920611798
+test_ref_val=1536
