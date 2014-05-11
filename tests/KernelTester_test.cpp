@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
 	{
 	  std::string nameOfKernel = "test";
-	  std::string nameOfInputfileThatExists = "plaquette_input_1";
+	  std::string nameOfInputfileThatExists = "inputfiles/kernelTesterEmpty_input";
 	  BOOST_CHECK_NO_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists) );
 	}
 
@@ -41,4 +41,27 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 	  BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatDoesNotExist), meta::Inputparameters::parse_aborted  );
 	}
 	
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE ( RUNTEST )
+
+       class TrivialKernelTester : public KernelTester
+       {
+       public:
+	 TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
+	   KernelTester(kernelNameIn, inputfileIn) {};
+	 void callSpecificKernel()
+	 {
+	   kernelResult = 1;
+	 }
+       };
+
+       BOOST_AUTO_TEST_CASE( TRIVIALKERNEL )
+       {
+	  std::string nameOfKernel = "test";
+	  std::string nameOfInputfileThatExists = "inputfiles/kernelTester_input";
+	  TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
+	  kernelTester.callSpecificKernel();
+       }
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -22,13 +22,21 @@
 #include "test_util.h"
 
 KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn):
-  kernelName(kernelNameIn)
+  kernelResult(0.)
 {
-  printKernelInfo(kernelName);
+  printKernelInfo(kernelNameIn);
   meta::Inputparameters parameters_tmp = create_parameters(inputfileIn);
   parameters = &parameters_tmp;
+
+  referenceValue = parameters->get_test_ref_value();
+  testPrecision = parameters->get_solver_prec();
+
   system = new hardware::System(*parameters);
   prng = new physics::PRNG(*system);
   gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
 
+KernelTester::~KernelTester()
+{
+  BOOST_CHECK_CLOSE(kernelResult, referenceValue, testPrecision);
+}

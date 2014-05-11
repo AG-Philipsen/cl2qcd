@@ -31,10 +31,13 @@ class KernelTester
 
 public:
   KernelTester(std::string kernelNameIn, std::string inputfileIn); 
+  ~KernelTester();
+  virtual void callSpecificKernel() {};
 
-  std::string kernelName;
 protected:
-
+  double referenceValue;
+  double kernelResult;
+  double testPrecision;
   meta::Inputparameters * parameters;
   hardware::System * system;
   physics::PRNG * prng;
