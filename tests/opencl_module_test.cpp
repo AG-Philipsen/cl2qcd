@@ -65,6 +65,25 @@ private:
   int typeOfPlaquette;
 };
 
+class RectanglesTester : public KernelTester
+{
+public:
+  RectanglesTester(std::string inputfile):
+    KernelTester("rectangles", inputfile)
+  {
+    callSpecificKernel();
+  }
+  void callSpecificKernel() override
+  {
+    auto device = this->system->get_devices()[0];
+    auto * code = device->get_gaugefield_code(); 
+    
+    hmc_float cpu_rect;
+    code->gaugeobservables_rectangles(this->gaugefield->get_buffers()[0], &cpu_rect);
+    kernelResult = cpu_rect;
+  }
+};
+
 
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
@@ -257,12 +276,12 @@ BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
   PlaquetteTester plaquetteTester("plaquette_temporal_input_1", 2);
 }
 
-BOOST_AUTO_TEST_CASE( TPLAQUETTE_TEMPORAL_2 )
+BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_2 )
 {
   PlaquetteTester plaquetteTester("plaquette_temporal_input_2", 2);
 }
 
-BOOST_AUTO_TEST_CASE( TPLAQUETTE_TEMPORAL_3 )
+BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_3 )
 {
   PlaquetteTester plaquetteTester("plaquette_temporal_input_3", 2);
 }
@@ -272,12 +291,12 @@ BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
   PlaquetteTester plaquetteTester("plaquette_spatial_input_1", 3);
 }
 
-BOOST_AUTO_TEST_CASE( TPLAQUETTE_SPATIAL_2 )
+BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_2 )
 {
   PlaquetteTester plaquetteTester("plaquette_spatial_input_2", 3);
 }
 
-BOOST_AUTO_TEST_CASE( TPLAQUETTE_SPATIAL_3 )
+BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_3 )
 {
   PlaquetteTester plaquetteTester("plaquette_spatial_input_3", 3);
 }
@@ -392,12 +411,12 @@ BOOST_AUTO_TEST_SUITE ( RECTANGLES )
 
 BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
 {
-	test_rectangles("/rectangles_input_1");
+  RectanglesTester rectanglesTester("rectangles_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
 {
-	test_rectangles("/rectangles_input_2");
+  RectanglesTester rectanglesTester("rectangles_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -406,17 +425,17 @@ BOOST_AUTO_TEST_SUITE ( RECTANGLES_REDUCTION )
 
 BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
 {
-	test_rectangles("/rectangles_reduction_input_1");
+  RectanglesTester rectanglesTester("rectangles_reduction_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
 {
-	test_rectangles("/rectangles_reduction_input_2");
+  RectanglesTester rectanglesTester("rectangles_reduction_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
 {
-	test_rectangles("/rectangles_reduction_input_3");
+  RectanglesTester rectanglesTester("rectangles_reduction_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

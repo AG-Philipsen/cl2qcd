@@ -12,8 +12,6 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
   logger.info() << "expect command line parameters:";
   logger.info() << "\t<exec_name>\t<source-dir>\t<gpu_usage>\t<rec12_usage>";
 
-  logger.fatal() << "adfajfasfasd";
-	
 	switch(num_par){
 		case 0:
 			logger.fatal() << "Something went terribly wrong! Did not even get executable name! Aborting...";
