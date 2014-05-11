@@ -177,6 +177,7 @@ public:
 	bool get_use_same_rnd_numbers() const noexcept;
 	bool get_profile_solver() const noexcept;
 	double get_test_ref_value() const noexcept;
+	double get_test_ref_value2() const noexcept;
 
 	bool is_ocl_compiler_opt_disabled() const noexcept;
 
@@ -347,6 +348,7 @@ private:
 	bool use_same_rnd_numbers;
 	bool profile_solver;
 	double test_ref_value;
+	double test_ref_value2;
 
 	bool ocl_compiler_opt_disabled;
 

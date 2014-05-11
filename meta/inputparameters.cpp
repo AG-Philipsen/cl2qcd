@@ -461,6 +461,10 @@ double Inputparameters::get_test_ref_value() const noexcept
 {
   return test_ref_value;
 }
+double Inputparameters::get_test_ref_value2() const noexcept
+{
+  return test_ref_value2;
+}
 
 std::string Inputparameters::get_log_level() const noexcept
 {
@@ -753,6 +757,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("use_same_rnd_numbers", po::value<bool>(&use_same_rnd_numbers)->default_value(false), "Use random numbers compatible with a scalar version. SLOW!")
 	("profile_solver", po::value<bool>(&profile_solver)->default_value(false))
 	("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
+	("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.))
 
 	("disable-ocl-compiler-opt", po::value<bool>(&ocl_compiler_opt_disabled)->default_value(false), "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)")
 
@@ -979,6 +984,7 @@ static void add_option_aliases(meta::ConfigFileNormalizer * const normalizer)
 	normalizer->add_alias("puregauge", "use_gauge_only");
 	normalizer->add_alias("PGT", "use_gauge_only");
 	normalizer->add_alias("test_ref_value", "test_ref_val");
+	normalizer->add_alias("test_ref_value2", "test_ref_val2");
 	normalizer->add_alias("ThetaT", "theta_fermion_temporal");
 	normalizer->add_alias("ThetaS", "theta_fermion_spatial");
 }
