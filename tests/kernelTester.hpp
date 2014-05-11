@@ -21,33 +21,18 @@
 #ifndef KERNELTESTER_H_
 #define KERNELTESTER_H_
 
-/*
-#include <fstream>
-#include "../common_header_files/types.h"
-#include "../host_functionality/host_use_timer.h"
-#include "../executables/exceptions.h"
-*/
-
 #include "../physics/prng.hpp"
 #include "../hardware/system.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 #include "../host_functionality/logger.hpp"
-#include "../physics/gaugeObservables.h"
-//#include "../meta/util.hpp"
 
 class KernelTester
 {
 
 public:
-  //	virtual ~KernelTester();
-
-	/**
-	* Initialize meta::Inputparametes and hardware::System objects
-	 */
   KernelTester(std::string kernelNameIn, std::string inputfileIn); 
 
   std::string kernelName;
-  std::string inputfile;
 protected:
 
   meta::Inputparameters * parameters;

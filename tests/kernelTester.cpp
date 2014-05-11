@@ -22,9 +22,13 @@
 #include "test_util.h"
 
 KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn):
-  kernelName(kernelNameIn), inputfile(inputfileIn)
+  kernelName(kernelNameIn)
 {
-  meta::Inputparameters parameters_tmp = create_parameters(inputfile);
+  printKernelInfo(kernelName);
+  meta::Inputparameters parameters_tmp = create_parameters(inputfileIn);
   parameters = &parameters_tmp;
-  //	hardware::System system(params);
+  system = new hardware::System(*parameters);
+  prng = new physics::PRNG(*system);
+  gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
+
