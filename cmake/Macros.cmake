@@ -1,6 +1,8 @@
 # Utility functions for specifying the build of OpTiMaL
 #
-# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
+# 	        2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>,
+#		     Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #
@@ -50,4 +52,18 @@ macro(add_unit_test NAME EXE)
 	add_executable("${EXE}" "${EXE}.cpp")
 	target_link_libraries("${EXE}" optimal)
 	add_test("${NAME}" "${EXE}" "${ARGN}")
+endmacro()
+
+# Add a unit test
+# NAME name for the test to use in ctest
+# EXE name for the executable to use
+# LIB name of the library to link to
+# The test is expected to have only one source
+# file called EXE.cpp and will be linked automatically
+# ARGN includes all the arguments passed to the macro beyond EXE
+#      and they should all be libraries needed by the executable
+macro(add_unit_test_withLibraries NAME EXE)
+	add_executable("${EXE}" "${EXE}.cpp")
+	target_link_libraries("${EXE}" ${ARGN} ${Boost_LIBRARIES})
+	add_test("${NAME}" "${EXE}")
 endmacro()

@@ -1,6 +1,7 @@
 # Build specifications for the contents of the hardware package
 #
-# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
+# 	        2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #
@@ -36,11 +37,13 @@ add_modules(hardware
 	transfer
 )
 
+target_link_libraries(hardware 	${OPENCL_LIBRARIES} exceptions )
+
 #
-# Definition of tets
+# Definition of tests
 #
 
-add_unit_test(hardware::System system_test)
-add_unit_test(hardware::Device device_test)
-add_unit_test(hardware::ProfilingData profiling_data_test)
-add_unit_test(hardware::SynchronizationEvent synchronization_event_test)
+add_unit_test_withLibraries(hardware::System system_test hardware crypto)
+add_unit_test_withLibraries(hardware::Device device_test hardware crypto)
+add_unit_test_withLibraries(hardware::ProfilingData profiling_data_test hardware crypto)
+add_unit_test_withLibraries(hardware::SynchronizationEvent synchronization_event_test hardware crypto)

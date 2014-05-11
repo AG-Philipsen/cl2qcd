@@ -21,8 +21,11 @@
 # Collect all code in this part of the source tree
 #
 
-add_library(executables
+add_library(exceptions
 	exceptions.cpp
+)
+
+add_library(executables
 	generalExecutable.cpp
 	generationExecutable.cpp
 	measurementExecutable.cpp
@@ -38,6 +41,7 @@ add_library(executables
 )
 
 target_link_libraries(executables
+	exceptions
 	physics
 )
 

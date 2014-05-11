@@ -1,6 +1,7 @@
 # Build specifications for the contents of the buffers package
 #
 # Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# 	        2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #
@@ -31,21 +32,21 @@ add_library(buffers
 	halo_update.cpp
 	su3vec.cpp
 )
+
 target_link_libraries(buffers
 	hardware
 	code
-	optimal
 )
 
 #
-# Definition of tets
+# Definition of tests
 #
 
-add_unit_test(hardware::buffers::Buffer buffer_test)
-add_unit_test(hardware::buffers::PRNGBuffer prng_buffer_test)
-add_unit_test(hardware::buffers::SU3 su3_test)
-add_unit_test(hardware::buffers::Plain plain_test)
-add_unit_test(hardware::buffers::Spinor spinor_test)
-add_unit_test(hardware::buffers::Gaugemomentum gaugemomentum_test)
-add_unit_test(hardware::buffers::Matrix3x3 3x3_test)
-add_unit_test(hardware::buffers::SU3vec su3vec_test)
+add_unit_test_withLibraries(hardware::buffers::Buffer buffer_test buffers crypto)
+add_unit_test_withLibraries(hardware::buffers::PRNGBuffer prng_buffer_test buffers crypto)
+add_unit_test_withLibraries(hardware::buffers::SU3 su3_test buffers crypto)
+add_unit_test_withLibraries(hardware::buffers::Plain plain_test buffers crypto)
+add_unit_test_withLibraries(hardware::buffers::Spinor spinor_test buffers crypto)
+add_unit_test_withLibraries(hardware::buffers::Gaugemomentum gaugemomentum_test buffers crypto)
+add_unit_test_withLibraries(hardware::buffers::Matrix3x3 3x3_test buffers crypto)
+add_unit_test_withLibraries(hardware::buffers::SU3vec su3vec_test buffers crypto)

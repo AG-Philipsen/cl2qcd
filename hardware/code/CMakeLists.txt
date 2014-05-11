@@ -1,6 +1,7 @@
 # Build specifications for the contents of the code package
 #
-# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
+# 	        2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #
@@ -39,15 +40,15 @@ add_library(code
 		molecular_dynamics.cpp
 		buffer.cpp
 )
+
 target_link_libraries(code
 		meta
 		buffers
 		klepsydra
-		optimal # todo remove me!
 		einhard
 )
 
 #
-# Definition of tets
+# Definition of tests
 #
 
