@@ -18,6 +18,38 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "kernelTester.hpp"
+
+class PlaquetteTester : public KernelTester
+{
+public:
+  PlaquetteTester(std::string inputfile):
+    KernelTester("plaquette", inputfile)
+  {
+    callSpecificKernel();
+  }
+  void callSpecificKernel() override
+  {
+    hmc_float dev_plaq, dev_tplaq, dev_splaq;
+
+    auto * code = this->system->get_devices()[0]->get_gaugefield_code();
+    auto device = this->system->get_devices()[0];
+    
+    const hardware::buffers::Plain<hmc_float> plaq(1, device );
+    const hardware::buffers::Plain<hmc_float> splaq(1, device);
+    const hardware::buffers::Plain<hmc_float> tplaq(1, device);
+    
+    code->plaquette_device(this->gaugefield->get_buffers()[0], &plaq, &tplaq, &splaq);
+	
+    plaq.dump(&dev_plaq);
+    splaq.dump(&dev_splaq);
+    tplaq.dump(&dev_tplaq);
+    
+    kernelResult = dev_plaq;
+  }
+};
+
+
 #include "../meta/util.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 #include "../hardware/device.hpp"
@@ -27,8 +59,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "test_util.h"
-#include "kernelTester.hpp"
-
 class TestGaugefield {
 public:
 	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
@@ -131,98 +161,6 @@ void test_rectangles(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-class TestGaugefield2 {
-public:
-	TestGaugefield2(hardware::System * system)//std::string kernelName, std::string inputfile)
-	{
-// 		printKernelInfo(kernelName);
-// 		logger.info() << "Init device";
-// 		meta::Inputparameters params = create_parameters(inputfile);
-// 		hardware::System system(params);
-		testGaugefield = new TestGaugefield(system);
-	};
-
-	TestGaugefield * testGaugefield;
-	
-	TestGaugefield* test()
-	{
-		return testGaugefield;
-	}
-};
-
-
-class PlaquetteTester : public KernelTester
-{
-public:
-  PlaquetteTester(std::string inputfile):
-    KernelTester("plaquette", inputfile) {}
-  void callSpecificiKernel()
-  {
-
-  }
-};
-
-
-void test_plaquette(std::string inputfile, hmc_float ref_plaq, hmc_float ref_tplaq, hmc_float ref_splaq)
-{
-  PlaquetteTester plaquetteTester(inputfile);
-  plaquetteTester.callSpecificKernel();
-
-  return;
-
-
-	std::string kernelName = "plaquette";
-// 	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
- 	TestGaugefield2 dummy2(&system);//kernelName, inputfile);
-	TestGaugefield * dummy = dummy2.test();
-// 	TestGaugefield * dummy = new TestGaugefield(&system);
-// 	TestGaugefield* dummy = createGaugefield(kernelName, inputfile);
-
-	// get device solutions
-	hmc_float dev_plaq, dev_tplaq, dev_splaq;
-	hmc_complex dev_pol;
-	//todo: replace by original fct.!
-// 	gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol, dummy.getParameters());
-// 	dummy.get_gaugefield()->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
-	
-	logger.info() << "call";
-	auto * code = dummy->system->get_devices()[0]->get_gaugefield_code();
-	logger.info() << "call";
-	auto device = dummy->get_gaugefield()->get_device();
-	logger.info() << "call";
-	
-	const hardware::buffers::Plain<hmc_float> plaq(1, device );
-	logger.info() << "call2";
-	const hardware::buffers::Plain<hmc_float> splaq(1, device);
-	logger.info() << "call3";
-	const hardware::buffers::Plain<hmc_float> tplaq(1, device);
-	logger.info() << "call4";	
-	logger.info() << "call";
-	code->plaquette_device(dummy->gf.get_buffers()[0], &plaq, &tplaq, &splaq);
-	logger.info() << "call";
-	
-	plaq.dump(&dev_plaq);
-	splaq.dump(&dev_splaq);
-	tplaq.dump(&dev_tplaq);
-	
-	//correct normalization
-	//todo: remove this?!
-	dev_tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(dummy->getParameters()));
-	dev_splaq /= static_cast<hmc_float>(meta::get_splaq_norm(dummy->getParameters()));
-	dev_plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(dummy->getParameters()));
-	
-	logger.info() << "reference value:\t" << "values obtained from host functionality";
-	hmc_float prec = dummy->getParameters().get_solver_prec();
-	logger.info() << "acceptance precision: " << prec;
-
-	BOOST_CHECK_CLOSE(ref_plaq,   dev_plaq,     prec);
-	BOOST_CHECK_CLOSE(ref_tplaq,  dev_tplaq,    prec);
-	BOOST_CHECK_CLOSE(ref_splaq,  dev_splaq,    prec);
-}
-
 void test_polyakov(std::string inputfile, hmc_complex ref_pol)
 {
 	std::string kernelName = "plaquette";
@@ -283,19 +221,24 @@ void test_stout_smear(std::string inputfile)
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
+//todo: add tests for tplaq and splaq!
+
 BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 {
-	test_plaquette( "/plaquette_input_1", 1, 1, 1 );
+  PlaquetteTester plaquetteTester("/plaquette_input_1");
+  //test_plaquette( "/plaquette_input_1", 1, 1, 1 );
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 {
-	test_plaquette( "/plaquette_input_2", 0.0050057845805392071, 0.00096087997130853749, 0.0090506891897698793 );
+  PlaquetteTester plaquetteTester("/plaquette_input_2");
+  //test_plaquette( "/plaquette_input_2", 0.0050057845805392071, 0.00096087997130853749, 0.0090506891897698793 );
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
 {
-	test_plaquette( "/plaquette_input_3", 0.57107711169452691, 0.57147433845588391, 0.57067988493316968 );
+  PlaquetteTester plaquetteTester("/plaquette_input_3");
+  //test_plaquette( "/plaquette_input_3", 0.57107711169452691, 0.57147433845588391, 0.57067988493316968 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -304,17 +247,17 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE_REDUCTION )
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
 {
-	test_plaquette( "/plaquette_reduction_input_1", 1, 1, 1 );
+  PlaquetteTester plaquetteTester("/plaquette_reduction_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
 {
-	test_plaquette( "/plaquette_reduction_input_2", 1, 1, 1 );
+  PlaquetteTester plaquetteTester("/plaquette_reduction_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
 {
-	test_plaquette( "/plaquette_reduction_input_3", 1, 1, 1 );
+  PlaquetteTester plaquetteTester("/plaquette_reduction_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
