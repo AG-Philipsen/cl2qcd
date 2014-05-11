@@ -39,20 +39,16 @@ public:
     
     code->plaquette_device(this->gaugefield->get_buffers()[0], &plaq, &tplaq, &splaq);
 	
-    plaq.dump(&dev_plaq);
-    splaq.dump(&dev_splaq);
-    tplaq.dump(&dev_tplaq);
-    
     switch( typeOfPlaquette )
       {
       case 1:
-	kernelResult = dev_plaq;
+	plaq.dump(&kernelResult);
 	break;
       case 2:
-	kernelResult = dev_tplaq;
+	splaq.dump(&kernelResult);
 	break;
       case 3:
-	kernelResult = dev_splaq;
+	tplaq.dump(&kernelResult);
 	break;
       default:
 	throw std::invalid_argument(  "Do not recognize type of plaquette. Should be 1,2 or 3 (normal plaquette, temporal plaquette, spatial plaquette)" );
@@ -61,7 +57,6 @@ public:
   }
 private:
   int typeOfPlaquette;
-  hmc_float dev_plaq, dev_tplaq, dev_splaq;
 };
 
 class RectanglesTester : public KernelTesterDouble
@@ -77,9 +72,9 @@ public:
     auto device = this->system->get_devices()[0];
     auto * code = device->get_gaugefield_code(); 
     
-    hmc_float cpu_rect;
-    code->gaugeobservables_rectangles(this->gaugefield->get_buffers()[0], &cpu_rect);
-    kernelResult = cpu_rect;
+    const hardware::buffers::Plain<hmc_float> rect(1, device );
+    code->rectangles_device(this->gaugefield->get_buffers()[0], &rect);
+    rect.dump(&kernelResult);
   }
 };
 
@@ -104,13 +99,8 @@ public:
     code->stout_smear_device( this->gaugefield->get_buffers()[0], &out);
 
     code->plaquette_device( &out, &plaq, &tplaq, &splaq);
-    plaq.dump(&dev_plaq);
-
-    kernelResult = dev_plaq;
+    plaq.dump(&kernelResult);
  }
-private:
-  hmc_float dev_plaq, dev_tplaq, dev_splaq;
-  hmc_complex dev_pol;
 };
 
 class PolyakovloopTester : public KernelTesterComplex
@@ -127,9 +117,7 @@ public:
     auto * code = device->get_gaugefield_code(); 
 
     const hardware::buffers::Plain<hmc_complex> pol(1, device);
-
     code->polyakov_device(this->gaugefield->get_buffers()[0], &pol);
-
     pol.dump(&kernelResult);
   }
 };
