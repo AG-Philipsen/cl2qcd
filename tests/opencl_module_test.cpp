@@ -23,17 +23,17 @@
 class PlaquetteTester : public KernelTester
 {
 public:
-  PlaquetteTester(std::string inputfile):
-    KernelTester("plaquette", inputfile)
+  PlaquetteTester(std::string inputfile, int typeOfPlaquette = 1):
+    KernelTester("plaquette", inputfile), typeOfPlaquette(typeOfPlaquette)
   {
     callSpecificKernel();
   }
   void callSpecificKernel() override
   {
     hmc_float dev_plaq, dev_tplaq, dev_splaq;
-
-    auto * code = this->system->get_devices()[0]->get_gaugefield_code();
+    
     auto device = this->system->get_devices()[0];
+    auto * code = device->get_gaugefield_code(); 
     
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
     const hardware::buffers::Plain<hmc_float> splaq(1, device);
@@ -45,8 +45,24 @@ public:
     splaq.dump(&dev_splaq);
     tplaq.dump(&dev_tplaq);
     
-    kernelResult = dev_plaq;
+    switch( typeOfPlaquette )
+      {
+      case 1:
+	kernelResult = dev_plaq;
+	break;
+      case 2:
+	kernelResult = dev_tplaq;
+	break;
+      case 3:
+	kernelResult = dev_splaq;
+	break;
+      default:
+	throw std::invalid_argument(  "Do not recognize type of plaquette. Should be 1,2 or 3 (normal plaquette, temporal plaquette, spatial plaquette)" );
+	break;
+      }
   }
+private:
+  int typeOfPlaquette;
 };
 
 
@@ -221,24 +237,49 @@ void test_stout_smear(std::string inputfile)
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
-//todo: add tests for tplaq and splaq!
-
 BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 {
-  PlaquetteTester plaquetteTester("plaquette_input_1");
-  //test_plaquette( "/plaquette_input_1", 1, 1, 1 );
+  PlaquetteTester plaquetteTester("plaquette_input_1", 1);
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 {
-  PlaquetteTester plaquetteTester("plaquette_input_2");
-  //test_plaquette( "/plaquette_input_2", 0.0050057845805392071, 0.00096087997130853749, 0.0090506891897698793 );
+  PlaquetteTester plaquetteTester("plaquette_input_2", 1);
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
 {
-  PlaquetteTester plaquetteTester("plaquette_input_3");
-  //test_plaquette( "/plaquette_input_3", 0.57107711169452691, 0.57147433845588391, 0.57067988493316968 );
+  PlaquetteTester plaquetteTester("plaquette_input_3", 1);
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
+{
+  PlaquetteTester plaquetteTester("plaquette_temporal_input_1", 2);
+}
+
+BOOST_AUTO_TEST_CASE( TPLAQUETTE_TEMPORAL_2 )
+{
+  PlaquetteTester plaquetteTester("plaquette_temporal_input_2", 2);
+}
+
+BOOST_AUTO_TEST_CASE( TPLAQUETTE_TEMPORAL_3 )
+{
+  PlaquetteTester plaquetteTester("plaquette_temporal_input_3", 2);
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
+{
+  PlaquetteTester plaquetteTester("plaquette_spatial_input_1", 3);
+}
+
+BOOST_AUTO_TEST_CASE( TPLAQUETTE_SPATIAL_2 )
+{
+  PlaquetteTester plaquetteTester("plaquette_spatial_input_2", 3);
+}
+
+BOOST_AUTO_TEST_CASE( TPLAQUETTE_SPATIAL_3 )
+{
+  PlaquetteTester plaquetteTester("plaquette_spatial_input_3", 3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
