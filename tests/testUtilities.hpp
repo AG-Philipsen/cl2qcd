@@ -18,31 +18,12 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KERNELTESTER_H_
-#define KERNELTESTER_H_
+#ifndef TESTUTILITIES_HPP_
+#define TESTUTILITIES_HPP_
 
-#include "../physics/prng.hpp"
-#include "../hardware/system.hpp"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../host_functionality/logger.hpp"
-#include "testUtilities.hpp"
+#include "../meta/inputparameters.hpp"
 
-class KernelTester
-{
+meta::Inputparameters create_parameters(std::string inputfile);
+void printKernelInfo(std::string name);
 
-public:
-  KernelTester(std::string kernelNameIn, std::string inputfileIn); 
-  ~KernelTester();
-  virtual void callSpecificKernel() {};
-
-protected:
-  double referenceValue;
-  double kernelResult;
-  double testPrecision;
-  meta::Inputparameters * parameters;
-  hardware::System * system;
-  physics::PRNG * prng;
-  physics::lattices::Gaugefield * gaugefield;
-};
-
-#endif /* KERNELTESTER_H_ */
+#endif

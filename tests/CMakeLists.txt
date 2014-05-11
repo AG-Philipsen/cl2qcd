@@ -43,6 +43,7 @@ add_test(OpenclCompiler openclCompiler)
 ### KernelTester tests
 
 add_library(kernelTestUtilities
+	testUtilities.cpp
 	kernelTester.cpp
 )
 
@@ -105,6 +106,7 @@ add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 -
 add_executable(opencl_module_test opencl_module_test.cpp)
 target_link_libraries(opencl_module_test
 	optimal
+	kernelTestUtilities
 	${Boost_LIBRARIES}
 )
 add_test(Opencl_module_CPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)

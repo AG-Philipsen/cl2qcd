@@ -19,7 +19,7 @@
  */
 
 #include "kernelTester.hpp"
-#include "test_util.h"
+#include <boost/test/unit_test.hpp>
 
 KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn):
   kernelResult(0.)

@@ -22,13 +22,12 @@
 #include "../physics/lattices/gaugefield.hpp"
 #include "../hardware/device.hpp"
 
-// use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE
 #include <boost/test/unit_test.hpp>
 
-//some functionality
 #include "test_util.h"
+#include "kernelTester.hpp"
 
 class TestGaugefield {
 public:
@@ -45,12 +44,17 @@ public:
 		physics::lattices::print_gaugeobservables(gf, 0);
 	}
 
+	//todo: rename, this is just the buffer!
 	const hardware::buffers::SU3 * get_gaugefield() {
 		return gf.get_buffers()[0];
 	}
+	
+	const meta::Inputparameters getParameters()
+	{
+		return system->get_inputparameters();
+	}
 
 	const hardware::code::Gaugefield * get_device();
-private:
 	const hardware::System * const system;
 	physics::PRNG prng;
 	physics::lattices::Gaugefield gf;
@@ -127,25 +131,93 @@ void test_rectangles(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+class TestGaugefield2 {
+public:
+	TestGaugefield2(hardware::System * system)//std::string kernelName, std::string inputfile)
+	{
+// 		printKernelInfo(kernelName);
+// 		logger.info() << "Init device";
+// 		meta::Inputparameters params = create_parameters(inputfile);
+// 		hardware::System system(params);
+		testGaugefield = new TestGaugefield(system);
+	};
+
+	TestGaugefield * testGaugefield;
+	
+	TestGaugefield* test()
+	{
+		return testGaugefield;
+	}
+};
+
+
+class PlaquetteTester : public KernelTester
+{
+public:
+  PlaquetteTester(std::string inputfile):
+    KernelTester("plaquette", inputfile) {}
+  void callSpecificiKernel()
+  {
+
+  }
+};
+
+
 void test_plaquette(std::string inputfile, hmc_float ref_plaq, hmc_float ref_tplaq, hmc_float ref_splaq)
 {
+  PlaquetteTester plaquetteTester(inputfile);
+  plaquetteTester.callSpecificKernel();
+
+  return;
+
+
 	std::string kernelName = "plaquette";
-	printKernelInfo(kernelName);
+// 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	TestGaugefield dummy(&system);
+ 	TestGaugefield2 dummy2(&system);//kernelName, inputfile);
+	TestGaugefield * dummy = dummy2.test();
+// 	TestGaugefield * dummy = new TestGaugefield(&system);
+// 	TestGaugefield* dummy = createGaugefield(kernelName, inputfile);
 
-	// get device colutions
+	// get device solutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol, params);
-
+	//todo: replace by original fct.!
+// 	gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol, dummy.getParameters());
+// 	dummy.get_gaugefield()->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+	
+	logger.info() << "call";
+	auto * code = dummy->system->get_devices()[0]->get_gaugefield_code();
+	logger.info() << "call";
+	auto device = dummy->get_gaugefield()->get_device();
+	logger.info() << "call";
+	
+	const hardware::buffers::Plain<hmc_float> plaq(1, device );
+	logger.info() << "call2";
+	const hardware::buffers::Plain<hmc_float> splaq(1, device);
+	logger.info() << "call3";
+	const hardware::buffers::Plain<hmc_float> tplaq(1, device);
+	logger.info() << "call4";	
+	logger.info() << "call";
+	code->plaquette_device(dummy->gf.get_buffers()[0], &plaq, &tplaq, &splaq);
+	logger.info() << "call";
+	
+	plaq.dump(&dev_plaq);
+	splaq.dump(&dev_splaq);
+	tplaq.dump(&dev_tplaq);
+	
+	//correct normalization
+	//todo: remove this?!
+	dev_tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(dummy->getParameters()));
+	dev_splaq /= static_cast<hmc_float>(meta::get_splaq_norm(dummy->getParameters()));
+	dev_plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(dummy->getParameters()));
+	
 	logger.info() << "reference value:\t" << "values obtained from host functionality";
-	hmc_float prec = params.get_solver_prec();
+	hmc_float prec = dummy->getParameters().get_solver_prec();
 	logger.info() << "acceptance precision: " << prec;
 
-	// verify
 	BOOST_CHECK_CLOSE(ref_plaq,   dev_plaq,     prec);
 	BOOST_CHECK_CLOSE(ref_tplaq,  dev_tplaq,    prec);
 	BOOST_CHECK_CLOSE(ref_splaq,  dev_splaq,    prec);
