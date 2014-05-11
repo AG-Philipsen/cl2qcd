@@ -225,19 +225,19 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 {
-  PlaquetteTester plaquetteTester("/plaquette_input_1");
+  PlaquetteTester plaquetteTester("plaquette_input_1");
   //test_plaquette( "/plaquette_input_1", 1, 1, 1 );
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 {
-  PlaquetteTester plaquetteTester("/plaquette_input_2");
+  PlaquetteTester plaquetteTester("plaquette_input_2");
   //test_plaquette( "/plaquette_input_2", 0.0050057845805392071, 0.00096087997130853749, 0.0090506891897698793 );
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
 {
-  PlaquetteTester plaquetteTester("/plaquette_input_3");
+  PlaquetteTester plaquetteTester("plaquette_input_3");
   //test_plaquette( "/plaquette_input_3", 0.57107711169452691, 0.57147433845588391, 0.57067988493316968 );
 }
 
@@ -247,17 +247,17 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE_REDUCTION )
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
 {
-  PlaquetteTester plaquetteTester("/plaquette_reduction_input_1");
+  PlaquetteTester plaquetteTester("plaquette_reduction_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
 {
-  PlaquetteTester plaquetteTester("/plaquette_reduction_input_2");
+  PlaquetteTester plaquetteTester("plaquette_reduction_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
 {
-  PlaquetteTester plaquetteTester("/plaquette_reduction_input_3");
+  PlaquetteTester plaquetteTester("plaquette_reduction_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

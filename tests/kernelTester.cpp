@@ -24,8 +24,8 @@
 KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn):
   kernelResult(0.)
 {
-  printKernelInfo(kernelNameIn);
-  meta::Inputparameters parameters_tmp = create_parameters(inputfileIn);
+  printKernelInformation(kernelNameIn);
+  meta::Inputparameters parameters_tmp = createParameters(inputfileIn);
 
   parameters = &parameters_tmp;
 

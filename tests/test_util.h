@@ -27,9 +27,9 @@
 
 #include "../host_functionality/logger.hpp"
 
-std::string defaultGpuOption = "--use_gpu=false";
-std::string defaultRec12Option = "--use_rec12=false";
-std::string defaultSourceDirectory = "../../tests";
+std::string defaultGpuOption_tmp = "--use_gpu=false";
+std::string defaultRec12Option_tmp = "--use_rec12=false";
+std::string defaultSourceDirectory_tmp = "../../tests";
 
 static void setArguments(std::string & inputfile_location, std::string & gpu_opt, std::string & rec12_opt, int & num_par, const int param_expect)
 {
@@ -43,17 +43,17 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 			break;
 		case 1:
 			logger.fatal() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
-			logger.fatal() << "\t<exec_name>\t" << defaultSourceDirectory << "\t" << defaultGpuOption << "\t" << defaultRec12Option;
+			logger.fatal() << "\t<exec_name>\t" << defaultSourceDirectory_tmp << "\t" << defaultGpuOption_tmp << "\t" << defaultRec12Option_tmp;
 			break;
 		case 2:
 			logger.fatal() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
-			logger.fatal() << "\t<exec_name>\t<source-dir>\t" << defaultGpuOption << "\t" << defaultRec12Option;
+			logger.fatal() << "\t<exec_name>\t<source-dir>\t" << defaultGpuOption_tmp << "\t" << defaultRec12Option_tmp;
 			
 			inputfile_location = boost::unit_test::framework::master_test_suite().argv[1];
 			break;
 		case 3:
 			logger.fatal() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
-			logger.fatal() << "\t<exec_name>\t<source-dir>\t<gpu-usage>\t" << defaultRec12Option;
+			logger.fatal() << "\t<exec_name>\t<source-dir>\t<gpu-usage>\t" << defaultRec12Option_tmp;
 			
 			inputfile_location = boost::unit_test::framework::master_test_suite().argv[1];
 			gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
@@ -75,9 +75,9 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 
 meta::Inputparameters create_parameters(std::string inputfile)
 {
-	std::string inputfile_location = defaultSourceDirectory;
-	std::string gpu_opt = defaultGpuOption;
-	std::string rec12_opt = defaultRec12Option;
+	std::string inputfile_location = defaultSourceDirectory_tmp;
+	std::string gpu_opt = defaultGpuOption_tmp;
+	std::string rec12_opt = defaultRec12Option_tmp;
 	int num_par = 0;
 	const int param_expect = 4;
   

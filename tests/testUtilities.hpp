@@ -23,7 +23,7 @@
 
 #include "../meta/inputparameters.hpp"
 
-meta::Inputparameters create_parameters(std::string inputfile);
-void printKernelInfo(std::string name);
+meta::Inputparameters createParameters(std::string inputfile);
+void printKernelInformation(std::string name);
 
 #endif

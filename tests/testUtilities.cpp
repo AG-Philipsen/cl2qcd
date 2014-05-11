@@ -11,6 +11,8 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 {
   logger.info() << "expect command line parameters:";
   logger.info() << "\t<exec_name>\t<source-dir>\t<gpu_usage>\t<rec12_usage>";
+
+  logger.fatal() << "adfajfasfasd";
 	
 	switch(num_par){
 		case 0:
@@ -49,7 +51,7 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 	}
 }
 
-meta::Inputparameters create_parameters(std::string inputfile)
+meta::Inputparameters createParameters(std::string inputfile)
 {
 	std::string inputfile_location = defaultSourceDirectory;
 	std::string gpu_opt = defaultGpuOption;
@@ -67,7 +69,7 @@ meta::Inputparameters create_parameters(std::string inputfile)
 	return params;
 }
 
-void printKernelInfo(std::string name)
+void printKernelInformation(std::string name)
 {
   logger.info() << "Test kernel\t\"" << name << "\"\tagainst reference value";
 }
