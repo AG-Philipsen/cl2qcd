@@ -20,11 +20,11 @@
 
 #include "kernelTester.hpp"
 
-class PlaquetteTester : public KernelTester
+class PlaquetteTester : public KernelTesterDouble
 {
 public:
   PlaquetteTester(std::string inputfile, int typeOfPlaquette = 1):
-    KernelTester("plaquette", inputfile), typeOfPlaquette(typeOfPlaquette)
+    KernelTesterDouble("plaquette", inputfile), typeOfPlaquette(typeOfPlaquette)
   {
     callSpecificKernel();
   }
@@ -64,11 +64,11 @@ private:
   hmc_float dev_plaq, dev_tplaq, dev_splaq;
 };
 
-class RectanglesTester : public KernelTester
+class RectanglesTester : public KernelTesterDouble
 {
 public:
   RectanglesTester(std::string inputfile):
-    KernelTester("rectangles", inputfile)
+    KernelTesterDouble("rectangles", inputfile)
   {
     callSpecificKernel();
   }
@@ -83,11 +83,11 @@ public:
   }
 };
 
-class StoutSmearTester : public KernelTester
+class StoutSmearTester : public KernelTesterDouble
 {
 public:
   StoutSmearTester(std::string inputfile):
-    KernelTester("plaquette", inputfile)
+    KernelTesterDouble("plaquette", inputfile)
   {
     callSpecificKernel();
   }

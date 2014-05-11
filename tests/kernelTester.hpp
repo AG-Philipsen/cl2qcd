@@ -29,20 +29,36 @@
 
 class KernelTester
 {
-
 public:
   KernelTester(std::string kernelNameIn, std::string inputfileIn); 
-  ~KernelTester();
   virtual void callSpecificKernel() {};
 
 protected:
-  double referenceValue;
-  double kernelResult;
   double testPrecision;
   meta::Inputparameters * parameters;
   hardware::System * system;
   physics::PRNG * prng;
   physics::lattices::Gaugefield * gaugefield;
+};
+
+class KernelTesterDouble: public KernelTester
+{
+public:
+  KernelTesterDouble(std::string kernelNameIn, std::string inputfileIn);
+  ~KernelTesterDouble();
+protected:
+  double referenceValue;
+  double kernelResult;
+};
+
+class KernelTesterComplex: public KernelTester
+{
+public:
+  KernelTesterComplex(std::string kernelNameIn, std::string inputfileIn);
+  ~KernelTesterComplex();
+protected:
+  hmc_complex referenceValue;
+  hmc_complex kernelResult;
 };
 
 #endif /* KERNELTESTER_H_ */

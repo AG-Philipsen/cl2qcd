@@ -21,15 +21,13 @@
 #include "kernelTester.hpp"
 #include <boost/test/unit_test.hpp>
 
-KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn):
-  kernelResult(0.)
+KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn)
 {
   printKernelInformation(kernelNameIn);
   meta::Inputparameters parameters_tmp = createParameters(inputfileIn);
 
   parameters = &parameters_tmp;
 
-  referenceValue = parameters->get_test_ref_value();
   testPrecision = parameters->get_solver_prec();
 
   system = new hardware::System(*parameters);
@@ -37,7 +35,25 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn):
   gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
 
-KernelTester::~KernelTester()
+KernelTesterDouble::KernelTesterDouble(std::string kernelNameIn, std::string inputfileIn):
+  KernelTester( kernelNameIn, inputfileIn), kernelResult(0.)
+{
+  referenceValue = parameters->get_test_ref_value();
+}
+
+KernelTesterDouble::~KernelTesterDouble()
 {
   BOOST_CHECK_CLOSE(kernelResult, referenceValue, testPrecision);
+}
+
+KernelTesterComplex::KernelTesterComplex(std::string kernelNameIn, std::string inputfileIn):
+  KernelTester( kernelNameIn, inputfileIn), kernelResult({ 0., 0.})
+{
+  referenceValue = {parameters->get_test_ref_value(), parameters->get_test_ref_value() };
+}
+
+KernelTesterComplex::~KernelTesterComplex()
+{
+  BOOST_CHECK_CLOSE(kernelResult.re, referenceValue.re, testPrecision);
+  BOOST_CHECK_CLOSE(kernelResult.im, referenceValue.im, testPrecision);
 }

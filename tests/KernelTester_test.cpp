@@ -43,16 +43,39 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 	
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE ( RUNTEST )
+BOOST_AUTO_TEST_SUITE ( DOUBLE )
 
-       class TrivialKernelTester : public KernelTester
+       class TrivialKernelTester : public KernelTesterDouble
        {
        public:
 	 TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-	   KernelTester(kernelNameIn, inputfileIn) {};
+	   KernelTesterDouble(kernelNameIn, inputfileIn) {};
 	 void callSpecificKernel()
 	 {
 	   kernelResult = 1;
+	 }
+       };
+
+       BOOST_AUTO_TEST_CASE( TRIVIALKERNEL )
+       {
+	  std::string nameOfKernel = "test";
+	  std::string nameOfInputfileThatExists = "kernelTester_input";
+	  TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
+	  kernelTester.callSpecificKernel();
+       }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE ( COMPLEX )
+
+       class TrivialKernelTester : public KernelTesterComplex
+       {
+       public:
+	 TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
+	   KernelTesterComplex(kernelNameIn, inputfileIn) {};
+	 void callSpecificKernel()
+	 {
+	   kernelResult = {1., 1.};
 	 }
        };
 
