@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2014 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -87,7 +87,7 @@ class StoutSmearTester : public KernelTesterDouble
 {
 public:
   StoutSmearTester(std::string inputfile):
-    KernelTesterDouble("plaquette", inputfile)
+    KernelTesterDouble("stout_smear", inputfile)
   {
     callSpecificKernel();
   }
@@ -113,119 +113,30 @@ private:
   hmc_complex dev_pol;
 };
 
+class PolyakovloopTester : public KernelTesterComplex
+{
+public:
+  PolyakovloopTester(std::string inputfile):
+    KernelTesterComplex("polyakov", inputfile)
+  {
+    callSpecificKernel();
+  }
+  void callSpecificKernel() override
+  {
+    auto device = this->system->get_devices()[0];
+    auto * code = device->get_gaugefield_code(); 
 
-#include "../meta/util.hpp"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../hardware/device.hpp"
+    const hardware::buffers::Plain<hmc_complex> pol(1, device);
+
+    code->polyakov_device(this->gaugefield->get_buffers()[0], &pol);
+
+    pol.dump(&kernelResult);
+  }
+};
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE
 #include <boost/test/unit_test.hpp>
-
-#include "test_util.h"
-class TestGaugefield {
-public:
-	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
-		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
-		auto inputfile = system->get_inputparameters();
-		std::string name = "test program";
-		meta::print_info_hmc(inputfile);
-		logger.info() << "gaugeobservables: ";
-		print_gaugeobservables();
-	};
-
-	void print_gaugeobservables() {
-		physics::lattices::print_gaugeobservables(gf, 0);
-	}
-
-	//todo: rename, this is just the buffer!
-	const hardware::buffers::SU3 * get_gaugefield() {
-		return gf.get_buffers()[0];
-	}
-	
-	const meta::Inputparameters getParameters()
-	{
-		return system->get_inputparameters();
-	}
-
-	const hardware::code::Gaugefield * get_device();
-	const hardware::System * const system;
-	physics::PRNG prng;
-	physics::lattices::Gaugefield gf;
-};
-
-const hardware::code::Gaugefield* TestGaugefield::get_device()
-{
-	return system->get_devices()[0]->get_gaugefield_code();
-}
-
-void gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out, const meta::Inputparameters& params)
-{
-	auto device = gf->get_device();
-	auto code = device->get_gaugefield_code();
-
-	const hardware::buffers::Plain<hmc_float> plaq(1, device);
-	const hardware::buffers::Plain<hmc_float> splaq(1, device);
-	const hardware::buffers::Plain<hmc_float> tplaq(1, device);
-	const hardware::buffers::Plain<hmc_complex> pol(1, device);
-
-	//measure plaquette
-	code->plaquette_device(gf, &plaq, &tplaq, &splaq);
-
-	//read out values
-	hmc_float tmp_plaq = 0.;
-	hmc_float tmp_splaq = 0.;
-	hmc_float tmp_tplaq = 0.;
-	//NOTE: these are blocking calls!
-	plaq.dump(&tmp_plaq);
-	splaq.dump(&tmp_splaq);
-	tplaq.dump(&tmp_tplaq);
-
-	tmp_tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(params));
-	tmp_splaq /= static_cast<hmc_float>(meta::get_splaq_norm(params));
-	tmp_plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(params));
-
-	(*plaq_out) = tmp_plaq;
-	(*splaq_out) = tmp_splaq;
-	(*tplaq_out) = tmp_tplaq;
-
-	//measure polyakovloop
-	code->polyakov_device(gf, &pol);
-
-	//read out values
-	hmc_complex tmp_pol = hmc_complex_zero;
-	//NOTE: this is a blocking call!
-	pol.dump(&tmp_pol);
-
-	tmp_pol.re /= static_cast<hmc_float> ( meta::get_poly_norm(params) );
-	tmp_pol.im /= static_cast<hmc_float> ( meta::get_poly_norm(params) );
-
-	pol_out->re = tmp_pol.re;
-	pol_out->im = tmp_pol.im;
-}
-
-void test_polyakov(std::string inputfile, hmc_complex ref_pol)
-{
-	std::string kernelName = "plaquette";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield dummy(&system);
-
-	// get device colutions
-	hmc_float dev_plaq, dev_tplaq, dev_splaq;
-	hmc_complex dev_pol;
-	gaugeobservables(dummy.get_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol, params);
-
-	logger.info() << "reference value:\t" << "values obtained from host functionality";
-	hmc_float prec = params.get_solver_prec();
-	logger.info() << "acceptance precision: " << prec;
-
-	// verify
-	BOOST_CHECK_CLOSE(ref_pol.re, dev_pol.re,   prec);
-	BOOST_CHECK_CLOSE(ref_pol.im, dev_pol.im,   prec);
-}
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
@@ -299,17 +210,17 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
 {
-	test_polyakov( "/polyakov_input_1", {1, 0} );
+  PolyakovloopTester polyakovloopTester("/polyakov_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_2)
 {
-	test_polyakov( "/polyakov_input_2", {0.01190176915346167, -0.073648068466866529} );
+  PolyakovloopTester polyakovloopTester("/polyakov_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_3)
 {
-	test_polyakov( "/polyakov_input_3", { -0.11349672123636854, 0.22828243566855222} );
+  PolyakovloopTester polyakovloopTester("/polyakov_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -318,17 +229,17 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV_REDUCTION )
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
 {
-	test_polyakov( "/polyakov_reduction_input_1", {1, 0} );
+  PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
 {
-	test_polyakov( "/polyakov_reduction_input_2", {1, 0} );
+  PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
 {
-	test_polyakov( "/polyakov_reduction_input_3", {1, 0} );
+  PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
