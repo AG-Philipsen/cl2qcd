@@ -40,18 +40,26 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 	  std::string nameOfInputfileThatDoesNotExist = "filethatdoesnotexist";
 	  BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatDoesNotExist), meta::Inputparameters::parse_aborted  );
 	}
+
+	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT )
+	{
+	  std::string nameOfKernel = "test";
+	  std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
+	  int maximumNumberOfReferenceValues = 2;
+	  BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues + 1) , std::invalid_argument );
+	}
 	
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( DOUBLE )
 
-       class TrivialKernelTester : public KernelTesterDouble
+       class TrivialKernelTester : public KernelTester
        {
        public:
 	 TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-	   KernelTesterDouble(kernelNameIn, inputfileIn)
+	   KernelTester(kernelNameIn, inputfileIn)
 	 {
-	   kernelResult = 1;
+	   kernelResult[0] = 1;
 	 }
        };
 
@@ -66,13 +74,14 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( COMPLEX )
 
-       class TrivialKernelTester : public KernelTesterComplex
+       class TrivialKernelTester : public KernelTester
        {
        public:
 	 TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-	   KernelTesterComplex(kernelNameIn, inputfileIn)
+	   KernelTester(kernelNameIn, inputfileIn, 2)
 	 {
-	   kernelResult = {1., 2.};
+	   kernelResult[0] = 1.;
+	   kernelResult[1] = 2.;
 	 }
        };
 

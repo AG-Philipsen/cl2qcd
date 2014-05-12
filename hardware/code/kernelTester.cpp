@@ -21,38 +21,39 @@
 #include "kernelTester.hpp"
 #include <boost/test/unit_test.hpp>
 
-KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn)
+KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn):
+  kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
   printKernelInformation(kernelNameIn);
   meta::Inputparameters parameters_tmp = createParameters(inputfileIn);
-
   parameters = &parameters_tmp;
-
-  testPrecision = parameters->get_solver_prec();
-
   system = new hardware::System(*parameters);
   device = system->get_devices()[0];
+
+  testPrecision = parameters->get_solver_prec();
+  
+  for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
+    {
+      if(iteration == 0)
+	{
+	  referenceValue[iteration] = parameters->get_test_ref_value();
+	}
+      else if(iteration == 1)
+	{
+	  referenceValue[iteration] = parameters->get_test_ref_value2();
+	}
+      else 
+	{
+	  throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
+	}
+    }
 }
 
-KernelTesterDouble::KernelTesterDouble(std::string kernelNameIn, std::string inputfileIn):
-  KernelTester( kernelNameIn, inputfileIn), kernelResult(0.)
+KernelTester::~KernelTester()
 {
-  referenceValue = parameters->get_test_ref_value();
+  for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
+    {
+      BOOST_CHECK_CLOSE(kernelResult[iteration], referenceValue[iteration], testPrecision);      
+    }
 }
 
-KernelTesterDouble::~KernelTesterDouble()
-{
-  BOOST_CHECK_CLOSE(kernelResult, referenceValue, testPrecision);
-}
-
-KernelTesterComplex::KernelTesterComplex(std::string kernelNameIn, std::string inputfileIn):
-  KernelTester( kernelNameIn, inputfileIn), kernelResult({ 0., 0.})
-{
-  referenceValue = {parameters->get_test_ref_value(), parameters->get_test_ref_value2() };
-}
-
-KernelTesterComplex::~KernelTesterComplex()
-{
-  BOOST_CHECK_CLOSE(kernelResult.re, referenceValue.re, testPrecision);
-  BOOST_CHECK_CLOSE(kernelResult.im, referenceValue.im, testPrecision);
-}

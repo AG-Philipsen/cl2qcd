@@ -21,19 +21,22 @@
 #ifndef KERNELTESTER_H_
 #define KERNELTESTER_H_
 
-#include "../physics/prng.hpp"
 #include "../hardware/system.hpp"
-#include "../physics/lattices/gaugefield.hpp"
 #include "../host_functionality/logger.hpp"
 #include "testUtilities.hpp"
+#include <vector>
 
 class KernelTester
 {
 public:
-  KernelTester(std::string kernelNameIn, std::string inputfileIn); 
+  KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1); 
+  ~KernelTester();
 
 protected:
   double testPrecision;
+  std::vector<double> kernelResult;
+  std::vector<double> referenceValue;
+
   meta::Inputparameters * parameters;
   hardware::System * system;
   hardware::Device * device;

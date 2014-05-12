@@ -22,36 +22,38 @@
 #include <boost/test/unit_test.hpp>
 
 #include "kernelTester.hpp"
+#include "../physics/prng.hpp"
+#include "../physics/lattices/gaugefield.hpp"
 
-class GaugefieldTesterDouble : public KernelTesterDouble
+class GaugefieldTester : public KernelTester
 {
 public:
-  GaugefieldTesterDouble(std::string kernelName, std::string inputfile):
-    KernelTesterDouble(kernelName, inputfile)
+  GaugefieldTester(std::string kernelName, std::string inputfile, int numberOfValues = 1):
+    KernelTester(kernelName, inputfile, numberOfValues)
   {
     prng = new physics::PRNG(*system);
+    logger.info() << "here3";
     gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-
+    
     code = device->get_gaugefield_code();
-  }
+}
 protected:
   const hardware::buffers::SU3* getGaugefieldBuffer()
   {
     return gaugefield->get_buffers()[0];
   }
-
-  const hardware::code::Gaugefield * code;  
-
   physics::PRNG * prng;  
+  const hardware::code::Gaugefield * code;  
   physics::lattices::Gaugefield * gaugefield;
 };
 
-class PlaquetteTester : public GaugefieldTesterDouble
+class PlaquetteTester : public GaugefieldTester
 {
 public:
   PlaquetteTester(std::string inputfile, int typeOfPlaquette = 1):
-    GaugefieldTesterDouble("plaquette", inputfile), typeOfPlaquette(typeOfPlaquette)
+    GaugefieldTester("plaquette", inputfile, 1), typeOfPlaquette(typeOfPlaquette)
   {
+	logger.info() << "here";
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
     const hardware::buffers::Plain<hmc_float> splaq(1, device);
     const hardware::buffers::Plain<hmc_float> tplaq(1, device);
@@ -61,13 +63,15 @@ public:
     switch( typeOfPlaquette )
       {
       case 1:
-	plaq.dump(&kernelResult);
+	logger.info() << "here";
+	plaq.dump(&kernelResult[0]);
+	logger.info() << kernelResult[0];
 	break;
       case 2:
-	tplaq.dump(&kernelResult);
+	tplaq.dump(&kernelResult[0]);
 	break;
       case 3:
-	splaq.dump(&kernelResult);
+	splaq.dump(&kernelResult[0]);
 	break;
       default:
 	throw std::invalid_argument(  "Do not recognize type of plaquette. Should be 1,2 or 3 (normal plaquette, temporal plaquette, spatial plaquette)" );
@@ -78,23 +82,23 @@ private:
   int typeOfPlaquette;
 };
 
-class RectanglesTester : public GaugefieldTesterDouble
+class RectanglesTester : public GaugefieldTester
 {
 public:
   RectanglesTester(std::string inputfile):
-    GaugefieldTesterDouble("rectangles", inputfile)
+    GaugefieldTester("rectangles", inputfile)
   {
     const hardware::buffers::Plain<hmc_float> rect(1, device );
     code->rectangles_device(getGaugefieldBuffer(), &rect);
-    rect.dump(&kernelResult);
+    rect.dump(&kernelResult[0]);
   }
 };
 
-class StoutSmearTester : public GaugefieldTesterDouble
+class StoutSmearTester : public GaugefieldTester
 {
 public:
   StoutSmearTester(std::string inputfile):
-    GaugefieldTesterDouble("stout_smear", inputfile)
+    GaugefieldTester("stout_smear", inputfile)
   {
     auto gaugefieldBuffer = getGaugefieldBuffer();
 
@@ -106,15 +110,15 @@ public:
     code->stout_smear_device( gaugefieldBuffer, &out);
 
     code->plaquette_device( &out, &plaq, &tplaq, &splaq);
-    plaq.dump(&kernelResult);
+    plaq.dump(&kernelResult[0]);
  }
 };
 
-class PolyakovloopTester : public KernelTesterComplex
+class PolyakovloopTester : public KernelTester
 {
 public:
   PolyakovloopTester(std::string inputfile):
-    KernelTesterComplex("polyakov", inputfile)
+    KernelTester("polyakov", inputfile, 2)
   {
     prng = new physics::PRNG(*system);
     gaugefield = new physics::lattices::Gaugefield(*system, *prng);
@@ -123,7 +127,11 @@ public:
 
     const hardware::buffers::Plain<hmc_complex> pol(1, device);
     code->polyakov_device(getGaugefieldBuffer(), &pol);
-    pol.dump(&kernelResult);
+
+    hmc_complex kernelResult_tmp;
+    pol.dump(&kernelResult_tmp);
+    kernelResult[0] = kernelResult_tmp.re;
+    kernelResult[1] = kernelResult_tmp.im;
   }
 private:
   physics::PRNG * prng;  
