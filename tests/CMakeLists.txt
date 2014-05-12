@@ -40,28 +40,6 @@ add_executable(openclCompiler opencl_compiler.cpp ../hardware/opencl_compiler.cp
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(OpenclCompiler openclCompiler)
 
-### KernelTester tests
-
-add_library(kernelTestUtilities
-	testUtilities.cpp
-	kernelTester.cpp
-)
-
-target_link_libraries(kernelTestUtilities
-	${Boost_LIBRARIES}
-	host_functionality
-	meta
-	hardware
-	lattices
-)
-
-# todo: perhaps one can remove the quite unspecific dependency on physics library
-add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities ildg_io physics)
-
-#add_executable(kernelTester_test KernelTester_test.cpp)
-#target_link_libraries(kernelTester_test kernelTestUtilities)
-#add_test(KernelTester kernelTester_test)
-
 add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend
 	optimal
@@ -104,15 +82,15 @@ add_test(LocalQ_1_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 -
 add_test(LocalQ_1_GPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=false)
 add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=true)
 
-add_executable(hardware_code_gaugefield_test hardware_code_gaugefield_test.cpp)
-target_link_libraries(hardware_code_gaugefield_test
-	kernelTestUtilities
-	${Boost_LIBRARIES}
-)
-add_test(hardware::code::Gaugefield_CPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(hardware::code::Gaugefield_GPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+#add_executable(hardware_code_gaugefield_test hardware_code_gaugefield_test.cpp)
+#target_link_libraries(hardware_code_gaugefield_test
+#	kernelTestUtilities
+#	${Boost_LIBRARIES}
+#)
+#add_test(hardware::code::Gaugefield_CPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+#add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+#add_test(hardware::code::Gaugefield_GPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+#add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(opencl_module_spinors_test opencl_module_spinors_test.cpp)
 target_link_libraries(opencl_module_spinors_test

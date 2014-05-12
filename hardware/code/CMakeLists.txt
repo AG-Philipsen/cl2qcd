@@ -52,3 +52,20 @@ target_link_libraries(code
 # Definition of tests
 #
 
+add_library(kernelTestUtilities
+	testUtilities.cpp
+	kernelTester.cpp
+)
+
+target_link_libraries(kernelTestUtilities
+	${Boost_LIBRARIES}
+	host_functionality
+	meta
+	hardware
+	# todo: remove this dependency
+	lattices
+)
+
+# todo: perhaps one can remove the quite unspecific dependency on physics library
+add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities ildg_io physics)
+

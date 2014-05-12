@@ -5,7 +5,7 @@
 
 std::string defaultGpuOption = "--use_gpu=false";
 std::string defaultRec12Option = "--use_rec12=false";
-std::string defaultSourceDirectory = "../../tests";
+std::string defaultSourceDirectory = "../../../hardware/code";
 std::string defaultInputfilesSubdirectory = "/inputfiles";
 
 static void setArguments(std::string & inputfile_location, std::string & gpu_opt, std::string & rec12_opt, int & num_par, const int param_expect)
@@ -15,23 +15,23 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 
 	switch(num_par){
 		case 0:
-			logger.fatal() << "Something went terribly wrong! Did not even get executable name! Aborting...";
+			logger.warn() << "Something went terribly wrong! Did not even get executable name! Aborting...";
 			exit(-1);
 			break;
 		case 1:
-			logger.fatal() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
-			logger.fatal() << "\t<exec_name>\t" << defaultSourceDirectory << "\t" << defaultGpuOption << "\t" << defaultRec12Option;
+			logger.warn() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
+			logger.warn() << "\t<exec_name>\t" << defaultSourceDirectory << "\t" << defaultGpuOption << "\t" << defaultRec12Option;
 			break;
 		case 2:
-			logger.fatal() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
-			logger.fatal() << "\t<exec_name>\t<source-dir>\t" << defaultGpuOption << "\t" << defaultRec12Option;
+			logger.warn() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
+			logger.warn() << "\t<exec_name>\t<source-dir>\t" << defaultGpuOption << "\t" << defaultRec12Option;
 			
 			inputfile_location = boost::unit_test::framework::master_test_suite().argv[1];
 			inputfile_location += defaultInputfilesSubdirectory;
 			break;
 		case 3:
-			logger.fatal() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
-			logger.fatal() << "\t<exec_name>\t<source-dir>\t<gpu-usage>\t" << defaultRec12Option;
+			logger.warn() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
+			logger.warn() << "\t<exec_name>\t<source-dir>\t<gpu-usage>\t" << defaultRec12Option;
 			
 			inputfile_location = boost::unit_test::framework::master_test_suite().argv[1];
 			inputfile_location += defaultInputfilesSubdirectory;
