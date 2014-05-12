@@ -52,6 +52,7 @@ target_link_libraries(kernelTestUtilities
 	host_functionality
 	meta
 	hardware
+	lattices
 )
 
 # todo: perhaps one can remove the quite unspecific dependency on physics library
@@ -105,7 +106,6 @@ add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 -
 
 add_executable(opencl_module_test opencl_module_test.cpp)
 target_link_libraries(opencl_module_test
-	optimal
 	kernelTestUtilities
 	${Boost_LIBRARIES}
 )

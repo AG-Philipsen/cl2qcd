@@ -49,8 +49,7 @@ BOOST_AUTO_TEST_SUITE ( DOUBLE )
        {
        public:
 	 TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-	   KernelTesterDouble(kernelNameIn, inputfileIn) {};
-	 void callSpecificKernel()
+	   KernelTesterDouble(kernelNameIn, inputfileIn)
 	 {
 	   kernelResult = 1;
 	 }
@@ -72,8 +71,7 @@ BOOST_AUTO_TEST_SUITE ( COMPLEX )
        {
        public:
 	 TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-	   KernelTesterComplex(kernelNameIn, inputfileIn) {};
-	 void callSpecificKernel()
+	   KernelTesterComplex(kernelNameIn, inputfileIn)
 	 {
 	   kernelResult = {1., 2.};
 	 }

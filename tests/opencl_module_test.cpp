@@ -23,18 +23,24 @@
 
 #include "kernelTester.hpp"
 
-class PlaquetteTester : public KernelTesterDouble
+class GaugefieldTesterDouble : public KernelTesterDouble
+{
+public:
+  GaugefieldTesterDouble(std::string kernelName, std::string inputfile):
+    KernelTesterDouble(kernelName, inputfile)
+  {
+    code = device->get_gaugefield_code();
+  }
+protected:
+  const hardware::code::Gaugefield * code;  
+};
+
+class PlaquetteTester : public GaugefieldTesterDouble
 {
 public:
   PlaquetteTester(std::string inputfile, int typeOfPlaquette = 1):
-    KernelTesterDouble("plaquette", inputfile), typeOfPlaquette(typeOfPlaquette)
+    GaugefieldTesterDouble("plaquette", inputfile), typeOfPlaquette(typeOfPlaquette)
   {
-    callSpecificKernel();
-  }
-  void callSpecificKernel() override
-  {
-    auto * code = device->get_gaugefield_code(); 
-    
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
     const hardware::buffers::Plain<hmc_float> splaq(1, device);
     const hardware::buffers::Plain<hmc_float> tplaq(1, device);
@@ -61,35 +67,24 @@ private:
   int typeOfPlaquette;
 };
 
-class RectanglesTester : public KernelTesterDouble
+class RectanglesTester : public GaugefieldTesterDouble
 {
 public:
   RectanglesTester(std::string inputfile):
-    KernelTesterDouble("rectangles", inputfile)
+    GaugefieldTesterDouble("rectangles", inputfile)
   {
-    callSpecificKernel();
-  }
-  void callSpecificKernel() override
-  {
-    auto * code = device->get_gaugefield_code(); 
-    
     const hardware::buffers::Plain<hmc_float> rect(1, device );
     code->rectangles_device(getGaugefieldBuffer(), &rect);
     rect.dump(&kernelResult);
   }
 };
 
-class StoutSmearTester : public KernelTesterDouble
+class StoutSmearTester : public GaugefieldTesterDouble
 {
 public:
   StoutSmearTester(std::string inputfile):
-    KernelTesterDouble("stout_smear", inputfile)
+    GaugefieldTesterDouble("stout_smear", inputfile)
   {
-    callSpecificKernel();
-  }
-  void callSpecificKernel() override
-  {
-    auto * code = device->get_gaugefield_code(); 
     auto gaugefieldBuffer = getGaugefieldBuffer();
 
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
@@ -109,10 +104,6 @@ class PolyakovloopTester : public KernelTesterComplex
 public:
   PolyakovloopTester(std::string inputfile):
     KernelTesterComplex("polyakov", inputfile)
-  {
-    callSpecificKernel();
-  }
-  void callSpecificKernel() override
   {
     auto * code = device->get_gaugefield_code(); 
 
