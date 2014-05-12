@@ -39,6 +39,7 @@ protected:
   hardware::System * system;
   physics::PRNG * prng;
   physics::lattices::Gaugefield * gaugefield;
+  hardware::Device * device;
 };
 
 class KernelTesterDouble: public KernelTester

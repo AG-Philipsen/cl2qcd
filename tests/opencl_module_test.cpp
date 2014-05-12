@@ -1,6 +1,5 @@
 /*
- * Copyright 2012, 2013, 2014 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright 2012, 2013, 2014 Christopher Pinke, Matthias Bach
  *
  * This file is part of CL2QCD.
  *
@@ -18,6 +17,10 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE OPENCL_MODULE
+#include <boost/test/unit_test.hpp>
+
 #include "kernelTester.hpp"
 
 class PlaquetteTester : public KernelTesterDouble
@@ -30,7 +33,6 @@ public:
   }
   void callSpecificKernel() override
   {
-    auto device = this->system->get_devices()[0];
     auto * code = device->get_gaugefield_code(); 
     
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
@@ -45,10 +47,10 @@ public:
 	plaq.dump(&kernelResult);
 	break;
       case 2:
-	splaq.dump(&kernelResult);
+	tplaq.dump(&kernelResult);
 	break;
       case 3:
-	tplaq.dump(&kernelResult);
+	splaq.dump(&kernelResult);
 	break;
       default:
 	throw std::invalid_argument(  "Do not recognize type of plaquette. Should be 1,2 or 3 (normal plaquette, temporal plaquette, spatial plaquette)" );
@@ -69,7 +71,6 @@ public:
   }
   void callSpecificKernel() override
   {
-    auto device = this->system->get_devices()[0];
     auto * code = device->get_gaugefield_code(); 
     
     const hardware::buffers::Plain<hmc_float> rect(1, device );
@@ -88,7 +89,6 @@ public:
   }
   void callSpecificKernel() override
   {
-    auto device = this->system->get_devices()[0];
     auto * code = device->get_gaugefield_code(); 
 
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
@@ -113,7 +113,6 @@ public:
   }
   void callSpecificKernel() override
   {
-    auto device = this->system->get_devices()[0];
     auto * code = device->get_gaugefield_code(); 
 
     const hardware::buffers::Plain<hmc_complex> pol(1, device);
@@ -121,10 +120,6 @@ public:
     pol.dump(&kernelResult);
   }
 };
-
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE
-#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 

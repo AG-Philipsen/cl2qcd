@@ -31,6 +31,8 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn)
   testPrecision = parameters->get_solver_prec();
 
   system = new hardware::System(*parameters);
+  device = system->get_devices()[0];
+
   prng = new physics::PRNG(*system);
   gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
