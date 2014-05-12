@@ -22,11 +22,17 @@
 # Collect all code in this part of the source tree
 #
 
-add_library(physics
+add_library(prng
 	prng.cpp
+	../host_functionality/host_random.cpp
+)
+target_link_libraries(prng
+	ranlux
+)
+
+add_library(physics
 	sources.cpp
 	gaugeObservables.cpp
-	../host_functionality/host_random.cpp
 )
 add_modules(physics
 	lattices
@@ -34,16 +40,16 @@ add_modules(physics
 	algorithms
 )
 target_link_libraries(physics
+	prng
 	meta
 	hardware
 	host_functionality
 	ildg_io
-	ranlux
 )
 
 #
 # Definition of tests
 #
 
-add_unit_test_withLibraries(physics::PRNG prng_test physics)
+add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware)
 add_unit_test_withLibraries(physics::<sources> sources_test physics)

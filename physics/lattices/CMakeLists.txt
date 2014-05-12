@@ -34,19 +34,22 @@ add_library(lattices
 )
 target_link_libraries(lattices
 	hardware
-	physics
+	ildg_io
+	host_functionality
+	prng
 )
 
 #
 # Definition of tests
 #
-add_unit_test(physics::lattices::Gaugefield gaugefield_test)
-add_unit_test(physics::lattices::Spinorfield spinorfield_test)
-add_unit_test(physics::lattices::Spinorfield_eo spinorfield_eo_test)
-add_unit_test(physics::lattices::Scalar<hmc_complex> scalar_complex_test)
-add_unit_test(physics::lattices::SwappableSpinorfield swappable_spinorfield_test)
-add_unit_test(physics::lattices::Gaugemomenta gaugemomenta_test)
-add_unit_test(physics::lattices::Staggeredfield_eo staggeredfield_eo_test)
+add_unit_test_withLibraries(physics::lattices::Gaugefield gaugefield_test lattices)
+add_unit_test_withLibraries(physics::lattices::Spinorfield spinorfield_test lattices)
+add_unit_test_withLibraries(physics::lattices::Spinorfield_eo spinorfield_eo_test lattices)
+add_unit_test_withLibraries(physics::lattices::Scalar<hmc_complex> scalar_complex_test lattices)
+add_unit_test_withLibraries(physics::lattices::SwappableSpinorfield swappable_spinorfield_test lattices)
+add_unit_test_withLibraries(physics::lattices::Gaugemomenta gaugemomenta_test lattices)
+add_unit_test_withLibraries(physics::lattices::Staggeredfield_eo staggeredfield_eo_test lattices)
+add_unit_test_withLibraries(physics::lattices::Algebra_Real algebra_real_test lattices)
+add_unit_test_withLibraries(physics::lattices::Vector vector_test lattices)
+
 add_unit_test(physics::lattices::Rooted_Staggeredfield_eo rooted_staggeredfield_eo_test)
-add_unit_test(physics::lattices::Algebra_Real algebra_real_test)
-add_unit_test(physics::lattices::Vector vector_test)
