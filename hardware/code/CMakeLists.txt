@@ -68,17 +68,14 @@ target_link_libraries(kernelTestUtilities
 	host_functionality
 	meta
 	hardware
-	# todo: remove this dependency
-	lattices
 )
 
-# todo: perhaps one can remove the quite unspecific dependency on physics library
-add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities ildg_io physics)
+add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities)
 
 add_executable(hardware_code_gaugefield_test gaugefield_test.cpp)
 target_link_libraries(hardware_code_gaugefield_test
 	kernelTestUtilities
-	${Boost_LIBRARIES}
+	lattices
 )
 add_test(hardware::code::Gaugefield_CPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)

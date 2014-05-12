@@ -31,21 +31,12 @@ class KernelTester
 {
 public:
   KernelTester(std::string kernelNameIn, std::string inputfileIn); 
-  virtual void callSpecificKernel() {};
 
 protected:
-  const hardware::buffers::SU3* getGaugefieldBuffer()
-  {
-    return gaugefield->get_buffers()[0];
-  }
-
   double testPrecision;
   meta::Inputparameters * parameters;
   hardware::System * system;
   hardware::Device * device;
-
-  physics::PRNG * prng;  
-  physics::lattices::Gaugefield * gaugefield;
 };
 
 class KernelTesterDouble: public KernelTester

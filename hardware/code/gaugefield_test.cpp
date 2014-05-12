@@ -29,10 +29,21 @@ public:
   GaugefieldTesterDouble(std::string kernelName, std::string inputfile):
     KernelTesterDouble(kernelName, inputfile)
   {
+    prng = new physics::PRNG(*system);
+    gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+
     code = device->get_gaugefield_code();
   }
 protected:
+  const hardware::buffers::SU3* getGaugefieldBuffer()
+  {
+    return gaugefield->get_buffers()[0];
+  }
+
   const hardware::code::Gaugefield * code;  
+
+  physics::PRNG * prng;  
+  physics::lattices::Gaugefield * gaugefield;
 };
 
 class PlaquetteTester : public GaugefieldTesterDouble
@@ -105,11 +116,22 @@ public:
   PolyakovloopTester(std::string inputfile):
     KernelTesterComplex("polyakov", inputfile)
   {
+    prng = new physics::PRNG(*system);
+    gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+
     auto * code = device->get_gaugefield_code(); 
 
     const hardware::buffers::Plain<hmc_complex> pol(1, device);
     code->polyakov_device(getGaugefieldBuffer(), &pol);
     pol.dump(&kernelResult);
+  }
+private:
+  physics::PRNG * prng;  
+  physics::lattices::Gaugefield * gaugefield;
+
+  const hardware::buffers::SU3* getGaugefieldBuffer()
+  {
+    return gaugefield->get_buffers()[0];
   }
 };
 

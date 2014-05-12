@@ -60,7 +60,6 @@ BOOST_AUTO_TEST_SUITE ( DOUBLE )
 	  std::string nameOfKernel = "test";
 	  std::string nameOfInputfileThatExists = "kernelTester_input";
 	  TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
-	  kernelTester.callSpecificKernel();
        }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -82,7 +81,6 @@ BOOST_AUTO_TEST_SUITE ( COMPLEX )
 	  std::string nameOfKernel = "test";
 	  std::string nameOfInputfileThatExists = "kernelTester_input";
 	  TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
-	  kernelTester.callSpecificKernel();
        }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -32,9 +32,6 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn)
 
   system = new hardware::System(*parameters);
   device = system->get_devices()[0];
-
-  prng = new physics::PRNG(*system);
-  gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 }
 
 KernelTesterDouble::KernelTesterDouble(std::string kernelNameIn, std::string inputfileIn):
