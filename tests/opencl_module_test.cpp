@@ -39,7 +39,7 @@ public:
     const hardware::buffers::Plain<hmc_float> splaq(1, device);
     const hardware::buffers::Plain<hmc_float> tplaq(1, device);
     
-    code->plaquette_device(this->gaugefield->get_buffers()[0], &plaq, &tplaq, &splaq);
+    code->plaquette_device(getGaugefieldBuffer(), &plaq, &tplaq, &splaq);
 	
     switch( typeOfPlaquette )
       {
@@ -74,7 +74,7 @@ public:
     auto * code = device->get_gaugefield_code(); 
     
     const hardware::buffers::Plain<hmc_float> rect(1, device );
-    code->rectangles_device(this->gaugefield->get_buffers()[0], &rect);
+    code->rectangles_device(getGaugefieldBuffer(), &rect);
     rect.dump(&kernelResult);
   }
 };
@@ -90,13 +90,14 @@ public:
   void callSpecificKernel() override
   {
     auto * code = device->get_gaugefield_code(); 
+    auto gaugefieldBuffer = getGaugefieldBuffer();
 
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
     const hardware::buffers::Plain<hmc_float> splaq(1, device);
     const hardware::buffers::Plain<hmc_float> tplaq(1, device);
-    const hardware::buffers::SU3 out(this->gaugefield->get_buffers()[0]->get_elements(), device);
+    const hardware::buffers::SU3 out(gaugefieldBuffer->get_elements(), device);
 
-    code->stout_smear_device( this->gaugefield->get_buffers()[0], &out);
+    code->stout_smear_device( gaugefieldBuffer, &out);
 
     code->plaquette_device( &out, &plaq, &tplaq, &splaq);
     plaq.dump(&kernelResult);
@@ -116,7 +117,7 @@ public:
     auto * code = device->get_gaugefield_code(); 
 
     const hardware::buffers::Plain<hmc_complex> pol(1, device);
-    code->polyakov_device(this->gaugefield->get_buffers()[0], &pol);
+    code->polyakov_device(getGaugefieldBuffer(), &pol);
     pol.dump(&kernelResult);
   }
 };

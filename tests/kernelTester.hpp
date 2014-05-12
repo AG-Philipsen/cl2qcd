@@ -34,12 +34,18 @@ public:
   virtual void callSpecificKernel() {};
 
 protected:
+  const hardware::buffers::SU3* getGaugefieldBuffer()
+  {
+    return gaugefield->get_buffers()[0];
+  }
+
   double testPrecision;
   meta::Inputparameters * parameters;
   hardware::System * system;
-  physics::PRNG * prng;
-  physics::lattices::Gaugefield * gaugefield;
   hardware::Device * device;
+
+  physics::PRNG * prng;  
+  physics::lattices::Gaugefield * gaugefield;
 };
 
 class KernelTesterDouble: public KernelTester
