@@ -52,6 +52,12 @@ target_link_libraries(code
 # Definition of tests
 #
 
+# default random number seed
+configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
+
+# default random number seed
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
+
 add_library(kernelTestUtilities
 	testUtilities.cpp
 	kernelTester.cpp
@@ -68,4 +74,14 @@ target_link_libraries(kernelTestUtilities
 
 # todo: perhaps one can remove the quite unspecific dependency on physics library
 add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities ildg_io physics)
+
+add_executable(hardware_code_gaugefield_test gaugefield_test.cpp)
+target_link_libraries(hardware_code_gaugefield_test
+	kernelTestUtilities
+	${Boost_LIBRARIES}
+)
+add_test(hardware::code::Gaugefield_CPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(hardware::code::Gaugefield_GPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 

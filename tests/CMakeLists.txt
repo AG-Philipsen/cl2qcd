@@ -82,16 +82,6 @@ add_test(LocalQ_1_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 -
 add_test(LocalQ_1_GPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=false)
 add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=true)
 
-#add_executable(hardware_code_gaugefield_test hardware_code_gaugefield_test.cpp)
-#target_link_libraries(hardware_code_gaugefield_test
-#	kernelTestUtilities
-#	${Boost_LIBRARIES}
-#)
-#add_test(hardware::code::Gaugefield_CPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-#add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-#add_test(hardware::code::Gaugefield_GPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-#add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
-
 add_executable(opencl_module_spinors_test opencl_module_spinors_test.cpp)
 target_link_libraries(opencl_module_spinors_test
 	optimal
