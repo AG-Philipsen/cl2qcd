@@ -5,7 +5,8 @@
 
 std::string defaultGpuOption = "--use_gpu=false";
 std::string defaultRec12Option = "--use_rec12=false";
-std::string defaultSourceDirectory = "../../tests/inputfiles";
+std::string defaultSourceDirectory = "../../tests";
+std::string defaultInputfilesSubdirectory = "/inputfiles";
 
 static void setArguments(std::string & inputfile_location, std::string & gpu_opt, std::string & rec12_opt, int & num_par, const int param_expect)
 {
@@ -26,12 +27,14 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 			logger.fatal() << "\t<exec_name>\t<source-dir>\t" << defaultGpuOption << "\t" << defaultRec12Option;
 			
 			inputfile_location = boost::unit_test::framework::master_test_suite().argv[1];
+			inputfile_location += defaultInputfilesSubdirectory;
 			break;
 		case 3:
 			logger.fatal() << "Got only " << num_par << " command line parameters, expected " << param_expect << "! Use default values instead:";
 			logger.fatal() << "\t<exec_name>\t<source-dir>\t<gpu-usage>\t" << defaultRec12Option;
 			
 			inputfile_location = boost::unit_test::framework::master_test_suite().argv[1];
+			inputfile_location += defaultInputfilesSubdirectory;
 			gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
 			break;
 
@@ -43,6 +46,7 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 			}
 			
 			inputfile_location = boost::unit_test::framework::master_test_suite().argv[1];
+			inputfile_location += defaultInputfilesSubdirectory;
 			gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
 			rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
 			break;
@@ -51,7 +55,7 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 
 meta::Inputparameters createParameters(std::string inputfile)
 {
-	std::string inputfile_location = defaultSourceDirectory;
+	std::string inputfile_location = defaultSourceDirectory + defaultInputfilesSubdirectory;
 	std::string gpu_opt = defaultGpuOption;
 	std::string rec12_opt = defaultRec12Option;
 	int num_par = 0;

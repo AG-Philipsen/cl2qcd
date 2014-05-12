@@ -18,7 +18,7 @@
  */
 
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE
+#define BOOST_TEST_MODULE hardware::code::Gaugefield
 #include <boost/test/unit_test.hpp>
 
 #include "kernelTester.hpp"
