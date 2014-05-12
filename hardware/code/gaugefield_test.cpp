@@ -22,6 +22,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "kernelTester.hpp"
+#include "../hardware/system.hpp"
 #include "../physics/prng.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 
@@ -31,8 +32,13 @@ public:
   GaugefieldTester(std::string kernelName, std::string inputfile, int numberOfValues = 1):
     KernelTester(kernelName, inputfile, numberOfValues)
   {
+    //todo: this object should be a member of KernelTester!
+    meta::Inputparameters parameters = createParameters(inputfile);
+
+    system = new hardware::System(parameters);
+    device = system->get_devices()[0];
+
     prng = new physics::PRNG(*system);
-    logger.info() << "here3";
     gaugefield = new physics::lattices::Gaugefield(*system, *prng);
     
     code = device->get_gaugefield_code();
@@ -42,6 +48,10 @@ protected:
   {
     return gaugefield->get_buffers()[0];
   }
+
+  const hardware::System * system;
+  hardware::Device * device;
+
   physics::PRNG * prng;  
   const hardware::code::Gaugefield * code;  
   physics::lattices::Gaugefield * gaugefield;
@@ -53,7 +63,6 @@ public:
   PlaquetteTester(std::string inputfile, int typeOfPlaquette = 1):
     GaugefieldTester("plaquette", inputfile, 1), typeOfPlaquette(typeOfPlaquette)
   {
-	logger.info() << "here";
     const hardware::buffers::Plain<hmc_float> plaq(1, device );
     const hardware::buffers::Plain<hmc_float> splaq(1, device);
     const hardware::buffers::Plain<hmc_float> tplaq(1, device);
@@ -63,9 +72,7 @@ public:
     switch( typeOfPlaquette )
       {
       case 1:
-	logger.info() << "here";
 	plaq.dump(&kernelResult[0]);
-	logger.info() << kernelResult[0];
 	break;
       case 2:
 	tplaq.dump(&kernelResult[0]);
@@ -114,17 +121,12 @@ public:
  }
 };
 
-class PolyakovloopTester : public KernelTester
+class PolyakovloopTester : public GaugefieldTester
 {
 public:
   PolyakovloopTester(std::string inputfile):
-    KernelTester("polyakov", inputfile, 2)
+    GaugefieldTester("polyakov", inputfile, 2)
   {
-    prng = new physics::PRNG(*system);
-    gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-
-    auto * code = device->get_gaugefield_code(); 
-
     const hardware::buffers::Plain<hmc_complex> pol(1, device);
     code->polyakov_device(getGaugefieldBuffer(), &pol);
 
@@ -132,14 +134,6 @@ public:
     pol.dump(&kernelResult_tmp);
     kernelResult[0] = kernelResult_tmp.re;
     kernelResult[1] = kernelResult_tmp.im;
-  }
-private:
-  physics::PRNG * prng;  
-  physics::lattices::Gaugefield * gaugefield;
-
-  const hardware::buffers::SU3* getGaugefieldBuffer()
-  {
-    return gaugefield->get_buffers()[0];
   }
 };
 

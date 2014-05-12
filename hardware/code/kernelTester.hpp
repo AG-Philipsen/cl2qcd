@@ -21,7 +21,6 @@
 #ifndef KERNELTESTER_H_
 #define KERNELTESTER_H_
 
-#include "../hardware/system.hpp"
 #include "../host_functionality/logger.hpp"
 #include "testUtilities.hpp"
 #include <vector>
@@ -36,30 +35,6 @@ protected:
   double testPrecision;
   std::vector<double> kernelResult;
   std::vector<double> referenceValue;
-
-  meta::Inputparameters * parameters;
-  hardware::System * system;
-  hardware::Device * device;
-};
-
-class KernelTesterDouble: public KernelTester
-{
-public:
-  KernelTesterDouble(std::string kernelNameIn, std::string inputfileIn);
-  ~KernelTesterDouble();
-protected:
-  double referenceValue;
-  double kernelResult;
-};
-
-class KernelTesterComplex: public KernelTester
-{
-public:
-  KernelTesterComplex(std::string kernelNameIn, std::string inputfileIn);
-  ~KernelTesterComplex();
-protected:
-  hmc_complex referenceValue;
-  hmc_complex kernelResult;
 };
 
 #endif /* KERNELTESTER_H_ */

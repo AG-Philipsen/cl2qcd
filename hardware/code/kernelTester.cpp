@@ -25,22 +25,19 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
   kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
   printKernelInformation(kernelNameIn);
-  meta::Inputparameters parameters_tmp = createParameters(inputfileIn);
-  parameters = &parameters_tmp;
-  system = new hardware::System(*parameters);
-  device = system->get_devices()[0];
+  meta::Inputparameters parameters = createParameters(inputfileIn);
 
-  testPrecision = parameters->get_solver_prec();
+  testPrecision = parameters.get_solver_prec();
   
   for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
     {
       if(iteration == 0)
 	{
-	  referenceValue[iteration] = parameters->get_test_ref_value();
+	  referenceValue[iteration] = parameters.get_test_ref_value();
 	}
       else if(iteration == 1)
 	{
-	  referenceValue[iteration] = parameters->get_test_ref_value2();
+	  referenceValue[iteration] = parameters.get_test_ref_value2();
 	}
       else 
 	{
