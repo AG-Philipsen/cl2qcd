@@ -55,7 +55,6 @@ target_link_libraries(code
 # default random number seed
 configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
-# default random number seed
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 add_library(kernelTestUtilities
@@ -84,8 +83,8 @@ add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test ${CM
 
 add_executable(hardware_code_spinors_test spinors_test.cpp)
 target_link_libraries(hardware_code_spinors_test
-	# todo: make this more specific
-	optimal
+	prng
+	lattices
 	kernelTestUtilities
 )
 add_test(Opencl_module_spinors_CPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)

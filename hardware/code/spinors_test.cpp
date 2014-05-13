@@ -44,6 +44,8 @@ public:
 
 		code = device->get_spinor_code();
 		
+		prng = new physics::PRNG(*system);
+		
 		NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(parameters);
 		NUM_ELEMENTS_EO = hardware::code::get_eoprec_spinorfieldsize(parameters);
 		(parameters.get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
@@ -58,7 +60,7 @@ public:
 protected:
 	std::string inputfile;
 	
-	std::string getSpecificInputfile(std::string inputfileIn)
+	static std::string getSpecificInputfile(std::string inputfileIn)
 	{
 		return "spinors/" + inputfileIn;
 	}
@@ -67,14 +69,7 @@ protected:
 	{
 		spinor * in;
 		in = new spinor[numberOfElements];
-		if(useRandom)
-		{
-			fill_with_random(in, numberOfElements, seed);
-		}
-		else
-		{
-			fill_with_one(in, numberOfElements);
-		}
+		useRandom ? fill_with_random(in, numberOfElements, seed) : fill_with_one(in, numberOfElements);
 		BOOST_REQUIRE(in);
 		return in;
 	}
@@ -155,31 +150,29 @@ protected:
 	void fill_with_one_eo(spinor * in, int size, bool eo)
 	{
 		int x, y, z, t;
+		hmc_complex content;
+		int coord[4];
+		bool parityOfSite;
+		int nspace;
+		int global_pos;
+
 		for (x = 0; x < ns; x++) {
 			for (y = 0; y < ns; y++) {
 				for (z = 0; z < ns; z++) {
 					for (t = 0; t < nt; t++) {
-						int coord[4];
 						coord[0] = t;
 						coord[1] = x;
 						coord[2] = y;
 						coord[3] = z;
-						int nspace =  get_nspace(coord);
-						int global_pos = get_global_pos(nspace, t);
+						nspace =  get_nspace(coord);
+						global_pos = get_global_pos(nspace, t);
 						if (global_pos > size)
 							break;
-						hmc_complex content;
-						if ((x + y + z + t) % 2 == 0) {
-							if (eo)
-								content = hmc_complex_one;
-							else
-								content = hmc_complex_zero;
-						} else {
-							if (eo)
-								content = hmc_complex_zero;
-							else
-								content = hmc_complex_one;
-						}
+
+						parityOfSite = (x + y + z + t) % 2 == 0;
+						content = (parityOfSite) ?
+							(eo ? hmc_complex_one : hmc_complex_zero) :
+							(eo ? hmc_complex_zero : hmc_complex_one);
 
 						in[global_pos].e0.e0 = content;
 						in[global_pos].e0.e1 = content;
@@ -261,6 +254,7 @@ protected:
 	
 	const hardware::System * system;
 	hardware::Device * device;
+	physics::PRNG * prng;
 
 	const hardware::code::Spinors * code;
 	
@@ -1220,12 +1214,11 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 				outHost = new spinor[NUM_ELEMENTS_SF * iterations];
 				BOOST_REQUIRE(out);
 				
-// 				physics::PRNG prng(*system);
-// 				auto prng_buf = prng.get_buffers().at(0);
+				auto prng_buf = prng->get_buffers().at(0);
 		
 				double sum = 0;
 				for (int i = 0; i < iterations; i++) {
-// 					code->generate_gaussian_spinorfield_device(&out, prng_buf);
+					code->generate_gaussian_spinorfield_device(&out, prng_buf);
 					out.dump(&outHost[i * NUM_ELEMENTS_SF]);
 					sum += count_sf(&outHost[i * NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
 				}
@@ -1239,7 +1232,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 					}
 					var = var / iterations / NUM_ELEMENTS_SF / 24;
 
-					kernelResult[0] = sqrt(var);
+					logger.info() << "variance:\t" << sqrt(var);
 				}
 			}
 	};
@@ -1281,12 +1274,11 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 				outHost = new spinor[NUM_ELEMENTS_EO * iterations];
 				BOOST_REQUIRE(out);
 				
-// 				physics::PRNG prng(*system);
-// 				auto prng_buf = prng.get_buffers().at(0);
+				auto prng_buf = prng->get_buffers().at(0);
 
 				double sum = 0;
 				for (int i = 0; i < iterations; i++) {
-// 					code->generate_gaussian_spinorfield_eo_device(&out, prng_buf);
+					code->generate_gaussian_spinorfield_eo_device(&out, prng_buf);
 					out.dump(&outHost[i * NUM_ELEMENTS_EO]);
 					sum += count_sf(&outHost[i * NUM_ELEMENTS_EO], NUM_ELEMENTS_EO);
 				}
