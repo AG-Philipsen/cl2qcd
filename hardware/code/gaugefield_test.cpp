@@ -26,220 +26,172 @@
 #include "../physics/prng.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 
-class GaugefieldTester : public KernelTester
-{
+class GaugefieldTester : public KernelTester {
 public:
-  GaugefieldTester(std::string kernelName, std::string inputfile, int numberOfValues = 1):
-    KernelTester(kernelName, inputfile, numberOfValues)
-  {
-    //todo: this object should be a member of KernelTester!
-    meta::Inputparameters parameters = createParameters(inputfile);
+	GaugefieldTester(std::string kernelName, std::string inputfile, int numberOfValues = 1):
+		KernelTester(kernelName, inputfile, numberOfValues) {
+		//todo: this object should be a member of KernelTester!
+		meta::Inputparameters parameters = createParameters(inputfile);
 
-    system = new hardware::System(parameters);
-    device = system->get_devices()[0];
+		system = new hardware::System(parameters);
+		device = system->get_devices()[0];
 
-    prng = new physics::PRNG(*system);
-    gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-    
-    code = device->get_gaugefield_code();
-}
+		prng = new physics::PRNG(*system);
+		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+
+		code = device->get_gaugefield_code();
+	}
 protected:
-  const hardware::buffers::SU3* getGaugefieldBuffer()
-  {
-    return gaugefield->get_buffers()[0];
-  }
+	const hardware::buffers::SU3* getGaugefieldBuffer() {
+		return gaugefield->get_buffers()[0];
+	}
 
-  const hardware::System * system;
-  hardware::Device * device;
+	const hardware::System * system;
+	hardware::Device * device;
 
-  physics::PRNG * prng;  
-  const hardware::code::Gaugefield * code;  
-  physics::lattices::Gaugefield * gaugefield;
-};
-
-class PlaquetteTester : public GaugefieldTester
-{
-public:
-  PlaquetteTester(std::string inputfile, int typeOfPlaquette = 1):
-    GaugefieldTester("plaquette", inputfile, 1), typeOfPlaquette(typeOfPlaquette)
-  {
-    const hardware::buffers::Plain<hmc_float> plaq(1, device );
-    const hardware::buffers::Plain<hmc_float> splaq(1, device);
-    const hardware::buffers::Plain<hmc_float> tplaq(1, device);
-    
-    code->plaquette_device(getGaugefieldBuffer(), &plaq, &tplaq, &splaq);
-	
-    switch( typeOfPlaquette )
-      {
-      case 1:
-	plaq.dump(&kernelResult[0]);
-	break;
-      case 2:
-	tplaq.dump(&kernelResult[0]);
-	break;
-      case 3:
-	splaq.dump(&kernelResult[0]);
-	break;
-      default:
-	throw std::invalid_argument(  "Do not recognize type of plaquette. Should be 1,2 or 3 (normal plaquette, temporal plaquette, spatial plaquette)" );
-	break;
-      }
-  }
-private:
-  int typeOfPlaquette;
-};
-
-class RectanglesTester : public GaugefieldTester
-{
-public:
-  RectanglesTester(std::string inputfile):
-    GaugefieldTester("rectangles", inputfile)
-  {
-    const hardware::buffers::Plain<hmc_float> rect(1, device );
-    code->rectangles_device(getGaugefieldBuffer(), &rect);
-    rect.dump(&kernelResult[0]);
-  }
-};
-
-class StoutSmearTester : public GaugefieldTester
-{
-public:
-  StoutSmearTester(std::string inputfile):
-    GaugefieldTester("stout_smear", inputfile)
-  {
-    auto gaugefieldBuffer = getGaugefieldBuffer();
-
-    const hardware::buffers::Plain<hmc_float> plaq(1, device );
-    const hardware::buffers::Plain<hmc_float> splaq(1, device);
-    const hardware::buffers::Plain<hmc_float> tplaq(1, device);
-    const hardware::buffers::SU3 out(gaugefieldBuffer->get_elements(), device);
-
-    code->stout_smear_device( gaugefieldBuffer, &out);
-
-    code->plaquette_device( &out, &plaq, &tplaq, &splaq);
-    plaq.dump(&kernelResult[0]);
- }
-};
-
-class PolyakovloopTester : public GaugefieldTester
-{
-public:
-  PolyakovloopTester(std::string inputfile):
-    GaugefieldTester("polyakov", inputfile, 2)
-  {
-    const hardware::buffers::Plain<hmc_complex> pol(1, device);
-    code->polyakov_device(getGaugefieldBuffer(), &pol);
-
-    hmc_complex kernelResult_tmp;
-    pol.dump(&kernelResult_tmp);
-    kernelResult[0] = kernelResult_tmp.re;
-    kernelResult[1] = kernelResult_tmp.im;
-  }
+	physics::PRNG * prng;
+	const hardware::code::Gaugefield * code;
+	physics::lattices::Gaugefield * gaugefield;
 };
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
-{
-  PlaquetteTester plaquetteTester("plaquette_input_1", 1);
-}
+	class PlaquetteTester : public GaugefieldTester {
+	public:
+		PlaquetteTester(std::string inputfile, int typeOfPlaquette = 1):
+			GaugefieldTester("plaquette", inputfile, 1), typeOfPlaquette(typeOfPlaquette) {
+			const hardware::buffers::Plain<hmc_float> plaq(1, device );
+			const hardware::buffers::Plain<hmc_float> splaq(1, device);
+			const hardware::buffers::Plain<hmc_float> tplaq(1, device);
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
-{
-  PlaquetteTester plaquetteTester("plaquette_input_2", 1);
-}
+			code->plaquette_device(getGaugefieldBuffer(), &plaq, &tplaq, &splaq);
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
-{
-  PlaquetteTester plaquetteTester("plaquette_input_3", 1);
-}
+			switch( typeOfPlaquette ) {
+				case 1:
+					plaq.dump(&kernelResult[0]);
+					break;
+				case 2:
+					tplaq.dump(&kernelResult[0]);
+					break;
+				case 3:
+					splaq.dump(&kernelResult[0]);
+					break;
+				default:
+					throw std::invalid_argument(  "Do not recognize type of plaquette. Should be 1,2 or 3 (normal plaquette, temporal plaquette, spatial plaquette)" );
+					break;
+			}
+		}
+	private:
+		int typeOfPlaquette;
+	};
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
-{
-  PlaquetteTester plaquetteTester("plaquette_temporal_input_1", 2);
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_input_1", 1);
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_2 )
-{
-  PlaquetteTester plaquetteTester("plaquette_temporal_input_2", 2);
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_input_2", 1);
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_3 )
-{
-  PlaquetteTester plaquetteTester("plaquette_temporal_input_3", 2);
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_input_3", 1);
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
-{
-  PlaquetteTester plaquetteTester("plaquette_spatial_input_1", 3);
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_temporal_input_1", 2);
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_2 )
-{
-  PlaquetteTester plaquetteTester("plaquette_spatial_input_2", 3);
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_2 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_temporal_input_2", 2);
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_3 )
-{
-  PlaquetteTester plaquetteTester("plaquette_spatial_input_3", 3);
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_3 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_temporal_input_3", 2);
+	}
 
-BOOST_AUTO_TEST_SUITE_END()
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_spatial_input_1", 3);
+	}
 
-BOOST_AUTO_TEST_SUITE ( PLAQUETTE_REDUCTION )
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_2 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_spatial_input_2", 3);
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
-{
-  PlaquetteTester plaquetteTester("plaquette_reduction_input_1");
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_3 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_spatial_input_3", 3);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_reduction_input_1");
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
-{
-  PlaquetteTester plaquetteTester("plaquette_reduction_input_2");
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_reduction_input_2");
+	}
 
-BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
-{
-  PlaquetteTester plaquetteTester("plaquette_reduction_input_3");
-}
+	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
+	{
+		PlaquetteTester plaquetteTester("plaquette_reduction_input_3");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
-BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
-{
-  PolyakovloopTester polyakovloopTester("/polyakov_input_1");
-}
+	class PolyakovloopTester : public GaugefieldTester {
+	public:
+		PolyakovloopTester(std::string inputfile):
+			GaugefieldTester("polyakov", inputfile, 2) {
+			const hardware::buffers::Plain<hmc_complex> pol(1, device);
+			code->polyakov_device(getGaugefieldBuffer(), &pol);
 
-BOOST_AUTO_TEST_CASE( POLYAKOV_2)
-{
-  PolyakovloopTester polyakovloopTester("/polyakov_input_2");
-}
+			hmc_complex kernelResult_tmp;
+			pol.dump(&kernelResult_tmp);
+			kernelResult[0] = kernelResult_tmp.re;
+			kernelResult[1] = kernelResult_tmp.im;
+		}
+	};
 
-BOOST_AUTO_TEST_CASE( POLYAKOV_3)
-{
-  PolyakovloopTester polyakovloopTester("/polyakov_input_3");
-}
+	BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
+	{
+		PolyakovloopTester polyakovloopTester("/polyakov_input_1");
+	}
 
-BOOST_AUTO_TEST_SUITE_END()
+	BOOST_AUTO_TEST_CASE( POLYAKOV_2)
+	{
+		PolyakovloopTester polyakovloopTester("/polyakov_input_2");
+	}
 
-BOOST_AUTO_TEST_SUITE ( POLYAKOV_REDUCTION )
+	BOOST_AUTO_TEST_CASE( POLYAKOV_3)
+	{
+		PolyakovloopTester polyakovloopTester("/polyakov_input_3");
+	}
 
-BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
-{
-  PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_1");
-}
+	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
+	{
+		PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_1");
+	}
 
-BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
-{
-  PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_2");
-}
+	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
+	{
+		PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_2");
+	}
 
-BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
-{
-  PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_3");
-}
+	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
+	{
+		PolyakovloopTester polyakovloopTester("/polyakov_reduction_input_3");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -263,63 +215,87 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 
-BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
-{
-  StoutSmearTester StoutSmearTester("stout_smear_input_1");
-}
+	class StoutSmearTester : public GaugefieldTester {
+	public:
+		StoutSmearTester(std::string inputfile):
+			GaugefieldTester("stout_smear", inputfile) {
+			auto gaugefieldBuffer = getGaugefieldBuffer();
 
-BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
-{
-  StoutSmearTester StoutSmearTester("stout_smear_input_2");
-}
+			const hardware::buffers::Plain<hmc_float> plaq(1, device );
+			const hardware::buffers::Plain<hmc_float> splaq(1, device);
+			const hardware::buffers::Plain<hmc_float> tplaq(1, device);
+			const hardware::buffers::SU3 out(gaugefieldBuffer->get_elements(), device);
 
-BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
-{
-  StoutSmearTester StoutSmearTester("stout_smear_input_3");
-}
+			code->stout_smear_device( gaugefieldBuffer, &out);
 
-BOOST_AUTO_TEST_CASE( STOUT_SMEAR_4 )
-{
-  StoutSmearTester StoutSmearTester("stout_smear_input_4");
-}
+			code->plaquette_device( &out, &plaq, &tplaq, &splaq);
+			plaq.dump(&kernelResult[0]);
+		}
+	};
 
-BOOST_AUTO_TEST_CASE( STOUT_SMEAR_5 )
-{
-  StoutSmearTester StoutSmearTester("stout_smear_input_5");
-}
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
+	{
+		StoutSmearTester StoutSmearTester("stout_smear_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
+	{
+		StoutSmearTester StoutSmearTester("stout_smear_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
+	{
+		StoutSmearTester StoutSmearTester("stout_smear_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_4 )
+	{
+		StoutSmearTester StoutSmearTester("stout_smear_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_5 )
+	{
+		StoutSmearTester StoutSmearTester("stout_smear_input_5");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( RECTANGLES )
 
-BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
-{
-  RectanglesTester rectanglesTester("rectangles_input_1");
-}
+	class RectanglesTester : public GaugefieldTester {
+	public:
+		RectanglesTester(std::string inputfile):
+			GaugefieldTester("rectangles", inputfile) {
+			const hardware::buffers::Plain<hmc_float> rect(1, device );
+			code->rectangles_device(getGaugefieldBuffer(), &rect);
+			rect.dump(&kernelResult[0]);
+		}
+	};
 
-BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
-{
-  RectanglesTester rectanglesTester("rectangles_input_2");
-}
+	BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
+	{
+		RectanglesTester rectanglesTester("rectangles_input_1");
+	}
 
-BOOST_AUTO_TEST_SUITE_END()
+	BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
+	{
+		RectanglesTester rectanglesTester("rectangles_input_2");
+	}
 
-BOOST_AUTO_TEST_SUITE ( RECTANGLES_REDUCTION )
+	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
+	{
+		RectanglesTester rectanglesTester("rectangles_reduction_input_1");
+	}
 
-BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
-{
-  RectanglesTester rectanglesTester("rectangles_reduction_input_1");
-}
+	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
+	{
+		RectanglesTester rectanglesTester("rectangles_reduction_input_2");
+	}
 
-BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
-{
-  RectanglesTester rectanglesTester("rectangles_reduction_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
-{
-  RectanglesTester rectanglesTester("rectangles_reduction_input_3");
-}
+	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
+	{
+		RectanglesTester rectanglesTester("rectangles_reduction_input_3");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 

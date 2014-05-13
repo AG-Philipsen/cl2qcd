@@ -25,16 +25,15 @@
 #include "testUtilities.hpp"
 #include <vector>
 
-class KernelTester
-{
+class KernelTester {
 public:
-  KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1); 
-  ~KernelTester();
+	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1);
+	~KernelTester();
 
 protected:
-  double testPrecision;
-  std::vector<double> kernelResult;
-  std::vector<double> referenceValue;
+	double testPrecision;
+	std::vector<double> kernelResult;
+	std::vector<double> referenceValue;
 };
 
 #endif /* KERNELTESTER_H_ */
