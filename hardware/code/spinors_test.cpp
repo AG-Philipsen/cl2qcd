@@ -45,6 +45,7 @@ public:
 		code = device->get_spinor_code();
 		
 		NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(parameters);
+		NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(parameters);
 		(parameters.get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
 	}
 protected:
@@ -61,6 +62,7 @@ protected:
 	const hardware::code::Spinors * code;
 	
 	size_t NUM_ELEMENTS_SF;
+	size_t NUM_ELEMENTS_SF_EO;
 	bool useRandom;
 };
 
@@ -324,24 +326,28 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 			SpinorTester("global_squarenorm", inputfile, 1)
 			{
 				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
+				in.load(createSpinorfield());
 				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-				spinor * sf_in;
-				sf_in = new spinor[NUM_ELEMENTS_SF];
-				if(useRandom)
-				{
-					fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-				}
-				else
-				{
-					fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-				}
-				BOOST_REQUIRE(sf_in);
-				in.load(sf_in);
 
 				code->set_float_to_global_squarenorm_device(&in, &sqnorm);
 				sqnorm.dump(&kernelResult[0]);
 			}
+	private:
+		spinor * createSpinorfield()
+		{
+			spinor * sf_in;
+			sf_in = new spinor[NUM_ELEMENTS_SF];
+			if(useRandom)
+			{
+				fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+			}
+			else
+			{
+				fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+			}
+			BOOST_REQUIRE(sf_in);
+			return sf_in;
+		}
 	};
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
@@ -409,6 +415,67 @@ void test_sf_squarenorm_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
+
+BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
+
+	class SquarenormEvenOddTester: public SpinorTester
+	{
+	public:
+		SquarenormEvenOddTester(std::string inputfile):
+			SpinorTester("global_squarenorm_eo", inputfile, 1)
+			{
+				const hardware::buffers::Spinor in(NUM_ELEMENTS_SF_EO, device);
+				in.load(createSpinorfield(NUM_ELEMENTS_SF_EO));
+				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
+
+				code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+				sqnorm.dump(&kernelResult[0]);
+			}
+	private:
+		spinor * createSpinorfield(size_t numberOfElements)
+		{
+			spinor * sf_in;
+			sf_in = new spinor[numberOfElements];
+			if(useRandom)
+			{
+				fill_sf_with_random(sf_in, numberOfElements);
+			}
+			else
+			{
+				fill_sf_with_one(sf_in, numberOfElements);
+			}
+			BOOST_REQUIRE(sf_in);
+			return sf_in;
+		}
+	};
+	
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_1 )
+	{
+		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_2 )
+	{
+		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_1 )
+	{
+		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_reduction_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_2 )
+	{
+		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_reduction_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_3 )
+	{
+		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_reduction_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 void test_sf_scalar_product(std::string inputfile)
 {
@@ -1192,40 +1259,6 @@ void test_sf_gaussian_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 
 }
-
-BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_EO)
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_1 )
-{
-	test_sf_squarenorm_eo("/sf_squarenorm_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_2 )
-{
-	test_sf_squarenorm_eo("/sf_squarenorm_eo_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_EO_REDUCTION)
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_1 )
-{
-	test_sf_squarenorm_eo("/sf_squarenorm_eo_reduction_input_1");
-	//test_sf_squarenorm_eo("/sf_squarenorm_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_2 )
-{
-	test_sf_squarenorm_eo("/sf_squarenorm_eo_reduction_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_3 )
-{
-	test_sf_squarenorm_eo("/sf_squarenorm_eo_reduction_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT)
 
