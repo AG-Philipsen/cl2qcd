@@ -753,69 +753,171 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-void test_sf_saxpy(std::string inputfile, bool switcher)
-{
-	//switcher chooses between saxpy and saxpy_arg kernel, which have the same functionality
-	using namespace hardware::buffers;
+BOOST_AUTO_TEST_SUITE(SAXPY)
 
-	std::string kernelName;
-	if( switcher)
-		kernelName = "saxpy";
-	else
-		kernelName = "saxpy_arg";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	class SaxpyTester: public SpinorTester
+	{
+	public:
+		SaxpyTester(std::string inputfile, bool switcher):
+			SpinorTester("saxpy", inputfile, 1)
+			{
+				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
+				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
+				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
+				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
+				in2.load(createSpinorfield(NUM_ELEMENTS_SF, 456));
+				alpha.load(&alpha_host);
 
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	logger.info() << "Use alpha = (" << alpha_host.re << "," << alpha_host.im << ")";
+				(switcher) ? code->saxpy_device(&in, &in2, &alpha, &out) : code->saxpy_device(&in, &in2, alpha_host, &out);
+				code->set_float_to_global_squarenorm_device(&out, &sqnorm);
+				sqnorm.dump(&kernelResult[0]);
+			}
+	};
 
-	spinor * sf_in;
-	spinor * sf_in2;
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_in2 = new spinor[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-		fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	} else {
-		fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-		fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
+	BOOST_AUTO_TEST_CASE( SAXPY_1 )
+	{
+		SaxpyTester tester("saxpy_input_1", true);
 	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
 
-	in.load(sf_in);
-	in2.load(sf_in2);
-	alpha.load(&alpha_host);
+	BOOST_AUTO_TEST_CASE( SAXPY_2 )
+	{
+		SaxpyTester tester("saxpy_input_2", true);
+	}
 
-	auto spinor_code = device->get_device()->get_spinor_code();
+	BOOST_AUTO_TEST_CASE( SAXPY_3 )
+	{
+		SaxpyTester tester("saxpy_input_3", true);
+	}
 
-	logger.info() << "Run kernel";
-	if (switcher)
-		device->saxpy_device(&in, &in2, &alpha, &out);
-	else
-		device->saxpy_device(&in, &in2, alpha_host, &out);
+	BOOST_AUTO_TEST_CASE( SAXPY_4 )
+	{
+		SaxpyTester tester("saxpy_input_4", true);
+	}
 
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+	BOOST_AUTO_TEST_CASE( SAXPY_5 )
+	{
+		SaxpyTester tester("/saxpy_input_5", true);
+	}
 
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
+	BOOST_AUTO_TEST_CASE( SAXPY_6 )
+	{
+		SaxpyTester tester("saxpy_input_6", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_7 )
+	{
+		SaxpyTester tester("saxpy_input_7", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_8 )
+	{
+		SaxpyTester tester("saxpy_input_8", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_9 )
+	{
+		SaxpyTester tester("saxpy_input_9", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_10 )
+	{
+		SaxpyTester tester("saxpy_input_10", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_11 )
+	{
+		SaxpyTester tester("saxpy_input_11", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_12 )
+	{
+		SaxpyTester tester("saxpy_input_12", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_13 )
+	{
+		SaxpyTester tester("saxpy_input_13", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_14 )
+	{
+		SaxpyTester tester("saxpy_input_14", true);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_1 )
+	{
+		SaxpyTester tester("saxpy_input_1", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_2 )
+	{
+		SaxpyTester tester("saxpy_input_2", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_3 )
+	{
+		SaxpyTester tester("saxpy_input_3", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_4 )
+	{
+		SaxpyTester tester("saxpy_input_4", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_5 )
+	{
+		SaxpyTester tester("saxpy_input_5", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_6 )
+	{
+		SaxpyTester tester("saxpy_input_6", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_7 )
+	{
+		SaxpyTester tester("saxpy_input_7", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_8 )
+	{
+		SaxpyTester tester("saxpy_input_8", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_9 )
+	{
+		SaxpyTester tester("saxpy_input_9", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_10 )
+	{
+		SaxpyTester tester("saxpy_input_10", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_11 )
+	{
+		SaxpyTester tester("saxpy_input_11", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_12 )
+	{
+		SaxpyTester tester("saxpy_input_12", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_13 )
+	{
+		SaxpyTester tester("saxpy_input_13", false);
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_14 )
+	{
+		SaxpyTester tester("saxpy_input_14", false);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 void test_sf_saxsbypz(std::string inputfile)
 {
@@ -1256,156 +1358,7 @@ void test_sf_gaussian_eo(std::string inputfile)
 
 	testFloatSizeAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
-
 }
-
-BOOST_AUTO_TEST_SUITE(SF_SAXPY)
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_1 )
-{
-	test_sf_saxpy("/sf_saxpy_input_1", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_2 )
-{
-	test_sf_saxpy("/sf_saxpy_input_2", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_3 )
-{
-	test_sf_saxpy("/sf_saxpy_input_3", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_4 )
-{
-	test_sf_saxpy("/sf_saxpy_input_4", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_5 )
-{
-	test_sf_saxpy("/sf_saxpy_input_5", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_6 )
-{
-	test_sf_saxpy("/sf_saxpy_input_6", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_7 )
-{
-	test_sf_saxpy("/sf_saxpy_input_7", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_8 )
-{
-	test_sf_saxpy("/sf_saxpy_input_8", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_9 )
-{
-	test_sf_saxpy("/sf_saxpy_input_9", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_10 )
-{
-	test_sf_saxpy("/sf_saxpy_input_10", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_11 )
-{
-	test_sf_saxpy("/sf_saxpy_input_11", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_12 )
-{
-	test_sf_saxpy("/sf_saxpy_input_12", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_13 )
-{
-	test_sf_saxpy("/sf_saxpy_input_13", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_14 )
-{
-	test_sf_saxpy("/sf_saxpy_input_14", true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(SF_SAXPY_ARG)
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_1 )
-{
-	test_sf_saxpy("/sf_saxpy_input_1", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_2 )
-{
-	test_sf_saxpy("/sf_saxpy_input_2", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_3 )
-{
-	test_sf_saxpy("/sf_saxpy_input_3", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_4 )
-{
-	test_sf_saxpy("/sf_saxpy_input_4", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_5 )
-{
-	test_sf_saxpy("/sf_saxpy_input_5", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_6 )
-{
-	test_sf_saxpy("/sf_saxpy_input_6", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_7 )
-{
-	test_sf_saxpy("/sf_saxpy_input_7", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_8 )
-{
-	test_sf_saxpy("/sf_saxpy_input_8", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_9 )
-{
-	test_sf_saxpy("/sf_saxpy_input_9", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_10 )
-{
-	test_sf_saxpy("/sf_saxpy_input_10", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_11 )
-{
-	test_sf_saxpy("/sf_saxpy_input_11", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_12 )
-{
-	test_sf_saxpy("/sf_saxpy_input_12", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_13 )
-{
-	test_sf_saxpy("/sf_saxpy_input_13", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_ARG_14 )
-{
-	test_sf_saxpy("/sf_saxpy_input_14", false);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_SAXPY_EO)
 
