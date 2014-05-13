@@ -56,13 +56,13 @@ protected:
 		return "spinors/" + inputfileIn;
 	}
 	
-	spinor * createSpinorfield(size_t numberOfElements)
+	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456)
 	{
 		spinor * sf_in;
 		sf_in = new spinor[numberOfElements];
 		if(useRandom)
 		{
-			fill_sf_with_random(sf_in, numberOfElements);
+			fill_sf_with_random(sf_in, numberOfElements, seed);
 		}
 		else
 		{
@@ -122,11 +122,6 @@ protected:
 			sf_in[i].e3.e2.im = prng_double();
 		}
 		return;
-	}
-	
-	void fill_sf_with_random(spinor * sf_in, int size)
-	{
-		fill_sf_with_random(sf_in, size, 123456);
 	}
 	
 	const hardware::System * system;
@@ -478,56 +473,55 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
-void test_sf_scalar_product(std::string inputfile)
-{
-	using namespace hardware::buffers;
+	class ScalarProductTester: public SpinorTester
+	{
+	public:
+		ScalarProductTester(std::string inputfile):
+			SpinorTester("scalar_product", inputfile, 2)
+			{
+				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
+				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
+				in2.load(createSpinorfield(NUM_ELEMENTS_SF, 456));
+				hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
 
-	std::string kernelName;
-	kernelName = "scalar_product";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+				code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
+				hmc_complex resultTmp;
+				sqnorm.dump(&resultTmp);
+				
+				kernelResult[0] = resultTmp.re;
+				kernelResult[1] = resultTmp.im;
+			}
+	};
 
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
-
-	spinor * sf_in;
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	spinor * sf_in2;
-	sf_in2 = new spinor[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-		fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	} else {
-		fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-		fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
+	{
+		ScalarProductTester scalarProductTester("scalar_product_input_1");
 	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
 
-	in.load(sf_in);
-	in2.load(sf_in2);
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_2 )
+	{
+		ScalarProductTester scalarProductTester("scalar_product_input_2");
+	}
 
-	auto spinor_code = device->get_device()->get_spinor_code();
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_1 )
+	{
+		ScalarProductTester scalarProductTester("scalar_product_reduction_input_1");
+	}
 
-	logger.info() << "Run kernel";
-	logger.info() << "result:";
-	hmc_complex cpu_res_tmp;
-	spinor_code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
-	sqnorm.dump(&cpu_res_tmp);
-	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
-	logger.info() << cpu_res;
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_2 )
+	{
+		ScalarProductTester scalarProductTester("scalar_product_reduction_input_2");
+	}
 
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_3 )
+	{
+		ScalarProductTester scalarProductTester("scalar_product_reduction_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 void test_sf_scalar_product_eo(std::string inputfile)
 {
@@ -1261,39 +1255,6 @@ void test_sf_gaussian_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 
 }
-
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_1 )
-{
-	test_sf_scalar_product("/sf_scalar_product_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_2 )
-{
-	test_sf_scalar_product("/sf_scalar_product_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_REDUCTION)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_1 )
-{
-	test_sf_scalar_product("/sf_scalar_product_reduction_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_2 )
-{
-	test_sf_scalar_product("/sf_scalar_product_reduction_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_3 )
-{
-	test_sf_scalar_product("/sf_scalar_product_reduction_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO)
 
