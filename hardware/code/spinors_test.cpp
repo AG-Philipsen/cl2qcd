@@ -47,6 +47,7 @@ public:
 		NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(parameters);
 		NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(parameters);
 		(parameters.get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
+		alpha_host = {parameters.get_beta(), parameters.get_rho()};
 	}
 protected:
 	std::string inputfile;
@@ -132,6 +133,7 @@ protected:
 	size_t NUM_ELEMENTS_SF;
 	size_t NUM_ELEMENTS_SF_EO;
 	bool useRandom;
+	hmc_complex alpha_host;
 };
 
 BOOST_AUTO_TEST_SUITE(BUILD)
@@ -633,55 +635,64 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
 	
 BOOST_AUTO_TEST_SUITE_END()
 
-void test_sf_sax(std::string inputfile)
-{
-	using namespace hardware::buffers;
+BOOST_AUTO_TEST_SUITE(SAX)
 
-	std::string kernelName;
-	kernelName = "sax";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	class SaxTester: public SpinorTester
+	{
+	public:
+		SaxTester(std::string inputfile):
+			SpinorTester("sax", inputfile, 2)
+			{
+				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
+				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
+				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
+				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
+				alpha.load(&alpha_host);
 
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	logger.info() << "Use alpha = (" << alpha_host.re << "," << alpha_host.im << ")";
+				code->sax_device(&in, &alpha, &out);
+				code->set_float_to_global_squarenorm_device(&out, &sqnorm);
+				sqnorm.dump(&kernelResult[0]);
+			}
+	};
 
-	spinor * sf_in;
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-		fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	} else {
-		fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
+	BOOST_AUTO_TEST_CASE( SAX_1 )
+	{
+		SaxTester tester ("sax_input_1");
 	}
-	BOOST_REQUIRE(sf_in);
 
-	in.load(sf_in);
-	alpha.load(&alpha_host);
+	BOOST_AUTO_TEST_CASE( SAX_2 )
+	{
+		SaxTester tester ("sax_input_2");
+	}
 
-	auto spinor_code = device->get_device()->get_spinor_code();
+	BOOST_AUTO_TEST_CASE( SAX_3 )
+	{
+		SaxTester tester ("sax_input_3");
+	}
 
-	logger.info() << "Run kernel";
-	device->sax_device(&in, &alpha, &out);
+	BOOST_AUTO_TEST_CASE( SAX_4 )
+	{
+		SaxTester tester ("sax_input_4");
+	}
 
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+	BOOST_AUTO_TEST_CASE( SAX_5 )
+	{
+		SaxTester tester ("sax_input_5");
+	}
 
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
+	BOOST_AUTO_TEST_CASE( SAX_6 )
+	{
+		SaxTester tester ("sax_input_6");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAX_7 )
+	{
+		SaxTester tester ("sax_input_7");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 void test_sf_saxpy(std::string inputfile, bool switcher)
 {
@@ -1238,45 +1249,6 @@ void test_sf_gaussian_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 
 }
-
-BOOST_AUTO_TEST_SUITE(SF_SAX)
-
-BOOST_AUTO_TEST_CASE( SF_SAX_1 )
-{
-	test_sf_sax("/sf_sax_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_2 )
-{
-	test_sf_sax("/sf_sax_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_3 )
-{
-	test_sf_sax("/sf_sax_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_4 )
-{
-	test_sf_sax("/sf_sax_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_5 )
-{
-	test_sf_sax("/sf_sax_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_6 )
-{
-	test_sf_sax("/sf_sax_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_7 )
-{
-	test_sf_sax("/sf_sax_input_7");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_SAX_EO)
 
