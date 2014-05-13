@@ -18,12 +18,12 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../meta/util.hpp"
-#include "../host_functionality/host_random.h"
-#include "../physics/prng.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/complex.hpp"
+#include "../../meta/util.hpp"
+#include "../../host_functionality/host_random.h"
+#include "../../physics/prng.hpp"
+#include "../device.hpp"
+#include "spinors.hpp"
+#include "complex.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -31,7 +31,7 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "test_util.h"
+#include "../../tests/test_util.h"
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
@@ -285,26 +285,14 @@ protected:
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
-	void test_build(std::string inputfile)
-	{
-		logger.info() << "build opencl_module_spinors";
-		logger.info() << "Init device";
-		meta::Inputparameters params = create_parameters(inputfile);
-		hardware::System system(params);
-		for(auto device: system.get_devices()) {
-			device->get_spinor_code();
-		}
-		BOOST_MESSAGE("Test done");
-	}
-
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
 	{
-// 		BOOST_CHECK_NO_THROW( 	SpinorTester spinorTester("build all kernels", "spinors_build_input_1") );
+		BOOST_CHECK_NO_THROW( 	SpinorTester spinorTester("build all kernels", "spinors_build_input_1") );
 	}
 
 	BOOST_AUTO_TEST_CASE( BUILD_2 )
 	{
-// 		BOOST_CHECK_NO_THROW( 	SpinorTester spinorTester("build all kernels", "spinors_build_input_2") );
+		BOOST_CHECK_NO_THROW( 	SpinorTester spinorTester("build all kernels", "spinors_build_input_2") );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -82,3 +82,12 @@ add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test ${CM
 add_test(hardware::code::Gaugefield_GPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
+add_executable(hardware_code_spinors_test spinors_test.cpp)
+target_link_libraries(hardware_code_spinors_test
+	# todo: make this more specific
+	optimal
+	kernelTestUtilities
+)
+add_test(Opencl_module_spinors_CPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)
+add_test(Opencl_module_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true)
+
