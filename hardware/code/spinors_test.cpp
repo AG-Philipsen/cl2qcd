@@ -573,44 +573,6 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-void test_sf_cold_eo(std::string inputfile, bool switcher)
-{
-	//switcher decides if the sf is set to cold or zero
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher)
-		kernelName = "set_spinorfield_cold_eo";
-	else
-		kernelName = "set_spinorfield_zero_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "Run kernel";
-	if(switcher)
-		device->set_eoprec_spinorfield_cold_device(&in);
-	else
-		device->set_zero_spinorfield_eoprec_device(&in);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
 BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 
 	class ColdAndZeroTester: public SpinorTester
@@ -642,15 +604,31 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
-	
-	BOOST_AUTO_TEST_CASE( SF_COLD_EO_1 )
+
+	class ColdAndZeroEvenOddTester: public SpinorTester
 	{
-		test_sf_cold_eo("/sf_cold_eo_input_1", true);
+	public:
+		ColdAndZeroEvenOddTester(std::string inputfile, bool switcher):
+			SpinorTester("cold or zero eo", inputfile, 2)
+			{
+				const hardware::buffers::Spinor in(NUM_ELEMENTS_SF_EO, device);
+				in.load(createSpinorfield(NUM_ELEMENTS_SF_EO));
+				hardware::buffers::Plain<double> sqnorm(1, device);
+
+				(switcher) ? code->set_eoprec_spinorfield_cold_device(&in) : 	code->set_zero_spinorfield_eoprec_device(&in);
+				code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+				sqnorm.dump(&kernelResult[0]);
+			}
+	};
+	
+	BOOST_AUTO_TEST_CASE( COLD_EO_1 )
+	{
+		ColdAndZeroEvenOddTester tester("cold_eo_input_1", true);
 	}
 
-	BOOST_AUTO_TEST_CASE( SF_ZERO_EO_1 )
+	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
 	{
-		test_sf_cold_eo("/sf_zero_eo_input_1",  false);
+		ColdAndZeroEvenOddTester tester("zero_eo_input_1",  false);
 	}
 	
 BOOST_AUTO_TEST_SUITE_END()
