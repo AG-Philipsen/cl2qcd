@@ -56,6 +56,79 @@ protected:
 		return "spinors/" + inputfileIn;
 	}
 	
+	spinor * createSpinorfield(size_t numberOfElements)
+	{
+		spinor * sf_in;
+		sf_in = new spinor[numberOfElements];
+		if(useRandom)
+		{
+			fill_sf_with_random(sf_in, numberOfElements);
+		}
+		else
+		{
+			fill_sf_with_one(sf_in, numberOfElements);
+		}
+		BOOST_REQUIRE(sf_in);
+		return sf_in;
+	}
+	
+	void fill_sf_with_one(spinor * sf_in, int size)
+	{
+		for(int i = 0; i < size; ++i) {
+			sf_in[i].e0.e0 = hmc_complex_one;
+			sf_in[i].e0.e1 = hmc_complex_one;
+			sf_in[i].e0.e2 = hmc_complex_one;
+			sf_in[i].e1.e0 = hmc_complex_one;
+			sf_in[i].e1.e1 = hmc_complex_one;
+			sf_in[i].e1.e2 = hmc_complex_one;
+			sf_in[i].e2.e0 = hmc_complex_one;
+			sf_in[i].e2.e1 = hmc_complex_one;
+			sf_in[i].e2.e2 = hmc_complex_one;
+			sf_in[i].e3.e0 = hmc_complex_one;
+			sf_in[i].e3.e1 = hmc_complex_one;
+			sf_in[i].e3.e2 = hmc_complex_one;
+		}
+		return;
+	}
+	
+	void fill_sf_with_random(spinor * sf_in, int size, int seed)
+	{
+		prng_init(seed);
+		for(int i = 0; i < size; ++i) {
+			sf_in[i].e0.e0.re = prng_double();
+			sf_in[i].e0.e1.re = prng_double();
+			sf_in[i].e0.e2.re = prng_double();
+			sf_in[i].e1.e0.re = prng_double();
+			sf_in[i].e1.e1.re = prng_double();
+			sf_in[i].e1.e2.re = prng_double();
+			sf_in[i].e2.e0.re = prng_double();
+			sf_in[i].e2.e1.re = prng_double();
+			sf_in[i].e2.e2.re = prng_double();
+			sf_in[i].e3.e0.re = prng_double();
+			sf_in[i].e3.e1.re = prng_double();
+			sf_in[i].e3.e2.re = prng_double();
+
+			sf_in[i].e0.e0.im = prng_double();
+			sf_in[i].e0.e1.im = prng_double();
+			sf_in[i].e0.e2.im = prng_double();
+			sf_in[i].e1.e0.im = prng_double();
+			sf_in[i].e1.e1.im = prng_double();
+			sf_in[i].e1.e2.im = prng_double();
+			sf_in[i].e2.e0.im = prng_double();
+			sf_in[i].e2.e1.im = prng_double();
+			sf_in[i].e2.e2.im = prng_double();
+			sf_in[i].e3.e0.im = prng_double();
+			sf_in[i].e3.e1.im = prng_double();
+			sf_in[i].e3.e2.im = prng_double();
+		}
+		return;
+	}
+	
+	void fill_sf_with_random(spinor * sf_in, int size)
+	{
+		fill_sf_with_random(sf_in, size, 123456);
+	}
+	
 	const hardware::System * system;
 	hardware::Device * device;
 
@@ -326,28 +399,12 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 			SpinorTester("global_squarenorm", inputfile, 1)
 			{
 				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				in.load(createSpinorfield());
+				in.load(createSpinorfield(NUM_ELEMENTS_SF));
 				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 
 				code->set_float_to_global_squarenorm_device(&in, &sqnorm);
 				sqnorm.dump(&kernelResult[0]);
 			}
-	private:
-		spinor * createSpinorfield()
-		{
-			spinor * sf_in;
-			sf_in = new spinor[NUM_ELEMENTS_SF];
-			if(useRandom)
-			{
-				fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-			}
-			else
-			{
-				fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-			}
-			BOOST_REQUIRE(sf_in);
-			return sf_in;
-		}
 	};
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
@@ -377,45 +434,6 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-void test_sf_squarenorm_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "global_squarenorm_eoprec";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	spinor * sf_in;
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	in.load(sf_in);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "Run kernel";
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
 BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
 	class SquarenormEvenOddTester: public SpinorTester
@@ -431,47 +449,31 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 				code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 				sqnorm.dump(&kernelResult[0]);
 			}
-	private:
-		spinor * createSpinorfield(size_t numberOfElements)
-		{
-			spinor * sf_in;
-			sf_in = new spinor[numberOfElements];
-			if(useRandom)
-			{
-				fill_sf_with_random(sf_in, numberOfElements);
-			}
-			else
-			{
-				fill_sf_with_one(sf_in, numberOfElements);
-			}
-			BOOST_REQUIRE(sf_in);
-			return sf_in;
-		}
 	};
 	
 	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_1 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_input_1");
+		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_input_1");
 	}
 
 	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_2 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_input_2");
+		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_input_2");
 	}
 
 	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_1 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_reduction_input_1");
+		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_reduction_input_1");
 	}
 
 	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_2 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_reduction_input_2");
+		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_reduction_input_2");
 	}
 
 	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_3 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("sf_squarenorm_eo_reduction_input_3");
+		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_reduction_input_3");
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
