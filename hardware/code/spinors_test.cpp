@@ -48,6 +48,7 @@ public:
 		NUM_ELEMENTS_EO = hardware::code::get_eoprec_spinorfieldsize(parameters);
 		(parameters.get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
 		alpha_host = {parameters.get_beta(), parameters.get_rho()};
+		beta_host = {parameters.get_kappa(), parameters.get_mu()};
 	}
 protected:
 	std::string inputfile;
@@ -134,6 +135,7 @@ protected:
 	size_t NUM_ELEMENTS_EO;
 	bool useRandom;
 	hmc_complex alpha_host;
+	hmc_complex beta_host;
 };
 
 BOOST_AUTO_TEST_SUITE(BUILD)
@@ -919,74 +921,6 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-// void test_saxsbypz(std::string inputfile)
-// {
-// 	using namespace hardware::buffers;
-// 
-// 	std::string kernelName;
-// 	kernelName = "saxsbypz";
-// 	printKernelInfo(kernelName);
-// 	logger.info() << "Init device";
-// 	meta::Inputparameters params = create_parameters(inputfile);
-// 	hardware::System system(params);
-// 	auto * device = system.get_devices().at(0)->get_spinor_code();
-// 
-// 	logger.info() << "Fill buffers...";
-// 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-// 	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-// 	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
-// 	const Plain<spinor> in3(NUM_ELEMENTS_SF, device->get_device());
-// 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-// 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-// 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-// 	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
-// 
-// 	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-// 	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
-// 	logger.info() << "Use alpha = (" << alpha_host.re << "," << alpha_host.im << ")";
-// 	logger.info() << "Use beta = (" << beta_host.re << "," << beta_host.im << ")";
-// 
-// 	spinor * in;
-// 	spinor * in2;
-// 	spinor * in3;
-// 	in = new spinor[NUM_ELEMENTS_SF];
-// 	in2 = new spinor[NUM_ELEMENTS_SF];
-// 	in3 = new spinor[NUM_ELEMENTS_SF];
-// 	//use the variable use_cg to switch between cold and random input sf
-// 	if(params.get_solver() == meta::Inputparameters::cg) {
-// 		fill_with_one(in, NUM_ELEMENTS_SF);
-// 		fill_with_one(in2, NUM_ELEMENTS_SF);
-// 		fill_with_one(in3, NUM_ELEMENTS_SF);
-// 	} else {
-// 		fill_with_random(in, NUM_ELEMENTS_SF, 123);
-// 		fill_with_random(in2, NUM_ELEMENTS_SF, 456);
-// 		fill_with_random(in3, NUM_ELEMENTS_SF, 789);
-// 	}
-// 	BOOST_REQUIRE(in);
-// 	BOOST_REQUIRE(in2);
-// 	BOOST_REQUIRE(in3);
-// 
-// 	in.load(in);
-// 	in2.load(in2);
-// 	in3.load(in3);
-// 	alpha.load(&alpha_host);
-// 	beta.load(&beta_host);
-// 
-// 	auto spinor_code = device->get_device()->get_spinor_code();
-// 
-// 	logger.info() << "Run kernel";
-// 	device->saxsbypz_device(&in, &in2, &in3, &alpha, &beta, &out);
-// 
-// 	logger.info() << "result:";
-// 	hmc_float cpu_res;
-// 	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-// 	sqnorm.dump(&cpu_res);
-// 	logger.info() << cpu_res;
-// 
-// 	testFloatAgainstInputparameters(cpu_res, params);
-// 	BOOST_MESSAGE("Test done");
-// }
-
 BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
 	class SaxpyEvenOddTester: public SpinorTester
@@ -1153,6 +1087,85 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
+
+	class SaxsbypzTester: public SpinorTester
+	{
+	public:
+		SaxsbypzTester(std::string inputfile):
+			SpinorTester("saxsbypz", inputfile, 1)
+			{
+				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> in3(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
+				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
+				hardware::buffers::Plain<hmc_complex> alpha(1, device);
+				hardware::buffers::Plain<hmc_complex> beta(1, device);
+
+				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
+				in2.load(createSpinorfield(NUM_ELEMENTS_SF, 456));
+				in3.load(createSpinorfield(NUM_ELEMENTS_SF, 789));
+				alpha.load(&alpha_host);
+				beta.load(&beta_host);
+
+				code->saxsbypz_device(&in, &in2, &in3, &alpha, &beta, &out);
+				code->set_float_to_global_squarenorm_device(&out, &sqnorm);
+				sqnorm.dump(&kernelResult[0]);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_1 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_2 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_3 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_4 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_5 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_5");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_6 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_6");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_7 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_7");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_8 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_8");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_9 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_9");
+	}
+
+	BOOST_AUTO_TEST_CASE( SAXSBYPZ_10 )
+	{
+		SaxsbypzTester tester("saxsbypz_input_10");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 // void test_saxsbypz_eo(std::string inputfile)
 // {
@@ -1463,59 +1476,6 @@ BOOST_AUTO_TEST_SUITE_END()
 // 	BOOST_MESSAGE("Test done");
 // }
 // 
-// BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_1 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_1");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_2 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_2");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_3 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_3");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_4 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_4");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_5 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_5");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_6 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_6");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_7 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_7");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_8 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_8");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_9 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_9");
-// }
-// 
-// BOOST_AUTO_TEST_CASE( SAXSBYPZ_10 )
-// {
-// 	test_saxsbypz("/saxsbypz_input_10");
-// }
-// 
-// BOOST_AUTO_TEST_SUITE_END()
 // 
 // BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 // 
