@@ -261,17 +261,53 @@ void fill_sf_with_random(spinor * sf_in, int size)
 	fill_sf_with_random(sf_in, size, 123456);
 }
 
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_spinors";
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	for(auto device: system.get_devices()) {
-		device->get_spinor_code();
+#include "../hardware/code/kernelTester.hpp"
+
+class SpinorTester : public KernelTester {
+public:
+	SpinorTester(std::string kernelName, std::string inputfile, int numberOfValues = 1):
+		KernelTester(kernelName, inputfile, numberOfValues) {
+		//todo: this object should be a member of KernelTester!
+		meta::Inputparameters parameters = createParameters(inputfile);
+
+		system = new hardware::System(parameters);
+		device = system->get_devices()[0];
+
+		code = device->get_spinor_code();
 	}
-	BOOST_MESSAGE("Test done");
-}
+protected:
+
+	const hardware::System * system;
+	hardware::Device * device;
+
+	const hardware::code::Spinors * code;
+};
+
+BOOST_AUTO_TEST_SUITE(BUILD)
+
+	void test_build(std::string inputfile)
+	{
+		logger.info() << "build opencl_module_spinors";
+		logger.info() << "Init device";
+		meta::Inputparameters params = create_parameters(inputfile);
+		hardware::System system(params);
+		for(auto device: system.get_devices()) {
+			device->get_spinor_code();
+		}
+		BOOST_MESSAGE("Test done");
+	}
+
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+// 		BOOST_CHECK_NO_THROW( 	SpinorTester spinorTester("build all kernels", "spinors_build_input_1") );
+	}
+
+	BOOST_AUTO_TEST_CASE( BUILD_2 )
+	{
+// 		BOOST_CHECK_NO_THROW( 	SpinorTester spinorTester("build all kernels", "spinors_build_input_2") );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 void test_sf_squarenorm(std::string inputfile)
 {
@@ -1144,20 +1180,6 @@ void test_sf_gaussian_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 
 }
-
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-  test_build("/opencl_module_spinors_build_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( BUILD_2 )
-{
-	test_build("/opencl_module_spinors_build_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_EO)
 

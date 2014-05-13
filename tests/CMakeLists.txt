@@ -86,7 +86,7 @@ add_executable(hardware_code_spinors_test spinors_test.cpp)
 target_link_libraries(hardware_code_spinors_test
 	# todo: make this more specific
 	optimal
-	${Boost_LIBRARIES}
+	kernelTestUtilities
 )
 add_test(Opencl_module_spinors_CPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)
 add_test(Opencl_module_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true)
