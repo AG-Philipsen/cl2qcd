@@ -1,6 +1,6 @@
 /*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+   * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+* Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -18,20 +18,20 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../meta/util.hpp"
-#include "../host_functionality/host_random.h"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/fermions.hpp"
+#include "../../meta/util.hpp"
+#include "../../host_functionality/host_random.h"
+#include "../../physics/lattices/gaugefield.hpp"
+#include "../device.hpp"
+#include "spinors.hpp"
+#include "fermions.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS
+#define BOOST_TEST_MODULE HARDWARE_CODE_FERMIONS
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "test_util.h"
+#include "../../tests/test_util.h"
 
 class TestGaugefield {
 

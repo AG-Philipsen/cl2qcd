@@ -114,16 +114,6 @@ target_link_libraries(opencl_module_correlators_staggered_test
 add_test(Opencl_module_correlators_staggered_CPU       opencl_module_correlators_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(Opencl_module_correlators_staggered_GPU       opencl_module_correlators_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
-add_executable(opencl_module_fermions_test opencl_module_fermions_test.cpp)
-target_link_libraries(opencl_module_fermions_test
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Opencl_module_fermions_CPU       opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(Opencl_module_fermions_CPU_REC12 opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(Opencl_module_fermions_GPU       opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(Opencl_module_fermions_GPU_REC12 opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
-
 add_executable(opencl_module_complex_test opencl_module_complex_test.cpp)
 target_link_libraries(opencl_module_complex_test
 	optimal
