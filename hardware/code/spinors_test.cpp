@@ -19,258 +19,11 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_SPINORS
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS
 
-#include "../hardware/code/kernelTester.hpp"
+#include "SpinorTester.hpp"
 
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
-#include "../device.hpp"
-#include "spinors.hpp"
-#include "complex.hpp"
-
-class SpinorTester : public KernelTester {
-public:
-	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-		inputfile(getSpecificInputfile(inputfileIn)), KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
-		{
-		//todo: this object should be a member of KernelTester!
-		meta::Inputparameters parameters = createParameters(inputfile);
-
-		system = new hardware::System(parameters);
-		device = system->get_devices()[0];
-
-		code = device->get_spinor_code();
-		
-		prng = new physics::PRNG(*system);
-		
-		NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(parameters);
-		NUM_ELEMENTS_EO = hardware::code::get_eoprec_spinorfieldsize(parameters);
-		(parameters.get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
-		(parameters.get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
-		alpha_host = {parameters.get_beta(), parameters.get_rho()};
-		beta_host = {parameters.get_kappa(), parameters.get_mu()};
-		ns = parameters.get_nspace();
-		nt = parameters.get_ntime();
-		iterations = parameters.get_integrationsteps(0);
-		parameters.get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
-	}
-protected:
-	std::string inputfile;
-	
-	static std::string getSpecificInputfile(std::string inputfileIn)
-	{
-		return "spinors/" + inputfileIn;
-	}
-	
-	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456)
-	{
-		spinor * in;
-		in = new spinor[numberOfElements];
-		useRandom ? fill_with_random(in, numberOfElements, seed) : fill_with_one(in, numberOfElements);
-		BOOST_REQUIRE(in);
-		return in;
-	}
-	
-	void fill_with_one(spinor * in, int size)
-	{
-		for(int i = 0; i < size; ++i) {
-			in[i].e0.e0 = hmc_complex_one;
-			in[i].e0.e1 = hmc_complex_one;
-			in[i].e0.e2 = hmc_complex_one;
-			in[i].e1.e0 = hmc_complex_one;
-			in[i].e1.e1 = hmc_complex_one;
-			in[i].e1.e2 = hmc_complex_one;
-			in[i].e2.e0 = hmc_complex_one;
-			in[i].e2.e1 = hmc_complex_one;
-			in[i].e2.e2 = hmc_complex_one;
-			in[i].e3.e0 = hmc_complex_one;
-			in[i].e3.e1 = hmc_complex_one;
-			in[i].e3.e2 = hmc_complex_one;
-		}
-		return;
-	}
-	
-	void fill_with_random(spinor * in, int size, int seed)
-	{
-		prng_init(seed);
-		for(int i = 0; i < size; ++i) {
-			in[i].e0.e0.re = prng_double();
-			in[i].e0.e1.re = prng_double();
-			in[i].e0.e2.re = prng_double();
-			in[i].e1.e0.re = prng_double();
-			in[i].e1.e1.re = prng_double();
-			in[i].e1.e2.re = prng_double();
-			in[i].e2.e0.re = prng_double();
-			in[i].e2.e1.re = prng_double();
-			in[i].e2.e2.re = prng_double();
-			in[i].e3.e0.re = prng_double();
-			in[i].e3.e1.re = prng_double();
-			in[i].e3.e2.re = prng_double();
-
-			in[i].e0.e0.im = prng_double();
-			in[i].e0.e1.im = prng_double();
-			in[i].e0.e2.im = prng_double();
-			in[i].e1.e0.im = prng_double();
-			in[i].e1.e1.im = prng_double();
-			in[i].e1.e2.im = prng_double();
-			in[i].e2.e0.im = prng_double();
-			in[i].e2.e1.im = prng_double();
-			in[i].e2.e2.im = prng_double();
-			in[i].e3.e0.im = prng_double();
-			in[i].e3.e1.im = prng_double();
-			in[i].e3.e2.im = prng_double();
-		}
-		return;
-	}
-	
-	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity()
-	{
-		spinor * in;
-		in = new spinor[NUM_ELEMENTS_SF];
-		fill_with_one_eo(in, NUM_ELEMENTS_SF, evenOrOdd);
-		return in;
-	}
-	
-	//todo: use the fct. from geometry.h here!
-	int get_nspace(int* coord)
-	{
-		int n = 0;
-		n = ns * ns * coord[3] + ns * coord[2] + coord[1];
-		return n;
-	}
-	
-	int get_global_pos(int spacepos, int t)
-	{
-		return spacepos + ns*ns*ns * t;
-	}
-	
-	void fill_with_one_eo(spinor * in, int size, bool eo)
-	{
-		int x, y, z, t;
-		hmc_complex content;
-		int coord[4];
-		bool parityOfSite;
-		int nspace;
-		int global_pos;
-
-		for (x = 0; x < ns; x++) {
-			for (y = 0; y < ns; y++) {
-				for (z = 0; z < ns; z++) {
-					for (t = 0; t < nt; t++) {
-						coord[0] = t;
-						coord[1] = x;
-						coord[2] = y;
-						coord[3] = z;
-						nspace =  get_nspace(coord);
-						global_pos = get_global_pos(nspace, t);
-						if (global_pos > size)
-							break;
-
-						parityOfSite = (x + y + z + t) % 2 == 0;
-						content = (parityOfSite) ?
-							(eo ? hmc_complex_one : hmc_complex_zero) :
-							(eo ? hmc_complex_zero : hmc_complex_one);
-
-						in[global_pos].e0.e0 = content;
-						in[global_pos].e0.e1 = content;
-						in[global_pos].e0.e2 = content;
-						in[global_pos].e1.e0 = content;
-						in[global_pos].e1.e1 = content;
-						in[global_pos].e1.e2 = content;
-						in[global_pos].e2.e0 = content;
-						in[global_pos].e2.e1 = content;
-						in[global_pos].e2.e2 = content;
-						in[global_pos].e3.e0 = content;
-						in[global_pos].e3.e1 = content;
-						in[global_pos].e3.e2 = content;
-					}
-				}
-			}
-		}
-		return;
-	}
-
-	hmc_float count_sf(spinor * in, int size)
-	{
-		hmc_float sum = 0.;
-		for (int i = 0; i < size; i++) {
-			sum +=
-				in[i].e0.e0.re + in[i].e0.e0.im
-				+ in[i].e0.e1.re + in[i].e0.e1.im
-				+ in[i].e0.e2.re + in[i].e0.e2.im
-				+ in[i].e1.e0.re + in[i].e1.e0.im
-				+ in[i].e1.e1.re + in[i].e1.e1.im
-				+ in[i].e1.e2.re + in[i].e1.e2.im
-				+ in[i].e2.e0.re + in[i].e2.e0.im
-				+ in[i].e2.e1.re + in[i].e2.e1.im
-				+ in[i].e2.e2.re + in[i].e2.e2.im
-				+ in[i].e3.e0.re + in[i].e3.e0.im
-				+ in[i].e3.e1.re + in[i].e3.e1.im
-				+ in[i].e3.e2.re + in[i].e3.e2.im;
-		}
-		return sum;
-	}
-
-	hmc_float calc_var(hmc_float in, hmc_float mean)
-	{
-		return (in - mean) * (in - mean);
-	}
-
-	hmc_float calc_var_sf(spinor * in, int size, hmc_float sum)
-	{
-		hmc_float var = 0.;
-		for(int k = 0; k < size; k++) {
-			var +=
-				calc_var( in[k].e0.e0.re , sum)
-				+ calc_var( in[k].e0.e0.im , sum)
-				+ calc_var( in[k].e0.e1.re , sum)
-				+ calc_var( in[k].e0.e1.im , sum)
-				+ calc_var( in[k].e0.e2.re , sum)
-				+ calc_var( in[k].e0.e2.im , sum)
-				+ calc_var( in[k].e1.e0.re , sum)
-				+ calc_var( in[k].e1.e0.im , sum)
-				+ calc_var( in[k].e1.e1.re , sum)
-				+ calc_var( in[k].e1.e1.im , sum)
-				+ calc_var( in[k].e1.e2.re , sum)
-				+ calc_var( in[k].e1.e2.im , sum)
-				+ calc_var( in[k].e2.e0.re , sum)
-				+ calc_var( in[k].e2.e0.im , sum)
-				+ calc_var( in[k].e2.e1.re , sum)
-				+ calc_var( in[k].e2.e1.im , sum)
-				+ calc_var( in[k].e2.e2.re , sum)
-				+ calc_var( in[k].e2.e2.im , sum)
-				+ calc_var( in[k].e3.e0.re , sum)
-				+ calc_var( in[k].e3.e0.im , sum)
-				+ calc_var( in[k].e3.e1.re , sum)
-				+ calc_var( in[k].e3.e1.im , sum)
-				+ calc_var( in[k].e3.e2.re , sum)
-				+ calc_var( in[k].e3.e2.im , sum);
-		}
-		return var;
-	}
-	
-	const hardware::System * system;
-	hardware::Device * device;
-	physics::PRNG * prng;
-
-	const hardware::code::Spinors * code;
-	
-	size_t NUM_ELEMENTS_SF;
-	size_t NUM_ELEMENTS_EO;
-	bool useRandom;
-	bool evenOrOdd;
-	bool calcVariance;
-	hmc_complex alpha_host;
-	hmc_complex beta_host;
-	int ns;
-	int nt;
-	int iterations;
-};
-
-BOOST_AUTO_TEST_SUITE(BUILD)
+BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
 	{
@@ -294,10 +47,7 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 			{
 				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
 				in.load(createSpinorfield(NUM_ELEMENTS_SF));
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-				code->set_float_to_global_squarenorm_device(&in, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormAndStoreAsKernelResult(&in);
 			}
 	};
 
@@ -338,10 +88,7 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 			{
 				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
 				in.load(createSpinorfield(NUM_ELEMENTS_EO));
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-				code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormEvenOddAndStoreAsKernelResult(&in);
 			}
 	};
 	
@@ -482,11 +229,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 			{
 				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
 				in.load(createSpinorfield(NUM_ELEMENTS_SF));
-				hardware::buffers::Plain<double> sqnorm(1, device);
-
 				(switcher) ? code->set_spinorfield_cold_device(&in) : 	code->set_zero_spinorfield_device(&in);
-				code->set_float_to_global_squarenorm_device(&in, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormAndStoreAsKernelResult(&in);
 			}
 	};
 
@@ -512,11 +256,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
 			{
 				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
 				in.load(createSpinorfield(NUM_ELEMENTS_EO));
-				hardware::buffers::Plain<double> sqnorm(1, device);
-
 				(switcher) ? code->set_eoprec_spinorfield_cold_device(&in) : 	code->set_zero_spinorfield_eoprec_device(&in);
-				code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormEvenOddAndStoreAsKernelResult(&in);
 			}
 	};
 	
@@ -542,15 +283,13 @@ BOOST_AUTO_TEST_SUITE(SAX)
 			{
 				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
 				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
 				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
 				alpha.load(&alpha_host);
 
 				code->sax_device(&in, &alpha, &out);
-				code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormAndStoreAsKernelResult(&out);
 			}
 	};
 
@@ -601,15 +340,13 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 			{
 				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
 				const hardware::buffers::Spinor out(NUM_ELEMENTS_EO, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
 				in.load(createSpinorfield(NUM_ELEMENTS_EO, 123));
 				alpha.load(&alpha_host);
 
 				code->sax_eoprec_device(&in, &alpha, &out);
-				code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormEvenOddAndStoreAsKernelResult(&out);
 			}
 	};
 
@@ -661,7 +398,6 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
 				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
 				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
 				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
@@ -669,8 +405,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 				alpha.load(&alpha_host);
 
 				(switcher) ? code->saxpy_device(&in, &in2, &alpha, &out) : code->saxpy_device(&in, &in2, alpha_host, &out);
-				code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormAndStoreAsKernelResult(&out);
 			}
 	};
 
@@ -827,7 +562,6 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
 				const hardware::buffers::Spinor in2(NUM_ELEMENTS_EO, device);
 				const hardware::buffers::Spinor out(NUM_ELEMENTS_EO, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
 				in.load(createSpinorfield(NUM_ELEMENTS_EO, 123));
@@ -835,8 +569,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 				alpha.load(&alpha_host);
 
 				(switcher) ? code->saxpy_eoprec_device(&in, &in2, &alpha, &out) : code->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
-				code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormEvenOddAndStoreAsKernelResult(&out);
 			}
 	};
 
@@ -994,7 +727,6 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
 				const hardware::buffers::Plain<spinor> in3(NUM_ELEMENTS_SF, device);
 				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 				hardware::buffers::Plain<hmc_complex> beta(1, device);
 
@@ -1005,8 +737,7 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 				beta.load(&beta_host);
 
 				code->saxsbypz_device(&in, &in2, &in3, &alpha, &beta, &out);
-				code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormAndStoreAsKernelResult(&out);
 			}
 	};
 
@@ -1074,7 +805,6 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 				const hardware::buffers::Spinor in2(NUM_ELEMENTS_EO, device);
 				const hardware::buffers::Spinor in3(NUM_ELEMENTS_EO, device);
 				const hardware::buffers::Spinor out(NUM_ELEMENTS_EO, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 				hardware::buffers::Plain<hmc_complex> beta(1, device);
 
@@ -1085,8 +815,7 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 				beta.load(&beta_host);
 
 				code->saxsbypz_eoprec_device(&in, &in2, &in3, &alpha, &beta, &out);
-				code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
+				calcSquarenormEvenOddAndStoreAsKernelResult(&out);
 			}
 	};
 
@@ -1154,15 +883,14 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
 				const hardware::buffers::Spinor in2(NUM_ELEMENTS_EO, device);
 				const hardware::buffers::Spinor in3(NUM_ELEMENTS_EO, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 
 				in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity() );
 
 				code->convert_to_eoprec_device(&in2, &in3, &in);
-				code->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
-				sqnorm.dump(&kernelResult[0]);
-				code->set_float_to_global_squarenorm_eoprec_device(&in3, &sqnorm);
-				sqnorm.dump(&kernelResult[1]);
+				code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
+				doubleBuffer->dump(&kernelResult[0]);
+				code->set_float_to_global_squarenorm_eoprec_device(&in3, doubleBuffer);
+				doubleBuffer->dump(&kernelResult[1]);
 				
 				if (evenOrOdd)
 				{

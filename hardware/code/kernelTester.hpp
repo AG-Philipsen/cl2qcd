@@ -21,6 +21,7 @@
 #ifndef KERNELTESTER_H_
 #define KERNELTESTER_H_
 
+#include <boost/test/unit_test.hpp>
 #include "../host_functionality/logger.hpp"
 #include "testUtilities.hpp"
 #include <vector>
