@@ -28,8 +28,8 @@
 
 class GaugefieldTester : public KernelTester {
 public:
-	GaugefieldTester(std::string kernelName, std::string inputfile, int numberOfValues = 1):
-		KernelTester(kernelName, inputfile, numberOfValues) {
+	GaugefieldTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
+	  inputfile(getSpecificInputfile(inputfileIn)), KernelTester(kernelName, (getSpecificInputfile(inputfileIn)), numberOfValues) {
 		//todo: this object should be a member of KernelTester!
 		meta::Inputparameters parameters = createParameters(inputfile);
 
@@ -42,6 +42,13 @@ public:
 		code = device->get_gaugefield_code();
 	}
 protected:
+	std::string inputfile;
+	
+	static std::string getSpecificInputfile(std::string inputfileIn)
+	{
+		return "gaugefield/" + inputfileIn;
+	}
+
 	const hardware::buffers::SU3* getGaugefieldBuffer() {
 		return gaugefield->get_buffers()[0];
 	}
