@@ -46,7 +46,7 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 KernelTester::~KernelTester()
 {
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
-		logger.info() << "    Result = " << kernelResult[iteration];
+		logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 		logger.info() << "Ref. Value = " << referenceValue[iteration];
 		BOOST_CHECK_CLOSE(kernelResult[iteration], referenceValue[iteration], testPrecision);
 	}
