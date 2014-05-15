@@ -23,8 +23,6 @@ public:
 		(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
 		alpha_host = {parameters->get_beta(), parameters->get_rho()};
 		beta_host = {parameters->get_kappa(), parameters->get_mu()};
-		ns = parameters->get_nspace();
-		nt = parameters->get_ntime();
 		iterations = parameters->get_integrationsteps(0);
 		parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
 	}
@@ -46,19 +44,6 @@ protected:
 	hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
-
-	//todo: use the fct. from geometry.h here!
-	int get_nspace(int* coord)
-	{
-		int n = 0;
-		n = ns * ns * coord[3] + ns * coord[2] + coord[1];
-		return n;
-	}
-	
-	int get_global_pos(int spacepos, int t)
-	{
-		return spacepos + ns*ns*ns * t;
-	}
 	
 	const hardware::code::Spinors * code;
 	physics::PRNG * prng;
@@ -72,7 +57,5 @@ protected:
 	bool calcVariance;
 	hmc_complex alpha_host;
 	hmc_complex beta_host;
-	int ns;
-	int nt;
 	int iterations;
 };
