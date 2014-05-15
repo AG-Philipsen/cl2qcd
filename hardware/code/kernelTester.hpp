@@ -29,12 +29,14 @@
 class KernelTester {
 public:
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1);
-	~KernelTester();
+	virtual ~KernelTester();
 
 protected:
 	double testPrecision;
 	std::vector<double> kernelResult;
 	std::vector<double> referenceValue;
+	
+	meta::Inputparameters * parameters;
 };
 
 #endif /* KERNELTESTER_H_ */

@@ -25,15 +25,15 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
 	printKernelInformation(kernelNameIn);
-	meta::Inputparameters parameters = createParameters(inputfileIn);
+	parameters = new meta::Inputparameters( createParameters(inputfileIn) );
 
-	testPrecision = parameters.get_solver_prec();
+	testPrecision = parameters->get_solver_prec();
 
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 		if(iteration == 0) {
-			referenceValue[iteration] = parameters.get_test_ref_value();
+			referenceValue[iteration] = parameters->get_test_ref_value();
 		} else if(iteration == 1) {
-			referenceValue[iteration] = parameters.get_test_ref_value2();
+			referenceValue[iteration] = parameters->get_test_ref_value2();
 		} else {
 			throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
 		}
@@ -45,5 +45,6 @@ KernelTester::~KernelTester()
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 		BOOST_CHECK_CLOSE(kernelResult[iteration], referenceValue[iteration], testPrecision);
 	}
+	delete parameters;
 }
 

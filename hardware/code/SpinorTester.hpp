@@ -9,32 +9,37 @@
 
 class SpinorTester : public KernelTester {
 public:
-  //todo: move to .cpp eventually
+	//todo: move to .cpp eventually
 	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
 		inputfile(getSpecificInputfile(inputfileIn)), KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
 		{
-		//todo: this object should be a member of KernelTester!
-		meta::Inputparameters parameters = createParameters(inputfile);
+		system = new hardware::System(*parameters);
 
-		system = new hardware::System(parameters);
 		device = system->get_devices()[0];
-
 		code = device->get_spinor_code();
 		
 		prng = new physics::PRNG(*system);
 
 		doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 		
-		NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(parameters);
-		NUM_ELEMENTS_EO = hardware::code::get_eoprec_spinorfieldsize(parameters);
-		(parameters.get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
-		(parameters.get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
-		alpha_host = {parameters.get_beta(), parameters.get_rho()};
-		beta_host = {parameters.get_kappa(), parameters.get_mu()};
-		ns = parameters.get_nspace();
-		nt = parameters.get_ntime();
-		iterations = parameters.get_integrationsteps(0);
-		parameters.get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+		NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*parameters);
+		NUM_ELEMENTS_EO = hardware::code::get_eoprec_spinorfieldsize(*parameters);
+		(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
+		(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
+		alpha_host = {parameters->get_beta(), parameters->get_rho()};
+		beta_host = {parameters->get_kappa(), parameters->get_mu()};
+		ns = parameters->get_nspace();
+		nt = parameters->get_ntime();
+		iterations = parameters->get_integrationsteps(0);
+		parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+	}
+	
+	~SpinorTester()
+	{
+		delete doubleBuffer;
+		delete prng;
+		delete system;
+		
 	}
 protected:
 	std::string inputfile;
@@ -69,7 +74,7 @@ protected:
 	const hardware::code::Spinors * code;
 	physics::PRNG * prng;
 
-        hardware::buffers::Plain<double> * doubleBuffer;
+	hardware::buffers::Plain<double> * doubleBuffer;
 	
 	size_t NUM_ELEMENTS_SF;
 	size_t NUM_ELEMENTS_EO;
