@@ -768,6 +768,71 @@ BOOST_AUTO_TEST_SUITE(M_WILSON_COMPARE_NONEO_EO )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(M_TM_COMPARE_NONEO_EO )
+
+	class MTmEvenOddComparator : public MFermionEvenOddComparator
+	{
+	public:
+		MTmEvenOddComparator(std::string inputfile):
+			MFermionEvenOddComparator("m_tm_plus", inputfile)
+			{
+				code->M_tm_plus_device(in_noneo, out_noneo,  this->getGaugefieldBuffer(), parameters->get_kappa(), meta::get_mubar(*parameters));
+				SpinorTester::code->set_float_to_global_squarenorm_device(out_noneo, doubleBuffer);
+				doubleBuffer->dump(&resultNonEvenOdd);
+				
+				//suppose in1 is the even, in2 the odd input vector
+				//now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
+				SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate1);
+				SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate2);
+
+				code->dslash_eo_device(in_eo2, intermediate1, this->getGaugefieldBuffer(), EO, parameters->get_kappa());
+				code->M_tm_sitediagonal_device(in_eo1, intermediate2,  meta::get_mubar(*parameters));
+
+				SpinorTester::code->saxpy_eoprec_device(intermediate1, intermediate2, minusone, intermediate1);
+
+				//now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
+				SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate2);
+				SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate3);
+
+				code->dslash_eo_device(in_eo1, intermediate2, this->getGaugefieldBuffer(), OE, parameters->get_kappa());
+				code->M_tm_sitediagonal_device(in_eo2, intermediate3,  meta::get_mubar(*parameters));
+
+				SpinorTester::code->saxpy_eoprec_device(intermediate2, intermediate3, minusone, intermediate2);
+
+				//now, both output vectors have to be converted back to noneo
+				SpinorTester::code->convert_from_eoprec_device(intermediate1, intermediate2, out_eo);
+				SpinorTester::code->set_float_to_global_squarenorm_device(out_eo, doubleBuffer);
+				doubleBuffer->dump(&resultEvenOdd);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_1)
+	{
+		MTmEvenOddComparator tester("m_tm_compare_noneo_eo_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_2)
+	{
+		MTmEvenOddComparator tester("m_tm_compare_noneo_eo_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_3)
+	{
+		MTmEvenOddComparator tester("m_tm_compare_noneo_eo_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_4)
+	{
+		MTmEvenOddComparator tester("m_tm_compare_noneo_eo_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_5)
+	{
+		MTmEvenOddComparator tester("m_tm_compare_noneo_eo_input_5");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 {
 	//switcher switches between similar functions
@@ -990,35 +1055,6 @@ void test_m_tm_minus_compare_noneo_eo(std::string inputfile)
 	test_m_fermion_compare_noneo_eo(inputfile, 2);
 }
 
-
-BOOST_AUTO_TEST_SUITE(M_TM_COMPARE_NONEO_EO )
-
-BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_1)
-{
-	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_2)
-{
-	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_3)
-{
-	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_3");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_4)
-{
-	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_4");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_5)
-{
-	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_5");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_MINUS_COMPARE_NONEO_EO )
 
