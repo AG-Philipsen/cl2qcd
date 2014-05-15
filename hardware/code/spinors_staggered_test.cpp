@@ -18,245 +18,93 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../meta/util.hpp"
-#include "../host_functionality/host_random.h"
-#include "../physics/prng.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/spinors_staggered.hpp"
-//spinors.hpp needed for get_spinorfieldsize and get_eoprec_spinorfieldsize
-#include "../hardware/code/spinors.hpp" 
-#include <numeric>      // std::accumulate
-
+// #include "../meta/util.hpp"
+// #include "../host_functionality/host_random.h"
+// #include "../physics/prng.hpp"
+// #include "../hardware/device.hpp"
+// #include "../hardware/code/spinors_staggered.hpp"
+// //spinors.hpp needed for get_spinorfieldsize and get_eoprec_spinorfieldsize
+// #include "../hardware/code/spinors.hpp" 
+// #include <numeric>      // std::accumulate
+/*
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE_SPINORS_STAGGERED
-#include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>*/
+// 
+// //some functionality
+// #include "../../tests/test_util.h"
+// #include "../../tests/test_util_staggered.h"
+// #include "../../tests/Kolmogorov_Smirnov.h"
+// #include "../../tests/Normal_RNG_tests.h"
 
-//some functionality
-#include "test_util.h"
-#include "test_util_staggered.h"
-#include "Kolmogorov_Smirnov.h"
-#include "Normal_RNG_tests.h"
+// use the boost test framework
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS_STAGGERED
 
-void fill_sf_with_one(su3vec * sf_in, int size)
-{
-  for(int i = 0; i < size; ++i) {
-    sf_in[i].e0 = hmc_complex_one;
-    sf_in[i].e1 = hmc_complex_one;
-    sf_in[i].e2 = hmc_complex_one;
-  }
-  return;
-}
-
-void fill_sf_with_zero(su3vec * sf_in, int size)
-{
-  for(int i = 0; i < size; ++i) {
-    sf_in[i].e0 = hmc_complex_zero;
-    sf_in[i].e1 = hmc_complex_zero;
-    sf_in[i].e2 = hmc_complex_zero;
-  }
-  return;
-}
-
-//This function sums the real and imaginary parts of all su3vec contained in sf_in
-hmc_float count_sf(su3vec * sf_in, int size)
-{
-  hmc_float sum = 0.;
-  for (int i=0; i<size; i++){
-    sum +=
-        sf_in[i].e0.re + sf_in[i].e0.im 
-      + sf_in[i].e1.re + sf_in[i].e1.im 
-      + sf_in[i].e2.re + sf_in[i].e2.im;
-  }
-  return sum;
-}
-
-//The following two function return the sum of the square deviation (frome the mean) of the numbers
-//in sf_in. To get the variance, i.e. the mean square deviation, the result
-//must be divided by the number of numbers summed (see test_sf_gaussian_staggered in this file).
-hmc_float calc_var(hmc_float in, hmc_float mean){
-  return (in - mean) * (in - mean);
-}
-
-hmc_float calc_var_sf(su3vec * sf_in, int size, hmc_float sum){
-  hmc_float var = 0.;
-  for(int k=0; k<size; k++){
-    var +=
-        calc_var(sf_in[k].e0.re, sum) 
-      + calc_var(sf_in[k].e0.im, sum) 
-      + calc_var(sf_in[k].e1.re, sum)
-      + calc_var(sf_in[k].e1.im, sum) 
-      + calc_var(sf_in[k].e2.re, sum) 
-      + calc_var(sf_in[k].e2.im, sum);
-  }
-  return var;
-}
-
-//This function fills the field sf_in in the following way
-// eo==true  ---> sf_in[even]=ONE  and sf_in[odd]=ZERO
-// eo==false ---> sf_in[even]=ZERO and sf_in[odd]=ONE
-void fill_sf_with_one_eo(su3vec * sf_in, int size, bool eo, meta::Inputparameters &params)
-{
-  int ns = params.get_nspace();
-  int nt = params.get_ntime();
-  int x,y,z,t;
-  for (x = 0; x<ns; x++){
-    for (y = 0; y<ns; y++){
-      for (z = 0; z<ns; z++){
-	for (t = 0; t<nt; t++){
-	  int coord[4];
-	  coord[0] = t;
-	  coord[1] = x;
-	  coord[2] = y;
-	  coord[3] = z;
-	  int nspace =  get_nspace(coord, params);
-	  int global_pos = get_global_pos(nspace, t, params);
-	  //This if should be unnecessary if size==ns*ns*ns*nt
-	  if (global_pos > size)
-	    break;
-	  hmc_complex content;
-	  if ((x+y+z+t) %2 == 0){
-	    if (eo)
-	      content = hmc_complex_one;
-	    else
-	      content = hmc_complex_zero;
-	  }
-	  else{
-	    if (eo)
-	      content = hmc_complex_zero;
-	    else
-	      content = hmc_complex_one;
-	  }
-	  
-	  sf_in[global_pos].e0 = content;
-	  sf_in[global_pos].e1 = content;
-	  sf_in[global_pos].e2 = content;
-	}}}}
-  return;
-}
-
-//This function works in the following way
-// eo==true  ---> sum of all components of sf_in[even] is returned
-// eo==false ---> sum of all components of sf_in[odd]  is returned
-hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo, meta::Inputparameters &params)
-{
-  int ns = params.get_nspace();
-  int nt = params.get_ntime();
-  int x,y,z,t;
-  hmc_float sum = 0.;
-  for (x = 0; x<ns; x++){
-    for (y = 0; y<ns; y++){
-      for (z = 0; z<ns; z++){
-	for (t = 0; t<nt; t++){
-	  int coord[4];
-	  coord[0] = t;
-	  coord[1] = x;
-	  coord[2] = y;
-	  coord[3] = z;
-	  int nspace =  get_nspace(coord, params);
-	  int global_pos = get_global_pos(nspace, t, params);
-	  //This if should be unnecessary if size==ns*ns*ns*nt
-	  if (global_pos > size)
-	    break;
-	  if (
-	      ( eo ==true && (x+y+z+t) %2 == 0) ||
-	      ( eo ==false &&  (x+y+z+t) %2 == 1 )
-	      )
-	    {
-	      int i = global_pos;
-	      sum +=
-		sf_in[i].e0.re+ sf_in[i].e0.im 
-		+sf_in[i].e1.re+ sf_in[i].e1.im 
-		+sf_in[i].e2.re+ sf_in[i].e2.im;
-	    }
-	  else{
-	    continue;
-	  }
-	}}}}
-  return sum;
-}
+#include "SpinorStaggeredTester.hpp"
 
 
+BOOST_AUTO_TEST_SUITE(BUILD)
 
-void fill_sf_with_random(su3vec * sf_in, int size, int seed)
-{
-  prng_init(seed);
-  for(int i = 0; i < size; ++i) {
-    sf_in[i].e0.re = prng_double();
-    sf_in[i].e1.re = prng_double();
-    sf_in[i].e2.re = prng_double();
-    
-    sf_in[i].e0.im = prng_double();
-    sf_in[i].e1.im = prng_double();
-    sf_in[i].e2.im = prng_double();
-  } 
-  return;
-}
-
-void fill_sf_with_random(su3vec * sf_in, int size)
-{
-  fill_sf_with_random(sf_in, size, 123456);
-}
-
-
-/********************************************************************************/
-
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_spinors_staggered";
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	for(auto device: system.get_devices()) {
-		device->get_spinor_staggered_code();
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+	   BOOST_CHECK_NO_THROW(SpinorStaggeredTester spinorStaggeredTester("build all kernels",
+									     "spinors_staggered_build_input_1", 0));
 	}
-	BOOST_MESSAGE("Test done");
-}
 
-void test_sf_squarenorm_staggered(std::string inputfile)
-{
-	using namespace hardware::buffers;
+	BOOST_AUTO_TEST_CASE( BUILD_2 )
+	{
+	   BOOST_CHECK_NO_THROW(SpinorStaggeredTester spinorStaggeredTester("build all kernels", 
+									      "spinors_staggered_build_input_2", 0));
+	}
 
-	std::string kernelName;
-	kernelName = "global_squarenorm";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
+BOOST_AUTO_TEST_SUITE_END()
 
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);	
-	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
-	Plain<hmc_float> sqnorm(1, device->get_device());
+///////////////////////////////////////
 
-	su3vec * sf_in;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
+BOOST_AUTO_TEST_SUITE(SQUARENORM)
 
-        //The following three lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-        /*
-        print_staggeredfield_to_textfile("ref_vec_sq",sf_in,params); 
-        logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
+	class SquarenormTester: public SpinorStaggeredTester{
+	  public:
+		SquarenormTester(std::string inputfile) : SpinorStaggeredTester("squarenorm", inputfile, 1){
+			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+			in.load(createSpinorfield(spinorfieldElements));
+			calcSquarenormAndStoreAsKernelResult(&in);
+		}
+	};
 
-	in.load(sf_in);
+	BOOST_AUTO_TEST_CASE( SQUARENORM_1 )
+	{
+	   SquarenormTester("squarenorm_input_1");
+	}
 
-	logger.info() << "Run kernel";
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+	BOOST_AUTO_TEST_CASE( SQUARENORM_2 )
+	{
+	   SquarenormTester("squarenorm_input_2");
+	}
 
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_1 )
+	{
+	   SquarenormTester("squarenorm_reduction_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_2 )
+	{
+	   SquarenormTester("squarenorm_reduction_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_3 )
+	{
+	   SquarenormTester("squarenorm_reduction_input_3");
+	}	
+	
+BOOST_AUTO_TEST_SUITE_END()
+
+
+#if 0
+
+
 
 void test_sf_scalar_product_staggered(std::string inputfile)
 {
@@ -1491,54 +1339,13 @@ void test_sf_sax_vectorized_and_squarenorm_staggered_eo(std::string inputfile)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-  test_build("/opencl_module_spinors_staggered_build_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( BUILD_2 )
-{
-  test_build("/opencl_module_spinors_staggered_build_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE(SF_SQUARENORM)
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_1 )
-{
-  test_sf_squarenorm_staggered("/sf_squarenorm_staggered_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_2 )
-{
-  test_sf_squarenorm_staggered("/sf_squarenorm_staggered_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_REDUCTION)
 
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_1 )
-{
-  test_sf_squarenorm_staggered("/sf_squarenorm_staggered_reduction_input_1");
-}
 
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_2 )
-{
-  test_sf_squarenorm_staggered("/sf_squarenorm_staggered_reduction_input_2");
-}
 
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_3 )
-{
-  test_sf_squarenorm_staggered("/sf_squarenorm_staggered_reduction_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT)
@@ -3440,3 +3247,4 @@ BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_10 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+#endif
