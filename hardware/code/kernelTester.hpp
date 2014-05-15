@@ -25,6 +25,8 @@
 #include "../host_functionality/logger.hpp"
 #include "testUtilities.hpp"
 #include <vector>
+#include "../system.hpp"
+#include "../device.hpp"
 
 class KernelTester {
 public:
@@ -37,6 +39,8 @@ protected:
 	std::vector<double> referenceValue;
 	
 	meta::Inputparameters * parameters;
+	const hardware::System * system;
+	hardware::Device * device;
 };
 
 #endif /* KERNELTESTER_H_ */

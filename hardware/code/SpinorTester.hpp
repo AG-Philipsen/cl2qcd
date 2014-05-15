@@ -3,7 +3,6 @@
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
 #include "../../physics/prng.hpp"
-#include "../device.hpp"
 #include "spinors.hpp"
 #include "complex.hpp"
 
@@ -11,13 +10,9 @@ class SpinorTester : public KernelTester {
 public:
 	//todo: move to .cpp eventually
 	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-		inputfile(getSpecificInputfile(inputfileIn)), KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+		KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
 		{
-		system = new hardware::System(*parameters);
-
-		device = system->get_devices()[0];
 		code = device->get_spinor_code();
-		
 		prng = new physics::PRNG(*system);
 
 		doubleBuffer = new hardware::buffers::Plain<double> (1, device);
@@ -38,23 +33,19 @@ public:
 	{
 		delete doubleBuffer;
 		delete prng;
-		delete system;
-		
 	}
 protected:
-	std::string inputfile;
-	
-        std::string getSpecificInputfile(std::string inputfileIn);	
-        spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
-        void fill_with_one(spinor * in, int size);
-        void fill_with_random(spinor * in, int size, int seed);
-        spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();	
-        void fill_with_one_eo(spinor * in, int size, bool eo);
-        hmc_float count_sf(spinor * in, int size);
-        hmc_float calc_var(hmc_float in, hmc_float mean);
-        hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
-        void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
-        void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
+	std::string getSpecificInputfile(std::string inputfileIn);	
+	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
+	void fill_with_one(spinor * in, int size);
+	void fill_with_random(spinor * in, int size, int seed);
+	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();	
+	void fill_with_one_eo(spinor * in, int size, bool eo);
+	hmc_float count_sf(spinor * in, int size);
+	hmc_float calc_var(hmc_float in, hmc_float mean);
+	hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
+	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
+	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
 
 	//todo: use the fct. from geometry.h here!
 	int get_nspace(int* coord)
@@ -69,8 +60,6 @@ protected:
 		return spacepos + ns*ns*ns * t;
 	}
 	
-	const hardware::System * system;
-	hardware::Device * device;
 	const hardware::code::Spinors * code;
 	physics::PRNG * prng;
 

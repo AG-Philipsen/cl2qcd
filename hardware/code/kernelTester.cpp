@@ -27,6 +27,9 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	printKernelInformation(kernelNameIn);
 	parameters = new meta::Inputparameters( createParameters(inputfileIn) );
 
+	system = new hardware::System(*parameters);
+	device = system->get_devices()[0];
+	
 	testPrecision = parameters->get_solver_prec();
 
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
@@ -46,5 +49,6 @@ KernelTester::~KernelTester()
 		BOOST_CHECK_CLOSE(kernelResult[iteration], referenceValue[iteration], testPrecision);
 	}
 	delete parameters;
+	delete system;
 }
 
