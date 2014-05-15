@@ -213,6 +213,40 @@ public:
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( GAMMA5 )
+
+	class Gamma5Tester : public FermionTester
+	{
+public:
+		Gamma5Tester(std::string inputfile) :
+			FermionTester("gamma5", inputfile, 1)
+		{
+			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+			spinor * sf_in;
+			sf_in = new spinor[spinorfieldElements];
+			
+			in.load( createSpinorfield(spinorfieldElements) );
+			code->gamma5_device(&in);
+			in.dump(sf_in);
+			kernelResult[0] = count_sf(sf_in, spinorfieldElements);
+	
+			delete sf_in;
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( GAMMA5_1)
+	{
+		Gamma5Tester tester("gamma5_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( GAMMA5_2 )
+	{
+		Gamma5Tester tester("gamma5_input_2");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
 
@@ -306,98 +340,6 @@ const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 	return gf.get_buffers().at(0);
 }
 
-void test_m_fermion(std::string inputfile, int switcher)
-{
-	//switcher switches between similar functions
-	//0: m_wilson (pure wilson)
-	//1: m_tm_plus (twisted mass, upper flavour)
-	//2: m_tm_minus (twisted mass, lower flavour)
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher == 0) {
-		kernelName = "m_wilson";
-	} else if(switcher == 1) {
-		kernelName = "m_tm_plus";
-	} else if(switcher == 2) {
-		kernelName = "m_tm_minus";
-	} else {
-		logger.fatal() << "wrong parameter in test_m_fermion";
-	}
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	auto * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	out.load(sf_in);
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(switcher == 0) {
-		device->M_wilson_device(&in, &out,  cpu.get_gaugefield(), params.get_kappa());
-	} else if(switcher == 1) {
-		device->M_tm_plus_device(&in, &out,  cpu.get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
-	} else if(switcher == 2) {
-		device->M_tm_minus_device(&in, &out,  cpu.get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
-	} else {
-		logger.fatal() << "wrong parameter in test_m_fermion";
-	}
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_m_wilson(std::string inputfile)
-{
-	test_m_fermion(inputfile, 0);
-}
-
-void test_m_tm_plus(std::string inputfile)
-{
-	test_m_fermion(inputfile, 1);
-}
-
-void test_m_tm_minus(std::string inputfile)
-{
-	test_m_fermion(inputfile, 2);
-}
-
 hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
 {
 	hmc_float res = 0.;
@@ -470,6 +412,11 @@ void test_gamma5(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
+
+	BOOST_AUTO_TEST_CASE( GAMMA5_test)
+	{
+		test_gamma5("gamma5_input_2");
+	}
 
 void test_gamma5_eo(std::string inputfile)
 {
@@ -715,22 +662,6 @@ void test_dslash_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
-
-
-
-BOOST_AUTO_TEST_SUITE( GAMMA5 )
-
-BOOST_AUTO_TEST_CASE( GAMMA5_1)
-{
-	test_gamma5("/gamma5_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( GAMMA5_2 )
-{
-	test_gamma5("/gamma5_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
 
