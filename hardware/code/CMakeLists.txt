@@ -93,7 +93,8 @@ add_test(Opencl_module_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURR
 
 add_executable(hardware_code_fermions_test fermions_test.cpp)
 target_link_libraries(hardware_code_fermions_test
-	optimal
+	prng
+	lattices
 	kernelTestUtilities
 )
 add_test(hardware_code_fermions_CPU       hardware_code_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
