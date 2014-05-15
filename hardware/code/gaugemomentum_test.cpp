@@ -56,7 +56,7 @@ protected:
 
    void fill_with_one(hmc_float * sf_in)
    {
-     for(int i = 0; i < NUM_ELEMENTS_AE; ++i) {
+     for(int i = 0; i < (int) NUM_ELEMENTS_AE; ++i) {
        sf_in[i] = 1.;
      }
      return;
@@ -65,7 +65,7 @@ protected:
    void fill_with_random(hmc_float * sf_in, int seed)
    {
      prng_init(seed);
-     for(int i = 0; i < NUM_ELEMENTS_AE; ++i) {
+     for(int i = 0; i < (int) NUM_ELEMENTS_AE; ++i) {
        sf_in[i] = prng_double();
      }
      return;
@@ -135,6 +135,30 @@ BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_3  )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( SET_ZERO )
+
+class SetZeroTester : public GaugemomentumTester
+{
+public:
+  SetZeroTester(std::string inputfile) :
+    GaugemomentumTester("set zero", inputfile, 1)
+  {
+    hardware::buffers::Gaugemomentum in(numberOfGaugemomentumElements, device);
+    code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>( createGaugemomentum() ));
+    code->set_zero_gaugemomentum(&in);
+    calcSquarenormAndStoreAsKernelResult(&in);
+  }
+};
+
+
+BOOST_AUTO_TEST_CASE( SET_ZERO_1 )
+{
+  SetZeroTester tester("set_zero_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 
 #include "../../meta/util.hpp"
@@ -277,51 +301,6 @@ void test_generate_gaussian_gaugemomenta(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_set_zero_gm(std::string inputfile)
-{
-	std::string kernelName = "set_zero_gm";
-	printKernelInfo(kernelName);
-
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	for(auto device: system.get_devices()) {
-		auto code = device->get_gaugemomentum_code();
-		hmc_float * gm_in;
-
-		logger.info() << "create buffers";
-		size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-		gm_in = new hmc_float[NUM_ELEMENTS_AE];
-		fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
-		BOOST_REQUIRE(gm_in);
-
-		hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, code->get_device());
-		code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
-		hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-		logger.info() << "|in|^2:";
-		code->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-		hmc_float cpu_back;
-		sqnorm.dump(&cpu_back);
-		logger.info() << cpu_back;
-
-		logger.info() << "Run kernel";
-		code->set_zero_gaugemomentum(&in);
-
-		logger.info() << "|out|^2:";
-		code->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-		hmc_float cpu_back2;
-		sqnorm.dump(&cpu_back2);
-		logger.info() << cpu_back2;
-
-		logger.info() << "Free buffers";
-		delete[] gm_in;
-
-		testFloatAgainstInputparameters(cpu_back2, params);
-	}
-	BOOST_MESSAGE("Test done");
-}
-
 void test_gm_saxpy(std::string inputfile)
 {
 	std::string kernelName = "gaugemomentum_saxpy";
@@ -441,15 +420,6 @@ BOOST_AUTO_TEST_CASE( GM_CONVERT_FROM_SOA_1 )
 {
 	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
 	test_gm_convert_from_soa("/gm_convert_from_soa_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( SET_ZERO_GM )
-
-BOOST_AUTO_TEST_CASE( SET_ZERO_GM_1 )
-{
-	test_set_zero_gm("/gm_set_zero_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
