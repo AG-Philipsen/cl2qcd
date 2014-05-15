@@ -646,11 +646,11 @@ const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 	return gf.get_buffers().at(0);
 }
 
-class MFermionEvenOddComparisionTester : public FermionTester
+class MFermionEvenOddComparator : public FermionTester
 {
 public:
-	MFermionEvenOddComparisionTester(std::string kernelName, std::string inputfile):
-		FermionTester(kernelName + " in EvenOdd and non-EvenOdd formulation", inputfile)
+	MFermionEvenOddComparator(std::string kernelName, std::string inputfile):
+		FermionTester(kernelName + " in EvenOdd and non-EvenOdd formulation", inputfile, 2)
 	{
 		in_eo1 = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
 		in_eo2 = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
@@ -676,42 +676,9 @@ public:
 		minusone = new hardware::buffers::Plain<hmc_complex>(1, device);
 		minusone->load(&minusone_tmp);
 		
-		//specific
-		code->M_wilson_device(in_noneo, out_noneo,  this->getGaugefieldBuffer(), parameters->get_kappa());
-			hmc_float cpu_res_noneo;
-	SpinorTester::code->set_float_to_global_squarenorm_device(out_noneo, doubleBuffer);
-	doubleBuffer->dump(&cpu_res_noneo);
-		
-				//suppose in1 is the even, in2 the odd input vector
-		//now calc out_tmp_eo1 = (1 in1 + D_eo in2)
-		SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate1);
-
-		code->dslash_eo_device(in_eo2, intermediate1, this->getGaugefieldBuffer(), EO, parameters->get_kappa());
-
-		SpinorTester::code->saxpy_eoprec_device(intermediate1, in_eo1, minusone, intermediate1);
-
-		//now calc out_tmp_eo2 = ( 1 in2 + D_oe in1)
-		SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate2);
-
-		code->dslash_eo_device(in_eo1, intermediate2, this->getGaugefieldBuffer(), OE, parameters->get_kappa());
-
-		SpinorTester::code->saxpy_eoprec_device(intermediate2, in_eo2, minusone, intermediate2);
-
-		//now, both output vectors have to be converted back to noneo
-		SpinorTester::code->convert_from_eoprec_device(intermediate1, intermediate2, out_eo);
-		
-	hmc_float cpu_res_eo;
-	SpinorTester::code->set_float_to_global_squarenorm_device(out_eo, doubleBuffer);
-	doubleBuffer->dump(&cpu_res_eo);
-		
-			BOOST_REQUIRE_CLOSE(cpu_res_eo, cpu_res_noneo, parameters->get_solver_prec() );
-	testFloatAgainstInputparameters(cpu_res_noneo, *parameters);
-	testFloatAgainstInputparameters(cpu_res_eo, *parameters);
-	
-		kernelResult[0] = cpu_res_eo;
-		kernelResult[1] = cpu_res_eo - cpu_res_noneo;
+		referenceValue[1] = referenceValue[0];
 	}
-	~MFermionEvenOddComparisionTester()
+	~MFermionEvenOddComparator()
 	{
 		delete in_eo1;
 		delete in_eo2;
@@ -721,9 +688,15 @@ public:
 		delete intermediate1;
 		delete intermediate2;
 		delete intermediate3;
+		
+		kernelResult[0] = resultEvenOdd;
+		kernelResult[1] = resultNonEvenOdd;
 	}
 	
 protected:
+		double resultEvenOdd;
+		double resultNonEvenOdd;
+	
 		const hardware::buffers::Spinor * in_eo1;
 		const hardware::buffers::Spinor * in_eo2;
 		const hardware::buffers::Plain<spinor> * out_eo;
@@ -735,10 +708,65 @@ protected:
 		hardware::buffers::Plain<hmc_complex> * minusone;
 };
 
-BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_1)
-{
-	MFermionEvenOddComparisionTester tester("blub" , "m_wilson_compare_noneo_eo_input_1");
-}
+
+
+
+BOOST_AUTO_TEST_SUITE(M_WILSON_COMPARE_NONEO_EO )
+
+	class MWilsonEvenOddComparator : public MFermionEvenOddComparator
+	{
+	public:
+		MWilsonEvenOddComparator(std::string inputfile):
+			MFermionEvenOddComparator("m_wilson", inputfile)
+			{
+				code->M_wilson_device(in_noneo, out_noneo,  this->getGaugefieldBuffer(), parameters->get_kappa());
+				SpinorTester::code->set_float_to_global_squarenorm_device(out_noneo, doubleBuffer);
+				doubleBuffer->dump(&resultNonEvenOdd);
+				
+				//suppose in1 is the even, in2 the odd input vector
+				//now calc out_tmp_eo1 = (1 in1 + D_eo in2)
+				SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate1);
+				code->dslash_eo_device(in_eo2, intermediate1, this->getGaugefieldBuffer(), EO, parameters->get_kappa());
+				SpinorTester::code->saxpy_eoprec_device(intermediate1, in_eo1, minusone, intermediate1);
+
+				//now calc out_tmp_eo2 = ( 1 in2 + D_oe in1)
+				SpinorTester::code->set_zero_spinorfield_eoprec_device(intermediate2);
+				code->dslash_eo_device(in_eo1, intermediate2, this->getGaugefieldBuffer(), OE, parameters->get_kappa());
+				SpinorTester::code->saxpy_eoprec_device(intermediate2, in_eo2, minusone, intermediate2);
+
+				SpinorTester::code->convert_from_eoprec_device(intermediate1, intermediate2, out_eo);
+				
+				SpinorTester::code->set_float_to_global_squarenorm_device(out_eo, doubleBuffer);
+				doubleBuffer->dump(&resultEvenOdd);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_1)
+	{
+		MWilsonEvenOddComparator tester("m_wilson_compare_noneo_eo_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_2)
+	{
+		MWilsonEvenOddComparator tester("m_wilson_compare_noneo_eo_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_3)
+	{
+		MWilsonEvenOddComparator tester("m_wilson_compare_noneo_eo_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_4)
+	{
+		MWilsonEvenOddComparator tester("m_wilson_compare_noneo_eo_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_5)
+	{
+		MWilsonEvenOddComparator tester("m_wilson_compare_noneo_eo_input_5");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 {
@@ -962,29 +990,6 @@ void test_m_tm_minus_compare_noneo_eo(std::string inputfile)
 	test_m_fermion_compare_noneo_eo(inputfile, 2);
 }
 
-BOOST_AUTO_TEST_SUITE(M_WILSON_COMPARE_NONEO_EO )
-
-BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_2)
-{
-	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_3)
-{
-	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_3");
-}
-
-BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_4)
-{
-	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_4");
-}
-
-BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_5)
-{
-	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_5");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_COMPARE_NONEO_EO )
 
