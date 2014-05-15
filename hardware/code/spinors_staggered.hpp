@@ -19,8 +19,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _HARDWARE_CODE_SPINORS_STAGGERED
-#define _HARDWARE_CODE_SPINORS_STAGGERED
+#ifndef _HARDWARE_CODE_SPINORS_STAGGERED_
+#define _HARDWARE_CODE_SPINORS_STAGGERED_
 
 #include "opencl_module.hpp"
 
@@ -471,4 +471,4 @@ private:
 
 }
 
-#endif // _HARDWARE_CODE_SPINORS_
+#endif // _HARDWARE_CODE_SPINORS_STAGGERED_

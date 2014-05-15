@@ -18,12 +18,12 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TESTUTILITIES_HPP_
-#define TESTUTILITIES_HPP_
+#ifndef _TESTUTILITIES_HPP_
+#define _TESTUTILITIES_HPP_
 
 #include "../meta/inputparameters.hpp"
 
 meta::Inputparameters createParameters(std::string inputfile);
 void printKernelInformation(std::string name);
 
-#endif
+#endif // _TESTUTILITIES_HPP_
