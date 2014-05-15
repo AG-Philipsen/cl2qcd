@@ -330,6 +330,34 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
+
+	class MTmInverseSitediagonalTester: public FermionmatrixEvenOddTester
+	{
+	public:
+		MTmInverseSitediagonalTester(std::string inputfile):
+			FermionmatrixEvenOddTester("m_tm_inverse_sitediagonal", inputfile)
+			{
+				code->M_tm_inverse_sitediagonal_device( in, out);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
+	{
+		MTmInverseSitediagonalTester tester("m_tm_inverse_sitediagonal_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_2)
+	{
+		MTmInverseSitediagonalTester tester("m_tm_inverse_sitediagonal_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_3)
+	{
+		MTmInverseSitediagonalTester tester("m_tm_inverse_sitediagonal_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
@@ -556,25 +584,6 @@ void test_dslash_eo(std::string inputfile)
 
 
 /*
-BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
-
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
-{
-	test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_2)
-{
-	test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_3)
-{
-	test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
 
 BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
