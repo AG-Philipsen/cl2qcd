@@ -84,26 +84,78 @@ BOOST_AUTO_TEST_SUITE(SQUARENORM)
 	   SquarenormTester("squarenorm_input_2");
 	}
 
-	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_1 )
+	BOOST_AUTO_TEST_CASE( SQUARENORM_REDUCTION_1 )
 	{
 	   SquarenormTester("squarenorm_reduction_input_1");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_2 )
+	BOOST_AUTO_TEST_CASE( SQUARENORM_REDUCTION_2 )
 	{
 	   SquarenormTester("squarenorm_reduction_input_2");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SQUARENORM_REDUCTION_3 )
+	BOOST_AUTO_TEST_CASE( SQUARENORM_REDUCTION_3 )
 	{
 	   SquarenormTester("squarenorm_reduction_input_3");
 	}	
 	
 BOOST_AUTO_TEST_SUITE_END()
 
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
+
+	class ScalarProductTester: public SpinorStaggeredTester{
+	   public:
+		ScalarProductTester(std::string inputfile) : SpinorStaggeredTester("scalar_product", inputfile, 2){
+			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+			const hardware::buffers::Plain<su3vec> in2(spinorfieldElements, device);
+			in.load(createSpinorfield(spinorfieldElements, 123));
+			in2.load(createSpinorfield(spinorfieldElements, 456));
+			hardware::buffers::Plain<hmc_complex> result(1, device);
+
+			code->set_complex_to_scalar_product_device(&in, &in2, &result);
+			hmc_complex resultHost;
+			result.dump(&resultHost);
+
+			kernelResult[0] = resultHost.re;
+			kernelResult[1] = resultHost.im;
+			}
+	};
+
+
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
+	{
+	    ScalarProductTester("/sf_scalar_product_staggered_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_2 )
+	{
+	    ScalarProductTester("/sf_scalar_product_staggered_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_1 )
+	{
+	    ScalarProductTester("/sf_scalar_product_staggered_reduction_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_2 )
+	{
+	    ScalarProductTester("/sf_scalar_product_staggered_reduction_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_3 )
+	{
+	    ScalarProductTester("/sf_scalar_product_staggered_reduction_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+
+
 
 #if 0
-
 
 
 void test_sf_scalar_product_staggered(std::string inputfile)
@@ -1347,40 +1399,6 @@ void test_sf_sax_vectorized_and_squarenorm_staggered_eo(std::string inputfile)
 
 
 
-
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_1 )
-{
-  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_2 )
-{
-  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_REDUCTION)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_1 )
-{
-  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_reduction_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_2 )
-{
-  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_reduction_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REDUCTION_3 )
-{
-  test_sf_scalar_product_staggered("/sf_scalar_product_staggered_reduction_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(SF_ZERO)
