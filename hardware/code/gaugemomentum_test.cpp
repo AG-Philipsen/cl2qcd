@@ -28,8 +28,8 @@
 class GaugemomentumTester : public KernelTester
 {
 public:
-  GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues = 1) :
-    KernelTester(kernelName, getSpecificInputfile(inputfile), numberOfValues)
+  GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues = 1, int typeOfComparision = 1) :
+    KernelTester(kernelName, getSpecificInputfile(inputfile), numberOfValues, typeOfComparision)
   {
     code = device->get_gaugemomentum_code();
     doubleBuffer = new hardware::buffers::Plain<double> (1, device);
@@ -283,119 +283,104 @@ hmc_float calc_var_gm(ae * ae_in, int size, hmc_float sum){
   return var;
 }
 
-void test_generate_gaussian_gaugemomenta(std::string inputfile)
+BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
+
+class GaussianTester : public GaugemomentumTester
 {
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "generate_gaussian_gaugemomentum";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-
-	physics::PRNG prng(system);
+public:
+  GaussianTester(std::string inputfile) :
+    GaugemomentumTester("gaussian gaugemomentum", inputfile, 1, 2)
+  {
+	physics::PRNG prng(*system);
+	auto prng_buf = prng.get_buffers().at(0);
 	cl_int err = CL_SUCCESS;
-	auto * device = system.get_devices().at(0)->get_gaugemomentum_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-	size_t NUM_ELEMENTS_GM = meta::get_vol4d(params) * NDIM;
-	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	//CP: run the kernel a couple of times times
-	int iterations = params.get_integrationsteps(0);
-
+	hardware::buffers::Gaugemomentum out(numberOfGaugemomentumElements, device);
+	double result = 0.;
+	double sum = 0.;
+	int iterations = parameters->get_integrationsteps(0);
 	ae * gm_out;
-	gm_out = new ae[NUM_ELEMENTS_GM * iterations];
+
+	gm_out = new ae[numberOfGaugemomentumElements * iterations];
 	BOOST_REQUIRE(gm_out);
 
-	auto gm_code = device->get_device()->get_gaugemomentum_code();
-	auto prng_buf = prng.get_buffers().at(0);
-
-	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
-	  logger.info() << "Run kernel";
-	  device->generate_gaussian_gaugemomenta_device(&out, prng_buf);
-	  out.dump(&gm_out[i*NUM_ELEMENTS_GM]);
-	  sum += count_gm(&gm_out[i*NUM_ELEMENTS_GM], NUM_ELEMENTS_GM);
+	  code->generate_gaussian_gaugemomenta_device(&out, prng_buf);
+	  out.dump(&gm_out[i*numberOfGaugemomentumElements]);
+	  sum += count_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements);
 	}
-	logger.info() << "result: mean";
-	hmc_float cpu_res = 0.;
-	sum = sum/iterations/NUM_ELEMENTS_GM/8;	
-	cpu_res= sum;
-	logger.info() << cpu_res;
+	sum = sum/iterations/numberOfGaugemomentumElements/8;	
+	result= sum;
 
-	if(params.get_read_multiple_configs()  == false){
-	  //CP: calc std derivation
-	  hmc_float var=0.;
+	if(parameters->get_read_multiple_configs()  == false){
+	  double var=0.;
 	  for (int i=0; i<iterations; i++){
-	    var += calc_var_gm(&gm_out[i*NUM_ELEMENTS_GM], NUM_ELEMENTS_GM, sum);
+	    var += calc_var_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements, sum);
 	  }
-	  var=var/iterations/NUM_ELEMENTS_GM/8;
+	  var=var/iterations/numberOfGaugemomentumElements/8;
 	  
-	  cpu_res = sqrt(var);
-	  logger.info() << "result: variance";
-	  logger.info() << cpu_res;
+	  result = sqrt(var);
 	}
 
-	testFloatSizeAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_gm_convert_to_soa(std::string inputfile)
-{
-
-}
-
-void test_gm_convert_from_soa(std::string inputfile)
-{
-
-}
-
-BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
+	kernelResult[0] = result;
+  }
+};
 
 BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 )
 {
-	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_1");
+  GaussianTester tester("gaussian_input_1");
 }
 
 BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_2 )
 {
-	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_2");
+  GaussianTester tester("gaussian_input_2");
 }
 
 BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_3 )
 {
-	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_3");
+  GaussianTester tester("gaussian_input_3");
 }
 
 BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_4 )
 {
-	test_generate_gaussian_gaugemomenta("/gm_gaussian_input_4");
+  GaussianTester tester("gaussian_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( GM_CONVERT_TO_SOA )
+BOOST_AUTO_TEST_SUITE( CONVERT_TO_SOA )
+
+class ConvertToSoaTester : public GaugemomentumTester
+{
+public:
+  ConvertToSoaTester(std::string inputfile) :
+    GaugemomentumTester("convert to soa", inputfile, 1)
+  {
+    BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+  }
+};
 
 BOOST_AUTO_TEST_CASE( GM_CONVERT_TO_SOA_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_gm_convert_to_soa("/gm_convert_to_soa_input_1");
+  ConvertToSoaTester tester("");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( GM_CONVERT_FROM_SOA )
+BOOST_AUTO_TEST_SUITE( CONVERT_FROM_SOA )
+
+class ConvertFromSoaTester : public GaugemomentumTester
+{
+public:
+  ConvertFromSoaTester(std::string inputfile) :
+    GaugemomentumTester("convert from soa", inputfile, 1)
+  {
+    BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+  }
+};
 
 BOOST_AUTO_TEST_CASE( GM_CONVERT_FROM_SOA_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_gm_convert_from_soa("/gm_convert_from_soa_input_1");
+  ConvertFromSoaTester tester("");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
