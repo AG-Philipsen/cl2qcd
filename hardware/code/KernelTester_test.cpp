@@ -41,12 +41,30 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatDoesNotExist), meta::Inputparameters::parse_aborted  );
 	}
 
-	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT )
+	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT_1 )
 	{
 		std::string nameOfKernel = "test";
 		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
 		int maximumNumberOfReferenceValues = 2;
 		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues + 1) , std::invalid_argument );
+	}
+
+	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT_2 )
+	{
+		std::string nameOfKernel = "test";
+		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
+		int maximumNumberOfReferenceValues = 2;
+		int minimalTypeOfComparision = 1;
+		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues, minimalTypeOfComparision - 1), std::invalid_argument );
+	}
+
+	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT_3 )
+	{
+		std::string nameOfKernel = "test";
+		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
+		int maximumNumberOfReferenceValues = 2;
+		int maximumTypeOfComparision = 2;
+		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues, maximumTypeOfComparision + 1), std::invalid_argument );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -67,6 +85,36 @@ BOOST_AUTO_TEST_SUITE ( DOUBLE )
 		std::string nameOfInputfileThatExists = "kernelTester_input";
 		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
 	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE ( DOUBLE_SMALL )
+
+	class TrivialKernelTester : public KernelTester {
+	public:
+	  TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn, double valueToCompare):
+		  KernelTester(kernelNameIn, inputfileIn, 1, 2) {
+			kernelResult[0] = valueToCompare;
+		}
+	};
+
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (TRIVIALKERNEL_1, 1)
+	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL_1 )
+	{
+		std::string nameOfKernel = "test";
+		std::string nameOfInputfileThatExists = "kernelTester_input";
+		double valueBiggerThanOne = 1.1;
+		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, valueBiggerThanOne);
+	}
+
+	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL_2 )
+	{
+		std::string nameOfKernel = "test";
+		std::string nameOfInputfileThatExists = "kernelTester_input";
+		double valueSmallerThanOne = 0.9;
+		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, valueSmallerThanOne);
+	}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
