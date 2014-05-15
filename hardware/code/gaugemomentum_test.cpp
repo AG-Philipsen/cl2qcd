@@ -34,8 +34,9 @@ public:
   {
     code = device->get_gaugemomentum_code();
     doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+    gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(numberOfGaugemomentumElements, device);
 
-    NUM_ELEMENTS_AE = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
+    numberOfAlgebraElements = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
     numberOfGaugemomentumElements = meta::get_vol4d(*parameters) * NDIM;
     useRandom = (parameters->get_solver() == meta::Inputparameters::cg)  ? false : true;
   }
@@ -49,7 +50,7 @@ protected:
   double * createGaugemomentum(int seed = 123456)
   {
     double * gm_in;
-    gm_in = new double[NUM_ELEMENTS_AE];
+    gm_in = new double[numberOfAlgebraElements];
     useRandom ? fill_with_random(gm_in, seed) : fill_with_one(gm_in);
     BOOST_REQUIRE(gm_in);
     return gm_in;    
@@ -57,7 +58,7 @@ protected:
 
    void fill_with_one(double * sf_in)
    {
-     for(int i = 0; i < (int) NUM_ELEMENTS_AE; ++i) {
+     for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
        sf_in[i] = 1.;
      }
      return;
@@ -66,7 +67,7 @@ protected:
    void fill_with_random(double * sf_in, int seed)
    {
      prng_init(seed);
-     for(int i = 0; i < (int) NUM_ELEMENTS_AE; ++i) {
+     for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
        sf_in[i] = prng_double();
      }
      return;
@@ -118,8 +119,9 @@ protected:
   const hardware::code::Gaugemomentum * code;
   
   hardware::buffers::Plain<double> * doubleBuffer;
+  hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
 
-  size_t NUM_ELEMENTS_AE;
+  size_t numberOfAlgebraElements;
   size_t numberOfGaugemomentumElements;
   bool useRandom;
 };
