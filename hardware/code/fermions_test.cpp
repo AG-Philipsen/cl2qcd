@@ -246,6 +246,38 @@ public:
 
 BOOST_AUTO_TEST_SUITE_END()
 
+	class Gamma5EvenOddTester : public FermionTester
+	{
+public:
+		Gamma5EvenOddTester(std::string inputfile) :
+			FermionTester("gamma5_eo", inputfile, 1)
+		{
+			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+			spinor * sf_in;
+			sf_in = new spinor[spinorfieldEvenOddElements];
+			
+			in.load( createSpinorfield(spinorfieldEvenOddElements) );
+			code->gamma5_eo_device(&in);
+			in.dump(sf_in);
+			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
+	
+			delete sf_in;
+		}
+	};
+
+	BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
+
+	BOOST_AUTO_TEST_CASE( GAMMA5_EO_1)
+	{
+		Gamma5EvenOddTester tester("gamma5_eo_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( GAMMA5_EO_2 )
+	{
+		Gamma5EvenOddTester tester("gamma5_eo_input_2");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
@@ -361,62 +393,6 @@ hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
 	}
 	return res;
 }
-
-void test_gamma5(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName = "gamma5";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	auto * device = cpu.get_device();
-	spinor * sf_in;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	device->gamma5_device(&in);
-	in.dump(sf_in);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_in);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-	BOOST_AUTO_TEST_CASE( GAMMA5_test)
-	{
-		test_gamma5("gamma5_input_2");
-	}
 
 void test_gamma5_eo(std::string inputfile)
 {
@@ -662,20 +638,6 @@ void test_dslash_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
-
-BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
-
-BOOST_AUTO_TEST_CASE( GAMMA5_EO_1)
-{
-	test_gamma5_eo("/gamma5_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( GAMMA5_EO_2 )
-{
-	test_gamma5_eo("/gamma5_eo_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 

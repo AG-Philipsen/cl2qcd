@@ -7,5 +7,5 @@ solver=BICGSTAB
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=-6.9751322174224235
+test_ref_val=-7.7072605732917445
 
