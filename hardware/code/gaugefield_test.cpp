@@ -22,28 +22,19 @@
 #include <boost/test/unit_test.hpp>
 
 #include "kernelTester.hpp"
-#include "../hardware/system.hpp"
 #include "../physics/prng.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 
 class GaugefieldTester : public KernelTester {
 public:
 	GaugefieldTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-	  inputfile(getSpecificInputfile(inputfileIn)), KernelTester(kernelName, (getSpecificInputfile(inputfileIn)), numberOfValues) {
-		//todo: this object should be a member of KernelTester!
-		meta::Inputparameters parameters = createParameters(inputfile);
-
-		system = new hardware::System(parameters);
-		device = system->get_devices()[0];
-
+	  KernelTester(kernelName, (getSpecificInputfile(inputfileIn)), numberOfValues) {
 		prng = new physics::PRNG(*system);
 		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-
 		code = device->get_gaugefield_code();
 	}
+
 protected:
-	std::string inputfile;
-	
 	static std::string getSpecificInputfile(std::string inputfileIn)
 	{
 		return "gaugefield/" + inputfileIn;
@@ -52,9 +43,6 @@ protected:
 	const hardware::buffers::SU3* getGaugefieldBuffer() {
 		return gaugefield->get_buffers()[0];
 	}
-
-	const hardware::System * system;
-	hardware::Device * device;
 
 	physics::PRNG * prng;
 	const hardware::code::Gaugefield * code;
