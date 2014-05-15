@@ -417,6 +417,142 @@ BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(DSLASH_EO )
+
+	class DslashEvenOddTester: public FermionmatrixEvenOddTester
+	{
+	public:
+		DslashEvenOddTester(std::string inputfile):
+			FermionmatrixEvenOddTester("dslash_eo", inputfile)
+			{
+				evenOrOdd ? 
+					code->dslash_eo_device( in, out, this->getGaugefieldBuffer(), EVEN, parameters->get_kappa() ) :
+					code->dslash_eo_device( in, out, this->getGaugefieldBuffer(), ODD, parameters->get_kappa() );
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_1)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_2)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_3)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_4)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_5)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_5");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_6)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_6");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_7)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_7");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_8)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_8");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_9)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_9");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_10)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_10");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_11)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_11");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_12)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_12");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_13)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_13");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_14)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_14");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_15)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_15");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_16)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_16");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_17)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_17");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_18)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_18");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_19)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_19");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_20)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_20");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_21)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_21");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_22)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_22");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_23)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_23");
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_24)
+	{
+		DslashEvenOddTester tester("dslash_eo_input_24");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
 
@@ -509,178 +645,6 @@ const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 {
 	return gf.get_buffers().at(0);
 }
-
-void test_dslash_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
-	std::string kernelName = "dslash_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	auto * device = cpu.get_device();
-
-	logger.info() << "Fill buffers...";
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
-	spinor * sf_in_eo;
-	sf_in_eo = new spinor[NUM_ELEMENTS_SF_EO];
-	const Spinor in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
-	const Spinor out_eo(NUM_ELEMENTS_SF_EO, device->get_device());
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in_eo, NUM_ELEMENTS_SF_EO);
-	else fill_sf_with_random(sf_in_eo, NUM_ELEMENTS_SF_EO);
-	in_eo_even.load(sf_in_eo);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-
-	hmc_float cpu_res;
-	if(params.get_read_multiple_configs()) {
-		device->dslash_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), EVEN, params.get_kappa() );
-	} else {
-		device->dslash_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), ODD, params.get_kappa() );
-	}
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out_eo, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << "result:";
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in_eo;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-BOOST_AUTO_TEST_SUITE(DSLASH_EO )
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_1)
-{
-	test_dslash_eo("/dslash_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_2)
-{
-	test_dslash_eo("/dslash_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_3)
-{
-	test_dslash_eo("/dslash_eo_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_4)
-{
-	test_dslash_eo("/dslash_eo_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_5)
-{
-	test_dslash_eo("/dslash_eo_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_6)
-{
-	test_dslash_eo("/dslash_eo_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_7)
-{
-	test_dslash_eo("/dslash_eo_input_7");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_8)
-{
-	test_dslash_eo("/dslash_eo_input_8");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_9)
-{
-	test_dslash_eo("/dslash_eo_input_9");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_10)
-{
-	test_dslash_eo("/dslash_eo_input_10");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_11)
-{
-	test_dslash_eo("/dslash_eo_input_11");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_12)
-{
-	test_dslash_eo("/dslash_eo_input_12");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_13)
-{
-	test_dslash_eo("/dslash_eo_input_13");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_14)
-{
-	test_dslash_eo("/dslash_eo_input_14");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_15)
-{
-	test_dslash_eo("/dslash_eo_input_15");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_16)
-{
-	test_dslash_eo("/dslash_eo_input_16");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_17)
-{
-	test_dslash_eo("/dslash_eo_input_17");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_18)
-{
-	test_dslash_eo("/dslash_eo_input_18");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_19)
-{
-	test_dslash_eo("/dslash_eo_input_19");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_20)
-{
-	test_dslash_eo("/dslash_eo_input_20");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_21)
-{
-	test_dslash_eo("/dslash_eo_input_21");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_22)
-{
-	test_dslash_eo("/dslash_eo_input_22");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_23)
-{
-	test_dslash_eo("/dslash_eo_input_23");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_24)
-{
-	test_dslash_eo("/dslash_eo_input_24");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 {
