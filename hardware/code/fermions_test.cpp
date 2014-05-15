@@ -22,6 +22,7 @@
 
 #include "SpinorTester.hpp"
 #include "gaugefield.hpp"
+#include "fermions.hpp"
 #include "../../physics/lattices/gaugefield.hpp"
 
 class FermionTester : public SpinorTester
@@ -30,11 +31,16 @@ public:
 	FermionTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
 	SpinorTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
 	{
-			
+			code = device->get_fermion_code();
+			gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+	}
+	~FermionTester()
+	{
+		delete gaugefield;
 	}
 	
-private:
-	const hardware::code::Gaugefield * code;
+protected:
+	const hardware::code::Fermions * code;
 	physics::lattices::Gaugefield * gaugefield;
 	
 	std::string getSpecificInputfile(std::string inputfileIn)
@@ -42,6 +48,10 @@ private:
 		//todo: this is ugly, find a better solution.
 		// The problem is that the parent class calls a similar fct.
 		return "../fermions/" + inputfileIn;
+	}
+	
+	const hardware::buffers::SU3* getGaugefieldBuffer() {
+		return gaugefield->get_buffers()[0];
 	}
 };
 
@@ -59,6 +69,100 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+class FermionmatrixTester : public FermionTester
+{
+public:
+	FermionmatrixTester(std::string kernelName, std::string inputfile) :
+	FermionTester(kernelName, inputfile, 1)
+	{
+		in = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
+		out = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
+		in->load(createSpinorfield(spinorfieldElements));
+		out->load(createSpinorfield(spinorfieldElements));
+	}
+	~FermionmatrixTester()
+	{
+		calcSquarenormAndStoreAsKernelResult(out);
+		delete in;
+		delete out;
+	}
+protected:
+	const hardware::buffers::Plain<spinor> * in;
+	const hardware::buffers::Plain<spinor> * out;
+};
+
+BOOST_AUTO_TEST_SUITE( M_WILSON )
+
+	class MWilsonTester : public FermionmatrixTester
+	{
+public:
+		MWilsonTester(std::string inputfile) :
+		FermionmatrixTester("m_wilson", inputfile)
+		{
+			code->M_wilson_device(in, out,  this->getGaugefieldBuffer(), parameters->get_kappa());
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( M_WILSON_1)
+	{
+		MWilsonTester tester("m_wilson_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_WILSON_2)
+	{
+		MWilsonTester tester("m_wilson_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_WILSON_3)
+	{
+		MWilsonTester tester("m_wilson_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_WILSON_4)
+	{
+		MWilsonTester tester("m_wilson_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_WILSON_5)
+	{
+		MWilsonTester tester("m_wilson_input_5");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_WILSON_6)
+	{
+		MWilsonTester tester("m_wilson_input_6");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+// 
+// 	BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
+// 
+// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
+// 	{
+// 		test_m_tm_minus("/m_tm_minus_input_1");
+// 	}
+// 
+// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
+// 	{
+// 		test_m_tm_minus("/m_tm_minus_input_2");
+// 	}
+// 
+// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
+// 	{
+// 		test_m_tm_minus("/m_tm_minus_input_3");
+// 	}
+// 
+// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
+// 	{
+// 		test_m_tm_minus("/m_tm_minus_input_4");
+// 	}
+// 
+// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
+// 	{
+// 		test_m_tm_minus("/m_tm_minus_input_5");
+// 	}
+
+// BOOST_AUTO_TEST_SUITE_END()
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
@@ -151,16 +255,6 @@ const hardware::code::Fermions* TestGaugefield::get_device()
 const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 {
 	return gf.get_buffers().at(0);
-}
-
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_hmc";
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	BOOST_MESSAGE("Test done");
 }
 
 void test_m_fermion(std::string inputfile, int switcher)
@@ -572,69 +666,6 @@ void test_dslash_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
-
-BOOST_AUTO_TEST_SUITE( M_WILSON )
-
-BOOST_AUTO_TEST_CASE( M_WILSON_1)
-{
-	test_m_wilson("/m_wilson_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_WILSON_2)
-{
-	test_m_wilson("/m_wilson_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( M_WILSON_3)
-{
-	test_m_wilson("/m_wilson_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( M_WILSON_4)
-{
-	test_m_wilson("/m_wilson_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( M_WILSON_5)
-{
-	test_m_wilson("/m_wilson_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( M_WILSON_6)
-{
-	test_m_wilson("/m_wilson_input_6");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
-
-BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
-{
-	test_m_tm_minus("/m_tm_minus_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
-{
-	test_m_tm_minus("/m_tm_minus_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
-{
-	test_m_tm_minus("/m_tm_minus_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
-{
-	test_m_tm_minus("/m_tm_minus_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
-{
-	test_m_tm_minus("/m_tm_minus_input_5");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
 
