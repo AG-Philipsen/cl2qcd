@@ -43,7 +43,6 @@ protected:
 	hmc_float calc_var(hmc_float in, hmc_float mean);
 	hmc_float calc_var_sf(su3vec * in, int size, hmc_float sum);
 	hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo);
-	
 	su3vec * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
@@ -66,6 +65,9 @@ protected:
 	void fill_with_random(su3vec * in, int size, int seed);
 	void fill_with_one(su3vec * in, int size);
 	void fill_with_one_eo(su3vec * in, int size, bool eo);
+	
+	//These methods are used to produce files for the Reference Code (D'Elia et al)
+	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
 };
 
 

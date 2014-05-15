@@ -235,3 +235,78 @@ void SpinorStaggeredTester::calcSquarenormEvenOddAndStoreAsKernelResult(const ha
   code->set_float_to_global_squarenorm_eoprec_device(in, doubleBuffer);
   doubleBuffer->dump(&kernelResult[0]);
 }
+
+/////////////////////////////////////////////////////////////////////////
+
+/**
+ * Fuction that "convert" a su3vec to a string with a proper structure to be   
+ * written to the text file that will be later used for the reference code     
+ */
+std::string su3vec_to_string(su3vec m)
+{
+  std::ostringstream os;
+  os.precision(16);
+  os << "(" << m.e0.re << "," << m.e0.im << ") (" << m.e1.re << "," << m.e1.im << ") (" << m.e2.re << "," << m.e2.im << ")\n\n";
+  return os.str();
+}
+
+//Tool to be used in the function print_gaugefield_to_textfile or print_staggeredfield_to_textfile
+static void get_full_coord_from_site_idx(int site_idx, int &x, int &y, int &z, int &t, const int ns)
+{
+  int volspace=ns*ns*ns;
+  int space=site_idx%volspace;
+  t=site_idx/volspace;
+  z=space/ns/ns;
+  int acc=z;
+  y=space/ns-ns*acc;
+  acc=ns*acc+y;
+  x=space-ns*acc;
+}
+
+/**
+ *  In the reference code the lattice is reorganized in the following way: 
+ * 
+ *   0             size
+ *   |-------|-------|   
+ *       e       o 
+ * 
+ *  where e=even, o=odd, whereas size=VOL4D. 
+ *  Hence, in order to use the same random staggered field in tests  
+ *  I have to print it to a text file according this scheme.
+ */
+void SpinorStaggeredTester::print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf)
+{
+  int nt=parameters->get_ntime();
+  int ns=parameters->get_nspace();
+  if(ns!=nt){
+    logger.fatal() << "The lattice must be isotropic to call the function print_staggeredfield_to_textfile(...)!";
+    abort();
+  }
+  //sf     is the su3vec array ordered with the "superindex scheme"                                                                     
+  //sf_new is the su3vec array in the right order (ref. code scheme) to be written to the file                                          
+  su3vec *sf_new = new su3vec[ns*ns*ns*nt];
+  //Now I have conf_old and I have to fill properly conf_new                                                                            
+  int x,y,z,t,num,even,size;
+  size=ns*ns*ns*nt;
+  for(int i=0; i<ns*ns*ns*nt; i++){
+    get_full_coord_from_site_idx(i,x,y,z,t,ns);
+    even = (x+y+z+t)%2;
+    // even=0 for even sites                                                                                                            
+    // even=1 for odd sites                                                                                                             
+    num = even*size/2 + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
+    // num is where, in conf_new, conf_old[...] is to be written                                                                        
+    sf_new[num]=sf[i];
+  }
+  //Now we can write sf_new to the file 
+  std::ofstream file(outputfile.c_str());
+  file << ns << " " << ns << " " << ns << " " << nt << std::endl;
+  for(int i=0; i<ns*ns*ns*nt; i++){
+    get_full_coord_from_site_idx(i,x,y,z,t,ns);
+    file << su3vec_to_string(sf_new[i]);
+  }
+  file.close();
+}
+
+
+
+

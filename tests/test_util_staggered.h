@@ -18,6 +18,12 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @attention This file is under refactoring. Its code is being copied somewhere else and then
+ *            it is doubled around in other files. This file will be deleted at the end of the
+ *            refactoring!
+ */
+
 #include "../physics/lattices/gaugefield.hpp"
 #include "../physics/lattices/staggeredfield_eo.hpp"
 #include "../meta/util.hpp"

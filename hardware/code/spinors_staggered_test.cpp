@@ -71,6 +71,11 @@ BOOST_AUTO_TEST_SUITE(SQUARENORM)
 			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
 			in.load(createSpinorfield(spinorfieldElements));
 			calcSquarenormAndStoreAsKernelResult(&in);
+			
+	/*
+        print_staggeredfield_to_textfile("ref_vec_sq", createSpinorfield(spinorfieldElements)); 
+        logger.info() << "Produced the ref_vec_sq text file with the staggered field for the ref. code.";
+	*/
 		}
 	};
 
@@ -113,16 +118,22 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 			in.load(createSpinorfield(spinorfieldElements, 123));
 			in2.load(createSpinorfield(spinorfieldElements, 456));
 			hardware::buffers::Plain<hmc_complex> result(1, device);
-
+			
 			code->set_complex_to_scalar_product_device(&in, &in2, &result);
 			hmc_complex resultHost;
 			result.dump(&resultHost);
 
 			kernelResult[0] = resultHost.re;
 			kernelResult[1] = resultHost.im;
+	
+	/*
+	print_staggeredfield_to_textfile("ref_vec_sp1", createSpinorfield(spinorfieldElements, 123)); 
+        logger.info() << "Produced the ref_vec_sp1 text file with the staggered field for the ref. code.";   
+        print_staggeredfield_to_textfile("ref_vec_sp2", createSpinorfield(spinorfieldElements, 456)); 
+        logger.info() << "Produced the ref_vec_sp2 text file with the staggered field for the ref. code."; 
+	*/
 			}
 	};
-
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
 	{
