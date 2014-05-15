@@ -126,27 +126,27 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
 	{
-	    ScalarProductTester("/sf_scalar_product_staggered_input_1");
+	    ScalarProductTester("scalar_product_input_1");
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_2 )
 	{
-	    ScalarProductTester("/sf_scalar_product_staggered_input_2");
+	    ScalarProductTester("scalar_product_input_2");
 	}
 	
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_1 )
 	{
-	    ScalarProductTester("/sf_scalar_product_staggered_reduction_input_1");
+	    ScalarProductTester("scalar_product_reduction_input_1");
 	}
 	
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_2 )
 	{
-	    ScalarProductTester("/sf_scalar_product_staggered_reduction_input_2");
+	    ScalarProductTester("scalar_product_reduction_input_2");
 	}
 	
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_3 )
 	{
-	    ScalarProductTester("/sf_scalar_product_staggered_reduction_input_3");
+	    ScalarProductTester("scalar_product_reduction_input_3");
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
