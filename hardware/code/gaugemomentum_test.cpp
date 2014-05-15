@@ -25,6 +25,7 @@
 #include "gaugemomentum.hpp"
 #include "../../host_functionality/host_random.h"
 
+#include "../../physics/prng.hpp"
 class GaugemomentumTester : public KernelTester
 {
 public:
@@ -48,13 +49,13 @@ protected:
   double * createGaugemomentum(int seed = 123456)
   {
     double * gm_in;
-    gm_in = new hmc_float[NUM_ELEMENTS_AE];
+    gm_in = new double[NUM_ELEMENTS_AE];
     useRandom ? fill_with_random(gm_in, seed) : fill_with_one(gm_in);
     BOOST_REQUIRE(gm_in);
     return gm_in;    
   }
 
-   void fill_with_one(hmc_float * sf_in)
+   void fill_with_one(double * sf_in)
    {
      for(int i = 0; i < (int) NUM_ELEMENTS_AE; ++i) {
        sf_in[i] = 1.;
@@ -62,7 +63,7 @@ protected:
      return;
    }
 
-   void fill_with_random(hmc_float * sf_in, int seed)
+   void fill_with_random(double * sf_in, int seed)
    {
      prng_init(seed);
      for(int i = 0; i < (int) NUM_ELEMENTS_AE; ++i) {
@@ -77,8 +78,45 @@ protected:
     doubleBuffer->dump(&kernelResult[0]);
   }
 
+  double count_gm(ae * ae_in, int size)
+  {
+    double sum = 0.;
+    for (int i = 0; i<size;i++){
+      sum +=
+	ae_in[i].e0
+	+ ae_in[i].e1
+	+ ae_in[i].e2
+	+ ae_in[i].e3
+	+ ae_in[i].e4
+	+ ae_in[i].e5
+	+ ae_in[i].e6
+	+ ae_in[i].e7;
+    }
+    return sum;
+  }
+  
+  double calc_var(double in, double mean){
+    return (in - mean) * (in - mean);
+  }
+  
+  double calc_var_gm(ae * ae_in, int size, double sum){
+    double var = 0.;
+    for(int k = 0; k<size; k++){
+      var +=
+	calc_var(   ae_in[k].e0 , sum) 
+	+ calc_var( ae_in[k].e1 , sum) 
+	+ calc_var( ae_in[k].e2 , sum)
+	+ calc_var( ae_in[k].e3 , sum) 
+	+ calc_var( ae_in[k].e4 , sum) 
+	+ calc_var( ae_in[k].e5 , sum) 
+	+ calc_var( ae_in[k].e6 , sum) 
+	+ calc_var( ae_in[k].e7 , sum) ;
+    }
+    return var;
+  }
+  
   const hardware::code::Gaugemomentum * code;
-
+  
   hardware::buffers::Plain<double> * doubleBuffer;
 
   size_t NUM_ELEMENTS_AE;
@@ -205,84 +243,6 @@ BOOST_AUTO_TEST_CASE( SAXPY_5 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-
-#include "../../meta/util.hpp"
-#include "../../physics/prng.hpp"
-
-#include "../tests/test_util.h"
-
-extern std::string const version;
-std::string const version = "0.1";
-
-void fill_with_one(hmc_float * sf_in, int size)
-{
-	for(int i = 0; i < size; ++i) {
-		sf_in[i] = 1.;
-	}
-	return;
-}
-
-void fill_with_random(hmc_float * sf_in, int size, int seed)
-{
-	prng_init(seed);
-	for(int i = 0; i < size; ++i) {
-		sf_in[i] = prng_double();
-	}
-	return;
-}
-
-ae make_ae(hmc_float e1, hmc_float e2, hmc_float e3, hmc_float e4,
-           hmc_float e5, hmc_float e6, hmc_float e7, hmc_float e8)
-{
-	ae tmp = {e1, e2, e3, e4, e5, e6, e7, e8};
-	return tmp;
-}
-
-void fill_with_zero(ae * ae, int size)
-{
-	for(int i = 0; i < size; ++i) {
-		ae[i] = make_ae(0., 0., 0., 0., 0., 0., 0., 0.);
-	}
-	return;
-}
-
-hmc_float count_gm(ae * ae_in, int size)
-{
-  hmc_float sum = 0.;
-  for (int i = 0; i<size;i++){
-    sum +=
-       ae_in[i].e0
-      + ae_in[i].e1
-      + ae_in[i].e2
-      + ae_in[i].e3
-      + ae_in[i].e4
-      + ae_in[i].e5
-      + ae_in[i].e6
-      + ae_in[i].e7;
-  }
-  return sum;
-}
-
-hmc_float calc_var(hmc_float in, hmc_float mean){
-  return (in - mean) * (in - mean);
-}
-
-hmc_float calc_var_gm(ae * ae_in, int size, hmc_float sum){
-  hmc_float var = 0.;
-  for(int k = 0; k<size; k++){
-    var +=
-      calc_var(   ae_in[k].e0 , sum) 
-      + calc_var( ae_in[k].e1 , sum) 
-      + calc_var( ae_in[k].e2 , sum)
-      + calc_var( ae_in[k].e3 , sum) 
-      + calc_var( ae_in[k].e4 , sum) 
-      + calc_var( ae_in[k].e5 , sum) 
-      + calc_var( ae_in[k].e6 , sum) 
-      + calc_var( ae_in[k].e7 , sum) ;
-  }
-  return var;
-}
-
 BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
 
 class GaussianTester : public GaugemomentumTester
@@ -293,7 +253,6 @@ public:
   {
 	physics::PRNG prng(*system);
 	auto prng_buf = prng.get_buffers().at(0);
-	cl_int err = CL_SUCCESS;
 	hardware::buffers::Gaugemomentum out(numberOfGaugemomentumElements, device);
 	double result = 0.;
 	double sum = 0.;
@@ -359,7 +318,7 @@ public:
   }
 };
 
-BOOST_AUTO_TEST_CASE( GM_CONVERT_TO_SOA_1 )
+BOOST_AUTO_TEST_CASE( CONVERT_TO_SOA_1 )
 {
   ConvertToSoaTester tester("");
 }
@@ -378,7 +337,7 @@ public:
   }
 };
 
-BOOST_AUTO_TEST_CASE( GM_CONVERT_FROM_SOA_1 )
+BOOST_AUTO_TEST_CASE( CONVERT_FROM_SOA_1 )
 {
   ConvertFromSoaTester tester("");
 }
