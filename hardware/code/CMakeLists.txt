@@ -105,7 +105,7 @@ add_test(hardware_code_fermions_GPU_REC12 hardware_code_fermions_test ${CMAKE_CU
 add_executable(hardware_code_gaugemomentum_test gaugemomentum_test.cpp)
 target_link_libraries(hardware_code_gaugemomentum_test
 	optimal
-	${Boost_LIBRARIES}
+	kernelTestUtilities
 )
 add_test(hardware_code_gaugemomentum_CPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_gaugemomentum_CPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)

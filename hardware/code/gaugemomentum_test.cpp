@@ -18,17 +18,127 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../device.hpp"
-#include "../system.hpp"
-#include "../../physics/prng.hpp"
-#include "gaugemomentum.hpp"
-
-// use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_GAUGEMOMENTUM
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE HARDWARE_CODE_GAUGEMOMENTUM
+
+#include "kernelTester.hpp"
+#include "gaugemomentum.hpp"
+#include "../../host_functionality/host_random.h"
+
+class GaugemomentumTester : public KernelTester
+{
+public:
+  GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues = 1) :
+    KernelTester(kernelName, getSpecificInputfile(inputfile), numberOfValues)
+  {
+    code = device->get_gaugemomentum_code();
+    doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+
+    NUM_ELEMENTS_AE = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
+    numberOfGaugemomentumElements = meta::get_vol4d(*parameters) * NDIM;
+    useRandom = (parameters->get_solver() == meta::Inputparameters::cg)  ? false : true;
+  }
+
+protected:
+  std::string getSpecificInputfile(std::string inputfileIn)
+  {
+    return "gaugemomentum/" + inputfileIn;
+  }
+
+  double * createGaugemomentum(int seed = 123456)
+  {
+    double * gm_in;
+    gm_in = new hmc_float[NUM_ELEMENTS_AE];
+    useRandom ? fill_with_random(gm_in, seed) : fill_with_one(gm_in);
+    BOOST_REQUIRE(gm_in);
+    return gm_in;    
+  }
+
+   void fill_with_one(hmc_float * sf_in)
+   {
+     for(int i = 0; i < NUM_ELEMENTS_AE; ++i) {
+       sf_in[i] = 1.;
+     }
+     return;
+   }
+
+   void fill_with_random(hmc_float * sf_in, int seed)
+   {
+     prng_init(seed);
+     for(int i = 0; i < NUM_ELEMENTS_AE; ++i) {
+       sf_in[i] = prng_double();
+     }
+     return;
+   }
+
+  void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in)
+  {
+    code->set_float_to_gaugemomentum_squarenorm_device(in, doubleBuffer);
+    doubleBuffer->dump(&kernelResult[0]);
+  }
+
+  const hardware::code::Gaugemomentum * code;
+
+  hardware::buffers::Plain<double> * doubleBuffer;
+
+  size_t NUM_ELEMENTS_AE;
+  size_t numberOfGaugemomentumElements;
+  bool useRandom;
+};
+
+BOOST_AUTO_TEST_SUITE(BUILD)
+
+BOOST_AUTO_TEST_CASE( BUILD_1 )
+{
+  GaugemomentumTester tester("build", "opencl_module_gaugemomentum_build_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( SQUARENORM )
+
+class SquarenormTester : public GaugemomentumTester
+{
+public:
+  SquarenormTester(std::string inputfile) :
+    GaugemomentumTester("gaugemomenta squarenorm", inputfile, 1)
+  {
+    hardware::buffers::Gaugemomentum in(numberOfGaugemomentumElements, device);
+    code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>( createGaugemomentum() ));
+    calcSquarenormAndStoreAsKernelResult(&in);
+  }
+};
+
+BOOST_AUTO_TEST_CASE(SQUARENORM_1  )
+{
+	SquarenormTester tester("squarenorm_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(SQUARENORM_2  )
+{
+	SquarenormTester tester("squarenorm_input_2");
+}
+
+BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_1  )
+{
+	SquarenormTester tester("squarenorm_reduction_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_2  )
+{
+	SquarenormTester tester("squarenorm_reduction_input_2");
+}
+
+BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_3  )
+{
+	SquarenormTester tester("squarenorm_reduction_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+#include "../../meta/util.hpp"
+#include "../../physics/prng.hpp"
 
 #include "../tests/test_util.h"
 
@@ -102,18 +212,6 @@ hmc_float calc_var_gm(ae * ae_in, int size, hmc_float sum){
       + calc_var( ae_in[k].e7 , sum) ;
   }
   return var;
-}
-
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_gaugemomentum";
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-for(auto device: system.get_devices()) {
-		device->get_gaugemomentum_code();
-	}
-	BOOST_MESSAGE("Test done");
 }
 
 void test_generate_gaussian_gaugemomenta(std::string inputfile)
@@ -224,49 +322,6 @@ void test_set_zero_gm(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_gm_squarenorm(std::string inputfile)
-{
-	std::string kernelName = "gaugemomenta squarenorm";
-	printKernelInfo(kernelName);
-
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	for(auto device: system.get_devices()) {
-		auto code = device->get_gaugemomentum_code();
-		hmc_float * gm_in;
-
-		logger.info() << "create buffers";
-		size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-		gm_in = new hmc_float[NUM_ELEMENTS_AE];
-
-		//use the variable use_cg to switch between cold and random input sf
-		if(params.get_solver() == meta::Inputparameters::cg) {
-			fill_with_one(gm_in, NUM_ELEMENTS_AE);
-		} else {
-			fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
-		}
-		BOOST_REQUIRE(gm_in);
-
-		hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device);
-		code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
-		hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-		logger.info() << "Run kernel";
-		logger.info() << "|in|^2:";
-		code->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-		hmc_float cpu_back;
-		sqnorm.dump(&cpu_back);
-		logger.info() << cpu_back;
-
-		logger.info() << "Free buffers";
-		delete[] gm_in;
-
-		testFloatAgainstInputparameters(cpu_back, params);
-	}
-	BOOST_MESSAGE("Test done");
-}
-
 void test_gm_saxpy(std::string inputfile)
 {
 	std::string kernelName = "gaugemomentum_saxpy";
@@ -346,15 +401,6 @@ void test_gm_convert_from_soa(std::string inputfile)
 
 }
 
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-	test_build("/opencl_module_gaugemomentum_build_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
 
 BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 )
@@ -395,39 +441,6 @@ BOOST_AUTO_TEST_CASE( GM_CONVERT_FROM_SOA_1 )
 {
 	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
 	test_gm_convert_from_soa("/gm_convert_from_soa_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( GM_SQUARENORM )
-
-BOOST_AUTO_TEST_CASE(GM_SQUARENORM_1  )
-{
-	test_gm_squarenorm("/gm_squarenorm_input_1");
-}
-
-BOOST_AUTO_TEST_CASE(GM_SQUARENORM_2  )
-{
-	test_gm_squarenorm("/gm_squarenorm_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( GM_SQUARENORM_REDUCTION )
-
-BOOST_AUTO_TEST_CASE(GM_SQUARENORM_REDUCTION_1  )
-{
-	test_gm_squarenorm("/gm_squarenorm_reduction_input_1");
-}
-
-BOOST_AUTO_TEST_CASE(GM_SQUARENORM_REDUCTION_2  )
-{
-	test_gm_squarenorm("/gm_squarenorm_reduction_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(GM_SQUARENORM_REDUCTION_3  )
-{
-	test_gm_squarenorm("/gm_squarenorm_reduction_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
