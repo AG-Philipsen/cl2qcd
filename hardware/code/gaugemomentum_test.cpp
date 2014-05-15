@@ -32,13 +32,13 @@ public:
   GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues = 1, int typeOfComparision = 1) :
     KernelTester(kernelName, getSpecificInputfile(inputfile), numberOfValues, typeOfComparision)
   {
-    code = device->get_gaugemomentum_code();
-    doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-    gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(numberOfGaugemomentumElements, device);
-
     numberOfAlgebraElements = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
     numberOfGaugemomentumElements = meta::get_vol4d(*parameters) * NDIM;
     useRandom = (parameters->get_solver() == meta::Inputparameters::cg)  ? false : true;
+
+    code = device->get_gaugemomentum_code();
+    doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+    gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(numberOfGaugemomentumElements, device);
   }
 
 protected:
@@ -144,8 +144,8 @@ public:
     GaugemomentumTester("gaugemomenta squarenorm", inputfile, 1)
   {
     hardware::buffers::Gaugemomentum in(numberOfGaugemomentumElements, device);
-    code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>( createGaugemomentum() ));
-    calcSquarenormAndStoreAsKernelResult(&in);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
+    calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
   }
 };
 
@@ -184,10 +184,9 @@ public:
   SetZeroTester(std::string inputfile) :
     GaugemomentumTester("set zero", inputfile, 1)
   {
-    hardware::buffers::Gaugemomentum in(numberOfGaugemomentumElements, device);
-    code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>( createGaugemomentum() ));
-    code->set_zero_gaugemomentum(&in);
-    calcSquarenormAndStoreAsKernelResult(&in);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
+    code->set_zero_gaugemomentum(gaugemomentumBuffer);
+    calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
   }
 };
 
@@ -206,14 +205,13 @@ public:
   SaxpyTester(std::string inputfile) :
     GaugemomentumTester("saxpy", inputfile, 1)
   {
-    hardware::buffers::Gaugemomentum in(numberOfGaugemomentumElements, device);
     hardware::buffers::Gaugemomentum out(numberOfGaugemomentumElements, device);
-    code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>( createGaugemomentum(123456) ));
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum(123456) ));
     code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>( createGaugemomentum(789101) ));
     double alpha = parameters->get_tau();
     doubleBuffer->load(&alpha);
 
-    code->saxpy_device(&in, &out, doubleBuffer, &out);
+    code->saxpy_device(gaugemomentumBuffer, &out, doubleBuffer, &out);
     calcSquarenormAndStoreAsKernelResult(&out);
   }
 };
@@ -255,7 +253,6 @@ public:
   {
 	physics::PRNG prng(*system);
 	auto prng_buf = prng.get_buffers().at(0);
-	hardware::buffers::Gaugemomentum out(numberOfGaugemomentumElements, device);
 	double result = 0.;
 	double sum = 0.;
 	int iterations = parameters->get_integrationsteps(0);
@@ -265,8 +262,8 @@ public:
 	BOOST_REQUIRE(gm_out);
 
 	for (int i = 0; i< iterations; i++){
-	  code->generate_gaussian_gaugemomenta_device(&out, prng_buf);
-	  out.dump(&gm_out[i*numberOfGaugemomentumElements]);
+	  code->generate_gaussian_gaugemomenta_device(gaugemomentumBuffer, prng_buf);
+	  gaugemomentumBuffer->dump(&gm_out[i*numberOfGaugemomentumElements]);
 	  sum += count_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements);
 	}
 	sum = sum/iterations/numberOfGaugemomentumElements/8;	
