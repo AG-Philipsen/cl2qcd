@@ -174,6 +174,45 @@ public:
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
+
+	class MTmPlusTester : public FermionmatrixTester
+	{
+public:
+		MTmPlusTester(std::string inputfile) :
+		FermionmatrixTester("m_tm_plus", inputfile)
+		{
+			code->M_tm_plus_device(in, out,  this->getGaugefieldBuffer(), parameters->get_kappa(), meta::get_mubar(*parameters));
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_1 )
+	{
+		MTmPlusTester tester("m_tm_plus_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
+	{
+		MTmPlusTester tester("m_tm_plus_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_3 )
+	{
+		MTmPlusTester tester("m_tm_plus_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_4 )
+	{
+		MTmPlusTester tester("m_tm_plus_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_5 )
+	{
+		MTmPlusTester tester("m_tm_plus_input_5");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
 
@@ -677,34 +716,7 @@ void test_dslash_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
 
-BOOST_AUTO_TEST_CASE( M_TM_PLUS_1 )
-{
-	test_m_tm_plus("/m_tm_plus_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
-{
-	test_m_tm_plus("/m_tm_plus_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_PLUS_3 )
-{
-	test_m_tm_plus("/m_tm_plus_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_PLUS_4 )
-{
-	test_m_tm_plus("/m_tm_plus_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_PLUS_5 )
-{
-	test_m_tm_plus("/m_tm_plus_input_5");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GAMMA5 )
 
