@@ -1,4 +1,29 @@
 #include "SpinorTester.hpp"
+#include "../../host_functionality/host_geometry.h"
+
+SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues):
+	KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+	{
+	code = device->get_spinor_code();
+	prng = new physics::PRNG(*system);
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+	
+	//todo: some of these could also be put into the specific child-classes where they are actually used.
+	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
+	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
+	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
+	(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
+	alpha_host = {parameters->get_beta(), parameters->get_rho()};
+	beta_host = {parameters->get_kappa(), parameters->get_mu()};
+	iterations = parameters->get_integrationsteps(0);
+	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+}
+
+SpinorTester::~SpinorTester()
+{
+	delete doubleBuffer;
+	delete prng;
+}
 
 void SpinorTester::fill_with_one(spinor * in, int size)
 {
@@ -64,8 +89,8 @@ spinor * SpinorTester::createSpinorfield(size_t numberOfElements, int seed)
 spinor * SpinorTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity()
 {
   spinor * in;
-  in = new spinor[NUM_ELEMENTS_SF];
-  fill_with_one_eo(in, NUM_ELEMENTS_SF, evenOrOdd);
+  in = new spinor[spinorfieldElements];
+  fill_with_one_eo(in, spinorfieldElements, evenOrOdd);
   return in;
 }
 
@@ -82,6 +107,10 @@ void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
 		bool parityOfSite;
 		int nspace;
 		int global_pos;
+		int ns, nt;
+		
+		ns = parameters->get_nspace();
+		nt = parameters->get_ntime();
 
 		for (x = 0; x < ns; x++) {
 			for (y = 0; y < ns; y++) {
@@ -91,8 +120,8 @@ void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
 						coord[1] = x;
 						coord[2] = y;
 						coord[3] = z;
-						nspace =  get_nspace(coord);
-						global_pos = get_global_pos(nspace, t);
+						nspace =  get_nspace(coord, *parameters);
+						global_pos = get_global_pos(nspace, t, *parameters);
 						if (global_pos > size)
 							break;
 

@@ -8,30 +8,9 @@
 
 class SpinorTester : public KernelTester {
 public:
-	//todo: move to .cpp eventually
-	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-		KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
-		{
-		code = device->get_spinor_code();
-		prng = new physics::PRNG(*system);
-
-		doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-		
-		NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*parameters);
-		NUM_ELEMENTS_EO = hardware::code::get_eoprec_spinorfieldsize(*parameters);
-		(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
-		(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
-		alpha_host = {parameters->get_beta(), parameters->get_rho()};
-		beta_host = {parameters->get_kappa(), parameters->get_mu()};
-		iterations = parameters->get_integrationsteps(0);
-		parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
-	}
+	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1);
+	~SpinorTester();
 	
-	~SpinorTester()
-	{
-		delete doubleBuffer;
-		delete prng;
-	}
 protected:
 	std::string getSpecificInputfile(std::string inputfileIn);	
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
@@ -50,8 +29,8 @@ protected:
 
 	hardware::buffers::Plain<double> * doubleBuffer;
 	
-	size_t NUM_ELEMENTS_SF;
-	size_t NUM_ELEMENTS_EO;
+	size_t spinorfieldElements;
+	size_t spinorfieldEvenOddElements;
 	bool useRandom;
 	bool evenOrOdd;
 	bool calcVariance;

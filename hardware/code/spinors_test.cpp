@@ -45,8 +45,8 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 		SquarenormTester(std::string inputfile):
 			SpinorTester("global_squarenorm", inputfile, 1)
 			{
-				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				in.load(createSpinorfield(NUM_ELEMENTS_SF));
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				in.load(createSpinorfield(spinorfieldElements));
 				calcSquarenormAndStoreAsKernelResult(&in);
 			}
 	};
@@ -86,8 +86,8 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 		SquarenormEvenOddTester(std::string inputfile):
 			SpinorTester("global_squarenorm_eo", inputfile, 1)
 			{
-				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
-				in.load(createSpinorfield(NUM_ELEMENTS_EO));
+				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+				in.load(createSpinorfield(spinorfieldEvenOddElements));
 				calcSquarenormEvenOddAndStoreAsKernelResult(&in);
 			}
 	};
@@ -127,10 +127,10 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 		ScalarProductTester(std::string inputfile):
 			SpinorTester("scalar_product", inputfile, 2)
 			{
-				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
-				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
-				in2.load(createSpinorfield(NUM_ELEMENTS_SF, 456));
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
+				in.load(createSpinorfield(spinorfieldElements, 123));
+				in2.load(createSpinorfield(spinorfieldElements, 456));
 				hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
 
 				code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
@@ -177,10 +177,10 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 		ScalarProductEvenOddTester(std::string inputfile):
 			SpinorTester("scalar_product_eo", inputfile, 2)
 			{
-				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor in2(NUM_ELEMENTS_EO, device);
-				in.load(createSpinorfield(NUM_ELEMENTS_EO, 123));
-				in2.load(createSpinorfield(NUM_ELEMENTS_EO, 456));
+				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+				in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
+				in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
 				hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
 
 				code->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
@@ -227,8 +227,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 		ColdAndZeroTester(std::string inputfile, bool switcher):
 			SpinorTester("cold or zero", inputfile, 2)
 			{
-				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				in.load(createSpinorfield(NUM_ELEMENTS_SF));
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				in.load(createSpinorfield(spinorfieldElements));
 				(switcher) ? code->set_spinorfield_cold_device(&in) : 	code->set_zero_spinorfield_device(&in);
 				calcSquarenormAndStoreAsKernelResult(&in);
 			}
@@ -254,8 +254,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
 		ColdAndZeroEvenOddTester(std::string inputfile, bool switcher):
 			SpinorTester("cold or zero eo", inputfile, 2)
 			{
-				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
-				in.load(createSpinorfield(NUM_ELEMENTS_EO));
+				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+				in.load(createSpinorfield(spinorfieldEvenOddElements));
 				(switcher) ? code->set_eoprec_spinorfield_cold_device(&in) : 	code->set_zero_spinorfield_eoprec_device(&in);
 				calcSquarenormEvenOddAndStoreAsKernelResult(&in);
 			}
@@ -281,11 +281,11 @@ BOOST_AUTO_TEST_SUITE(SAX)
 		SaxTester(std::string inputfile):
 			SpinorTester("sax", inputfile, 1)
 			{
-				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
+				in.load(createSpinorfield(spinorfieldElements, 123));
 				alpha.load(&alpha_host);
 
 				code->sax_device(&in, &alpha, &out);
@@ -338,11 +338,11 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 		SaxEvenOddTester(std::string inputfile):
 			SpinorTester("sax_eo", inputfile, 1)
 			{
-				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor out(NUM_ELEMENTS_EO, device);
+				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(NUM_ELEMENTS_EO, 123));
+				in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
 				alpha.load(&alpha_host);
 
 				code->sax_eoprec_device(&in, &alpha, &out);
@@ -395,13 +395,13 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 		SaxpyTester(std::string inputfile, bool switcher):
 			SpinorTester("saxpy", inputfile, 1)
 			{
-				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
-				in2.load(createSpinorfield(NUM_ELEMENTS_SF, 456));
+				in.load(createSpinorfield(spinorfieldElements, 123));
+				in2.load(createSpinorfield(spinorfieldElements, 456));
 				alpha.load(&alpha_host);
 
 				(switcher) ? code->saxpy_device(&in, &in2, &alpha, &out) : code->saxpy_device(&in, &in2, alpha_host, &out);
@@ -559,13 +559,13 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 		SaxpyEvenOddTester(std::string inputfile, bool switcher):
 			SpinorTester("saxpy_eo or saxpy_arg_eo", inputfile, 1)
 			{
-				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor in2(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor out(NUM_ELEMENTS_EO, device);
+				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(NUM_ELEMENTS_EO, 123));
-				in2.load(createSpinorfield(NUM_ELEMENTS_EO, 456));
+				in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
+				in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
 				alpha.load(&alpha_host);
 
 				(switcher) ? code->saxpy_eoprec_device(&in, &in2, &alpha, &out) : code->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
@@ -723,16 +723,16 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 		SaxsbypzTester(std::string inputfile):
 			SpinorTester("saxsbypz", inputfile, 1)
 			{
-				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Plain<spinor> in2(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Plain<spinor> in3(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> in3(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 				hardware::buffers::Plain<hmc_complex> beta(1, device);
 
-				in.load(createSpinorfield(NUM_ELEMENTS_SF, 123));
-				in2.load(createSpinorfield(NUM_ELEMENTS_SF, 456));
-				in3.load(createSpinorfield(NUM_ELEMENTS_SF, 789));
+				in.load(createSpinorfield(spinorfieldElements, 123));
+				in2.load(createSpinorfield(spinorfieldElements, 456));
+				in3.load(createSpinorfield(spinorfieldElements, 789));
 				alpha.load(&alpha_host);
 				beta.load(&beta_host);
 
@@ -801,16 +801,16 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 		SaxsbypzEvenOddTester(std::string inputfile):
 			SpinorTester("saxsbypz_eo", inputfile, 1)
 			{
-				const hardware::buffers::Spinor in(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor in2(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor in3(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor out(NUM_ELEMENTS_EO, device);
+				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 				hardware::buffers::Plain<hmc_complex> beta(1, device);
 
-				in.load(createSpinorfield(NUM_ELEMENTS_EO, 123));
-				in2.load(createSpinorfield(NUM_ELEMENTS_EO, 456));
-				in3.load(createSpinorfield(NUM_ELEMENTS_EO, 789));
+				in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
+				in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
+				in3.load(createSpinorfield(spinorfieldEvenOddElements, 789));
 				alpha.load(&alpha_host);
 				beta.load(&beta_host);
 
@@ -880,9 +880,9 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 		ConvertEvenOddTester(std::string inputfile):
 			SpinorTester("convert_eo", inputfile, 2)
 			{
-				const hardware::buffers::Plain<spinor> in(NUM_ELEMENTS_SF, device);
-				const hardware::buffers::Spinor in2(NUM_ELEMENTS_EO, device);
-				const hardware::buffers::Spinor in3(NUM_ELEMENTS_EO, device);
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
 
 				in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity() );
 
@@ -894,12 +894,12 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 				
 				if (evenOrOdd)
 				{
-					referenceValue[0] = NUM_ELEMENTS_EO*12.; 
+					referenceValue[0] = spinorfieldEvenOddElements*12.; 
 					referenceValue[1] = 0.;
 				}
 				else
 				{ 
-					referenceValue[1] = NUM_ELEMENTS_EO*12.; 
+					referenceValue[1] = spinorfieldEvenOddElements*12.; 
 					referenceValue[0] = 0.;
 				}
 			}
@@ -935,11 +935,11 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 		GaussianTester(std::string inputfile):
 			SpinorTester("generate_gaussian_spinorfield", inputfile, 1)
 			{
-				const hardware::buffers::Plain<spinor> out(NUM_ELEMENTS_SF, device);
+				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 
 				spinor * outHost;
-				outHost = new spinor[NUM_ELEMENTS_SF * iterations];
+				outHost = new spinor[spinorfieldElements * iterations];
 				BOOST_REQUIRE(out);
 				
 				auto prng_buf = prng->get_buffers().at(0);
@@ -947,18 +947,18 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 				double sum = 0;
 				for (int i = 0; i < iterations; i++) {
 					code->generate_gaussian_spinorfield_device(&out, prng_buf);
-					out.dump(&outHost[i * NUM_ELEMENTS_SF]);
-					sum += count_sf(&outHost[i * NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
+					out.dump(&outHost[i * spinorfieldElements]);
+					sum += count_sf(&outHost[i * spinorfieldElements], spinorfieldElements);
 				}
-				kernelResult[0] = sum / iterations / NUM_ELEMENTS_SF / 24;
+				kernelResult[0] = sum / iterations / spinorfieldElements / 24;
 
 				if(calcVariance) 
 				{
 					double var = 0.;
 					for (int i = 0; i < iterations; i++) {
-						var += calc_var_sf(&outHost[i * NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
+						var += calc_var_sf(&outHost[i * spinorfieldElements], spinorfieldElements, sum);
 					}
-					var = var / iterations / NUM_ELEMENTS_SF / 24;
+					var = var / iterations / spinorfieldElements / 24;
 
 					logger.info() << "variance:\t" << sqrt(var);
 				}
@@ -995,11 +995,11 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 		GaussianEvenOddTester(std::string inputfile):
 			SpinorTester("generate_gaussian_spinorfield_eo", inputfile, 1)
 			{
-				const hardware::buffers::Spinor out(NUM_ELEMENTS_EO, device);
+				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 
 				spinor * outHost;
-				outHost = new spinor[NUM_ELEMENTS_EO * iterations];
+				outHost = new spinor[spinorfieldEvenOddElements * iterations];
 				BOOST_REQUIRE(out);
 				
 				auto prng_buf = prng->get_buffers().at(0);
@@ -1007,18 +1007,18 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 				double sum = 0;
 				for (int i = 0; i < iterations; i++) {
 					code->generate_gaussian_spinorfield_eo_device(&out, prng_buf);
-					out.dump(&outHost[i * NUM_ELEMENTS_EO]);
-					sum += count_sf(&outHost[i * NUM_ELEMENTS_EO], NUM_ELEMENTS_EO);
+					out.dump(&outHost[i * spinorfieldEvenOddElements]);
+					sum += count_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements);
 				}
-				kernelResult[0] = sum / iterations / NUM_ELEMENTS_SF / 24;
+				kernelResult[0] = sum / iterations / spinorfieldElements / 24;
 
 				if(calcVariance) 
 				{
 					double var = 0.;
 					for (int i = 0; i < iterations; i++) {
-						var += calc_var_sf(&outHost[i * NUM_ELEMENTS_EO], NUM_ELEMENTS_EO, sum);
+						var += calc_var_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements, sum);
 					}
-					var = var / iterations / NUM_ELEMENTS_EO / 24;
+					var = var / iterations / spinorfieldEvenOddElements / 24;
 
 					logger.info() << "variance:\t" << sqrt(var);
 				}
