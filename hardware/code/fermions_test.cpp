@@ -134,35 +134,45 @@ public:
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-// 
-// 	BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
-// 
-// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
-// 	{
-// 		test_m_tm_minus("/m_tm_minus_input_1");
-// 	}
-// 
-// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
-// 	{
-// 		test_m_tm_minus("/m_tm_minus_input_2");
-// 	}
-// 
-// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
-// 	{
-// 		test_m_tm_minus("/m_tm_minus_input_3");
-// 	}
-// 
-// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
-// 	{
-// 		test_m_tm_minus("/m_tm_minus_input_4");
-// 	}
-// 
-// 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
-// 	{
-// 		test_m_tm_minus("/m_tm_minus_input_5");
-// 	}
 
-// BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
+
+	class MTmMinusTester : public FermionmatrixTester
+	{
+public:
+		MTmMinusTester(std::string inputfile) :
+		FermionmatrixTester("m_tm_minus", inputfile)
+		{
+			code->M_tm_minus_device(in, out,  this->getGaugefieldBuffer(), parameters->get_kappa(), meta::get_mubar(*parameters));
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
+	{
+		MTmMinusTester tester("m_tm_minus_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
+	{
+		MTmMinusTester tester("m_tm_minus_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
+	{
+		MTmMinusTester tester("m_tm_minus_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
+	{
+		MTmMinusTester tester("m_tm_minus_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
+	{
+		MTmMinusTester tester("m_tm_minus_input_5");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
