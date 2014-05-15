@@ -21,17 +21,48 @@
 #define BOOST_TEST_MODULE HARDWARE_CODE_FERMIONS
 
 #include "SpinorTester.hpp"
+#include "gaugefield.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
 
 class FermionTester : public SpinorTester
 {
+public:
+	FermionTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
+	SpinorTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+	{
+			
+	}
 	
+private:
+	const hardware::code::Gaugefield * code;
+	physics::lattices::Gaugefield * gaugefield;
+	
+	std::string getSpecificInputfile(std::string inputfileIn)
+	{
+		//todo: this is ugly, find a better solution.
+		// The problem is that the parent class calls a similar fct.
+		return "../fermions/" + inputfileIn;
+	}
 };
 
+BOOST_AUTO_TEST_SUITE(BUILD)
+
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+		FermionTester tester("build", "build_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( BUILD_2 )
+	{
+		FermionTester tester("build", "build_input_2");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
-#include "../../physics/lattices/gaugefield.hpp"
+
 #include "fermions.hpp"
 
 //some functionality
@@ -541,21 +572,6 @@ void test_dslash_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
-
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-	test_build("/opencl_module_fermions_build_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( BUILD_2 )
-{
-	test_build("/opencl_module_fermions_build_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 
 BOOST_AUTO_TEST_SUITE( M_WILSON )
 

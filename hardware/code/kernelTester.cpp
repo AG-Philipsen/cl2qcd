@@ -51,4 +51,3 @@ KernelTester::~KernelTester()
 	delete parameters;
 	delete system;
 }
-

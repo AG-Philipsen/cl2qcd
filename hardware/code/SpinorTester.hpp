@@ -12,7 +12,8 @@ public:
 	~SpinorTester();
 	
 protected:
-	std::string getSpecificInputfile(std::string inputfileIn);	
+	std::string getSpecificInputfile(std::string inputfileIn);
+
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fill_with_one(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);

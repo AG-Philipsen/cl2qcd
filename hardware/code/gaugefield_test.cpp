@@ -28,14 +28,14 @@
 class GaugefieldTester : public KernelTester {
 public:
 	GaugefieldTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-	  KernelTester(kernelName, (getSpecificInputfile(inputfileIn)), numberOfValues) {
+	  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues) {
 		prng = new physics::PRNG(*system);
 		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 		code = device->get_gaugefield_code();
 	}
 
 protected:
-	static std::string getSpecificInputfile(std::string inputfileIn)
+	std::string getSpecificInputfile(std::string inputfileIn)
 	{
 		return "gaugefield/" + inputfileIn;
 	}
