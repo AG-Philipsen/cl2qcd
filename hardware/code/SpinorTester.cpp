@@ -20,8 +20,8 @@
 #include "SpinorTester.hpp"
 #include "../../host_functionality/host_geometry.h"
 
-SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues):
-	KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
+  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
 	{
 	code = device->get_spinor_code();
 	prng = new physics::PRNG(*system);

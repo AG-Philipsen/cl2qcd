@@ -933,7 +933,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	{
 	public:
 		GaussianTester(std::string inputfile):
-			SpinorTester("generate_gaussian_spinorfield", inputfile, 1)
+		  SpinorTester("generate_gaussian_spinorfield", inputfile, 1, 2)
 			{
 				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
@@ -993,7 +993,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 	{
 	public:
 		GaussianEvenOddTester(std::string inputfile):
-			SpinorTester("generate_gaussian_spinorfield_eo", inputfile, 1)
+		  SpinorTester("generate_gaussian_spinorfield_eo", inputfile, 1, 2)
 			{
 				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 				hardware::buffers::Plain<hmc_float> sqnorm(1, device);

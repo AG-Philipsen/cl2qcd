@@ -30,7 +30,7 @@
 
 class SpinorTester : public KernelTester {
 public:
-	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1);
+  SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
 	~SpinorTester();
 	
 protected:
