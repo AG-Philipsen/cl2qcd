@@ -359,6 +359,64 @@ BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
+
+	class MTmSitediagonalMinusTester: public FermionmatrixEvenOddTester
+	{
+	public:
+		MTmSitediagonalMinusTester(std::string inputfile):
+			FermionmatrixEvenOddTester("m_tm_sitediagonal_minus", inputfile)
+			{
+				code->M_tm_sitediagonal_minus_device( in, out);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
+	{
+		MTmSitediagonalMinusTester tester("m_tm_sitediagonal_minus_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_2)
+	{
+		MTmSitediagonalMinusTester tester("m_tm_sitediagonal_minus_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_3)
+	{
+		MTmSitediagonalMinusTester tester("m_tm_sitediagonal_minus_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
+
+	class MTmInverseSitediagonalMinusTester: public FermionmatrixEvenOddTester
+	{
+	public:
+		MTmInverseSitediagonalMinusTester(std::string inputfile):
+			FermionmatrixEvenOddTester("m_tm_inverse_sitediagonal_minus", inputfile)
+			{
+				code->M_tm_inverse_sitediagonal_minus_device( in, out);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1)
+	{
+		MTmInverseSitediagonalMinusTester tester("m_tm_inverse_sitediagonal_minus_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_2)
+	{
+		MTmInverseSitediagonalMinusTester tester("m_tm_inverse_sitediagonal_minus_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_3)
+	{
+		MTmInverseSitediagonalMinusTester tester("m_tm_inverse_sitediagonal_minus_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
 
@@ -452,88 +510,6 @@ const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 	return gf.get_buffers().at(0);
 }
 
-// void test_m_tm_sitediagonal(std::string inputfile)
-// {
-// 	test_m_tm_sitediagonal_plus_minus(inputfile, true);
-// }
-// 
-// void test_m_tm_sitediagonal_minus(std::string inputfile)
-// {
-// 	test_m_tm_sitediagonal_plus_minus(inputfile, false);
-// }
-// 
-// void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
-// {
-// 	using namespace hardware::buffers;
-// 
-// 	std::string kernelName;
-// 	if(switcher)
-// 		kernelName = "m_tm_inverse_sitediagonal";
-// 	else
-// 		kernelName = "m_tm_inverse_sitediagonal_minus";
-// 	printKernelInfo(kernelName);
-// 	logger.info() << "Init device";
-// 	meta::Inputparameters params = create_parameters(inputfile);
-// 	hardware::System system(params);
-// 	TestGaugefield cpu(&system);
-// 	auto * device = cpu.get_device();
-// 	spinor * sf_in;
-// 	spinor * sf_out;
-// 
-// 	logger.info() << "Fill buffers...";
-// 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-// 
-// 	sf_in = new spinor[NUM_ELEMENTS_SF];
-// 	sf_out = new spinor[NUM_ELEMENTS_SF];
-// 
-// 	//use the variable use_cg to switch between cold and random input sf
-// 	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-// 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-// 	BOOST_REQUIRE(sf_in);
-// 
-// 	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-// 	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-// 	in.load(sf_in);
-// 	out.load(sf_in);
-// 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-// 
-// 	auto spinor_code = device->get_device()->get_spinor_code();
-// 
-// 	logger.info() << "|phi|^2:";
-// 	hmc_float cpu_back;
-// 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-// 	sqnorm.dump(&cpu_back);
-// 	logger.info() << cpu_back;
-// 
-// 	hmc_float cpu_res;
-// 	if(switcher) {
-// 		device->M_tm_inverse_sitediagonal_device( &in, &out);
-// 	} else {
-// 		device->M_tm_inverse_sitediagonal_minus_device( &in, &out);
-// 	}
-// 	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-// 	sqnorm.dump(&cpu_res);
-// 	logger.info() << "result:";
-// 	logger.info() << cpu_res;
-// 
-// 	logger.info() << "Clear buffers";
-// 	delete[] sf_in;
-// 	delete[] sf_out;
-// 
-// 	testFloatAgainstInputparameters(cpu_res, params);
-// 	BOOST_MESSAGE("Test done");
-// }
-// 
-// void test_m_tm_inverse_sitediagonal(std::string inputfile)
-// {
-// 	test_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
-// }
-// 
-// void test_m_tm_inverse_sitediagonal_minus(std::string inputfile)
-// {
-// 	test_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
-// }
-
 void test_dslash_eo(std::string inputfile)
 {
 	using namespace hardware::buffers;
@@ -581,46 +557,6 @@ void test_dslash_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
-
-
-/*
-BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
-
-BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
-{
-	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_2)
-{
-	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_3)
-{
-	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
-
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1)
-{
-	test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_2)
-{
-	test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_3)
-{
-	test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()*/
 
 BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 
