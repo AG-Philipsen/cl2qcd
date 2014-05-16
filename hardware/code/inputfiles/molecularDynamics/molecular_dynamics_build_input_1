@@ -8,7 +8,5 @@ use_smearing=true
 
 #this specifies the acceptance precision
 solver_prec=1e-8
-#reference value
-test_ref_val=0.98724670708006379
 
 

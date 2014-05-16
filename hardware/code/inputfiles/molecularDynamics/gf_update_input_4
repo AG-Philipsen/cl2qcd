@@ -9,11 +9,11 @@ NT=4
 solver=CG
 
 #this specifies the "eps" in the update
-tau=0.12
+tau=0.
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.52977582236535459
+test_ref_val=877.17444356279361
 
 

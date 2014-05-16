@@ -5,14 +5,14 @@ NS=4
 NT=4
 
 #with BICGSTAB, this set the init-gm to random values
-solver=CG
+solver=BICGSTAB
 
 #this specifies the "eps" in the update
-tau=0.
+tau=0.12
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1.
+test_ref_val=1516.4109420749787
 
 

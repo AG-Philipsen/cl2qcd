@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2014 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -18,22 +18,139 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../meta/util.hpp"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/molecular_dynamics.hpp"
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/spinors_staggered.hpp"
-#include "../hardware/code/gaugemomentum.hpp"
-
-// use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_MOLECULAR_DYNAMICS
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE HARDWARE_CODE_MOLECULAR_DYNAMICS
 
-#include "test_util.h"
-#include "test_util_staggered.h"
-#include "../host_functionality/host_random.h"
+#include "GaugemomentumTester.hpp"
+#include "molecular_dynamics.hpp"
+
+#include "../physics/lattices/gaugefield.hpp"
+
+class MolecularDynamicsTester : public GaugemomentumTester
+{
+public:
+	MolecularDynamicsTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1) :
+		GaugemomentumTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+		{
+			gaugefieldCode = device->get_gaugefield_code();
+			molecularDynamicsCode = device->get_molecular_dynamics_code();
+			
+			gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+		}
+		
+		~MolecularDynamicsTester()
+		{
+			molecularDynamicsCode = NULL;
+			gaugefieldCode = NULL;
+		}
+		
+protected:
+	std::string getSpecificInputfile(std::string inputfileIn)
+	{
+		//todo: this is ugly, find a better solution.
+		// The problem is that the parent class calls a similar fct.
+		return "../molecularDynamics/" + inputfileIn;
+	}
+	
+	const hardware::buffers::SU3* getGaugefieldBuffer() {
+		return gaugefield->get_buffers()[0];
+	}
+	
+	const hardware::code::Molecular_Dynamics * molecularDynamicsCode;
+	const hardware::code::Gaugefield * gaugefieldCode;
+	
+	physics::PRNG * prng;
+	physics::lattices::Gaugefield * gaugefield;
+};
+
+BOOST_AUTO_TEST_SUITE(BUILD)
+
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+		MolecularDynamicsTester tester("build", "molecular_dynamics_build_input_1");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( GF_UPDATE )
+
+	class GaugefieldUpdateTester : public MolecularDynamicsTester
+	{
+	public:
+		GaugefieldUpdateTester(std::string inputfile) : 
+			MolecularDynamicsTester("md_update_gaugefield", inputfile)
+			{
+				code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
+				double epsilon = parameters->get_tau();
+				molecularDynamicsCode->md_update_gaugefield_device(gaugemomentumBuffer, getGaugefieldBuffer(), epsilon);
+				
+				const hardware::buffers::Plain<hmc_float> plaq(1, device );
+				const hardware::buffers::Plain<hmc_float> splaq(1, device);
+				const hardware::buffers::Plain<hmc_float> tplaq(1, device);
+
+				gaugefieldCode->plaquette_device(getGaugefieldBuffer(), &plaq, &tplaq, &splaq);
+				plaq.dump(&kernelResult[0]);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE(GF_UPDATE_1 )
+	{
+		GaugefieldUpdateTester tester("gf_update_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( GF_UPDATE_2 )
+	{
+		GaugefieldUpdateTester tester("gf_update_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( GF_UPDATE_3 )
+	{
+		GaugefieldUpdateTester tester("gf_update_input_3");
+	}
+
+	BOOST_AUTO_TEST_CASE( GF_UPDATE_4 )
+	{
+		GaugefieldUpdateTester tester("gf_update_input_4");
+	}
+
+	BOOST_AUTO_TEST_CASE(GF_UPDATE_5 )
+	{
+		BOOST_MESSAGE("THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!");
+		GaugefieldUpdateTester tester("gf_update_input_5");
+	}
+
+	BOOST_AUTO_TEST_CASE(GF_UPDATE_6 )
+	{
+		GaugefieldUpdateTester tester("gf_update_input_6");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include "../../meta/util.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
+#include "molecular_dynamics.hpp"
+#include "spinors_staggered.hpp"
+
+#include "../../tests/test_util.h"
+#include "../../tests/test_util_staggered.h"
 
 class TestMolecularDynamics {
 
@@ -259,77 +376,9 @@ void fill_sf_with_random_eo(su3vec * sf_in1, su3vec * sf_in2, int size, int seed
 	return;
 }
 
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_molecular_dynamics";
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestMolecularDynamics cpu(&system);
-	BOOST_MESSAGE("Test done");
-}
-
 void test_stout_smear_fermion_force(std::string inputfile)
 {
 
-}
-
-void test_gf_update(std::string inputfile)
-{
-	std::string kernelName = "md_update_gaugefield";
-	printKernelInfo(kernelName);
-
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestMolecularDynamics cpu(&system);
-	auto * device = cpu.get_device();
-	hmc_float * gm_in;
-
-	logger.info() << "create buffers";
-	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-	gm_in = new hmc_float[NUM_ELEMENTS_AE];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-		fill_with_one(gm_in, NUM_ELEMENTS_AE);
-	} else {
-		fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
-	}
-	BOOST_REQUIRE(gm_in);
-	auto gf_code = device->get_device()->get_gaugefield_code();
-	auto gm_code = device->get_device()->get_gaugemomentum_code();
-
-	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
-	gm_code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "|in|^2:";
-
-	gm_code->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-	hmc_float cpu_back;
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-
-	logger.info() << "Run kernel";
-	hmc_float eps = params.get_tau();
-	device->md_update_gaugefield_device(&in, cpu.get_gaugefield(), eps);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables();
-
-	hmc_float plaq_cpu;
-	hardware::buffers::Plain<hmc_float> plaq_buf(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> foo1_buf(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> foo2_buf(1, device->get_device());
-	gf_code->plaquette_device(cpu.get_gaugefield(), &plaq_buf, &foo1_buf, &foo2_buf);
-	plaq_buf.dump(&plaq_cpu);
-	plaq_cpu /= static_cast<hmc_float>(meta::get_plaq_norm(params));
-
-	logger.info() << "Free buffers";
-	delete[] gm_in;
-
-	testFloatAgainstInputparameters(plaq_cpu, params);
-	BOOST_MESSAGE("Test done");
 }
 
 void test_f_gauge(std::string inputfile)
@@ -666,58 +715,12 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-
-
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-	test_build("/opencl_module_molecular_dynamics_build_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 BOOST_AUTO_TEST_SUITE( STOUT_SMEAR_FERMION_FORCE )
 
 BOOST_AUTO_TEST_CASE(STOUT_SMEAR_FERMION_FORCE_1 )
 {
 	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
 	test_stout_smear_fermion_force("/stout_smear_fermion_force_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( GF_UPDATE )
-
-BOOST_AUTO_TEST_CASE(GF_UPDATE_1 )
-{
-	test_gf_update("/gf_update_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( GF_UPDATE_2 )
-{
-	test_gf_update("/gf_update_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( GF_UPDATE_3 )
-{
-	test_gf_update("/gf_update_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( GF_UPDATE_4 )
-{
-	test_gf_update("/gf_update_input_4");
-}
-
-BOOST_AUTO_TEST_CASE(GF_UPDATE_5 )
-{
-	BOOST_MESSAGE("THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!");
-	test_gf_update("/gf_update_input_5");
-}
-
-BOOST_AUTO_TEST_CASE(GF_UPDATE_6 )
-{
-	test_gf_update("/gf_update_input_6");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
