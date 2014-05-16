@@ -1090,7 +1090,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
 	class SaxpyEvenOddTester: public SpinorStaggeredTester{
 	   public:
-		SaxpyEvenOddTester(std::string inputfile, bool switcher):SpinorStaggeredTester("saxpy_eo or saxpy_arg_eo", inputfile, 1){
+		SaxpyEvenOddTester(std::string inputfile, int switcher):SpinorStaggeredTester("saxpy_eo or saxpy_arg_eo", inputfile, 1){
 			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements, device);
 			const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
 			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements, device);
@@ -1408,7 +1408,7 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 
 	class SaxpbyEvenOddTester: public SpinorStaggeredTester{
 	   public:
-		SaxpbyEvenOddTester(std::string inputfile, bool switcher):SpinorStaggeredTester("saxpy_eo or saxpy_arg_eo", inputfile, 1){
+		SaxpbyEvenOddTester(std::string inputfile, int switcher):SpinorStaggeredTester("saxpy_eo or saxpy_arg_eo", inputfile, 1){
 			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements, device);
 			const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
 			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements, device);
@@ -1918,803 +1918,563 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 	
 BOOST_AUTO_TEST_SUITE_END()
 
+///////////////////////////////////////
 
+BOOST_AUTO_TEST_SUITE(SAXPBYPZ_EO)
 
+	class SaxpbypzEvenOddTester: public SpinorStaggeredTester{
+	   public:
+		SaxpbypzEvenOddTester(std::string inputfile, bool switcher=true) : 
+		                               SpinorStaggeredTester("saxsbypz_eo", inputfile){
+			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements, device);
+			const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
+			const hardware::buffers::SU3vec in3(spinorfieldEvenOddElements, device);
+			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements, device);
+			hardware::buffers::Plain<hmc_complex> alpha(1, device);
+			hardware::buffers::Plain<hmc_complex> beta(1, device);
 
-#if 0
+			in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
+			in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
+			in3.load(createSpinorfield(spinorfieldEvenOddElements, 789));
+			alpha.load(&alpha_host);
+			beta.load(&beta_host);
 
+			(switcher) ? code->saxpbypz_eoprec_device(&in, &in2, &in3, &alpha, &beta, &out) :
+			             code->saxpbypz_eoprec_device(&in, &in2, &in3, alpha_host, beta_host, &out);
 
+			calcSquarenormEvenOddAndStoreAsKernelResult(&out);
+			
+  /*
+  print_staggeredfield_eo_to_textfile("ref_vec_saxpbypz1_eo", createSpinorfield(spinorfieldEvenOddElements, 123)); 
+  logger.info() << "Produced the ref_vec_saxpbypz1_eo text file with the staggered field for the ref. code."; 
+  print_staggeredfield_eo_to_textfile("ref_vec_saxpbypz2_eo", createSpinorfield(spinorfieldEvenOddElements, 456)); 
+  logger.info() << "Produced the ref_vec_saxpbypz2_eo text file with the staggered field for the ref. code.";  
+  print_staggeredfield_eo_to_textfile("ref_vec_saxpbypz3_eo", createSpinorfield(spinorfieldEvenOddElements, 789)); 
+  logger.info() << "Produced the ref_vec_saxpbypz3_eo text file with the staggered field for the ref. code.";
+  */
+		}
+	};
 
-void test_sf_saxpby_staggered_eo(std::string inputfile, int switcher=0)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher==0)
-	  kernelName = "saxpby_cplx_staggered_eoprec";
-	if(switcher==1)
-	  kernelName = "saxpby_cplx_arg_staggered_eoprec";
-	if(switcher==2)
-	  kernelName = "saxpby_real_staggered_eoprec";
-	if(switcher==3)
-	  kernelName = "saxpby_real_arg_staggered_eoprec";
-	if(switcher==4)
-	  kernelName = "saxpby_real_vec_staggered_eoprec";
-	
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const SU3vec in(NUM_ELEMENTS_SF, device->get_device());
-	const SU3vec in2(NUM_ELEMENTS_SF, device->get_device());
-	const SU3vec out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	
-	//Here we waste a bit of memory, but in the test is not a problem!!
-	//Used if switcher==4
-	hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device->get_device());
-	std::vector<hmc_float> alpha_host_real_vec(5, params.get_beta());
-	const int index_alpha = 3;
-	hardware::buffers::Plain<hmc_float> beta_real_vec(5, device->get_device());
-	std::vector<hmc_float> beta_host_real_vec(5, params.get_kappa());
-	const int index_beta = 2;
-	//Used if switcher==2 || ==3
-	hardware::buffers::Plain<hmc_float> alpha_real(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> beta_real(1, device->get_device());
-	hmc_float alpha_host_real = params.get_beta();
-	hmc_float beta_host_real = params.get_kappa();
-	//Used if switcher==0 || ==1
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
-
-	su3vec * sf_in;
-	su3vec * sf_in2;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
-	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
-
-	//The following seven lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-	/*
-        print_staggeredfield_eo_to_textfile("ref_vec_saxpby1_eo",sf_in,params); 
-        logger.info() << "Produced the ref_vec_saxpby1_eo text file with the staggered field for the ref. code."; 
-	print_staggeredfield_eo_to_textfile("ref_vec_saxpby2_eo",sf_in2,params); 
-        logger.info() << "Produced the ref_vec_saxpbypz2_eo text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
-	
-	in.load(sf_in);
-	in2.load(sf_in2);
-	
-	if(switcher==4){
-	  logger.info() << "Use alpha[" << index_alpha << "] = " << alpha_host_real_vec[index_alpha];
-	  alpha_real_vec.load(&alpha_host_real_vec[0]); 
-	  logger.info() << "Use beta[" << index_beta << "] = " << beta_host_real_vec[index_beta];
-	  beta_real_vec.load(&beta_host_real_vec[0]); 
-	}else if(switcher==2 || switcher==3){
-	  logger.info() << "Use alpha = " << alpha_host_real;
-	  logger.info() << "Use beta = " << beta_host_real;
-	  alpha_real.load(&alpha_host_real);
-	  beta_real.load(&beta_host_real);
-	}else{
-	  logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
-	  logger.info() << "Use beta = (" << beta_host.re << ","<< beta_host.im <<")";
-	  alpha.load(&alpha_host);
-	  beta.load(&beta_host);
-	}
-
-	logger.info() << "Run kernel";
-	if(switcher==0)
-	  device->saxpby_eoprec_device(&in, &in2, &alpha, &beta, &out);
-	if(switcher==1)
-	  device->saxpby_eoprec_device(&in, &in2, alpha_host, beta_host, &out);
-	if(switcher==2)
-	  device->saxpby_eoprec_device(&in, &in2, &alpha_real, &beta_real, &out);
-	if(switcher==3)
-	  device->saxpby_eoprec_device(&in, &in2, alpha_host_real, beta_host_real, &out);
-	if(switcher==4)
-	  device->saxpby_eoprec_device(&in, &in2, &alpha_real_vec, &beta_real_vec, index_alpha, index_beta, &out);
-	
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_sf_saxpbypz_staggered_eo(std::string inputfile, bool switcher=true)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher)
-	  kernelName = "saxpbypz_cplx_staggered_eoprec";
-	else
-	  kernelName = "saxpbypz_cplx_arg_staggered_eoprec";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const SU3vec in(NUM_ELEMENTS_SF, device->get_device());
-	const SU3vec in2(NUM_ELEMENTS_SF, device->get_device());
-	const SU3vec in3(NUM_ELEMENTS_SF, device->get_device());
-	const SU3vec out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
-
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
-	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
-	logger.info() << "Use beta = (" << beta_host.re << ","<< beta_host.im <<")";
-
-	su3vec * sf_in;
-	su3vec * sf_in2;
-	su3vec * sf_in3;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
-	sf_in3 = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
-	  fill_sf_with_random(sf_in3, NUM_ELEMENTS_SF, 789);
-	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
-	BOOST_REQUIRE(sf_in3);
-
-	//The following seven lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-	/*
-        print_staggeredfield_eo_to_textfile("ref_vec_saxpbypz1_eo",sf_in,params); 
-        logger.info() << "Produced the ref_vec_saxpbypz1_eo text file with the staggered field for the ref. code."; 
-	print_staggeredfield_eo_to_textfile("ref_vec_saxpbypz2_eo",sf_in2,params); 
-        logger.info() << "Produced the ref_vec_saxpbypz2_eo text file with the staggered field for the ref. code.";  
-        print_staggeredfield_eo_to_textfile("ref_vec_saxpbypz3_eo",sf_in3,params); 
-        logger.info() << "Produced the ref_vec_saxpbypz3_eo text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
-	
-	in.load(sf_in);
-	in2.load(sf_in2);
-	in3.load(sf_in3);
-	alpha.load(&alpha_host);
-	beta.load(&beta_host);
-
-	logger.info() << "Run kernel";
-	if(switcher)
-	  device->saxpbypz_eoprec_device(&in, &in2, &in3, &alpha, &beta, &out);
-	else
-	  device->saxpbypz_eoprec_device(&in, &in2, &in3, alpha_host, beta_host, &out);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_sf_gaussian_staggered_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "set_gaussian_spinorfield_stagg_eoprec";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-
-	physics::PRNG prng(system);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const SU3vec out(NUM_ELEMENTS_SF, device->get_device());
-
-	int iterations = params.get_integrationsteps(0);
-
-	su3vec * sf_out;
-	sf_out = new su3vec[NUM_ELEMENTS_SF * iterations];
-	BOOST_REQUIRE(sf_out);
-
-	auto prng_buf = prng.get_buffers().at(0);
-
-	hmc_float sum = 0;
-	for (int i = 0; i< iterations; i++){
-	  if(i%200==0)logger.info() << "Run kernel for the " << i << "th time";
-	  device->set_gaussian_spinorfield_eoprec_device(&out, prng_buf);
-	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
-	  //Here we sum the entries to calculate the mean later
-	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
-	}
-	logger.info() << "result: mean";
-	hmc_float cpu_res = 0.;
-	//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real gaussian numbers
-	sum = sum/iterations/NUM_ELEMENTS_SF/6;	
-	cpu_res= sum;
-	logger.info() << cpu_res;
-
-	if(params.get_read_multiple_configs()  == false){
-	  //CP: calc std derivation
-	  hmc_float var=0.;
-	  for (int i=0; i<iterations; i++){
-	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
-	  }
-	  //var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
-	  var=var/iterations/NUM_ELEMENTS_SF/6;
-	  
-	  cpu_res = sqrt(var);
-	  logger.info() << "result: variance";
-	  logger.info() << cpu_res;
-	}
-
-	//The Kolmogorov_Smirnov test requires set of n samples with n around 1000
-	//(to big n and to small n are not good choices for this test)
-	//So we can consider each kernel result as a set (NUM_ELEMENTS_SF*6=1536 for a 4^4 lattice)
-	vector<vector<hmc_float>> samples;
-	vector<hmc_float> tmp;
-	vector<hmc_float> tmp2;
-	for(int i=0; i<iterations; i++){
-	  vector<hmc_float> tmp;
-	  for(uint j=0; j<NUM_ELEMENTS_SF; j++){
-	    tmp2=reals_from_su3vec(sf_out[i*NUM_ELEMENTS_SF+j]);
-	    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
-	    tmp2.clear();
-	  }
-	  samples.push_back(tmp);
-	  tmp.clear();
-	}
-	logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
-	logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
-	
-	if(params.get_read_multiple_configs()==true){
-	  //Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
-	  //Note that in the test BOOST_CHECK is used.
-	  mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
-	  mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
-	  mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
-	}else{
-	  //Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
-	  //Note that in the test BOOST_CHECK is used.
-	  variance_test_multiple_set(samples,2.,sqrt(0.5));
-	  variance_test_multiple_set(samples,3.,sqrt(0.5));
-	  variance_test_multiple_set(samples,4.,sqrt(0.5));
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_1 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_1");
 	}
 	
-	testFloatSizeAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-
-}
-
-
-void test_sf_sax_vectorized_and_squarenorm_staggered_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "sax_vectorized_and_squarenorm_eoprec";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	int NUM_EQS = params.get_md_approx_ord();
-	const SU3vec in(NUM_ELEMENTS_SF*NUM_EQS, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(NUM_EQS, device->get_device());
-	hardware::buffers::Plain<hmc_float> alpha(NUM_EQS, device->get_device());
-
-	std::vector<hmc_float> alpha_host(NUM_EQS, params.get_beta());
-	logger.info() << "Using:";
-	for(uint i=0; i<alpha_host.size(); i++){
-	  alpha_host[i] += i*params.get_rho();
-	  logger.info() << "  alpha[" << i << "] = " << alpha_host[i];
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_2 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_2");
 	}
-
-	su3vec * sf_in;
-	sf_in = new su3vec[NUM_ELEMENTS_SF * NUM_EQS];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF * NUM_EQS);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF * NUM_EQS, 123);
-	}
-	BOOST_REQUIRE(sf_in);
-
-	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-        /*
-        print_staggeredfield_eo_to_textfile("ref_vec_sax_eo",sf_in,params); 
-        logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
 	
-	in.load(sf_in);
-	alpha.load(&alpha_host[0]);
-
-	logger.info() << "Run kernel";
-	device->sax_vectorized_and_squarenorm_eoprec_device(&in, &alpha, NUM_EQS, &sqnorm);
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_3 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_3");
+	}
 	
-	logger.info() << "result:";
-	std::vector<hmc_float> cpu_res(NUM_EQS);
-	sqnorm.dump(&cpu_res[0]);
-	for(uint i=0; i<cpu_res.size(); i++)
-	  logger.info() << "  cpu_res[" << i << "] = " << cpu_res[i];
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_4 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_5 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_5");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_6 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_6");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_7 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_7");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_8 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_8");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_9 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_9");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_10 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_10");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_11 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_11");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_12 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_12");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_13 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_13");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_14 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_14");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_15 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_15");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_16 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_16");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_17 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_17");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_18 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_18");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_19 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_19");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_20 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_20");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_21 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_21");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_22 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_22");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_23 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_23");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_24 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_24");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_25 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_25");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_26 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_26");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_27 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_27");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_28 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_28");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_29 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_29");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_30 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_30");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_31 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_31");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_32 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_32");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_33 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_33");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_34 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_34");
+	}
 
-	testFloatAgainstInputparameters(std::accumulate(cpu_res.begin(), cpu_res.end(), 0.0), params);
-	BOOST_MESSAGE("Test done");
-}
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_1 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_1", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_2 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_2", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_3 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_3", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_4 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_4", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_5 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_5", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_6 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_6", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_7 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_7", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_8 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_8", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_9 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_9", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_10 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_10", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_11 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_11", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_12 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_12", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_13 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_13", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_14 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_14", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_15 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_15", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_16 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_16", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_17 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_17", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_18 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_18", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_19 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_19", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_20 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_20", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_21 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_21", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_22 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_22", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_23 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_23", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_24 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_24", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_25 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_25", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_26 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_26", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_27 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_27", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_28 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_28", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_29 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_29", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_30 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_30", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_31 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_31", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_32 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_32", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_33 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_33", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_34 )
+	{
+	    SaxpbypzEvenOddTester("saxpbypz_eo_input_34", false);
+	}
+	
+BOOST_AUTO_TEST_SUITE_END()
 
+///////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 
+	class GaussianEvenOddTester: public SpinorStaggeredTester{
+	   public:
+		GaussianEvenOddTester(std::string inputfile) : SpinorStaggeredTester("gaussian_spinorfield_eo", inputfile, 1, 2){
+			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements, device);
+			hardware::buffers::Plain<hmc_float> sqnorm(1, device);
 
+			su3vec * outHost;
+			outHost = new su3vec[spinorfieldEvenOddElements * iterations];
+			BOOST_REQUIRE(out);
+				
+			auto prng_buf = prng->get_buffers().at(0);
+		
+			double sum = 0;
+			for (int i = 0; i < iterations; i++) {
+				if(i%200==0) logger.info() << "Run kernel for the " << i << "th time";
+				code->set_gaussian_spinorfield_eoprec_device(&out, prng_buf);
+				out.dump(&outHost[i * spinorfieldEvenOddElements]);
+				sum += count_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements);
+			}
+			//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real gaussian numbers
+			sum /= (iterations * spinorfieldEvenOddElements * 6);
+			kernelResult[0] = sum;
 
+			if(calcVariance){
+				double var = 0.;
+				for (int i = 0; i < iterations; i++) {
+				   var += calc_var_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements, sum);
+				}
+				//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
+				var /= (iterations * spinorfieldEvenOddElements * 6);
+				kernelResult[0] = sqrt(var);
+			}
+			
+			/** 
+			 * @TODO This piece of code contains actually tests for the RNG itself 
+			 *       and should be moved elsewhere. 
+			 */
+			//The Kolmogorov_Smirnov test requires set of n samples with n around 1000
+			//(to big n and to small n are not good choices for this test)
+			//So we can consider each kernel result as a set (NUM_ELEMENTS_SF*6=1536 for a 4^4 lattice)
+			vector<vector<hmc_float>> samples;
+			vector<hmc_float> tmp;
+			vector<hmc_float> tmp2;
+			for(int i=0; i<iterations; i++){
+			  vector<hmc_float> tmp;
+			  for(uint j=0; j<spinorfieldEvenOddElements; j++){
+			    tmp2=reals_from_su3vec(outHost[i*spinorfieldEvenOddElements+j]);
+			    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
+			    tmp2.clear();
+			  }
+			  samples.push_back(tmp);
+			  tmp.clear();
+			}
+			logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
+			logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
+			
+			if(!calcVariance){
+			  //Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
+			  //Note that in the test BOOST_CHECK is used.
+			  mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
+			  mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
+			  mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
+			}else{
+			  //Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
+			  //Note that in the test BOOST_CHECK is used.
+			  variance_test_multiple_set(samples,2.,sqrt(0.5));
+			  variance_test_multiple_set(samples,3.,sqrt(0.5));
+			  variance_test_multiple_set(samples,4.,sqrt(0.5));
+			}
+		}
+	};
 
-
-
-BOOST_AUTO_TEST_SUITE(SF_SAXPBYPZ_EO)
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_1 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_2 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_3 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_4 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_5 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_6 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_7 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_7");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_8 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_8");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_9 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_9");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_10 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_10");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_11 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_11");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_12 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_12");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_13 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_13");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_14 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_14");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_15 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_15");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_16 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_16");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_17 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_17");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_18 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_18");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_19 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_19");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_20 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_20");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_21 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_21");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_22 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_22");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_23 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_23");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_24 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_24");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_25 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_25");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_26 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_26");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_27 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_27");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_28 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_28");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_29 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_29");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_30 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_30");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_31 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_31");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_32 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_32");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_33 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_33");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_EO_34 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_34");
-}
+	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_1 )
+	{
+	    GaussianEvenOddTester("gaussian_eo_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_2 )
+	{
+	    GaussianEvenOddTester("gaussian_eo_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_3 )
+	{
+	    GaussianEvenOddTester("gaussian_eo_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_4 )
+	{
+	    GaussianEvenOddTester("gaussian_eo_input_4");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(SF_SAXPBYPZ_ARG_EO)
+///////////////////////////////////////
 
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_1 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_1", false);
-}
+BOOST_AUTO_TEST_SUITE(SAX_VEC_AND_SQNORM)
 
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_2 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_2", false);
-}
+	class SaxVecAndSqnormEvenOddTester: public SpinorStaggeredTester{
+	   public:
+		SaxVecAndSqnormEvenOddTester(std::string inputfile) : SpinorStaggeredTester("sax_vectorized_and_squarenorm_eoprec",inputfile, 1){
+			int NUM_EQS = parameters->get_md_approx_ord();
+			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements*NUM_EQS, device);
+			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements*NUM_EQS, device);
+			in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
+			
+			hardware::buffers::Plain<hmc_float> sqnorm(NUM_EQS, device);
+			hardware::buffers::Plain<hmc_float> alpha(NUM_EQS, device);
+			std::vector<hmc_float> alpha_vec_host(NUM_EQS, alpha_host.re);
+			for(uint i=0; i<alpha_vec_host.size(); i++)
+			    alpha_vec_host[i] += i*alpha_host.im;
+			alpha.load(&alpha_vec_host[0]);
+			
+			code->sax_vectorized_and_squarenorm_eoprec_device(&in, &alpha, NUM_EQS, &sqnorm);
+			std::vector<hmc_float> cpu_res(NUM_EQS);
+			sqnorm.dump(&cpu_res[0]);
 
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_3 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_3", false);
-}
+			kernelResult[0] = std::accumulate(cpu_res.begin(), cpu_res.end(), 0.0);
 
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_4 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_4", false);
-}
+  /*
+  print_staggeredfield_eo_to_textfile("ref_vec_sax_and_sq_eo", createSpinorfield(spinorfieldEvenOddElements, 123)); 
+  logger.info() << "Produced the ref_vec_sax_and_sq_eo text file with the staggered field for the ref. code.";
+  */
+		}
+	};
 
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_5 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_5", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_6 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_6", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_7 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_7", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_8 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_8", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_9 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_9", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_10 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_10", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_11 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_11", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_12 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_12", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_13 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_13", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_14 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_14", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_15 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_15", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_16 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_16", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_17 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_17", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_18 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_18", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_19 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_19", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_20 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_20", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_21 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_21", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_22 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_22", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_23 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_23", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_24 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_24", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_25 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_25", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_26 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_26", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_27 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_27", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_28 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_28", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_29 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_29", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_30 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_30", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_31 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_31", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_32 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_32", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_33 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_33", false);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_ARG_EO_34 )
-{
-  test_sf_saxpbypz_staggered_eo("/sf_saxpbypz_staggered_eo_input_34", false);
-}
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_1 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_2 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_3 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_4 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_5 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_5");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_6 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_6");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_7 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_7");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_8 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_8");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_9 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_9");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_10 )
+	{
+	    SaxVecAndSqnormEvenOddTester("/sax_vec_sqnorm_eo_input_10");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN_EO)
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_1 )
-{
-  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_2 )
-{
-  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_3 )
-{
-  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SF_GAUSSIAN_EO_4 )
-{
-  test_sf_gaussian_staggered_eo("/sf_gaussian_staggered_eo_input_4");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_SAX_VEC_AND_SQNORM)
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_1 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_2 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_3 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_4 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_5 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_6 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_7 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_7");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_8 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_8");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_9 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_9");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_VEC_AND_SQNORM_10 )
-{
-  test_sf_sax_vectorized_and_squarenorm_staggered_eo("/sf_sax_vec_sqnorm_staggered_eo_input_10");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-#endif
