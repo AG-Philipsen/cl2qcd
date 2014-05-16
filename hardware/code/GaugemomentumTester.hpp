@@ -34,9 +34,13 @@ public:
   ~GaugemomentumTester();
 
 protected:
+	enum Filltype {one, zero};
+	
   std::string getSpecificInputfile(std::string inputfileIn);
   double * createGaugemomentum(int seed = 123456);
+	double * createGaugemomentumBasedOnFilltype(Filltype filltype = one);
   void fill_with_one(double * sf_in);
+	void fill_with_zero(double * sf_in);
   void fill_with_random(double * sf_in, int seed);
   void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in);
   double count_gm(ae * ae_in, int size);

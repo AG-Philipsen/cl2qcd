@@ -52,10 +52,35 @@ double * GaugemomentumTester::createGaugemomentum(int seed)
   return gm_in;    
 }
 
+double * GaugemomentumTester::createGaugemomentumBasedOnFilltype(Filltype filltype)
+{
+  double * gm_in;
+  gm_in = new double[numberOfAlgebraElements];
+  switch(filltype)
+	{
+		case one:
+			fill_with_one(gm_in);
+			break;
+		case zero:
+			fill_with_zero(gm_in);
+			break;
+	}
+  BOOST_REQUIRE(gm_in);
+  return gm_in;    
+}
+
 void GaugemomentumTester::fill_with_one(double * sf_in)
 {
   for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
     sf_in[i] = 1.;
+  }
+  return;
+}
+
+void GaugemomentumTester::fill_with_zero(double * sf_in)
+{
+  for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
+    sf_in[i] = 0.;
   }
   return;
 }
