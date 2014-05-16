@@ -18,22 +18,22 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../meta/util.hpp"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/molecular_dynamics.hpp"
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/spinors_staggered.hpp"
-#include "../hardware/code/gaugemomentum.hpp"
+#include "../../meta/util.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
+#include "../device.hpp"
+#include "molecular_dynamics.hpp"
+#include "spinors.hpp"
+#include "spinors_staggered.hpp"
+#include "gaugemomentum.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE_MOLECULAR_DYNAMICS
 #include <boost/test/unit_test.hpp>
 
-#include "test_util.h"
-#include "test_util_staggered.h"
-#include "../host_functionality/host_random.h"
+#include "../../tests/test_util.h"
+#include "../../tests/test_util_staggered.h"
+#include "../../host_functionality/host_random.h"
 
 class TestMolecularDynamics {
 

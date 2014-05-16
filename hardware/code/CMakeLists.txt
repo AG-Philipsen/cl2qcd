@@ -89,8 +89,8 @@ target_link_libraries(hardware_code_spinors_test
 	lattices
 	kernelTestUtilities
 )
-add_test(Opencl_module_spinors_CPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)
-add_test(Opencl_module_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true)
+add_test(hardware_code_spinors_CPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)
+add_test(hardware_code_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true)
 
 add_executable(hardware_code_fermions_test fermions_test.cpp)
 target_link_libraries(hardware_code_fermions_test
@@ -112,4 +112,15 @@ add_test(hardware_code_gaugemomentum_CPU       hardware_code_gaugemomentum_test 
 add_test(hardware_code_gaugemomentum_CPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(hardware_code_gaugemomentum_GPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_gaugemomentum_GPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+
+add_executable(hardware_code_molecular_dynamics_test molecular_dynamics_test.cpp)
+target_link_libraries(hardware_code_molecular_dynamics_test
+	optimal
+	kernelTestUtilities
+)
+add_test(hardware_code_molecular_dynamics_CPU       hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_molecular_dynamics_CPU_REC12 hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(hardware_code_molecular_dynamics_GPU       hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(hardware_code_molecular_dynamics_GPU_REC12 hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+
 
