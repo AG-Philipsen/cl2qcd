@@ -31,8 +31,9 @@
 class KernelTester {
 public:
   KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparision = 1);
-	virtual ~KernelTester();
-
+	virtual ~KernelTester();	
+	void setReferenceValuesToZero();
+	
 protected:
 	double testPrecision;
         int typeOfComparision;

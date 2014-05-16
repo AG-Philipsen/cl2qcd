@@ -69,3 +69,10 @@ KernelTester::~KernelTester()
 	delete parameters;
 	delete system;
 }
+
+void KernelTester::setReferenceValuesToZero()
+{
+	for (int iteration = 0; iteration < (int) referenceValue.size(); iteration ++) {
+		referenceValue[iteration] = 0.;
+	}
+}

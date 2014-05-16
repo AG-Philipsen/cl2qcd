@@ -22,6 +22,7 @@
 #define BOOST_TEST_MODULE HARDWARE_CODE_MOLECULAR_DYNAMICS
 
 #include "GaugemomentumTester.hpp"
+#include "SpinorTester.hpp"
 #include "molecular_dynamics.hpp"
 
 #include "../physics/lattices/gaugefield.hpp"
@@ -183,9 +184,142 @@ BOOST_AUTO_TEST_SUITE( F_GAUGE_TLSYM )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( STOUT_SMEAR_FERMION_FORCE )
 
+	BOOST_AUTO_TEST_CASE(STOUT_SMEAR_FERMION_FORCE_1 )
+	{
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+	}
 
+BOOST_AUTO_TEST_SUITE_END()
 
+// void test_f_fermion(std::string inputfile)
+// {
+// 	using namespace hardware::buffers;
+// 
+// 	std::string kernelName = "f_fermion";
+// 	printKernelInfo(kernelName);
+// 	logger.info() << "Init device";
+// 	meta::Inputparameters params = create_parameters(inputfile);
+// 	hardware::System system(params);
+// 	TestMolecularDynamics cpu(&system);
+// 	auto * device = cpu.get_device();
+// 	spinor * sf_in1;
+// 	spinor * sf_in2;
+// 	ae * ae_out;
+// 
+// 	logger.info() << "Fill buffers...";
+// 	int NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+// 	int NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+// 
+// 	sf_in1 = new spinor[NUM_ELEMENTS_SF];
+// 	sf_in2 = new spinor[NUM_ELEMENTS_SF];
+// 	ae_out = new ae[NUM_ELEMENTS_AE];
+// 
+// 	//use the variable use_cg to switch between cold and random input sf
+// 	if(params.get_solver() == meta::Inputparameters::cg) {
+// 		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
+// 		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
+// 	} else {
+// 		fill_sf_with_random(sf_in1, NUM_ELEMENTS_SF, 123456);
+// 		fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 789101);
+// 	}
+// 	fill_with_zero(ae_out, NUM_ELEMENTS_AE);
+// 	BOOST_REQUIRE(sf_in1);
+// 	BOOST_REQUIRE(sf_in2);
+// 	BOOST_REQUIRE(ae_out);
+// 
+// 	auto spinor_code = device->get_device()->get_spinor_code();
+// 	auto gm_code = device->get_device()->get_gaugemomentum_code();
+// 
+// 	const Plain<spinor> in1(NUM_ELEMENTS_SF, device->get_device());
+// 	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
+// 	in1.load(sf_in1);
+// 	in2.load(sf_in2);
+// 	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
+// 	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(ae_out));
+// 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+// 
+// 	logger.info() << "|phi_1|^2:";
+// 	hmc_float cpu_back;
+// 	spinor_code->set_float_to_global_squarenorm_device(&in1, &sqnorm);
+// 	sqnorm.dump(&cpu_back);
+// 	logger.info() << cpu_back;
+// 	logger.info() << "|phi_2|^2:";
+// 	hmc_float cpu_back2;
+// 	spinor_code->set_float_to_global_squarenorm_device(&in2, &sqnorm);
+// 	sqnorm.dump(&cpu_back2);
+// 	logger.info() << cpu_back2;
+// 	logger.info() << "Run kernel";
+// 	device->fermion_force_device( &in1, &in2, cpu.get_gaugefield(), &out, params.get_kappa());
+// 	logger.info() << "result:";
+// 	hmc_float cpu_res;
+// 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+// 	sqnorm.dump(&cpu_res);
+// 	logger.info() << cpu_res;
+// 
+// 	logger.info() << "Clear buffers";
+// 	delete[] sf_in1;
+// 	delete[] sf_in2;
+// 	delete[] ae_out;
+// 
+// 	testFloatAgainstInputparameters(cpu_res, params);
+// 	BOOST_MESSAGE("Test done");
+// }
+
+BOOST_AUTO_TEST_SUITE( F_FERMION )
+
+	class FFermionTester : public MolecularDynamicsTester, public SpinorTester
+	{
+	public:
+		FFermionTester(std::string inputfile) : 
+			MolecularDynamicsTester("f_fermion", inputfile), SpinorTester("f_fermion", MolecularDynamicsTester::getSpecificInputfile(inputfile))
+			{
+				MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+				const hardware::buffers::Plain<spinor> in1(SpinorTester::spinorfieldElements, MolecularDynamicsTester::device);
+				const hardware::buffers::Plain<spinor> in2(SpinorTester::spinorfieldElements, MolecularDynamicsTester::device);
+
+				in1.load(SpinorTester::createSpinorfield(SpinorTester::spinorfieldElements));
+				in2.load(SpinorTester::createSpinorfield(SpinorTester::spinorfieldElements));
+				
+				molecularDynamicsCode->fermion_force_device( &in1, &in2, getGaugefieldBuffer(), gaugemomentumBuffer, MolecularDynamicsTester::parameters->get_kappa());
+				MolecularDynamicsTester::calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
+				
+				SpinorTester::setReferenceValuesToZero();
+			}
+	};
+
+BOOST_AUTO_TEST_CASE( F_FERMION_1 )
+{
+	FFermionTester tester("f_fermion_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_2 )
+{
+	FFermionTester tester("f_fermion_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_3 )
+{
+	FFermionTester tester("f_fermion_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_4 )
+{
+	FFermionTester tester("f_fermion_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_5 )
+{
+	FFermionTester tester("f_fermion_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_6 )
+{
+	FFermionTester tester("f_fermion_input_6");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 
 #include "../../meta/util.hpp"
@@ -427,80 +561,6 @@ void test_stout_smear_fermion_force(std::string inputfile)
 
 
 
-void test_f_fermion(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName = "f_fermion";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestMolecularDynamics cpu(&system);
-	auto * device = cpu.get_device();
-	spinor * sf_in1;
-	spinor * sf_in2;
-	ae * ae_out;
-
-	logger.info() << "Fill buffers...";
-	int NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	int NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-
-	sf_in1 = new spinor[NUM_ELEMENTS_SF];
-	sf_in2 = new spinor[NUM_ELEMENTS_SF];
-	ae_out = new ae[NUM_ELEMENTS_AE];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
-		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	} else {
-		fill_sf_with_random(sf_in1, NUM_ELEMENTS_SF, 123456);
-		fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 789101);
-	}
-	fill_with_zero(ae_out, NUM_ELEMENTS_AE);
-	BOOST_REQUIRE(sf_in1);
-	BOOST_REQUIRE(sf_in2);
-	BOOST_REQUIRE(ae_out);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gm_code = device->get_device()->get_gaugemomentum_code();
-
-	const Plain<spinor> in1(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
-	in1.load(sf_in1);
-	in2.load(sf_in2);
-	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(ae_out));
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "|phi_1|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_device(&in1, &sqnorm);
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "|phi_2|^2:";
-	hmc_float cpu_back2;
-	spinor_code->set_float_to_global_squarenorm_device(&in2, &sqnorm);
-	sqnorm.dump(&cpu_back2);
-	logger.info() << cpu_back2;
-	logger.info() << "Run kernel";
-	device->fermion_force_device( &in1, &in2, cpu.get_gaugefield(), &out, params.get_kappa());
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in1;
-	delete[] sf_in2;
-	delete[] ae_out;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
 void test_f_fermion_eo(std::string inputfile)
 {
 	using namespace hardware::buffers;
@@ -675,50 +735,6 @@ void test_f_stagg_fermion_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
-
-BOOST_AUTO_TEST_SUITE( STOUT_SMEAR_FERMION_FORCE )
-
-BOOST_AUTO_TEST_CASE(STOUT_SMEAR_FERMION_FORCE_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_stout_smear_fermion_force("/stout_smear_fermion_force_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( F_FERMION )
-
-BOOST_AUTO_TEST_CASE( F_FERMION_1 )
-{
-	test_f_fermion("/f_fermion_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( F_FERMION_2 )
-{
-	test_f_fermion("/f_fermion_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( F_FERMION_3 )
-{
-	test_f_fermion("/f_fermion_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( F_FERMION_4 )
-{
-	test_f_fermion("/f_fermion_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( F_FERMION_5 )
-{
-	test_f_fermion("/f_fermion_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( F_FERMION_6 )
-{
-	test_f_fermion("/f_fermion_input_6");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_FERMION_EO )
 
