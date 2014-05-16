@@ -950,7 +950,8 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 					out.dump(&outHost[i * spinorfieldElements]);
 					sum += count_sf(&outHost[i * spinorfieldElements], spinorfieldElements);
 				}
-				kernelResult[0] = sum / iterations / spinorfieldElements / 24;
+				sum /= iterations * spinorfieldElements * 24;
+				kernelResult[0] = sum;
 
 				if(calcVariance) 
 				{
@@ -958,9 +959,8 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 					for (int i = 0; i < iterations; i++) {
 						var += calc_var_sf(&outHost[i * spinorfieldElements], spinorfieldElements, sum);
 					}
-					var = var / iterations / spinorfieldElements / 24;
-
-					logger.info() << "variance:\t" << sqrt(var);
+					var /= iterations * spinorfieldEvenOddElements * 24;
+					kernelResult[0] =  sqrt(var);
 				}
 			}
 	};
@@ -1010,7 +1010,8 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 					out.dump(&outHost[i * spinorfieldEvenOddElements]);
 					sum += count_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements);
 				}
-				kernelResult[0] = sum / iterations / spinorfieldElements / 24;
+				sum /= iterations * spinorfieldElements * 24;
+				kernelResult[0] = sum;
 
 				if(calcVariance) 
 				{
@@ -1018,9 +1019,8 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 					for (int i = 0; i < iterations; i++) {
 						var += calc_var_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements, sum);
 					}
-					var = var / iterations / spinorfieldEvenOddElements / 24;
-
-					logger.info() << "variance:\t" << sqrt(var);
+					var /= iterations * spinorfieldEvenOddElements * 24;
+					kernelResult[0] =  sqrt(var);
 				}
 			}
 	};
