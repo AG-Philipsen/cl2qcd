@@ -27,6 +27,7 @@
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
 #include "../../physics/prng.hpp"
+#include "../../physics/lattices/staggeredfield_eo.hpp"
 #include "spinors_staggered.hpp"
 #include "complex.hpp"
 
@@ -70,6 +71,7 @@ protected:
 	
 	//These methods are used to produce files for the Reference Code (D'Elia et al)
 	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
+	void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf);
 	//Utilities methods
 	std::vector<hmc_float> reals_from_su3vec(su3vec v);
 };

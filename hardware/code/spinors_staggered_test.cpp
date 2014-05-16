@@ -746,7 +746,159 @@ BOOST_AUTO_TEST_SUITE_END()
 
 ///////////////////////////////////////
 
+BOOST_AUTO_TEST_SUITE(SQUARENORM_EO)
 
+	class SquarenormEvenOddTester: public SpinorStaggeredTester{
+	   public:
+		SquarenormEvenOddTester(std::string inputfile) : SpinorStaggeredTester("squarenorm_eo", inputfile){
+			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements, device);
+			in.load(createSpinorfield(spinorfieldEvenOddElements));
+			calcSquarenormEvenOddAndStoreAsKernelResult(&in);
+			
+        /*
+        print_staggeredfield_eo_to_textfile("ref_vec_sq_eo", createSpinorfield(spinorfieldEvenOddElements)); 
+        logger.info() << "Produced the ref_vec_sq_eo text file with the staggered field for the ref. code.";
+        */
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
+	{
+	    SquarenormEvenOddTester("squarenorm_eo_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_2 )
+	{
+	    SquarenormEvenOddTester("squarenorm_eo_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_1 )
+	{
+	    SquarenormEvenOddTester("squarenorm_eo_reduction_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_2 )
+	{
+	    SquarenormEvenOddTester("squarenorm_eo_reduction_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_3 )
+	{
+	    SquarenormEvenOddTester("squarenorm_eo_reduction_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
+      
+	class ScalarProductEvenOddTester: public SpinorStaggeredTester{
+	   public:
+		ScalarProductEvenOddTester(std::string inputfile, bool real=false) :SpinorStaggeredTester("scalar product eo", inputfile, 2){
+			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements, device);
+			const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
+			in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
+			in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
+
+			if(!real){
+				hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
+				code->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
+				hmc_complex resultTmp;
+				sqnorm.dump(&resultTmp);
+				kernelResult[0] = resultTmp.re;
+				kernelResult[1] = resultTmp.im;
+			}else{
+				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
+				code->set_float_to_scalar_product_real_part_eoprec_device(&in, &in2, &sqnorm);
+				hmc_float resultTmp;
+				sqnorm.dump(&resultTmp);
+				kernelResult[0] = resultTmp;
+				kernelResult[1] = 0;
+			}
+			
+        /*
+        print_staggeredfield_eo_to_textfile("ref_vec_sp1", createSpinorfield(spinorfieldEvenOddElements, 123)); 
+        logger.info() << "Produced the ref_vec_sp1 text file with the staggered field for the ref. code.";   
+        print_staggeredfield_eo_to_textfile("ref_vec_sp2", createSpinorfield(spinorfieldEvenOddElements, 456)); 
+        logger.info() << "Produced the ref_vec_sp2 text file with the staggered field for the ref. code.";
+	*/
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_1 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_2 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_1 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_input_1", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_2 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_reduction_input_1", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_3 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_reduction_input_2", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_4 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_reduction_input_3", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_REDUCTION_1 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_reduction_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_REDUCTION_2 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_reduction_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_REDUCTION_3 )
+	{
+	    ScalarProductEvenOddTester("scalar_product_eo_reduction_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
+
+	class ColdAndZeroEvenOddTester: public SpinorStaggeredTester{
+	   public:
+		ColdAndZeroEvenOddTester(std::string inputfile, bool switcher): SpinorStaggeredTester("cold or zero eo", inputfile){
+			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements, device);
+			in.load(createSpinorfield(spinorfieldEvenOddElements));
+			(switcher) ? code->set_cold_spinorfield_eoprec_device(&in) : 
+			             code->set_zero_spinorfield_eoprec_device(&in);
+			calcSquarenormEvenOddAndStoreAsKernelResult(&in);
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( COLD_EO_1 )
+	{
+	    ColdAndZeroEvenOddTester("set_cold_eo_input_1", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
+	{
+	    ColdAndZeroEvenOddTester("set_zero_eo_input_1",  false);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 
 
@@ -755,153 +907,7 @@ BOOST_AUTO_TEST_SUITE_END()
 #if 0
 
 
-void test_sf_squarenorm_staggered_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
 
-	std::string kernelName;
-	kernelName = "global_squarenorm_staggered_eoprec";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const SU3vec in(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	su3vec * sf_in;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-	
-	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-        /*
-        print_staggeredfield_eo_to_textfile("ref_vec_sq_eo",sf_in,params); 
-        logger.info() << "Produced the ref_vec_sq_eo text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
-	
-	in.load(sf_in);
-	
-	logger.info() << "Run kernel";
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_sf_cold_staggered_eo(std::string inputfile, bool switcher)
-{
-  //switcher decides if the sf is set to cold or zero
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher)
-	  kernelName = "set_cold_spinorfield_stagg_eoprec";
-	else
-	  kernelName = "set_zero_spinorfield_stagg_eoprec";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const SU3vec in(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "Run kernel";
-	if(switcher)
-	  device->set_cold_spinorfield_eoprec_device(&in);
-	else
-	  device->set_zero_spinorfield_eoprec_device(&in);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_sf_scalar_product_staggered_eo(std::string inputfile, bool real_part=false)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "scalar_product_eoprec_staggered";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
-	const SU3vec in(NUM_ELEMENTS_SF, device->get_device());
-	const SU3vec in2(NUM_ELEMENTS_SF, device->get_device());
-	//Here I waste a bit of memory but in a test this is not so serious
-	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm_real(1, device->get_device());
-
-	su3vec * sf_in;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	su3vec * sf_in2;
-	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
-	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
-
-	//The following five lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-        /*
-        print_staggeredfield_eo_to_textfile("ref_vec_sp1",sf_in,params); 
-        logger.info() << "Produced the ref_vec_sp1 text file with the staggered field for the ref. code.";   
-        print_staggeredfield_eo_to_textfile("ref_vec_sp2",sf_in2,params); 
-        logger.info() << "Produced the ref_vec_sp2 text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
-	
-	in.load(sf_in);
-	in2.load(sf_in2);
-
-	logger.info() << "Run kernel";
-	logger.info() << "result:";
-	hmc_complex cpu_res_tmp;
-	hmc_float cpu_res;
-	if(real_part == false){
-	  device->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
-	  sqnorm.dump(&cpu_res_tmp);
-	  cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
-	}else{
-	  device->set_float_to_scalar_product_real_part_eoprec_device(&in, &in2, &sqnorm_real);
-	  sqnorm_real.dump(&cpu_res);
-	}
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
 
 void test_sf_sax_staggered_eo(std::string inputfile, int switcher=0)
 {
@@ -1463,117 +1469,8 @@ void test_sf_sax_vectorized_and_squarenorm_staggered_eo(std::string inputfile)
 
 
 
-BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_EO)
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_1 )
-{
-  test_sf_squarenorm_staggered_eo("/sf_squarenorm_staggered_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_2 )
-{
-  test_sf_squarenorm_staggered_eo("/sf_squarenorm_staggered_eo_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE(SF_SQUARENORM_EO_REDUCTION)
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_1 )
-{
-  test_sf_squarenorm_staggered_eo("/sf_squarenorm_staggered_eo_reduction_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_2 )
-{
-  test_sf_squarenorm_staggered_eo("/sf_squarenorm_staggered_eo_reduction_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SQUARENORM_EO_REDUCTION_3 )
-{
-  test_sf_squarenorm_staggered_eo("/sf_squarenorm_staggered_eo_reduction_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_1 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_2 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_REAL_EO)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_1 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_input_1", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_2 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_1", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_3 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_2", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_REAL_EO_4 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_3", true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(SF_SCALAR_PRODUCT_EO_REDUCTION)
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_1 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_2 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SCALAR_PRODUCT_EO_REDUCTION_3 )
-{
-  test_sf_scalar_product_staggered_eo("/sf_scalar_product_staggered_eo_reduction_input_3");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_COLD_EO)
-
-BOOST_AUTO_TEST_CASE( SF_COLD_EO_1 )
-{
-	test_sf_cold_staggered_eo("/sf_set_cold_staggered_eo_input_1", true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_ZERO_EO)
-
-BOOST_AUTO_TEST_CASE( SF_ZERO_EO_1 )
-{
-  test_sf_cold_staggered_eo("/sf_set_zero_staggered_eo_input_1",  false);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(SF_SAX_CPLX_EO)
