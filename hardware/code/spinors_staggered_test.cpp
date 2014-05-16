@@ -205,45 +205,50 @@ BOOST_AUTO_TEST_SUITE(SAX)
 
 			code->sax_device(&in, &alpha, &out);
 			calcSquarenormAndStoreAsKernelResult(&out);
+
+        /*
+        print_staggeredfield_to_textfile("ref_vec_sax", createSpinorfield(spinorfieldElements, 123)); 
+        logger.info() << "Produced the ref_vec_sax text file with the staggered field for the ref. code.";
+	*/
 		}
 	};
 
-	BOOST_AUTO_TEST_CASE( SF_SAX_1 )
+	BOOST_AUTO_TEST_CASE( SAX_1 )
 	{
 	    SaxTester("sax_input_1");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SAX_2 )
+	BOOST_AUTO_TEST_CASE( SAX_2 )
 	{
 	    SaxTester("sax_input_2");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SAX_3 )
+	BOOST_AUTO_TEST_CASE( SAX_3 )
 	{
 	    SaxTester("sax_input_3");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SAX_4 )
+	BOOST_AUTO_TEST_CASE( SAX_4 )
 	{
 	    SaxTester("sax_input_4");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SAX_5 )
+	BOOST_AUTO_TEST_CASE( SAX_5 )
 	{
 	    SaxTester("sax_input_5");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SAX_6 )
+	BOOST_AUTO_TEST_CASE( SAX_6 )
 	{
 	    SaxTester("sax_input_6");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SAX_7 )
+	BOOST_AUTO_TEST_CASE( SAX_7 )
 	{
 	    SaxTester("sax_input_7");
 	}
 	
-	BOOST_AUTO_TEST_CASE( SF_SAX_8 )
+	BOOST_AUTO_TEST_CASE( SAX_8 )
 	{
 	    SaxTester("sax_input_8");
 	}
@@ -252,144 +257,131 @@ BOOST_AUTO_TEST_SUITE(SAX)
 
 ///////////////////////////////////////
 
+BOOST_AUTO_TEST_SUITE(SAXPY)
+
+	class SaxpyTester: public SpinorStaggeredTester{
+	   public:
+		SaxpyTester(std::string inputfile, bool switcher) : SpinorStaggeredTester("saxpy", inputfile){
+			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+			const hardware::buffers::Plain<su3vec> in2(spinorfieldElements, device);
+			const hardware::buffers::Plain<su3vec> out(spinorfieldElements, device);
+			hardware::buffers::Plain<hmc_complex> alpha(1, device);
+
+			in.load(createSpinorfield(spinorfieldElements, 123));
+			in2.load(createSpinorfield(spinorfieldElements, 456));
+			alpha.load(&alpha_host);
+
+			(switcher) ? code->saxpy_device(&in, &in2, &alpha, &out) : (throw(std::invalid_argument("The kernel saxpy_stagg_arg doesn't exist yet, this is a meaningless test!")));
+			calcSquarenormAndStoreAsKernelResult(&out);
+	
+	/*
+        print_staggeredfield_to_textfile("ref_vec_saxpy1", createSpinorfield(spinorfieldElements, 123)); 
+        logger.info() << "Produced the ref_vec_saxpy1 text file with the staggered field for the ref. code.";   
+        print_staggeredfield_to_textfile("ref_vec_saxpy2", createSpinorfield(spinorfieldElements, 456)); 
+        logger.info() << "Produced the ref_vec_saxpy2 text file with the staggered field for the ref. code."; 
+	*/
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( SAXPY_1 )
+	{
+	    SaxpyTester("saxpy_input_1", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_2 )
+	{
+	    SaxpyTester("saxpy_input_2", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_3 )
+	{
+	    SaxpyTester("saxpy_input_3", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_4 )
+	{
+	    SaxpyTester("saxpy_input_4", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_5 )
+	{
+	    SaxpyTester("saxpy_input_5", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_6 )
+	{
+	    SaxpyTester("saxpy_input_6", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_7 )
+	{
+	    SaxpyTester("saxpy_input_7", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_8 )
+	{
+	    SaxpyTester("saxpy_input_8", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_9 )
+	{
+	    SaxpyTester("saxpy_input_9", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_10 )
+	{
+	    SaxpyTester("saxpy_input_10", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_11 )
+	{
+	    SaxpyTester("saxpy_input_11", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_12 )
+	{
+	    SaxpyTester("saxpy_input_12", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_13 )
+	{
+	    SaxpyTester("saxpy_input_13", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_14 )
+	{
+	    SaxpyTester("saxpy_input_14", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_15 )
+	{
+	    SaxpyTester("saxpy_input_15", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_16 )
+	{
+	    SaxpyTester("saxpy_input_16", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_17 )
+	{
+	    SaxpyTester("saxpy_input_17", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SAXPY_18 )
+	{
+	    SaxpyTester("saxpy_input_18", true);
+	}
+	
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
 
 
 
 
 #if 0
 
-
-
-void test_sf_sax_staggered(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "sax_staggered";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
-
-	su3vec * sf_in;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg)
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	BOOST_REQUIRE(sf_in);
-
-	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-        /*
-        print_staggeredfield_to_textfile("ref_vec_sax",sf_in,params); 
-        logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
-	
-	in.load(sf_in);
-	alpha.load(&alpha_host);
-
-	logger.info() << "Run kernel";
-	device->sax_device(&in, &alpha, &out);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_sf_saxpy_staggered(std::string inputfile, bool switcher)
-{
-  //switcher chooses between saxpy_stagg and saxpy_stagg_arg kernel, which have the same functionality
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if( switcher)
-	  kernelName = "saxpy_staggered";
-	else {
-	  //kernelName = "saxpy_staggered_arg";
-	  ;
-	}	  
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<su3vec> in2(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
-
-	su3vec * sf_in;
-	su3vec * sf_in2;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
-	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
-
-	//The following five lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-        /*
-        print_staggeredfield_to_textfile("ref_vec_saxpy1",sf_in,params); 
-        logger.info() << "Produced the ref_vec_saxpy1 text file with the staggered field for the ref. code.";   
-        print_staggeredfield_to_textfile("ref_vec_saxpy2",sf_in2,params); 
-        logger.info() << "Produced the ref_vec_saxpy2 text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
-	
-	in.load(sf_in);
-	in2.load(sf_in2);
-	alpha.load(&alpha_host);
-
-	logger.info() << "Run kernel";
-	if (switcher)
-	  device->saxpy_device(&in, &in2, &alpha, &out);
-	else 
-	  logger.error() << "The kernel saxpy_stagg_arg doesn't exist yet, this is a meaningless test!";
-	  //device->saxpy_device(&in, &in2, alpha_host, &out);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
 
 void test_sf_saxpbypz_staggered(std::string inputfile)
 {
@@ -1409,99 +1401,7 @@ void test_sf_sax_vectorized_and_squarenorm_staggered_eo(std::string inputfile)
 
 
 
-BOOST_AUTO_TEST_SUITE(SF_SAXPY)
 
-BOOST_AUTO_TEST_CASE( SF_SAXPY_1 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_1", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_2 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_2", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_3 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_3", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_4 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_4", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_5 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_5", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_6 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_6", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_7 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_7", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_8 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_8", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_9 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_9", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_10 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_10", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_11 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_11", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_12 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_12", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_13 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_13", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_14 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_14", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_15 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_15", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_16 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_16", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_17 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_17", true);
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPY_18 )
-{
-  test_sf_saxpy_staggered("/sf_saxpy_staggered_input_18", true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(SF_SAXPBYPZ)
