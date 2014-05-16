@@ -128,32 +128,60 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_GAUGE )
 
-	class GaugefieldUpdateTester : public MolecularDynamicsTester
+	class FGaugeTester : public MolecularDynamicsTester
 	{
 	public:
-		GaugefieldUpdateTester(std::string inputfile) : 
-			MolecularDynamicsTester("md_update_gaugefield", inputfile)
+		FGaugeTester(std::string inputfile) : 
+			MolecularDynamicsTester("f_gauge", inputfile)
 			{
 				code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
 				molecularDynamicsCode->gauge_force_device( getGaugefieldBuffer(), gaugemomentumBuffer);
-				
-				GaugemomentumTester::code->set_float_to_gaugemomentum_squarenorm_device(gaugemomentumBuffer, doubleBuffer);
-				doubleBuffer->dump(&kernelResult[0]);
+				calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 			}
 	};
 
 	BOOST_AUTO_TEST_CASE( F_GAUGE_1 )
 	{
-		GaugefieldUpdateTester tester("/f_gauge_input_1");
+		FGaugeTester tester("/f_gauge_input_1");
 	}
 
 	BOOST_AUTO_TEST_CASE( F_GAUGE_2 )
 	{
-		GaugefieldUpdateTester tester("f_gauge_input_2");
+		FGaugeTester tester("f_gauge_input_2");
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( F_GAUGE_TLSYM )
+
+	class FGaugeTlsymTester : public MolecularDynamicsTester
+	{
+	public:
+		FGaugeTlsymTester(std::string inputfile) : 
+			MolecularDynamicsTester("f_gauge_tlsym", inputfile)
+			{
+				code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+				molecularDynamicsCode->gauge_force_tlsym_device( getGaugefieldBuffer(), gaugemomentumBuffer);
+				calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_1 )
+	{
+		FGaugeTlsymTester tester("f_gauge_tlsym_input_1");
+	}
+
+	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_2 )
+	{
+		FGaugeTlsymTester tester("f_gauge_tlsym_input_2");
+	}
+
+	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_3 )
+	{
+		FGaugeTlsymTester tester("f_gauge_tlsym_input_3");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 
 
@@ -397,47 +425,7 @@ void test_stout_smear_fermion_force(std::string inputfile)
 
 }
 
-void test_f_gauge_tlsym(std::string inputfile)
-{
-	std::string kernelName = "f_gauge_tlsym";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestMolecularDynamics cpu(&system);
-	auto * device = cpu.get_device();
-	ae * gm_out;
-	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
-	logger.info() << "create buffers";
-	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-	gm_out = new ae[NUM_ELEMENTS_AE];
-	fill_with_zero(gm_out, NUM_ELEMENTS_AE);
-	BOOST_REQUIRE(gm_out);
-
-	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "|out|^2:";
-	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
-	hmc_float cpu_back;
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-
-	device->gauge_force_tlsym_device( cpu.get_gaugefield(), &out);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-
-	delete[] gm_out;
-}
 
 void test_f_fermion(std::string inputfile)
 {
@@ -694,25 +682,6 @@ BOOST_AUTO_TEST_CASE(STOUT_SMEAR_FERMION_FORCE_1 )
 {
 	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
 	test_stout_smear_fermion_force("/stout_smear_fermion_force_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( F_GAUGE_TLSYM )
-
-BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_1 )
-{
-	test_f_gauge_tlsym("/f_gauge_tlsym_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_2 )
-{
-	test_f_gauge_tlsym("/f_gauge_tlsym_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_3 )
-{
-	test_f_gauge_tlsym("/f_gauge_tlsym_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
