@@ -377,6 +377,221 @@ BOOST_AUTO_TEST_SUITE_END()
 
 ///////////////////////////////////////
 
+BOOST_AUTO_TEST_SUITE(SAXPBYPZ)
+
+	class SaxpbypzTester: public SpinorStaggeredTester{
+	   public:
+		SaxpbypzTester(std::string inputfile) : SpinorStaggeredTester("saxpbypz", inputfile){
+			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+			const hardware::buffers::Plain<su3vec> in2(spinorfieldElements, device);
+			const hardware::buffers::Plain<su3vec> in3(spinorfieldElements, device);
+			const hardware::buffers::Plain<su3vec> out(spinorfieldElements, device);
+			hardware::buffers::Plain<hmc_complex> alpha(1, device);
+			hardware::buffers::Plain<hmc_complex> beta(1, device);
+
+			in.load(createSpinorfield(spinorfieldElements, 123));
+			in2.load(createSpinorfield(spinorfieldElements, 456));
+			in3.load(createSpinorfield(spinorfieldElements, 789));
+			alpha.load(&alpha_host);
+			beta.load(&beta_host);
+
+			code->saxpbypz_device(&in, &in2, &in3, &alpha, &beta, &out);
+			calcSquarenormAndStoreAsKernelResult(&out);
+			
+	/*
+        print_staggeredfield_to_textfile("ref_vec_saxpbypz1", createSpinorfield(spinorfieldElements, 123)); 
+        logger.info() << "Produced the ref_vec_saxpbypz1 text file with the staggered field for the ref. code."; 
+	print_staggeredfield_to_textfile("ref_vec_saxpbypz2", createSpinorfield(spinorfieldElements, 456)); 
+        logger.info() << "Produced the ref_vec_saxpbypz2 text file with the staggered field for the ref. code.";  
+        print_staggeredfield_to_textfile("ref_vec_saxpbypz3", createSpinorfield(spinorfieldElements, 789)); 
+        logger.info() << "Produced the ref_vec_saxpbypz3 text file with the staggered field for the ref. code.";
+	*/
+		}
+	};
+
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_1 )
+{
+  SaxpbypzTester("/saxpbypz_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_2 )
+{
+  SaxpbypzTester("/saxpbypz_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_3 )
+{
+  SaxpbypzTester("/saxpbypz_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_4 )
+{
+  SaxpbypzTester("/saxpbypz_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_5 )
+{
+  SaxpbypzTester("/saxpbypz_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_6 )
+{
+  SaxpbypzTester("/saxpbypz_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_7 )
+{
+  SaxpbypzTester("/saxpbypz_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_8 )
+{
+  SaxpbypzTester("/saxpbypz_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_9 )
+{
+  SaxpbypzTester("/saxpbypz_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_10 )
+{
+  SaxpbypzTester("/saxpbypz_input_10");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_11 )
+{
+  SaxpbypzTester("/saxpbypz_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_12 )
+{
+  SaxpbypzTester("/saxpbypz_input_12");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_13 )
+{
+  SaxpbypzTester("/saxpbypz_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_14 )
+{
+  SaxpbypzTester("/saxpbypz_input_14");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_15 )
+{
+  SaxpbypzTester("/saxpbypz_input_15");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_16 )
+{
+  SaxpbypzTester("/saxpbypz_input_16");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_17 )
+{
+  SaxpbypzTester("/saxpbypz_input_17");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_18 )
+{
+  SaxpbypzTester("/saxpbypz_input_18");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_19 )
+{
+  SaxpbypzTester("/saxpbypz_input_19");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_20 )
+{
+  SaxpbypzTester("/saxpbypz_input_20");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_21 )
+{
+  SaxpbypzTester("/saxpbypz_input_21");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_22 )
+{
+  SaxpbypzTester("/saxpbypz_input_22");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_23 )
+{
+  SaxpbypzTester("/saxpbypz_input_23");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_24 )
+{
+  SaxpbypzTester("/saxpbypz_input_24");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_25 )
+{
+  SaxpbypzTester("/saxpbypz_input_25");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_26 )
+{
+  SaxpbypzTester("/saxpbypz_input_26");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_27 )
+{
+  SaxpbypzTester("/saxpbypz_input_27");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_28 )
+{
+  SaxpbypzTester("/saxpbypz_input_28");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_29 )
+{
+  SaxpbypzTester("/saxpbypz_input_29");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_30 )
+{
+  SaxpbypzTester("/saxpbypz_input_30");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_31 )
+{
+  SaxpbypzTester("/saxpbypz_input_31");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_32 )
+{
+  SaxpbypzTester("/saxpbypz_input_32");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_33 )
+{
+  SaxpbypzTester("/saxpbypz_input_33");
+}
+
+BOOST_AUTO_TEST_CASE( SAXPBYPZ_34 )
+{
+  SaxpbypzTester("/saxpbypz_input_34");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1401,182 +1616,6 @@ void test_sf_sax_vectorized_and_squarenorm_staggered_eo(std::string inputfile)
 
 
 
-
-
-
-BOOST_AUTO_TEST_SUITE(SF_SAXPBYPZ)
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_1 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_2 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_3 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_4 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_5 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_6 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_7 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_7");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_8 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_8");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_9 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_9");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_10 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_10");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_11 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_11");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_12 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_12");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_13 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_13");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_14 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_14");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_15 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_15");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_16 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_16");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_17 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_17");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_18 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_18");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_19 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_19");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_20 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_20");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_21 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_21");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_22 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_22");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_23 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_23");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_24 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_24");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_25 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_25");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_26 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_26");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_27 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_27");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_28 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_28");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_29 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_29");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_30 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_30");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_31 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_31");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_32 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_32");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_33 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_33");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAXPBYPZ_34 )
-{
-  test_sf_saxpbypz_staggered("/sf_saxpbypz_staggered_input_34");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(SF_GAUSSIAN)
