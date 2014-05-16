@@ -162,6 +162,96 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
+
+	class ColdAndZeroTester: public SpinorStaggeredTester{
+	   public:
+		ColdAndZeroTester(std::string inputfile, bool switcher) : SpinorStaggeredTester("cold or zero", inputfile)
+			{
+				const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+				in.load(createSpinorfield(spinorfieldElements));
+				(switcher) ? code->set_cold_spinorfield_device(&in) : 	code->set_zero_spinorfield_device(&in);
+				calcSquarenormAndStoreAsKernelResult(&in);
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( ZERO_1 )
+	{
+	    ColdAndZeroTester("set_zero_input_1", false);
+	}
+	
+	BOOST_AUTO_TEST_CASE( COLD_1 )
+	{
+	    ColdAndZeroTester("set_cold_input_1", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(SAX)
+
+	class SaxTester: public SpinorStaggeredTester{
+	   public:
+		SaxTester(std::string inputfile) : SpinorStaggeredTester("sax", inputfile){
+			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+			const hardware::buffers::Plain<su3vec> out(spinorfieldElements, device);
+			hardware::buffers::Plain<hmc_complex> alpha(1, device);
+
+			in.load(createSpinorfield(spinorfieldElements, 123));
+			alpha.load(&alpha_host);
+
+			code->sax_device(&in, &alpha, &out);
+			calcSquarenormAndStoreAsKernelResult(&out);
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( SF_SAX_1 )
+	{
+	    SaxTester("sax_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SAX_2 )
+	{
+	    SaxTester("sax_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SAX_3 )
+	{
+	    SaxTester("sax_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SAX_4 )
+	{
+	    SaxTester("sax_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SAX_5 )
+	{
+	    SaxTester("sax_input_5");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SAX_6 )
+	{
+	    SaxTester("sax_input_6");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SAX_7 )
+	{
+	    SaxTester("sax_input_7");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SF_SAX_8 )
+	{
+	    SaxTester("sax_input_8");
+	}
+	
+	BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
 
 
 
@@ -169,101 +259,6 @@ BOOST_AUTO_TEST_SUITE_END()
 #if 0
 
 
-void test_sf_scalar_product_staggered(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "scalar_product";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
-	const Plain<su3vec> in2(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
-
-	su3vec * sf_in;
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	su3vec * sf_in2;
-	sf_in2 = new su3vec[NUM_ELEMENTS_SF];
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in, NUM_ELEMENTS_SF, 123);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 456);
-	}
-	BOOST_REQUIRE(sf_in);
-	BOOST_REQUIRE(sf_in2);
-
-        //The following five lines are to be used to produce the ref_vec file needed to get the ref_value
-        //---> Comment them out when the reference values have been obtained! 
-        /*
-        print_staggeredfield_to_textfile("ref_vec_sp1",sf_in,params); 
-        logger.info() << "Produced the ref_vec_sp1 text file with the staggered field for the ref. code.";   
-        print_staggeredfield_to_textfile("ref_vec_sp2",sf_in2,params); 
-        logger.info() << "Produced the ref_vec_sp2 text file with the staggered field for the ref. code. Returning...";   
-        return;
-	// */
-
-	in.load(sf_in);
-	in2.load(sf_in2);
-
-	logger.info() << "Run kernel";
-	logger.info() << "result:";
-	hmc_complex cpu_res_tmp;
-	device->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
-	sqnorm.dump(&cpu_res_tmp);
-	hmc_float cpu_res = cpu_res_tmp.re + cpu_res_tmp.im;
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_sf_cold(std::string inputfile, bool switcher)
-{
-	//switcher decides if the sf is set to cold or zero   
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher)
-	  kernelName = "set_cold_spinorfield_stagg";
-	else
-	  kernelName = "set_zero_spinorfield_stagg";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	auto device = system.get_devices().at(0)->get_spinor_staggered_code();
-	
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "Run kernel";
-        if(switcher)
-	  device->set_cold_spinorfield_device(&in);
-        else
-          device->set_zero_spinorfield_device(&in);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
 
 void test_sf_sax_staggered(std::string inputfile)
 {
@@ -1412,69 +1407,6 @@ void test_sf_sax_vectorized_and_squarenorm_staggered_eo(std::string inputfile)
 
 
 
-BOOST_AUTO_TEST_SUITE(SF_ZERO)
-
-BOOST_AUTO_TEST_CASE( SF_ZERO_1 )
-{
-  test_sf_cold("/sf_set_zero_staggered_input_1", false);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_COLD)
-
-BOOST_AUTO_TEST_CASE( SF_COLD_1 )
-{
-  test_sf_cold("/sf_set_cold_staggered_input_1", true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(SF_SAX)
-
-BOOST_AUTO_TEST_CASE( SF_SAX_1 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_2 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_3 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_4 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_5 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_6 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_7 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_7");
-}
-
-BOOST_AUTO_TEST_CASE( SF_SAX_8 )
-{
-  test_sf_sax_staggered("/sf_sax_staggered_input_8");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(SF_SAXPY)
