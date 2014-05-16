@@ -21,8 +21,8 @@
 #include "kernelTester.hpp"
 #include <boost/test/unit_test.hpp>
 
-KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn):
-	kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
+KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn, int typeOfComparisionIn):
+  kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
 	printKernelInformation(kernelNameIn);
 	parameters = new meta::Inputparameters( createParameters(inputfileIn) );
@@ -41,17 +41,30 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 			throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
 		}
 	}
+
+	if ( (typeOfComparisionIn == 1) || (typeOfComparisionIn == 2)  )
+	  {
+	    typeOfComparision = typeOfComparisionIn;
+	  } else
+	  {
+	    throw( std::invalid_argument("Do not recognize type of comparision. Aborting...") );
+	  }
+
 }
 
+#include <boost/test/floating_point_comparison.hpp>
 KernelTester::~KernelTester()
 {
+  //NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 		logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 		logger.info() << "Ref. Value = " << referenceValue[iteration];
-		BOOST_CHECK_CLOSE(kernelResult[iteration], referenceValue[iteration], testPrecision);
+		if (typeOfComparision == 1)
+		    BOOST_CHECK_CLOSE(referenceValue[iteration], kernelResult[iteration], testPrecision);
+		else if (typeOfComparision == 2)
+		    BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
 	}
 	delete parameters;
 	delete system;
 	device = NULL;
 }
-

@@ -23,7 +23,6 @@ find_package(PythonInterp REQUIRED)
 # default random number seed
 configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
-# default random number seed
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -141,16 +140,6 @@ add_test(Opencl_module_fermions_staggered_CPU       opencl_module_fermions_stagg
 add_test(Opencl_module_fermions_staggered_CPU_REC12 opencl_module_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(Opencl_module_fermions_staggered_GPU       opencl_module_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(Opencl_module_fermions_staggered_GPU_REC12 opencl_module_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
-
-add_executable(opencl_module_gaugemomentum_test opencl_module_gaugemomentum_test.cpp)
-target_link_libraries(opencl_module_gaugemomentum_test
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Opencl_module_gaugemomentum_CPU       opencl_module_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(Opencl_module_gaugemomentum_CPU_REC12 opencl_module_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(Opencl_module_gaugemomentum_GPU       opencl_module_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(Opencl_module_gaugemomentum_GPU_REC12 opencl_module_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(opencl_module_molecular_dynamics_test opencl_module_molecular_dynamics_test.cpp)
 target_link_libraries(opencl_module_molecular_dynamics_test

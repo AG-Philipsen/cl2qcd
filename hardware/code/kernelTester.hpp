@@ -30,11 +30,12 @@
 
 class KernelTester {
 public:
-	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1);
+  KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparision = 1);
 	virtual ~KernelTester();
 
 protected:
 	double testPrecision;
+        int typeOfComparision;
 	std::vector<double> kernelResult;
 	std::vector<double> referenceValue;
 	
