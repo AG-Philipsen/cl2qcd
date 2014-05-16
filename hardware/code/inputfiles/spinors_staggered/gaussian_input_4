@@ -4,7 +4,7 @@ NS=4
 NT=4
 
 # this specifies the number a gaussian spinorfield is created
-integrationsteps0=100
+integrationsteps0=2000
 
 #reference value: the result of the test must be smaller than this to make the test passes
 test_ref_val=0.71

@@ -62,7 +62,7 @@ add_library(kernelTestUtilities
 	kernelTester.cpp
 	SpinorTester.cpp
 	SpinorStaggeredTester.cpp
-	GaugemomentumTester.cpp
+#	GaugemomentumTester.cpp
 )
 
 target_link_libraries(kernelTestUtilities
@@ -114,13 +114,13 @@ add_test(hardware_code_fermions_CPU_REC12 hardware_code_fermions_test ${CMAKE_CU
 add_test(hardware_code_fermions_GPU       hardware_code_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_fermions_GPU_REC12 hardware_code_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
-add_executable(hardware_code_gaugemomentum_test gaugemomentum_test.cpp)
-target_link_libraries(hardware_code_gaugemomentum_test
-	prng
-	kernelTestUtilities
-)
-add_test(hardware_code_gaugemomentum_CPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(hardware_code_gaugemomentum_CPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(hardware_code_gaugemomentum_GPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(hardware_code_gaugemomentum_GPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+# add_executable(hardware_code_gaugemomentum_test gaugemomentum_test.cpp)
+# target_link_libraries(hardware_code_gaugemomentum_test
+# 	prng
+# 	kernelTestUtilities
+# )
+# add_test(hardware_code_gaugemomentum_CPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+# add_test(hardware_code_gaugemomentum_CPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+# add_test(hardware_code_gaugemomentum_GPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+# add_test(hardware_code_gaugemomentum_GPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 

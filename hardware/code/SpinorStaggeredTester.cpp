@@ -24,8 +24,8 @@
 #include "../../host_functionality/host_geometry.h"
 #include "spinors.hpp" //this is for get_spinorfieldsize, get_eoprec_spinorfieldsize
 
-SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues):
-	KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
+     KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
 {
 	code = device->get_spinor_staggered_code();
 	prng = new physics::PRNG(*system);
@@ -142,13 +142,11 @@ void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
 	  coord[3] = z;
 	  nspace =  get_nspace(coord, *parameters);
 	  global_pos = get_global_pos(nspace, t, *parameters);
-	  //This if should be unnecessary if size==ns*ns*ns*nt
-	  if (global_pos > size)
+	  if (global_pos >= size)
 	    break;
 	  parityOfSite = (x + y + z + t) % 2 == 0;
 	  content = (parityOfSite) ? (eo ? hmc_complex_one : hmc_complex_zero) :
 				      (eo ? hmc_complex_zero : hmc_complex_one);
-	  
 	  sf_in[global_pos].e0 = content;
 	  sf_in[global_pos].e1 = content;
 	  sf_in[global_pos].e2 = content;
@@ -179,8 +177,7 @@ hmc_float SpinorStaggeredTester::count_sf_eo(su3vec * sf_in, int size, bool eo)
 	  coord[3] = z;
 	  int nspace =  get_nspace(coord, *parameters);
 	  int global_pos = get_global_pos(nspace, t, *parameters);
-	  //This if should be unnecessary if size==ns*ns*ns*nt
-	  if (global_pos > size)
+	  if (global_pos >= size)
 	    break;
 	  if (
 	      ( eo ==true && (x+y+z+t) %2 == 0) ||
@@ -217,6 +214,24 @@ su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSite
   fill_with_one_eo(in, spinorfieldElements, evenOrOdd);
   return in;
 }
+
+su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity()
+{
+  su3vec * in;
+  in = new su3vec[spinorfieldEvenOddElements];
+  fill_with_one_eo(in, spinorfieldEvenOddElements, evenOrOdd);
+  return in;
+}
+
+// std::vector<su3vec> SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity()
+// {
+//   su3vec * in;
+//   in = new su3vec[spinorfieldEvenOddElements];
+//   fill_with_one_eo(in, spinorfieldEvenOddElements, evenOrOdd);
+//   std::vector<su3vec> out(in, in + sizeof(in) / sizeof(su3vec));
+//   delete in;
+//   return out;
+// }
 
 std::string SpinorStaggeredTester::getSpecificInputfile(std::string inputfileIn)
 {
@@ -307,6 +322,18 @@ void SpinorStaggeredTester::print_staggeredfield_to_textfile(std::string outputf
   file.close();
 }
 
-
+/**
+ * Function that returns a vector with the 6 real number contained in an su3vec (used in gaussian tests)
+ */
+std::vector<hmc_float> SpinorStaggeredTester::reals_from_su3vec(su3vec v){
+  std::vector<hmc_float> out;
+  out.push_back(v.e0.re);
+  out.push_back(v.e0.im);
+  out.push_back(v.e1.re);
+  out.push_back(v.e1.im);
+  out.push_back(v.e2.re);
+  out.push_back(v.e2.im);
+  return out;
+}
 
 

@@ -33,7 +33,8 @@
 
 class SpinorStaggeredTester : public KernelTester {
 public:
-	SpinorStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1);
+	SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
+			       int numberOfValues = 1, int typeOfComparision = 1);
 	~SpinorStaggeredTester();
 	
 protected:
@@ -45,6 +46,7 @@ protected:
 	hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo);
 	su3vec * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
+	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity();
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
 	std::string getSpecificInputfile(std::string inputfileIn);
@@ -68,6 +70,8 @@ protected:
 	
 	//These methods are used to produce files for the Reference Code (D'Elia et al)
 	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
+	//Utilities methods
+	std::vector<hmc_float> reals_from_su3vec(su3vec v);
 };
 
 
