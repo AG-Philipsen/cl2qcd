@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 		std::string nameOfKernel = "test";
 		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
 		int maximumNumberOfReferenceValues = 2;
-		int maximumTypeOfComparision = 2;
+		int maximumTypeOfComparision = 3;
 		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues, maximumTypeOfComparision + 1), std::invalid_argument );
 	}
 
@@ -99,6 +99,7 @@ BOOST_AUTO_TEST_SUITE ( DOUBLE_SMALL )
 	};
 
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (TRIVIALKERNEL_1, 1)
+
 	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL_1 )
 	{
 		std::string nameOfKernel = "test";
@@ -115,10 +116,9 @@ BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (TRIVIALKERNEL_1, 1)
 		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, valueSmallerThanOne);
 	}
 
-
 BOOST_AUTO_TEST_SUITE_END()
 
-	BOOST_AUTO_TEST_SUITE ( COMPLEX )
+BOOST_AUTO_TEST_SUITE ( COMPLEX )
 
 	class TrivialKernelTester : public KernelTester {
 	public:
@@ -126,6 +126,26 @@ BOOST_AUTO_TEST_SUITE_END()
 			KernelTester(kernelNameIn, inputfileIn, 2) {
 			kernelResult[0] = 1.;
 			kernelResult[1] = 2.;
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL )
+	{
+		std::string nameOfKernel = "test";
+		std::string nameOfInputfileThatExists = "kernelTester_input";
+		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE ( COMPLEX_ONE_REFERENCE_VALUE )
+
+	class TrivialKernelTester : public KernelTester {
+	public:
+		TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
+			KernelTester(kernelNameIn, inputfileIn, 2, 3) {
+			kernelResult[0] = 1.;
+			kernelResult[1] = kernelResult[0];
 		}
 	};
 

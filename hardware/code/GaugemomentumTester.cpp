@@ -94,10 +94,10 @@ void GaugemomentumTester::fill_with_random(double * sf_in, int seed)
   return;
 }
 
-void GaugemomentumTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in)
+void GaugemomentumTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index)
 {
   code->set_float_to_gaugemomentum_squarenorm_device(in, doubleBuffer);
-  doubleBuffer->dump(&kernelResult[0]);
+  doubleBuffer->dump(&kernelResult[index]);
 }
 
 double GaugemomentumTester::count_gm(ae * ae_in, int size)

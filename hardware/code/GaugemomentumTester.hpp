@@ -42,7 +42,7 @@ protected:
   void fill_with_one(double * sf_in);
 	void fill_with_zero(double * sf_in);
   void fill_with_random(double * sf_in, int seed);
-  void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in);
+  void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index = 0);
   double count_gm(ae * ae_in, int size);
   double calc_var(double in, double mean);  
   double calc_var_gm(ae * ae_in, int size, double sum);

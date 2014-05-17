@@ -42,7 +42,7 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 		}
 	}
 
-	if ( (typeOfComparisionIn == 1) || (typeOfComparisionIn == 2)  )
+	if ( (typeOfComparisionIn == 1) || (typeOfComparisionIn == 2)  || (typeOfComparisionIn == 3) )
 	  {
 	    typeOfComparision = typeOfComparisionIn;
 	  } else
@@ -64,6 +64,10 @@ KernelTester::~KernelTester()
 	  else if (typeOfComparision == 2)
 	    {
 	      BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
+	    }
+		else if (typeOfComparision == 3)
+	    {
+	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
 	    }
 	}
 	delete parameters;

@@ -36,7 +36,7 @@ public:
 	
 protected:
 	double testPrecision;
-        int typeOfComparision;
+	int typeOfComparision;
 	std::vector<double> kernelResult;
 	std::vector<double> referenceValue;
 	
