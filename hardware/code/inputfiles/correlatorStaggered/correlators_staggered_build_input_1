@@ -1,0 +1,8 @@
+NS=4
+NT=4
+
+use_eo=true
+fermact=rooted_stagg
+sourcetype=volume
+
+

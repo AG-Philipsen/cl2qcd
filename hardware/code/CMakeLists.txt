@@ -159,3 +159,21 @@ target_link_libraries(hardware_code_real_test
 )
 add_test(hardware_code_real_CPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_real_GPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+add_executable(hardware_code_correlator_test correlator_test.cpp)
+target_link_libraries(hardware_code_correlator_test
+	optimal
+        kernelTestUtilities
+)
+add_test(hardware_code_correlator_CPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_correlator_GPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+add_executable(hardware_code_correlator_staggered_test correlator_staggered_test.cpp)
+target_link_libraries(hardware_code_correlator_staggered_test
+	optimal
+        kernelTestUtilities
+)
+add_test(hardware_code_correlator_staggered_CPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_correlator_staggered_GPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+

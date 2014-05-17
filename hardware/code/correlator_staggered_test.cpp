@@ -18,6 +18,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "testUtilities.hpp"
+
 #include "../meta/util.hpp"
 #include "../host_functionality/host_random.h"
 #include "../physics/prng.hpp"
@@ -30,8 +32,8 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "test_util.h"
-#include "test_util_staggered.h"
+#include "../../tests/test_util.h"
+#include "../../tests/test_util_staggered.h"
 
 void fill_sf_with_one(su3vec * sf_in, int size)
 {
@@ -200,7 +202,7 @@ void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_correlators_staggered";
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("correlatorStaggered/" + inputfile);
 	hardware::System system(params);
 	for(auto device: system.get_devices()) {
 		device->get_correlator_staggered_code();
@@ -216,7 +218,7 @@ void test_src_volume(std::string inputfile)
 	kernelName = "create_staggered_eo_volume_source";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("correlatorStaggered/" + inputfile);
 	hardware::System system(params);
 
 	physics::PRNG prng(system);
@@ -289,12 +291,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-  test_build("/opencl_module_correlators_staggered_build_input_1"); //just to have an input file
-}
-
-BOOST_AUTO_TEST_CASE( BUILD_2 )
-{
-  test_build("/opencl_module_correlators_staggered_build_input_2"); //just to have an input file
+  test_build("correlators_staggered_build_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
