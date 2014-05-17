@@ -534,25 +534,22 @@ BOOST_AUTO_TEST_SUITE( F_FERMION_COMPARE_NONEO_EO )
 		FFermionEvenOddComparator(std::string inputfile) : 
 			MolecularDynamicsTester("f_fermion compare even-odd and non-even-odd", inputfile, 2, 3), SpinorTester("f_fermion compare even-odd and non-even-odd", MolecularDynamicsTester::getSpecificInputfile(inputfile))
 			{
-				outNonEo = new const hardware::buffers::Gaugemomentum(MolecularDynamicsTester::numberOfGaugemomentumElements, MolecularDynamicsTester::device);
-				outEo = new const hardware::buffers::Gaugemomentum(MolecularDynamicsTester::numberOfGaugemomentumElements, MolecularDynamicsTester::device);
-				MolecularDynamicsTester::code->importGaugemomentumBuffer(outNonEo, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
-				MolecularDynamicsTester::code->importGaugemomentumBuffer(outEo, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
-				
-				inNonEo1 = new const hardware::buffers::Plain<spinor>(SpinorTester::spinorfieldElements, MolecularDynamicsTester::device);
-				inNonEo2 = new const hardware::buffers::Plain<spinor>(SpinorTester::spinorfieldElements, MolecularDynamicsTester::device);
-				inEo1 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
-				inEo2 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
-				inEo3 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
-				inEo4 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
-				
-				inNonEo1->load(SpinorTester::createSpinorfield(SpinorTester::spinorfieldElements, 123456 ));
-				inNonEo2->load(SpinorTester::createSpinorfield(SpinorTester::spinorfieldElements, 789101 ));
-				fillTwoSpinorBuffers(inEo1, inEo2, 123456);
-				fillTwoSpinorBuffers(inEo3, inEo4, 789101);
-				
+				createBuffers();
+				fillBuffers();
+	
+				hmc_float cpu_res_eo;
 				molecularDynamicsCode->fermion_force_eo_device(inEo1, inEo4, getGaugefieldBuffer(), outEo, ODD, MolecularDynamicsTester::parameters->get_kappa() );
+				MolecularDynamicsTester::code->set_float_to_gaugemomentum_squarenorm_device(outEo, MolecularDynamicsTester::doubleBuffer);
+				MolecularDynamicsTester::doubleBuffer->dump(&cpu_res_eo);
+				logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
+				logger.info() << cpu_res_eo;
+				
 				molecularDynamicsCode->fermion_force_eo_device(inEo2, inEo3, getGaugefieldBuffer(), outEo, EVEN, MolecularDynamicsTester::parameters->get_kappa() );
+				MolecularDynamicsTester::code->set_float_to_gaugemomentum_squarenorm_device(outEo, MolecularDynamicsTester::doubleBuffer);
+				MolecularDynamicsTester::doubleBuffer->dump(&cpu_res_eo);
+				logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
+				logger.info() << cpu_res_eo;
+	
 				MolecularDynamicsTester::calcSquarenormAndStoreAsKernelResult(outEo, 0);
 				
 				molecularDynamicsCode->fermion_force_device( inNonEo1, inNonEo2, getGaugefieldBuffer(), outNonEo, MolecularDynamicsTester::parameters->get_kappa());
@@ -560,7 +557,73 @@ BOOST_AUTO_TEST_SUITE( F_FERMION_COMPARE_NONEO_EO )
 	
 				SpinorTester::setReferenceValuesToZero();
 			}
+			~FFermionEvenOddComparator()
+			{
+				outNonEo = NULL;
+				outEo = NULL;
+				inNonEo1 = NULL;
+				inNonEo2 = NULL;
+			}
+			
 	private:
+		void createBuffers()
+		{
+			outNonEo = new const hardware::buffers::Gaugemomentum(MolecularDynamicsTester::numberOfGaugemomentumElements, MolecularDynamicsTester::device);
+			outEo = new const hardware::buffers::Gaugemomentum(MolecularDynamicsTester::numberOfGaugemomentumElements, MolecularDynamicsTester::device);
+			inNonEo1 = new const hardware::buffers::Plain<spinor>(SpinorTester::spinorfieldElements, MolecularDynamicsTester::device);
+			inNonEo2 = new const hardware::buffers::Plain<spinor>(SpinorTester::spinorfieldElements, MolecularDynamicsTester::device);
+			inEo1 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
+			inEo2 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
+			inEo3 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
+			inEo4 = new const hardware::buffers::Spinor(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
+			}
+			void fillBuffers()
+			{
+				MolecularDynamicsTester::code->importGaugemomentumBuffer(outNonEo, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+				MolecularDynamicsTester::code->importGaugemomentumBuffer(outEo, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+				
+				inNonEo1->load(SpinorTester::createSpinorfield(SpinorTester::spinorfieldElements, 123456 ));
+				inNonEo2->load(SpinorTester::createSpinorfield(SpinorTester::spinorfieldElements, 789101 ));
+				fillTwoSpinorBuffers(inEo1, inEo2, 123456);
+				fillTwoSpinorBuffers(inEo3, inEo4, 789101);
+				
+				//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
+				//therefore, simply convert the eo input back to noneo
+				if(SpinorTester::useRandom)
+				{
+					if (SpinorTester::evenOrOdd)
+					{
+						SpinorTester::code->convert_from_eoprec_device(inEo1, inEo2, inNonEo1);
+						SpinorTester::code->convert_from_eoprec_device(inEo3, inEo4, inNonEo2);
+					}
+					else
+					{
+						//The content of the buffers inEo1-4 changes randomly if the squarenorm is not called here...
+						//This might be solved once tests for the kernel are implemented in spinors_test...
+						SpinorTester::code->convert_to_eoprec_device(inEo1, inEo2, inNonEo1);
+						SpinorTester::code->convert_to_eoprec_device(inEo3, inEo4, inNonEo2);
+					
+						hmc_float cpu_res_eo;
+						logger.fatal() << "Something seems to be broken when converting noneo to eo. Calculating the squarenorm of the vectors seems to cure this...";
+						SpinorTester::code->set_float_to_global_squarenorm_eoprec_device(inEo1, SpinorTester::doubleBuffer);
+						SpinorTester::doubleBuffer->dump(&cpu_res_eo);
+						logger.fatal() << "eo1: " << cpu_res_eo;
+
+						SpinorTester::code->set_float_to_global_squarenorm_eoprec_device(inEo2, SpinorTester::doubleBuffer);
+						SpinorTester::doubleBuffer->dump(&cpu_res_eo);
+						logger.fatal() << "eo2: " << cpu_res_eo;
+						
+						SpinorTester::code->set_float_to_global_squarenorm_eoprec_device(inEo3, SpinorTester::doubleBuffer);
+						SpinorTester::doubleBuffer->dump(&cpu_res_eo);
+						logger.fatal() << "eo3: " << cpu_res_eo;
+						
+						SpinorTester::code->set_float_to_global_squarenorm_eoprec_device(inEo4, SpinorTester::doubleBuffer);
+						SpinorTester::doubleBuffer->dump(&cpu_res_eo);
+						logger.fatal() << "eo4: " << cpu_res_eo;
+					}
+				}
+		}
+			
 		const hardware::buffers::Gaugemomentum * outNonEo;
 		const hardware::buffers::Gaugemomentum * outEo;
 		const hardware::buffers::Plain<spinor> * inNonEo1;

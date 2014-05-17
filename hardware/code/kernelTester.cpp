@@ -57,6 +57,7 @@ KernelTester::~KernelTester()
 {
   //NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
+		logger.info() << "compare result " << iteration;
 	  if (typeOfComparision == 1)
 	    {
 	      BOOST_CHECK_CLOSE(referenceValue[iteration], kernelResult[iteration], testPrecision);
