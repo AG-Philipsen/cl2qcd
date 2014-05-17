@@ -18,6 +18,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "testUtilities.hpp"
+
 #include "../meta/util.hpp"
 #include "../physics/prng.hpp"
 #include "../hardware/device.hpp"
@@ -29,13 +31,13 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "test_util.h"
+#include "../../tests/test_util.h"
 
 void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_real";
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("real/" + inputfile);
 	hardware::System system(params);
 	for(auto device: system.get_devices()) {
 		device->get_real_code();
@@ -54,7 +56,7 @@ void test_access_element(std::string inputfile, bool get=true)
 	  kernelName = "set_vector_element";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("real/" + inputfile);
 	hardware::System system(params);
 	auto * device = system.get_devices().at(0)->get_real_code();
 	
@@ -118,7 +120,7 @@ void test_base_operations(std::string inputfile, int switcher, bool hard=false)
 	  kernelName = "subtraction";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("real/" + inputfile);
 	hardware::System system(params);
 	auto * device = system.get_devices().at(0)->get_real_code();
 
@@ -180,7 +182,7 @@ void test_update(std::string inputfile, int switcher)
 	  kernelName = "update_zeta_cgm";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("real/" + inputfile);
 	hardware::System system(params);
 	auto * device = system.get_devices().at(0)->get_real_code();
 
@@ -238,12 +240,12 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-	test_build("/opencl_module_spinors_build_input_1"); //Just to use an inputfile
+	test_build("/real_build_input_1"); 
 }
 
 BOOST_AUTO_TEST_CASE( BUILD_2 )
 {
-	test_build("/opencl_module_spinors_build_input_2"); //Just to use an inputfile
+	test_build("/real_build_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

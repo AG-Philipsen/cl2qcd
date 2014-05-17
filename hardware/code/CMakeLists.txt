@@ -52,6 +52,8 @@ target_link_libraries(code
 # Definition of tests
 #
 
+# todo: remove dependencies on optimal library!
+
 # default random number seed
 configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
@@ -141,3 +143,19 @@ add_test(hardware_code_fermions_staggered_CPU       hardware_code_fermions_stagg
 add_test(hardware_code_fermions_staggered_CPU_REC12 hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(hardware_code_fermions_staggered_GPU       hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_fermions_staggered_GPU_REC12 hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+
+add_executable(hardware_code_complex_test complex_test.cpp)
+target_link_libraries(hardware_code_complex_test
+	optimal
+	kernelTestUtilities
+)
+add_test(hardware_code_complex_CPU       hardware_code_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_complex_GPU       hardware_code_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+add_executable(hardware_code_real_test real_test.cpp)
+target_link_libraries(hardware_code_real_test
+	optimal
+	kernelTestUtilities
+)
+add_test(hardware_code_real_CPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_real_GPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
