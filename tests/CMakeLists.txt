@@ -81,24 +81,6 @@ add_test(LocalQ_1_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 -
 add_test(LocalQ_1_GPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=false)
 add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=true)
 
-add_executable(opencl_module_spinors_test_merged_kernels opencl_module_spinors_test_merged_kernels.cpp)
-target_link_libraries(opencl_module_spinors_test_merged_kernels
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Opencl_module_spinors_merged_kernels_CPU       opencl_module_spinors_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(Opencl_module_spinors_merged_kernels_GPU       opencl_module_spinors_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-
-add_executable(opencl_module_fermions_test_merged_kernels opencl_module_fermions_test_merged_kernels.cpp)
-target_link_libraries(opencl_module_fermions_test_merged_kernels
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Opencl_module_fermions_merged_kernels_CPU       opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(Opencl_module_fermions_merged_kernels_CPU_REC12 opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(Opencl_module_fermions_merged_kernels_GPU       opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(Opencl_module_fermions_merged_kernels_GPU_REC12 opencl_module_fermions_test_merged_kernels ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
-
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 

@@ -176,4 +176,22 @@ target_link_libraries(hardware_code_correlator_staggered_test
 add_test(hardware_code_correlator_staggered_CPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_correlator_staggered_GPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
+add_executable(hardware_code_spinors_merged_kernels_test spinors_merged_kernels_test.cpp)
+target_link_libraries(hardware_code_spinors_merged_kernels_test
+	optimal
+	kernelTestUtilities
+)
+add_test(hardware_code_spinors_merged_kernels_test_CPU       hardware_code_spinors_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_spinors_merged_kernels_test_GPU       hardware_code_spinors_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+add_executable(hardware_code_fermions_merged_kernels_test fermions_merged_kernels_test.cpp)
+target_link_libraries(hardware_code_fermions_merged_kernels_test
+	optimal
+	kernelTestUtilities
+)
+add_test(hardware_code_fermions_merged_kernels_test_CPU       hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_fermions_merged_kernels_test_CPU_REC12 hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(hardware_code_fermions_merged_kernels_test_GPU       hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(hardware_code_fermions_merged_kernels_test_GPU_REC12 hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+
 

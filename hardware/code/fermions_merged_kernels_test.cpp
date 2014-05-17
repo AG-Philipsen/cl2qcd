@@ -18,6 +18,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "testUtilities.hpp"
+
 #include "../meta/util.hpp"
 #include "../host_functionality/host_random.h"
 #include "../physics/lattices/gaugefield.hpp"
@@ -31,7 +33,7 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "test_util.h"
+#include "../../tests/test_util.h"
 
 class TestGaugefield {
 
@@ -112,7 +114,7 @@ void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_hmc";
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	BOOST_MESSAGE("Test done");
@@ -158,7 +160,7 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	std::string kernelName = "dslash_AND_gamma5_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
@@ -225,7 +227,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 		kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
@@ -307,7 +309,7 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	else kernelName = "m_tm_sitediagonal_minus_AND_gamma5_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
@@ -375,12 +377,12 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-	test_build("/opencl_module_fermions_build_input_1");
+	test_build("build_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( BUILD_2 )
 {
-	test_build("/opencl_module_fermions_build_input_2");
+	test_build("build_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

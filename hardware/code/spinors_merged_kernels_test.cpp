@@ -18,6 +18,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "testUtilities.hpp"
+
 #include "../meta/util.hpp"
 #include "../host_functionality/host_random.h"
 #include "../hardware/system.hpp"
@@ -30,7 +32,7 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "test_util.h"
+#include "../../tests/test_util.h"
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
@@ -161,7 +163,7 @@ void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_spinors";
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params =createParameters("spinorsMerged/" + inputfile);
 	hardware::System system(params);
 	for(auto device: system.get_devices()) {
 		device->get_spinor_code();
@@ -177,7 +179,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	kernelName = "saxpy_ANS_squarenorm_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params =createParameters("spinorsMerged/" + inputfile);
 	hardware::System system(params);
 	auto * device = system.get_devices().at(0)->get_spinor_code();
 

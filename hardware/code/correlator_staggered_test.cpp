@@ -294,6 +294,11 @@ BOOST_AUTO_TEST_CASE( BUILD_1 )
   test_build("correlators_staggered_build_input_1");
 }
 
+BOOST_AUTO_TEST_CASE( BUILD_2 )
+{
+  test_build("correlators_staggered_build_input_2");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
