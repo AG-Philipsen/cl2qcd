@@ -60,19 +60,26 @@ KernelTester::~KernelTester()
 		logger.info() << "compare result " << iteration;
 	  if (typeOfComparision == 1)
 	    {
-	      BOOST_CHECK_CLOSE(referenceValue[iteration], kernelResult[iteration], testPrecision);
+				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+				logger.info() << "Ref. Value = " << referenceValue[iteration];
+				BOOST_CHECK_CLOSE(referenceValue[iteration], kernelResult[iteration], testPrecision);
 	    }
 	  else if (typeOfComparision == 2)
 	    {
+				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+				logger.info() << "upper Bound = " << referenceValue[iteration];
 	      BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
 	    }
 		else if (typeOfComparision == 3)
 	    {
+				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+				logger.info() << "Ref. Value = " << referenceValue[0];
 	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
 	    }
 	}
 	delete parameters;
 	delete system;
+	device = NULL;
 }
 
 void KernelTester::setReferenceValuesToZero()

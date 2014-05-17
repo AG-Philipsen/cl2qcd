@@ -122,8 +122,6 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		set_gaussian_spinorfield_stagg_eoprec = 0;
 		sax_vectorized_and_squarenorm_reduction = 0;
 		sax_vectorized_and_squarenorm_eoprec = 0;
-		//Squarenorm
-		global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
 		//Scalar Product
 		scalar_product_stagg = createKernel("scalar_product_staggered") << basic_fermion_code << "spinorfield_staggered_scalar_product.cl";
 		//Setting fields
@@ -135,6 +133,8 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		saxpy_stagg = createKernel("saxpy_staggered") << basic_fermion_code << "spinorfield_staggered_saxpy.cl";
 		saxpbypz_stagg = createKernel("saxpbypz_staggered") << basic_fermion_code << "spinorfield_staggered_saxpbypz.cl";
 	}
+	//Squarenorm non_eo always built because needed in tests for conversion from eo to non eo
+	global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
 }
 
 void hardware::code::Spinors_staggered::clear_kernels()

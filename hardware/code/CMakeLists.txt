@@ -61,6 +61,7 @@ add_library(kernelTestUtilities
 	testUtilities.cpp
 	kernelTester.cpp
 	SpinorTester.cpp
+	SpinorStaggeredTester.cpp
 	GaugemomentumTester.cpp
 )
 
@@ -91,6 +92,16 @@ target_link_libraries(hardware_code_spinors_test
 )
 add_test(hardware_code_spinors_CPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)
 add_test(hardware_code_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true)
+
+add_executable(hardware_code_spinors_staggered_test spinors_staggered_test.cpp)
+target_link_libraries(hardware_code_spinors_staggered_test
+	prng
+	lattices
+	kernelTestUtilities
+)
+add_test(Opencl_module_spinors_staggered_CPU       hardware_code_spinors_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)
+add_test(Opencl_module_spinors_staggered_GPU       hardware_code_spinors_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true)
+
 
 add_executable(hardware_code_fermions_test fermions_test.cpp)
 target_link_libraries(hardware_code_fermions_test
