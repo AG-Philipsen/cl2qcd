@@ -37,6 +37,7 @@ protected:
 	std::string getSpecificInputfile(std::string inputfileIn);
 
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
+	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
 	void fill_with_one(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);
 	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();	
@@ -46,6 +47,7 @@ protected:
 	hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
+	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
 	
 	const hardware::code::Spinors * code;
 	physics::PRNG * prng;

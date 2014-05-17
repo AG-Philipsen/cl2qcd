@@ -238,3 +238,88 @@ void SpinorTester::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::b
   code->set_float_to_global_squarenorm_eoprec_device(in, doubleBuffer);
   doubleBuffer->dump(&kernelResult[0]);
 }
+
+void SpinorTester::fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed)
+{
+	prng_init(seed);
+	for(int i = 0; i < size; ++i) {
+		sf_in1[i].e0.e0.re = prng_double();
+		sf_in1[i].e0.e1.re = prng_double();
+		sf_in1[i].e0.e2.re = prng_double();
+		sf_in1[i].e1.e0.re = prng_double();
+		sf_in1[i].e1.e1.re = prng_double();
+		sf_in1[i].e1.e2.re = prng_double();
+		sf_in1[i].e2.e0.re = prng_double();
+		sf_in1[i].e2.e1.re = prng_double();
+		sf_in1[i].e2.e2.re = prng_double();
+		sf_in1[i].e3.e0.re = prng_double();
+		sf_in1[i].e3.e1.re = prng_double();
+		sf_in1[i].e3.e2.re = prng_double();
+
+		sf_in1[i].e0.e0.im = prng_double();
+		sf_in1[i].e0.e1.im = prng_double();
+		sf_in1[i].e0.e2.im = prng_double();
+		sf_in1[i].e1.e0.im = prng_double();
+		sf_in1[i].e1.e1.im = prng_double();
+		sf_in1[i].e1.e2.im = prng_double();
+		sf_in1[i].e2.e0.im = prng_double();
+		sf_in1[i].e2.e1.im = prng_double();
+		sf_in1[i].e2.e2.im = prng_double();
+		sf_in1[i].e3.e0.im = prng_double();
+		sf_in1[i].e3.e1.im = prng_double();
+		sf_in1[i].e3.e2.im = prng_double();
+
+		sf_in2[i].e0.e0.re = prng_double();
+		sf_in2[i].e0.e1.re = prng_double();
+		sf_in2[i].e0.e2.re = prng_double();
+		sf_in2[i].e1.e0.re = prng_double();
+		sf_in2[i].e1.e1.re = prng_double();
+		sf_in2[i].e1.e2.re = prng_double();
+		sf_in2[i].e2.e0.re = prng_double();
+		sf_in2[i].e2.e1.re = prng_double();
+		sf_in2[i].e2.e2.re = prng_double();
+		sf_in2[i].e3.e0.re = prng_double();
+		sf_in2[i].e3.e1.re = prng_double();
+		sf_in2[i].e3.e2.re = prng_double();
+
+		sf_in2[i].e0.e0.im = prng_double();
+		sf_in2[i].e0.e1.im = prng_double();
+		sf_in2[i].e0.e2.im = prng_double();
+		sf_in2[i].e1.e0.im = prng_double();
+		sf_in2[i].e1.e1.im = prng_double();
+		sf_in2[i].e1.e2.im = prng_double();
+		sf_in2[i].e2.e0.im = prng_double();
+		sf_in2[i].e2.e1.im = prng_double();
+		sf_in2[i].e2.e2.im = prng_double();
+		sf_in2[i].e3.e0.im = prng_double();
+		sf_in2[i].e3.e1.im = prng_double();
+		sf_in2[i].e3.e2.im = prng_double();
+	}
+	return;
+}
+
+void SpinorTester::fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed)
+{
+	spinor * sf_in1;
+	spinor * sf_in2;
+	sf_in1 = new spinor[spinorfieldEvenOddElements];
+	sf_in2 = new spinor[spinorfieldEvenOddElements];
+	BOOST_REQUIRE(sf_in1);
+	BOOST_REQUIRE(sf_in2);
+	
+	if( useRandom )
+	{ 
+		fillTwoSpinorfieldsWithRandomNumbers(sf_in1, sf_in2, spinorfieldEvenOddElements, seed);
+	}
+	else
+	{
+		fill_with_one(sf_in1, spinorfieldEvenOddElements);
+		fill_with_one(sf_in2, spinorfieldEvenOddElements);
+	}
+	
+	in1->load(sf_in1);
+	in2->load(sf_in2);
+		
+	delete sf_in1;
+	delete sf_in2;
+}

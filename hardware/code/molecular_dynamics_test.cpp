@@ -247,65 +247,6 @@ BOOST_AUTO_TEST_SUITE( F_FERMION )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed)
-{
-	prng_init(seed);
-	for(int i = 0; i < size; ++i) {
-		sf_in1[i].e0.e0.re = prng_double();
-		sf_in1[i].e0.e1.re = prng_double();
-		sf_in1[i].e0.e2.re = prng_double();
-		sf_in1[i].e1.e0.re = prng_double();
-		sf_in1[i].e1.e1.re = prng_double();
-		sf_in1[i].e1.e2.re = prng_double();
-		sf_in1[i].e2.e0.re = prng_double();
-		sf_in1[i].e2.e1.re = prng_double();
-		sf_in1[i].e2.e2.re = prng_double();
-		sf_in1[i].e3.e0.re = prng_double();
-		sf_in1[i].e3.e1.re = prng_double();
-		sf_in1[i].e3.e2.re = prng_double();
-
-		sf_in1[i].e0.e0.im = prng_double();
-		sf_in1[i].e0.e1.im = prng_double();
-		sf_in1[i].e0.e2.im = prng_double();
-		sf_in1[i].e1.e0.im = prng_double();
-		sf_in1[i].e1.e1.im = prng_double();
-		sf_in1[i].e1.e2.im = prng_double();
-		sf_in1[i].e2.e0.im = prng_double();
-		sf_in1[i].e2.e1.im = prng_double();
-		sf_in1[i].e2.e2.im = prng_double();
-		sf_in1[i].e3.e0.im = prng_double();
-		sf_in1[i].e3.e1.im = prng_double();
-		sf_in1[i].e3.e2.im = prng_double();
-
-		sf_in2[i].e0.e0.re = prng_double();
-		sf_in2[i].e0.e1.re = prng_double();
-		sf_in2[i].e0.e2.re = prng_double();
-		sf_in2[i].e1.e0.re = prng_double();
-		sf_in2[i].e1.e1.re = prng_double();
-		sf_in2[i].e1.e2.re = prng_double();
-		sf_in2[i].e2.e0.re = prng_double();
-		sf_in2[i].e2.e1.re = prng_double();
-		sf_in2[i].e2.e2.re = prng_double();
-		sf_in2[i].e3.e0.re = prng_double();
-		sf_in2[i].e3.e1.re = prng_double();
-		sf_in2[i].e3.e2.re = prng_double();
-
-		sf_in2[i].e0.e0.im = prng_double();
-		sf_in2[i].e0.e1.im = prng_double();
-		sf_in2[i].e0.e2.im = prng_double();
-		sf_in2[i].e1.e0.im = prng_double();
-		sf_in2[i].e1.e1.im = prng_double();
-		sf_in2[i].e1.e2.im = prng_double();
-		sf_in2[i].e2.e0.im = prng_double();
-		sf_in2[i].e2.e1.im = prng_double();
-		sf_in2[i].e2.e2.im = prng_double();
-		sf_in2[i].e3.e0.im = prng_double();
-		sf_in2[i].e3.e1.im = prng_double();
-		sf_in2[i].e3.e2.im = prng_double();
-	}
-	return;
-}
-
 BOOST_AUTO_TEST_SUITE( F_FERMION_EO )
 
 	class FFermionEvenOddTester : public MolecularDynamicsTester, public SpinorTester
@@ -317,25 +258,7 @@ BOOST_AUTO_TEST_SUITE( F_FERMION_EO )
 				MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
 				const hardware::buffers::Spinor in1(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
 				const hardware::buffers::Spinor in2(SpinorTester::spinorfieldEvenOddElements, MolecularDynamicsTester::device);
-
-				spinor * sf_in1;
-				spinor * sf_in2;
-				sf_in1 = new spinor[SpinorTester::spinorfieldEvenOddElements];
-				sf_in2 = new spinor[SpinorTester::spinorfieldEvenOddElements];
-				//use the variable use_cg to switch between cold and random input sf
-				if(MolecularDynamicsTester::parameters->get_solver() == meta::Inputparameters::cg) {
-					SpinorTester::fill_with_one(sf_in1, SpinorTester::spinorfieldEvenOddElements);
-					SpinorTester::fill_with_one(sf_in2, SpinorTester::spinorfieldEvenOddElements);
-				} else {
-					fill_sf_with_random_eo(sf_in1, sf_in2, SpinorTester::spinorfieldEvenOddElements, 123456);
-				}
-				BOOST_REQUIRE(sf_in1);
-				BOOST_REQUIRE(sf_in2);
-			
-				in1.load(sf_in1);
-				in2.load(sf_in2);
-				delete sf_in1;
-				delete sf_in2;
+				fillTwoSpinorBuffers(&in1, &in2);
 				
 				int tmp = ( MolecularDynamicsTester::parameters->get_read_multiple_configs() ) ? EVEN : ODD;
 				molecularDynamicsCode->fermion_force_eo_device( &in1, &in2, getGaugefieldBuffer(), gaugemomentumBuffer, tmp,  MolecularDynamicsTester::parameters->get_kappa());
@@ -619,6 +542,66 @@ void fill_sf_with_random_eo(su3vec * sf_in1, su3vec * sf_in2, int size, int seed
 	}
 	return;
 }
+
+void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed)
+{
+	prng_init(seed);
+	for(int i = 0; i < size; ++i) {
+		sf_in1[i].e0.e0.re = prng_double();
+		sf_in1[i].e0.e1.re = prng_double();
+		sf_in1[i].e0.e2.re = prng_double();
+		sf_in1[i].e1.e0.re = prng_double();
+		sf_in1[i].e1.e1.re = prng_double();
+		sf_in1[i].e1.e2.re = prng_double();
+		sf_in1[i].e2.e0.re = prng_double();
+		sf_in1[i].e2.e1.re = prng_double();
+		sf_in1[i].e2.e2.re = prng_double();
+		sf_in1[i].e3.e0.re = prng_double();
+		sf_in1[i].e3.e1.re = prng_double();
+		sf_in1[i].e3.e2.re = prng_double();
+
+		sf_in1[i].e0.e0.im = prng_double();
+		sf_in1[i].e0.e1.im = prng_double();
+		sf_in1[i].e0.e2.im = prng_double();
+		sf_in1[i].e1.e0.im = prng_double();
+		sf_in1[i].e1.e1.im = prng_double();
+		sf_in1[i].e1.e2.im = prng_double();
+		sf_in1[i].e2.e0.im = prng_double();
+		sf_in1[i].e2.e1.im = prng_double();
+		sf_in1[i].e2.e2.im = prng_double();
+		sf_in1[i].e3.e0.im = prng_double();
+		sf_in1[i].e3.e1.im = prng_double();
+		sf_in1[i].e3.e2.im = prng_double();
+
+		sf_in2[i].e0.e0.re = prng_double();
+		sf_in2[i].e0.e1.re = prng_double();
+		sf_in2[i].e0.e2.re = prng_double();
+		sf_in2[i].e1.e0.re = prng_double();
+		sf_in2[i].e1.e1.re = prng_double();
+		sf_in2[i].e1.e2.re = prng_double();
+		sf_in2[i].e2.e0.re = prng_double();
+		sf_in2[i].e2.e1.re = prng_double();
+		sf_in2[i].e2.e2.re = prng_double();
+		sf_in2[i].e3.e0.re = prng_double();
+		sf_in2[i].e3.e1.re = prng_double();
+		sf_in2[i].e3.e2.re = prng_double();
+
+		sf_in2[i].e0.e0.im = prng_double();
+		sf_in2[i].e0.e1.im = prng_double();
+		sf_in2[i].e0.e2.im = prng_double();
+		sf_in2[i].e1.e0.im = prng_double();
+		sf_in2[i].e1.e1.im = prng_double();
+		sf_in2[i].e1.e2.im = prng_double();
+		sf_in2[i].e2.e0.im = prng_double();
+		sf_in2[i].e2.e1.im = prng_double();
+		sf_in2[i].e2.e2.im = prng_double();
+		sf_in2[i].e3.e0.im = prng_double();
+		sf_in2[i].e3.e1.im = prng_double();
+		sf_in2[i].e3.e2.im = prng_double();
+	}
+	return;
+}
+
 
 /////////////////////////////////////////////////////////////////////////
 //    TESTS FOR STAGGERED FERMIONS MOLECULAR DYNAMICS RELATED TOOLS    //
