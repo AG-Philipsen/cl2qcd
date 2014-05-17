@@ -18,6 +18,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "testUtilities.hpp"
+
 #include "../meta/util.hpp"
 #include "../host_functionality/host_random.h"
 #include "../hardware/code/spinors_staggered.hpp"
@@ -29,8 +31,8 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "test_util.h"
-#include "test_util_staggered.h"
+#include "../../tests/test_util.h"
+#include "../../tests/test_util_staggered.h"
 
 
 void fill_sf_with_one(su3vec * sf_in, int size)
@@ -69,7 +71,7 @@ void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_fermions_staggered";
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("fermionsStaggered/" + inputfile);
 	hardware::System system(params);
 	TestGaugefield_stagg cpu(&system);
 	BOOST_MESSAGE("Test done");
@@ -83,7 +85,7 @@ void test_m_staggered(std::string inputfile)
 	kernelName = "M_staggered";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("fermionsStaggered/" + inputfile);
 	hardware::System system(params);
 	TestGaugefield_stagg cpu(&system);
 	
@@ -157,7 +159,7 @@ void test_DKS_eo(std::string inputfile)
 	std::string kernelName = "D_KS_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
+	meta::Inputparameters params = createParameters("fermionsStaggered/" + inputfile);
 	hardware::System system(params);
 	TestGaugefield_stagg cpu(&system);
 	auto * device = cpu.get_device();
