@@ -22,7 +22,7 @@
 
 #include "gaugeObservables.h"
 
-void physics::gaugeObservables::measureGaugeObservables(physics::lattices::Gaugefield * gaugefield, int iteration)
+void physics::gaugeObservables::measureGaugeObservables(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
   measurePlaqAndPoly(gaugefield, iteration);
   if ( parameters->get_measure_rectangles() ){
@@ -33,13 +33,13 @@ void physics::gaugeObservables::measureGaugeObservables(physics::lattices::Gauge
   }
 }
 
-void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield * gf, int iter)
+void physics::gaugeObservables::measurePlaqAndPoly(const physics::lattices::Gaugefield * gf, int iter)
 {
 	const std::string filename = meta::get_gauge_obs_file_name(*parameters,  "");
 	measurePlaqAndPoly(gf, iter, filename);
 }
 
-void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield * gf, int iter, const std::string& filename)
+void physics::gaugeObservables::measurePlaqAndPoly(const physics::lattices::Gaugefield * gf, int iter, const std::string& filename)
 {
   measurePlaquette(gf);
   measurePolyakovloop(gf);
@@ -60,7 +60,7 @@ void physics::gaugeObservables::writePlaqAndPolyToFile(int iter,  const std::str
 	outputToFile.close();
 }
 
-void physics::gaugeObservables::measureTransportcoefficientKappa(physics::lattices::Gaugefield * gaugefield, int iteration)
+void physics::gaugeObservables::measureTransportcoefficientKappa(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
 	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters->get_beta());
 	writeTransportcoefficientKappaToFile(parameters->get_transportcoefficientKappaFilename(), iteration);
@@ -85,7 +85,7 @@ void physics::gaugeObservables::writeTransportcoefficientKappaToFile(std::string
 	}
 }
 
-void physics::gaugeObservables::measureRectangles(physics::lattices::Gaugefield * gf, int iteration)
+void physics::gaugeObservables::measureRectangles(const physics::lattices::Gaugefield * gf, int iteration)
 {
 	measureRectangles(gf);
 	writeRectanglesToFile(iteration, parameters->get_rectanglesFilename());

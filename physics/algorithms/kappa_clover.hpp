@@ -39,7 +39,7 @@ namespace algorithms {
  *
  * @todo return a future
  */
-hmc_float kappa_clover(physics::lattices::Gaugefield& gf, hmc_float beta);
+hmc_float kappa_clover(const physics::lattices::Gaugefield& gf, hmc_float beta);
 
 }
 

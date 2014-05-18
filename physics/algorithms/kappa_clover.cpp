@@ -26,7 +26,7 @@
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/kappa.hpp"
 
-hmc_float physics::algorithms::kappa_clover(physics::lattices::Gaugefield& gf, hmc_float beta)
+hmc_float physics::algorithms::kappa_clover(const physics::lattices::Gaugefield& gf, hmc_float beta)
 {
 	assert(gf.get_buffers().size() == 1);
 

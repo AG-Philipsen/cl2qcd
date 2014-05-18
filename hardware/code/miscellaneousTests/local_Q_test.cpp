@@ -23,6 +23,8 @@
 #include "../hardware/device.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 
+#include "../../../physics/observables/gaugeObservables.h"
+
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE localQ_test
@@ -168,7 +170,8 @@ BOOST_AUTO_TEST_CASE( LOCAL_Q )
 	hardware::System system(params);
 	Dummyfield cpu(system);
 	logger.info() << "gaugeobservables: ";
-	print_gaugeobservables(cpu.gf, 0);
+	physics::gaugeObservables obs(&params );
+	obs.measureGaugeObservables(&cpu.gf, 0);
 	logger.info() << "Run kernel";
 	hmc_float cpu_res;
 	cpu_res = cpu.runTestKernel();

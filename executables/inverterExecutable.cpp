@@ -76,9 +76,7 @@ void inverterExecutable::measureTwoFlavourDoubletChiralCondensateOnGaugefield() 
 
 void inverterExecutable::performApplicationSpecificMeasurements() {
 	logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
-	if (parameters.get_print_to_screen()) {
-		print_gaugeobservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
-	}
+	gaugeObservablesInstance.measureGaugeObservables(gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
 	if (parameters.get_measure_correlators()) {
 		measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 	}

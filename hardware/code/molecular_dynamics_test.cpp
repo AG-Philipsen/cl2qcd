@@ -522,6 +522,8 @@ BOOST_AUTO_TEST_SUITE_END()
 #include "test_util.h"
 #include "test_util_staggered.h"
 
+#include "../../physics/observables/gaugeObservables.h"
+
 class TestMolecularDynamics {
 
 public:
@@ -535,7 +537,8 @@ public:
 	const hardware::buffers::SU3 * get_gaugefield();
 
 	void print_gaugeobservables() {
-		physics::lattices::print_gaugeobservables(gf, 0);
+	  physics::gaugeObservables obs(&system->get_inputparameters() );
+	  obs.measureGaugeObservables(&gf, 0);
 	}
 
 private:

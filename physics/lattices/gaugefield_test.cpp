@@ -86,8 +86,17 @@ void test_save(bool hot) {
 	hmc_float orig_splaq, reread_splaq;
 	hmc_complex orig_pol, reread_pol;
 
-	gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
-	gf.gaugeobservables(&reread_plaq, &reread_tplaq, &reread_splaq, &reread_pol);
+	obs.measureGaugeObservables(&gf, 0);
+	orig_plaq = obs.getPlaquette();
+	orig_tplaq = obs.getTemporalPlaquette();
+	orig_splaq = obs.getSpatialPlaquette();
+	orig_pol = obs.getPolyakovloop();
+
+	obs.measureGaugeObservables(&reread, 1);
+	reread_plaq = obs.getPlaquette();
+	reread_tplaq = obs.getTemporalPlaquette();
+	reread_splaq = obs.getSpatialPlaquette();
+	reread_pol = obs.getPolyakovloop();
 
 	BOOST_CHECK_EQUAL(orig_plaq, reread_plaq);
 	BOOST_CHECK_EQUAL(orig_splaq, reread_splaq);
@@ -171,11 +180,24 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, false);
-		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+
+		obs.measureGaugeObservables(&gf, 0);
+		orig_plaq = obs.getPlaquette();
+		orig_tplaq = obs.getTemporalPlaquette();
+		orig_splaq = obs.getSpatialPlaquette();
+		orig_pol = obs.getPolyakovloop();
+
 		gf.update_halo();
-		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		obs.measureGaugeObservables(&gf, 1);
+		new_plaq = obs.getPlaquette();
+		new_tplaq = obs.getTemporalPlaquette();
+		new_splaq = obs.getSpatialPlaquette();
+		new_pol = obs.getPolyakovloop();
+
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
 		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
@@ -188,11 +210,23 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(1, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, true);
-		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+
+		obs.measureGaugeObservables(&gf, 0);
+		orig_plaq = obs.getPlaquette();
+		orig_tplaq = obs.getTemporalPlaquette();
+		orig_splaq = obs.getSpatialPlaquette();
+		orig_pol = obs.getPolyakovloop();
+
 		gf.update_halo();
-		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		obs.measureGaugeObservables(&gf, 1);
+		new_plaq = obs.getPlaquette();
+		new_tplaq = obs.getTemporalPlaquette();
+		new_splaq = obs.getSpatialPlaquette();
+		new_pol = obs.getPolyakovloop();
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
 		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
@@ -205,11 +239,23 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-		gf.gaugeobservables(&orig_plaq, &orig_tplaq, &orig_splaq, &orig_pol);
+
+		obs.measureGaugeObservables(&gf, 0);
+		orig_plaq = obs.getPlaquette();
+		orig_tplaq = obs.getTemporalPlaquette();
+		orig_splaq = obs.getSpatialPlaquette();
+		orig_pol = obs.getPolyakovloop();
+
 		gf.update_halo();
-		gf.gaugeobservables(&new_plaq, &new_tplaq, &new_splaq, &new_pol);
+
+		obs.measureGaugeObservables(&gf, 1);
+		new_plaq = obs.getPlaquette();
+		new_tplaq = obs.getTemporalPlaquette();
+		new_splaq = obs.getSpatialPlaquette();
+		new_pol = obs.getPolyakovloop();
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
 		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);

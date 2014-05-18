@@ -50,18 +50,20 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	 */
 	const Spinorfield solution(system);
 	solution.cold();
+	int iterations = 0;
 
 	if(params.get_solver() == meta::Inputparameters::cg) {
 		const QplusQminus fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, phi, system, params.get_solver_prec());
+		iterations  = cg(&solution, fm, gf, phi, system, params.get_solver_prec());
 		const Qminus qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
 
 	} else  {
 		const Qplus fm(kappa, mubar, system);
-		const int iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec());
+		iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec());
 		copyData(&phi_inv, solution);
 	}
+	logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";
 	return squarenorm(phi_inv);
 }
 
@@ -81,7 +83,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	 * or a point-source spinorfield as trial-solution
 	 */
 	const Spinorfield_eo solution(system);
-
+	int iterations = 0;
 	logger.debug() << "\t\t\tstart solver";
 
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -89,16 +91,17 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 		solution.cold();
 
 		const QplusQminus_eo fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, phi, system, params.get_solver_prec());
+		iterations = cg(&solution, fm, gf, phi, system, params.get_solver_prec());
 		const Qminus_eo qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
 	} else {
 		solution.zero();
 		solution.gamma5();
 		const Qplus_eo fm(kappa, mubar, system);
-		const int iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec());
+		iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec());
 		copyData(&phi_inv, solution);
 	}
+	logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";
 	return squarenorm(phi_inv);
 }
 
@@ -128,17 +131,19 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	solution.cold();
 
 	logger.debug() << "\t\t\tstart solver";
+	int iterations = 0;
 
 	if(params.get_solver() == meta::Inputparameters::cg) {
 		const QplusQminus fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
+		iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
 		const Qminus qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
 	} else  {
 		const Qplus fm(kappa, mubar, system);
-		const int iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec());
+		iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec());
 		copyData(&phi_inv, solution);
 	}
+	logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";
 	return squarenorm(phi_inv);
 }
 
@@ -160,6 +165,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	const Spinorfield_eo phi_inv(system);
 
 	logger.debug() << "\t\t\tstart solver";
+	int iterations = 0;
 
 	//sf_tmp = Qplus(light_mass) phi_mp
 	const Spinorfield_eo tmp(system);
@@ -173,7 +179,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	if(params.get_solver() == meta::Inputparameters::cg) {
 		solution.cold();
 		const QplusQminus_eo fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
+		iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
 		const Qminus_eo qminus(kappa, mubar, system);
 		qminus(&phi_inv, gf, solution);
 	} else {
@@ -181,16 +187,18 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 		solution.gamma5();
 
 		const Qplus_eo fm(kappa, mubar, system);
-		const int iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec());
+		iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec());
 
 		copyData(&phi_inv, solution);
 	}
+	logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";
 	return squarenorm(phi_inv);
 }
 
 hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi_mp, const hardware::System& system)
 {
    //Function not yet implemented!
+  return 0.;
 }
 
 /**
@@ -212,14 +220,15 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	
 	auto params = system.get_inputparameters();
 	const physics::fermionmatrix::MdagM_eo fm(system, mass);
-	
+	int iterations = 0;
+
 	//Temporary fields for shifted inverter
 	logger.debug() << "\t\tstart solver...";
 	std::vector<physics::lattices::Staggeredfield_eo *> X;
 	for(int i=0; i<phi.Get_order(); i++)
 		X.push_back(new physics::lattices::Staggeredfield_eo(system));
 	//Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-	const int iterations = physics::algorithms::solvers::cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_solver_prec());
+	iterations = physics::algorithms::solvers::cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_solver_prec());
 	logger.debug() << "\t\t...end solver in " << iterations << " iterations";
 	
 	physics::lattices::Staggeredfield_eo tmp(system); //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
@@ -229,6 +238,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	}
 	
 	meta::free_container(X);
+	logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";
 	return scalar_product(phi, tmp).re;
   
 }
@@ -246,16 +256,22 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	hmc_float s_new = 0.;
 
 	//Gauge-Part
+	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
 	physics::gaugeObservables gaugeObs(&params);
-	hmc_float tplaq, splaq, plaq;
-	hmc_float tplaq_new, splaq_new, plaq_new;
+	hmc_float plaq = gaugeObs.measurePlaquette(&gf);
+	hmc_float splaq = gaugeObs.getSpatialPlaquette();
+	hmc_float tplaq = gaugeObs.getTemporalPlaquette();
+
+	hmc_float plaq_new = gaugeObs.measurePlaquette(&new_u);
+	hmc_float splaq_new = gaugeObs.getSpatialPlaquette();
+	hmc_float tplaq_new = gaugeObs.getTemporalPlaquette();
+
+	hmc_complex poly = gaugeObs.measurePolyakovloop(&gf);
+	hmc_complex poly_new = gaugeObs.measurePolyakovloop(&new_u);
+
 	hmc_float rect_new = 0.;
 	hmc_float rect = 0.;
-	hmc_complex poly;
-	hmc_complex poly_new;
-	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	gf.gaugeobservables(&plaq,  &tplaq, &splaq, &poly);
-	new_u.gaugeobservables(&plaq_new,  &tplaq_new, &splaq_new, &poly_new);
+
 	//plaq has to be divided by the norm-factor to get s_gauge
 	hmc_float factor = 1. / (meta::get_plaq_norm(params));
 	if(meta::get_use_rectangles(params) == true) {

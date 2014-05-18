@@ -88,16 +88,6 @@ namespace physics {
 			void save(std::string outputfile, int number);
 
 			/**
-			 * Calculate plaquette and polyakov of this gaugefield.
-			 *
-			 * @param[out] plaq Storage for result of plaquette calculation
-			 * @param[out] tplaq Storage for result of plaquette calculation
-			 * @param[out] splaq Storage for result of plaquette calculation
-			 * @param[out] pol Storage for result of polyakov calculation
-			 */
-			void gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const;
-
-			/**
 			 * Get the buffers containing the gaugefield state on the devices.
 			 */
 			const std::vector<const hardware::buffers::SU3 *> get_buffers() const noexcept;
@@ -114,10 +104,10 @@ namespace physics {
 			 */
 			void unsmear();
 
-		  /**
-		   * Get sourcefileparameters
-		   */
-		  sourcefileparameters get_parameters_source();
+              		/**
+		         * Get sourcefileparameters
+		         */
+		        sourcefileparameters get_parameters_source();
 
 			/**
 			 * Update the halo cells of each buffer from its neighbours.
@@ -143,17 +133,6 @@ namespace physics {
 		  sourcefileparameters parameters_source;
 
 		};
-
-		/**
-		 * Print the gaugeobservables of the given gaugefield as info output.
-		 */
-		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter);
-
-		/**
-		 * Print the gaugeobservables of the given gaugefield to the given file
-		 */
-		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename);
-
 	}
 }
 
