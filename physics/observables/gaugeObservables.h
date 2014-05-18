@@ -41,23 +41,23 @@ namespace physics{
     /**
      * Measures all gauge observables according to parameter settings
      */
-    void measureGaugeObservables(physics::lattices::Gaugefield& gf, int iteration, meta::Inputparameters params);
+    void measureGaugeObservables(physics::lattices::Gaugefield * gf, int iteration);
 
     /**
      * Measures plaquette and polyakov loop and writes them to file
      */
-    void measurePlaqAndPoly(physics::lattices::Gaugefield& gf, int iter, const std::string& filename, meta::Inputparameters params);
-    void measurePlaqAndPoly(physics::lattices::Gaugefield& gf, int iter, meta::Inputparameters params);
+    void measurePlaqAndPoly(physics::lattices::Gaugefield * gf, int iter, const std::string& filename);
+    void measurePlaqAndPoly(physics::lattices::Gaugefield * gf, int iter);
 
     /**
      * Measures rectangle products of link variables and writes it to file
      */
-    void measureRectangles(physics::lattices::Gaugefield& gf, int iter, meta::Inputparameters params);
+    void measureRectangles(physics::lattices::Gaugefield * gf, int iter);
 
     /**
      * Measures transportcoefficient kappa and writes it to file
      */
-    void measureTransportcoefficientKappa(physics::lattices::Gaugefield& gaugefield, int iteration, meta::Inputparameters parameters);
+    void measureTransportcoefficientKappa(physics::lattices::Gaugefield * gaugefield, int iteration);
 
   private:
     meta::Inputparameters * parameters;

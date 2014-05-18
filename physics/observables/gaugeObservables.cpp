@@ -22,28 +22,28 @@
 
 #include "gaugeObservables.h"
 
-void physics::gaugeObservables::measureGaugeObservables(physics::lattices::Gaugefield& gaugefield, int iteration, meta::Inputparameters parameters)
+void physics::gaugeObservables::measureGaugeObservables(physics::lattices::Gaugefield * gaugefield, int iteration)
 {
-  measurePlaqAndPoly(gaugefield, iteration, parameters);
-  if ( parameters.get_measure_rectangles() ){
-    measureRectangles(gaugefield, iteration, parameters);
+  measurePlaqAndPoly(gaugefield, iteration);
+  if ( parameters->get_measure_rectangles() ){
+    measureRectangles(gaugefield, iteration);
   }
-  if ( parameters.get_measure_transportcoefficient_kappa() ) {
-    measureTransportcoefficientKappa(gaugefield, iteration, parameters);
+  if ( parameters->get_measure_transportcoefficient_kappa() ) {
+    measureTransportcoefficientKappa(gaugefield, iteration);
   }
 }
 
-void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield& gf, int iter, meta::Inputparameters params)
+void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield * gf, int iter)
 {
-	const std::string filename = meta::get_gauge_obs_file_name(params,  "");
-	measurePlaqAndPoly(gf, iter, filename, params);
+	const std::string filename = meta::get_gauge_obs_file_name(*parameters,  "");
+	measurePlaqAndPoly(gf, iter, filename);
 }
 
-void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield& gf, int iter, const std::string& filename, meta::Inputparameters params)
+void physics::gaugeObservables::measurePlaqAndPoly(physics::lattices::Gaugefield * gf, int iter, const std::string& filename)
 {
-	gf.gaugeobservables(&plaquette, &plaquette_temporal, &plaquette_spatial, &polyakov);
-
-	if ( params.get_print_to_screen() ){
+  measurePlaquette(gf);
+  measurePolyakovloop(gf);
+	if ( parameters->get_print_to_screen() ){
 	  logger.info() << iter << '\t' << plaquette << '\t' << plaquette_temporal << '\t' << plaquette_spatial << '\t' << polyakov.re << '\t' << polyakov.im << '\t' << sqrt(polyakov.re * polyakov.re + polyakov.im * polyakov.im);
 	}
 	writePlaqAndPolyToFile(iter, filename);
@@ -60,10 +60,10 @@ void physics::gaugeObservables::writePlaqAndPolyToFile(int iter,  const std::str
 	outputToFile.close();
 }
 
-void physics::gaugeObservables::measureTransportcoefficientKappa(physics::lattices::Gaugefield& gaugefield, int iteration, meta::Inputparameters parameters)
+void physics::gaugeObservables::measureTransportcoefficientKappa(physics::lattices::Gaugefield * gaugefield, int iteration)
 {
-	kappa = physics::algorithms::kappa_clover(gaugefield, parameters.get_beta());
-	writeTransportcoefficientKappaToFile(parameters.get_transportcoefficientKappaFilename(), iteration);
+	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters->get_beta());
+	writeTransportcoefficientKappaToFile(parameters->get_transportcoefficientKappaFilename(), iteration);
 }
 
 void physics::gaugeObservables::writeTransportcoefficientKappaToFileUsingOpenOutputStream(int iteration)
@@ -85,10 +85,10 @@ void physics::gaugeObservables::writeTransportcoefficientKappaToFile(std::string
 	}
 }
 
-void physics::gaugeObservables::measureRectangles(physics::lattices::Gaugefield& gf, int iteration, meta::Inputparameters parameters)
+void physics::gaugeObservables::measureRectangles(physics::lattices::Gaugefield * gf, int iteration)
 {
-	rectangles = gf.rectangles();
-	writeRectanglesToFile(iteration, parameters.get_rectanglesFilename());
+	measureRectangles(gf);
+	writeRectanglesToFile(iteration, parameters->get_rectanglesFilename());
 }
 
 void physics::gaugeObservables::writeRectanglesToFile(int iter, const std::string& filename)

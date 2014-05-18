@@ -45,6 +45,6 @@ void gaugeobservablesExecutable::printParametersToScreenAndFile()
 
 void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
 {
-  gaugeObservablesInstance.measureGaugeObservables(*gaugefield, gaugefield->get_parameters_source().trajectorynr_source, parameters);
+  gaugeObservablesInstance.measureGaugeObservables(gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
 }
 
