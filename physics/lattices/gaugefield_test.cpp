@@ -43,13 +43,14 @@ BOOST_AUTO_TEST_CASE(initialization)
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		// init hot
 		Gaugefield gf2(system, prng, true);
 
 		// init cold
 		Gaugefield gf3(system, prng, false);
-		BOOST_CHECK_CLOSE(gf3.plaquette(), 1., 0.1);
+		BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf3), 1., 0.1);
 	}
 
 	{
@@ -58,10 +59,11 @@ BOOST_AUTO_TEST_CASE(initialization)
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		// init from file
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-		BOOST_CHECK_CLOSE(gf.plaquette(), 0.57107711169452713, 0.1);
+		BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), 0.57107711169452713, 0.1);
 	}
 }
 
@@ -72,6 +74,7 @@ void test_save(bool hot) {
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
+	physics::gaugeObservables obs(&params);
 
 	Gaugefield gf(system, prng, hot);
 	gf.save("conf.test", 0);
@@ -129,9 +132,11 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, false);
-		hmc_complex pol = gf.polyakov();
+
+		hmc_complex pol = obs.measurePolyakovloop(&gf);;
 		BOOST_CHECK_CLOSE(pol.re, 1., 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0., 0.1);
 	}
@@ -141,9 +146,10 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-		hmc_complex pol = gf.polyakov();
+		hmc_complex pol = obs.measurePolyakovloop(&gf);
 		BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
 	}

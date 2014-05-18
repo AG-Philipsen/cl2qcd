@@ -31,6 +31,8 @@
 #include <fstream>
 #include "../../hardware/device.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
+#include "../observables/gaugeObservables.h"
+
 
 /**
  * Version number.
@@ -121,7 +123,8 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	delete[] gf_ildg;
 	delete[] gf_host;
 
-	hmc_float plaq = plaquette();
+	physics::gaugeObservables obs(&parameters);
+	hmc_float plaq = obs.measurePlaquette(this);
 	check_sourcefileparameters(parameters, plaq, parameters_source);
 }
 
@@ -226,7 +229,8 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 		delete host_buf;
 	}
 
-	hmc_float plaq = plaquette();
+	physics::gaugeObservables obs(&parameters);
+	hmc_float plaq = obs.measurePlaquette(this);
 
 	const size_t NSPACE = parameters.get_nspace();
 
@@ -342,79 +346,6 @@ static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, c
 	}
 }
 
-hmc_float physics::lattices::Gaugefield::plaquette() const
-{
-	hmc_float plaq, tplaq, splaq;
-	plaquette(&plaq, &tplaq, &splaq);
-	return plaq;
-}
-
-void physics::lattices::Gaugefield::plaquette(hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq) const
-{
-	// the plaquette is local to each side and then summed up
-	// for multi-device simply calculate the plaquette for each device and then sum up the devices
-
-	using hardware::buffers::Plain;
-
-	size_t num_devs = buffers.size();
-	auto params = system.get_inputparameters();
-
-	if(num_devs == 1) {
-		auto gf_dev = buffers[0];
-		auto device = gf_dev->get_device();
-
-		const Plain<hmc_float> plaq_dev(1, device);
-		const Plain<hmc_float> tplaq_dev(1, device);
-		const Plain<hmc_float> splaq_dev(1, device);
-		device->get_gaugefield_code()->plaquette_device(gf_dev, &plaq_dev, &tplaq_dev, &splaq_dev);
-
-		plaq_dev.dump(plaq);
-		tplaq_dev.dump(tplaq);
-		splaq_dev.dump(splaq);
-		*tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(params));
-		*splaq /= static_cast<hmc_float>(meta::get_splaq_norm(params));
-		*plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(params));
-	} else {
-		// trigger calculation
-		std::vector<const Plain<hmc_float>*> plaqs; plaqs.reserve(num_devs);
-		std::vector<const Plain<hmc_float>*> tplaqs; tplaqs.reserve(num_devs);
-		std::vector<const Plain<hmc_float>*> splaqs; splaqs.reserve(num_devs);
-		for(size_t i = 0; i < num_devs; ++i) {
-			auto device = buffers[i]->get_device();
-			const Plain<hmc_float>* plaq_dev = new Plain<hmc_float>(1, device);
-			const Plain<hmc_float>* tplaq_dev = new Plain<hmc_float>(1, device);
-			const Plain<hmc_float>* splaq_dev = new Plain<hmc_float>(1, device);
-			device->get_gaugefield_code()->plaquette_device(buffers[i], plaq_dev, tplaq_dev, splaq_dev);
-			plaqs.push_back(plaq_dev);
-			tplaqs.push_back(tplaq_dev);
-			splaqs.push_back(splaq_dev);
-		}
-		// collect results
-		*plaq = 0.0;
-		*splaq = 0.0;
-		*tplaq = 0.0;
-		for(size_t i = 0; i < num_devs; ++i) {
-			hmc_float tmp;
-
-			plaqs[i]->dump(&tmp);
-			*plaq += tmp;
-
-			tplaqs[i]->dump(&tmp);
-			*tplaq += tmp;
-
-			splaqs[i]->dump(&tmp);
-			*splaq += tmp;
-
-			delete plaqs[i];
-			delete tplaqs[i];
-			delete splaqs[i];
-		}
-		*plaq /= static_cast<hmc_float>(meta::get_plaq_norm(params));
-		*tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(params));
-		*splaq /= static_cast<hmc_float>(meta::get_splaq_norm(params));
-	}
-}
-
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float plaquette, sourcefileparameters& parameters_source)
 {
 	logger.info() << "Checking sourcefile parameters against inputparameters...";
@@ -492,69 +423,11 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 
 void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const
 {
-	plaquette(plaq, tplaq, splaq);
-	*pol = polyakov();
-}
-
-hmc_complex physics::lattices::Gaugefield::polyakov() const
-{
-	using hardware::buffers::Plain;
-
-	hmc_complex tmp_pol = hmc_complex_zero;
-
-	if(buffers.size() == 1) {
-		auto gf_buf = buffers[0];
-		auto device = gf_buf->get_device();
-		auto gf_code = device->get_gaugefield_code();
-
-		const Plain<hmc_complex> pol_buf(1, device);
-
-		//measure polyakovloop
-		gf_code->polyakov_device(gf_buf, &pol_buf);
-
-		//NOTE: this is a blocking call!
-		pol_buf.dump(&tmp_pol);
-
-	} else {
-		const size_t volspace = meta::get_volspace(system.get_inputparameters());
-		// calculate local part per device
-		std::vector<Plain<Matrixsu3>*> local_results;
-		local_results.reserve(buffers.size());
-		for(auto buffer: buffers) {
-			auto dev = buffer->get_device();
-			auto res_buf = new Plain<Matrixsu3>(volspace, dev);
-			dev->get_gaugefield_code()->polyakov_md_local_device(res_buf, buffer);
-			local_results.push_back(res_buf);
-		}
-
-		// merge results
-		auto main_dev = buffers.at(0)->get_device();
-		Plain<Matrixsu3> merged_buf(volspace * local_results.size(), main_dev);
-		{
-			Matrixsu3* merged_host = new Matrixsu3[merged_buf.get_elements()];
-			size_t offset = 0;
-			for(auto local_res: local_results) {
-				local_res->dump(&merged_host[offset]);
-				offset += volspace;
-			}
-			merged_buf.load(merged_host);
-			delete[] merged_host;
-		}
-
-		const Plain<hmc_complex> pol_buf(1, main_dev);
-		main_dev->get_gaugefield_code()->polyakov_md_merge_device(&merged_buf, buffers.size(), &pol_buf);
-		pol_buf.dump(&tmp_pol);
-
-		for(auto buffer: local_results) {
-			delete buffer;
-		}
-	}
-
-	auto params = system.get_inputparameters();
-	tmp_pol.re /= static_cast<hmc_float>(meta::get_poly_norm(params));
-	tmp_pol.im /= static_cast<hmc_float>(meta::get_poly_norm(params));
-
-	return tmp_pol;
+        physics::gaugeObservables obs(&system.get_inputparameters());
+	*plaq = obs.measurePlaquette(this);
+	*splaq = obs.getSpatialPlaquette();
+	*tplaq = obs.getTemporalPlaquette();
+	*pol = obs.measurePolyakovloop(this);
 }
 
 void physics::lattices::print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter)

@@ -264,6 +264,14 @@ double physics::gaugeObservables::measurePlaquette(const physics::lattices::Gaug
     {
       return plaquette;
     }
+    double physics::gaugeObservables::getSpatialPlaquette()
+    {
+      return plaquette_spatial;
+    }
+    double physics::gaugeObservables::getTemporalPlaquette()
+    {
+      return plaquette_temporal;
+    }
 
     double physics::gaugeObservables::getRectangles()
     {

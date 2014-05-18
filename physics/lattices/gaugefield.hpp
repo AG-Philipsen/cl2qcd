@@ -88,21 +88,6 @@ namespace physics {
 			void save(std::string outputfile, int number);
 
 			/**
-			 * Return plaquette value
-			 */
-			hmc_float plaquette() const;
-
-			/**
-			 * Return plaquette values
-			 */
-			void plaquette(hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq) const;
-
-			/**
-			 * Return polyakov value
-			 */
-			hmc_complex polyakov() const;
-
-			/**
 			 * Calculate plaquette and polyakov of this gaugefield.
 			 *
 			 * @param[out] plaq Storage for result of plaquette calculation

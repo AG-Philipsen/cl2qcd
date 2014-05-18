@@ -37,6 +37,7 @@ target_link_libraries(lattices
 	ildg_io
 	host_functionality
 	prng
+	observables
 )
 
 #

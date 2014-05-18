@@ -30,6 +30,8 @@
 
 #include "../lattices/util.hpp"
 
+#include "../observables/gaugeObservables.h"
+
 BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 {
 	using namespace physics::lattices;
@@ -39,16 +41,17 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		{
 			Gaugefield gf(system, prng, false);
 			Gaugemomenta gm(system);
 			gm.zero();
 
-			hmc_float ref = gf.plaquette();
+			hmc_float ref = obs.measurePlaquette(&gf);
 			gauge_force(&gm, gf);
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			BOOST_CHECK_CLOSE(gf.plaquette(), ref, 0.01);
+			BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), ref, 0.01);
 		}
 
 		{
@@ -57,7 +60,8 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 			pseudo_randomize<Gaugemomenta, ae>(&gm, 415);
 
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			BOOST_CHECK_CLOSE(gf.plaquette(), 0.80918156710730049, 0.01);
+			physics::gaugeObservables obs(&params);
+			BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), 0.80918156710730049, 0.01);
 		}
 	}
 
@@ -71,9 +75,10 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		Gaugemomenta gm(system);
 		pseudo_randomize<Gaugemomenta, ae>(&gm, 123);
 
-		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.57107711169452713, 0.0001);
+		physics::gaugeObservables obs(&params);
+		BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.32089465123266286, 0.01);
+		BOOST_REQUIRE_CLOSE(obs.measurePlaquette(&gf), 0.32089465123266286, 0.01);
 	}
 
 	{
@@ -81,23 +86,24 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
+		physics::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
 		Gaugemomenta gm(system);
 		gm.zero();
 
-		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.57107711169452713, 0.0001);
+		BOOST_REQUIRE_CLOSE(obs.measurePlaquette(&gf), 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.57107711169452713, 0.0001);
+		BOOST_REQUIRE_CLOSE(obs.measurePlaquette(&gf), 0.57107711169452713, 0.0001);
 		gauge_force(&gm, gf);
 
 		BOOST_REQUIRE_CLOSE(squarenorm(gm), 52723.299867438494, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(gf.plaquette(), 0.0060440132434446334, 0.01);
+		BOOST_REQUIRE_CLOSE(obs.measurePlaquette(&gf), 0.0060440132434446334, 0.01);
 		gauge_force(&gm, gf);
 		BOOST_REQUIRE_CLOSE(squarenorm(gm), 82900.801546488685, 0.01);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(gf.plaquette(), -0.0076685322051177783, 0.01);
+		BOOST_REQUIRE_CLOSE(obs.measurePlaquette(&gf), -0.0076685322051177783, 0.01);
 	}
 }
 

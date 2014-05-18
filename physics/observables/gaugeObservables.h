@@ -32,7 +32,7 @@ namespace physics{
 
   class gaugeObservables{
   public:
-    gaugeObservables(meta::Inputparameters * parametersIn)
+    gaugeObservables(const meta::Inputparameters * parametersIn)
       {
 	parameters = parametersIn;
       }
@@ -60,7 +60,7 @@ namespace physics{
     void measureTransportcoefficientKappa(physics::lattices::Gaugefield * gaugefield, int iteration);
 
   private:
-    meta::Inputparameters * parameters;
+    const meta::Inputparameters * parameters;
     double plaquette;
     double plaquette_temporal;
     double plaquette_spatial;
@@ -79,6 +79,8 @@ namespace physics{
 
   public:
     double getPlaquette();
+    double getSpatialPlaquette();
+    double getTemporalPlaquette();
     double getRectangles();
     hmc_complex getPolyakovloop();
 
