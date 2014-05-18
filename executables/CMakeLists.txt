@@ -45,4 +45,4 @@ target_link_libraries(executables
 	physics
 )
 
-
+add_subdirectory(tests)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# coding=utf8
 #
-# Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+# Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+# Matthias Bach, Christian Schaefer, Stefano Lottini, Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -20,9 +22,8 @@
 from subprocess import *
 import re
 import sys
-import os
 
-tolerance = 1.e-6
+tolerance = 0.1
 
 def compareFloat(reference, actual, precision):
 	return actual > reference * (1.0 - precision / 100) and actual < reference * (1.0 + precision / 100)
@@ -35,43 +36,44 @@ def main():
 	#print '%f' % float(reference.readline())
 	#print '%f' % float(reference.readline())
 
-	#rm existing rhmc_output file
-	# NOTE: the "-f" will suppress an error if the file does not exist
-	os.system('rm -f rhmc_output')
-
-	# perform RHMC with given input file
-	# open tmp file to save the output of the rhmc
-	# NOTE: stdout=PIPE does not work here, apparently no output file is created then
-	subject = Popen(['../rhmc'] + sys.argv[2:], stdout = PIPE)
-	
+	subject = Popen(['../../inverter'] + sys.argv[2:], stdout=PIPE)
 
 	for line in subject.stdout:
 		# Echo line to allow checking what's going on
 		print line,
 
+		# Now we can check what the line looks like and react on it
+		# The regexp searches for "[<timestamp>] INFO: <digits><whitespace><float>" and returns only the <float>-part.
+		# For float the scientific notation matcher from http://docs.python.org/library/re.html#re.search is used.
+		match = re.match(r"^\[\d\d:\d\d:\d\d\] INFO: \d+\s+([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)$",line)
+		if match != None:
+			matched = float(match.group(1))
+			#print 'Matched: %f' % matched
+			try:
+				refval = float(reference.readline())
+			except ValueError:
+				print "Too many values in output."
+				return 126
+			if not compareFloat(matched, refval, tolerance):
+				print "Invalid Result! Expected: %f  Real: %f (at %.1f %% tolerance)" % (refval, matched, tolerance)
+				return 127
+
+	#print '--'
+
 	subject.wait()
-	if subject.returncode == 0 or subject.returncode == -11: # yes, it's kind of dirty to ignore -11 like that
+	if subject.returncode == 0:
 		#print "Program completed successfully"
 		pass
 	else:
 		print "Program terminated with exit code %i" % ( subject.returncode )
 		return subject.returncode
 
-	#now the value of interest is in the 1st row of "rhmc_output"
-	candidate = open('rhmc_output')
-
-	#get reference value, this is given in the first line of the reference file
-	refval = float(reference.readline())
-	val = float(candidate.readline().split()[1])
-	candidate.close()
-	reference.close()
-
-	if not compareFloat(val, refval, tolerance):
-		print "Invalid Result! Expected: %.16f  Real: %.16f (at %.1e %% tolerance)" % (refval, val, tolerance)
-		return 127
+	# check whether reference has been used up
+	if reference.readline() != '':
+		print "Not enough values have been reproduced."
+		return 124
 
 	# no check failed
-	print "Test done! No errors detected!"
 	return 0
 
 if __name__ == '__main__':

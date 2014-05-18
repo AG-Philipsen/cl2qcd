@@ -1,4 +1,4 @@
-# Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+# Copyright 2012, 2013, 2014 Lars Zeidlewicz, Christopher Pinke,
 # Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
 #
 # This file is part of CL2QCD.
@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
-message(STATUS "Building Tests")
+message(STATUS "Building executables tests")
 
 find_package(PythonInterp REQUIRED)
 
@@ -26,7 +26,6 @@ configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)

@@ -221,9 +221,6 @@ if(BUILD_MICROBENCHMARKS)
 	add_subdirectory(microbenchmarks)
 endif(BUILD_MICROBENCHMARKS)
 
-# Take care of unit tests
-add_subdirectory(tests)
-
 # Benchmarking
 option(BUILD_BENCHMARKS "Build benchmarks" OFF)
 if(BUILD_BENCHMARKS)

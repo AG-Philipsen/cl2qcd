@@ -36,7 +36,7 @@ def main():
 	reference = open(sys.argv[1])
 	refval = float(reference.readline())
 
-	subject = Popen(['../heatbath'] + sys.argv[2:])
+	subject = Popen(['../../heatbath'] + sys.argv[2:])
 
 	subject.wait()
 	if subject.returncode == 0:

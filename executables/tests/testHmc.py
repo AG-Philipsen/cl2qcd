@@ -44,7 +44,7 @@ def main():
 	# perform HMC with given input file
 	# open tmp file to save the output of the hmc
 	# NOTE: stdout=PIPE does not work here, apparently no output file is created then
-	subject = Popen(['../hmc'] + sys.argv[2:], stdout = PIPE)
+	subject = Popen(['../../hmc'] + sys.argv[2:], stdout = PIPE)
 
 	for line in subject.stdout:
 		# Echo line to allow checking what's going on
