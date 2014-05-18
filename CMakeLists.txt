@@ -79,7 +79,7 @@ if( LIBXML2_DEFINITIONS )
 	add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-# requrie 1.48 as boost-regex of 1.46 can't be compiled with c++11-enabled g++-4.7
+# require 1.48 as boost-regex of 1.46 can't be compiled with c++11-enabled g++-4.7
 find_package(Boost 1.48.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
@@ -205,6 +205,9 @@ if(NOT CMAKE_HOST_APPLE)
 endif(NOT CMAKE_HOST_APPLE)
 
 add_library(einhard einhard/einhard.cpp)
+
+# Boost test
+add_subdirectory(boost)
 
 # Random number generation lib
 add_subdirectory(ranlux)

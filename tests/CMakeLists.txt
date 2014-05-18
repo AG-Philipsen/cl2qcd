@@ -27,14 +27,6 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-add_executable(boost_test boost_test.cpp)
-target_link_libraries(boost_test
-	${Boost_LIBRARIES}
-)
-add_test(boost_ARGC_1 boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_1)
-add_test(boost_ARGC_2 boost_test ${CMAKE_CURRENT_SOURCE_DIR} --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2)
-add_test(boost_ARGV boost_test "firstArgument" "secondArgument" "thirdArgument" --run_test=BOOST_ARGUMENTS/BOOST_ARGV )
-
 add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend
 	optimal
