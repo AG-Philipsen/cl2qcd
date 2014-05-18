@@ -557,44 +557,6 @@ hmc_complex physics::lattices::Gaugefield::polyakov() const
 	return tmp_pol;
 }
 
-hmc_float physics::lattices::Gaugefield::rectangles() const
-{
-	// the rectangles are local to each site and then summed up
-	// for multi-device simply calculate the plaquette for each device and then sum up the devices
-
-	using hardware::buffers::Plain;
-
-	size_t num_devs = buffers.size();
-	auto params = system.get_inputparameters();
-
-	hmc_float rect;
-
-	if(num_devs == 1) {
-		auto gf_dev = buffers[0];
-		gf_dev->get_device()->get_gaugefield_code()->gaugeobservables_rectangles(gf_dev, &rect);
-	} else {
-		// trigger calculation
-		std::vector<const Plain<hmc_float>*> rects; rects.reserve(num_devs);
-		for(size_t i = 0; i < num_devs; ++i) {
-			auto device = buffers[i]->get_device();
-			const Plain<hmc_float>* rect_dev = new Plain<hmc_float>(1, device);
-			device->get_gaugefield_code()->rectangles_device(buffers[i], rect_dev);
-			rects.push_back(rect_dev);
-		}
-		// collect results
-		rect = 0.0;
-		for(size_t i = 0; i < num_devs; ++i) {
-			hmc_float tmp;
-			rects[i]->dump(&tmp);
-			rect += tmp;
-
-			delete rects[i];
-		}
-	}
-
-	return rect;
-}
-
 void physics::lattices::print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter)
 {
 	hmc_float plaq;

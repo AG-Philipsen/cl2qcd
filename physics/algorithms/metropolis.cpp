@@ -2,7 +2,7 @@
  * Implementation of the metropolis algorithm
  *
  * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
- * Copyright (c) 2012-2013 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2012-2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
  * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
@@ -28,6 +28,7 @@
 #include "../lattices/util.hpp"
 #include "../../meta/util.hpp"
 #include <cmath>
+#include "../observables/gaugeObservables.h"
 
 static void print_info_debug(const meta::Inputparameters& params, std::string metropolis_part, hmc_float value, bool info=true);
 
@@ -245,6 +246,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	hmc_float s_new = 0.;
 
 	//Gauge-Part
+	physics::gaugeObservables gaugeObs(&params);
 	hmc_float tplaq, splaq, plaq;
 	hmc_float tplaq_new, splaq_new, plaq_new;
 	hmc_float rect_new = 0.;
@@ -257,8 +259,8 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	//plaq has to be divided by the norm-factor to get s_gauge
 	hmc_float factor = 1. / (meta::get_plaq_norm(params));
 	if(meta::get_use_rectangles(params) == true) {
-		rect = gf.rectangles();
-		rect_new = new_u.rectangles();
+	        rect = gaugeObs.measureRectangles(&gf);
+		rect_new = gaugeObs.measureRectangles(&new_u);
 		hmc_float c0 = meta::get_c0(params);
 		hmc_float c1 = meta::get_c1(params);
 		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1 * ( rect - rect_new )  );

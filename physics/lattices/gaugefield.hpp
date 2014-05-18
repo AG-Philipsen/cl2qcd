@@ -113,14 +113,6 @@ namespace physics {
 			void gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const;
 
 			/**
-			 * Calculate rectangles of this gaugefield
-			 *
-			 * @param[in] gf gaugefield to measure on
-			 * @param[out] plaq Storage for result of rectangles calculation
-			 */
-			hmc_float rectangles() const;
-
-			/**
 			 * Get the buffers containing the gaugefield state on the devices.
 			 */
 			const std::vector<const hardware::buffers::SU3 *> get_buffers() const noexcept;

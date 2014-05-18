@@ -102,7 +102,7 @@ void physics::gaugeObservables::writeRectanglesToFile(int iter, const std::strin
 	outputToFile.close();
 }
 
-    void physics::gaugeObservables::measurePlaquette(physics::lattices::Gaugefield * gaugefield)
+double physics::gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * gaugefield)
     {
 	// the plaquette is local to each side and then summed up
 	// for multi-device simply calculate the plaquette for each device and then sum up the devices
@@ -162,9 +162,11 @@ void physics::gaugeObservables::writeRectanglesToFile(int iter, const std::strin
 	plaquette_temporal /= static_cast<hmc_float>(meta::get_tplaq_norm(*parameters));
 	plaquette_spatial /= static_cast<hmc_float>(meta::get_splaq_norm(*parameters));
 	plaquette  /= static_cast<hmc_float>(meta::get_plaq_norm(*parameters));
+
+	return plaquette;
     }
 
-    void physics::gaugeObservables::measureRectangles(physics::lattices::Gaugefield * gaugefield)
+    double physics::gaugeObservables::measureRectangles(const physics::lattices::Gaugefield * gaugefield)
     {
       // the rectangles are local to each site and then summed up
       // for multi-device simply calculate the plaquette for each device and then sum up the devices
@@ -199,9 +201,10 @@ void physics::gaugeObservables::writeRectanglesToFile(int iter, const std::strin
 	  delete rects[i];
 	}
       }	
+      return rectangles;
     }
 
-    void physics::gaugeObservables::measurePolyakovloop(physics::lattices::Gaugefield * gaugefield)
+    hmc_complex physics::gaugeObservables::measurePolyakovloop(const physics::lattices::Gaugefield * gaugefield)
     {
       using hardware::buffers::Plain;
 
@@ -253,6 +256,8 @@ void physics::gaugeObservables::writeRectanglesToFile(int iter, const std::strin
       
       polyakov.re /= static_cast<hmc_float>(meta::get_poly_norm(*parameters));
       polyakov.im /= static_cast<hmc_float>(meta::get_poly_norm(*parameters));
+
+      return polyakov;
     }
 
     double physics::gaugeObservables::getPlaquette()

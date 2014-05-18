@@ -31,6 +31,8 @@
 #include "../../meta/type_ops.hpp"
 #include <stdexcept>
 
+#include "../observables/gaugeObservables.h"
+
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace physics::lattices;
@@ -104,9 +106,10 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
+	physics::gaugeObservables obs(&params);
 
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-	BOOST_CHECK_THROW(gf.rectangles(), std::logic_error);
+	BOOST_CHECK_THROW(obs.measureRectangles(&gf), std::logic_error);
 
 	const char * _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
 	meta::Inputparameters params2(3, _params2);
@@ -114,7 +117,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	physics::PRNG prng2(system2);
 
 	Gaugefield gf2(system2, prng2, std::string(SOURCEDIR) + "/tests/conf.00200");
-	BOOST_CHECK_CLOSE(gf2.rectangles(), 1103.2398401620451, 0.1);
+	BOOST_CHECK_CLOSE(obs.measureRectangles(&gf2), 1103.2398401620451, 0.1);
 }
 
 BOOST_AUTO_TEST_CASE(polyakov)
