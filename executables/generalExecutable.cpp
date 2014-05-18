@@ -57,7 +57,7 @@ void generalExecutable::printProfilingDataToFile()
 	  }
 }
 
-generalExecutable::generalExecutable(int argc, const char* argv[]) : parameters(argc, argv)
+generalExecutable::generalExecutable(int argc, const char* argv[]) : parameters(argc, argv), gaugeObservablesInstance(&parameters)
 {
 	totalRuntimeOfExecutable.reset();
 	initializationTimer.reset();
