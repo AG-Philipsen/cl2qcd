@@ -138,3 +138,34 @@ BOOST_AUTO_TEST_CASE( RECTANGLES_3 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( POLYAKOVLOOP  )
+
+class PolyakovloopTester : public GaugeObservablesTester
+{
+public:
+  PolyakovloopTester(int argc, const char** argv, hmc_complex referenceValue):
+    GaugeObservablesTester(argc, argv)
+  {
+    double testPrecision = 1e-8;
+    GaugeObservablesTester::gaugeObservables->measurePolyakovloop(GaugeObservablesTester::gaugefield);
+    hmc_complex poly = GaugeObservablesTester::gaugeObservables->getPolyakovloop();
+    BOOST_CHECK_CLOSE(poly.re, referenceValue.re, testPrecision);
+    BOOST_CHECK_CLOSE(poly.im, referenceValue.im, testPrecision);
+  }
+};
+
+BOOST_AUTO_TEST_CASE( POLYAKOVLOOP_1 )
+{
+  hmc_complex referenceValue = {1., 0.};
+  const char * _params[] = {"foo", "--startcondition=cold"};
+  PolyakovloopTester(2, _params, referenceValue);
+}
+
+BOOST_AUTO_TEST_CASE( POLYAKOVLOOP_2 )
+{
+  hmc_complex referenceValue = {-0.11349672123636857,0.22828243566855227};
+  const char * _params[] = {"foo", "--startcondition=continue", "--sourcefile=conf.00200", "--nt=4"};
+  PolyakovloopTester(4, _params, referenceValue);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
