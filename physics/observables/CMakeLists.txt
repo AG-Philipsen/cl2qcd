@@ -32,6 +32,7 @@ target_link_libraries(observables
 	hardware
 	host_functionality
 	ildg_io
+	lattices
 )
 
 #
@@ -40,5 +41,5 @@ target_link_libraries(observables
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
-add_unit_test_withLibraries(physics::gaugeObservables gaugeObservables_test meta hardware lattices prng)
+add_unit_test_withLibraries(physics::gaugeObservables gaugeObservables_test observables)
 
