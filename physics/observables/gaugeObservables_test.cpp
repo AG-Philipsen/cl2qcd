@@ -43,37 +43,65 @@ BOOST_AUTO_TEST_CASE( BUILD_1 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+class GaugeObservablesTester
+{
+public:
+  GaugeObservablesTester(int argc, const char** argv)
+  {
+    parameters = new meta::Inputparameters(argc, argv);
+    gaugeObservables = new physics::gaugeObservables(parameters);
+    system = new hardware::System(*parameters);
+    prng = new physics::PRNG(*system);
+    gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+
+    //  GaugeObservablesTester::gaugeObservables->measurePlaquette(GaugeObservablesTester::gaugefield);
+    logger.info() << GaugeObservablesTester::gaugeObservables->getPlaquette();
+  }
+  ~GaugeObservablesTester()
+  {
+    gaugeObservables= 0;
+    system = 0;
+    prng = 0;
+    gaugefield = 0;
+    parameters = 0;
+  }
+
+  meta::Inputparameters * parameters;
+  physics::gaugeObservables * gaugeObservables;
+  physics::lattices::Gaugefield * gaugefield;
+private:
+  hardware::System *  system;
+  physics::PRNG * prng;
+};
+
 BOOST_AUTO_TEST_SUITE( PLAQUETTE  )
+
+class PlaquetteTester : public GaugeObservablesTester
+{
+public:
+  PlaquetteTester(int argc, const char** argv, double referenceValue):
+    GaugeObservablesTester(argc, argv)
+  {
+    double testPrecision = 1e-8;
+    GaugeObservablesTester::gaugeObservables->measurePlaquette(GaugeObservablesTester::gaugefield);
+    logger.info() << GaugeObservablesTester::gaugeObservables->getPlaquette();
+
+    BOOST_CHECK_CLOSE(GaugeObservablesTester::gaugeObservables->getPlaquette(), referenceValue, testPrecision);
+  }
+};
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 {
+  double referenceValue = 1.;
   const char * _params[] = {"foo", "--startcondition=cold"};
-  meta::Inputparameters params(2, _params);
-
-  physics::gaugeObservables tester(&params);
-  hardware::System system(params);
-  physics::PRNG prng(system);
-  physics::lattices::Gaugefield gaugefield(system, prng);
-
-  tester.measurePlaquette(&gaugefield);
-  BOOST_CHECK_CLOSE(tester.getPlaquette(), 1., 1e-8);
+  PlaquetteTester(2, _params, referenceValue);
 }
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 {
   double referenceValue = 0.57107711169452713;
-  double testPrecision = 1e-8;
-
   const char * _params[] = {"foo", "--startcondition=continue", "--sourcefile=conf.00200", "--nt=4"};
-  meta::Inputparameters params(4, _params);
-
-  physics::gaugeObservables tester(&params);
-  hardware::System system(params);
-  physics::PRNG prng(system);
-  physics::lattices::Gaugefield gaugefield(system, prng);
-
-  tester.measurePlaquette(&gaugefield);
-  BOOST_CHECK_CLOSE(tester.getPlaquette(), referenceValue, testPrecision);
+  PlaquetteTester(4, _params, referenceValue);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
