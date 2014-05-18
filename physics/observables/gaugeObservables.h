@@ -1,8 +1,8 @@
-#include "./lattices/gaugefield.hpp"
+#include "../lattices/gaugefield.hpp"
 #include <fstream>
 #include <cmath>
-#include "../meta/inputparameters.hpp"
-#include "algorithms/kappa_clover.hpp"
+#include "../../meta/inputparameters.hpp"
+#include "../algorithms/kappa_clover.hpp"
 
 namespace physics{
 

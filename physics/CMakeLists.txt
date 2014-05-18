@@ -32,12 +32,12 @@ target_link_libraries(prng
 
 add_library(physics
 	sources.cpp
-	gaugeObservables.cpp
 )
 add_modules(physics
 	lattices
 	fermionmatrix
 	algorithms
+	observables
 )
 target_link_libraries(physics
 	prng

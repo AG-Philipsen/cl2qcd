@@ -38,7 +38,7 @@
 #include "../hardware/system.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 #include "../physics/prng.hpp"
-#include "../physics/gaugeObservables.h"
+#include "../physics/observables/gaugeObservables.h"
 
 class generalExecutable
 {
