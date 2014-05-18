@@ -35,10 +35,6 @@ add_test(boost_ARGC_1 boost_test --run_test=BOOST_ARGUMENTS/BOOST_ARGC_1)
 add_test(boost_ARGC_2 boost_test ${CMAKE_CURRENT_SOURCE_DIR} --run_test=BOOST_ARGUMENTS/BOOST_ARGC_2)
 add_test(boost_ARGV boost_test "firstArgument" "secondArgument" "thirdArgument" --run_test=BOOST_ARGUMENTS/BOOST_ARGV )
 
-add_executable(openclCompiler opencl_compiler.cpp ../hardware/opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
-target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
-add_test(OpenclCompiler openclCompiler)
-
 add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend
 	optimal
