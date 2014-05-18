@@ -28,31 +28,6 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 
-add_executable(geometry geometry.cpp)
-target_link_libraries(geometry
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(geometry geometry)
-
-add_executable(gaugefield_convert gaugefield_convert.cpp)
-target_link_libraries(gaugefield_convert
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Gaugefield_Conversion gaugefield_convert)
-
-add_executable(calc_staple Calc_staple_test.cpp)
-target_link_libraries(calc_staple
-	optimal
-	${Boost_LIBRARIES}
-)
-
-add_test(Calc_staple_1_CPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=false)
-add_test(Calc_staple_1_CPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=true)
-add_test(Calc_staple_1_GPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=false)
-add_test(Calc_staple_1_GPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=true)
-
 add_executable(localQ local_Q_test.cpp)
 target_link_libraries(localQ
 	optimal

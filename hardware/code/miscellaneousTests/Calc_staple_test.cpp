@@ -41,7 +41,9 @@ protected:
 	};
 public:
 	Code(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
-		fill_kernels();
+	  logger.info() << "init code";
+	  fill_kernels();
+	  logger.info() << "code done";
 	};
 	~Code() {
 		clear_kernels();
@@ -90,7 +92,9 @@ void Dummyfield::fill_buffers()
 
 void Code::fill_kernels()
 {
-	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "../tests/staple_test.cl";
+  logger.info() << "create Kernel";
+	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "../hardware/code/miscellaneousTests/staple_test.cl";
+	logger.info() << "done";
 }
 
 void Dummyfield::clear_buffers()
@@ -107,6 +111,7 @@ void Code::clear_kernels()
 
 void Code::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls)
 {
+  logger.info() << "call kernel";
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
