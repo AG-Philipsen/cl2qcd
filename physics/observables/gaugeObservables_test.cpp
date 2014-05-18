@@ -53,9 +53,6 @@ public:
     system = new hardware::System(*parameters);
     prng = new physics::PRNG(*system);
     gaugefield = new physics::lattices::Gaugefield(*system, *prng);
-
-    //  GaugeObservablesTester::gaugeObservables->measurePlaquette(GaugeObservablesTester::gaugefield);
-    logger.info() << GaugeObservablesTester::gaugeObservables->getPlaquette();
   }
   ~GaugeObservablesTester()
   {
@@ -84,8 +81,6 @@ public:
   {
     double testPrecision = 1e-8;
     GaugeObservablesTester::gaugeObservables->measurePlaquette(GaugeObservablesTester::gaugefield);
-    logger.info() << GaugeObservablesTester::gaugeObservables->getPlaquette();
-
     BOOST_CHECK_CLOSE(GaugeObservablesTester::gaugeObservables->getPlaquette(), referenceValue, testPrecision);
   }
 };
@@ -102,6 +97,43 @@ BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
   double referenceValue = 0.57107711169452713;
   const char * _params[] = {"foo", "--startcondition=continue", "--sourcefile=conf.00200", "--nt=4"};
   PlaquetteTester(4, _params, referenceValue);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( RECTANGLES  )
+
+class RectanglesTester : public GaugeObservablesTester
+{
+public:
+  RectanglesTester(int argc, const char** argv, double referenceValue):
+    GaugeObservablesTester(argc, argv)
+  {
+    double testPrecision = 1e-8;
+    GaugeObservablesTester::gaugeObservables->measureRectangles(GaugeObservablesTester::gaugefield);
+    BOOST_CHECK_CLOSE(GaugeObservablesTester::gaugeObservables->getRectangles(), referenceValue, testPrecision);
+  }
+};
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
+{
+  double referenceValue = 1.;
+  const char * _paramsWithWrongGaugeAction[] = {"foo", "--startcondition=cold", "--gaugeact=wilson"};
+  BOOST_REQUIRE_THROW(RectanglesTester(3, _paramsWithWrongGaugeAction, referenceValue), std::logic_error);
+}
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
+{
+  double referenceValue = 6144.;
+  const char * _params[] = {"foo", "--startcondition=cold", "--gaugeact=tlsym"};
+  RectanglesTester(3, _params, referenceValue);
+}
+
+BOOST_AUTO_TEST_CASE( RECTANGLES_3 )
+{
+  double referenceValue = 1103.2398401620451;
+  const char * _params[] = {"foo", "--startcondition=continue", "--sourcefile=conf.00200", "--nt=4", "--gaugeact=tlsym"};
+  RectanglesTester(5, _params, referenceValue);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

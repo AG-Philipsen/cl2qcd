@@ -83,9 +83,13 @@ namespace physics{
       return plaquette;
     }
 
+    double getRectangles()
+    {
+      return rectangles;
+    }
+
     void measurePlaquette(physics::lattices::Gaugefield * gaugefield)
     {
-      //      void physics::lattices::Gaugefield::plaquette(hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq) const
 	// the plaquette is local to each side and then summed up
 	// for multi-device simply calculate the plaquette for each device and then sum up the devices
 
@@ -105,9 +109,6 @@ namespace physics{
 		plaq_dev.dump(&plaquette);
 		tplaq_dev.dump(&plaquette_temporal);
 		splaq_dev.dump(&plaquette_spatial);
-		plaquette_temporal /= static_cast<hmc_float>(meta::get_tplaq_norm(*parameters));
-		plaquette_spatial /= static_cast<hmc_float>(meta::get_splaq_norm(*parameters));
-		plaquette  /= static_cast<hmc_float>(meta::get_plaq_norm(*parameters));
 	} else {
 		// trigger calculation
 		std::vector<const Plain<hmc_float>*> plaqs; plaqs.reserve(num_devs);
@@ -143,10 +144,47 @@ namespace physics{
 			delete tplaqs[i];
 			delete splaqs[i];
 		}
-		plaquette_temporal /= static_cast<hmc_float>(meta::get_tplaq_norm(*parameters));
-		plaquette_spatial /= static_cast<hmc_float>(meta::get_splaq_norm(*parameters));
-		plaquette  /= static_cast<hmc_float>(meta::get_plaq_norm(*parameters));
 	}
+	plaquette_temporal /= static_cast<hmc_float>(meta::get_tplaq_norm(*parameters));
+	plaquette_spatial /= static_cast<hmc_float>(meta::get_splaq_norm(*parameters));
+	plaquette  /= static_cast<hmc_float>(meta::get_plaq_norm(*parameters));
+    }
+
+    void measureRectangles(physics::lattices::Gaugefield * gaugefield)
+    {
+      // the rectangles are local to each site and then summed up
+      // for multi-device simply calculate the plaquette for each device and then sum up the devices
+      
+      using hardware::buffers::Plain;
+      
+      auto gaugefieldBuffers = gaugefield->get_buffers();
+      size_t num_devs = gaugefieldBuffers.size();
+      
+      if(num_devs == 1) {
+	auto device = gaugefieldBuffers[0]->get_device();
+	const Plain<hmc_float> rect_dev(1, device);
+	device->get_gaugefield_code()->rectangles_device(gaugefieldBuffers[0], &rect_dev);
+	rect_dev.dump(&rectangles);
+      } else {
+	// trigger calculation
+	std::vector<const Plain<hmc_float>*> rects;
+	rects.reserve(num_devs);
+	for(size_t i = 0; i < num_devs; ++i) {
+	  auto device = gaugefieldBuffers[i]->get_device();
+	  const Plain<hmc_float>* rect_dev = new Plain<hmc_float>(1, device);
+	  device->get_gaugefield_code()->rectangles_device(gaugefieldBuffers[i], rect_dev);
+	  rects.push_back(rect_dev);
+	}
+	// collect results
+	rectangles = 0.0;
+	for(size_t i = 0; i < num_devs; ++i) {
+	  hmc_float tmp;
+	  rects[i]->dump(&tmp);
+	  rectangles += tmp;
+	  
+	  delete rects[i];
+	}
+      }	
     }
   };
 }
