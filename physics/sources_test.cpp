@@ -26,7 +26,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "sources.hpp"
-#include "../tests/test_util_staggered.h"
+#include "../hardware/code/test_util_staggered.h"
 #include <sstream>
 
 void test_sources(std::string type, int num_sources)

@@ -519,8 +519,8 @@ BOOST_AUTO_TEST_SUITE_END()
 #include "molecular_dynamics.hpp"
 #include "spinors_staggered.hpp"
 
-#include "../../tests/test_util.h"
-#include "../../tests/test_util_staggered.h"
+#include "test_util.h"
+#include "test_util_staggered.h"
 
 class TestMolecularDynamics {
 

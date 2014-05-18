@@ -42,8 +42,8 @@
 #define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS_STAGGERED
 
 #include "SpinorStaggeredTester.hpp"
-#include "../../tests/Kolmogorov_Smirnov.h"
-#include "../../tests/Normal_RNG_tests.h"
+#include "Kolmogorov_Smirnov.h"
+#include "Normal_RNG_tests.h"
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 

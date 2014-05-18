@@ -32,8 +32,8 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "../../tests/test_util.h"
-#include "../../tests/test_util_staggered.h"
+#include "test_util.h"
+#include "test_util_staggered.h"
 
 void fill_sf_with_one(su3vec * sf_in, int size)
 {

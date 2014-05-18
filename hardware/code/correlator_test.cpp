@@ -33,7 +33,7 @@
 #include <boost/test/unit_test.hpp>
 
 //some functionality
-#include "../../tests/test_util.h"
+#include "test_util.h"
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
