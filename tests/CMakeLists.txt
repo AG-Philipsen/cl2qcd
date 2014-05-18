@@ -27,12 +27,6 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-add_executable(su2su3extend su2su3extend.cpp)
-target_link_libraries(su2su3extend
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Su2su3extend su2su3extend)
 
 add_executable(geometry geometry.cpp)
 target_link_libraries(geometry

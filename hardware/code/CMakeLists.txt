@@ -52,6 +52,8 @@ target_link_libraries(code
 # Definition of tests
 #
 
+add_subdirectory(miscellaneousTests)
+
 # default random number seed
 configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
