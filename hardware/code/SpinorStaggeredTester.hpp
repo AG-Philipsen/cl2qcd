@@ -36,6 +36,10 @@ class SpinorStaggeredTester : public KernelTester {
 public:
 	SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
 			       int numberOfValues = 1, int typeOfComparision = 1);
+	//The following constructor is used only for force tests where one inherits from MolecularDynamicsTester
+	//and from this class at the same time (to avoid that system, device and parameters are created twice)
+	SpinorStaggeredTester(meta::Inputparameters * parameters, const hardware::System * system,
+			      hardware::Device * device);
 	virtual ~SpinorStaggeredTester();
 	
 protected:
@@ -64,6 +68,7 @@ protected:
 	hmc_complex alpha_host;
 	hmc_complex beta_host;
 	int iterations;
+	bool allocatedObjects; //Take trace if system, device, inputparameters are allocated
 	
 	//These methods are used to produce files for the Reference Code (D'Elia et al)
 	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
@@ -73,6 +78,7 @@ protected:
 
 private:
 	su3vec * inputfield;
+	void setMembers();
 };
 
 

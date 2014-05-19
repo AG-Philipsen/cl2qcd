@@ -25,15 +25,9 @@
 #include "spinors.hpp" //this is for get_spinorfieldsize, get_eoprec_spinorfieldsize
 
 
-SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
-     KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
-{
-	code = device->get_spinor_staggered_code();
-	prng = new physics::PRNG(*system);
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-	inputfield = NULL;
-	
+void SpinorStaggeredTester::setMembers(){
 	//todo: some of these could also be put into the specific child-classes where they are actually used.
+	inputfield = NULL;
 	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
 	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
 	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
@@ -44,10 +38,33 @@ SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string
 	iterations = parameters->get_integrationsteps(0);
 }
 
+SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
+					      int numberOfValues, int typeOfComparision) :
+     KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
+{
+	code = device->get_spinor_staggered_code();
+	prng = new physics::PRNG(*system);
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+	allocatedObjects = true;
+	setMembers();
+}
+
+SpinorStaggeredTester::SpinorStaggeredTester(meta::Inputparameters * parameters, const hardware::System * system,
+					     hardware::Device * device) : 
+      KernelTester(parameters, system, device), allocatedObjects(false)
+{
+	setMembers();
+	code = device->get_spinor_staggered_code();
+}
+
 SpinorStaggeredTester::~SpinorStaggeredTester()
 {
-	delete doubleBuffer;
-	delete prng;
+	if(allocatedObjects){
+		delete doubleBuffer;
+ 		delete prng;
+	}
+	doubleBuffer = NULL;
+	prng = NULL;
 	code = NULL;
 	if(inputfield != NULL)
 	  delete[] inputfield;
