@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	  physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
 	  
 	  //This configuration for the Ref.Code is the same as for example dks_input_5
-	  Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	  Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	  Staggeredfield_eo b(system);
 	  std::vector<Staggeredfield_eo*> out;
 	  for(uint i=0; i<sigma.size(); i++)
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	  physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
 	  
 	  //This configuration for the Ref.Code is the same as for example dks_input_5
-	  Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	  Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	  Staggeredfield_eo b(system);
 	  std::vector<Staggeredfield_eo*> out;
 	  for(uint i=0; i<sigma.size(); i++)
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	Staggeredfield_eo b(system);
 	std::vector<Staggeredfield_eo*> out;
 	for(uint i=0; i<sigma.size(); i++)
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	Staggeredfield_eo b(system);
 	std::vector<Staggeredfield_eo*> out;
 	for(uint i=0; i<sigma.size(); i++)
