@@ -161,7 +161,7 @@ void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
 						coord[3] = z;
 						nspace =  get_nspace(coord, *parameters);
 						global_pos = get_global_pos(nspace, t, *parameters);
-						if (global_pos > size)
+						if (global_pos >= size)
 							break;
 
 						parityOfSite = (x + y + z + t) % 2 == 0;
@@ -343,3 +343,84 @@ void SpinorTester::fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, c
 	delete sf_in1;
 	delete sf_in2;
 }
+
+void SpinorTester::fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2)
+{
+	spinor * sf_in1;
+	spinor * sf_in2;
+	sf_in1 = new spinor[spinorfieldEvenOddElements];
+	sf_in2 = new spinor[spinorfieldEvenOddElements];
+	BOOST_REQUIRE(sf_in1);
+	BOOST_REQUIRE(sf_in2);
+	
+	fillTwoSpinorfieldsDependingOnParity(sf_in1, sf_in2, spinorfieldEvenOddElements);
+	
+	in1->load(sf_in1);
+	in2->load(sf_in2);
+		
+	delete sf_in1;
+	delete sf_in2;
+}
+
+static spinor fillSpinorWithNumber(hmc_complex content)
+{
+	spinor in;
+	in.e0.e0 = content;
+	in.e0.e1 = content;
+	in.e0.e2 = content;
+	in.e1.e0 = content;
+	in.e1.e1 = content;
+	in.e1.e2 = content;
+	in.e2.e0 = content;
+	in.e2.e1 = content;
+	in.e2.e2 = content;
+	in.e3.e0 = content;
+	in.e3.e1 = content;
+	in.e3.e2 = content;
+	return in;
+}
+
+void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * in2, int size)
+{
+		int x, y, z, t;
+		hmc_complex content;
+		int coord[4];
+		bool parityOfSite;
+		int nspace;
+		int global_pos;
+		int ns, nt;
+		
+		ns = parameters->get_nspace();
+		nt = parameters->get_ntime();
+
+		for (x = 0; x < ns; x++) {
+			for (y = 0; y < ns; y++) {
+				for (z = 0; z < ns; z++) {
+					for (t = 0; t < nt; t++) {
+						coord[0] = t;
+						coord[1] = x;
+						coord[2] = y;
+						coord[3] = z;
+						nspace =  get_nspace(coord, *parameters);
+						global_pos = get_global_pos(nspace, t, *parameters);
+						if (global_pos >= size)
+							break;
+
+						parityOfSite = (x + y + z + t) % 2 == 0;
+						if (parityOfSite) 
+						{
+							in1[global_pos] =fillSpinorWithNumber( hmc_complex_one );
+							in2[global_pos] =fillSpinorWithNumber( hmc_complex_zero );
+						}
+						else
+						{
+							in1[global_pos] =fillSpinorWithNumber( hmc_complex_zero );
+							in2[global_pos] =fillSpinorWithNumber( hmc_complex_one );
+						}
+						
+					}
+				}
+			}
+		}
+		return;
+	}

@@ -44,6 +44,8 @@ protected:
 	void fill_with_one(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);
 	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();	
+	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
+	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
 	void fill_with_one_eo(spinor * in, int size, bool eo);
 	hmc_float count_sf(spinor * in, int size);
 	hmc_float calc_var(hmc_float in, hmc_float mean);
