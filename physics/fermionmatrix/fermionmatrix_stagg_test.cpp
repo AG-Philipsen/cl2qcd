@@ -102,7 +102,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		FERMIONMATRIX matrix2(system, 1.);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);
@@ -165,7 +165,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);

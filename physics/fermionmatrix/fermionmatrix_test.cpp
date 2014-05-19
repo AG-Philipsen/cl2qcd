@@ -120,7 +120,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		physics::PRNG prng(system);
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -168,7 +168,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		physics::PRNG prng(system);
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 

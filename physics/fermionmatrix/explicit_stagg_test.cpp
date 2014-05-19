@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		physics::PRNG prng(system);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);
