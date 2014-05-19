@@ -98,16 +98,22 @@ namespace physics {
 			 * Creates a backup which can be restored via the unsmear command.
 			 */
 			void smear();
+			void smear() const ;
 
 			/**
 			 * Restore the unsmeared gaugefield from the backup created before smearing.
 			 */
 			void unsmear();
+			void unsmear() const;
 
               		/**
 		         * Get sourcefileparameters
 		         */
 		        sourcefileparameters get_parameters_source();
+		        sourcefileparameters get_parameters_source() const
+		  {
+		    return parameters_source;
+		  }
 
 			/**
 			 * Update the halo cells of each buffer from its neighbours.
@@ -115,6 +121,16 @@ namespace physics {
 			 * On a single device this will be a no-op.
 			 */
 			void update_halo() const;
+
+		  const  physics::PRNG * getPrng() const 
+		  {
+		    return &prng;
+		  }
+
+		  const hardware::System * getSystem() const
+		  {
+		    return &system;
+		  }
 
 		private:
 			hardware::System const& system;

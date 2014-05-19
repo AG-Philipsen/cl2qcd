@@ -40,7 +40,7 @@ namespace algorithms {
  *
  * TODO make gaugefield a const-ref
  */
-void perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system);
+void perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, const physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system);
 
 }
 

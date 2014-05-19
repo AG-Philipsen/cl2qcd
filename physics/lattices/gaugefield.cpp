@@ -514,6 +514,16 @@ void physics::lattices::Gaugefield::smear()
 	}
 }
 
+void physics::lattices::Gaugefield::smear() const
+{
+  this->smear();
+}
+
+void physics::lattices::Gaugefield::unsmear() const
+{
+  this->unsmear();
+}
+
 void physics::lattices::Gaugefield::unsmear()
 {
 	if(unsmeared_buffers.size() == 0) {
