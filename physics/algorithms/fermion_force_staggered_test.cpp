@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Gaugemomenta gm(system);
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Gaugemomenta gm(system);
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Gaugemomenta gm(system);
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Gaugemomenta gm(system);
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);

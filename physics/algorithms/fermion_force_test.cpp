@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 		Gaugemomenta gm(system);
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Gaugemomenta gm(system);
 
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Gaugemomenta gm(system);
 
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces_eo)
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);

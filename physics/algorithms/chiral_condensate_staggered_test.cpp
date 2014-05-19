@@ -63,7 +63,7 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	if(cold)
 	  gf = new Gaugefield(system, prng, false);
 	else //This configuration for the Ref.Code is the same as for example dks_input_5
-	  gf = new Gaugefield(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	  gf = new Gaugefield(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	hmc_complex pbp = physics::algorithms::chiral_condensate_staggered(*gf, prng, system);
 	
