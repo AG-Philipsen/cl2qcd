@@ -20,8 +20,6 @@
 #ifndef GAUGEMOMENTUM_TESTER_HPP_
 #define GAUGEMOMENTUM_TESTER_HPP_
 
-#include "GaugemomentumTester.hpp"
-
 #include "kernelTester.hpp"
 #include "gaugemomentum.hpp"
 #include "../../host_functionality/host_random.h"
