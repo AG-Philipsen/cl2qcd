@@ -18,25 +18,6 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// #include "../meta/util.hpp"
-// #include "../host_functionality/host_random.h"
-// #include "../physics/prng.hpp"
-// #include "../hardware/device.hpp"
-// #include "../hardware/code/spinors_staggered.hpp"
-// //spinors.hpp needed for get_spinorfieldsize and get_eoprec_spinorfieldsize
-// #include "../hardware/code/spinors.hpp" 
-// #include <numeric>      // std::accumulate
-/*
-// use the boost test framework
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_SPINORS_STAGGERED
-#include <boost/test/unit_test.hpp>*/
-// 
-// //some functionality
-// #include "../../tests/test_util.h"
-// #include "../../tests/test_util_staggered.h"
-
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS_STAGGERED
