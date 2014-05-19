@@ -39,7 +39,7 @@ public:
 	virtual ~SpinorStaggeredTester();
 	
 protected:
-	
+	//Methods (protected for inheritance resons)
 	void fill_with_zero(su3vec * sf_in, int size);
 	hmc_float count_sf(su3vec * in, int size);
 	hmc_float calc_var(hmc_float in, hmc_float mean);
@@ -52,6 +52,7 @@ protected:
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
 	std::string getSpecificInputfile(std::string inputfileIn);
 	
+	//Members (protected for inheritance resons)
 	const hardware::code::Spinors_staggered * code;
 	physics::PRNG * prng;
 	hardware::buffers::Plain<double> * doubleBuffer;
@@ -74,6 +75,9 @@ protected:
 	void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf);
 	//Utilities methods
 	std::vector<hmc_float> reals_from_su3vec(su3vec v);
+
+private:
+	su3vec * inputfield;
 };
 
 
