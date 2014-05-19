@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(max)
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	hmc_float max = find_max_eigenvalue(matrix, gf, system, 1.e-5);
 	
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(min)
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	hmc_float min = find_min_eigenvalue(matrix, gf, system, 1.e-3);
 	
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	hmc_float max,min;
 	find_maxmin_eigenvalue(max, min, matrix, gf, system, 1.e-3);
