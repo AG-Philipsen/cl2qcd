@@ -53,7 +53,7 @@ SpinorStaggeredTester::~SpinorStaggeredTester()
 	  delete[] inputfield;
 }
 
-void SpinorStaggeredTester::fill_with_one(su3vec * sf_in, int size)
+static void fill_with_one(su3vec * sf_in, int size)
 {
   for(int i = 0; i < size; ++i) {
     sf_in[i].e0 = hmc_complex_one;
@@ -73,7 +73,7 @@ void SpinorStaggeredTester::fill_with_zero(su3vec * sf_in, int size)
   return;
 }
 
-void SpinorStaggeredTester::fill_with_random(su3vec * sf_in, int size, int seed)
+static void fill_with_random(su3vec * sf_in, int size, int seed)
 {
   prng_init(seed);
   for(int i = 0; i < size; ++i) {
@@ -125,7 +125,7 @@ hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float
 //This function fills the field sf_in in the following way
 // eo==true  ---> sf_in[even]=ONE  and sf_in[odd]=ZERO
 // eo==false ---> sf_in[even]=ZERO and sf_in[odd]=ONE
-void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
+static void fill_with_one_eo(su3vec * sf_in, int size, bool eo, const meta::Inputparameters * parameters)
 {
   int ns = parameters->get_nspace();
   int nt = parameters->get_ntime();
@@ -220,7 +220,7 @@ su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSite
   if(inputfield !=NULL)
     delete[] inputfield;
   inputfield = new su3vec[spinorfieldElements];
-  fill_with_one_eo(inputfield, spinorfieldElements, evenOrOdd);
+  fill_with_one_eo(inputfield, spinorfieldElements, evenOrOdd, parameters);
   return inputfield;
 }
 
@@ -229,7 +229,7 @@ su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependin
   if(inputfield !=NULL)
     delete[] inputfield;
   inputfield = new su3vec[spinorfieldEvenOddElements];
-  fill_with_one_eo(inputfield, spinorfieldEvenOddElements, evenOrOdd);
+  fill_with_one_eo(inputfield, spinorfieldEvenOddElements, evenOrOdd, parameters);
   return inputfield;
 }
 

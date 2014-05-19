@@ -65,11 +65,6 @@ protected:
 	hmc_complex beta_host;
 	int iterations;
 	
-	//Maybe the following should be static functions in the .cpp file
-	void fill_with_random(su3vec * in, int size, int seed);
-	void fill_with_one(su3vec * in, int size);
-	void fill_with_one_eo(su3vec * in, int size, bool eo);
-	
 	//These methods are used to produce files for the Reference Code (D'Elia et al)
 	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
 	void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf);
