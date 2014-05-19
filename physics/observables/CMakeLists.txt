@@ -23,6 +23,8 @@
 
 add_library(observables
 	gaugeObservables.cpp
+#	wilsonTwoFlavourChiralCondensate.cpp
+	wilsonTwoFlavourChiralCondensate.hpp
 )
 
 target_link_libraries(observables
@@ -42,4 +44,5 @@ target_link_libraries(observables
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 add_unit_test_withLibraries(physics::gaugeObservables gaugeObservables_test observables)
+add_unit_test_withLibraries(physics::observables::wilson::twoFlavourChiralCondensate wilsonTwoFlavourChiralCondensate_test observables)
 
