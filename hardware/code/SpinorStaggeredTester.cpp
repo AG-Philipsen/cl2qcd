@@ -224,16 +224,6 @@ su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependin
   return in;
 }
 
-// std::vector<su3vec> SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity()
-// {
-//   su3vec * in;
-//   in = new su3vec[spinorfieldEvenOddElements];
-//   fill_with_one_eo(in, spinorfieldEvenOddElements, evenOrOdd);
-//   std::vector<su3vec> out(in, in + sizeof(in) / sizeof(su3vec));
-//   delete in;
-//   return out;
-// }
-
 std::string SpinorStaggeredTester::getSpecificInputfile(std::string inputfileIn)
 {
   return "spinors_staggered/" + inputfileIn;

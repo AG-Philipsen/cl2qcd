@@ -36,7 +36,7 @@ class SpinorStaggeredTester : public KernelTester {
 public:
 	SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
 			       int numberOfValues = 1, int typeOfComparision = 1);
-	~SpinorStaggeredTester();
+	virtual ~SpinorStaggeredTester();
 	
 protected:
 	
