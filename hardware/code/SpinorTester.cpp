@@ -20,14 +20,9 @@
 #include "SpinorTester.hpp"
 #include "../../host_functionality/host_geometry.h"
 
-SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
-  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
-	{
-	code = device->get_spinor_code();
-	prng = new physics::PRNG(*system);
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-	
-	//todo: some of these could also be put into the specific child-classes where they are actually used.
+void SpinorTester::setMembers()
+{
+		//todo: some of these could also be put into the specific child-classes where they are actually used.
 	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
 	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
 	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
@@ -38,10 +33,35 @@ SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int 
 	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
 }
 
+SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
+  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
+	{
+	code = device->get_spinor_code();
+	prng = new physics::PRNG(*system);
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+	allocatedObjects = true;
+	
+	setMembers();
+}
+
+SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
+	KernelTester(parameters, system, device), allocatedObjects(false)
+{
+	setMembers();
+	code = device->get_spinor_code();
+}
+
+
 SpinorTester::~SpinorTester()
 {
-	delete doubleBuffer;
-	delete prng;
+	if(allocatedObjects)
+	{
+		delete doubleBuffer;
+ 		delete prng;
+	}
+	doubleBuffer = NULL;
+	prng = NULL;
+	code = NULL;
 }
 
 void SpinorTester::fill_with_one(spinor * in, int size)
@@ -141,7 +161,7 @@ void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
 						coord[3] = z;
 						nspace =  get_nspace(coord, *parameters);
 						global_pos = get_global_pos(nspace, t, *parameters);
-						if (global_pos > size)
+						if (global_pos >= size)
 							break;
 
 						parityOfSite = (x + y + z + t) % 2 == 0;
@@ -323,3 +343,84 @@ void SpinorTester::fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, c
 	delete sf_in1;
 	delete sf_in2;
 }
+
+void SpinorTester::fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2)
+{
+	spinor * sf_in1;
+	spinor * sf_in2;
+	sf_in1 = new spinor[spinorfieldEvenOddElements];
+	sf_in2 = new spinor[spinorfieldEvenOddElements];
+	BOOST_REQUIRE(sf_in1);
+	BOOST_REQUIRE(sf_in2);
+	
+	fillTwoSpinorfieldsDependingOnParity(sf_in1, sf_in2, spinorfieldEvenOddElements);
+	
+	in1->load(sf_in1);
+	in2->load(sf_in2);
+		
+	delete sf_in1;
+	delete sf_in2;
+}
+
+static spinor fillSpinorWithNumber(hmc_complex content)
+{
+	spinor in;
+	in.e0.e0 = content;
+	in.e0.e1 = content;
+	in.e0.e2 = content;
+	in.e1.e0 = content;
+	in.e1.e1 = content;
+	in.e1.e2 = content;
+	in.e2.e0 = content;
+	in.e2.e1 = content;
+	in.e2.e2 = content;
+	in.e3.e0 = content;
+	in.e3.e1 = content;
+	in.e3.e2 = content;
+	return in;
+}
+
+void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * in2, int size)
+{
+		int x, y, z, t;
+		hmc_complex content;
+		int coord[4];
+		bool parityOfSite;
+		int nspace;
+		int global_pos;
+		int ns, nt;
+		
+		ns = parameters->get_nspace();
+		nt = parameters->get_ntime();
+
+		for (x = 0; x < ns; x++) {
+			for (y = 0; y < ns; y++) {
+				for (z = 0; z < ns; z++) {
+					for (t = 0; t < nt; t++) {
+						coord[0] = t;
+						coord[1] = x;
+						coord[2] = y;
+						coord[3] = z;
+						nspace =  get_nspace(coord, *parameters);
+						global_pos = get_global_pos(nspace, t, *parameters);
+						if (global_pos >= size)
+							break;
+
+						parityOfSite = (x + y + z + t) % 2 == 0;
+						if (parityOfSite) 
+						{
+							in1[global_pos] =fillSpinorWithNumber( hmc_complex_one );
+							in2[global_pos] =fillSpinorWithNumber( hmc_complex_zero );
+						}
+						else
+						{
+							in1[global_pos] =fillSpinorWithNumber( hmc_complex_zero );
+							in2[global_pos] =fillSpinorWithNumber( hmc_complex_one );
+						}
+						
+					}
+				}
+			}
+		}
+		return;
+	}

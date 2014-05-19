@@ -31,16 +31,21 @@
 class SpinorTester : public KernelTester {
 public:
   SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
+	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	~SpinorTester();
 	
 protected:
 	std::string getSpecificInputfile(std::string inputfileIn);
+	
+	bool allocatedObjects;
 
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
 	void fill_with_one(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);
 	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();	
+	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
+	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
 	void fill_with_one_eo(spinor * in, int size, bool eo);
 	hmc_float count_sf(spinor * in, int size);
 	hmc_float calc_var(hmc_float in, hmc_float mean);
@@ -48,6 +53,8 @@ protected:
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
 	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
+	
+	void setMembers();
 	
 	const hardware::code::Spinors * code;
 	physics::PRNG * prng;

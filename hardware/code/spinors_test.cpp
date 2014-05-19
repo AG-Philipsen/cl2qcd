@@ -877,31 +877,48 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	class ConvertEvenOddTester: public SpinorTester
 	{
 	public:
-		ConvertEvenOddTester(std::string inputfile):
+		ConvertEvenOddTester(std::string inputfile, bool toOrFrom = true):
 			SpinorTester("convert_eo", inputfile, 2)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
 				const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
 
-				in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity() );
-
-				code->convert_to_eoprec_device(&in2, &in3, &in);
-				code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
-				doubleBuffer->dump(&kernelResult[0]);
-				code->set_float_to_global_squarenorm_eoprec_device(&in3, doubleBuffer);
-				doubleBuffer->dump(&kernelResult[1]);
 				
-				if (evenOrOdd)
+
+				if ( toOrFrom )
 				{
+					in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity() );
+					code->convert_to_eoprec_device(&in2, &in3, &in) ;
+
+					code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
+					doubleBuffer->dump(&kernelResult[0]);
+					code->set_float_to_global_squarenorm_eoprec_device(&in3, doubleBuffer);
+					doubleBuffer->dump(&kernelResult[1]);
+					
+					if (evenOrOdd)
+					{
+						referenceValue[0] = spinorfieldEvenOddElements*12.; 
+						referenceValue[1] = 0.;
+					}
+					else
+					{ 
+						referenceValue[0] = 0.;
+						referenceValue[1] = spinorfieldEvenOddElements*12.; 
+					}
+				} else
+				{
+					fillTwoSpinorBuffersDependingOnParity(&in2, &in3);
+					code->convert_from_eoprec_device(&in2, &in3, &in);
+					
+					code->set_float_to_global_squarenorm_device(&in, doubleBuffer);
+					doubleBuffer->dump(&kernelResult[0]);
+					
 					referenceValue[0] = spinorfieldEvenOddElements*12.; 
-					referenceValue[1] = 0.;
 				}
-				else
-				{ 
-					referenceValue[1] = spinorfieldEvenOddElements*12.; 
-					referenceValue[0] = 0.;
-				}
+
+				
+
 			}
 	};
 
@@ -917,12 +934,12 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_3 )
 	{
-		ConvertEvenOddTester tester("convert_eo_input_1");
+		ConvertEvenOddTester tester("convert_eo_input_1", false);
 	}
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_4 )
 	{
-		ConvertEvenOddTester tester("convert_eo_input_2");
+		ConvertEvenOddTester tester("convert_eo_input_2", false);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
