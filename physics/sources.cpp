@@ -49,7 +49,7 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 	spinorfield->update_halo();
 }
 
-void physics::set_volume_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng)
+void physics::set_volume_source(const physics::lattices::Spinorfield * spinorfield, const PRNG& prng)
 {
 	spinorfield->zero();
 
@@ -65,7 +65,7 @@ void physics::set_volume_source(const physics::lattices::Spinorfield * spinorfie
 	spinorfield->update_halo();
 }
 
-void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng, int t_pos)
+void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinorfield, const PRNG& prng, int t_pos)
 {
 	spinorfield->zero();
 
@@ -83,7 +83,7 @@ void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinor
 	spinorfield->update_halo();
 }
 
-void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfield, PRNG& prng, int z)
+void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfield, const PRNG& prng, int z)
 {
 	spinorfield->zero();
 
@@ -100,7 +100,7 @@ void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfie
 }
 
 //Steggered source
-void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * inout, PRNG& prng)
+void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * inout, const PRNG& prng)
 {
 	auto buffers = inout->get_buffers();
 
@@ -115,9 +115,9 @@ void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * ino
 	  inout->update_halo();
 }
 
-static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, physics::PRNG& prng, const meta::Inputparameters& params);
+static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const meta::Inputparameters& params);
 
-std::vector<physics::lattices::Spinorfield *> physics::create_sources(hardware::System& system, PRNG& prng, const size_t n_sources)
+std::vector<physics::lattices::Spinorfield *> physics::create_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources)
 {
 	auto params = system.get_inputparameters();
 
@@ -126,7 +126,7 @@ std::vector<physics::lattices::Spinorfield *> physics::create_sources(hardware::
 	return sources;
 }
 
-static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, physics::PRNG& prng, const meta::Inputparameters& params)
+static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const meta::Inputparameters& params)
 {
 	using namespace physics;
 

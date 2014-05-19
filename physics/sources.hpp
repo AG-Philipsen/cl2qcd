@@ -35,7 +35,7 @@ namespace physics {
 	 * Create sources as specified by the input parameters of the system.
 	 * \param n_sources Number of sources to create
 	 */
-	std::vector<lattices::Spinorfield *> create_sources(hardware::System& system, PRNG& prng, const size_t n_sources);
+	std::vector<lattices::Spinorfield *> create_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources);
 
 	/**
 	 * Create a set of spinorfields that can be swapped.
@@ -44,11 +44,11 @@ namespace physics {
 	std::vector<lattices::Spinorfield *> create_swappable_sources(hardware::System& system, PRNG& prng, const size_t n_sources);
 
 	void set_point_source(const physics::lattices::Spinorfield *, int k, const meta::Inputparameters& params);
-	void set_volume_source(const physics::lattices::Spinorfield *, PRNG& prng);
-	void set_timeslice_source(const physics::lattices::Spinorfield *, PRNG& prng, int t);
-	void set_zslice_source(const physics::lattices::Spinorfield *, PRNG& prng, int z);
+	void set_volume_source(const physics::lattices::Spinorfield *, const PRNG& prng);
+	void set_timeslice_source(const physics::lattices::Spinorfield *, const PRNG& prng, int t);
+	void set_zslice_source(const physics::lattices::Spinorfield *, const PRNG& prng, int z);
 	//Staggered sources
-	void set_volume_source(const physics::lattices::Staggeredfield_eo *, PRNG& prng);
+	void set_volume_source(const physics::lattices::Staggeredfield_eo *, const PRNG& prng);
 
 }
 
