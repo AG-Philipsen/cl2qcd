@@ -31,6 +31,7 @@
 class KernelTester {
 public:
   KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparision = 1);
+	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	virtual ~KernelTester();	
 	void setReferenceValuesToZero();
 	
@@ -39,6 +40,7 @@ protected:
 	int typeOfComparision;
 	std::vector<double> kernelResult;
 	std::vector<double> referenceValue;
+	bool allocatedObjects;
 	
 	meta::Inputparameters * parameters;
 	const hardware::System * system;

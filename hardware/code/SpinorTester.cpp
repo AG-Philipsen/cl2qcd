@@ -20,14 +20,9 @@
 #include "SpinorTester.hpp"
 #include "../../host_functionality/host_geometry.h"
 
-SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
-  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
-	{
-	code = device->get_spinor_code();
-	prng = new physics::PRNG(*system);
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-	
-	//todo: some of these could also be put into the specific child-classes where they are actually used.
+void SpinorTester::setMembers()
+{
+		//todo: some of these could also be put into the specific child-classes where they are actually used.
 	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
 	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
 	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
@@ -38,10 +33,35 @@ SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int 
 	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
 }
 
+SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
+  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
+	{
+	code = device->get_spinor_code();
+	prng = new physics::PRNG(*system);
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+	allocatedObjects = true;
+	
+	setMembers();
+}
+
+SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
+	KernelTester(parameters, system, device), allocatedObjects(false)
+{
+	setMembers();
+	code = device->get_spinor_code();
+}
+
+
 SpinorTester::~SpinorTester()
 {
-	delete doubleBuffer;
-	delete prng;
+	if(allocatedObjects)
+	{
+		delete doubleBuffer;
+ 		delete prng;
+	}
+	doubleBuffer = NULL;
+	prng = NULL;
+	code = NULL;
 }
 
 void SpinorTester::fill_with_one(spinor * in, int size)

@@ -31,10 +31,13 @@
 class SpinorTester : public KernelTester {
 public:
   SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
+	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	~SpinorTester();
 	
 protected:
 	std::string getSpecificInputfile(std::string inputfileIn);
+	
+	bool allocatedObjects;
 
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
@@ -48,6 +51,8 @@ protected:
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
 	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
+	
+	void setMembers();
 	
 	const hardware::code::Spinors * code;
 	physics::PRNG * prng;

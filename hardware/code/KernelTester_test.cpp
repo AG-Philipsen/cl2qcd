@@ -66,6 +66,20 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 		int maximumTypeOfComparision = 3;
 		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues, maximumTypeOfComparision + 1), std::invalid_argument );
 	}
+	
+	BOOST_AUTO_TEST_CASE( BUILD_3 )
+	{
+		const char * _params[] = {"foo"};
+		meta::Inputparameters * parameter;
+		hardware::System * system;
+		hardware::Device * device;
+		
+		parameter = new meta::Inputparameters(2, _params);
+		system = new hardware::System(*parameter);
+		device = system->get_devices()[0];
+		
+		BOOST_CHECK_NO_THROW(KernelTester kernelTester(parameter, system, device) );
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -29,6 +29,7 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 
 	system = new hardware::System(*parameters);
 	device = system->get_devices()[0];
+	allocatedObjects = true;
 	
 	testPrecision = parameters->get_solver_prec();
 
@@ -49,8 +50,11 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	  {
 	    throw( std::invalid_argument("Do not recognize type of comparision. Aborting...") );
 	  }
-
 }
+
+KernelTester::KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
+	parameters(parameters), system(system), device(device), kernelResult(0, 0), referenceValue(0, 0), typeOfComparision(1), allocatedObjects(false)
+{}
 
 #include <boost/test/floating_point_comparison.hpp>
 KernelTester::~KernelTester()
@@ -77,9 +81,17 @@ KernelTester::~KernelTester()
 	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
 	    }
 	}
-	delete parameters;
-	delete system;
+	
+	if(allocatedObjects)
+	{
+		delete parameters;
+		delete system;
+	}
+	
+	parameters = NULL;
+	system = NULL;
 	device = NULL;
+
 }
 
 void KernelTester::setReferenceValuesToZero()
