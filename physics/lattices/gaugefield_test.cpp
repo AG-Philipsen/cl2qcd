@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 		physics::gaugeObservables obs(&params);
 
 		// init from file
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), 0.57107711169452713, 0.1);
 	}
 }
@@ -79,8 +79,6 @@ void test_save(bool hot) {
 	Gaugefield gf(system, prng, hot);
 	gf.save("conf.test", 0);
 
-	Gaugefield reread(system, prng, "conf.test");
-
 	hmc_float orig_plaq, reread_plaq;
 	hmc_float orig_tplaq, reread_tplaq;
 	hmc_float orig_splaq, reread_splaq;
@@ -92,6 +90,9 @@ void test_save(bool hot) {
 	orig_splaq = obs.getSpatialPlaquette();
 	orig_pol = obs.getPolyakovloop();
 
+	//NOTE: the conversion to std::string is necessary, otherwise the compiler creates a boolean!
+	Gaugefield reread(system, prng, (std::string) "conf.test");
+	
 	obs.measureGaugeObservables(&reread, 1);
 	reread_plaq = obs.getPlaquette();
 	reread_tplaq = obs.getTemporalPlaquette();
@@ -120,7 +121,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	physics::PRNG prng(system);
 	physics::gaugeObservables obs(&params);
 
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	BOOST_CHECK_THROW(obs.measureRectangles(&gf), std::logic_error);
 
 	const char * _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
@@ -128,7 +129,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	hardware::System system2(params2);
 	physics::PRNG prng2(system2);
 
-	Gaugefield gf2(system2, prng2, std::string(SOURCEDIR) + "/tests/conf.00200");
+	Gaugefield gf2(system2, prng2, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	BOOST_CHECK_CLOSE(obs.measureRectangles(&gf2), 1103.2398401620451, 0.1);
 }
 
@@ -157,7 +158,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		physics::PRNG prng(system);
 		physics::gaugeObservables obs(&params);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		hmc_complex pol = obs.measurePolyakovloop(&gf);
 		BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
@@ -241,7 +242,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		physics::PRNG prng(system);
 		physics::gaugeObservables obs(&params);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
+		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 
 		obs.measureGaugeObservables(&gf, 0);
 		orig_plaq = obs.getPlaquette();
