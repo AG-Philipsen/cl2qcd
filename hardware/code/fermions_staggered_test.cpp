@@ -18,450 +18,473 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testUtilities.hpp"
-
-#include "../meta/util.hpp"
-#include "../host_functionality/host_random.h"
-#include "../hardware/code/spinors_staggered.hpp"
-#include "../hardware/code/spinors.hpp"
+// #include "testUtilities.hpp"
+// 
+// #include "../meta/util.hpp"
+// #include "../host_functionality/host_random.h"
+// #include "../hardware/code/spinors_staggered.hpp"
+// #include "../hardware/code/spinors.hpp"
+// 
+// // use the boost test framework
+// #define BOOST_TEST_DYN_LINK
+// #define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS_STAGGERED
+// #include <boost/test/unit_test.hpp>
+// 
+// //some functionality
+// #include "test_util.h"
+// #include "test_util_staggered.h"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS_STAGGERED
-#include <boost/test/unit_test.hpp>
 
-//some functionality
-#include "test_util.h"
-#include "test_util_staggered.h"
+#include "SpinorStaggeredTester.hpp"
+#include "fermions_staggered.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
 
-
-void fill_sf_with_one(su3vec * sf_in, int size)
-{
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0 = hmc_complex_one;
-		sf_in[i].e1 = hmc_complex_one;
-		sf_in[i].e2 = hmc_complex_one;
+class FermionStaggeredTester : public SpinorStaggeredTester{
+   public:
+	FermionStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
+	SpinorStaggeredTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues){
+		code = device->get_fermion_staggered_code();
+		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+		/*
+		print_gaugefield_to_textfile("ref_conf");
+		logger.info() << "Produced the ref_conf text file with the links for the Ref.Code.";
+		*/
 	}
-	return;
-}
-
-void fill_sf_with_random(su3vec * sf_in, int size, int seed)
-{
-	prng_init(seed);
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.re = prng_double();
-		sf_in[i].e1.re = prng_double();
-		sf_in[i].e2.re = prng_double();
-
-		sf_in[i].e0.im = prng_double();
-		sf_in[i].e1.im = prng_double();
-		sf_in[i].e2.im = prng_double();
+	
+	virtual ~FermionStaggeredTester(){
+		delete gaugefield;
+		code = NULL;
 	}
-	return;
-}
-
-void fill_sf_with_random(su3vec * sf_in, int size)
-{
-	fill_sf_with_random(sf_in, size, 123456);
-}
-
-
-
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_fermions_staggered";
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("fermionsStaggered/" + inputfile);
-	hardware::System system(params);
-	TestGaugefield_stagg cpu(&system);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_m_staggered(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "M_staggered";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("fermionsStaggered/" + inputfile);
-	hardware::System system(params);
-	TestGaugefield_stagg cpu(&system);
 	
-	//The following three lines are to be used to produce the ref_conf file needed to get the ref_value
-	//---> Comment them out when the reference values have been obtained!
-	/*
-	print_gaugefield_to_textfile("ref_conf",&cpu,params);
-	logger.info() << "Produced the ref_conf text file with the links for the ref. code. Returning...";
-	return;
-	// */
-
-	cl_int err = CL_SUCCESS;
-	const hardware::code::Fermions_staggered * device = cpu.get_device();
-	su3vec * sf_in;
-	su3vec * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
-
-	sf_in = new su3vec[NUM_ELEMENTS_SF];
-	sf_out = new su3vec[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
+   protected:
+	const hardware::code::Fermions_staggered * code;
+	physics::lattices::Gaugefield * gaugefield;
 	
-	//The following three lines are to be used to produce the ref_vec file needed to get the ref_value
-	//---> Comment them out when the reference values have been obtained!
-	/*
-	print_staggeredfield_to_textfile("ref_vec",sf_in,params);
-	logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";
-	return;
-	 */
-
-	const Plain<su3vec> in(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	const Plain<su3vec> out(NUM_ELEMENTS_SF, device->get_device());
-	out.load(sf_in);
-	const hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_staggered_code();
-		
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	device->M_staggered_device(&in, &out,  cpu.get_gaugefield(), ARG_DEF);
-
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << std::setprecision(16) << cpu_res;
-	
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-
-void test_DKS_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
-	std::string kernelName = "D_KS_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("fermionsStaggered/" + inputfile);
-	hardware::System system(params);
-	TestGaugefield_stagg cpu(&system);
-	auto * device = cpu.get_device();
-	
-	//The following three lines are to be used to produce the ref_conf file needed to get the ref_value
-	//---> Comment them out when the reference values have been obtained!
-	/*
-	print_gaugefield_to_textfile("ref_conf",&cpu,params);
-	logger.info() << "Produced the ref_conf text file with the links for the ref. code. Returning...";
-	//return;
-	// */
-
-	logger.info() << "Fill buffers...";
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
-	su3vec * sf_in_eo;
-	sf_in_eo = new su3vec[NUM_ELEMENTS_SF_EO];
-	const SU3vec in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
-	const SU3vec out_eo(NUM_ELEMENTS_SF_EO, device->get_device());
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in_eo, NUM_ELEMENTS_SF_EO);
-	else fill_sf_with_random(sf_in_eo, NUM_ELEMENTS_SF_EO);
-	in_eo_even.load(sf_in_eo);
-	
-	//The following six lines are to be used to produce the ref_vec file needed to get the ref_value
-	//---> Comment them out when the reference values have been obtained!
-	/*
-	if(params.get_read_multiple_configs())
-	  print_staggeredfield_eo_to_textfile("ref_vec_odd",sf_in_eo,params);
-	else
-	  print_staggeredfield_eo_to_textfile("ref_vec_even",sf_in_eo,params);
-	logger.info() << "Produced the ref_vec text file with the staggered field for the ref. code. Returning...";
-	return;
-	// */
-
-	auto spinor_code = device->get_device()->get_spinor_staggered_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-
-	hmc_float cpu_res;
-	if(params.get_read_multiple_configs()) {
-		device->D_KS_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), EVEN);
-	} else {
-		device->D_KS_eo_device( &in_eo_even, &out_eo, cpu.get_gaugefield(), ODD);
+	std::string getSpecificInputfile(std::string inputfileIn)
+	{
+		//todo: this is ugly, find a better solution.
+		// The problem is that the parent class calls a similar fct.
+		return "../fermionsStaggered/" + inputfileIn;
 	}
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out_eo, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << "result:";
-	logger.info() << cpu_res;
+	
+	const hardware::buffers::SU3* getGaugefieldBuffer() {
+		return gaugefield->get_buffers()[0];
+	}
+	
+	//This method is used to produce file for the Reference Code (D'Elia et al) -> implemented at the end
+	void print_gaugefield_to_textfile(std::string outputfile);
+};
 
-	logger.info() << "Clear buffers";
-	delete[] sf_in_eo;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-
+///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-	test_build("/opencl_module_fermions_staggered_build_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( BUILD_2 )
-{
-	test_build("/opencl_module_fermions_staggered_build_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( M_STAGGERED )
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_1)
-{
-	test_m_staggered("/m_staggered_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_2)
-{
-	test_m_staggered("/m_staggered_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_3)
-{
-	test_m_staggered("/m_staggered_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_4)
-{
-	test_m_staggered("/m_staggered_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_5)
-{
-	test_m_staggered("/m_staggered_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_6)
-{
-	test_m_staggered("/m_staggered_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_7)
-{
-	test_m_staggered("/m_staggered_input_7");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_8)
-{
-	test_m_staggered("/m_staggered_input_8");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_9)
-{
-	test_m_staggered("/m_staggered_input_9");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_10)
-{
-	test_m_staggered("/m_staggered_input_10");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_11)
-{
-	test_m_staggered("/m_staggered_input_11");
-}
-
-BOOST_AUTO_TEST_CASE( M_STAGGERED_12)
-{
-	test_m_staggered("/m_staggered_input_12");
-}
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+	    BOOST_CHECK_NO_THROW(FermionStaggeredTester("build", "fermions_staggered_build_input_1"));
+	}
+	
+	BOOST_AUTO_TEST_CASE( BUILD_2 )
+	{
+	    BOOST_CHECK_NO_THROW(FermionStaggeredTester("build", "fermions_staggered_build_input_2"));
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
+///////////////////////////////////////
+
+class FermionmatrixStaggeredTester : public FermionStaggeredTester{
+   public:
+	FermionmatrixStaggeredTester(std::string kernelName, std::string inputfile) : 
+	    FermionStaggeredTester(kernelName, inputfile){
+		in = new const hardware::buffers::Plain<su3vec>(spinorfieldElements, device);
+		out = new const hardware::buffers::Plain<su3vec>(spinorfieldElements, device);
+		in->load(createSpinorfield(spinorfieldElements));
+		out->load(createSpinorfield(spinorfieldElements));
+		/*
+		print_staggeredfield_to_textfile("ref_vec_Mmatrix", createSpinorfield(spinorfieldElements));
+		logger.info() << "Produced the ref_vec_Mmatrix file with the staggered field for the Ref.Code.";
+		*/
+	}
+	virtual ~FermionmatrixStaggeredTester(){
+		calcSquarenormAndStoreAsKernelResult(out);
+		delete in;
+		delete out;
+	}
+protected:
+	const hardware::buffers::Plain<su3vec> * in;
+	const hardware::buffers::Plain<su3vec> * out;
+};
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE( M_MATRIX )
+
+	class MTester : public FermionmatrixStaggeredTester{
+	   public:
+		MTester(std::string inputfile) : FermionmatrixStaggeredTester("M_staggered", inputfile){
+ 			code->M_staggered_device(in, out,  getGaugefieldBuffer()); //mass is the def.value
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( M_MATRIX_1)
+	{
+	    MTester("m_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_2)
+	{
+	    MTester("m_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_3)
+	{
+	    MTester("m_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_4)
+	{
+	    MTester("m_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_5)
+	{
+	    MTester("m_input_5");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_6)
+	{
+	    MTester("m_input_6");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_7)
+	{
+	    MTester("m_input_7");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_8)
+	{
+	    MTester("m_input_8");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_9)
+	{
+	    MTester("m_input_9");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_10)
+	{
+	    MTester("m_input_10");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_11)
+	{
+	    MTester("m_input_11");
+	}
+	
+	BOOST_AUTO_TEST_CASE( M_MATRIX_12)
+	{
+	    MTester("m_input_12");
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+class FermionmatrixStaggeredEvenOddTester : public FermionStaggeredTester{
+   public:
+	FermionmatrixStaggeredEvenOddTester(std::string kernelName, std::string inputfile) :
+	   FermionStaggeredTester(kernelName, inputfile){
+		in = new const hardware::buffers::SU3vec(spinorfieldEvenOddElements, device);
+		out = new const hardware::buffers::SU3vec(spinorfieldEvenOddElements, device);
+		in->load(createSpinorfield(spinorfieldEvenOddElements));
+		out->load(createSpinorfield(spinorfieldEvenOddElements));
+	}
+	~FermionmatrixStaggeredEvenOddTester(){
+		calcSquarenormEvenOddAndStoreAsKernelResult(out);
+		delete in;
+		delete out;
+	}
+   protected:
+	const hardware::buffers::SU3vec * in;
+	const hardware::buffers::SU3vec * out;
+};
+
+///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE( DKS_EO )
 
-BOOST_AUTO_TEST_CASE( DKS_EO_1)
-{
-	test_DKS_eo("/dks_input_1");
-}
+	class DksEvenOddTester : public FermionmatrixStaggeredEvenOddTester{
+	   public:
+		DksEvenOddTester(std::string inputfile) : FermionmatrixStaggeredEvenOddTester("DKS_eo", inputfile){
+ 			evenOrOdd ? code->D_KS_eo_device(in, out,  getGaugefieldBuffer(), EVEN)
+				  : code->D_KS_eo_device(in, out,  getGaugefieldBuffer(), ODD);
+		}
+	};
 
-BOOST_AUTO_TEST_CASE( DKS_EO_2)
-{
-	test_DKS_eo("/dks_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_3)
-{
-	test_DKS_eo("/dks_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_4)
-{
-	test_DKS_eo("/dks_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_5)
-{
-	test_DKS_eo("/dks_input_5");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_6)
-{
-	test_DKS_eo("/dks_input_6");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_7)
-{
-	test_DKS_eo("/dks_input_7");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_8)
-{
-	test_DKS_eo("/dks_input_8");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_9)
-{
-	test_DKS_eo("/dks_input_9");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_10)
-{
-	test_DKS_eo("/dks_input_10");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_11)
-{
-	test_DKS_eo("/dks_input_11");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_12)
-{
-	test_DKS_eo("/dks_input_12");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_13)
-{
-	test_DKS_eo("/dks_input_13");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_14)
-{
-	test_DKS_eo("/dks_input_14");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_15)
-{
-	test_DKS_eo("/dks_input_15");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_16)
-{
-	test_DKS_eo("/dks_input_16");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_17)
-{
-	test_DKS_eo("/dks_input_17");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_18)
-{
-	test_DKS_eo("/dks_input_18");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_19)
-{
-	test_DKS_eo("/dks_input_19");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_20)
-{
-	test_DKS_eo("/dks_input_20");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_21)
-{
-	test_DKS_eo("/dks_input_21");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_22)
-{
-	test_DKS_eo("/dks_input_22");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_23)
-{
-	test_DKS_eo("/dks_input_23");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_24)
-{
-	test_DKS_eo("/dks_input_24");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_25)
-{
-	test_DKS_eo("/dks_input_25");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_26)
-{
-	test_DKS_eo("/dks_input_26");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_27)
-{
-	test_DKS_eo("/dks_input_27");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_28)
-{
-	test_DKS_eo("/dks_input_28");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_29)
-{
-	test_DKS_eo("/dks_input_29");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_30)
-{
-	test_DKS_eo("/dks_input_30");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_31)
-{
-	test_DKS_eo("/dks_input_31");
-}
-
-BOOST_AUTO_TEST_CASE( DKS_EO_32)
-{
-	test_DKS_eo("/dks_input_32");
-}
-
+	BOOST_AUTO_TEST_CASE( DKS_EO_1)
+	{
+	    DksEvenOddTester("dks_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_2)
+	{
+	    DksEvenOddTester("dks_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_3)
+	{
+	    DksEvenOddTester("dks_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_4)
+	{
+	    DksEvenOddTester("dks_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_5)
+	{
+	    DksEvenOddTester("dks_input_5");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_6)
+	{
+	    DksEvenOddTester("dks_input_6");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_7)
+	{
+	    DksEvenOddTester("dks_input_7");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_8)
+	{
+	    DksEvenOddTester("dks_input_8");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_9)
+	{
+	    DksEvenOddTester("dks_input_9");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_10)
+	{
+	    DksEvenOddTester("dks_input_10");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_11)
+	{
+	    DksEvenOddTester("dks_input_11");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_12)
+	{
+	    DksEvenOddTester("dks_input_12");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_13)
+	{
+	    DksEvenOddTester("dks_input_13");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_14)
+	{
+	    DksEvenOddTester("dks_input_14");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_15)
+	{
+	    DksEvenOddTester("dks_input_15");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_16)
+	{
+	    DksEvenOddTester("dks_input_16");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_17)
+	{
+	    DksEvenOddTester("dks_input_17");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_18)
+	{
+	    DksEvenOddTester("dks_input_18");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_19)
+	{
+	    DksEvenOddTester("dks_input_19");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_20)
+	{
+	    DksEvenOddTester("dks_input_20");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_21)
+	{
+	    DksEvenOddTester("dks_input_21");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_22)
+	{
+	    DksEvenOddTester("dks_input_22");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_23)
+	{
+	    DksEvenOddTester("dks_input_23");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_24)
+	{
+	    DksEvenOddTester("dks_input_24");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_25)
+	{
+	    DksEvenOddTester("dks_input_25");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_26)
+	{
+	    DksEvenOddTester("dks_input_26");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_27)
+	{
+	    DksEvenOddTester("dks_input_27");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_28)
+	{
+	    DksEvenOddTester("dks_input_28");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_29)
+	{
+	    DksEvenOddTester("dks_input_29");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_30)
+	{
+	    DksEvenOddTester("dks_input_30");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_31)
+	{
+	    DksEvenOddTester("dks_input_31");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DKS_EO_32)
+	{
+	    DksEvenOddTester("dks_input_32");
+	}
+	
 BOOST_AUTO_TEST_SUITE_END()
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Tool to be used in the function print_gaugefield_to_textfile 
+/**
+ * Fuction that "convert" a matrix to a string with a proper structure to be 
+ * written to the text file that will be later used for the reference code 
+ */
+static std::string matrix_to_string(Matrixsu3 m)
+{
+  std::ostringstream os;
+  os.precision(16);
+  os << "(" << m.e00.re << "," << m.e00.im << ") (" << m.e01.re << "," << m.e01.im << ") (" << m.e02.re << "," << m.e02.im << ")\n";
+  os << "(" << m.e10.re << "," << m.e10.im << ") (" << m.e11.re << "," << m.e11.im << ") (" << m.e12.re << "," << m.e12.im << ")\n";
+  os << "(" << m.e20.re << "," << m.e20.im << ") (" << m.e21.re << "," << m.e21.im << ") (" << m.e22.re << "," << m.e22.im << ")\n\n";
+  return os.str();
+}
+
+static void get_full_coord_from_site_idx(int site_idx, int &x, int &y, int &z, int &t, const int ns)
+{
+  int volspace=ns*ns*ns;
+  int space=site_idx%volspace;
+  t=site_idx/volspace;
+  z=space/ns/ns;
+  int acc=z;
+  y=space/ns-ns*acc;
+  acc=ns*acc+y;
+  x=space-ns*acc;
+}
+
+static inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor)
+{
+  Matrixsu3 out;
+  out.e00 = complexmult(in.e00, factor);
+  out.e01 = complexmult(in.e01, factor);
+  out.e02 = complexmult(in.e02, factor);
+  out.e10 = complexmult(in.e10, factor);
+  out.e11 = complexmult(in.e11, factor);
+  out.e12 = complexmult(in.e12, factor);
+  out.e20 = complexmult(in.e20, factor);
+  out.e21 = complexmult(in.e21, factor);
+  out.e22 = complexmult(in.e22, factor);
+  return out;
+}
+
+/**
+ *  In the reference code the lattice is reorganized in the following way:    
+ *
+ *  links used according to this scheme
+ *   0             size            size2           size3         no_links  
+ *   |-------|-------|-------|-------|-------|-------|-------|-------|
+ *      e        o       e       o       e       o       e       o  
+ *        x-dir         y-dir         z-dir         t-dir  
+ *
+ *  where e=even, o=odd, whereas size=VOL4D.  
+ *  Hence, in order to use the same random configuration in tests 
+ *  I have to print all links to a text file according this scheme.  
+ *
+ *  @note: In our program mu=0 is the TIME direction and mu=1,2,3 are the x,y,z direction!!!   
+ * 
+ */
+void FermionStaggeredTester::print_gaugefield_to_textfile(std::string outputfile)
+{
+  int nt=parameters->get_ntime();
+  int ns=parameters->get_nspace();
+  if(ns!=nt){
+    logger.fatal() << "The lattice must be isotropic to call the function print_gaugefield_to_textfile(...)!";
+    abort();
+  }
+  //conf_old is the Matrixsu3 array with the links in the standard order (standard for this code)                                     
+  //conf_new is the Matrixsu3 array in the right order (ref. code scheme) to be written to the file                                   
+  Matrixsu3 *conf_old=new Matrixsu3[ns*ns*ns*nt*4];
+  Matrixsu3 *conf_new=new Matrixsu3[ns*ns*ns*nt*4];
+  device->get_gaugefield_code()->exportGaugefield(conf_old, gaugefield->get_buffers()[0]);
+  //Now I have conf_old and I have to fill properly conf_new                                                                          
+  int x,y,z,t,num,even,size;
+  size=ns*ns*ns*nt;
+  for(int i=0; i<ns*ns*ns*nt; i++){
+    get_full_coord_from_site_idx(i,x,y,z,t,ns);
+    even = (x+y+z+t)%2;
+    // even=0 for even sites                                                                                                          
+    // even=1 for odd sites                                                                                                           
+    num = even*size/2 + (x+y*ns+z*ns*ns+t*ns*ns*ns)/2;
+    // num is where, in conf_new, conf_old[...] is to be written                                                                      
+    conf_new[num       ]=conf_old[4*i+1]; //x-dir                                                                                     
+    conf_new[num+size  ]=conf_old[4*i+2]; //y-dir                                                                                     
+    conf_new[num+size*2]=conf_old[4*i+3]; //z-dir                                                                                     
+    conf_new[num+size*3]=conf_old[4*i  ]; //t-dir      
+  }
+  //Now we can write conf_new to the file                                                                                             
+  std::ofstream file(outputfile.c_str());
+  file << ns << " " << ns << " " << ns << " " << nt << " ";
+  file << parameters->get_beta() << " " << parameters->get_mass() << " 12345" << std::endl;
+  //The last number that I set to 12345 should be the hmc iteration; here it is not relevant                                          
+  for(int i=0; i<ns*ns*ns*nt*4; i++)
+    file << matrix_to_string(conf_new[i]);
+  file.close();
+}
+
+
+
 
