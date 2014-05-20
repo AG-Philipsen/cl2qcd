@@ -93,11 +93,11 @@ const std::vector<const hardware::buffers::PRNGBuffer*> physics::PRNG::get_buffe
 	return buffers;
 }
 
-double physics::PRNG::get_double() noexcept {
+double physics::PRNG::get_double() const noexcept{
 	return prng_double();
 }
 
-Matrixsu3 physics::random_matrixsu3(physics::PRNG& prng)
+Matrixsu3 physics::random_matrixsu3(const physics::PRNG& prng)
 {
 	//this is like project_su3 from operations_gaugefield.cl, only that you do it with gaussian su3 vectors
 	//taken also from the tmlqcd code
@@ -208,7 +208,7 @@ Matrixsu3 physics::random_matrixsu3(physics::PRNG& prng)
 	return out;
 }
 
-void physics::gaussianNormalPair(hmc_float * z1, hmc_float * z2, physics::PRNG& prng)
+void physics::gaussianNormalPair(hmc_float * z1, hmc_float * z2, const physics::PRNG& prng)
 {
 	hmc_float u1 = 1.0 - prng.get_double();
 	hmc_float u2 = 1.0 - prng.get_double();
@@ -218,7 +218,7 @@ void physics::gaussianNormalPair(hmc_float * z1, hmc_float * z2, physics::PRNG& 
 	// SL: not yet tested
 }
 
-void physics::gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma, physics::PRNG& prng)
+void physics::gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma, const physics::PRNG& prng)
 {
 	// SL: this fills real and imaginary part of a vector of "length" complex numbers
 	//     with components drawn with a Gaussian distribution and variance sigma

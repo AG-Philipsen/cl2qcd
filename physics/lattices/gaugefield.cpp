@@ -44,10 +44,10 @@ extern std::string const version;
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system);
 static void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers);
 
-static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, physics::PRNG& prng);
+static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const physics::PRNG& prng);
 static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
-static void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems);
+static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
 static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
@@ -61,13 +61,11 @@ static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> bu
 static void extract_boundary(char* host, const hardware::buffers::SU3 * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 static void send_halo(const hardware::buffers::SU3 * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source() 
+void physics::lattices::Gaugefield::initializeBasedOnParameters()
 {
-	auto parameters = system.get_inputparameters();
-	switch(parameters.get_startcondition()) {
+	switch(parameters->get_startcondition()) {
 		case meta::Inputparameters::start_from_source:
-			fill_from_ildg(parameters.get_sourcefile());
+			fill_from_ildg(parameters->get_sourcefile());
 			break;
 		case meta::Inputparameters::cold_start:
 			set_cold(buffers);
@@ -77,6 +75,12 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 			update_halo();
 			break;
 	}
+}
+
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source(), parameters(&system.get_inputparameters() )
+{
+	initializeBasedOnParameters();
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, bool hot)
@@ -155,7 +159,7 @@ physics::lattices::Gaugefield::~Gaugefield()
 	release_buffers(&unsmeared_buffers);
 }
 
-static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, physics::PRNG& prng)
+static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const physics::PRNG& prng)
 {
 	using hardware::Device;
 
@@ -192,7 +196,7 @@ void set_cold(Matrixsu3 * field, size_t elems)
 	}
 }
 
-void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems)
+void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems)
 {
 	for(size_t i = 0; i < elems; ++i) {
 		field[i] = random_matrixsu3(prng);
@@ -648,4 +652,14 @@ static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> bu
 	}
 
 	hardware::buffers::update_halo_soa<Matrixsu3>(buffers, system, .5, 2 * NDIM);
+}
+
+const physics::PRNG * physics::lattices::Gaugefield::getPrng() const 
+{
+  return &prng;
+}
+
+const hardware::System * physics::lattices::Gaugefield::getSystem() const
+{
+  return &system;
 }

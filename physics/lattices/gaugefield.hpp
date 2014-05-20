@@ -106,11 +106,11 @@ namespace physics {
 			void unsmear();
 			void unsmear() const;
 
-              		/**
-		         * Get sourcefileparameters
-		         */
-		        sourcefileparameters get_parameters_source();
-		        sourcefileparameters get_parameters_source() const
+			/**
+			 * Get sourcefileparameters
+			 */
+			sourcefileparameters get_parameters_source();
+			sourcefileparameters get_parameters_source() const
 		  {
 		    return parameters_source;
 		  }
@@ -122,32 +122,27 @@ namespace physics {
 			 */
 			void update_halo() const;
 
-		  const  physics::PRNG * getPrng() const 
-		  {
-		    return &prng;
-		  }
-
-		  const hardware::System * getSystem() const
-		  {
-		    return &system;
-		  }
+		  const  physics::PRNG * getPrng() const;
+		  const hardware::System * getSystem() const;
 
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
 			std::vector<const hardware::buffers::SU3 *> buffers;
 			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
+			const meta::Inputparameters * parameters;
 
 			/**
 			 * Utility function for construction.
 			 */
 			void fill_from_ildg(std::string);
 
-		  /*
+		  /**
 		   * Contains metadata of sourcefile
 		   */
 		  sourcefileparameters parameters_source;
-
+			
+			void initializeBasedOnParameters();
 		};
 	}
 }

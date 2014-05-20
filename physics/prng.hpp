@@ -56,7 +56,7 @@ namespace physics {
 			/**
 			 * Get random numbers
 			 */
-			double get_double() noexcept;
+			double get_double() const noexcept;
 
 			/**
 			 * Get the buffers containing the random state on the device.
@@ -94,9 +94,9 @@ namespace physics {
 			const hardware::System& system;
 	};
 
-	void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma, physics::PRNG& prng);
-	void gaussianNormalPair(hmc_float * z1, hmc_float * z2, physics::PRNG& prng);
-	Matrixsu3 random_matrixsu3(physics::PRNG& prng);
+	void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma, const physics::PRNG& prng);
+	void gaussianNormalPair(hmc_float * z1, hmc_float * z2, const physics::PRNG& prng);
+	Matrixsu3 random_matrixsu3(const physics::PRNG& prng);
 }
 
 #endif /* _PHYSICS_PRNG_ */
