@@ -44,22 +44,31 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 
 		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
 	}
+	
+	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_2 )
+	{
+		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=wilson", "--pbp_version=tm_one_end_trick"};
+		meta::Inputparameters params(4, _params);
+
+		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( MEASURE )
 
-	BOOST_AUTO_TEST_CASE( MEASURE_1 )
+	BOOST_AUTO_TEST_CASE( MEASURE_1 ) // equiv. to inverter test 29
 	{
-		const char * _params[] = {"foo", "--kappa=0.01", "--measure_pbp=true"};
-		meta::Inputparameters params(3, _params);
+		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--fermact=TWISTEDMASS", "--measure_pbp=true", "--num_sources=1", "--sourcetype=volume", "--sourcecontent=one"};
+		meta::Inputparameters params(11, _params);
 		const hardware::System system(params);
 		const physics::PRNG prng(system);
 		const physics::lattices::Gaugefield gaugefield(system, prng);
 
-		physics::observables::wilson::TwoFlavourChiralCondensate tester(&params);
-		
-		tester.measureChiralCondensate(&gaugefield, 0);
+		double result = physics::observables::wilson::measureChiralCondensate(&gaugefield, 0);
+		double referenceValue = 4.86486486486488e-01;
+		double testPrecision = 1e-8;
+		BOOST_REQUIRE_CLOSE(result, referenceValue, testPrecision);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
