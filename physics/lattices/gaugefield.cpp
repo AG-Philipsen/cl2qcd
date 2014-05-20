@@ -58,14 +58,30 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
-static void extract_boundary(char* host, const hardware::buffers::SU3 * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
-static void send_halo(const hardware::buffers::SU3 * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
+
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()) , parameters_source()
+{
+	initializeBasedOnParameters();
+}
+
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, bool hot)
+	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
+{
+	initializeHotOrCold(hot);
+}
+
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, std::string ildgfile)
+	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
+{
+	initializeFromILDGSourcefile(ildgfile);
+}
 
 void physics::lattices::Gaugefield::initializeBasedOnParameters()
 {
 	switch(parameters->get_startcondition()) {
 		case meta::Inputparameters::start_from_source:
-			fill_from_ildg(parameters->get_sourcefile());
+			initializeFromILDGSourcefile(parameters->get_sourcefile());
 			break;
 		case meta::Inputparameters::cold_start:
 			set_cold(buffers);
@@ -77,14 +93,7 @@ void physics::lattices::Gaugefield::initializeBasedOnParameters()
 	}
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters_source(), parameters(&system.get_inputparameters() )
-{
-	initializeBasedOnParameters();
-}
-
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, bool hot)
-	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
+void physics::lattices::Gaugefield::initializeHotOrCold(bool hot)
 {
 	if(hot) {
 		set_hot(buffers, prng);
@@ -94,13 +103,7 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physic
 	}
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, std::string ildgfile)
-	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
-{
-	fill_from_ildg(ildgfile);
-}
-
-void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
+void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ildgfile)
 {
 	auto parameters = system.get_inputparameters();
 	Matrixsu3 * gf_host = new Matrixsu3[meta::get_vol4d(parameters) * 4];
@@ -248,7 +251,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters)
 {
 	//little check if arrays are big enough
-	if (meta::get_vol4d(parameters) *NDIM * NC * NC * 2 != check) {
+	if ((int) (meta::get_vol4d(parameters) *NDIM * NC * NC * 2) != check) {
 		std::stringstream errstr;
 		errstr << "Error in setting gaugefield to source values!!\nCheck global settings!!";
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
@@ -663,3 +666,9 @@ const hardware::System * physics::lattices::Gaugefield::getSystem() const
 {
   return &system;
 }
+
+const meta::Inputparameters * physics::lattices::Gaugefield::getParameters() const
+{
+  return parameters;
+}
+

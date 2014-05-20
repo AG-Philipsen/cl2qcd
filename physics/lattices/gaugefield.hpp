@@ -124,6 +124,7 @@ namespace physics {
 
 		  const  physics::PRNG * getPrng() const;
 		  const hardware::System * getSystem() const;
+			const meta::Inputparameters * getParameters() const;
 
 		private:
 			hardware::System const& system;
@@ -133,16 +134,16 @@ namespace physics {
 			const meta::Inputparameters * parameters;
 
 			/**
-			 * Utility function for construction.
+			 * Utility functions for construction.
 			 */
-			void fill_from_ildg(std::string);
+			void initializeBasedOnParameters();
+			void initializeHotOrCold(bool hot);
+			void initializeFromILDGSourcefile(std::string);
 
 		  /**
 		   * Contains metadata of sourcefile
 		   */
 		  sourcefileparameters parameters_source;
-			
-			void initializeBasedOnParameters();
 		};
 	}
 }
