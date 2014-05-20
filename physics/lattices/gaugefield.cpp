@@ -59,19 +59,19 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()) , parameters_source()
 {
 	initializeBasedOnParameters();
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, bool hot)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, bool hot)
 	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
 {
 	initializeHotOrCold(hot);
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, physics::PRNG& prng, std::string ildgfile)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, std::string ildgfile)
 	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
 {
 	initializeFromILDGSourcefile(ildgfile);

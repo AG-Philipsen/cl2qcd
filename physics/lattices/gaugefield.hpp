@@ -46,17 +46,17 @@ namespace physics {
 			/**
 			 * Construct a gaugefield based on the input-files of the system
 			 */
-			Gaugefield(const hardware::System&, physics::PRNG&);
+			Gaugefield(const hardware::System&, const physics::PRNG&);
 
 			/**
 			 * Construct a gaugefield based on the given ILDG file.
 			 */
-			Gaugefield(const hardware::System&, physics::PRNG&, std::string);
+			Gaugefield(const hardware::System&, const physics::PRNG&, std::string);
 
 			/**
 			 * Construct a gaugefield that has been initialized hot or cold
 			 */
-			Gaugefield(const hardware::System&, physics::PRNG&, bool hot);
+			Gaugefield(const hardware::System&, const physics::PRNG&, bool hot);
 
 			/**
 			 * Release resources
