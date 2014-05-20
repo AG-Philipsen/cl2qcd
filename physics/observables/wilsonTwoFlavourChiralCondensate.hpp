@@ -34,48 +34,52 @@
 
 namespace physics{
 
-  namespace observables{
+	namespace observables{
 
-    namespace wilson{
+		namespace wilson{
 
-      class TwoFlavourChiralCondensate
-      {
-      public:
-	TwoFlavourChiralCondensate(const meta::Inputparameters * parametersIn)
-	{
-	  parameters = parametersIn;
-	}
-	TwoFlavourChiralCondensate() = delete;
+			class TwoFlavourChiralCondensate
+			{
+			public:
+				TwoFlavourChiralCondensate(const meta::Inputparameters * parametersIn)
+				{
+	  			parameters = parametersIn;
+					if(! parameters->get_measure_pbp() ) 
+					{
+						throw std::logic_error("Chiral condensate calculation disabled in parameter setting. Aborting...");
+					}
+				}
+				TwoFlavourChiralCondensate() = delete;
 
-	//perhaps move this out of class?
-	double measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, int iteration)
-	{
-	  auto system = gaugefield->getSystem();
-	  auto prng = gaugefield->getPrng();
+				//perhaps move this out of class?
+				double measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, int iteration)
+				{
+					auto system = gaugefield->getSystem();
+					auto prng = gaugefield->getPrng();
 
-	  std::string currentConfigurationName = "replace";
-	  filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, currentConfigurationName);
-	  int sourceNumber = 0;
+					std::string currentConfigurationName = "replace";
+					filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, currentConfigurationName);
+					int sourceNumber = 0;
 
-	  for (; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
-	    auto sources = physics::create_sources(*system, *prng, 1);
-	    auto result = physics::lattices::create_spinorfields(*system, sources.size());
-	    physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
-	    physics::algorithms::flavour_doublet_chiral_condensate(result, sources, filenameForChiralCondensateData, gaugefield->get_parameters_source().trajectorynr_source, *system);
-	    physics::lattices::release_spinorfields(result);
-	    physics::lattices::release_spinorfields(sources);
-	  }
+					for (; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
+						auto sources = physics::create_sources(*system, *prng, 1);
+						auto result = physics::lattices::create_spinorfields(*system, sources.size());
+						physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
+						physics::algorithms::flavour_doublet_chiral_condensate(result, sources, filenameForChiralCondensateData, gaugefield->get_parameters_source().trajectorynr_source, *system);
+						physics::lattices::release_spinorfields(result);
+						physics::lattices::release_spinorfields(sources);
+					}
 
-	  return 0.;
-	}
+					return 0.;
+				}
 	
-      private:
-	const meta::Inputparameters * parameters;
-	double chiralCondensate;
-	std::ofstream outputToFile;
-	std::string filenameForChiralCondensateData;
-	
-	void writeChiralCondensateToFile(int iter,  const std::string& filename);
+			private:
+				const meta::Inputparameters * parameters;
+				double chiralCondensate;
+				std::ofstream outputToFile;
+				std::string filenameForChiralCondensateData;
+				
+				void writeChiralCondensateToFile(int iter,  const std::string& filename);
       };
     }
   }

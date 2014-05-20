@@ -30,13 +30,36 @@
 
 BOOST_AUTO_TEST_SUITE( BUILD )
 
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-  const char * _params[] = {"foo"};
-  meta::Inputparameters params(1, _params);
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+		const char * _params[] = {"foo", "--measure_pbp=true"};
+		meta::Inputparameters params(2, _params);
+		BOOST_REQUIRE_NO_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) );
+	}
+	
+	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_1 )
+	{
+		const char * _params[] = {"foo", "--measure_pbp=false"};
+		meta::Inputparameters params(2, _params);
 
-  BOOST_REQUIRE_NO_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) );
-}
+		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( MEASURE )
+
+	BOOST_AUTO_TEST_CASE( MEASURE_1 )
+	{
+		const char * _params[] = {"foo", "--kappa=0.01", "--measure_pbp=true"};
+		meta::Inputparameters params(3, _params);
+		const hardware::System system(params);
+		const physics::PRNG prng(system);
+		const physics::lattices::Gaugefield gaugefield(system, prng);
+
+		physics::observables::wilson::TwoFlavourChiralCondensate tester(&params);
+		
+		tester.measureChiralCondensate(&gaugefield, 0);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
