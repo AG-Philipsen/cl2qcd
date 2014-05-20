@@ -52,6 +52,24 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 
 		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
 	}
+	
+	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_3 )
+	{
+		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=clover", "--pbp_version=tm_one_end_trick"};
+		meta::Inputparameters params(4, _params);
+
+		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+	}
+	
+		BOOST_AUTO_TEST_CASE( INV_ARGUMENT_4 )
+	{
+		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=clover", "--pbp_version=std"};
+		meta::Inputparameters params(4, _params);
+
+		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+	}
+	
+	//todo: tlsym, iwasaki, dbw2, rooted_stagg
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -59,7 +77,7 @@ BOOST_AUTO_TEST_SUITE( MEASURE )
 
 	BOOST_AUTO_TEST_CASE( MEASURE_1 ) // equiv. to inverter test 29
 	{
-		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--fermact=TWISTEDMASS", "--measure_pbp=true", "--num_sources=1", "--sourcetype=volume", "--sourcecontent=one"};
+		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--fermact=TWISTEDMASS", "--measure_pbp=true", "--num_sources=2", "--sourcetype=volume", "--sourcecontent=one", "--use_eo=false"};
 		meta::Inputparameters params(11, _params);
 		const hardware::System system(params);
 		const physics::PRNG prng(system);

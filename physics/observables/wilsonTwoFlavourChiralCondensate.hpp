@@ -49,24 +49,18 @@ namespace physics{
 				{
 	  			parameters = parametersIn;
 					checkInputparameters();
+					openFileForWriting();
 				}
 				TwoFlavourChiralCondensate() = delete;
+				
+				~TwoFlavourChiralCondensate()
+				{
+					outputToFile.close();
+				}
 				
 				double getChiralCondensate()
 				{
 					return chiralCondensate;
-				}
-				
-				void flavour_doublet_chiral_condensate(const std::vector<physics::lattices::Spinorfield*>& inverted, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
-				{
-					if( parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) 
-					{
-// 						flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
-					} 
-					else
-					{
-						flavour_doublet_chiral_condensate_std(inverted, sources, pbp_fn, number, system);
-					}
 				}
 				
 				void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield)
@@ -74,17 +68,16 @@ namespace physics{
 					auto system = gaugefield->getSystem();
 					auto prng = gaugefield->getPrng();
 				
-					std::string currentConfigurationName = "replace";
-					filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, currentConfigurationName);
 					int sourceNumber = 0;
 
 					for (; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
 						auto sources = physics::create_sources(*system, *prng, 1);
 						auto result = physics::lattices::create_spinorfields(*system, sources.size());
 						physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
-						flavour_doublet_chiral_condensate(result, sources, filenameForChiralCondensateData, gaugefield->get_parameters_source().trajectorynr_source, *system);
+						flavour_doublet_chiral_condensate(result[0], sources[0], *system);
 						physics::lattices::release_spinorfields(result);
 						physics::lattices::release_spinorfields(sources);
+						writeChiralCondensateToFile(gaugefield->get_parameters_source().trajectorynr_source);
 					}
 				}
 				
@@ -95,7 +88,12 @@ namespace physics{
 				std::ofstream outputToFile;
 				std::string filenameForChiralCondensateData;
 				
-				void writeChiralCondensateToFile(int iter,  const std::string& filename);
+				void writeChiralCondensateToFile(int number)
+				{
+					logger.info() << "chiral condensate:" ;
+					logger.info() << number << "\t" << std::scientific << std::setprecision(14) << chiralCondensate;
+					outputToFile << number << "\t" << std::scientific << std::setprecision(14) << chiralCondensate << std::endl;
+				}
 				
 				void checkInputparameters()
 				{
@@ -110,21 +108,26 @@ namespace physics{
 						throw std::logic_error("No valid chiral condensate version has ben selected.");
 				}
 				
-				void flavour_doublet_chiral_condensate_std(const std::vector<physics::lattices::Spinorfield*>& solved_fields, const std::vector<physics::lattices::Spinorfield*>& sources, std::string pbp_fn, int number, const hardware::System& system)
+				double norm_std() const 
 				{
-					using namespace physics::lattices;
-
-					auto params = system.get_inputparameters();
-
-					// Output
-					using namespace std;
-					ofstream of;
-					of.open(pbp_fn.c_str(), std::ios_base::app);
-					if(!of.is_open()) {
-						throw File_Exception(pbp_fn);
+					/**
+					 * Normalize for VOL4D, NF and spinor entries (NC * ND = 12)
+					 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
+					 * The additional factor of 2 is inserted to fit the reference values.
+					 */
+					double norm =  4. * parameters->get_kappa() * 2. / meta::get_vol4d(*parameters) / 2. / 12.;
+					/**
+					 * Currently, there is a problem with the sign if even-odd is used (issue #389).
+					 * This seems to cause the a wrong sign in the chiral condensate, which will be compensated for now.
+					 */
+					if(parameters->get_use_eo() ){
+						norm *= -1.;
 					}
-
-					hmc_float result = 0.;
+					return norm;
+				}
+				
+				void flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi, const hardware::System& system)
+				{
 					/**
 					* In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
 					* <pbp> = <ubu + dbd> = 2<ubu>  
@@ -146,50 +149,45 @@ namespace physics{
 					*       = - lim_r->inf Nf/r  (gamma_5 Xi_r, Phi_r)
 					* NOTE: The basic difference compared to the pure Wilson case is the gamma_5 and that one takes the negative imaginary part!
 					*/
-					// Need 2 spinors at once..
-					logger.debug() << "init buffers for chiral condensate calculation...";
-					Spinorfield phi(system);
-					Spinorfield xi(system);
-					assert(solved_fields.size() == sources.size());
-					/*
-					* Normalize for VOL4D, NF and spinor entries (NC * ND = 12)
-					* In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
-					* The additional factor of 2 is inserted to fit the reference values.
-					*/
-					hmc_float norm = 4. * params.get_kappa() * 2. / meta::get_vol4d(params) / 2. / 12.;
-					/**
-					* Currently, there is a problem with the sign if even-odd is used (issue #389).
-					* This seems to cause the a wrong sign in the chiral condensate, which will be compensated for now.
-					*/
-					if(params.get_use_eo() ){
-						norm *= -1.;
-					}
-					logger.info() << "chiral condensate:" ;
-					for(size_t i = 0; i < solved_fields.size(); ++i) {
-						copyData(&phi, solved_fields[i]);
-						copyData(&xi, sources[i]);
 
-						if(params.get_fermact() == meta::Inputparameters::twistedmass) {
-							xi.gamma5();
-						}
-						
-						hmc_complex tmp = scalar_product(xi, phi);
-						tmp.re *= norm;
-						tmp.im *= norm;
-						switch(params.get_fermact()) {
-							case  meta::Inputparameters::wilson:
-								result = tmp.re;
-								break;
-							case meta::Inputparameters::twistedmass:
-								result = (-1.) * tmp.im;
-								break;
-							default:
-								throw std::invalid_argument("chiral condensate not implemented for given fermion action");
-						}
-						logger.info() << number << "\t" << scientific << setprecision(14) << result;
-						of << number << "\t" << scientific << setprecision(14) << result << endl;
+					if(parameters->get_fermact() == meta::Inputparameters::twistedmass) {
+						xi->gamma5();
 					}
-					chiralCondensate = result;
+					hmc_complex tmp = scalar_product(*xi, *phi);
+
+					switch(parameters->get_fermact()) {
+						case  meta::Inputparameters::wilson:
+							chiralCondensate = tmp.re * norm_std();
+							break;
+						case meta::Inputparameters::twistedmass:
+							chiralCondensate = (-1.) * tmp.im * norm_std();
+							break;
+						default:
+							throw std::invalid_argument("chiral condensate not implemented for given fermion action");
+					}
+				}
+				
+				void openFileForWriting()
+				{
+					//todo: what is this neede for?
+					std::string currentConfigurationName = "replace";
+					filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, currentConfigurationName);
+					outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
+					if(!outputToFile.is_open()) {
+						throw File_Exception(filenameForChiralCondensateData);
+					}
+				}
+				
+				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources, const hardware::System& system)
+				{
+					if( parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) 
+					{
+// 						flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
+					} 
+					else
+					{
+						flavourChiralCondensate_std(inverted, sources, system);
+					}
 				}
 
       };
