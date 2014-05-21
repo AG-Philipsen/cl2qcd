@@ -30,14 +30,14 @@
 
 class KernelTester {
 public:
-  KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparision = 1);
+  KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	virtual ~KernelTester();
 	void setReferenceValuesToZero();
 	
 protected:
 	double testPrecision;
-	int typeOfComparision;
+	int typeOfComparison;
 	std::vector<double> kernelResult;
 	std::vector<double> referenceValue;
 	bool allocatedObjects;
