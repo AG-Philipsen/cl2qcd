@@ -18,309 +18,327 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testUtilities.hpp"
-
-#include "../meta/util.hpp"
-#include "../host_functionality/host_random.h"
-#include "../physics/prng.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/complex.hpp"
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE_COMPLEX
-#include <boost/test/unit_test.hpp>
 
-//some functionality
-#include "test_util.h"
+#include "kernelTester.hpp"
+#include "complex.hpp"
 
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_complex";
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("complex/" + inputfile);
-	hardware::System system(params);
-	for(auto device: system.get_devices()) {
-		device->get_complex_code();
+class ComplexTester : public KernelTester {
+   public:
+	ComplexTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 2,
+	    int typeOfComparision = 1) : 
+	    KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision) {
+		code = device->get_complex_code();
+		hmc_complex alpha_host = {parameters->get_beta(), parameters->get_rho()};
+		hmc_complex beta_host = {parameters->get_kappa(), parameters->get_mu()};
+		alpha = new hardware::buffers::Plain<hmc_complex>(1, device);
+		beta = new hardware::buffers::Plain<hmc_complex>(1, device);
+		result = new hardware::buffers::Plain<hmc_complex>(1, device);
+		alpha->load(&alpha_host);
+		beta->load(&beta_host);
 	}
-	BOOST_MESSAGE("Test done");
-}
-
-void test_cplx(std::string inputfile, int switcher, bool hard=false)
-{
-  //switcher chooses between product, ratio, sum, subtraction and convert
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if (switcher == 0)
-	  kernelName = "product";
-	else if(switcher == 1)
-	  kernelName = "ratio";
-	else if(switcher == 2)
-	  kernelName = "sum";
-	else if(switcher == 3)
-	  kernelName = "subtraction";
-	else if (switcher == 4)
-	  kernelName = "convert";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("complex/" + inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_complex_code();
-
-	logger.info() << "Fill buffers...";
-	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
-	hardware::buffers::Plain<hmc_complex> beta(1, device->get_device());
-
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
-	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
-	hmc_complex beta_host = {params.get_kappa(), params.get_mu()};
-	logger.info() << "Use beta = (" << beta_host.re << ","<< beta_host.im <<")";
-
-	alpha.load(&alpha_host);
-	beta.load(&beta_host);
-
-	logger.info() << "Run kernel";
-	if(switcher == 0){
-	  device->set_complex_to_product_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_complex_to_product_device(&alpha, &sqnorm, &sqnorm);
+	
+	void storeResultAsComplex(){
+		hmc_complex tmp;
+		result->dump(&tmp);
+		kernelResult[0] = tmp.re;
+		kernelResult[1] = tmp.im;
 	}
-	else if (switcher ==1){
-	  device->set_complex_to_ratio_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_complex_to_ratio_device(&sqnorm, &beta, &sqnorm);
+	
+	virtual ~ComplexTester(){
+		delete alpha;
+		delete beta;
+		delete result;
+		code = NULL;
 	}
-	else if (switcher ==2){
-	  device->set_complex_to_sum_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_complex_to_sum_device(&alpha, &sqnorm, &sqnorm);
-	}
-	else if (switcher ==3){
-	  device->set_complex_to_difference_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_complex_to_difference_device(&sqnorm, &beta, &sqnorm);
-	}
-	if(switcher == 4){
-	  hardware::buffers::Plain<hmc_float> gamma(1, device->get_device());
-	  hmc_float tmp = (params.get_beta());
-	  gamma.load(&tmp);
-	  device->set_complex_to_float_device(&gamma, &sqnorm);
-	}
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	hmc_complex tmp;
-	sqnorm.dump(&tmp);
-	cpu_res = tmp.re + tmp.im;
-	logger.info() << cpu_res;
+    
+   protected:
+	const hardware::code::Complex * code;
+	hardware::buffers::Plain<hmc_complex> *alpha;
+	hardware::buffers::Plain<hmc_complex> *beta;
+	hardware::buffers::Plain<hmc_complex> *result;
 
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
+	std::string getSpecificInputfile(std::string inputfileIn){
+		//todo: this is ugly, find a better solution.
+		// The problem is that the parent class calls a similar fct.
+		return "complex/" + inputfileIn;
+	}
+};
 
+///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-	test_build("complex_build_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( BUILD_2 )
-{
-	test_build("complex_build_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(CPLX_PRODUCT)
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_1 )
-{
-  test_cplx("/cplx_product_input_1", 0);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_2 )
-{
-  test_cplx("/cplx_product_input_2", 0);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_3 )
-{
-  test_cplx("/cplx_product_input_3", 0);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_4 )
-{
-  test_cplx("/cplx_product_input_4", 0);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_5 )
-{
-  test_cplx("/cplx_product_input_5", 0);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_6 )
-{
-  test_cplx("/cplx_product_input_6", 0);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_7 )
-{
-  test_cplx("/cplx_product_input_7", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_8 )
-{
-  test_cplx("/cplx_product_input_8", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_9 )
-{
-  test_cplx("/cplx_product_input_9", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_10 )
-{
-  test_cplx("/cplx_product_input_10", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_11 )
-{
-  test_cplx("/cplx_product_input_11", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_PRODUCT_12 )
-{
-  test_cplx("/cplx_product_input_12", 0, true);
-}
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+	    BOOST_CHECK_NO_THROW(ComplexTester("build", "complex_build_input_1", 0));
+	}
+	
+	BOOST_AUTO_TEST_CASE( BUILD_2 )
+	{
+	    BOOST_CHECK_NO_THROW(ComplexTester("build", "complex_build_input_2", 0));
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(CPLX_RATIO)
+///////////////////////////////////////
 
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_1 )
-{
-  test_cplx("/cplx_ratio_input_1", 1);
-}
+BOOST_AUTO_TEST_SUITE(PRODUCT)
 
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_2 )
-{
-  test_cplx("/cplx_ratio_input_2", 1);
-}
+	class ComplexProductTester: public ComplexTester{
+	  public:
+		ComplexProductTester(std::string inputfile, bool multiple_operation = false) :
+		   ComplexTester("product", inputfile){
+			code->set_complex_to_product_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_complex_to_product_device(alpha, result, result);
+			
+			storeResultAsComplex();
+		}
+	};
 
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_3 )
-{
-  test_cplx("/cplx_ratio_input_3", 1);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_4 )
-{
-  test_cplx("/cplx_ratio_input_4", 1);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_5 )
-{
-  test_cplx("/cplx_ratio_input_5", 1, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_6 )
-{
-  test_cplx("/cplx_ratio_input_6", 1, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_7 )
-{
-  test_cplx("/cplx_ratio_input_7", 1, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_RATIO_8 )
-{
-  test_cplx("/cplx_ratio_input_8", 1, true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(CPLX_SUM)
-
-BOOST_AUTO_TEST_CASE( CPLX_SUM_1 )
-{
-  test_cplx("/cplx_sum_input_1", 2);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_SUM_2 )
-{
-  test_cplx("/cplx_sum_input_2", 2);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_SUM_3 )
-{
-  test_cplx("/cplx_sum_input_3", 2);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_SUM_4 )
-{
-  test_cplx("/cplx_sum_input_4", 2, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_SUM_5 )
-{
-  test_cplx("/cplx_sum_input_5", 2, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_SUM_6 )
-{
-  test_cplx("/cplx_sum_input_6", 2, true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(CPLX_DIFFERENCE)
-
-BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_1 )
-{
-  test_cplx("/cplx_difference_input_1", 3);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_2 )
-{
-  test_cplx("/cplx_difference_input_2", 3);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_3 )
-{
-  test_cplx("/cplx_difference_input_3", 3);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_4 )
-{
-  test_cplx("/cplx_difference_input_4", 3, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_5 )
-{
-  test_cplx("/cplx_difference_input_5", 3, true);
-}
-
-BOOST_AUTO_TEST_CASE( CPLX_DIFFERENCE_6 )
-{
-  test_cplx("/cplx_difference_input_6", 3, true);
-}
+	BOOST_AUTO_TEST_CASE( PRODUCT_1 )
+	{
+	    ComplexProductTester("product_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_2 )
+	{
+	    ComplexProductTester("product_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_3 )
+	{
+	    ComplexProductTester("product_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_4 )
+	{
+	    ComplexProductTester("product_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_5 )
+	{
+	    ComplexProductTester("product_input_5");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_6 )
+	{
+	    ComplexProductTester("product_input_6");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_7 )
+	{
+	    ComplexProductTester("product_input_7", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_8 )
+	{
+	    ComplexProductTester("product_input_8", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_9 )
+	{
+	    ComplexProductTester("product_input_9", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_10 )
+	{
+	    ComplexProductTester("product_input_10", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_11 )
+	{
+	    ComplexProductTester("product_input_11", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_12 )
+	{
+	    ComplexProductTester("product_input_12", true);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(CPLX_CONVERT)
+///////////////////////////////////////
 
-BOOST_AUTO_TEST_CASE( CPLX_CONVERT_1 )
-{
-  test_cplx("/cplx_convert_input_1", 4);
-}
+BOOST_AUTO_TEST_SUITE(RATIO)
 
-BOOST_AUTO_TEST_CASE( CPLX_CONVERT_2 )
-{
-  test_cplx("/cplx_convert_input_2", 4);
-}
+	class ComplexRatioTester: public ComplexTester{
+	  public:
+		ComplexRatioTester(std::string inputfile, bool multiple_operation = false) :
+		   ComplexTester("ratio", inputfile){
+			code->set_complex_to_ratio_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_complex_to_ratio_device(result, beta, result);
+			
+			storeResultAsComplex();
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( RATIO_1 )
+	{
+	    ComplexRatioTester("ratio_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_2 )
+	{
+	    ComplexRatioTester("ratio_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_3 )
+	{
+	    ComplexRatioTester("ratio_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_4 )
+	{
+	    ComplexRatioTester("ratio_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_5 )
+	{
+	    ComplexRatioTester("ratio_input_5", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_6 )
+	{
+	    ComplexRatioTester("ratio_input_6", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_7 )
+	{
+	    ComplexRatioTester("ratio_input_7", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_8 )
+	{
+	    ComplexRatioTester("ratio_input_8", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(SUM)
+
+	class ComplexSumTester: public ComplexTester{
+	  public:
+		ComplexSumTester(std::string inputfile, bool multiple_operation = false) :
+		   ComplexTester("sum", inputfile){
+			code->set_complex_to_sum_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_complex_to_sum_device(alpha, result, result);
+			
+			storeResultAsComplex();
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( SUM_1 )
+	{
+	    ComplexSumTester("sum_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_2 )
+	{
+	    ComplexSumTester("sum_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_3 )
+	{
+	    ComplexSumTester("sum_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_4 )
+	{
+	    ComplexSumTester("sum_input_4", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_5 )
+	{
+	    ComplexSumTester("sum_input_5", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_6 )
+	{
+	    ComplexSumTester("sum_input_6", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(DIFFERENCE)
+
+	class ComplexDifferenceTester: public ComplexTester{
+	  public:
+		ComplexDifferenceTester(std::string inputfile, bool multiple_operation = false) :
+		   ComplexTester("difference", inputfile){
+			code->set_complex_to_difference_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_complex_to_difference_device(result, beta, result);
+			
+			storeResultAsComplex();
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_1 )
+	{
+	    ComplexDifferenceTester("difference_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_2 )
+	{
+	    ComplexDifferenceTester("difference_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_3 )
+	{
+	    ComplexDifferenceTester("difference_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_4 )
+	{
+	    ComplexDifferenceTester("difference_input_4", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_5 )
+	{
+	    ComplexDifferenceTester("difference_input_5", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_6 )
+	{
+	    ComplexDifferenceTester("difference_input_6", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(CONVERT)
+
+	class ComplexConvertTester: public ComplexTester{
+	  public:
+		ComplexConvertTester(std::string inputfile) : ComplexTester("convert", inputfile){
+			hardware::buffers::Plain<hmc_float> gamma(1, device);
+			hmc_float tmp = (parameters->	get_beta());
+			gamma.load(&tmp);
+			code->set_complex_to_float_device(&gamma, result);
+			
+			storeResultAsComplex();
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( CONVERT_1 )
+	{
+	    ComplexConvertTester("convert_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( CONVERT_2 )
+	{
+	    ComplexConvertTester("convert_input_2");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
