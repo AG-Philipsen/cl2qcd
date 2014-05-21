@@ -18,22 +18,6 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// #include "testUtilities.hpp"
-// 
-// #include "../meta/util.hpp"
-// #include "../host_functionality/host_random.h"
-// #include "../hardware/code/spinors_staggered.hpp"
-// #include "../hardware/code/spinors.hpp"
-// 
-// // use the boost test framework
-// #define BOOST_TEST_DYN_LINK
-// #define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS_STAGGERED
-// #include <boost/test/unit_test.hpp>
-// 
-// //some functionality
-// #include "test_util.h"
-// #include "test_util_staggered.h"
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS_STAGGERED
