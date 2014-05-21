@@ -18,446 +18,401 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testUtilities.hpp"
-
-#include "../meta/util.hpp"
-#include "../physics/prng.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/real.hpp"
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OPENCL_MODULE_REAL
-#include <boost/test/unit_test.hpp>
 
-//some functionality
-#include "test_util.h"
+#include "real.hpp"
+#include "kernelTester.hpp"
 
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_real";
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("real/" + inputfile);
-	hardware::System system(params);
-	for(auto device: system.get_devices()) {
-		device->get_real_code();
-	}
-	BOOST_MESSAGE("Test done");
-}
-
-void test_access_element(std::string inputfile, bool get=true)
-{
-	using namespace hardware::buffers;
-	
-	std::string kernelName;
-	if (get)
-	  kernelName = "get_vector_element";
-	else
-	  kernelName = "set_vector_element";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("real/" + inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_real_code();
-	
-	logger.info() << "Fill buffers...";
-	hardware::buffers::Plain<hmc_float> scalar_buf(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> vector_buf(4, device->get_device());
-	std::vector<hmc_float> vector_host;
-	hmc_float scalar_host;
-	
-	vector_host.push_back(params.get_beta());
-	vector_host.push_back(params.get_kappa());
-	vector_host.push_back(params.get_rho());
-	vector_host.push_back(params.get_mu());
-	vector_buf.load(&vector_host[0]);
-	if(get){
-	  logger.info() << "Using:";
-	  for(uint i=0; i<vector_host.size(); i++)
-	    logger.info() << "vector_buf[" << i << "] = " << vector_host[i];
-	}else{
-	  scalar_host = params.get_beta() + params.get_kappa() + params.get_rho() + params.get_mu();
-	  logger.info() << "Using scalar = " << scalar_host;
-	  scalar_buf.load(&scalar_host);
+class RealTester : public KernelTester {
+   public:
+	RealTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1,
+	    int typeOfComparision = 1) : 
+	    KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision) {
+		code = device->get_real_code();
+		hmc_float alpha_host = parameters->get_beta();
+		hmc_float beta_host = parameters->get_kappa();
+		alpha = new hardware::buffers::Plain<hmc_float>(1, device);
+		beta = new hardware::buffers::Plain<hmc_float>(1, device);
+		result = new hardware::buffers::Plain<hmc_float>(1, device);
+		alpha->load(&alpha_host);
+		beta->load(&beta_host);
 	}
 	
-	logger.info() << "Run kernel";
-	
-	if(get){
-	  for(uint i=0; i<vector_host.size(); i++){
-	    device->set_real_to_vector_element_device(&vector_buf, i, &scalar_buf);
-	    hmc_float cpu_res;
-	    scalar_buf.dump(&cpu_res);
-	    logger.info() << "element " << i << " = " << cpu_res;
-	    BOOST_REQUIRE_CLOSE(cpu_res, vector_host[i], 1.e-8);
-	  }
-	}else{
-	  for(uint i=0; i<vector_host.size(); i++){
-	    device->set_vector_element_to_real_device(&scalar_buf, i, &vector_buf);
-	    std::vector<hmc_float> cpu_res(4);
-	    vector_buf.dump(&cpu_res[0]);
-	    logger.info() << "element " << i << " = " << cpu_res[i];
-	    BOOST_REQUIRE_CLOSE(cpu_res[i], scalar_host, 1.e-8);
-	  }
+	virtual ~RealTester(){
+		delete alpha;
+		delete beta;
+		delete result;
+		code = NULL;
 	}
-	
-	BOOST_MESSAGE("Test done");
-}
+    
+   protected:
+	const hardware::code::Real * code;
+	hardware::buffers::Plain<hmc_float> *alpha;
+	hardware::buffers::Plain<hmc_float> *beta;
+	hardware::buffers::Plain<hmc_float> *result;
 
-void test_base_operations(std::string inputfile, int switcher, bool hard=false)
-{
-  //switcher chooses between product, ratio, sum, subtraction and convert
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if (switcher == 0)
-	  kernelName = "product";
-	else if(switcher == 1)
-	  kernelName = "ratio";
-	else if(switcher == 2)
-	  kernelName = "sum";
-	else if(switcher == 3)
-	  kernelName = "subtraction";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("real/" + inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_real_code();
-
-	logger.info() << "Fill buffers...";
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> alpha(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> beta(1, device->get_device());
-
-	hmc_float alpha_host = params.get_beta();
-	logger.info() << "Use alpha = " << alpha_host;
-	hmc_float beta_host = params.get_kappa();
-	logger.info() << "Use beta = " << beta_host;
-
-	alpha.load(&alpha_host);
-	beta.load(&beta_host);
-
-	logger.info() << "Run kernel";
-	if(switcher == 0){
-	  device->set_real_to_product_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_real_to_product_device(&alpha, &sqnorm, &sqnorm);
+	std::string getSpecificInputfile(std::string inputfileIn){
+		//todo: this is ugly, find a better solution.
+		// The problem is that the parent class calls a similar fct.
+		return "real/" + inputfileIn;
 	}
-	else if (switcher ==1){
-	  device->set_real_to_ratio_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_real_to_ratio_device(&sqnorm, &beta, &sqnorm);
-	}
-	else if (switcher ==2){
-	  device->set_real_to_sum_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_real_to_sum_device(&alpha, &sqnorm, &sqnorm);
-	}
-	else if (switcher ==3){
-	  device->set_real_to_difference_device(&alpha, &beta, &sqnorm);
-	  if(hard)
-	    device->set_real_to_difference_device(&sqnorm, &beta, &sqnorm);
-	}
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+};
 
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
-
-void test_update(std::string inputfile, int switcher)
-{
-  //switcher chooses between alpha, beta and zeta update
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if (switcher == 0)
-	  kernelName = "update_alpha_cgm";
-	else if(switcher == 1)
-	  kernelName = "update_beta_cgm";
-	else if(switcher == 2)
-	  kernelName = "update_zeta_cgm";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("real/" + inputfile);
-	hardware::System system(params);
-	auto * device = system.get_devices().at(0)->get_real_code();
-
-	logger.info() << "Fill buffers...";
-	hardware::buffers::Plain<hmc_float> out(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> variable_1(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> variable_2(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> variable_3(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> variable_4(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> variable_5(1, device->get_device());
-	hardware::buffers::Plain<hmc_float> variable_6(1, device->get_device());
-
-	hmc_float variable_1_host = params.get_beta();
-	hmc_float variable_2_host = params.get_rho();
-	hmc_float variable_3_host = params.get_kappa();
-	hmc_float variable_4_host = params.get_mu();
-	hmc_float variable_5_host = params.get_mass(); 
-	hmc_float variable_6_host = params.get_approx_lower();  
-	
-	logger.info() << "Use variable_1 = " << variable_1_host;
-	logger.info() << "Use variable_2 = " << variable_2_host;
-	logger.info() << "Use variable_3 = " << variable_3_host;
-	if(switcher == 0 || switcher == 2){
-	  logger.info() << "Use variable_4 = " << variable_4_host;
-	  logger.info() << "Use variable_5 = " << variable_5_host;
-	}
-	if(switcher == 2)
-	  logger.info() << "Use variable_6 = " << variable_6_host;
-
-	variable_1.load(&variable_1_host);
-	variable_2.load(&variable_2_host);
-	variable_3.load(&variable_3_host);
-	variable_4.load(&variable_4_host);
-	variable_5.load(&variable_5_host);
-	variable_6.load(&variable_6_host);
-
-	logger.info() << "Run kernel";
-	if(switcher == 0)
-	  device->update_alpha_cgm_device(&variable_1, &variable_2, &variable_3, &variable_4, &variable_5, 1, &out);
-	else if (switcher ==1)
-	  device->update_beta_cgm_device(&variable_1, &variable_2, &variable_3, 1, &out);
-	else if (switcher ==2)
-	  device->update_zeta_cgm_device(&variable_1, &variable_2, &variable_3, &variable_4, &variable_5, &variable_6, 1, &out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	out.dump(&cpu_res);
-	logger.info() << cpu_res;
-
-	testFloatAgainstInputparameters(cpu_res, params);
-	BOOST_MESSAGE("Test done");
-}
-
+///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-	test_build("/real_build_input_1"); 
-}
-
-BOOST_AUTO_TEST_CASE( BUILD_2 )
-{
-	test_build("/real_build_input_2");
-}
+	BOOST_AUTO_TEST_CASE( BUILD_1 )
+	{
+	    BOOST_CHECK_NO_THROW(RealTester("build", "real_build_input_1", 0));
+	}
+	
+	BOOST_AUTO_TEST_CASE( BUILD_2 )
+	{
+	    BOOST_CHECK_NO_THROW(RealTester("build", "real_build_input_2", 0));
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(PRODUCT)
+
+	class RealProductTester: public RealTester{
+	  public:
+		RealProductTester(std::string inputfile, bool multiple_operation = false) :
+		   RealTester("product", inputfile){
+			code->set_real_to_product_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_real_to_product_device(alpha, result, result);
+			
+			result->dump(&kernelResult[0]);
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( PRODUCT_1 )
+	{
+	    RealProductTester("product_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_2 )
+	{
+	    RealProductTester("product_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_3 )
+	{
+	    RealProductTester("product_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_4 )
+	{
+	    RealProductTester("product_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_5 )
+	{
+	    RealProductTester("product_input_5");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_6 )
+	{
+	    RealProductTester("product_input_6");
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_7 )
+	{
+	    RealProductTester("product_input_7", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_8 )
+	{
+	    RealProductTester("product_input_8", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_9 )
+	{
+	    RealProductTester("product_input_9", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_10 )
+	{
+	    RealProductTester("product_input_10", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_11 )
+	{
+	    RealProductTester("product_input_11", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( PRODUCT_12 )
+	{
+	    RealProductTester("product_input_12", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(RATIO)
+
+	class RealRatioTester: public RealTester{
+	  public:
+		RealRatioTester(std::string inputfile, bool multiple_operation = false) :
+		   RealTester("ratio", inputfile){
+			code->set_real_to_ratio_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_real_to_ratio_device(result, beta, result);
+			
+			result->dump(&kernelResult[0]);
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( RATIO_1 )
+	{
+	    RealRatioTester("ratio_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_2 )
+	{
+	    RealRatioTester("ratio_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_3 )
+	{
+	    RealRatioTester("ratio_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_4 )
+	{
+	    RealRatioTester("ratio_input_4");
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_5 )
+	{
+	    RealRatioTester("ratio_input_5", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_6 )
+	{
+	    RealRatioTester("ratio_input_6", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_7 )
+	{
+	    RealRatioTester("ratio_input_7", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( RATIO_8 )
+	{
+	    RealRatioTester("ratio_input_8", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(SUM)
+
+	class RealSumTester: public RealTester{
+	  public:
+		RealSumTester(std::string inputfile, bool multiple_operation = false) :
+		   RealTester("sum", inputfile){
+			code->set_real_to_sum_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_real_to_sum_device(alpha, result, result);
+			
+			result->dump(&kernelResult[0]);
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( SUM_1 )
+	{
+	    RealSumTester("sum_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_2 )
+	{
+	    RealSumTester("sum_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_3 )
+	{
+	    RealSumTester("sum_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_4 )
+	{
+	    RealSumTester("sum_input_4", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_5 )
+	{
+	    RealSumTester("sum_input_5", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( SUM_6 )
+	{
+	    RealSumTester("sum_input_6", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
+
+BOOST_AUTO_TEST_SUITE(DIFFERENCE)
+
+	class RealDifferenceTester: public RealTester{
+	  public:
+		RealDifferenceTester(std::string inputfile, bool multiple_operation = false) :
+		   RealTester("difference", inputfile){
+			code->set_real_to_difference_device(alpha, beta, result);
+			if(multiple_operation)
+			  code->set_real_to_difference_device(result, beta, result);
+			
+			result->dump(&kernelResult[0]);
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_1 )
+	{
+	    RealDifferenceTester("difference_input_1");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_2 )
+	{
+	    RealDifferenceTester("difference_input_2");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_3 )
+	{
+	    RealDifferenceTester("difference_input_3");
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_4 )
+	{
+	    RealDifferenceTester("difference_input_4", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_5 )
+	{
+	    RealDifferenceTester("difference_input_5", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_6 )
+	{
+	    RealDifferenceTester("difference_input_6", true);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 
-BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_1 )
-{
-	test_access_element("/real_access_element_vector_input_1", true);
-}
+	//This test is quite different from the others and we inherit from KernelTester but we
+	//use BOOST directly here. Probably one could think about a better object.
+	class RealAccessVectorElementTester: public KernelTester{
+	  public:
+		RealAccessVectorElementTester(std::string inputfile, bool get_element) :
+		   KernelTester("Access_vector_element", ("real/" + inputfile), 0){
+		   
+			const hardware::code::Real * code = device->get_real_code();
+			hardware::buffers::Plain<hmc_float> scalar_buf(1, device);
+			hardware::buffers::Plain<hmc_float> vector_buf(4, device);
+			std::vector<hmc_float> vector_host(4);
+			hmc_float scalar_host;
 
-BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_2 )
-{
-	test_access_element("/real_access_element_vector_input_1", false);
-}
+			if(get_element){
+			   vector_host[0] = parameters->get_beta();
+			   vector_host[1] = parameters->get_kappa();
+			   vector_host[2] = parameters->get_rho();
+			   vector_host[3] = parameters->get_mu();
+			   vector_buf.load(&vector_host[0]);
+			   for(uint i=0; i<vector_host.size(); i++){
+			      code->set_real_to_vector_element_device(&vector_buf, i, &scalar_buf);
+			      hmc_float cpu_res;
+			      scalar_buf.dump(&cpu_res);
+			      BOOST_REQUIRE_CLOSE(cpu_res, vector_host[i], 1.e-8);
+			   }
+			}else{
+			   scalar_host = parameters->get_beta() + parameters->get_kappa() +
+			                 parameters->get_rho() + parameters->get_mu();
+			   scalar_buf.load(&scalar_host);
+			   for(uint i=0; i<vector_host.size(); i++){
+			      code->set_vector_element_to_real_device(&scalar_buf, i, &vector_buf);
+			      std::vector<hmc_float> cpu_res(4);
+			      vector_buf.dump(&cpu_res[0]);
+			      BOOST_REQUIRE_CLOSE(cpu_res[i], scalar_host, 1.e-8);
+			   }
+			}
+		}
+	};
 
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE(REAL_PRODUCT)
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_1 )
-{
-  test_base_operations("/real_product_input_1", 0);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_2 )
-{
-  test_base_operations("/real_product_input_2", 0);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_3 )
-{
-  test_base_operations("/real_product_input_3", 0);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_4 )
-{
-  test_base_operations("/real_product_input_4", 0);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_5 )
-{
-  test_base_operations("/real_product_input_5", 0);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_6 )
-{
-  test_base_operations("/real_product_input_6", 0);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_7 )
-{
-  test_base_operations("/real_product_input_7", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_8 )
-{
-  test_base_operations("/real_product_input_8", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_9 )
-{
-  test_base_operations("/real_product_input_9", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_10 )
-{
-  test_base_operations("/real_product_input_10", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_11 )
-{
-  test_base_operations("/real_product_input_11", 0, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_PRODUCT_12 )
-{
-  test_base_operations("/real_product_input_12", 0, true);
-}
+	BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_1 )
+	{
+	    RealAccessVectorElementTester("access_element_vector_input_1", true);
+	}
+	
+	BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_2 )
+	{
+	    RealAccessVectorElementTester("access_element_vector_input_1", false);
+	} 
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(REAL_RATIO)
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_1 )
-{
-  test_base_operations("/real_ratio_input_1", 1);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_2 )
-{
-  test_base_operations("/real_ratio_input_2", 1);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_3 )
-{
-  test_base_operations("/real_ratio_input_3", 1);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_4 )
-{
-  test_base_operations("/real_ratio_input_4", 1);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_5 )
-{
-  test_base_operations("/real_ratio_input_5", 1, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_6 )
-{
-  test_base_operations("/real_ratio_input_6", 1, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_7 )
-{
-  test_base_operations("/real_ratio_input_7", 1, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_RATIO_8 )
-{
-  test_base_operations("/real_ratio_input_8", 1, true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(REAL_SUM)
-
-BOOST_AUTO_TEST_CASE( REAL_SUM_1 )
-{
-  test_base_operations("/real_sum_input_1", 2);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_SUM_2 )
-{
-  test_base_operations("/real_sum_input_2", 2);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_SUM_3 )
-{
-  test_base_operations("/real_sum_input_3", 2);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_SUM_4 )
-{
-  test_base_operations("/real_sum_input_4", 2, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_SUM_5 )
-{
-  test_base_operations("/real_sum_input_5", 2, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_SUM_6 )
-{
-  test_base_operations("/real_sum_input_6", 2, true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(REAL_DIFFERENCE)
-
-BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_1 )
-{
-  test_base_operations("/real_difference_input_1", 3);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_2 )
-{
-  test_base_operations("/real_difference_input_2", 3);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_3 )
-{
-  test_base_operations("/real_difference_input_3", 3);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_4 )
-{
-  test_base_operations("/real_difference_input_4", 3, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_5 )
-{
-  test_base_operations("/real_difference_input_5", 3, true);
-}
-
-BOOST_AUTO_TEST_CASE( REAL_DIFFERENCE_6 )
-{
-  test_base_operations("/real_difference_input_6", 3, true);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
+///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(REAL_UPDATE)
 
-BOOST_AUTO_TEST_CASE( ALPHA_1 )
-{
-  test_update("/real_update_alpha_input_1", 0);
-}
+	class RealUpdateTester: public RealTester{
+	  public:
+		RealUpdateTester(std::string inputfile, int which_update) : RealTester("update", inputfile){
+			
+		   //Variable 1 and 3 are in the base class as alpha and beta Plain<hmc_float> buffers
+		   hardware::buffers::Plain<hmc_float> variable_2(1, device);
+		   hardware::buffers::Plain<hmc_float> variable_4(1, device);
+		   hardware::buffers::Plain<hmc_float> variable_5(1, device);
+		   hardware::buffers::Plain<hmc_float> variable_6(1, device);
+		   
+		   hmc_float variable_2_host = parameters->get_rho();
+		   hmc_float variable_4_host = parameters->get_mu();
+		   hmc_float variable_5_host = parameters->get_mass(); 
+		   hmc_float variable_6_host = parameters->get_approx_lower(); 
+		   
+		   variable_2.load(&variable_2_host);
+		   variable_4.load(&variable_4_host);
+		   variable_5.load(&variable_5_host);
+		   variable_6.load(&variable_6_host);
+		   
+		   if(which_update == 0)
+		     code->update_alpha_cgm_device(alpha, &variable_2, beta, &variable_4, &variable_5, 1, result);
+		   else if (which_update ==1)
+		     code->update_beta_cgm_device(alpha, &variable_2, beta, 1, result);
+		   else if (which_update ==2)
+		     code->update_zeta_cgm_device(alpha, &variable_2, beta, &variable_4, &variable_5, &variable_6, 1, result);
 
-BOOST_AUTO_TEST_CASE( BET_1 )
-{
-  test_update("/real_update_beta_input_1", 1);
-}
+		   result->dump(&kernelResult[0]);
+		}
+	};
 
-BOOST_AUTO_TEST_CASE( ZETA_1 )
-{
-  test_update("/real_update_zeta_input_1", 2);
-}
+	BOOST_AUTO_TEST_CASE( ALPHA_1 )
+	{
+	    RealUpdateTester("update_alpha_input_1", 0);
+	}
+	
+	BOOST_AUTO_TEST_CASE( BETA_1 )
+	{
+	    RealUpdateTester("update_beta_input_1", 1);
+	}
+	
+	BOOST_AUTO_TEST_CASE( ZETA_1 )
+	{
+	    RealUpdateTester("update_zeta_input_1", 2);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////
