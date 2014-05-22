@@ -95,46 +95,20 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( MEASURE )
 
-        BOOST_AUTO_TEST_CASE( MEASURE_1 ) // equiv. to inverter test 29
-	{
-		int numberOfSources = 12;
-		std::string numberOfSources_option = boost::lexical_cast<std::string>( numberOfSources );
-		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--fermact=TWISTEDMASS", "--measure_pbp=true", "--sourcetype=volume", "--sourcecontent=one", "--use_eo=false", numberOfSources_option.c_str()};
-		meta::Inputparameters params(11, _params);
-		const hardware::System system(params);
-		const physics::PRNG prng(system);
-		const physics::lattices::Gaugefield gaugefield(system, prng);
-
-		double testPrecision = 1e-8;
-		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
-		std::vector<double> results;
-		results = physics::observables::wilson::measureChiralCondensateAndWriteToFile(&gaugefield, 0);
-		
-		BOOST_REQUIRE_EQUAL(numberOfSources, (int) results.size() );
-		
-		for (int i = 0; i < (int) referenceValues.size(); i++)
-		{
-			BOOST_REQUIRE_CLOSE(results[i], referenceValues[i], testPrecision);
-		}
-	}
-
-//fermact = wilson, tm
-//pbp_version= std, one-end
-//sourcetype = volume, z-slice
-//sourcecontent = one, z4, gaussian
-//use_eo = true, false <- only one test necessary!
-
-void testMeasurement(std::vector<double> referenceValues, int numberOfSources, std::string fermactOptionIn, std::string sourceTypeOptionIn, std::string sourceContentOptionIn, std::string pbpVersionOptionIn, std::string eoOptionIn = "false")
+void testMeasurement(std::vector<double> referenceValues, int numberOfSources, std::string fermactOptionIn, std::string sourceTypeOptionIn, std::string pbpVersionOptionIn, std::string eoOptionIn = "false", std::string startconditionOptionIn = "cold", std::string sourcefileOptionIn = "conf.00200")
 {
 		std::string numberOfSources_option = "--num_sources=" + boost::lexical_cast<std::string>( numberOfSources );
 		std::string fermactOption = "--fermact=" + fermactOptionIn;
 		std::string sourceTypeOption = "--sourcetype=" + sourceTypeOptionIn;
-		std::string sourceContentOption = "--sourcecontent=" + sourceContentOptionIn;
+		std::string sourceContentOption = "--sourcecontent=one";
 		std::string pbpVersionOption = "--pbp_version=" + pbpVersionOptionIn;
+		std::string startconditionOption = "--startcondition=" + startconditionOptionIn;
+		std::string sourcefileOption = "--sourcefile=" + sourcefileOptionIn;
+		std::string eoOption = "--use_eo=" + eoOptionIn;
 
-		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str()};
+		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str(), eoOption.c_str(), startconditionOption.c_str(), sourcefileOption.c_str()};
 
-		const meta::Inputparameters params(12, _params);
+		const meta::Inputparameters params(14, _params);
 		const hardware::System system(params);
 		const physics::PRNG prng(system);
 		const physics::lattices::Gaugefield gaugefield(system, prng);
@@ -151,12 +125,20 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		}
 }
 
+        BOOST_AUTO_TEST_CASE( MEASURE_NONEO )
+	{
+		int numberOfSources = 9;
+		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
+	
+		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "std", (std::string) "false");
+	}
+
         BOOST_AUTO_TEST_CASE( MEASURE_EO )
 	{
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
 	
-		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "one", (std::string) "std", (std::string) "true");
+		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "std", (std::string) "true");
 	}
 
         BOOST_AUTO_TEST_CASE( MEASURE_ONE_END_TRICK )
@@ -164,8 +146,31 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		int numberOfSources = 9;
 		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
 	
-		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "one", (std::string) "tm_one_end_trick");
+		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "tm_one_end_trick");
 	}
 
+BOOST_AUTO_TEST_CASE( MEASURE_Z_SLICE )
+	{
+		int numberOfSources = 9;
+		std::vector<double> referenceValues(numberOfSources, 1.16971963846964e-01);
+	
+		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "zslice", (std::string) "std");
+	}
+
+BOOST_AUTO_TEST_CASE( MEASURE_CONFIGURATION_1 )
+	{
+		int numberOfSources = 9;
+		std::vector<double> referenceValues(numberOfSources, 6.86307941352032e-02);
+	
+		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "zslice", (std::string) "std", (std::string) "false", (std::string) "continue");
+	}
+
+BOOST_AUTO_TEST_CASE( MEASURE_CONFIGURATION_2 )
+	{
+		int numberOfSources = 9;
+		std::vector<double> referenceValues(numberOfSources, 1.35706953188924e-01);
+	
+		testMeasurement(referenceValues, numberOfSources, (std::string) "wilson", (std::string) "zslice", (std::string) "std", (std::string) "false", (std::string) "continue");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
