@@ -37,39 +37,48 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		BOOST_REQUIRE_NO_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) );
 	}
 	
+	void testLogicError(const char * _params[], int length )
+	{
+		meta::Inputparameters params(length, _params);
+		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+	}
+	
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_1 )
 	{
 		const char * _params[] = {"foo", "--measure_pbp=false"};
-		meta::Inputparameters params(2, _params);
-
-		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+		testLogicError(_params, 2);
 	}
 	
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_2 )
 	{
 		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=wilson", "--pbp_version=tm_one_end_trick"};
-		meta::Inputparameters params(4, _params);
-
-		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+		testLogicError(_params, 4);
 	}
 	
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_3 )
 	{
 		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=clover", "--pbp_version=tm_one_end_trick"};
-		meta::Inputparameters params(4, _params);
-
-		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+		testLogicError(_params, 4);
 	}
-	
-		BOOST_AUTO_TEST_CASE( INV_ARGUMENT_4 )
+
+	void testInvalidFermionAction(std::string actionName)
 	{
-		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=clover", "--pbp_version=std"};
-		meta::Inputparameters params(4, _params);
-
+		logger.info() << "Testing fermion action \"" + actionName + "\" for logic error";
+		const char * standardParameters[] = {"foo", "--measure_pbp=true"};
+		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() };
+		
+		meta::Inputparameters params(3, commandLineParameters);
 		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
 	}
 	
-	//todo: tlsym, iwasaki, dbw2, rooted_stagg
+	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_FERMION_ACTION )
+	{
+		std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};
+		for (int i = 0; i < (int) actionNames.size(); i++)
+		{
+			testInvalidFermionAction("--fermact=" + actionNames[i]);
+		}
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 

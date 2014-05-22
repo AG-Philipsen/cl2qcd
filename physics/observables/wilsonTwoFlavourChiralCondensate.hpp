@@ -62,26 +62,24 @@ namespace physics{
 				{
 					return chiralCondensate;
 				}
-				
+								
 				void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield)
 				{
 					auto system = gaugefield->getSystem();
 					auto prng = gaugefield->getPrng();
 				
 					int sourceNumber = 0;
-
 					for (; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
 						auto sources = physics::create_sources(*system, *prng, 1);
 						auto result = physics::lattices::create_spinorfields(*system, sources.size());
 						physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
-						flavour_doublet_chiral_condensate(result[0], sources[0], *system);
+						flavour_doublet_chiral_condensate(result[0], sources[0]);
 						physics::lattices::release_spinorfields(result);
 						physics::lattices::release_spinorfields(sources);
 						writeChiralCondensateToFile(gaugefield->get_parameters_source().trajectorynr_source);
 					}
 				}
 				
-
 			private:
 				const meta::Inputparameters * parameters;
 				double chiralCondensate;
@@ -95,6 +93,26 @@ namespace physics{
 					outputToFile << number << "\t" << std::scientific << std::setprecision(14) << chiralCondensate << std::endl;
 				}
 				
+				void checkFermionAction(const meta::Inputparameters * parameters) const
+				{
+					if( ! (  
+									( parameters->get_fermact() == meta::Inputparameters::twistedmass) ||
+									( parameters->get_fermact() == meta::Inputparameters::wilson)
+								)
+						)
+						throw std::logic_error("Chiral condensate not implemented for chosen fermion action.");
+				}
+				
+				void checkChiralCondensateVersion(const meta::Inputparameters * parameters) const
+				{
+					if( ! (  
+									( parameters->get_pbp_version() == meta::Inputparameters::std) ||
+									( (parameters->get_fermact() == meta::Inputparameters::twistedmass && parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) )
+								)
+						)
+						throw std::logic_error("No valid chiral condensate version has been selected.");
+				}
+				
 				void checkInputparameters()
 				{
 					if(! parameters->get_measure_pbp() ) 
@@ -102,10 +120,8 @@ namespace physics{
 						throw std::logic_error("Chiral condensate calculation disabled in parameter setting. Aborting...");
 					}
 					
-					if( ! (  ( parameters->get_pbp_version() == meta::Inputparameters::std) ||
-						       ((parameters->get_fermact() == meta::Inputparameters::twistedmass && parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) )
-								) )
-						throw std::logic_error("No valid chiral condensate version has ben selected.");
+					checkFermionAction(parameters);
+					checkChiralCondensateVersion(parameters);
 				}
 				
 				double norm_std() const 
@@ -126,7 +142,7 @@ namespace physics{
 					return norm;
 				}
 				
-				void flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi, const hardware::System& system)
+				void flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi)
 				{
 					/**
 					* In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
@@ -169,7 +185,7 @@ namespace physics{
 				
 				void openFileForWriting()
 				{
-					//todo: what is this neede for?
+					//todo: what is this needed for?
 					std::string currentConfigurationName = "replace";
 					filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, currentConfigurationName);
 					outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
@@ -178,7 +194,7 @@ namespace physics{
 					}
 				}
 				
-				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources, const hardware::System& system)
+				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources)
 				{
 					if( parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) 
 					{
@@ -186,16 +202,16 @@ namespace physics{
 					} 
 					else
 					{
-						flavourChiralCondensate_std(inverted, sources, system);
+						flavourChiralCondensate_std(inverted, sources);
 					}
 				}
-
-      };
+			};
 
 			double measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, int iteration)
 			{
 				TwoFlavourChiralCondensate condensate(gaugefield->getParameters() );
 				condensate.measureChiralCondensate(gaugefield);
+				//todo: this makes no sense if there are more than one sources!
 				return condensate.getChiralCondensate();
 			}
     }
