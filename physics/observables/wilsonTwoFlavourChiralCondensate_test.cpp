@@ -24,6 +24,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::observables::wilson::TwoFlavourChiralCondensate
 #include <boost/test/unit_test.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "../../host_functionality/logger.hpp"
 #include <stdexcept>
@@ -34,13 +35,21 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 	{
 		const char * _params[] = {"foo", "--measure_pbp=true"};
 		meta::Inputparameters params(2, _params);
-		BOOST_REQUIRE_NO_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) );
+		const hardware::System system(params);
+		const physics::PRNG prng(system);
+		const physics::lattices::Gaugefield gaugefield(system, prng);
+		
+		BOOST_REQUIRE_NO_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&gaugefield) );
 	}
 	
 	void testLogicError(const char * _params[], int length )
 	{
 		meta::Inputparameters params(length, _params);
-		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+		const hardware::System system(params);
+		const physics::PRNG prng(system);
+		const physics::lattices::Gaugefield gaugefield(system, prng);
+		
+		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&gaugefield) , std::logic_error);
 	}
 	
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_1 )
@@ -56,7 +65,11 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() , version.c_str()};
 		
 		meta::Inputparameters params(4, commandLineParameters);
-		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
+		const hardware::System system(params);
+		const physics::PRNG prng(system);
+		const physics::lattices::Gaugefield gaugefield(system, prng);
+		
+		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&gaugefield) , std::logic_error);
 	}
 	
 	std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};
@@ -82,18 +95,27 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( MEASURE )
 
-	BOOST_AUTO_TEST_CASE( MEASURE_1 ) // equiv. to inverter test 29
+		BOOST_AUTO_TEST_CASE( MEASURE_1 ) // equiv. to inverter test 29
 	{
-		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--fermact=TWISTEDMASS", "--measure_pbp=true", "--num_sources=2", "--sourcetype=volume", "--sourcecontent=one", "--use_eo=false"};
+		int numberOfSources = 12;
+		std::string numberOfSources_option = boost::lexical_cast<std::string>( numberOfSources );
+		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--fermact=TWISTEDMASS", "--measure_pbp=true", "--sourcetype=volume", "--sourcecontent=one", "--use_eo=false", numberOfSources_option.c_str()};
 		meta::Inputparameters params(11, _params);
 		const hardware::System system(params);
 		const physics::PRNG prng(system);
 		const physics::lattices::Gaugefield gaugefield(system, prng);
 
-		double result = physics::observables::wilson::measureChiralCondensate(&gaugefield, 0);
-		double referenceValue = 4.86486486486488e-01;
 		double testPrecision = 1e-8;
-		BOOST_REQUIRE_CLOSE(result, referenceValue, testPrecision);
+		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
+		std::vector<double> results;
+		results = physics::observables::wilson::measureChiralCondensateAndWriteToFile(&gaugefield, 0);
+		
+		BOOST_REQUIRE_EQUAL(numberOfSources, (int) results.size() );
+		
+		for (int i = 0; i < (int) referenceValues.size(); i++)
+		{
+			BOOST_REQUIRE_CLOSE(results[i], referenceValues[i], testPrecision);
+		}
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

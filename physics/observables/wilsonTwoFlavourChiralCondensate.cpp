@@ -27,12 +27,12 @@
 
 #include <cassert>
 
-physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const meta::Inputparameters * parametersIn):
-	chiralCondensate(0.)
+physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn):
+	gaugefield(gaugefieldIn), parameters(gaugefield->getParameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate()
 {
-	parameters = parametersIn;
 	checkInputparameters();
 	openFileForWriting();
+	trajectoryNumber = gaugefield->get_parameters_source().trajectorynr_source;
 }
 
 void checkFermionAction(const meta::Inputparameters * parameters)
@@ -71,33 +71,35 @@ physics::observables::wilson::TwoFlavourChiralCondensate::~TwoFlavourChiralConde
 	outputToFile.close();
 }
 
-double physics::observables::wilson::TwoFlavourChiralCondensate::getChiralCondensate()
+std::vector<double> physics::observables::wilson::TwoFlavourChiralCondensate::getChiralCondensate()
 {
 	return chiralCondensate;
 }
 				
 void physics::observables::wilson::TwoFlavourChiralCondensate::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield)
 {
-	auto system = gaugefield->getSystem();
-	auto prng = gaugefield->getPrng();
-
-	int sourceNumber = 0;
-	for (; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
+	logger.info() << "chiral condensate:" ;
+	for (int sourceNumber = 0; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
 		auto sources = physics::create_sources(*system, *prng, 1);
 		auto result = physics::lattices::create_spinorfields(*system, sources.size());
 		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
 		flavour_doublet_chiral_condensate(result[0], sources[0]);
 		physics::lattices::release_spinorfields(result);
 		physics::lattices::release_spinorfields(sources);
-		writeChiralCondensateToFile(gaugefield->get_parameters_source().trajectorynr_source);
 	}
 }
 
-void physics::observables::wilson::TwoFlavourChiralCondensate::writeChiralCondensateToFile(int number)
+void printChiralCondensate(int trajectoryNumber, double value)
 {
-	logger.info() << "chiral condensate:" ;
-	logger.info() << number << "\t" << std::scientific << std::setprecision(14) << chiralCondensate;
-	outputToFile << number << "\t" << std::scientific << std::setprecision(14) << chiralCondensate << std::endl;
+	logger.info() << trajectoryNumber << "\t" << std::scientific << std::setprecision(14) << value;
+}
+
+void physics::observables::wilson::TwoFlavourChiralCondensate::writeChiralCondensateToFile()
+{
+	for (int i = 0; i < (int) chiralCondensate.size(); i++)
+	{
+		outputToFile << trajectoryNumber << "\t" << std::scientific << std::setprecision(14) << chiralCondensate[i] << std::endl;
+	}
 }
 
 double physics::observables::wilson::TwoFlavourChiralCondensate::norm_std() const 
@@ -141,6 +143,7 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCond
 	*       = - lim_r->inf Nf/r  (gamma_5 Xi_r, Phi_r)
 	* NOTE: The basic difference compared to the pure Wilson case is the gamma_5 and that one takes the negative imaginary part!
 	*/
+	double result;
 
 	if(parameters->get_fermact() == meta::Inputparameters::twistedmass) {
 		xi->gamma5();
@@ -149,14 +152,17 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCond
 
 	switch(parameters->get_fermact()) {
 		case  meta::Inputparameters::wilson:
-			chiralCondensate = tmp.re * norm_std();
+			result = tmp.re * norm_std();
 			break;
 		case meta::Inputparameters::twistedmass:
-			chiralCondensate = (-1.) * tmp.im * norm_std();
+			result = (-1.) * tmp.im * norm_std();
 			break;
 		default:
 			throw std::invalid_argument("chiral condensate not implemented for given fermion action");
 	}
+
+	printChiralCondensate(trajectoryNumber, result );
+	chiralCondensate.push_back(result);
 }
 
 void physics::observables::wilson::TwoFlavourChiralCondensate::openFileForWriting()
@@ -182,11 +188,11 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_c
 	}
 }
 
-double physics::observables::wilson::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, int iteration)
+std::vector<double> physics::observables::wilson::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
-	physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield->getParameters() );
+	physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield);
 	condensate.measureChiralCondensate(gaugefield);
-	//todo: this makes no sense if there are more than one sources!
+	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
 }
 

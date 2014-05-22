@@ -37,28 +37,32 @@ namespace physics{
 			class TwoFlavourChiralCondensate
 			{
 			public:
-				TwoFlavourChiralCondensate(const meta::Inputparameters * parametersIn);
+				TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield);
 				TwoFlavourChiralCondensate() = delete;
 				~TwoFlavourChiralCondensate();
 				
-				double getChiralCondensate();
+				std::vector<double> getChiralCondensate();
 				void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield);
+				void writeChiralCondensateToFile();
 				
 			private:
+				const physics::lattices::Gaugefield * gaugefield;
 				const meta::Inputparameters * parameters;
-				double chiralCondensate;
+				const hardware::System * system;
+				const physics::PRNG * prng;
+				int trajectoryNumber;
+				std::vector<double> chiralCondensate;
 				std::ofstream outputToFile;
 				std::string filenameForChiralCondensateData;
 				
 				void checkInputparameters();
-				void writeChiralCondensateToFile(int number);
 				double norm_std() const ;
 				void flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi);
 				void openFileForWriting();
 				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources);
 			};
 
-			double measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, int iteration);
+			std::vector<double> measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration);
     }
   }
 }
