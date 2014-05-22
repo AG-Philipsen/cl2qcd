@@ -49,8 +49,6 @@ protected:
 
 	void measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 
-	void measureTwoFlavourDoubletChiralCondensateOnGaugefield();
-
 	/**
 	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
 	 */

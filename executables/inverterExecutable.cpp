@@ -20,6 +20,7 @@
 
 #include "inverterExecutable.h"
 
+#include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
 	initializationTimer.reset();
@@ -61,19 +62,6 @@ void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield() {
 	release_spinorfields(sources);
 }
 
-void inverterExecutable::measureTwoFlavourDoubletChiralCondensateOnGaugefield() {
-	filenameForTwoFlavourDoubletChiralCondensateData = meta::get_ferm_obs_pbp_file_name(parameters, currentConfigurationName);
-	int sourceNumber = 0;
-	for (; sourceNumber < parameters.get_num_sources(); sourceNumber++) {
-		auto sources = physics::create_sources(*system, *prng, 1);
-		auto result = physics::lattices::create_spinorfields(*system, sources.size());
-		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
-		physics::algorithms::flavour_doublet_chiral_condensate(result, sources, filenameForTwoFlavourDoubletChiralCondensateData, gaugefield->get_parameters_source().trajectorynr_source, *system);
-		release_spinorfields(result);
-		release_spinorfields(sources);
-	}
-}
-
 void inverterExecutable::performApplicationSpecificMeasurements() {
 	logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 	gaugeObservablesInstance.measureGaugeObservables(gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
@@ -81,7 +69,7 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
 		measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 	}
 	if (parameters.get_measure_pbp()) {
-		measureTwoFlavourDoubletChiralCondensateOnGaugefield();
+	  physics::observables::wilson:: measureChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
 	}
 }
 
