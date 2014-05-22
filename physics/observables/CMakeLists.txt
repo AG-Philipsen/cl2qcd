@@ -23,8 +23,7 @@
 
 add_library(observables
 	gaugeObservables.cpp
-#	wilsonTwoFlavourChiralCondensate.cpp
-	wilsonTwoFlavourChiralCondensate.hpp
+	wilsonTwoFlavourChiralCondensate.cpp
 )
 
 target_link_libraries(observables
