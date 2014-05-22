@@ -86,7 +86,7 @@ void test_volume_source_stagg(std::string content)
 	else if(content == "z4")
 	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8); //Analytic result
 	else if(content == "gaussian")
-	  BOOST_CHECK_CLOSE(sqnorm, 6194.3961400489661173, 1); //Depends on random numbers -> tolerance 1%
+	  BOOST_CHECK_CLOSE(sqnorm, 6194.3961400489661173, 3); //Depends on random numbers -> tolerance 3%
 	else if(content == "z2")
 	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8); //Analytic result
 
