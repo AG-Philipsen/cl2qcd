@@ -120,7 +120,7 @@ double physics::observables::wilson::TwoFlavourChiralCondensate::norm_std() cons
 	return norm;
 }
 
-void physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi)
+double physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi)
 {
 	/**
 	* In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
@@ -161,8 +161,7 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCond
 			throw std::invalid_argument("chiral condensate not implemented for given fermion action");
 	}
 
-	printChiralCondensate(trajectoryNumber, result );
-	chiralCondensate.push_back(result);
+	return result;
 }
 
 void physics::observables::wilson::TwoFlavourChiralCondensate::openFileForWriting()
@@ -178,14 +177,17 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::openFileForWritin
 
 void physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources)
 {
+        double result = 0.;
 	if( parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) 
 	{
-// 			flavour_doublet_chiral_condensate_tm(inverted, pbp_fn, number, system);
+	  result = flavour_doublet_chiral_condensate_tm(inverted);
 	} 
 	else
 	{
-		flavourChiralCondensate_std(inverted, sources);
+	  result = flavourChiralCondensate_std(inverted, sources);
 	}
+ 	printChiralCondensate(trajectoryNumber, result );
+	chiralCondensate.push_back(result);
 }
 
 std::vector<double> physics::observables::wilson::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
@@ -196,3 +198,35 @@ std::vector<double> physics::observables::wilson::measureChiralCondensateAndWrit
 	return condensate.getChiralCondensate();
 }
 
+double physics::observables::wilson::TwoFlavourChiralCondensate::norm_tm() const 
+{
+	/*
+	 * Normalize for VOL4D, Nf and spinor entries (NC * ND = 12)
+	 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
+	 * The additional factor of 2 is inserted to fit the reference values.
+	 */
+	double norm = 4. * parameters->get_kappa()  / meta::get_vol4d(*parameters)  * meta::get_mubar(*parameters ) * 2. / 2. / 12.;
+	return norm;
+}
+
+double physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate_tm(const physics::lattices::Spinorfield* phi)
+{
+	/**
+	 * For twisted-mass fermions one can also employ the one-end trick, which origins from
+	 * D_d - D_u = - 4 i kappa amu gamma_5 <-> D^-1_u - D^-1_d = - 4 i kappa amu gamma_5 (D^-1_u)^dagger D^-1_u
+	 * With this, the chiral condensate is:
+	 * <pbp> = ... 
+	 *       = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
+	 *       = - 4 i kappa amu Tr ( i gamma_5 gamma_5 (D^-1_u)^dagger D^-1_u )
+	 *       = 4 kappa amu Tr ((D^-1_u)^dagger D^-1_u) 
+	 *       = 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
+	 *       = 4 kappa amu lim_r->inf 1/R |Phi_r|^2
+	 * NOTE: Here one only needs Phi...
+	 */
+	double result = 0.;
+	logger.info() << "chiral condensate:" ;
+	hmc_float tmp = squarenorm(*phi);
+	result = tmp * norm_tm();
+
+	return result;
+}

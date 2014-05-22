@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( MEASURE )
 
-		BOOST_AUTO_TEST_CASE( MEASURE_1 ) // equiv. to inverter test 29
+        BOOST_AUTO_TEST_CASE( MEASURE_1 ) // equiv. to inverter test 29
 	{
 		int numberOfSources = 12;
 		std::string numberOfSources_option = boost::lexical_cast<std::string>( numberOfSources );
@@ -117,5 +117,55 @@ BOOST_AUTO_TEST_SUITE( MEASURE )
 			BOOST_REQUIRE_CLOSE(results[i], referenceValues[i], testPrecision);
 		}
 	}
+
+//fermact = wilson, tm
+//pbp_version= std, one-end
+//sourcetype = volume, z-slice
+//sourcecontent = one, z4, gaussian
+//use_eo = true, false <- only one test necessary!
+
+void testMeasurement(std::vector<double> referenceValues, int numberOfSources, std::string fermactOptionIn, std::string sourceTypeOptionIn, std::string sourceContentOptionIn, std::string pbpVersionOptionIn, std::string eoOptionIn = "false")
+{
+		std::string numberOfSources_option = "--num_sources=" + boost::lexical_cast<std::string>( numberOfSources );
+		std::string fermactOption = "--fermact=" + fermactOptionIn;
+		std::string sourceTypeOption = "--sourcetype=" + sourceTypeOptionIn;
+		std::string sourceContentOption = "--sourcecontent=" + sourceContentOptionIn;
+		std::string pbpVersionOption = "--pbp_version=" + pbpVersionOptionIn;
+
+		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--startcondition=cold", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str()};
+
+		const meta::Inputparameters params(12, _params);
+		const hardware::System system(params);
+		const physics::PRNG prng(system);
+		const physics::lattices::Gaugefield gaugefield(system, prng);
+
+		std::vector<double> results;
+		results = physics::observables::wilson::measureChiralCondensateAndWriteToFile(&gaugefield, 0);
+		
+		BOOST_REQUIRE_EQUAL(numberOfSources, (int) results.size() );
+
+		double testPrecision = 1e-8;		
+		for (int i = 0; i < (int) referenceValues.size(); i++)
+		{
+			BOOST_REQUIRE_CLOSE(results[i], referenceValues[i], testPrecision);
+		}
+}
+
+        BOOST_AUTO_TEST_CASE( MEASURE_EO )
+	{
+		int numberOfSources = 9;
+		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
+	
+		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "one", (std::string) "std", (std::string) "true");
+	}
+
+        BOOST_AUTO_TEST_CASE( MEASURE_ONE_END_TRICK )
+	{
+		int numberOfSources = 9;
+		std::vector<double> referenceValues(numberOfSources, 4.86486486486488e-01);
+	
+		testMeasurement(referenceValues, numberOfSources, (std::string) "twistedmass", (std::string) "volume", (std::string) "one", (std::string) "tm_one_end_trick");
+	}
+
 
 BOOST_AUTO_TEST_SUITE_END()

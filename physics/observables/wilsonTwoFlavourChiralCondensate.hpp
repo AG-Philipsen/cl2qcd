@@ -57,7 +57,9 @@ namespace physics{
 				
 				void checkInputparameters();
 				double norm_std() const ;
-				void flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi);
+			        double norm_tm() const;
+				double flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi);
+			        double flavour_doublet_chiral_condensate_tm(const physics::lattices::Spinorfield* phi);
 				void openFileForWriting();
 				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources);
 			};
