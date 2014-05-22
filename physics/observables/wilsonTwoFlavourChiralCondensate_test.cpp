@@ -48,35 +48,33 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const char * _params[] = {"foo", "--measure_pbp=false"};
 		testLogicError(_params, 2);
 	}
-	
-	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_2 )
-	{
-		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=wilson", "--pbp_version=tm_one_end_trick"};
-		testLogicError(_params, 4);
-	}
-	
-	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_3 )
-	{
-		const char * _params[] = {"foo", "--measure_pbp=true", "--fermact=clover", "--pbp_version=tm_one_end_trick"};
-		testLogicError(_params, 4);
-	}
 
-	void testInvalidFermionAction(std::string actionName)
+	void testInvalidFermionActionAndVersion(std::string actionName, std::string version = "--pbp_version=std")
 	{
-		logger.info() << "Testing fermion action \"" + actionName + "\" for logic error";
+		logger.info() << "Testing fermion action \"" + actionName + "\" and chiral condensate version \"" + version + "\" for logic error";
 		const char * standardParameters[] = {"foo", "--measure_pbp=true"};
-		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() };
+		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() , version.c_str()};
 		
-		meta::Inputparameters params(3, commandLineParameters);
+		meta::Inputparameters params(4, commandLineParameters);
 		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&params) , std::logic_error);
 	}
 	
+	std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};
+	
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_FERMION_ACTION )
 	{
-		std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};
 		for (int i = 0; i < (int) actionNames.size(); i++)
 		{
-			testInvalidFermionAction("--fermact=" + actionNames[i]);
+			testInvalidFermionActionAndVersion("--fermact=" + actionNames[i]);
+		}
+	}
+	
+	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_CHIRAL_CONDENSATE_VERSION )
+	{
+		actionNames.push_back("wilson");
+		for (int i = 0; i < (int) actionNames.size(); i++)
+		{
+			testInvalidFermionActionAndVersion("--fermact=" + actionNames[i], "--pbp_version=tm_one_end_trick");
 		}
 	}
 
