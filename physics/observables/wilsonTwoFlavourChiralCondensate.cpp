@@ -27,8 +27,8 @@
 
 #include <cassert>
 
-physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn):
-	gaugefield(gaugefieldIn), parameters(gaugefield->getParameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate()
+physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn):
+  gaugefield(gaugefieldIn), parameters(gaugefield->getParameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)
 {
 	checkInputparameters();
 	openFileForWriting();
@@ -96,6 +96,7 @@ void printChiralCondensate(int trajectoryNumber, double value)
 
 void physics::observables::wilson::TwoFlavourChiralCondensate::writeChiralCondensateToFile()
 {
+  logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
 	for (int i = 0; i < (int) chiralCondensate.size(); i++)
 	{
 		outputToFile << trajectoryNumber << "\t" << std::scientific << std::setprecision(14) << chiralCondensate[i] << std::endl;
@@ -166,9 +167,7 @@ double physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCo
 
 void physics::observables::wilson::TwoFlavourChiralCondensate::openFileForWriting()
 {
-	//todo: what is this needed for?
-	std::string currentConfigurationName = "replace";
-	filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, currentConfigurationName);
+	filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, configurationName);
 	outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
 	if(!outputToFile.is_open()) {
 		throw File_Exception(filenameForChiralCondensateData);
@@ -190,9 +189,9 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_c
 	chiralCondensate.push_back(result);
 }
 
-std::vector<double> physics::observables::wilson::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
+std::vector<double> physics::observables::wilson::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
-	physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield);
+  physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName);
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();

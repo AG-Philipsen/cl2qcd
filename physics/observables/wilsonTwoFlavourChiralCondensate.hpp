@@ -37,7 +37,7 @@ namespace physics{
 			class TwoFlavourChiralCondensate
 			{
 			public:
-				TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield);
+			        TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield, std::string configurationName = "what");
 				TwoFlavourChiralCondensate() = delete;
 				~TwoFlavourChiralCondensate();
 				
@@ -54,6 +54,7 @@ namespace physics{
 				std::vector<double> chiralCondensate;
 				std::ofstream outputToFile;
 				std::string filenameForChiralCondensateData;
+			        std::string configurationName;
 				
 				void checkInputparameters();
 				double norm_std() const ;
@@ -64,7 +65,7 @@ namespace physics{
 				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources);
 			};
 
-			std::vector<double> measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration);
+		  std::vector<double> measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName);
     }
   }
 }
