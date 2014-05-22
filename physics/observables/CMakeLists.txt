@@ -44,4 +44,5 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 add_unit_test_withLibraries(physics::gaugeObservables gaugeObservables_test observables)
 add_unit_test_withLibraries(physics::observables::wilson::twoFlavourChiralCondensate wilsonTwoFlavourChiralCondensate_test observables)
+add_test(physics::observables::wilson::twoFlavourChiralCondensate_GPU wilsonTwoFlavourChiralCondensate_test --use_gpu=true)
 

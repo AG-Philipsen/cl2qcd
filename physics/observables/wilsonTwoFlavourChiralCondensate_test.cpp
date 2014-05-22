@@ -1,5 +1,5 @@
 /** @file
- * Unit test for the physics::observables::wilson::TwoFlavourChiralCondensate class
+ * Unit tests for the physics::observables::wilson::TwoFlavourChiralCondensate class
  *
  * Copyright 2014,Christopher Pinke
  *
@@ -106,9 +106,27 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		std::string sourcefileOption = "--sourcefile=" + sourcefileOptionIn;
 		std::string eoOption = "--use_eo=" + eoOptionIn;
 
-		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str(), eoOption.c_str(), startconditionOption.c_str(), sourcefileOption.c_str()};
+		int numberOfOptions= 14;
 
-		const meta::Inputparameters params(14, _params);
+		int numberOfParametersFromBoost =       boost::unit_test::framework::master_test_suite().argc;
+		std::vector<std::string> boostOptions;
+		if (numberOfParametersFromBoost > 1)
+		  {
+		    BOOST_REQUIRE_EQUAL(numberOfParametersFromBoost, 1);
+		    for (int i = 1; i < numberOfParametersFromBoost; i++)
+		      {
+			boostOptions.push_back( boost::unit_test::framework::master_test_suite().argv[i]);
+		      }
+		    numberOfOptions ++;
+		  }
+		else
+		  {
+		    boostOptions.push_back("");
+		  }
+
+		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str(), eoOption.c_str(), startconditionOption.c_str(), sourcefileOption.c_str(), boostOptions[0].c_str()};
+
+		const meta::Inputparameters params(numberOfOptions, _params);
 		const hardware::System system(params);
 		const physics::PRNG prng(system);
 		const physics::lattices::Gaugefield gaugefield(system, prng);
