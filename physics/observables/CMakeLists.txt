@@ -24,6 +24,7 @@
 add_library(observables
 	gaugeObservables.cpp
 	wilsonTwoFlavourChiralCondensate.cpp
+	wilsonTwoFlavourCorrelators.cpp
 )
 
 target_link_libraries(observables
@@ -46,3 +47,4 @@ add_unit_test_withLibraries(physics::gaugeObservables gaugeObservables_test obse
 add_unit_test_withLibraries(physics::observables::wilson::twoFlavourChiralCondensate wilsonTwoFlavourChiralCondensate_test observables)
 add_test(physics::observables::wilson::twoFlavourChiralCondensate_GPU wilsonTwoFlavourChiralCondensate_test --use_gpu=true)
 
+add_unit_test_withLibraries(physics::observables::wilson::twoFlavourCorrelators wilsonTwoFlavourCorrelators_test observables)
