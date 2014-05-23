@@ -26,9 +26,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "../../host_functionality/logger.hpp"
-#include <stdexcept>
-
 BOOST_AUTO_TEST_SUITE( BUILD )
 
 	BOOST_AUTO_TEST_CASE( BUILD_1 )

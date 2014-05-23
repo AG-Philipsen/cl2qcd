@@ -22,10 +22,7 @@
 #include "wilsonTwoFlavourChiralCondensate.hpp"
 
 #include "../algorithms/inversion.hpp"
-#include "../algorithms/flavour_doublet.hpp"
 #include "../sources.hpp"
-
-#include <cassert>
 
 physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn, int trajectoryNumberIn):
   gaugefield(gaugefieldIn), parameters(gaugefield->getParameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)

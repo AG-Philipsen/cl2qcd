@@ -25,7 +25,6 @@
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/spinorfield.hpp"
 #include <fstream>
-#include <cmath>
 #include "../../meta/inputparameters.hpp"
 
 namespace physics{
