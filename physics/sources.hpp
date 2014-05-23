@@ -41,7 +41,7 @@ namespace physics {
 	 * Create a set of spinorfields that can be swapped.
 	 * Return normal spinorfield pointers for compatibility reasons.
 	 */
-	std::vector<lattices::Spinorfield *> create_swappable_sources(hardware::System& system, PRNG& prng, const size_t n_sources);
+	std::vector<lattices::Spinorfield *> create_swappable_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources);
 
 	void set_point_source(const physics::lattices::Spinorfield *, int k, const meta::Inputparameters& params);
 	void set_volume_source(const physics::lattices::Spinorfield *, const PRNG& prng);

@@ -160,7 +160,7 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 	}
 }
 
-std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(hardware::System& system, PRNG& prng, const size_t n_sources)
+std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources)
 {
 	auto params = system.get_inputparameters();
 
