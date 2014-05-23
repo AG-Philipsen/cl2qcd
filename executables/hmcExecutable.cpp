@@ -20,6 +20,9 @@
 
 #include "hmcExecutable.h"
 
+
+#include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
+
 hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
   generationExecutable(argc, argv)
 {
@@ -76,6 +79,10 @@ void hmcExecutable::performOnlineMeasurements()
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
 		std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
 		printHmcObservables(gaugeout_name);
+		if (parameters.get_measure_pbp()) {
+		  std::string currentConfigurationName = meta::create_configuration_name(parameters, iteration);
+		  physics::observables::wilson:: measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
+		}
 	}
 }
 

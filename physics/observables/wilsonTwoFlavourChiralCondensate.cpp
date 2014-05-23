@@ -189,7 +189,7 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_c
 	chiralCondensate.push_back(result);
 }
 
-std::vector<double> physics::observables::wilson::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
+std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
   physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName);
 	condensate.measureChiralCondensate(gaugefield);

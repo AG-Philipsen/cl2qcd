@@ -65,7 +65,7 @@ namespace physics{
 				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources);
 			};
 
-		  std::vector<double> measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName);
+		  std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName);
     }
   }
 }

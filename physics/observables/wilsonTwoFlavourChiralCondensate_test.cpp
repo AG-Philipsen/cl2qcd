@@ -132,7 +132,7 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		const physics::lattices::Gaugefield gaugefield(system, prng);
 
 		std::vector<double> results;
-		results = physics::observables::wilson::measureChiralCondensateAndWriteToFile(&gaugefield, "conf.test");
+		results = physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, "conf.test");
 		
 		BOOST_REQUIRE_EQUAL(numberOfSources, (int) results.size() );
 

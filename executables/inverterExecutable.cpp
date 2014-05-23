@@ -21,6 +21,7 @@
 #include "inverterExecutable.h"
 
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
+
 inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
 	initializationTimer.reset();
@@ -69,7 +70,7 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
 		measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 	}
 	if (parameters.get_measure_pbp()) {
-	  physics::observables::wilson:: measureChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
+	  physics::observables::wilson:: measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
 	}
 }
 
