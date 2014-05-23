@@ -166,17 +166,7 @@ std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, 
   if(parameters.get_ferm_obs_to_single_file() ){
     return parameters.get_ferm_obs_pbp_prefix() +  parameters.get_ferm_obs_pbp_postfix();
   } else {
-    switch ( parameters.get_startcondition() ) {
-    case meta::Inputparameters::start_from_source :
-      return  parameters.get_ferm_obs_pbp_prefix() + conf_name + parameters.get_ferm_obs_pbp_postfix();
-      break;
-    case meta::Inputparameters::hot_start :
-      return  parameters.get_ferm_obs_pbp_prefix() + "conf.hot" +   parameters.get_ferm_obs_pbp_postfix() ;
-      break;
-    case meta::Inputparameters::cold_start :
-      return  parameters.get_ferm_obs_pbp_prefix() + "conf.cold" + parameters.get_ferm_obs_pbp_postfix() ;
-      break;
-    }
+		return  parameters.get_ferm_obs_pbp_prefix() + conf_name + parameters.get_ferm_obs_pbp_postfix();
   }
 }
 

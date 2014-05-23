@@ -80,8 +80,7 @@ void hmcExecutable::performOnlineMeasurements()
 		std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
 		printHmcObservables(gaugeout_name);
 		if (parameters.get_measure_pbp()) {
-		  std::string currentConfigurationName = meta::create_configuration_name(parameters, iteration);
-		  physics::observables::wilson:: measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
+		  physics::observables::wilson:: measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, iteration);
 		}
 	}
 }

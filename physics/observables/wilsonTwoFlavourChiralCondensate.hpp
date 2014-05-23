@@ -37,7 +37,7 @@ namespace physics{
 			class TwoFlavourChiralCondensate
 			{
 			public:
-			        TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield, std::string configurationName = "what");
+			 TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield, std::string configurationName = "conf.default");
 				TwoFlavourChiralCondensate() = delete;
 				~TwoFlavourChiralCondensate();
 				
@@ -66,6 +66,7 @@ namespace physics{
 			};
 
 		  std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName);
+			std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration);
     }
   }
 }
