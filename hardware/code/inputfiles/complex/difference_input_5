@@ -1,0 +1,17 @@
+NS=4
+NT=4
+
+# this specifies alpha.re
+beta=1.
+# this specifies alpha.im
+rho=2.
+# this specifies beta.re
+kappa=1.
+# this specifies beta.im
+mu=2.
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=-1
+test_ref_val2=-2

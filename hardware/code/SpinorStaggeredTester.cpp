@@ -25,14 +25,9 @@
 #include "spinors.hpp" //this is for get_spinorfieldsize, get_eoprec_spinorfieldsize
 
 
-SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
-     KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
-{
-	code = device->get_spinor_staggered_code();
-	prng = new physics::PRNG(*system);
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-	
+void SpinorStaggeredTester::setMembers(){
 	//todo: some of these could also be put into the specific child-classes where they are actually used.
+	inputfield = NULL;
 	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
 	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
 	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
@@ -43,14 +38,39 @@ SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string
 	iterations = parameters->get_integrationsteps(0);
 }
 
-SpinorStaggeredTester::~SpinorStaggeredTester()
+SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
+					      int numberOfValues, int typeOfComparision) :
+     KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
 {
-	delete doubleBuffer;
-	delete prng;
-	code = NULL;
+	code = device->get_spinor_staggered_code();
+	prng = new physics::PRNG(*system);
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+	allocatedObjects = true;
+	setMembers();
 }
 
-void SpinorStaggeredTester::fill_with_one(su3vec * sf_in, int size)
+SpinorStaggeredTester::SpinorStaggeredTester(meta::Inputparameters * parameters, const hardware::System * system,
+					     hardware::Device * device) : 
+      KernelTester(parameters, system, device), allocatedObjects(false)
+{
+	setMembers();
+	code = device->get_spinor_staggered_code();
+}
+
+SpinorStaggeredTester::~SpinorStaggeredTester()
+{
+	if(allocatedObjects){
+		delete doubleBuffer;
+ 		delete prng;
+	}
+	doubleBuffer = NULL;
+	prng = NULL;
+	code = NULL;
+	if(inputfield != NULL)
+	  delete[] inputfield;
+}
+
+static void fill_with_one(su3vec * sf_in, int size)
 {
   for(int i = 0; i < size; ++i) {
     sf_in[i].e0 = hmc_complex_one;
@@ -70,7 +90,7 @@ void SpinorStaggeredTester::fill_with_zero(su3vec * sf_in, int size)
   return;
 }
 
-void SpinorStaggeredTester::fill_with_random(su3vec * sf_in, int size, int seed)
+static void fill_with_random(su3vec * sf_in, int size, int seed)
 {
   prng_init(seed);
   for(int i = 0; i < size; ++i) {
@@ -122,7 +142,7 @@ hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float
 //This function fills the field sf_in in the following way
 // eo==true  ---> sf_in[even]=ONE  and sf_in[odd]=ZERO
 // eo==false ---> sf_in[even]=ZERO and sf_in[odd]=ONE
-void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
+static void fill_with_one_eo(su3vec * sf_in, int size, bool eo, const meta::Inputparameters * parameters)
 {
   int ns = parameters->get_nspace();
   int nt = parameters->get_ntime();
@@ -194,45 +214,41 @@ hmc_float SpinorStaggeredTester::count_sf_eo(su3vec * sf_in, int size, bool eo)
 	  else{
 	    continue;
 	  }
-	}}}}
+	}
+      }
+    }
+  }
   return sum;
 }
 
 
 su3vec * SpinorStaggeredTester::createSpinorfield(size_t numberOfElements, int seed)
 {
-  su3vec * in;
-  in = new su3vec[numberOfElements];
-  useRandom ? fill_with_random(in, numberOfElements, seed) : fill_with_one(in, numberOfElements);
-  BOOST_REQUIRE(in);
-  return in;
+  if(inputfield !=NULL)
+    delete[] inputfield;
+  inputfield = new su3vec[numberOfElements];
+  useRandom ? fill_with_random(inputfield, numberOfElements, seed) : fill_with_one(inputfield, numberOfElements);
+  BOOST_REQUIRE(inputfield);
+  return inputfield;
 }
 
 su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity()
 {
-  su3vec * in;
-  in = new su3vec[spinorfieldElements];
-  fill_with_one_eo(in, spinorfieldElements, evenOrOdd);
-  return in;
+  if(inputfield !=NULL)
+    delete[] inputfield;
+  inputfield = new su3vec[spinorfieldElements];
+  fill_with_one_eo(inputfield, spinorfieldElements, evenOrOdd, parameters);
+  return inputfield;
 }
 
 su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity()
 {
-  su3vec * in;
-  in = new su3vec[spinorfieldEvenOddElements];
-  fill_with_one_eo(in, spinorfieldEvenOddElements, evenOrOdd);
-  return in;
+  if(inputfield !=NULL)
+    delete[] inputfield;
+  inputfield = new su3vec[spinorfieldEvenOddElements];
+  fill_with_one_eo(inputfield, spinorfieldEvenOddElements, evenOrOdd, parameters);
+  return inputfield;
 }
-
-// std::vector<su3vec> SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity()
-// {
-//   su3vec * in;
-//   in = new su3vec[spinorfieldEvenOddElements];
-//   fill_with_one_eo(in, spinorfieldEvenOddElements, evenOrOdd);
-//   std::vector<su3vec> out(in, in + sizeof(in) / sizeof(su3vec));
-//   delete in;
-//   return out;
-// }
 
 std::string SpinorStaggeredTester::getSpecificInputfile(std::string inputfileIn)
 {
@@ -258,7 +274,7 @@ void SpinorStaggeredTester::calcSquarenormEvenOddAndStoreAsKernelResult(const ha
  * Fuction that "convert" a su3vec to a string with a proper structure to be   
  * written to the text file that will be later used for the reference code     
  */
-std::string su3vec_to_string(su3vec m)
+static std::string su3vec_to_string(su3vec m)
 {
   std::ostringstream os;
   os.precision(16);

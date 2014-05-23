@@ -36,10 +36,14 @@ class SpinorStaggeredTester : public KernelTester {
 public:
 	SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
 			       int numberOfValues = 1, int typeOfComparision = 1);
-	~SpinorStaggeredTester();
+	//The following constructor is used only for force tests where one inherits from MolecularDynamicsTester
+	//and from this class at the same time (to avoid that system, device and parameters are created twice)
+	SpinorStaggeredTester(meta::Inputparameters * parameters, const hardware::System * system,
+			      hardware::Device * device);
+	virtual ~SpinorStaggeredTester();
 	
 protected:
-	
+	//Methods (protected for inheritance resons)
 	void fill_with_zero(su3vec * sf_in, int size);
 	hmc_float count_sf(su3vec * in, int size);
 	hmc_float calc_var(hmc_float in, hmc_float mean);
@@ -52,6 +56,7 @@ protected:
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
 	std::string getSpecificInputfile(std::string inputfileIn);
 	
+	//Members (protected for inheritance resons)
 	const hardware::code::Spinors_staggered * code;
 	physics::PRNG * prng;
 	hardware::buffers::Plain<double> * doubleBuffer;
@@ -63,17 +68,17 @@ protected:
 	hmc_complex alpha_host;
 	hmc_complex beta_host;
 	int iterations;
-	
-	//Maybe the following should be static functions in the .cpp file
-	void fill_with_random(su3vec * in, int size, int seed);
-	void fill_with_one(su3vec * in, int size);
-	void fill_with_one_eo(su3vec * in, int size, bool eo);
+	bool allocatedObjects; //Take trace if system, device, inputparameters are allocated
 	
 	//These methods are used to produce files for the Reference Code (D'Elia et al)
 	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
 	void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf);
 	//Utilities methods
 	std::vector<hmc_float> reals_from_su3vec(su3vec v);
+
+private:
+	su3vec * inputfield;
+	void setMembers();
 };
 
 

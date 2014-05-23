@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 	{
 	public:
 		ColdAndZeroTester(std::string inputfile, bool switcher):
-			SpinorTester("cold or zero", inputfile, 2)
+			SpinorTester("cold or zero", inputfile)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				in.load(createSpinorfield(spinorfieldElements));
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
 	{
 	public:
 		ColdAndZeroEvenOddTester(std::string inputfile, bool switcher):
-			SpinorTester("cold or zero eo", inputfile, 2)
+			SpinorTester("cold or zero eo", inputfile)
 			{
 				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 				in.load(createSpinorfield(spinorfieldEvenOddElements));

@@ -82,13 +82,13 @@ void test_volume_source_stagg(std::string content)
 	//Lattice is here 8^4 and we have even-odd preconditioning
 	logger.info() << "source content: " << content << " and squarnorm of volume source is " << sqnorm;
 	if(content == "one")
-	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8);
+	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8); //Analytic result
 	else if(content == "z4")
-	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8);
+	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8); //Analytic result
 	else if(content == "gaussian")
-	  BOOST_CHECK_CLOSE(sqnorm, 6194.3961400489661173, 1.e-8);
+	  BOOST_CHECK_CLOSE(sqnorm, 6194.3961400489661173, 3); //Depends on random numbers -> tolerance 3%
 	else if(content == "z2")
-	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8);
+	  BOOST_CHECK_CLOSE(sqnorm, 6144, 1.e-8); //Analytic result
 
 }
 

@@ -21,7 +21,7 @@
 #include "kernelTester.hpp"
 #include <boost/test/unit_test.hpp>
 
-KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn, int typeOfComparisionIn):
+KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn, int typeOfComparisonIn):
   kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
 	printKernelInformation(kernelNameIn);
@@ -43,9 +43,9 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 		}
 	}
 
-	if ( (typeOfComparisionIn == 1) || (typeOfComparisionIn == 2)  || (typeOfComparisionIn == 3) )
+	if ( (typeOfComparisonIn == 1) || (typeOfComparisonIn == 2)  || (typeOfComparisonIn == 3) )
 	  {
-	    typeOfComparision = typeOfComparisionIn;
+	    typeOfComparison = typeOfComparisonIn;
 	  } else
 	  {
 	    throw( std::invalid_argument("Do not recognize type of comparision. Aborting...") );
@@ -53,7 +53,7 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 }
 
 KernelTester::KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
-	parameters(parameters), system(system), device(device), kernelResult(0, 0), referenceValue(0, 0), typeOfComparision(1), allocatedObjects(false)
+	parameters(parameters), system(system), device(device), kernelResult(0, 0), referenceValue(0, 0), typeOfComparison(1), allocatedObjects(false)
 {}
 
 #include <boost/test/floating_point_comparison.hpp>
@@ -62,19 +62,19 @@ KernelTester::~KernelTester()
   //NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 		logger.info() << "compare result " << iteration;
-	  if (typeOfComparision == 1)
+	  if (typeOfComparison == 1)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "Ref. Value = " << referenceValue[iteration];
 				BOOST_CHECK_CLOSE(referenceValue[iteration], kernelResult[iteration], testPrecision);
 	    }
-	  else if (typeOfComparision == 2)
+	  else if (typeOfComparison == 2)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "upper Bound = " << referenceValue[iteration];
 	      BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
 	    }
-		else if (typeOfComparision == 3)
+		else if (typeOfComparison == 3)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "Ref. Value = " << referenceValue[0];

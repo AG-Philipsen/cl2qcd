@@ -4,7 +4,7 @@ NT=4
 fermact=rooted_stagg
 
 # this specifies the number of times the kernel is run
-integrationsteps0=1
+integrationsteps0=2000
 
 #this specifies the acceptance precision
 solver_prec=1e-8
