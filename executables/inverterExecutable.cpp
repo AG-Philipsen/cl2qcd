@@ -21,6 +21,7 @@
 #include "inverterExecutable.h"
 
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
+#include "../physics/observables/wilsonTwoFlavourCorrelators.hpp"
 
 inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
 {
@@ -47,30 +48,14 @@ void inverterExecutable::printParametersToScreenAndFile()
 	writeInverterLogfile();
 }
 
-void inverterExecutable::measureTwoFlavourDoubletCorrelatorsOnGaugefield() {
-	filenameForTwoFlavourDoubletCorrelatorData = meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
-	// for the correlator calculation, all sources are needed on the device
-	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parameters.get_num_sources());
-	const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), parameters.get_place_sources_on_host());
-	swap_out(sources);
-	swap_out(result);
-	physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
-	logger.info() << "Finished inversion. Starting measurements.";
-	swap_in(sources);
-	swap_in(result);
-	physics::algorithms::flavour_doublet_correlators(result, sources, filenameForTwoFlavourDoubletCorrelatorData, *system);
-	release_spinorfields(result);
-	release_spinorfields(sources);
-}
-
 void inverterExecutable::performApplicationSpecificMeasurements() {
 	logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
 	gaugeObservablesInstance.measureGaugeObservables(gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
 	if (parameters.get_measure_correlators()) {
-		measureTwoFlavourDoubletCorrelatorsOnGaugefield();
+		physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(gaugefield, currentConfigurationName);
 	}
 	if (parameters.get_measure_pbp()) {
-	  physics::observables::wilson:: measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
+// 	  physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
 	}
 }
 

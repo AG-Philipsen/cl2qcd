@@ -37,8 +37,6 @@ namespace algorithms {
  * @param[in] gaugefield Gaugefield on which to base the inversion
  * @param[in] sources Spinorfields from which to start the inversion
  * @param[in] params The inputparameters of the application
- *
- * TODO make gaugefield a const-ref
  */
 void perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, const physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system);
 

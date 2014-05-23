@@ -43,11 +43,14 @@ add_library(algorithms
 )
 target_link_libraries(algorithms
 		lattices
+		fermionmatrix
 		physics
+		observables
+	optimal
 )
 
 #
-# Definition of tets
+# Definition of tests
 #
 
 add_unit_test(physics::algorithms::flavour_doublet flavour_doublet_test)

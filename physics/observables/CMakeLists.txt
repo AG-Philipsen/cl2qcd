@@ -29,6 +29,7 @@ add_library(observables
 
 target_link_libraries(observables
 	algorithms
+	fermionmatrix
 	prng
 	meta
 	hardware

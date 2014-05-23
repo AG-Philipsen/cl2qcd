@@ -21,10 +21,6 @@
 #define _INVERTERH_
 
 #include "measurementExecutable.h"
-#include "../physics/lattices/spinorfield.hpp"
-#include "../physics/sources.hpp"
-#include "../physics/algorithms/flavour_doublet.hpp"
-#include "../physics/algorithms/inversion.hpp"
 
 /**
  * Inverter executable which measures fermionic observables on gaugefield configurations.
@@ -46,8 +42,6 @@ protected:
 	void writeInverterLogfile();
 
 	void printParametersToScreenAndFile();
-
-	void measureTwoFlavourDoubletCorrelatorsOnGaugefield();
 
 	/**
 	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.

@@ -49,6 +49,8 @@ namespace physics{
 				std::string filenameForCorrelatorData;
 				std::string configurationName;
 			};
+			
+			void measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName);
     }
   }
 }

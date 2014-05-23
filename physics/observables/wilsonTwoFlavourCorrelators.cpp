@@ -21,3 +21,27 @@
 
 #include "wilsonTwoFlavourCorrelators.hpp"
 
+#include "../physics/sources.hpp"
+#include "../physics/algorithms/flavour_doublet.hpp"
+#include "../physics/algorithms/inversion.hpp"
+
+void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName) 
+{
+	auto parameters = gaugefield->getParameters();
+	auto system = gaugefield->getSystem();
+	auto prng = gaugefield->getPrng();
+	
+	std::string filenameForCorrelatorData = meta::get_ferm_obs_corr_file_name(*parameters, currentConfigurationName);
+	// for the correlator calculation, all sources are needed on the device
+	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parameters->get_num_sources());
+	const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), parameters->get_place_sources_on_host());
+	swap_out(sources);
+	swap_out(result);
+	physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
+	logger.info() << "Finished inversion. Starting measurements.";
+	swap_in(sources);
+	swap_in(result);
+	physics::algorithms::flavour_doublet_correlators(result, sources, filenameForCorrelatorData, *system);
+	release_spinorfields(result);
+	release_spinorfields(sources);
+}
