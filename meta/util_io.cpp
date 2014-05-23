@@ -453,9 +453,11 @@ static void print_info_integrator(std::ostream* os, int number, const meta::Inpu
 
 void meta::print_info_hmc(const Inputparameters& params)
 {
-	print_info_observables_hmc_io(params);
-	print_info_fermion(params);
 	print_info_gauge(params);
+	print_info_fermion(params);
+	print_info_observables_fermion_io(params);
+	print_info_source(params);
+	print_info_observables_hmc_io(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## HMC parameters: " ;
 	logger.info() << "##  ";
@@ -513,9 +515,11 @@ void meta::print_info_hmc(const Inputparameters& params)
 
 void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
 {
-	print_info_observables_hmc_io(os, params);
-	print_info_fermion(os, params);
 	print_info_gauge(os, params);
+	print_info_fermion(os, params);
+	print_info_observables_fermion_io(os, params);
+	print_info_source(os, params);
+	print_info_observables_hmc_io(os, params);
 	*os << "## **********************************************************" << endl;
 	*os << "## HMC parameters: "  << '\n';
 	*os << "##  " << '\n';

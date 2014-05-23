@@ -27,12 +27,12 @@
 
 #include <cassert>
 
-physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn):
+physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn, int trajectoryNumberIn):
   gaugefield(gaugefieldIn), parameters(gaugefield->getParameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)
 {
 	checkInputparameters();
 	openFileForWriting();
-	trajectoryNumber = gaugefield->get_parameters_source().trajectorynr_source;
+	trajectoryNumber = trajectoryNumberIn;
 }
 
 void checkFermionAction(const meta::Inputparameters * parameters)
@@ -191,7 +191,7 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_c
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
-  physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName);
+  physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, gaugefield->get_parameters_source().trajectorynr_source);
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
@@ -200,7 +200,7 @@ std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondens
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
 	std::string currentConfigurationName = meta::create_configuration_name(*(gaugefield->getParameters() ), iteration);
-  physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName);
+  physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, iteration);
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
