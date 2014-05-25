@@ -282,3 +282,9 @@ double physics::observables::gaugeObservables::measurePlaquette(const physics::l
     {
       return polyakov;
     }
+
+void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration)
+{
+  gaugeObservables obs(gf->getParameters() );
+  obs.measureGaugeObservables(gf, iteration);
+}

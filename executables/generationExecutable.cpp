@@ -89,7 +89,7 @@ void generationExecutable::generate()
 void generationExecutable::performOnlineMeasurements()
 {
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
-	  gaugeObservablesInstance.measureGaugeObservables(gaugefield, iteration);
+          physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
 	}
 }
 

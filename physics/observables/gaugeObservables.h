@@ -90,6 +90,8 @@ namespace physics{
       double measureRectangles(const physics::lattices::Gaugefield * gaugefield);
       hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gaugefield);
     };
+
+    void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
   }
 }
 
