@@ -21,6 +21,11 @@
  */
 
 #include "gaugeObservables.h"
+#include "../../hardware/code/kappa.hpp"
+#include <cassert>
+#include <fstream>
+#include <cmath>
+#include "../../meta/inputparameters.hpp"
 
 class gaugeObservables{
     public:
@@ -119,9 +124,24 @@ void gaugeObservables::writePlaqAndPolyToFile(int iter,  const std::string& file
 	outputToFile.close();
 }
 
+hmc_float kappa_clover(const physics::lattices::Gaugefield& gf, hmc_float beta)
+{
+	assert(gf.get_buffers().size() == 1);
+
+	auto gf_dev = gf.get_buffers()[0];
+
+	auto device = gf_dev->get_device();
+	hardware::buffers::Plain<hmc_float> kappa_clover_dev(1, device);
+	gf_dev->get_device()->get_kappa_code()->run_kappa_clover(&kappa_clover_dev, gf_dev, beta);
+
+	hmc_float kappa_clover_host;
+	kappa_clover_dev.dump(&kappa_clover_host);
+	return kappa_clover_host;
+}
+
 void gaugeObservables::measureTransportcoefficientKappa(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
-	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters->get_beta());
+	kappa = kappa_clover(*gaugefield, parameters->get_beta());
 	writeTransportcoefficientKappaToFile(parameters->get_transportcoefficientKappaFilename(), iteration);
 }
 

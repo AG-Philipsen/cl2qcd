@@ -23,10 +23,6 @@
 #define GAUGEOBSERVABLES_H_
 
 #include "../lattices/gaugefield.hpp"
-#include <fstream>
-#include <cmath>
-#include "../../meta/inputparameters.hpp"
-#include "../algorithms/kappa_clover.hpp"
 
 namespace physics{
 

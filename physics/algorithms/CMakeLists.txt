@@ -24,7 +24,6 @@
 add_library(algorithms
 	solver.cpp
 	su3heatbath.cpp
-	kappa_clover.cpp
 	inversion.cpp
 	molecular_dynamics.cpp
 	metropolis.cpp
