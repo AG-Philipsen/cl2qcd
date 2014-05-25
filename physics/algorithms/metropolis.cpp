@@ -257,17 +257,18 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 
 	//Gauge-Part
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	physics::observables::gaugeObservables gaugeObs(&params);
-	hmc_float plaq = gaugeObs.measurePlaquette(&gf);
-	hmc_float splaq = gaugeObs.getSpatialPlaquette();
-	hmc_float tplaq = gaugeObs.getTemporalPlaquette();
+	auto plaqs = physics::observables::measureAllPlaquettes(&gf);
+	hmc_float plaq = plaqs.plaquette;
+	hmc_float splaq = plaqs.spatialPlaquette;
+	hmc_float tplaq = plaqs.temporalPlaquette;
 
-	hmc_float plaq_new = gaugeObs.measurePlaquette(&new_u);
-	hmc_float splaq_new = gaugeObs.getSpatialPlaquette();
-	hmc_float tplaq_new = gaugeObs.getTemporalPlaquette();
+	plaqs = physics::observables::measureAllPlaquettes(&new_u);
+	hmc_float plaq_new = plaqs.plaquette;
+	hmc_float splaq_new = plaqs.spatialPlaquette;
+	hmc_float tplaq_new = plaqs.temporalPlaquette;
 
-	hmc_complex poly = gaugeObs.measurePolyakovloop(&gf);
-	hmc_complex poly_new = gaugeObs.measurePolyakovloop(&new_u);
+	hmc_complex poly = physics::observables::measurePolyakovloop(&gf);
+	hmc_complex poly_new = physics::observables::measurePolyakovloop(&new_u);
 
 	hmc_float rect_new = 0.;
 	hmc_float rect = 0.;
@@ -275,8 +276,8 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	//plaq has to be divided by the norm-factor to get s_gauge
 	hmc_float factor = 1. / (meta::get_plaq_norm(params));
 	if(meta::get_use_rectangles(params) == true) {
-	        rect = gaugeObs.measureRectangles(&gf);
-		rect_new = gaugeObs.measureRectangles(&new_u);
+	  rect = physics::observables::measureRectangles(&gf);
+	  rect_new = physics::observables::measureRectangles(&new_u);
 		hmc_float c0 = meta::get_c0(params);
 		hmc_float c1 = meta::get_c1(params);
 		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1 * ( rect - rect_new )  );
