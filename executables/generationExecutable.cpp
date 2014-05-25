@@ -65,7 +65,7 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization...";
-	gaugeObservablesInstance.measureGaugeObservables(gaugefield, iteration);
+	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
 	for (; iteration < thermalizationSteps; iteration++)
 	 {
 		thermalizeAccordingToSpecificAlgorithm();

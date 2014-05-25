@@ -68,7 +68,6 @@ protected:
 	physics::lattices::Gaugefield * gaugefield;
 	std::ofstream outputToFile;
 	const char* generalTimeOutputFilename = "general_time_output";
-	physics::observables::gaugeObservables gaugeObservablesInstance;
 
 	void printRuntimeInformationToScreenAndFile();
 
