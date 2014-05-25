@@ -102,7 +102,7 @@ void physics::observables::gaugeObservables::writeRectanglesToFile(int iter, con
 	outputToFile.close();
 }
 
-double physics::observables::gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * gaugefield)
+double physics::observables::gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * gaugefield, bool normalize)
     {
 	// the plaquette is local to each side and then summed up
 	// for multi-device simply calculate the plaquette for each device and then sum up the devices
@@ -159,9 +159,13 @@ double physics::observables::gaugeObservables::measurePlaquette(const physics::l
 			delete splaqs[i];
 		}
 	}
-	plaquette_temporal /= static_cast<hmc_float>(meta::get_tplaq_norm(*parameters));
-	plaquette_spatial /= static_cast<hmc_float>(meta::get_splaq_norm(*parameters));
-	plaquette  /= static_cast<hmc_float>(meta::get_plaq_norm(*parameters));
+
+	if (normalize)
+	  {
+	    plaquette_temporal /= static_cast<hmc_float>(meta::get_tplaq_norm(*parameters));
+	    plaquette_spatial /= static_cast<hmc_float>(meta::get_splaq_norm(*parameters));
+	    plaquette  /= static_cast<hmc_float>(meta::get_plaq_norm(*parameters));
+	  }
 
 	return plaquette;
     }
@@ -293,6 +297,12 @@ double  physics::observables::measurePlaquette(const physics::lattices::Gaugefie
 {
   gaugeObservables obs(gf->getParameters() );
   return obs.measurePlaquette(gf);
+}
+
+double  physics::observables::measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf)
+{
+  gaugeObservables obs(gf->getParameters() );
+  return obs.measurePlaquette(gf, false);
 }
 
 double  physics::observables::measureRectangles(const physics::lattices::Gaugefield * gf)

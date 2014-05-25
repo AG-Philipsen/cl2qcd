@@ -97,13 +97,14 @@ namespace physics{
       double getRectangles();
       hmc_complex getPolyakovloop();
       
-      double measurePlaquette(const physics::lattices::Gaugefield * gaugefield);
+      double measurePlaquette(const physics::lattices::Gaugefield * gaugefield, bool normalize = true);
       double measureRectangles(const physics::lattices::Gaugefield * gaugefield);
       hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gaugefield);
     };
 
     void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
     double measurePlaquette(const physics::lattices::Gaugefield * gf);
+    double measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf);
     double measureRectangles(const physics::lattices::Gaugefield * gf);
     Plaquettes measureAllPlaquettes(const physics::lattices::Gaugefield * gf);
     hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gf);

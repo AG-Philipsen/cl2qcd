@@ -187,3 +187,17 @@ BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
 
 }
 
+BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
+{
+  const char * _params[] = {"foo", "--startcondition=cold", "--nt=4", "--ns=4"};
+  meta::Inputparameters parameters(2, _params);
+  hardware::System system(parameters);
+  physics::PRNG prng(system);
+  physics::lattices::Gaugefield gf(system, prng);
+
+  auto plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
+
+  BOOST_REQUIRE_CLOSE(plaq, 3072., 1e-8);
+}
+
+
