@@ -74,7 +74,6 @@ void test_save(bool hot) {
 	hardware::System system(params);
 	physics::PRNG prng(system);
 
-
 	Gaugefield gf(system, prng, hot);
 	gf.save("conf.test", 0);
 
@@ -108,10 +107,9 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
-	physics::observables::gaugeObservables obs(&params);
 
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-	BOOST_CHECK_THROW(obs.measureRectangles(&gf), std::logic_error);
+	BOOST_CHECK_THROW( physics::observables::measureRectangles(&gf);, std::logic_error);
 
 	const char * _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
 	meta::Inputparameters params2(3, _params2);
@@ -119,7 +117,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	physics::PRNG prng2(system2);
 
 	Gaugefield gf2(system2, prng2, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-	BOOST_CHECK_CLOSE(obs.measureRectangles(&gf2), 1103.2398401620451, 0.1);
+	BOOST_CHECK_CLOSE(physics::observables::measureRectangles(&gf2), 1103.2398401620451, 0.1);
 }
 
 BOOST_AUTO_TEST_CASE(polyakov)
@@ -131,11 +129,10 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, false);
 
-		hmc_complex pol = obs.measurePolyakovloop(&gf);;
+		hmc_complex pol = physics::observables::measurePolyakovloop(&gf);;
 		BOOST_CHECK_CLOSE(pol.re, 1., 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0., 0.1);
 	}
@@ -145,10 +142,9 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		hmc_complex pol = obs.measurePolyakovloop(&gf);
+		hmc_complex pol = physics::observables::measurePolyakovloop(&gf);
 		BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
 	}
@@ -170,28 +166,18 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, false);
 
-		obs.measureGaugeObservables(&gf, 0);
-		orig_plaq = obs.getPlaquette();
-		orig_tplaq = obs.getTemporalPlaquette();
-		orig_splaq = obs.getSpatialPlaquette();
-		orig_pol = obs.getPolyakovloop();
+		orig_plaq = physics::observables::measurePlaquette(&gf);
+		orig_pol = physics::observables::measurePolyakovloop(&gf);
 
 		gf.update_halo();
 
-		obs.measureGaugeObservables(&gf, 1);
-		new_plaq = obs.getPlaquette();
-		new_tplaq = obs.getTemporalPlaquette();
-		new_splaq = obs.getSpatialPlaquette();
-		new_pol = obs.getPolyakovloop();
-
+		new_plaq = physics::observables::measurePlaquette(&gf);
+		new_pol = physics::observables::measurePolyakovloop(&gf);
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
-		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
-		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);
 	}
 
@@ -204,23 +190,15 @@ BOOST_AUTO_TEST_CASE(halo_update)
 
 		Gaugefield gf(system, prng, true);
 
-		obs.measureGaugeObservables(&gf, 0);
-		orig_plaq = obs.getPlaquette();
-		orig_tplaq = obs.getTemporalPlaquette();
-		orig_splaq = obs.getSpatialPlaquette();
-		orig_pol = obs.getPolyakovloop();
+		orig_plaq = physics::observables::measurePlaquette(&gf);
+		orig_pol = physics::observables::measurePolyakovloop(&gf);
 
 		gf.update_halo();
 
-		obs.measureGaugeObservables(&gf, 1);
-		new_plaq = obs.getPlaquette();
-		new_tplaq = obs.getTemporalPlaquette();
-		new_splaq = obs.getSpatialPlaquette();
-		new_pol = obs.getPolyakovloop();
+		new_plaq = physics::observables::measurePlaquette(&gf);
+		new_pol = physics::observables::measurePolyakovloop(&gf);
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
-		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
-		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);
 	}
 
@@ -233,23 +211,18 @@ BOOST_AUTO_TEST_CASE(halo_update)
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 
-		obs.measureGaugeObservables(&gf, 0);
-		orig_plaq = obs.getPlaquette();
-		orig_tplaq = obs.getTemporalPlaquette();
-		orig_splaq = obs.getSpatialPlaquette();
-		orig_pol = obs.getPolyakovloop();
+		orig_plaq = physics::observables::measurePlaquette(&gf);
+		orig_pol = physics::observables::measurePolyakovloop(&gf);
 
 		gf.update_halo();
 
-		obs.measureGaugeObservables(&gf, 1);
 		new_plaq = obs.getPlaquette();
-		new_tplaq = obs.getTemporalPlaquette();
-		new_splaq = obs.getSpatialPlaquette();
 		new_pol = obs.getPolyakovloop();
 
+		new_plaq = physics::observables::measurePlaquette(&gf);
+		new_pol = physics::observables::measurePolyakovloop(&gf);
+
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
-		BOOST_CHECK_EQUAL(orig_splaq, new_splaq);
-		BOOST_CHECK_EQUAL(orig_tplaq, new_tplaq);
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);
 	}
 }
