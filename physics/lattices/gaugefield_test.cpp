@@ -43,14 +43,14 @@ BOOST_AUTO_TEST_CASE(initialization)
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PRNG prng(system);
-		physics::observables::gaugeObservables obs(&params);
 
 		// init hot
 		Gaugefield gf2(system, prng, true);
 
 		// init cold
 		Gaugefield gf3(system, prng, false);
-		BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf3), 1., 0.1);
+		logger.fatal() << physics::observables::measurePlaquette(&gf3);
+		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf3), 1., 0.1);
 	}
 
 	{
@@ -59,11 +59,10 @@ BOOST_AUTO_TEST_CASE(initialization)
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PRNG prng(system);
-		physics::observables::gaugeObservables obs(&params);
 
 		// init from file
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), 0.57107711169452713, 0.1);
+		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.1);
 	}
 }
 
@@ -74,34 +73,24 @@ void test_save(bool hot) {
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
-	physics::observables::gaugeObservables obs(&params);
+
 
 	Gaugefield gf(system, prng, hot);
 	gf.save("conf.test", 0);
 
 	hmc_float orig_plaq, reread_plaq;
-	hmc_float orig_tplaq, reread_tplaq;
-	hmc_float orig_splaq, reread_splaq;
 	hmc_complex orig_pol, reread_pol;
 
-	obs.measureGaugeObservables(&gf, 0);
-	orig_plaq = obs.getPlaquette();
-	orig_tplaq = obs.getTemporalPlaquette();
-	orig_splaq = obs.getSpatialPlaquette();
-	orig_pol = obs.getPolyakovloop();
+	orig_plaq = physics::observables::measurePlaquette(&gf);
+	orig_pol = physics::observables::measurePolyakovloop(&gf);
 
 	//NOTE: the conversion to std::string is necessary, otherwise the compiler creates a boolean!
 	Gaugefield reread(system, prng, (std::string) "conf.test");
 	
-	obs.measureGaugeObservables(&reread, 1);
-	reread_plaq = obs.getPlaquette();
-	reread_tplaq = obs.getTemporalPlaquette();
-	reread_splaq = obs.getSpatialPlaquette();
-	reread_pol = obs.getPolyakovloop();
+	reread_plaq =  physics::observables::measurePlaquette(&reread);
+	reread_pol = physics::observables::measurePolyakovloop(&reread);
 
 	BOOST_CHECK_EQUAL(orig_plaq, reread_plaq);
-	BOOST_CHECK_EQUAL(orig_splaq, reread_splaq);
-	BOOST_CHECK_EQUAL(orig_tplaq, reread_tplaq);
 	BOOST_CHECK_EQUAL(orig_pol, reread_pol);
 }
 

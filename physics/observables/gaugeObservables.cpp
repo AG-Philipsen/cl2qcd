@@ -288,3 +288,17 @@ void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::
   gaugeObservables obs(gf->getParameters() );
   obs.measureGaugeObservables(gf, iteration);
 }
+
+double  physics::observables::measurePlaquette(const physics::lattices::Gaugefield * gf)
+{
+  gaugeObservables obs(gf->getParameters() );
+  obs.measurePlaquette(gf);
+  return obs.measurePlaquette(gf);
+}
+
+hmc_complex  physics::observables::measurePolyakovloop(const physics::lattices::Gaugefield * gf)
+{
+  gaugeObservables obs(gf->getParameters() );
+  obs.measurePolyakovloop(gf);
+  return obs.getPolyakovloop();
+}

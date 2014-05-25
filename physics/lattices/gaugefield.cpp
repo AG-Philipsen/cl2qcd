@@ -66,13 +66,13 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const 
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, bool hot)
-	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters(&system.get_inputparameters()), parameters_source() 
 {
 	initializeHotOrCold(hot);
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, std::string ildgfile)
-	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()), parameters_source() 
 {
 	initializeFromILDGSourcefile(ildgfile);
 }
