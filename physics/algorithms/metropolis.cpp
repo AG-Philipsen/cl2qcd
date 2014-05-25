@@ -256,18 +256,8 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	hmc_float s_new = 0.;
 
 	//Gauge-Part
-	auto plaqs = physics::observables::measureAllPlaquettes(&gf);
 	hmc_float plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
-	hmc_float splaq = plaqs.spatialPlaquette;
-	hmc_float tplaq = plaqs.temporalPlaquette;
-
-	plaqs = physics::observables::measureAllPlaquettes(&new_u);
 	hmc_float plaq_new = physics::observables::measurePlaquetteWithoutNormalization(&new_u);
-	hmc_float splaq_new = plaqs.spatialPlaquette;
-	hmc_float tplaq_new = plaqs.temporalPlaquette;
-
-	hmc_complex poly = physics::observables::measurePolyakovloop(&gf);
-	hmc_complex poly_new = physics::observables::measurePolyakovloop(&new_u);
 
 	hmc_float rect_new = 0.;
 	hmc_float rect = 0.;
@@ -372,6 +362,22 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	}
 	print_info_debug(params, "[DH]:\tdH:\t\t", deltaH);
 	print_info_debug(params, "[MET]:\tAcc-Prop:\t", compare_prob);
+
+	//calc gaugeobservables
+	//todo: calc only of final configuration
+	auto plaqs = physics::observables::measureAllPlaquettes(&gf);
+	plaq = plaqs.plaquette; 
+	hmc_float splaq = plaqs.spatialPlaquette;
+	hmc_float tplaq = plaqs.temporalPlaquette;
+
+	plaqs = physics::observables::measureAllPlaquettes(&new_u);
+	plaq_new = plaqs.plaquette; 
+	hmc_float splaq_new = plaqs.spatialPlaquette;
+	hmc_float tplaq_new = plaqs.temporalPlaquette;
+
+	hmc_complex poly = physics::observables::measurePolyakovloop(&gf);
+	hmc_complex poly_new = physics::observables::measurePolyakovloop(&new_u);
+
 	hmc_observables tmp;
 	if(rnd <= compare_prob) {
 		tmp.accept = 1;
