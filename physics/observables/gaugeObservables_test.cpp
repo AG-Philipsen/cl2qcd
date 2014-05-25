@@ -169,3 +169,21 @@ BOOST_AUTO_TEST_CASE( POLYAKOVLOOP_2 )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
+{
+  const char * _params[] = {"foo", "--startcondition=cold"};
+  meta::Inputparameters parameters(2, _params);
+  hardware::System system(parameters);
+  physics::PRNG prng(system);
+  physics::lattices::Gaugefield gf(system, prng);
+
+  auto allPlaquettes = physics::observables::measureAllPlaquettes(&gf);
+
+  BOOST_REQUIRE_CLOSE(allPlaquettes.plaquette, 1., 1e-8);
+  BOOST_REQUIRE_CLOSE(allPlaquettes.temporalPlaquette, 1., 1e-8);
+  BOOST_REQUIRE_CLOSE(allPlaquettes.spatialPlaquette, 1., 1e-8);
+
+}
+

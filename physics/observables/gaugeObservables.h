@@ -31,6 +31,17 @@
 namespace physics{
 
   namespace observables{
+
+    class Plaquettes
+    {
+    public:
+      double plaquette;
+      double temporalPlaquette;
+      double spatialPlaquette;
+      
+    Plaquettes(double plaquetteIn, double temporalPlaquetteIn, double spatialPlaquetteIn):
+      plaquette(plaquetteIn), temporalPlaquette(temporalPlaquetteIn), spatialPlaquette(spatialPlaquetteIn) {}
+    };
     
     class gaugeObservables{
     public:
@@ -93,6 +104,7 @@ namespace physics{
 
     void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
     double measurePlaquette(const physics::lattices::Gaugefield * gf);
+    Plaquettes measureAllPlaquettes(const physics::lattices::Gaugefield * gf);
     hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gf);
   }
 }

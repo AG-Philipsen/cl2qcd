@@ -302,3 +302,11 @@ hmc_complex  physics::observables::measurePolyakovloop(const physics::lattices::
   obs.measurePolyakovloop(gf);
   return obs.getPolyakovloop();
 }
+
+physics::observables::Plaquettes  physics::observables::measureAllPlaquettes(const physics::lattices::Gaugefield * gf)
+{
+  gaugeObservables obs(gf->getParameters() );
+  obs.measurePlaquette(gf);
+  Plaquettes plaqs (obs.getPlaquette(), obs.getTemporalPlaquette(), obs.getSpatialPlaquette() );
+  return plaqs;
+}
