@@ -155,8 +155,6 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	using namespace physics::lattices;
 
 	hmc_float orig_plaq, new_plaq;
-	hmc_float orig_tplaq, new_tplaq;
-	hmc_float orig_splaq, new_splaq;
 	hmc_complex orig_pol, new_pol;
 
 	// simple test, gaugeobservables should not get changed by halo exchange
@@ -186,7 +184,6 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(1, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, true);
 
@@ -207,7 +204,6 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 
@@ -215,9 +211,6 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		orig_pol = physics::observables::measurePolyakovloop(&gf);
 
 		gf.update_halo();
-
-		new_plaq = obs.getPlaquette();
-		new_pol = obs.getPolyakovloop();
 
 		new_plaq = physics::observables::measurePlaquette(&gf);
 		new_pol = physics::observables::measurePolyakovloop(&gf);

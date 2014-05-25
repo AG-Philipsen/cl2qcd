@@ -60,7 +60,6 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 			pseudo_randomize<Gaugemomenta, ae>(&gm, 415);
 
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			physics::observables::gaugeObservables obs(&params);
 			double plaq = physics::observables::measurePlaquette(&gf);
 			BOOST_CHECK_CLOSE(plaq, 0.80918156710730049, 0.01);
 		}

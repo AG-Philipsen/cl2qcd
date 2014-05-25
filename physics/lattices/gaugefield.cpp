@@ -130,8 +130,7 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 	delete[] gf_ildg;
 	delete[] gf_host;
 
-	physics::observables::gaugeObservables obs(&parameters);
-	hmc_float plaq = obs.measurePlaquette(this);
+	hmc_float plaq = physics::observables::measurePlaquette(this);
 	check_sourcefileparameters(parameters, plaq, parameters_source);
 }
 
@@ -236,8 +235,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 		delete host_buf;
 	}
 
-	physics::observables::gaugeObservables obs(&parameters);
-	hmc_float plaq = obs.measurePlaquette(this);
+	hmc_float plaq = physics::observables::measurePlaquette(this);
 
 	const size_t NSPACE = parameters.get_nspace();
 
