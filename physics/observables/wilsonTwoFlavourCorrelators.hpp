@@ -23,10 +23,6 @@
 #define WILSONTWOFLAVOURCORRELATORS_HPP_
 
 #include "../lattices/gaugefield.hpp"
-#include "../lattices/spinorfield.hpp"
-#include <fstream>
-#include <cmath>
-#include "../../meta/inputparameters.hpp"
 
 namespace physics{
 
@@ -34,22 +30,6 @@ namespace physics{
 
 		namespace wilson{
 
-			class TwoFlavourCorrelators
-			{
-			public:
-				
-			private:
-				const physics::lattices::Gaugefield * gaugefield;
-				const meta::Inputparameters * parameters;
-				const hardware::System * system;
-				const physics::PRNG * prng;
-				int trajectoryNumber;
-				std::vector<double> correlator;
-				std::ofstream outputToFile;
-				std::string filenameForCorrelatorData;
-				std::string configurationName;
-			};
-			
 			void measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName);
     }
   }
