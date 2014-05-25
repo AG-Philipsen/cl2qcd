@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	hardware::System system(params);
 	Dummyfield cpu(system);
 	logger.info() << "gaugeobservables: ";
-	physics::gaugeObservables obs(&params );
+	physics::observables::gaugeObservables obs(&params );
 	obs.measureGaugeObservables(&cpu.gf, 0);
 	logger.info() << "Run kernel";
 	logger.info() << "running test kernel";

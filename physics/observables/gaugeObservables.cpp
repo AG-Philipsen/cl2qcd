@@ -22,7 +22,7 @@
 
 #include "gaugeObservables.h"
 
-void physics::gaugeObservables::measureGaugeObservables(const physics::lattices::Gaugefield * gaugefield, int iteration)
+void physics::observables::gaugeObservables::measureGaugeObservables(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
   measurePlaqAndPoly(gaugefield, iteration);
   if ( parameters->get_measure_rectangles() ){
@@ -33,13 +33,13 @@ void physics::gaugeObservables::measureGaugeObservables(const physics::lattices:
   }
 }
 
-void physics::gaugeObservables::measurePlaqAndPoly(const physics::lattices::Gaugefield * gf, int iter)
+void physics::observables::gaugeObservables::measurePlaqAndPoly(const physics::lattices::Gaugefield * gf, int iter)
 {
 	const std::string filename = meta::get_gauge_obs_file_name(*parameters,  "");
 	measurePlaqAndPoly(gf, iter, filename);
 }
 
-void physics::gaugeObservables::measurePlaqAndPoly(const physics::lattices::Gaugefield * gf, int iter, const std::string& filename)
+void physics::observables::gaugeObservables::measurePlaqAndPoly(const physics::lattices::Gaugefield * gf, int iter, const std::string& filename)
 {
   measurePlaquette(gf);
   measurePolyakovloop(gf);
@@ -49,7 +49,7 @@ void physics::gaugeObservables::measurePlaqAndPoly(const physics::lattices::Gaug
 	writePlaqAndPolyToFile(iter, filename);
 }
 
-void physics::gaugeObservables::writePlaqAndPolyToFile(int iter,  const std::string& filename)
+void physics::observables::gaugeObservables::writePlaqAndPolyToFile(int iter,  const std::string& filename)
 {
 	outputToFile.open(filename.c_str(), std::ios::app);
 	if(!outputToFile.is_open()) throw File_Exception(filename);
@@ -60,20 +60,20 @@ void physics::gaugeObservables::writePlaqAndPolyToFile(int iter,  const std::str
 	outputToFile.close();
 }
 
-void physics::gaugeObservables::measureTransportcoefficientKappa(const physics::lattices::Gaugefield * gaugefield, int iteration)
+void physics::observables::gaugeObservables::measureTransportcoefficientKappa(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
 	kappa = physics::algorithms::kappa_clover(*gaugefield, parameters->get_beta());
 	writeTransportcoefficientKappaToFile(parameters->get_transportcoefficientKappaFilename(), iteration);
 }
 
-void physics::gaugeObservables::writeTransportcoefficientKappaToFileUsingOpenOutputStream(int iteration)
+void physics::observables::gaugeObservables::writeTransportcoefficientKappaToFileUsingOpenOutputStream(int iteration)
 {
 	outputToFile.width(8);
 	outputToFile.precision(15);
 	outputToFile << iteration << "\t" << kappa << std::endl;
 }
 
-void physics::gaugeObservables::writeTransportcoefficientKappaToFile(std::string filename, int iteration)
+void physics::observables::gaugeObservables::writeTransportcoefficientKappaToFile(std::string filename, int iteration)
 {
 	outputToFile.open(filename.c_str(), std::ios::app);
 	if ( outputToFile.is_open() ) {
@@ -85,13 +85,13 @@ void physics::gaugeObservables::writeTransportcoefficientKappaToFile(std::string
 	}
 }
 
-void physics::gaugeObservables::measureRectangles(const physics::lattices::Gaugefield * gf, int iteration)
+void physics::observables::gaugeObservables::measureRectangles(const physics::lattices::Gaugefield * gf, int iteration)
 {
 	measureRectangles(gf);
 	writeRectanglesToFile(iteration, parameters->get_rectanglesFilename());
 }
 
-void physics::gaugeObservables::writeRectanglesToFile(int iter, const std::string& filename)
+void physics::observables::gaugeObservables::writeRectanglesToFile(int iter, const std::string& filename)
 {
 	outputToFile.open(filename.c_str(), std::ios::app);
 	if(!outputToFile.is_open()) throw File_Exception(filename);
@@ -102,7 +102,7 @@ void physics::gaugeObservables::writeRectanglesToFile(int iter, const std::strin
 	outputToFile.close();
 }
 
-double physics::gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * gaugefield)
+double physics::observables::gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * gaugefield)
     {
 	// the plaquette is local to each side and then summed up
 	// for multi-device simply calculate the plaquette for each device and then sum up the devices
@@ -166,7 +166,7 @@ double physics::gaugeObservables::measurePlaquette(const physics::lattices::Gaug
 	return plaquette;
     }
 
-    double physics::gaugeObservables::measureRectangles(const physics::lattices::Gaugefield * gaugefield)
+    double physics::observables::gaugeObservables::measureRectangles(const physics::lattices::Gaugefield * gaugefield)
     {
       // the rectangles are local to each site and then summed up
       // for multi-device simply calculate the plaquette for each device and then sum up the devices
@@ -204,7 +204,7 @@ double physics::gaugeObservables::measurePlaquette(const physics::lattices::Gaug
       return rectangles;
     }
 
-    hmc_complex physics::gaugeObservables::measurePolyakovloop(const physics::lattices::Gaugefield * gaugefield)
+    hmc_complex physics::observables::gaugeObservables::measurePolyakovloop(const physics::lattices::Gaugefield * gaugefield)
     {
       using hardware::buffers::Plain;
 
@@ -260,25 +260,25 @@ double physics::gaugeObservables::measurePlaquette(const physics::lattices::Gaug
       return polyakov;
     }
 
-    double physics::gaugeObservables::getPlaquette()
+    double physics::observables::gaugeObservables::getPlaquette()
     {
       return plaquette;
     }
-    double physics::gaugeObservables::getSpatialPlaquette()
+    double physics::observables::gaugeObservables::getSpatialPlaquette()
     {
       return plaquette_spatial;
     }
-    double physics::gaugeObservables::getTemporalPlaquette()
+    double physics::observables::gaugeObservables::getTemporalPlaquette()
     {
       return plaquette_temporal;
     }
 
-    double physics::gaugeObservables::getRectangles()
+    double physics::observables::gaugeObservables::getRectangles()
     {
       return rectangles;
     }
 
-    hmc_complex physics::gaugeObservables::getPolyakovloop()
+    hmc_complex physics::observables::gaugeObservables::getPolyakovloop()
     {
       return polyakov;
     }

@@ -257,7 +257,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 
 	//Gauge-Part
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	physics::gaugeObservables gaugeObs(&params);
+	physics::observables::gaugeObservables gaugeObs(&params);
 	hmc_float plaq = gaugeObs.measurePlaquette(&gf);
 	hmc_float splaq = gaugeObs.getSpatialPlaquette();
 	hmc_float tplaq = gaugeObs.getTemporalPlaquette();

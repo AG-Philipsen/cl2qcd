@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		{
 			Gaugefield gf(system, prng, false);
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 			pseudo_randomize<Gaugemomenta, ae>(&gm, 415);
 
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			physics::gaugeObservables obs(&params);
+			physics::observables::gaugeObservables obs(&params);
 			BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), 0.80918156710730049, 0.01);
 		}
 	}
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		Gaugemomenta gm(system);
 		pseudo_randomize<Gaugemomenta, ae>(&gm, 123);
 
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 		BOOST_CHECK_CLOSE(obs.measurePlaquette(&gf), 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
 		BOOST_REQUIRE_CLOSE(obs.measurePlaquette(&gf), 0.32089465123266286, 0.01);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Gaugemomenta gm(system);

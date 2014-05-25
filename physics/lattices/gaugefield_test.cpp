@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		// init hot
 		Gaugefield gf2(system, prng, true);
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		// init from file
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -74,7 +74,7 @@ void test_save(bool hot) {
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
-	physics::gaugeObservables obs(&params);
+	physics::observables::gaugeObservables obs(&params);
 
 	Gaugefield gf(system, prng, hot);
 	gf.save("conf.test", 0);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
-	physics::gaugeObservables obs(&params);
+	physics::observables::gaugeObservables obs(&params);
 
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	BOOST_CHECK_THROW(obs.measureRectangles(&gf), std::logic_error);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, false);
 
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		hmc_complex pol = obs.measurePolyakovloop(&gf);
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, false);
 
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(1, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, true);
 
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
 		physics::PRNG prng(system);
-		physics::gaugeObservables obs(&params);
+		physics::observables::gaugeObservables obs(&params);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 

@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( BUILD_1 )
   const char * _params[] = {"foo"};
   meta::Inputparameters params(1, _params);
 
-  BOOST_REQUIRE_NO_THROW(physics::gaugeObservables tester(&params) );
+  BOOST_REQUIRE_NO_THROW(physics::observables::gaugeObservables tester(&params) );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -49,7 +49,7 @@ public:
   GaugeObservablesTester(int argc, const char** argv)
   {
     parameters = new meta::Inputparameters(argc, argv);
-    gaugeObservables = new physics::gaugeObservables(parameters);
+    gaugeObservables = new physics::observables::gaugeObservables(parameters);
     system = new hardware::System(*parameters);
     prng = new physics::PRNG(*system);
     gaugefield = new physics::lattices::Gaugefield(*system, *prng);
@@ -64,7 +64,7 @@ public:
   }
 
   meta::Inputparameters * parameters;
-  physics::gaugeObservables * gaugeObservables;
+  physics::observables::gaugeObservables * gaugeObservables;
   physics::lattices::Gaugefield * gaugefield;
 private:
   hardware::System *  system;
