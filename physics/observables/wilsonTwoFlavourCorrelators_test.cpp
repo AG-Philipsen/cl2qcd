@@ -28,7 +28,7 @@
 #include "../../host_functionality/logger.hpp"
 #include <stdexcept>
 
-#include "../lattices/spinorfield.hpp"
+
 
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"

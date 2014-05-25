@@ -25,7 +25,6 @@ add_library(algorithms
 	solver.cpp
 	su3heatbath.cpp
 	kappa_clover.cpp
-	flavour_doublet.cpp
 	inversion.cpp
 	molecular_dynamics.cpp
 	metropolis.cpp
@@ -53,7 +52,6 @@ target_link_libraries(algorithms
 # Definition of tests
 #
 
-add_unit_test(physics::algorithms::flavour_doublet flavour_doublet_test)
 add_unit_test(physics::algorithms::<fermion_force> fermion_force_test)
 add_unit_test(physics::algorithms::<fermion_force_staggered> fermion_force_staggered_test)
 add_unit_test(physics::algorithms::<forces> forces_test)
