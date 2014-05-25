@@ -256,14 +256,13 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	hmc_float s_new = 0.;
 
 	//Gauge-Part
-	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
 	auto plaqs = physics::observables::measureAllPlaquettes(&gf);
-	hmc_float plaq = plaqs.plaquette;
+	hmc_float plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
 	hmc_float splaq = plaqs.spatialPlaquette;
 	hmc_float tplaq = plaqs.temporalPlaquette;
 
 	plaqs = physics::observables::measureAllPlaquettes(&new_u);
-	hmc_float plaq_new = plaqs.plaquette;
+	hmc_float plaq_new = physics::observables::measurePlaquetteWithoutNormalization(&new_u);
 	hmc_float splaq_new = plaqs.spatialPlaquette;
 	hmc_float tplaq_new = plaqs.temporalPlaquette;
 
@@ -273,21 +272,19 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	hmc_float rect_new = 0.;
 	hmc_float rect = 0.;
 
-	//plaq has to be divided by the norm-factor to get s_gauge
-	hmc_float factor = 1. / (meta::get_plaq_norm(params));
 	if(meta::get_use_rectangles(params) == true) {
 	  rect = physics::observables::measureRectangles(&gf);
 	  rect_new = physics::observables::measureRectangles(&new_u);
 		hmc_float c0 = meta::get_c0(params);
 		hmc_float c1 = meta::get_c1(params);
-		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1 * ( rect - rect_new )  );
-		s_old = - beta * ( c0 * (plaq) / factor + c1 * ( rect )  );
-		s_new = - beta * ( c0 * (plaq_new) / factor + c1 * ( rect_new )  );
+		deltaH = - beta * ( c0 * (plaq - plaq_new)  + c1 * ( rect - rect_new )  );
+		s_old = - beta * ( c0 * ( plaq )  + c1 * ( rect )  );
+		s_new = - beta * ( c0 * (plaq_new)  + c1 * ( rect_new )  );
 	} else {
 		/** NOTE: the minus here is introduced to fit tmlqcd!!! */
-		deltaH = -(plaq - plaq_new) * beta / factor;
-		s_old = -(plaq ) * beta / factor;
-		s_new = -(plaq_new) * beta / factor;
+		deltaH = -(plaq - plaq_new) * beta ;
+		s_old = -(plaq ) * beta ;
+		s_new = -(plaq_new) * beta ;
 	}
 
 	print_info_debug(params, "[DH]:\tS[GF]_0:\t", s_old, false);
