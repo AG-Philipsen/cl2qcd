@@ -28,17 +28,6 @@
 
 BOOST_AUTO_TEST_SUITE( BUILD )
 
-	BOOST_AUTO_TEST_CASE( BUILD_1 )
-	{
-		const char * _params[] = {"foo", "--measure_pbp=true"};
-		meta::Inputparameters params(2, _params);
-		const hardware::System system(params);
-		const physics::PRNG prng(system);
-		const physics::lattices::Gaugefield gaugefield(system, prng);
-		
-		BOOST_REQUIRE_NO_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&gaugefield) );
-	}
-	
 	void testLogicError(const char * _params[], int length )
 	{
 		meta::Inputparameters params(length, _params);
@@ -46,7 +35,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const physics::PRNG prng(system);
 		const physics::lattices::Gaugefield gaugefield(system, prng);
 		
-		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&gaugefield) , std::logic_error);
+		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0) , std::logic_error);
 	}
 	
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_1 )
@@ -66,7 +55,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const physics::PRNG prng(system);
 		const physics::lattices::Gaugefield gaugefield(system, prng);
 		
-		BOOST_REQUIRE_THROW(physics::observables::wilson::TwoFlavourChiralCondensate tester(&gaugefield) , std::logic_error);
+		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0) , std::logic_error);
 	}
 	
 	std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};

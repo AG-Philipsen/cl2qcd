@@ -31,19 +31,6 @@
 
 #include "../lattices/gaugefield.hpp"
 
-/*
-BOOST_AUTO_TEST_SUITE( BUILD )
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-  const char * _params[] = {"foo"};
-  meta::Inputparameters params(1, _params);
-
-  BOOST_REQUIRE_NO_THROW(physics::observables::gaugeObservables tester(&params) );
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-*/
 class GaugeObservablesTester
 {
 public:
