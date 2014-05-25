@@ -23,12 +23,15 @@
 #define WILSONTWOFLAVOURCORRELATORS_HPP_
 
 #include "../lattices/gaugefield.hpp"
+#include "../lattices/spinorfield.hpp"
 
 namespace physics{
 
 	namespace observables{
 
 		namespace wilson{
+
+		  std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system);
 
 			void measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName);
     }

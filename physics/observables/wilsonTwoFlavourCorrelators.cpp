@@ -73,14 +73,14 @@ void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfiel
 	  throw File_Exception(corr_fn);
 	}
 
-	auto result_ps = calculate_correlator("ps", result, sources, system);
-	auto result_sc = calculate_correlator("sc", result, sources, system);
-	auto result_vx = calculate_correlator("vx", result, sources, system);
-	auto result_vy = calculate_correlator("vy", result, sources, system);
-	auto result_vz = calculate_correlator("vz", result, sources, system);
-	auto result_ax = calculate_correlator("ax", result, sources, system);
-	auto result_ay = calculate_correlator("ay", result, sources, system);
-	auto result_az = calculate_correlator("az", result, sources, system);
+	auto result_ps = physics::observables::wilson::calculate_correlator("ps", result, sources, system);
+	auto result_sc = physics::observables::wilson::calculate_correlator("sc", result, sources, system);
+	auto result_vx = physics::observables::wilson::calculate_correlator("vx", result, sources, system);
+	auto result_vy = physics::observables::wilson::calculate_correlator("vy", result, sources, system);
+	auto result_vz = physics::observables::wilson::calculate_correlator("vz", result, sources, system);
+	auto result_ax = physics::observables::wilson::calculate_correlator("ax", result, sources, system);
+	auto result_ay = physics::observables::wilson::calculate_correlator("ay", result, sources, system);
+	auto result_az = physics::observables::wilson::calculate_correlator("az", result, sources, system);
 
 	auto parameters = system.get_inputparameters();
 
@@ -299,7 +299,7 @@ static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& 
 	return host_result;
 }
 
-std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
+std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {
 	if(type == "ps") {
 		return calculate_correlator_componentwise(type, corr, sources, system);
