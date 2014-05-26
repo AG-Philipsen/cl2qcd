@@ -29,4 +29,9 @@ add_library(ildg_io
 target_link_libraries(ildg_io
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
+	# check if this is needed...
+	executables
 )
+
+add_unit_test(ildg_read_gaugefield ildg_read_gaugefield_test)
+
