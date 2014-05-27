@@ -20,7 +20,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "chiral_condensate_staggered.hpp"
+#include "staggeredChiralCondensate.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -65,7 +65,7 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	else //This configuration for the Ref.Code is the same as for example dks_input_5
 	  gf = new Gaugefield(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
-	hmc_complex pbp = physics::algorithms::chiral_condensate_staggered(*gf, prng, system);
+	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system);
 	
 	logger.info() << "Chiral condensate pbp = (" << std::setprecision(12) << pbp.re << ", " << pbp.im << ")";
 	if(content == "one"){

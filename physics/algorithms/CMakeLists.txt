@@ -39,7 +39,6 @@ add_library(algorithms
 	rational_approximation.cpp
 	solver_shifted.cpp
 	rhmc.cpp
-	chiral_condensate_staggered.cpp
 )
 target_link_libraries(algorithms
 		lattices
@@ -61,4 +60,3 @@ add_unit_test(physics::algorithms::<molecular_dynamics> molecular_dynamics_test)
 add_unit_test(physics::algorithms::<rational_approximation> rational_approximation_test ${CMAKE_CURRENT_SOURCE_DIR}/rational_approximation_test_input)
 add_unit_test(physics::algorithms::solver::<solver_shifted> solver_shifted_test)
 add_unit_test(physics::algorithms::<find_minmax_eigenvalue> find_minmax_eigenvalue_test)
-add_unit_test(physics::algorithms::<chiral_condensate_stagg> chiral_condensate_staggered_test)

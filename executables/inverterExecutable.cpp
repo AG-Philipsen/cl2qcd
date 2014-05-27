@@ -55,7 +55,7 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
 		physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(gaugefield, currentConfigurationName);
 	}
 	if (parameters.get_measure_pbp()) {
-// 	  physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
+	  physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
 	}
 }
 
