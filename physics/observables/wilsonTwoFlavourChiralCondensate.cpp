@@ -24,7 +24,38 @@
 #include "../algorithms/inversion.hpp"
 #include "../sources.hpp"
 
-physics::observables::wilson::TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn, int trajectoryNumberIn):
+class TwoFlavourChiralCondensate
+{
+public:
+  TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield, std::string configurationName = "conf.default", int iteration = 0);
+  TwoFlavourChiralCondensate() = delete;
+  ~TwoFlavourChiralCondensate();
+  
+  std::vector<double> getChiralCondensate();
+  void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield);
+  void writeChiralCondensateToFile();
+  
+private:
+  const physics::lattices::Gaugefield * gaugefield;
+  const meta::Inputparameters * parameters;
+  const hardware::System * system;
+  const physics::PRNG * prng;
+  int trajectoryNumber;
+  std::vector<double> chiralCondensate;
+  std::ofstream outputToFile;
+  std::string filenameForChiralCondensateData;
+  std::string configurationName;
+  
+  void checkInputparameters();
+  double norm_std() const ;
+  double norm_tm() const;
+  double flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi);
+  double flavour_doublet_chiral_condensate_tm(const physics::lattices::Spinorfield* phi);
+  void openFileForWriting();
+  void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources);
+};
+
+TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn, int trajectoryNumberIn):
   gaugefield(gaugefieldIn), parameters(gaugefield->getParameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)
 {
 	checkInputparameters();
@@ -52,7 +83,7 @@ void checkChiralCondensateVersion(const meta::Inputparameters * parameters)
 		throw std::logic_error("No valid chiral condensate version has been selected.");
 }
 
-void physics::observables::wilson::TwoFlavourChiralCondensate::checkInputparameters()
+void TwoFlavourChiralCondensate::checkInputparameters()
 {
 	if(! parameters->get_measure_pbp() ) 
 	{
@@ -63,17 +94,17 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::checkInputparamet
 	checkChiralCondensateVersion(parameters);
 }
 
-physics::observables::wilson::TwoFlavourChiralCondensate::~TwoFlavourChiralCondensate()
+TwoFlavourChiralCondensate::~TwoFlavourChiralCondensate()
 {
 	outputToFile.close();
 }
 
-std::vector<double> physics::observables::wilson::TwoFlavourChiralCondensate::getChiralCondensate()
+std::vector<double> TwoFlavourChiralCondensate::getChiralCondensate()
 {
 	return chiralCondensate;
 }
 				
-void physics::observables::wilson::TwoFlavourChiralCondensate::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield)
+void TwoFlavourChiralCondensate::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield)
 {
 	logger.info() << "chiral condensate:" ;
 	for (int sourceNumber = 0; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
@@ -91,7 +122,7 @@ void printChiralCondensate(int trajectoryNumber, double value)
 	logger.info() << trajectoryNumber << "\t" << std::scientific << std::setprecision(14) << value;
 }
 
-void physics::observables::wilson::TwoFlavourChiralCondensate::writeChiralCondensateToFile()
+void TwoFlavourChiralCondensate::writeChiralCondensateToFile()
 {
   logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
 	for (int i = 0; i < (int) chiralCondensate.size(); i++)
@@ -100,7 +131,7 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::writeChiralConden
 	}
 }
 
-double physics::observables::wilson::TwoFlavourChiralCondensate::norm_std() const 
+double TwoFlavourChiralCondensate::norm_std() const 
 {
 	/**
 	 * Normalize for VOL4D, NF and spinor entries (NC * ND = 12)
@@ -118,7 +149,7 @@ double physics::observables::wilson::TwoFlavourChiralCondensate::norm_std() cons
 	return norm;
 }
 
-double physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi)
+double TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi)
 {
 	/**
 	* In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
@@ -162,7 +193,7 @@ double physics::observables::wilson::TwoFlavourChiralCondensate::flavourChiralCo
 	return result;
 }
 
-void physics::observables::wilson::TwoFlavourChiralCondensate::openFileForWriting()
+void TwoFlavourChiralCondensate::openFileForWriting()
 {
 	filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, configurationName);
 	outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
@@ -171,7 +202,7 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::openFileForWritin
 	}
 }
 
-void physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources)
+void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources)
 {
         double result = 0.;
 	if( parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) 
@@ -188,7 +219,7 @@ void physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_c
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
-  physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, gaugefield->get_parameters_source().trajectorynr_source);
+        TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, gaugefield->get_parameters_source().trajectorynr_source);
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
@@ -197,13 +228,13 @@ std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondens
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
 	std::string currentConfigurationName = meta::create_configuration_name(*(gaugefield->getParameters() ), iteration);
-  physics::observables::wilson::TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, iteration);
+	TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, iteration);
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
 }
 
-double physics::observables::wilson::TwoFlavourChiralCondensate::norm_tm() const 
+double TwoFlavourChiralCondensate::norm_tm() const 
 {
 	/*
 	 * Normalize for VOL4D, Nf and spinor entries (NC * ND = 12)
@@ -214,7 +245,7 @@ double physics::observables::wilson::TwoFlavourChiralCondensate::norm_tm() const
 	return norm;
 }
 
-double physics::observables::wilson::TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate_tm(const physics::lattices::Spinorfield* phi)
+double TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate_tm(const physics::lattices::Spinorfield* phi)
 {
 	/**
 	 * For twisted-mass fermions one can also employ the one-end trick, which origins from

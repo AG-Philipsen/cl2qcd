@@ -24,9 +24,6 @@
 
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/spinorfield.hpp"
-#include <fstream>
-#include <cmath>
-#include "../../meta/inputparameters.hpp"
 
 namespace physics{
 
@@ -34,22 +31,8 @@ namespace physics{
 
 		namespace wilson{
 
-			class TwoFlavourCorrelators
-			{
-			public:
-				
-			private:
-				const physics::lattices::Gaugefield * gaugefield;
-				const meta::Inputparameters * parameters;
-				const hardware::System * system;
-				const physics::PRNG * prng;
-				int trajectoryNumber;
-				std::vector<double> correlator;
-				std::ofstream outputToFile;
-				std::string filenameForCorrelatorData;
-				std::string configurationName;
-			};
-			
+		  std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system);
+
 			void measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName);
     }
   }

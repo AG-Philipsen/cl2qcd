@@ -66,13 +66,13 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const 
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, bool hot)
-	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters(&system.get_inputparameters()), parameters_source() 
 {
 	initializeHotOrCold(hot);
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, std::string ildgfile)
-	: system(system), prng(prng), buffers(allocate_buffers(system)), parameters_source() 
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()), parameters_source() 
 {
 	initializeFromILDGSourcefile(ildgfile);
 }
@@ -130,8 +130,7 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 	delete[] gf_ildg;
 	delete[] gf_host;
 
-	physics::gaugeObservables obs(&parameters);
-	hmc_float plaq = obs.measurePlaquette(this);
+	hmc_float plaq = physics::observables::measurePlaquette(this);
 	check_sourcefileparameters(parameters, plaq, parameters_source);
 }
 
@@ -236,8 +235,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 		delete host_buf;
 	}
 
-	physics::gaugeObservables obs(&parameters);
-	hmc_float plaq = obs.measurePlaquette(this);
+	hmc_float plaq = physics::observables::measurePlaquette(this);
 
 	const size_t NSPACE = parameters.get_nspace();
 

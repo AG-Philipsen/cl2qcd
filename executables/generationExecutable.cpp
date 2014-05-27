@@ -65,7 +65,7 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization...";
-	gaugeObservablesInstance.measureGaugeObservables(gaugefield, iteration);
+	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
 	for (; iteration < thermalizationSteps; iteration++)
 	 {
 		thermalizeAccordingToSpecificAlgorithm();
@@ -89,7 +89,7 @@ void generationExecutable::generate()
 void generationExecutable::performOnlineMeasurements()
 {
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
-	  gaugeObservablesInstance.measureGaugeObservables(gaugefield, iteration);
+          physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
 	}
 }
 

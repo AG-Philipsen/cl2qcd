@@ -33,39 +33,8 @@ namespace physics{
 
 		namespace wilson{
 
-			class TwoFlavourChiralCondensate
-			{
-			public:
-			 TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield, std::string configurationName = "conf.default", int iteration = 0);
-				TwoFlavourChiralCondensate() = delete;
-				~TwoFlavourChiralCondensate();
-				
-				std::vector<double> getChiralCondensate();
-				void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield);
-				void writeChiralCondensateToFile();
-				
-			private:
-				const physics::lattices::Gaugefield * gaugefield;
-				const meta::Inputparameters * parameters;
-				const hardware::System * system;
-				const physics::PRNG * prng;
-				int trajectoryNumber;
-				std::vector<double> chiralCondensate;
-				std::ofstream outputToFile;
-				std::string filenameForChiralCondensateData;
-			        std::string configurationName;
-				
-				void checkInputparameters();
-				double norm_std() const ;
-			        double norm_tm() const;
-				double flavourChiralCondensate_std(const physics::lattices::Spinorfield* phi, const physics::lattices::Spinorfield* xi);
-			        double flavour_doublet_chiral_condensate_tm(const physics::lattices::Spinorfield* phi);
-				void openFileForWriting();
-				void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources);
-			};
-
 		  std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName);
-			std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration);
+		  std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration);
     }
   }
 }

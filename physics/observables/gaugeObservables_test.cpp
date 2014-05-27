@@ -31,32 +31,18 @@
 
 #include "../lattices/gaugefield.hpp"
 
-BOOST_AUTO_TEST_SUITE( BUILD )
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
-{
-  const char * _params[] = {"foo"};
-  meta::Inputparameters params(1, _params);
-
-  BOOST_REQUIRE_NO_THROW(physics::gaugeObservables tester(&params) );
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 class GaugeObservablesTester
 {
 public:
   GaugeObservablesTester(int argc, const char** argv)
   {
     parameters = new meta::Inputparameters(argc, argv);
-    gaugeObservables = new physics::gaugeObservables(parameters);
     system = new hardware::System(*parameters);
     prng = new physics::PRNG(*system);
     gaugefield = new physics::lattices::Gaugefield(*system, *prng);
   }
   ~GaugeObservablesTester()
   {
-    gaugeObservables= 0;
     system = 0;
     prng = 0;
     gaugefield = 0;
@@ -64,7 +50,6 @@ public:
   }
 
   meta::Inputparameters * parameters;
-  physics::gaugeObservables * gaugeObservables;
   physics::lattices::Gaugefield * gaugefield;
 private:
   hardware::System *  system;
@@ -80,8 +65,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    GaugeObservablesTester::gaugeObservables->measurePlaquette(GaugeObservablesTester::gaugefield);
-    BOOST_CHECK_CLOSE(GaugeObservablesTester::gaugeObservables->getPlaquette(), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(GaugeObservablesTester::gaugefield), referenceValue, testPrecision);
   }
 };
 
@@ -110,8 +94,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    GaugeObservablesTester::gaugeObservables->measureRectangles(GaugeObservablesTester::gaugefield);
-    BOOST_CHECK_CLOSE(GaugeObservablesTester::gaugeObservables->getRectangles(), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measureRectangles(GaugeObservablesTester::gaugefield), referenceValue, testPrecision);
   }
 };
 
@@ -147,8 +130,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    GaugeObservablesTester::gaugeObservables->measurePolyakovloop(GaugeObservablesTester::gaugefield);
-    hmc_complex poly = GaugeObservablesTester::gaugeObservables->getPolyakovloop();
+    hmc_complex poly =    physics::observables::measurePolyakovloop(GaugeObservablesTester::gaugefield);
     BOOST_CHECK_CLOSE(poly.re, referenceValue.re, testPrecision);
     BOOST_CHECK_CLOSE(poly.im, referenceValue.im, testPrecision);
   }
@@ -169,3 +151,35 @@ BOOST_AUTO_TEST_CASE( POLYAKOVLOOP_2 )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
+{
+  const char * _params[] = {"foo", "--startcondition=cold"};
+  meta::Inputparameters parameters(2, _params);
+  hardware::System system(parameters);
+  physics::PRNG prng(system);
+  physics::lattices::Gaugefield gf(system, prng);
+
+  auto allPlaquettes = physics::observables::measureAllPlaquettes(&gf);
+
+  BOOST_REQUIRE_CLOSE(allPlaquettes.plaquette, 1., 1e-8);
+  BOOST_REQUIRE_CLOSE(allPlaquettes.temporalPlaquette, 1., 1e-8);
+  BOOST_REQUIRE_CLOSE(allPlaquettes.spatialPlaquette, 1., 1e-8);
+
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
+{
+  const char * _params[] = {"foo", "--startcondition=cold", "--nt=4", "--ns=4"};
+  meta::Inputparameters parameters(2, _params);
+  hardware::System system(parameters);
+  physics::PRNG prng(system);
+  physics::lattices::Gaugefield gf(system, prng);
+
+  auto plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
+
+  BOOST_REQUIRE_CLOSE(plaq, 3072., 1e-8);
+}
+
+

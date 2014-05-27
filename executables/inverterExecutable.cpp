@@ -50,7 +50,7 @@ void inverterExecutable::printParametersToScreenAndFile()
 
 void inverterExecutable::performApplicationSpecificMeasurements() {
 	logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
-	gaugeObservablesInstance.measureGaugeObservables(gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
+	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_parameters_source().trajectorynr_source);
 	if (parameters.get_measure_correlators()) {
 		physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(gaugefield, currentConfigurationName);
 	}

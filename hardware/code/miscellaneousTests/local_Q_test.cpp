@@ -170,8 +170,7 @@ BOOST_AUTO_TEST_CASE( LOCAL_Q )
 	hardware::System system(params);
 	Dummyfield cpu(system);
 	logger.info() << "gaugeobservables: ";
-	physics::gaugeObservables obs(&params );
-	obs.measureGaugeObservables(&cpu.gf, 0);
+	physics::observables::measureGaugeObservablesAndWriteToFile(&cpu.gf, 0);
 	logger.info() << "Run kernel";
 	hmc_float cpu_res;
 	cpu_res = cpu.runTestKernel();
