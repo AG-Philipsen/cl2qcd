@@ -543,6 +543,7 @@ void sourcefileparameters::set_defaults()
 	epssq_source = 0;
 	kappa_solver_source = 0;
 	mu_solver_source = 0;
+	
 	return;
 }
 

@@ -65,15 +65,15 @@ void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters toCheck)
   BOOST_REQUIRE_EQUAL(toCheck.flavours_source, 0);
   BOOST_REQUIRE_EQUAL(toCheck.trajectorynr_source, 200);
   /**
-   * These seem to be broken, prop. not correctly initialized
+   * Some values (time!) are not properly written to file, or their values are not correctly gathered.
    * TODO: repair!
    */
-  //BOOST_REQUIRE_EQUAL(toCheck.time_source, -619635472);
-  //BOOST_REQUIRE_EQUAL(toCheck.time_solver_source, -1512993016);
-  //BOOST_REQUIRE_CLOSE(toCheck.kappa_solver_source, 6.9533299623896868e-310, 1e-8);
-  //BOOST_REQUIRE_EQUAL(toCheck.mu_solver_source, 0);
-  //BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 32767);
-  //BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.time_source, -619635472);
+  BOOST_REQUIRE_EQUAL(toCheck.time_solver_source, 0.);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver_source, 0.);
+  BOOST_REQUIRE_EQUAL(toCheck.mu_solver_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
   BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue_source, 0.571077);
   BOOST_REQUIRE_EQUAL(toCheck.beta_source, 5.69);
   BOOST_REQUIRE_EQUAL(toCheck.kappa_source, 0.125);
