@@ -27,7 +27,7 @@
 #include "ildg_read_gaugefield.h"
 
 int expectedPrecision = 64;
-std::string nameOfExistingGaugefieldFile = "ildg_io/conf.example";
+std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
 
 void checkDefaults(sourcefileparameters toCheck)
 {
