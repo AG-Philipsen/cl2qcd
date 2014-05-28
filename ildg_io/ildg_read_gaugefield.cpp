@@ -145,6 +145,7 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size)
 	lz_source = tmpArray[4];
 	lt_source = tmpArray[5];
 	field_source = field;
+	num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
 }
 
 //todo: merge with xml fcts. above!!
@@ -237,12 +238,13 @@ void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
   }
 }
 
-char *createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
+char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 {
   char * buffer = new char[nbytes + 1];
   int error = limeReaderReadData(buffer, &nbytes, r);
   if(error != 0) 
-    throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+    throw Print_Error_Message("Error while reading data from LIME file...", __FILE__, __LINE__);
+	buffer[nbytes] = 0;
   return buffer;
 }
 
@@ -301,27 +303,28 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, Lime
 void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
   //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
-  if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && limeFileProp.numberOfFermionicEntries < 2 ) {
-    logger.trace() << "\tfound XML-infos as lime_type \"" << lime_type << "\"";
-
+	if(
+			(limeEntryTypes[4] == lime_type || limeEntryTypes[7] == lime_type) &&
+			limeFileProp.numberOfFermionicEntries < 2 
+		) 
+	{
+		logger.trace() << "\tfound XML-infos as lime_type";
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
 		get_XML_infos(buffer, nbytes);
 		delete[] buffer;
-    logger.trace() << "\tsuccesfully read XMLInfos";
-    
-    num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
+		logger.trace() << "\tsuccesfully read XMLInfos";
   }
 }
 
 void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes)
 {
-  if("scidac-checksum" == lime_type) {
-    logger.trace() << "\tfound scidac-checksum as lime_type" << lime_type;
+	if(limeEntryTypes[6] == lime_type) 
+	{
+    logger.trace() << "\tfound \"" << limeEntryTypes[6] << "\" as lime_type";
     char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-    buffer[nbytes] = 0;
-
     checksum = get_checksum(buffer, nbytes);
     delete[] buffer;
+		logger.trace() << "\tsuccesfully read " << limeEntryTypes[6];
   }
 }
 
@@ -332,15 +335,10 @@ int checkLimeEntryForFermionInformations(std::string lime_type)
 
 int checkLimeEntryForBinaryData(std::string lime_type)
 {
-	if( 
-				limeEntryTypes[5] == lime_type || 
-				limeEntryTypes[8] == lime_type
-			)
-		{
-			return 1;
-		}
-		else
-			return 0;
+	return	( 
+						limeEntryTypes[5] == lime_type || 
+						limeEntryTypes[8] == lime_type
+					) ? 1 : 0;
 }
 
 LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
