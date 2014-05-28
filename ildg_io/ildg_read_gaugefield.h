@@ -53,7 +53,7 @@ public:
 class LimeFileProperties
 {
 public:
- LimeFileProperties() : numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0) {};
+ LimeFileProperties() : numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0), readMetaData(false) {};
  LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
   numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) {};
 	
@@ -61,6 +61,7 @@ public:
   int numberOfEntries;
   int numberOfBinaryDataEntries;
 	int numberOfFermionicEntries;
+	bool readMetaData;
 };
 
 class LimeFilePropertiesCollector: public LimeFileProperties

@@ -413,8 +413,18 @@ void sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(Lim
     }
 }
 
+static void checkIfMetaDataHasBeenRead(bool readMetaData)
+{
+	if(! readMetaData)
+	{
+		throw std::logic_error("Did not read metadata yet. Will not read in binary data. Aborting...");
+	}
+}
+
 void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination)
 {
+	checkIfMetaDataHasBeenRead(limeFileProp.readMetaData);
+	
 	LimeHeaderData limeHeaderData(r);
 	
 	if (limeHeaderData.MB_flag == 1) 
@@ -487,6 +497,7 @@ void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
   logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
   readLimeFile(sourceFilename, NULL, true);
+	limeFileProp.readMetaData = true;
   logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
 
