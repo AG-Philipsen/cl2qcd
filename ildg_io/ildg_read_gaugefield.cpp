@@ -300,6 +300,16 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, Lime
   }
 }
 
+static void logger_readLimeEntry(std::string type)
+{
+	logger.trace() << "\tfound \"" << type << "\" entry...";
+}
+
+static void logger_readLimeEntrySuccess()
+{
+	logger.trace() << "\t...succesfully read entry";
+}
+
 void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
   //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
@@ -312,7 +322,7 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, Lime
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
 		get_XML_infos(buffer, nbytes);
 		delete[] buffer;
-		logger.trace() << "\tsuccesfully read XMLInfos";
+		logger_readLimeEntrySuccess();
   }
 }
 
@@ -320,11 +330,11 @@ void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type
 {
 	if(limeEntryTypes[6] == lime_type) 
 	{
-    logger.trace() << "\tfound \"" << limeEntryTypes[6] << "\" as lime_type";
+    logger_readLimeEntry( limeEntryTypes[6] );
     char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
     checksum = get_checksum(buffer, nbytes);
     delete[] buffer;
-		logger.trace() << "\tsuccesfully read " << limeEntryTypes[6];
+		logger_readLimeEntrySuccess();
   }
 }
 
