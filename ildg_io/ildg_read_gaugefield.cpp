@@ -377,16 +377,14 @@ size_t sourcefileparameters::sizeOfGaugefieldBuffer()
   return num_entries_source * sizeof(hmc_float);
 }
 
-char* sourcefileparameters::createBufferForGaugefield(int num_entries)
+char* createBuffer(size_t datasize)
 {
-  size_t datasize = sizeOfGaugefieldBuffer();
   char * buffer = new char[datasize];
   return buffer;
 }
 
-void sourcefileparameters::checkSizeOfBinaryDataForGaugefield(size_t actualSize)
+static void checkBufferSize(size_t actualSize, size_t expectedSize)
 {
-  size_t expectedSize = sizeOfGaugefieldBuffer();
   if(actualSize != expectedSize) {
     throw Invalid_Parameters("Binary data does not have expected size.", expectedSize, actualSize);
   }
@@ -397,8 +395,8 @@ void sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(Lim
   if (limeFileProp.numberOfBinaryDataEntries == 1)
     {
       //todo: generalize for diff. field types..
-      checkSizeOfBinaryDataForGaugefield(limeHeaderData.numberOfBytes);
-      destination[limeFileProp.numberOfBinaryDataEntries-1] = createBufferForGaugefield(num_entries_source);
+      checkBufferSize(limeHeaderData.numberOfBytes, sizeOfGaugefieldBuffer());
+      destination[limeFileProp.numberOfBinaryDataEntries-1] = createBuffer(sizeOfGaugefieldBuffer());
       limeReaderReadData(destination[limeFileProp.numberOfBinaryDataEntries-1], &limeHeaderData.numberOfBytes, r);
     }
   else

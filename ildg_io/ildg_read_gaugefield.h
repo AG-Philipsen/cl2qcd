@@ -123,8 +123,6 @@ public:
 	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData);
 	size_t	sizeOfGaugefieldBuffer();
-	char* createBufferForGaugefield(int num_entries);
-	void checkSizeOfBinaryDataForGaugefield(size_t actualSize);
 	void extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
 	void extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, LimeHeaderData limeHeaderData);
 	void readLimeFile(char ** destination);
