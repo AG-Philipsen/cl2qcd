@@ -129,13 +129,13 @@ public:
 	size_t	sizeOfGaugefieldBuffer();
 	char* createBufferForGaugefield(int num_entries);
 	void checkSizeOfBinaryDataForGaugefield(size_t actualSize);
-	int extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries);
-	LimeFileProperties extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int numberOfBinaryDataEntries);
+	void extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries);
+	void extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int numberOfBinaryDataEntries);
 	void readLimeFile(std::string sourceFilename, char ** destination, bool readMetaData);
 	void extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision);
 	void extractDataFromLimeFile(std::string sourceFilename, char ** destination);
 	Checksum get_checksum(const char * buffer, int size);
-	LimeFileProperties extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries);
+	void extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries);
 	void goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData);
 
 	int numberOfFermionFieldsRead;
