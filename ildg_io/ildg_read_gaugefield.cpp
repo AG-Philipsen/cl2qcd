@@ -82,6 +82,77 @@ void sourcefileparameters::get_XLF_infos(const char * filename)
 	logger.trace() << "\tsuccesfully read XLFInfos";
 	return;
 }
+// plaquette = 0.571077
+//  trajectory nr = 
+//  trajectory nr = 200
+//  beta = 5.690000, kappa = 0.125000, mu = 0.006000, c2_rec = 0.000000
+//  time = -619635472
+//  hmcversion = 0.1b
+//  mubar = 0.000000
+//  epsilonbar = 0.000000
+//  date = Sun Jan 20 12:15:17 2013
+
+#include <string>
+#include <algorithm>    // copy
+#include <iterator>     // back_inserter
+#include <boost/regex.hpp>        // regex, sregex_token_iterator
+#include <vector>
+
+static std::string trimStringBeforeEqual(std::string in)
+{
+	unsigned found = in.find_last_of(" = ");
+	return in.substr(found+1);
+}
+
+class helper
+{
+public:
+	boost::regex re;
+	std::string str;
+	std::string value;
+};
+
+void sourcefileparameters::get_XLF_infos(char * buffer, size_t nbytes)
+{
+	std::vector<std::string> tokens;
+	std::map<std::string, boost::regex> regularExpressions;
+	std::map<std::string, std::string> values;
+	std::string str(buffer);
+
+	std::map<std::string, helper> super;
+	super["plaquette"].re = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
+	
+	logger.fatal() << str;
+			
+	regularExpressions["plaquette"] = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
+	regularExpressions["trajectory_nr"] = boost::regex ("trajectory nr\\s+=\\s+\\d+");
+	regularExpressions["beta"] = boost::regex ("beta\\s+=\\s+\\d.\\d+");
+	regularExpressions["kappa"] = boost::regex ("kappa\\s+=\\s+\\d.\\d+");
+	regularExpressions["mu"] = boost::regex ("mu\\s+=\\s+\\d.\\d+");
+	regularExpressions["c2_rec"] = boost::regex ("c2_rec\\s+=\\s+\\d.\\d+");
+	//todo: plus or minus here
+	regularExpressions["time"] = boost::regex ("kappa\\s+=\\s+\\d+");
+	//todo: this will not work
+	regularExpressions["hmcversion"] = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+");
+	regularExpressions["mubar"] = boost::regex ("mubar\\s+=\\s+\\d.\\d+");
+	regularExpressions["epsilonbar"] = boost::regex ("epsilonbar\\s+=\\s+\\d.\\d+");
+	//todo: this will not work
+	regularExpressions["date"] = boost::regex ("date\\s+=\\s+\\d.\\d+");
+	
+	//todo: make this more beautiful
+	//http://stackoverflow.com/questions/10058606/c-splitting-a-string-by-a-character
+	//start/end points of tokens in str
+	boost::sregex_token_iterator begin(str.begin(), str.end(), super["plaquette"].re), end;
+	std::copy(begin, end, std::back_inserter(tokens));
+	super["plaquette"].str = tokens[0];
+	super["plaquette"].value =  trimStringBeforeEqual(super["plaquette"].str);
+	
+	for (std::map<std::string, helper>::iterator it = super.begin(); it != super.end(); it++)
+	{
+		logger.fatal() << it->second.re << "  " << it->second.str << "  " << it->second.value;	
+	}
+	
+}
 
 void sourcefileparameters::get_inverter_infos(const char * filename)
 {
@@ -287,16 +358,17 @@ void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type,
 void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
   //!!read XLF info, only FIRST fermion is read!!
-  if("xlf-info" == lime_type && limeFileProp.numberOfFermionicEntries < 2) {
-    FILE * tmp;
-
+  if(limeEntryTypes[1]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) {
     logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
-    char tmp_file_name[] = "tmpfilenametwo";
-    createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
+		
+		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
+		get_XLF_infos(buffer, nbytes);
+		
+//     char tmp_file_name[] = "tmpfilenametwo";
+//     createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
+// 		    get_XLF_infos(tmp_file_name);
     
-    get_XLF_infos(tmp_file_name);
-    
-    remove(tmp_file_name);
+//     remove(tmp_file_name);
   }
 }
 

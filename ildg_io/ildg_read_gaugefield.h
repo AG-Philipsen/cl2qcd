@@ -57,6 +57,7 @@ public:
 	void readMetaDataFromLimeFile();
 	void get_XML_infos(const char * buffer, int size);
 	void get_XLF_infos(const char * filename);
+	void get_XLF_infos(char * buffer, size_t nbytes);
 	void get_inverter_infos(const char * filename);
 	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
