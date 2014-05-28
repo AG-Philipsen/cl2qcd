@@ -56,8 +56,8 @@ public:
  private:
 	void readMetaDataFromLimeFile();
 	void get_XML_infos(const char * buffer, int size);
-	void get_XLF_infos(char * buffer);
-	void get_inverter_infos(const char * filename);
+	void get_XLF_infos(const char * buffer);
+	void get_inverter_infos(const char * buffer);
 	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
