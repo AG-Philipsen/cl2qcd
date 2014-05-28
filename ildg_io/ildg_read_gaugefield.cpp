@@ -114,44 +114,49 @@ public:
 
 void sourcefileparameters::get_XLF_infos(char * buffer, size_t nbytes)
 {
-	std::vector<std::string> tokens;
-	std::map<std::string, boost::regex> regularExpressions;
 	std::map<std::string, std::string> values;
 	std::string str(buffer);
 
-	std::map<std::string, helper> super;
-	super["plaquette"].re = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
-	
+	//todo: remove
 	logger.fatal() << str;
-			
-	regularExpressions["plaquette"] = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
-	regularExpressions["trajectory_nr"] = boost::regex ("trajectory nr\\s+=\\s+\\d+");
-	regularExpressions["beta"] = boost::regex ("beta\\s+=\\s+\\d.\\d+");
-	regularExpressions["kappa"] = boost::regex ("kappa\\s+=\\s+\\d.\\d+");
-	regularExpressions["mu"] = boost::regex ("mu\\s+=\\s+\\d.\\d+");
-	regularExpressions["c2_rec"] = boost::regex ("c2_rec\\s+=\\s+\\d.\\d+");
+	
+	std::map<std::string, helper> helperMap;
+	helperMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
+	
+	//todo: put in fct.
+	helperMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
+	helperMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+\\d+");
+	helperMap["beta"].re = boost::regex ("beta\\s+=\\s+\\d.\\d+");
+	helperMap["kappa"].re = boost::regex ("kappa\\s+=\\s+\\d.\\d+");
+	helperMap["mu"].re = boost::regex ("mu\\s+=\\s+\\d.\\d+");
+	helperMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+\\d.\\d+");
 	//todo: plus or minus here
-	regularExpressions["time"] = boost::regex ("kappa\\s+=\\s+\\d+");
+// 	helperMap["time"].re = boost::regex ("kappa\\s+=\\s+\\d+");
 	//todo: this will not work
-	regularExpressions["hmcversion"] = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+");
-	regularExpressions["mubar"] = boost::regex ("mubar\\s+=\\s+\\d.\\d+");
-	regularExpressions["epsilonbar"] = boost::regex ("epsilonbar\\s+=\\s+\\d.\\d+");
+// 	helperMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+");
+	helperMap["mubar"].re = boost::regex ("mubar\\s+=\\s+\\d.\\d+");
+	helperMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+\\d.\\d+");
 	//todo: this will not work
-	regularExpressions["date"] = boost::regex ("date\\s+=\\s+\\d.\\d+");
+// 	helperMap["date"].re = boost::regex ("date\\s+=\\s+\\d.\\d+");
 	
-	//todo: make this more beautiful
-	//http://stackoverflow.com/questions/10058606/c-splitting-a-string-by-a-character
-	//start/end points of tokens in str
-	boost::sregex_token_iterator begin(str.begin(), str.end(), super["plaquette"].re), end;
-	std::copy(begin, end, std::back_inserter(tokens));
-	super["plaquette"].str = tokens[0];
-	super["plaquette"].value =  trimStringBeforeEqual(super["plaquette"].str);
-	
-	for (std::map<std::string, helper>::iterator it = super.begin(); it != super.end(); it++)
+	//todo: find out about ::iterator
+	for (std::map<std::string, helper>::iterator it = helperMap.begin(); it != helperMap.end(); it++)
 	{
+		//todo: add check if re is found
+		
+		//todo: make this more beautiful
+		//http://stackoverflow.com/questions/10058606/c-splitting-a-string-by-a-character
+		//start/end points of tokens in str
+		std::vector<std::string> tokens;
+		boost::sregex_token_iterator begin(str.begin(), str.end(), it->second.re), end;
+		std::copy(begin, end, std::back_inserter(tokens));
+		it->second.str = tokens[0];
+		it->second.value =  trimStringBeforeEqual(it->second.str);
+		
 		logger.fatal() << it->second.re << "  " << it->second.str << "  " << it->second.value;	
 	}
 	
+	//todo: map to sourcefileparameters
 }
 
 void sourcefileparameters::get_inverter_infos(const char * filename)
