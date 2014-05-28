@@ -22,6 +22,7 @@
 #
 
 add_library(ildg_io
+	limeUtilities.cpp
 	ildg_read_gaugefield.cpp
 	ildg_write_gaugefield.cpp
 )
@@ -31,7 +32,8 @@ target_link_libraries(ildg_io
 	${LIBXML2_LIBRARIES}
 	# check if this is needed...
 	executables
+	# this needs to be a stand-alone library...
+	einhard
 )
 
-add_unit_test(ildg_read_gaugefield ildg_read_gaugefield_test)
-
+add_unit_test(ildg_read_gaugefield ildg_read
