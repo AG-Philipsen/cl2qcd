@@ -268,9 +268,9 @@ void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type,
       
       remove(tmp_file_name);
       
-      strcpy(solvertype_source, solvertype);
-      strcpy(hmcversion_solver_source, hmcversion_solver);
-      strcpy(date_solver_source, date_solver);
+      solvertype_source =  solvertype;
+      hmcversion_solver_source = hmcversion_solver;
+      date_solver_source = date_solver;
     }
 }
 
@@ -290,8 +290,8 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int 
     
     remove(tmp_file_name);
 
-    strcpy(hmcversion_source, hmcversion);
-    strcpy(date_source, date);
+		hmcversion_source = hmcversion;
+		date_source = date;
   }
 }
 
