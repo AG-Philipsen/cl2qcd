@@ -339,6 +339,19 @@ int checkLimeEntryForFermionInformations(std::string lime_type)
   return limeEntryTypes[0] == lime_type ? 1 : 0;
 }
 
+int checkLimeEntryForBinaryData(std::string lime_type)
+{
+	if( 
+				limeEntryTypes[5] == lime_type || 
+				limeEntryTypes[8] == lime_type
+			)
+		{
+			return 1;
+		}
+		else
+			return 0;
+}
+
 LimeFileProperties sourcefileparameters::checkLimeEntry(LimeFileProperties & limeFileProp, LimeReader * r, LimeHeaderData limeHeaderData)
 {
 	LimeFileProperties props;
@@ -353,6 +366,7 @@ LimeFileProperties sourcefileparameters::checkLimeEntry(LimeFileProperties & lim
   
   checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
 
+	props.numberOfBinaryDataEntries = checkLimeEntryForBinaryData(limeHeaderData.limeEntryType);
 	props.numberOfEntries = 1;
 	
 	return props;
@@ -586,9 +600,9 @@ void sourcefileparameters::readsourcefile(std::string sourceFilename, int desire
   extractMetadataFromLimeFile(sourceFilename, desiredPrecision);
    
 	//todo: this should be removed eventually
-	limeFileProp.setDefaults();
+// 	limeFileProp.setDefaults();
 	
-  extractDataFromLimeFile(sourceFilename, destination);
+//   extractDataFromLimeFile(sourceFilename, destination);
 }
 
 LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
@@ -601,7 +615,7 @@ LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 	} 
 	else 
 	{
-		logger.info() << "\tfile does not contain informations about fermions";
+		logger.trace() << "\tfile does not contain informations about fermions";
 	}
 }
 
