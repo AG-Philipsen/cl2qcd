@@ -339,9 +339,11 @@ int checkLimeEntryForFermionInformations(std::string lime_type)
   return limeEntryTypes[0] == lime_type ? 1 : 0;
 }
 
-void sourcefileparameters::checkLimeEntry(LimeFileProperties & limeFileProp, LimeReader * r, LimeHeaderData limeHeaderData)
+LimeFileProperties sourcefileparameters::checkLimeEntry(LimeFileProperties & limeFileProp, LimeReader * r, LimeHeaderData limeHeaderData)
 {
-  limeFileProp.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
+	LimeFileProperties props;
+ 
+	props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
     
   checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
   
@@ -350,6 +352,10 @@ void sourcefileparameters::checkLimeEntry(LimeFileProperties & limeFileProp, Lim
   checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
   
   checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+
+	props.numberOfEntries = 1;
+	
+	return props;
 }
 
 void sourcefileparameters::checkPrecision(int desiredPrecision)
@@ -422,8 +428,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 
 	if (limeHeaderData.MB_flag == 1) 
 	{
-		checkLimeEntry(limeFileProp, r, limeHeaderData);
-		limeFileProp.numberOfEntries += 1;
+		limeFileProp += checkLimeEntry(limeFileProp, r, limeHeaderData);
 	}
 
 	return limeFileProp;
@@ -602,4 +607,5 @@ void LimeFileProperties::operator+=(LimeFileProperties other)
 {
   this->numberOfEntries += other.numberOfEntries;
   this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
+	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
 }
