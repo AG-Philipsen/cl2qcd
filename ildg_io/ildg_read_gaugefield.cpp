@@ -334,29 +334,20 @@ void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type
   }
 }
 
-int checkLimeEntryForFermionInformations(std::string lime_type, int switcher)
+int checkLimeEntryForFermionInformations(std::string lime_type)
 {
-  if("propagator-type" == lime_type) {
-    if (switcher == 0) {
-      logger.info() << "\tfile contains fermion informations" ;
-    } else {
-      logger.info() << "\tfile contains informations about more than one fermion: " << switcher;
-    }
-    return 1;
-  }
-  else 
-    return 0;
+  return limeEntryTypes[0] == lime_type ? 1 : 0;
 }
 
-void sourcefileparameters::checkLimeEntry(int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData)
+void sourcefileparameters::checkLimeEntry(LimeFileProperties & limeFileProp, LimeReader * r, LimeHeaderData limeHeaderData)
 {
-  *numberOfFermionEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType, *numberOfFermionEntries);
+  limeFileProp.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
     
-  checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes);
+  checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
   
-  checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes);
+  checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
   
-  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, *numberOfFermionEntries, r, limeHeaderData.numberOfBytes);
+  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
   
   checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
 }
@@ -431,9 +422,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 
 	if (limeHeaderData.MB_flag == 1) 
 	{
-		//todo: fix this!
-		int numberOfFermionEntries = 0;
-		checkLimeEntry(&numberOfFermionEntries, r, limeHeaderData);
+		checkLimeEntry(limeFileProp, r, limeHeaderData);
 		limeFileProp.numberOfEntries += 1;
 	}
 
@@ -597,8 +586,16 @@ void sourcefileparameters::readsourcefile(std::string sourceFilename, int desire
 
 LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 {
-  logger.trace() << "Found " << numberOfEntries << " LIME records.";
-  logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
+	logger.trace() << "Found " << numberOfEntries << " LIME records.";
+	logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
+	if (numberOfFermionicEntries > 0) 
+	{
+		logger.trace() << "\tfile contains " << numberOfFermionicEntries << " fermion entries." ;
+	} 
+	else 
+	{
+		logger.info() << "\tfile does not contain informations about fermions";
+	}
 }
 
 void LimeFileProperties::operator+=(LimeFileProperties other)

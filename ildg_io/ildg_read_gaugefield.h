@@ -53,13 +53,14 @@ public:
 class LimeFileProperties
 {
 public:
- LimeFileProperties() : numberOfEntries(0), numberOfBinaryDataEntries(0) {};
+ LimeFileProperties() : numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0) {};
  LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
   numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) {};
   
   void operator+=(LimeFileProperties other);
   int numberOfEntries;
   int numberOfBinaryDataEntries;
+	int numberOfFermionicEntries;
 };
 
 class LimeFilePropertiesCollector: public LimeFileProperties
@@ -116,7 +117,7 @@ public:
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
 	int calcNumberOfEntriesForGaugefield();
-	void checkLimeEntry(int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData);
+	void checkLimeEntry(LimeFileProperties & limeFileProp, LimeReader * r, LimeHeaderData limeHeaderData);
 	void checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
