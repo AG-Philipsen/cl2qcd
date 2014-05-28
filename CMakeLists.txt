@@ -161,7 +161,6 @@ set(OPTIMAL_USED_LIBS
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
-	einhard
 	${PRNG_LIBRARIES}
 	crypto
 	executables
@@ -175,6 +174,7 @@ add_modules(optimal
 	host_functionality
 	ildg_io
 	physics
+	einhard
 	executables
 )
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
@@ -203,8 +203,6 @@ add_library(klepsydra
 if(NOT CMAKE_HOST_APPLE)
 	target_link_libraries(klepsydra rt)
 endif(NOT CMAKE_HOST_APPLE)
-
-add_library(einhard einhard/einhard.cpp)
 
 # Boost test
 add_subdirectory(boost)

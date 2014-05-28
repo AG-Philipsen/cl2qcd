@@ -1,4 +1,4 @@
-# Build specifications for the host functionality
+# Build specifications for einhard
 #
 # Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de> 
 #
@@ -17,19 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
-add_library(logger
-	logger.cpp
+add_library(einhard
+	einhard.cpp
 )
 
-add_library(host_functionality
-	host_geometry.cpp
-	host_operations_gaugefield.cpp
-	host_use_timer.cpp
-	host_random.cpp
-)
-
-target_link_libraries(host_functionality logger)

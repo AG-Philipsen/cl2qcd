@@ -32,10 +32,12 @@ target_link_libraries(ildg_io
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 	# check if this is needed...
-	executables
+	#executables
 	# this needs to be a stand-alone library...
 	einhard
+	logger
+	exceptions
 )
 
-add_unit_test(ildg_read_gaugefield ildg_read_gaugefield_test)
+add_unit_test_withLibraries(ildg_read_gaugefield ildg_read_gaugefield_test ildg_io)
 

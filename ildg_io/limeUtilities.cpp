@@ -37,7 +37,14 @@ LimeFileProperties::LimeFileProperties() :
 
  LimeFileProperties::LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
  	numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) 
-{};
+{}
+
+void LimeFileProperties::operator+=(LimeFileProperties other)
+{
+  this->numberOfEntries += other.numberOfEntries;
+  this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
+	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
+}
 
 LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 {
@@ -51,11 +58,4 @@ LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 	{
 		logger.trace() << "\tfile does not contain informations about fermions";
 	}
-}
-
-void LimeFileProperties::operator+=(LimeFileProperties other)
-{
-  this->numberOfEntries += other.numberOfEntries;
-  this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
-	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
 }
