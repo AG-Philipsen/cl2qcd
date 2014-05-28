@@ -94,8 +94,7 @@ public:
 	
 	int lx_source, ly_source, lz_source, lt_source, prec_source, num_entries_source, flavours_source,
 	    trajectorynr_source, time_source, time_solver_source, noiter_source;
-	hmc_float plaquettevalue_source, beta_source, kappa_source, mu_source, c2_rec_source, mubar_source, epsilonbar_source,
-	          epssq_source, kappa_solver_source, mu_solver_source;
+	double plaquettevalue_source, beta_source, kappa_source, mu_source, c2_rec_source, mubar_source, epsilonbar_source, epssq_source, kappa_solver_source, mu_solver_source;
 	Checksum checksum;
 	
 	std::string field_source;
