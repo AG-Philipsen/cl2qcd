@@ -97,11 +97,20 @@ void sourcefileparameters::get_XLF_infos(const char * filename)
 #include <iterator>     // back_inserter
 #include <boost/regex.hpp>        // regex, sregex_token_iterator
 #include <vector>
+#include <algorithm>
+
+static std::string removeNewlines(std::string in)
+{
+  in.erase(std::remove(in.begin(), in.end(), '\n'), in.end());
+  return in;
+}
 
 static std::string trimStringBeforeEqual(std::string in)
 {
-	unsigned found = in.find_last_of(" = ");
-	return in.substr(found+1);
+	unsigned found = in.find_last_of("=");
+	std::string withoutEqual = in.substr(found+1);
+	found = ( withoutEqual ).find_first_of(" ");
+	return  withoutEqual.substr(found+1);
 }
 
 class helper
@@ -112,7 +121,19 @@ public:
 	std::string value;
 };
 
-void sourcefileparameters::get_XLF_infos(char * buffer, size_t nbytes)
+#include <boost/lexical_cast.hpp>
+
+static double castStringToDouble(std::string in)
+{
+  return boost::lexical_cast<double>(in);
+}
+
+static int castStringToInt(std::string in)
+{
+  return boost::lexical_cast<int>(in);
+}
+
+void sourcefileparameters::get_XLF_infos(char * buffer)
 {
 	std::map<std::string, std::string> values;
 	std::string str(buffer);
@@ -130,14 +151,12 @@ void sourcefileparameters::get_XLF_infos(char * buffer, size_t nbytes)
 	helperMap["kappa"].re = boost::regex ("kappa\\s+=\\s+\\d.\\d+");
 	helperMap["mu"].re = boost::regex ("mu\\s+=\\s+\\d.\\d+");
 	helperMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+\\d.\\d+");
-	//todo: plus or minus here
-// 	helperMap["time"].re = boost::regex ("kappa\\s+=\\s+\\d+");
-	//todo: this will not work
-// 	helperMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+");
+ 	helperMap["time"].re = boost::regex ("time\\s+=\\s+[\\+\\-]\\d+");
+ 	helperMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+[a-z]*");
 	helperMap["mubar"].re = boost::regex ("mubar\\s+=\\s+\\d.\\d+");
 	helperMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+\\d.\\d+");
 	//todo: this will not work
-// 	helperMap["date"].re = boost::regex ("date\\s+=\\s+\\d.\\d+");
+ 	helperMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 	
 	//todo: find out about ::iterator
 	for (std::map<std::string, helper>::iterator it = helperMap.begin(); it != helperMap.end(); it++)
@@ -150,13 +169,27 @@ void sourcefileparameters::get_XLF_infos(char * buffer, size_t nbytes)
 		std::vector<std::string> tokens;
 		boost::sregex_token_iterator begin(str.begin(), str.end(), it->second.re), end;
 		std::copy(begin, end, std::back_inserter(tokens));
-		it->second.str = tokens[0];
+
+		it->second.str = removeNewlines( tokens[0] );
 		it->second.value =  trimStringBeforeEqual(it->second.str);
 		
 		logger.fatal() << it->second.re << "  " << it->second.str << "  " << it->second.value;	
 	}
 	
-	//todo: map to sourcefileparameters
+	plaquettevalue_source = castStringToDouble(helperMap["plaquette"].value);
+	kappa_source = castStringToDouble(helperMap["kappa"].value);
+	mu_source = castStringToDouble(helperMap["mu"].value);
+	beta_source = castStringToDouble(helperMap["beta"].value);
+	c2_rec_source = castStringToDouble(helperMap["c2_rec"].value);
+	mubar_source = castStringToDouble(helperMap["mubar"].value);
+	epsilonbar_source = castStringToDouble(helperMap["epsilonbar"].value);
+
+	trajectorynr_source = castStringToInt(helperMap["trajectory_nr"].value);
+	time_source = castStringToInt(helperMap["time"].value);
+
+	hmcversion_source = helperMap["hmcversion"].value;
+	date_source = helperMap["date"].value;
+
 }
 
 void sourcefileparameters::get_inverter_infos(const char * filename)
@@ -363,17 +396,11 @@ void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type,
 void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
   //!!read XLF info, only FIRST fermion is read!!
-  if(limeEntryTypes[1]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) {
-    logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
-		
-		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_XLF_infos(buffer, nbytes);
-		
-//     char tmp_file_name[] = "tmpfilenametwo";
-//     createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
-// 		    get_XLF_infos(tmp_file_name);
-    
-//     remove(tmp_file_name);
+  if(limeEntryTypes[1]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
+    {
+      logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
+      char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
+      get_XLF_infos(buffer);
   }
 }
 
