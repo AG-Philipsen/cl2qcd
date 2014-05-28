@@ -47,8 +47,11 @@ const char * limeEntryTypes[] = {
   "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
 };
 
-void sourcefileparameters::get_XLF_infos(const char * filename, char * hmcversion, char * date )
+void sourcefileparameters::get_XLF_infos(const char * filename)
 {
+	char hmcversion[50];
+	char date[50];
+	
 	FILE * reader;
 	reader = fopen(filename, "r");
 	if (reader != NULL) {
@@ -70,6 +73,9 @@ void sourcefileparameters::get_XLF_infos(const char * filename, char * hmcversio
 		}
 	} else throw File_Exception(filename);
 
+	hmcversion_source = hmcversion;
+	date_source = date;
+	
 	logger.trace() << "\tsuccesfully read XLFInfos";
 	return;
 }
@@ -278,20 +284,15 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int 
 {
   //!!read XLF info, only FIRST fermion is read!!
   if("xlf-info" == lime_type && switcher < 2) {
-    char hmcversion[50];
-    char date[50];
     FILE * tmp;
 
     logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
     char tmp_file_name[] = "tmpfilenametwo";
     createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
     
-    get_XLF_infos(tmp_file_name, hmcversion, date);
+    get_XLF_infos(tmp_file_name);
     
     remove(tmp_file_name);
-
-		hmcversion_source = hmcversion;
-		date_source = date;
   }
 }
 
