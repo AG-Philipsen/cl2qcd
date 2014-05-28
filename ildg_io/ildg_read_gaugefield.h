@@ -62,9 +62,9 @@ public:
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
 	int calcNumberOfEntriesForGaugefield();
-	void checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
-	void checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
-	void checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes);
+	void checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes);
+	void checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes);
+	void checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData);
 	size_t	sizeOfGaugefieldBuffer();

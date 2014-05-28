@@ -260,11 +260,11 @@ void createTemporaryFileToStoreStreamFromLimeReader(char * tmp_file_name, LimeRe
   delete [] buffer;
 }
 
-void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
+void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
-	if("inverter-info" == lime_type)
+	if( limeEntryTypes[2] == lime_type)
 	{
-		if ( switcher > 1 )
+		if ( limeFileProp.numberOfFermionicEntries > 1 )
 		{
 			logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
 			return;
@@ -282,10 +282,10 @@ void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type,
 	}
 }
 
-void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
+void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
   //!!read XLF info, only FIRST fermion is read!!
-  if("xlf-info" == lime_type && switcher < 2) {
+  if("xlf-info" == lime_type && limeFileProp.numberOfFermionicEntries < 2) {
     FILE * tmp;
 
     logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
@@ -298,10 +298,10 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int 
   }
 }
 
-void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
+void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
   //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
-  if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && switcher < 2 ) {
+  if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && limeFileProp.numberOfFermionicEntries < 2 ) {
     logger.trace() << "\tfound XML-infos as lime_type \"" << lime_type << "\"";
 
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
@@ -349,11 +349,11 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
  
 	props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
     
-  checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
+  checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
   
-  checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
+  checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
   
-  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, limeFileProp.numberOfFermionicEntries, r, limeHeaderData.numberOfBytes);
+  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
   
   checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
 
