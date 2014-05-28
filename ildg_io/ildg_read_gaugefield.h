@@ -57,6 +57,8 @@ public:
  LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
   numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) {};
   
+	void setDefaults();
+	
   void operator+=(LimeFileProperties other);
   int numberOfEntries;
   int numberOfBinaryDataEntries;
@@ -66,6 +68,7 @@ public:
 class LimeFilePropertiesCollector: public LimeFileProperties
 {
  public:
+	void setDefaults();
   ~LimeFilePropertiesCollector();  
 };
 
@@ -136,6 +139,7 @@ public:
 	void goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData);
 
 	int numberOfFermionFieldsRead;
+	LimeFilePropertiesCollector limeFileProp;
 };
 
 #endif /* _READGAUGEH_ */

@@ -448,12 +448,11 @@ LimeFileProperties sourcefileparameters::extractInformationFromLimeEntry(LimeRea
 
 void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData)
 {
-  LimeFilePropertiesCollector limeFileProp;
   int statusOfLimeReader = 0;
 
   while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
     checkLimeRecordReadForFailure(statusOfLimeReader);
-    limeFileProp += extractInformationFromLimeEntry(r, destination, readMetaData, limeFileProp.numberOfBinaryDataEntries);
+    this->limeFileProp += extractInformationFromLimeEntry(r, destination, readMetaData, limeFileProp.numberOfBinaryDataEntries);
   }
 }
 
@@ -586,6 +585,9 @@ void sourcefileparameters::readsourcefile(std::string sourceFilename, int desire
 
   extractMetadataFromLimeFile(sourceFilename, desiredPrecision);
    
+	//todo: this should be removed eventually
+	limeFileProp.setDefaults();
+	
   extractDataFromLimeFile(sourceFilename, destination);
 }
 
@@ -603,9 +605,21 @@ LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 	}
 }
 
+void LimeFilePropertiesCollector::setDefaults()
+{
+	LimeFileProperties::setDefaults();
+}
+
 void LimeFileProperties::operator+=(LimeFileProperties other)
 {
   this->numberOfEntries += other.numberOfEntries;
   this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
 	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
+}
+
+void LimeFileProperties::setDefaults()
+{
+	numberOfEntries = 0;
+	numberOfBinaryDataEntries = 0;
+	numberOfFermionicEntries = 0;
 }
