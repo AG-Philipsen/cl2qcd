@@ -1,5 +1,4 @@
 /** @file
- * Utilities for handling LIME files
  *
  * Copyright 2014, Christopher Pinke
  *
@@ -20,6 +19,8 @@
  */
 
 #include "limeUtilities.hpp"
+
+#include "../host_functionality/logger.hpp"
 
 LimeHeaderData::LimeHeaderData(LimeReader *r)
 {

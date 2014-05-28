@@ -28,6 +28,7 @@
 
 //todo: remove this eventually
 #include "limeUtilities.hpp"
+#include "SourcefileParameters_values.hpp"
 
 #include "checksum.h"
 extern "C" {
@@ -39,12 +40,8 @@ extern "C" {
  *
  * Contains metadata of the parsed gaugefield as members.
  */
-class sourcefileparameters {
+class sourcefileparameters : public sourcefileparameters_values {
 public:
-  sourcefileparameters() {
-		set_defaults();
-		numberOfFermionFieldsRead = 0;
-	};
 	/**
 	 * Read gauge configuration from the given file into the given array.
 	 *
@@ -54,28 +51,11 @@ public:
 	 */
   void readsourcefile(std::string file, int precision, char ** data);
 	
-	void set_defaults();
-	void val_assign_source(int * out, int in);
-	void val_assign_source(hmc_float * out, hmc_float in);
-	
-	int lx_source, ly_source, lz_source, lt_source, prec_source, num_entries_source, flavours_source,
-	    trajectorynr_source, time_source, time_solver_source, noiter_source;
-	double plaquettevalue_source, beta_source, kappa_source, mu_source, c2_rec_source, mubar_source, epsilonbar_source, epssq_source, kappa_solver_source, mu_solver_source;
-	Checksum checksum;
-	
-	std::string field_source;
-	std::string date_source;
-	std::string hmcversion_source;
-	std::string solvertype_source;
-	std::string hmcversion_solver_source;
-	std::string date_solver_source;
-
  private:
 	void readMetaDataFromLimeFile();
 	void get_XML_infos(const char * buffer, int size);
 	void get_XLF_infos(const char * filename);
 	void get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date );
-	void printMetaDataToScreen();
 	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
@@ -96,7 +76,6 @@ public:
 	void extractInformationFromLimeEntry(LimeReader * r, char ** destination);
 	void goThroughLimeRecords(LimeReader * r, char ** destination);
 
-	int numberOfFermionFieldsRead;
 	LimeFilePropertiesCollector limeFileProp;
 	
 	std::string sourceFilename;

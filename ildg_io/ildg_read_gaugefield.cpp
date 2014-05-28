@@ -497,78 +497,11 @@ void checkPrecision(int desiredPrecision, int actualPrecision)
     throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting", __FILE__, __LINE__);
 }
 
-void sourcefileparameters::printMetaDataToScreen()
-{
-  logger.info() << "*************************************************************" ;
-  logger.info() << "*************************************************************" ;
-  logger.info() << "Metadata from file " << sourceFilename << ":";
-  logger.info() << "\treading XML-data gave:";
-  logger.info() << "\t\tfield type:\t" << field_source ;
-  logger.info() << "\t\tprecision:\t" << prec_source ;
-  logger.info() << "\t\tlx:\t\t" << lx_source ;
-  logger.info() << "\t\tly:\t\t" << ly_source ;
-  logger.info() << "\t\tlz:\t\t" << lz_source ;
-  logger.info() << "\t\tlt:\t\t" << lt_source ;
-  logger.info() << "\t\tflavours:\t" << flavours_source ;
-  logger.info() << "\treading XLF-data gave:";
-  logger.info() << "\t\tplaquette:\t" << plaquettevalue_source;
-  logger.info() << "\t\ttrajectorynr:\t" << trajectorynr_source;
-  logger.info() << "\t\tbeta:\t\t" << beta_source;
-  logger.info() << "\t\tkappa:\t\t" << kappa_source;
-  logger.info() << "\t\tmu:\t\t" << mu_source;
-  logger.info() << "\t\tc2_rec:\t\t" << c2_rec_source;
-  logger.info() << "\t\ttime:\t\t" << time_source;
-  logger.info() << "\t\thmc-version:\t" << hmcversion_source;
-  logger.info() << "\t\tmubar:\t\t" << mubar_source;
-  logger.info() << "\t\tepsilonbar:\t" << epsilonbar_source;
-  logger.info() << "\t\tdate:\t\t" << date_source;
-  if(numberOfFermionFieldsRead != 0) {
-    logger.info() << "\treading inverter-data gave:";
-    logger.info() << "\t\tsolvertype:\t" << solvertype_source;
-    logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << epssq_source;
-    logger.info() << "\t\tnoiter:\t\t" << noiter_source;
-    logger.info() << "\t\tkappa_solver:\t" << kappa_solver_source;
-    logger.info() << "\t\tmu_solver:\t" << mu_solver_source;
-    logger.info() << "\t\ttime_solver:\t" << time_solver_source;
-    logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver_source;
-    logger.info() << "\t\tdate_solver:\t" << date_solver_source;
-  }
-  logger.info() << "\tfile-checksum:\t" << checksum;
-  logger.info() << "*************************************************************" ;
-}
-
-void sourcefileparameters::set_defaults()
-{
-	lx_source = 0;
-	ly_source = 0;
-	lz_source = 0;
-	lt_source = 0;
-	prec_source = 0;
-	num_entries_source = 0;
-	flavours_source = 0;
-	trajectorynr_source = 0;
-	time_source = 0;
-	time_solver_source = 0;
-	noiter_source = 0;
-	plaquettevalue_source = 0;
-	beta_source = 0;
-	kappa_source = 0;
-	mu_source = 0;
-	c2_rec_source = 0;
-	mubar_source = 0;
-	epsilonbar_source = 0;
-	epssq_source = 0;
-	kappa_solver_source = 0;
-	mu_solver_source = 0;
-	
-	return;
-}
-
 void sourcefileparameters::extractMetadataFromLimeFile()
 {
   readMetaDataFromLimeFile();
 
-  printMetaDataToScreen();
+  printMetaDataToScreen(sourceFilename);
 
   //todo: this may be unified with a check against the inputparameters..
   checkPrecision(desiredPrecision, prec_source);  

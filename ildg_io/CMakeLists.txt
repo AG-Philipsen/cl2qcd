@@ -23,6 +23,7 @@
 
 add_library(ildg_io
 	limeUtilities.cpp
+	SourcefileParameters_values.cpp
 	ildg_read_gaugefield.cpp
 	ildg_write_gaugefield.cpp
 )
