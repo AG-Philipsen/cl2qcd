@@ -83,8 +83,12 @@ void sourcefileparameters::get_XLF_infos(const char * filename)
 	return;
 }
 
-void sourcefileparameters::get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date )
+void sourcefileparameters::get_inverter_infos(const char * filename)
 {
+	char solvertype[50];
+	char hmcversion_solver[50];
+	char date_solver[50];
+
 	FILE * reader;
 	reader = fopen(filename, "r");
 	if (reader != NULL) {
@@ -92,16 +96,21 @@ void sourcefileparameters::get_inverter_infos(const char * filename, char * solv
 		const char * tmparray [] = {"solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 		char tmp1[512];
 		while ( fgets (tmp1, 512, reader) != NULL ) {
-			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_char(tmp1, strlen(tmparray[0]), strlen(tmp1), solver);
+			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_char(tmp1, strlen(tmparray[0]), strlen(tmp1), solvertype);
 			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[1]), strlen(tmp1), &epssq_source);
 			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_int (tmp1, strlen(tmparray[2]), strlen(tmp1), &noiter_source);
 			if(strncmp(tmparray[3], tmp1, strlen(tmparray[3])) == 0) extrInfo_kappa(tmp1, strlen(tmparray[3]), strlen(tmp1), &kappa_solver_source, &mu_solver_source);
 			if(strncmp(tmparray[5], tmp1, strlen(tmparray[5])) == 0) extrInfo_int (tmp1, strlen(tmparray[5]), strlen(tmp1), &time_solver_source);
-			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_char(tmp1, strlen(tmparray[6]), strlen(tmp1), hmcversion);
-			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), date);
+			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_char(tmp1, strlen(tmparray[6]), strlen(tmp1), hmcversion_solver);
+			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), date_solver);
 		}
 	} else throw File_Exception(filename);
 
+	
+	solvertype_source =  solvertype;
+	hmcversion_solver_source = hmcversion_solver;
+	date_solver_source = date_solver;
+	
 	logger.trace() << "\tsuccesfully read InverterInfos" ;
 	return;
 }
@@ -207,18 +216,6 @@ int sourcefileparameters::calcNumberOfEntriesForGaugefield()
   return (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * 2 * 4 * 9;
 }
 
-int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(char * fieldType)
-{
-  if(strcmp(fieldType, "diracFermion") == 0) {
-    return calcNumberOfEntriesForDiracFermionfield();
-  } else if(strcmp(fieldType, "su3gauge") == 0) {
-    return calcNumberOfEntriesForGaugefield();
-  } else {
-    throw Print_Error_Message("Unknown ildg field type...", __FILE__, __LINE__);
-    return 0; //to get rid of a warning
-  }
-}
-
 int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
 {
   if(fieldType == "diracFermion") {
@@ -265,32 +262,24 @@ void createTemporaryFileToStoreStreamFromLimeReader(char * tmp_file_name, LimeRe
 
 void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
 {
-  if("inverter-info" == lime_type)
-    {
-      if ( switcher > 1 )
+	if("inverter-info" == lime_type)
 	{
-	  logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
-	  return;
+		if ( switcher > 1 )
+		{
+			logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
+			return;
+		}
+	
+		logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
+		numberOfFermionFieldsRead++;
+		
+		char tmp_file_name[] = "tmpfilenameone";
+		createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
+		
+		get_inverter_infos(tmp_file_name);
+		
+		remove(tmp_file_name);
 	}
-      
-      char solvertype[50];
-      char hmcversion_solver[50];
-      char date_solver[50];
-	  
-      logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
-      numberOfFermionFieldsRead++;
-      
-      char tmp_file_name[] = "tmpfilenameone";
-      createTemporaryFileToStoreStreamFromLimeReader(tmp_file_name, r, nbytes);
-      
-      get_inverter_infos(tmp_file_name, solvertype, hmcversion_solver, date_solver);
-      
-      remove(tmp_file_name);
-      
-      solvertype_source =  solvertype;
-      hmcversion_solver_source = hmcversion_solver;
-      date_solver_source = date_solver;
-    }
 }
 
 void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)

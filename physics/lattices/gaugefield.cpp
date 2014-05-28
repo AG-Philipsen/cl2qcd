@@ -351,6 +351,7 @@ static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, c
 	}
 }
 
+//move to namespace ildg_io
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float plaquette, sourcefileparameters& parameters_source)
 {
 	logger.info() << "Checking sourcefile parameters against inputparameters...";

@@ -35,6 +35,8 @@ extern "C" {
 #include <lime.h>
 }
 
+//todo: add namespace ildg_io
+
 /**
  * Parser class for a stored gaugefield.
  *
@@ -55,9 +57,8 @@ public:
 	void readMetaDataFromLimeFile();
 	void get_XML_infos(const char * buffer, int size);
 	void get_XLF_infos(const char * filename);
-	void get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date );
+	void get_inverter_infos(const char * filename);
 	void readDataFromLimeFile(char ** destination);
-	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
 	int calcNumberOfEntriesForGaugefield();
