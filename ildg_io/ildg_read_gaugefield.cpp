@@ -431,12 +431,12 @@ void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char *
 	}
 }
 
-void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData)
+void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination)
 {
 	LimeHeaderData limeHeaderData(r);
 	if (limeHeaderData.MB_flag == 1) 
 	{
-		if( readMetaData)
+		if( ! limeFileProp.readMetaData )
 			{
 				this->limeFileProp += extractMetaDataFromLimeEntry(r, limeHeaderData);
 			}
@@ -447,17 +447,17 @@ void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char 
 	}
 }
 
-void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData)
+void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destination)
 {
-  int statusOfLimeReader = 0;
-
-  while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
-    checkLimeRecordReadForFailure(statusOfLimeReader);
-    extractInformationFromLimeEntry(r, destination, readMetaData);
-  }
+	int statusOfLimeReader = LIME_SUCCESS;
+	while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) 
+	{
+		checkLimeRecordReadForFailure(statusOfLimeReader);
+		extractInformationFromLimeEntry(r, destination);
+	}
 }
 
-void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** destination, bool readMetaData)
+void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** destination)
 {
   FILE *limeFileOpenedForReading;
   LimeReader *limeReader;
@@ -465,7 +465,7 @@ void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** dest
   limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
   limeReader = limeCreateReader(limeFileOpenedForReading);
 
-  goThroughLimeRecords(limeReader, destination, readMetaData);
+  goThroughLimeRecords(limeReader, destination);
 
   limeDestroyReader(limeReader);
   fclose(limeFileOpenedForReading); 
@@ -474,14 +474,14 @@ void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** dest
 void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char ** destination)
 {
   logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
-  readLimeFile(sourceFilename, destination, false);
+  readLimeFile(sourceFilename, destination);
   logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
 }
 
 void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
 {
   logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
-  readLimeFile(sourceFilename, NULL, true);
+  readLimeFile(sourceFilename, NULL);
 	limeFileProp.readMetaData = true;
   logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
