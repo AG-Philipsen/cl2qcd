@@ -56,8 +56,6 @@ public:
  LimeFileProperties() : numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0) {};
  LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
   numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) {};
-  
-	void setDefaults();
 	
   void operator+=(LimeFileProperties other);
   int numberOfEntries;
@@ -68,7 +66,6 @@ public:
 class LimeFilePropertiesCollector: public LimeFileProperties
 {
  public:
-	void setDefaults();
   ~LimeFilePropertiesCollector();  
 };
 
@@ -129,13 +126,13 @@ public:
 	size_t	sizeOfGaugefieldBuffer();
 	char* createBufferForGaugefield(int num_entries);
 	void checkSizeOfBinaryDataForGaugefield(size_t actualSize);
-	void extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries);
-	void extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int numberOfBinaryDataEntries);
+	void extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
+	void extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination);
 	void readLimeFile(std::string sourceFilename, char ** destination, bool readMetaData);
 	void extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision);
 	void extractDataFromLimeFile(std::string sourceFilename, char ** destination);
 	Checksum get_checksum(const char * buffer, int size);
-	void extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries);
+	void extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData);
 	void goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData);
 
 	int numberOfFermionFieldsRead;

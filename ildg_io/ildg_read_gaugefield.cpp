@@ -398,14 +398,14 @@ void sourcefileparameters::checkSizeOfBinaryDataForGaugefield(size_t actualSize)
   }
 }
 
-void sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination, int numberOfBinaryDataEntries)
+void sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination)
 {
-  if (numberOfBinaryDataEntries == 0)
+  if (limeFileProp.numberOfBinaryDataEntries == 1)
     {
       //todo: generalize for diff. field types..
       checkSizeOfBinaryDataForGaugefield(limeHeaderData.numberOfBytes);
-      destination[numberOfBinaryDataEntries] = createBufferForGaugefield(num_entries_source);
-      limeReaderReadData(destination[numberOfBinaryDataEntries], &limeHeaderData.numberOfBytes, r);
+      destination[limeFileProp.numberOfBinaryDataEntries-1] = createBufferForGaugefield(num_entries_source);
+      limeReaderReadData(destination[limeFileProp.numberOfBinaryDataEntries-1], &limeHeaderData.numberOfBytes, r);
     }
   else
     {
@@ -413,7 +413,7 @@ void sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(Lim
     }
 }
 
-void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int numberOfBinaryDataEntries)
+void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination)
 {
 	LimeHeaderData limeHeaderData(r);
 	
@@ -422,7 +422,7 @@ void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char *
 		if( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) )
 		{
 			logger.fatal() << limeHeaderData.limeEntryType;
-			extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, numberOfBinaryDataEntries);
+			extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination);
 		}
 	}
 }
@@ -440,7 +440,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	return limeFileProp;
 }
 
-void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries)
+void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData)
 {
   if( readMetaData)
     {
@@ -448,7 +448,7 @@ void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char 
     }
   else 
     {
-      extractBinaryDataFromLimeEntry(r, destination, numberOfBinaryDataEntries);
+      extractBinaryDataFromLimeEntry(r, destination);
     }
 }
 
@@ -458,7 +458,7 @@ void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destinat
 
   while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) {
     checkLimeRecordReadForFailure(statusOfLimeReader);
-    extractInformationFromLimeEntry(r, destination, readMetaData, limeFileProp.numberOfBinaryDataEntries);
+    extractInformationFromLimeEntry(r, destination, readMetaData);
   }
 }
 
@@ -590,9 +590,6 @@ void sourcefileparameters::readsourcefile(std::string sourceFilename, int desire
   checkIfFileExists(sourceFilename);
 
   extractMetadataFromLimeFile(sourceFilename, desiredPrecision);
-   
-	//todo: this should be removed eventually
-// 	limeFileProp.setDefaults();
 	
   extractDataFromLimeFile(sourceFilename, destination);
 }
@@ -611,21 +608,9 @@ LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 	}
 }
 
-void LimeFilePropertiesCollector::setDefaults()
-{
-	LimeFileProperties::setDefaults();
-}
-
 void LimeFileProperties::operator+=(LimeFileProperties other)
 {
   this->numberOfEntries += other.numberOfEntries;
   this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
 	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
-}
-
-void LimeFileProperties::setDefaults()
-{
-	numberOfEntries = 0;
-	numberOfBinaryDataEntries = 0;
-	numberOfFermionicEntries = 0;
 }
