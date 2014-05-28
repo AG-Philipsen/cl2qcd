@@ -23,6 +23,8 @@
 #include "../host_functionality/logger.hpp"
 #include <sstream>
 
+#include <iostream>
+
 extern "C" {
 #include <lime_fixed_types.h>
 #include <libxml/parser.h>
@@ -124,7 +126,9 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size, char * f
 	ly_source = tmpArray[3];
 	lz_source = tmpArray[4];
 	lt_source = tmpArray[5];
+	std::cout << field << std::endl;
 	strcpy(field_out, field);
+	std::cout << field_out << std::endl;
 }
 
 //todo: merge with xml fcts. above!!
@@ -296,16 +300,18 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int 
   char field_out[100];
   //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
   if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && switcher < 2 ) {
-    logger.trace() << "\tfound XML-infos as lime_type" << lime_type;
+    logger.trace() << "\tfound XML-infos as lime_type \"" << lime_type << "\"";
     char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
 
     get_XML_infos(buffer, nbytes, field_out );
+		std::cout << field_out << std::endl;
     delete[] buffer;
     logger.trace() << "\tsuccesfully read XMLInfos";
     
     num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_out);
+		
+		field_source = field_out;
   }
-  strcpy(field_source, field_out);
 }
 
 void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes)
@@ -485,7 +491,7 @@ void sourcefileparameters::printMetaDataToScreen(std::string file)
   logger.info() << "*************************************************************" ;
   logger.info() << "*************************************************************" ;
   logger.info() << "Metadata from file " << file << ":";
-  logger.trace() << "\treading XML-data gave:";
+  logger.info() << "\treading XML-data gave:";
   logger.info() << "\t\tfield type:\t" << field_source ;
   logger.info() << "\t\tprecision:\t" << prec_source ;
   logger.info() << "\t\tlx:\t\t" << lx_source ;
@@ -493,17 +499,17 @@ void sourcefileparameters::printMetaDataToScreen(std::string file)
   logger.info() << "\t\tlz:\t\t" << lz_source ;
   logger.info() << "\t\tlt:\t\t" << lt_source ;
   logger.info() << "\t\tflavours:\t" << flavours_source ;
-  logger.trace() << "\treading XLF-data gave:";
+  logger.info() << "\treading XLF-data gave:";
   logger.info() << "\t\tplaquette:\t" << plaquettevalue_source;
-  logger.debug() << "\t\ttrajectorynr:\t" << trajectorynr_source;
+  logger.info() << "\t\ttrajectorynr:\t" << trajectorynr_source;
   logger.info() << "\t\tbeta:\t\t" << beta_source;
   logger.info() << "\t\tkappa:\t\t" << kappa_source;
   logger.info() << "\t\tmu:\t\t" << mu_source;
-  logger.debug() << "\t\tc2_rec:\t\t" << c2_rec_source;
-  logger.debug() << "\t\ttime:\t\t" << time_source;
+  logger.info() << "\t\tc2_rec:\t\t" << c2_rec_source;
+  logger.info() << "\t\ttime:\t\t" << time_source;
   logger.info() << "\t\thmc-version:\t" << hmcversion_source;
-  logger.debug() << "\t\tmubar:\t\t" << mubar_source;
-  logger.debug() << "\t\tepsilonbar:\t" << epsilonbar_source;
+  logger.info() << "\t\tmubar:\t\t" << mubar_source;
+  logger.info() << "\t\tepsilonbar:\t" << epsilonbar_source;
   logger.info() << "\t\tdate:\t\t" << date_source;
   if(numberOfFermionFieldsRead != 0) {
     logger.info() << "\treading inverter-data gave:";
@@ -563,6 +569,7 @@ void sourcefileparameters::extractDataFromLimeFile(std::string sourceFilename, c
   //todo: put conversion to numbers in here...
 }
 
+//todo: make char ** std::vector<char*>
 void sourcefileparameters::readsourcefile(std::string sourceFilename, int desiredPrecision, char ** destination)
 {
   checkIfFileExists(sourceFilename);

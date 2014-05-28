@@ -120,14 +120,15 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckMetadata)
   checkMetadataOfSpecificGaugefieldFile(srcFileParams);
 }
 
+//todo: this test probably will never work!
 BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
 {
   sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+	srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   size_t expectedSizeOfBuffer = srcFileParams.num_entries_source * sizeof(hmc_float);
   size_t actualSizeOfBuffer = sizeof(bufferToStoreGaugefield);
-  BOOST_REQUIRE_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
+	BOOST_REQUIRE_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)

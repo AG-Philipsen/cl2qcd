@@ -94,13 +94,15 @@ public:
 	    trajectorynr_source, time_source, time_solver_source, noiter_source;
 	hmc_float plaquettevalue_source, beta_source, kappa_source, mu_source, c2_rec_source, mubar_source, epsilonbar_source,
 	          epssq_source, kappa_solver_source, mu_solver_source;
-	char field_source[100];
+// 	char field_source[100];
 	char hmcversion_source[50];
 	char date_source[50];
 	char solvertype_source[50];
 	char hmcversion_solver_source[50];
 	char date_solver_source[50];
 	Checksum checksum;
+	
+	std::string field_source;
 
  private:
 	void readMetaDataFromLimeFile(std::string sourceFilename);
