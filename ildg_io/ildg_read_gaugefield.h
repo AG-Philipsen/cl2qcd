@@ -106,13 +106,14 @@ public:
 
  private:
 	void readMetaDataFromLimeFile(std::string sourceFilename);
-	void get_XML_infos(const char * buffer, int size, char * field_out );
+	void get_XML_infos(const char * buffer, int size);
 	void get_XLF_infos(const char * filename);
 	void get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date );
 	void printMetaDataToScreen(std::string sourceFilename);
 	void readDataFromLimeFile(std::string sourceFilename, char ** destination);
 	void checkPrecision(int desiredPrecision);
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
+	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
 	int calcNumberOfEntriesForGaugefield();
 	void checkLimeEntry(int *  numberOfFermionEntries, LimeReader * r, LimeHeaderData limeHeaderData);

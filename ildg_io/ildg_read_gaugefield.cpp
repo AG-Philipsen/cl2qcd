@@ -103,7 +103,7 @@ void sourcefileparameters::get_inverter_infos(const char * filename, char * solv
 	return;
 }
 
-void sourcefileparameters::get_XML_infos(const char * buffer, int size, char * field_out )
+void sourcefileparameters::get_XML_infos(const char * buffer, int size)
 {
 	xmlTextReaderPtr reader;
 	int returnValue;
@@ -132,9 +132,7 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size, char * f
 	ly_source = tmpArray[3];
 	lz_source = tmpArray[4];
 	lt_source = tmpArray[5];
-	std::cout << field << std::endl;
-	strcpy(field_out, field);
-	std::cout << field_out << std::endl;
+	field_source = field;
 }
 
 //todo: merge with xml fcts. above!!
@@ -211,6 +209,18 @@ int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(char * fieldType)
   if(strcmp(fieldType, "diracFermion") == 0) {
     return calcNumberOfEntriesForDiracFermionfield();
   } else if(strcmp(fieldType, "su3gauge") == 0) {
+    return calcNumberOfEntriesForGaugefield();
+  } else {
+    throw Print_Error_Message("Unknown ildg field type...", __FILE__, __LINE__);
+    return 0; //to get rid of a warning
+  }
+}
+
+int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
+{
+  if(fieldType == "diracFermion") {
+    return calcNumberOfEntriesForDiracFermionfield();
+  } else if( fieldType == "su3gauge") {
     return calcNumberOfEntriesForGaugefield();
   } else {
     throw Print_Error_Message("Unknown ildg field type...", __FILE__, __LINE__);
@@ -298,20 +308,16 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, int 
 
 void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, int switcher, LimeReader *r, size_t nbytes)
 {
-  char field_out[100];
   //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
   if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && switcher < 2 ) {
     logger.trace() << "\tfound XML-infos as lime_type \"" << lime_type << "\"";
-    char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
 
-    get_XML_infos(buffer, nbytes, field_out );
-		std::cout << field_out << std::endl;
-    delete[] buffer;
+		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
+		get_XML_infos(buffer, nbytes);
+		delete[] buffer;
     logger.trace() << "\tsuccesfully read XMLInfos";
     
-    num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_out);
-		
-		field_source = field_out;
+    num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
   }
 }
 
