@@ -24,6 +24,7 @@
 #include <sstream>
 
 #include <iostream>
+#include <vector>
 
 extern "C" {
 #include <lime_fixed_types.h>
@@ -42,7 +43,7 @@ extern "C" {
 //todo: use these instead of hardcoded strings.
 //todo: move to .h ?
 //possible limeEntryTypes
-const char * limeEntryTypes[] = {
+const std::vector<std::string> limeEntryTypes = {
   "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
   "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
 };
@@ -404,31 +405,39 @@ int sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(Lime
 
 LimeFileProperties sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, int numberOfBinaryDataEntries)
 {
-    LimeHeaderData limeHeaderData(r);
-    LimeFileProperties limeFileProp;
-    if (limeHeaderData.MB_flag == 1) {
-      if( strcmp (limeEntryTypes[5], limeHeaderData.limeEntryType.c_str()) == 0 || strcmp (limeEntryTypes[8], limeHeaderData.limeEntryType.c_str()) == 0  )
+	LimeHeaderData limeHeaderData(r);
+	LimeFileProperties limeFileProp;
+	
+	if (limeHeaderData.MB_flag == 1) 
 	{
-	  limeFileProp.numberOfBinaryDataEntries += extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, numberOfBinaryDataEntries);
+		if( 
+				limeEntryTypes[5] == limeHeaderData.limeEntryType || 
+				limeEntryTypes[8] == limeHeaderData.limeEntryType
+			)
+		{
+			logger.fatal() << limeHeaderData.limeEntryType;
+			limeFileProp.numberOfBinaryDataEntries += extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination, numberOfBinaryDataEntries);
+		}
+		limeFileProp.numberOfEntries += 1;
 	}
-      limeFileProp.numberOfEntries += 1;
-    }
-    return limeFileProp;
+	
+	return limeFileProp;
 }
 
 LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r)
 {
-  LimeFileProperties limeFileProp;
-  LimeHeaderData limeHeaderData(r);
+	LimeFileProperties limeFileProp;
+	LimeHeaderData limeHeaderData(r);
 
-  if (limeHeaderData.MB_flag == 1) {
-    //todo: fix this!
-    int numberOfFermionEntries = 0;
-    checkLimeEntry(&numberOfFermionEntries, r, limeHeaderData);
-    limeFileProp.numberOfEntries += 1;
-  }
+	if (limeHeaderData.MB_flag == 1) 
+	{
+		//todo: fix this!
+		int numberOfFermionEntries = 0;
+		checkLimeEntry(&numberOfFermionEntries, r, limeHeaderData);
+		limeFileProp.numberOfEntries += 1;
+	}
 
-  return limeFileProp;
+	return limeFileProp;
 }
 
 LimeFileProperties sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData, int numberOfBinaryDataEntries)
