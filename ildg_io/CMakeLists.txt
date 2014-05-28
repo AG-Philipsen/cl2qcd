@@ -36,4 +36,5 @@ target_link_libraries(ildg_io
 	einhard
 )
 
-add_unit_test(ildg_read_gaugefield ildg_read
+add_unit_test(ildg_read_gaugefield ildg_read_gaugefield_test)
+

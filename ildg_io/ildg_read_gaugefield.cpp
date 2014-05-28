@@ -20,6 +20,8 @@
 
 #include "ildg_read_gaugefield.h"
 
+#include "limeUtilities.hpp"
+
 #include "../host_functionality/logger.hpp"
 #include <sstream>
 
@@ -590,25 +592,4 @@ void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desi
   extractMetadataFromLimeFile();
 	
   extractDataFromLimeFile(destination);
-}
-
-LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
-{
-	logger.trace() << "Found " << numberOfEntries << " LIME records.";
-	logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
-	if (numberOfFermionicEntries > 0) 
-	{
-		logger.trace() << "\tfile contains " << numberOfFermionicEntries << " fermion entries." ;
-	} 
-	else 
-	{
-		logger.trace() << "\tfile does not contain informations about fermions";
-	}
-}
-
-void LimeFileProperties::operator+=(LimeFileProperties other)
-{
-  this->numberOfEntries += other.numberOfEntries;
-  this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
-	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
 }

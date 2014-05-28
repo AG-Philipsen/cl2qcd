@@ -26,49 +26,13 @@
 #include "../common_header_files/types.h"
 #include "../executables/exceptions.h"
 
+//todo: remove this eventually
+#include "limeUtilities.hpp"
+
 #include "checksum.h"
 extern "C" {
 #include <lime.h>
 }
-
-class LimeHeaderData
-{
-public:
-  LimeHeaderData(LimeReader *r)
-  {
-    numberOfBytes    = limeReaderBytes(r);
-    limeEntryType = (limeReaderType(r));
-    bytes_pad = limeReaderPadBytes(r);
-    MB_flag   = limeReaderMBFlag(r);
-    ME_flag   = limeReaderMEFlag(r);
-  }
-
-  n_uint64_t numberOfBytes;
-  size_t bytes_pad;
-  int MB_flag, ME_flag;
-  std::string limeEntryType;
-};
-
-
-class LimeFileProperties
-{
-public:
- LimeFileProperties() : numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0), readMetaData(false) {};
- LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
-  numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) {};
-	
-  void operator+=(LimeFileProperties other);
-  int numberOfEntries;
-  int numberOfBinaryDataEntries;
-	int numberOfFermionicEntries;
-	bool readMetaData;
-};
-
-class LimeFilePropertiesCollector: public LimeFileProperties
-{
- public:
-  ~LimeFilePropertiesCollector();  
-};
 
 /**
  * Parser class for a stored gaugefield.

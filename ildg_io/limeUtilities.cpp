@@ -20,3 +20,41 @@
  */
 
 #include "limeUtilities.hpp"
+
+LimeHeaderData::LimeHeaderData(LimeReader *r)
+{
+  numberOfBytes    = limeReaderBytes(r);
+  limeEntryType = (limeReaderType(r));
+  bytes_pad = limeReaderPadBytes(r);
+  MB_flag   = limeReaderMBFlag(r);
+  ME_flag   = limeReaderMEFlag(r);
+}
+
+LimeFileProperties::LimeFileProperties() :
+	numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0), readMetaData(false)
+{}
+
+ LimeFileProperties::LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
+ 	numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) 
+{};
+
+LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
+{
+	logger.trace() << "Found " << numberOfEntries << " LIME records.";
+	logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
+	if (numberOfFermionicEntries > 0) 
+	{
+		logger.trace() << "\tfile contains " << numberOfFermionicEntries << " fermion entries." ;
+	} 
+	else 
+	{
+		logger.trace() << "\tfile does not contain informations about fermions";
+	}
+}
+
+void LimeFileProperties::operator+=(LimeFileProperties other)
+{
+  this->numberOfEntries += other.numberOfEntries;
+  this->numberOfBinaryDataEntries += other.numberOfBinaryDataEntries;
+	this->numberOfFermionicEntries += other.numberOfFermionicEntries;
+}

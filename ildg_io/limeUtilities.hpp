@@ -22,4 +22,40 @@
 #ifndef _LIMEUTILITIES_HPP_
 #define _LIMEUTILITIES_HPP_
 
+#include <string>
+
+extern "C" {
+#include <lime.h>
+}
+
+class LimeHeaderData
+{
+public:
+  LimeHeaderData(LimeReader *r);
+
+  n_uint64_t numberOfBytes;
+  size_t bytes_pad;
+  int MB_flag, ME_flag;
+  std::string limeEntryType;
+};
+
+class LimeFileProperties
+{
+public:
+	LimeFileProperties();
+	LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries);
+	
+  void operator+=(LimeFileProperties other);
+  int numberOfEntries;
+  int numberOfBinaryDataEntries;
+	int numberOfFermionicEntries;
+	bool readMetaData;
+};
+
+class LimeFilePropertiesCollector: public LimeFileProperties
+{
+ public:
+  ~LimeFilePropertiesCollector();  
+};
+
 #endif
