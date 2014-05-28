@@ -40,6 +40,14 @@ extern "C" {
 
 #include "parser_utils.h"
 
+#include <string>
+#include <algorithm>    // copy
+#include <iterator>     // back_inserter
+#include <boost/regex.hpp>        // regex, sregex_token_iterator
+#include <vector>
+#include <algorithm>
+#include <boost/lexical_cast.hpp>
+
 #define ENDIAN (htons(1) == 1)
 
 //todo: use these instead of hardcoded strings.
@@ -49,55 +57,6 @@ const std::vector<std::string> limeEntryTypes = {
   "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
   "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
 };
-
-void sourcefileparameters::get_XLF_infos(const char * filename)
-{
-	char hmcversion[50];
-	char date[50];
-	
-	FILE * reader;
-	reader = fopen(filename, "r");
-	if (reader != NULL) {
-		//there are " " inf front of most of the labels, the last one was added for a different style
-		const char * tmparray [] = {"plaquette", " trajectory nr", " beta", "kappa", "mu", "c2_rec", " time", " hmcversion", " mubar", " epsilonbar", " date", " plaquette"};
-		char tmp1[512];
-
-		while ( fgets (tmp1, 512, reader) != NULL) {
-			trim2(tmp1);
-			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[0]), strlen(tmp1), &plaquettevalue_source);
-			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_int(tmp1, strlen(tmparray[1]), strlen(tmp1), &trajectorynr_source);
-			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_beta(tmp1, strlen(tmparray[2]), strlen(tmp1), &beta_source, &kappa_source, &mu_source, &c2_rec_source);
-			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_int(tmp1, strlen(tmparray[6]), strlen(tmp1), &time_source);
-			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), hmcversion);
-			if(strncmp(tmparray[8], tmp1, strlen(tmparray[8])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[8]), strlen(tmp1), &mubar_source);
-			if(strncmp(tmparray[9], tmp1, strlen(tmparray[9])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[9]), strlen(tmp1), &epsilonbar_source);
-			if(strncmp(tmparray[10], tmp1, strlen(tmparray[10])) == 0) extrInfo_char(tmp1, strlen(tmparray[10]), strlen(tmp1), date);
-			if(strncmp(tmparray[11], tmp1, strlen(tmparray[11])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[11]), strlen(tmp1), &plaquettevalue_source);
-		}
-	} else throw File_Exception(filename);
-
-	hmcversion_source = hmcversion;
-	date_source = date;
-	
-	logger.trace() << "\tsuccesfully read XLFInfos";
-	return;
-}
-// plaquette = 0.571077
-//  trajectory nr = 
-//  trajectory nr = 200
-//  beta = 5.690000, kappa = 0.125000, mu = 0.006000, c2_rec = 0.000000
-//  time = -619635472
-//  hmcversion = 0.1b
-//  mubar = 0.000000
-//  epsilonbar = 0.000000
-//  date = Sun Jan 20 12:15:17 2013
-
-#include <string>
-#include <algorithm>    // copy
-#include <iterator>     // back_inserter
-#include <boost/regex.hpp>        // regex, sregex_token_iterator
-#include <vector>
-#include <algorithm>
 
 static std::string removeNewlines(std::string in)
 {
@@ -121,8 +80,6 @@ public:
 	std::string value;
 };
 
-#include <boost/lexical_cast.hpp>
-
 static double castStringToDouble(std::string in)
 {
   return boost::lexical_cast<double>(in);
@@ -133,18 +90,8 @@ static int castStringToInt(std::string in)
   return boost::lexical_cast<int>(in);
 }
 
-void sourcefileparameters::get_XLF_infos(char * buffer)
+static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
 {
-	std::map<std::string, std::string> values;
-	std::string str(buffer);
-
-	//todo: remove
-	logger.fatal() << str;
-	
-	std::map<std::string, helper> helperMap;
-	helperMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
-	
-	//todo: put in fct.
 	helperMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
 	helperMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+\\d+");
 	helperMap["beta"].re = boost::regex ("beta\\s+=\\s+\\d.\\d+");
@@ -155,9 +102,28 @@ void sourcefileparameters::get_XLF_infos(char * buffer)
  	helperMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+[a-z]*");
 	helperMap["mubar"].re = boost::regex ("mubar\\s+=\\s+\\d.\\d+");
 	helperMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+\\d.\\d+");
-	//todo: this will not work
  	helperMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
-	
+}
+
+static void setParametersToXlfValues(sourcefileparameters & parameters, std::map<std::string, helper>  helperMap)
+{
+	parameters.plaquettevalue_source = castStringToDouble(helperMap["plaquette"].value);
+	parameters.kappa_source = castStringToDouble(helperMap["kappa"].value);
+	parameters.mu_source = castStringToDouble(helperMap["mu"].value);
+	parameters.beta_source = castStringToDouble(helperMap["beta"].value);
+	parameters.c2_rec_source = castStringToDouble(helperMap["c2_rec"].value);
+	parameters.mubar_source = castStringToDouble(helperMap["mubar"].value);
+	parameters.epsilonbar_source = castStringToDouble(helperMap["epsilonbar"].value);
+
+	parameters.trajectorynr_source = castStringToInt(helperMap["trajectory_nr"].value);
+	parameters.time_source = castStringToInt(helperMap["time"].value);
+
+	parameters.hmcversion_source = helperMap["hmcversion"].value;
+	parameters.date_source = helperMap["date"].value;
+}
+
+void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  helperMap)
+{
 	//todo: find out about ::iterator
 	for (std::map<std::string, helper>::iterator it = helperMap.begin(); it != helperMap.end(); it++)
 	{
@@ -172,24 +138,18 @@ void sourcefileparameters::get_XLF_infos(char * buffer)
 
 		it->second.str = removeNewlines( tokens[0] );
 		it->second.value =  trimStringBeforeEqual(it->second.str);
-		
-		logger.fatal() << it->second.re << "  " << it->second.str << "  " << it->second.value;	
 	}
-	
-	plaquettevalue_source = castStringToDouble(helperMap["plaquette"].value);
-	kappa_source = castStringToDouble(helperMap["kappa"].value);
-	mu_source = castStringToDouble(helperMap["mu"].value);
-	beta_source = castStringToDouble(helperMap["beta"].value);
-	c2_rec_source = castStringToDouble(helperMap["c2_rec"].value);
-	mubar_source = castStringToDouble(helperMap["mubar"].value);
-	epsilonbar_source = castStringToDouble(helperMap["epsilonbar"].value);
+}
 
-	trajectorynr_source = castStringToInt(helperMap["trajectory_nr"].value);
-	time_source = castStringToInt(helperMap["time"].value);
+void sourcefileparameters::get_XLF_infos(char * buffer)
+{
+	std::string str(buffer);
+	//todo: make class out of this
+	std::map<std::string, helper> helperMap;
 
-	hmcversion_source = helperMap["hmcversion"].value;
-	date_source = helperMap["date"].value;
-
+	fillHelperMap_xlf(helperMap);
+	mapStringToHelperMap(str, helperMap);
+	setParametersToXlfValues(*this, helperMap);
 }
 
 void sourcefileparameters::get_inverter_infos(const char * filename)
