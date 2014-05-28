@@ -372,12 +372,6 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	return props;
 }
 
-void sourcefileparameters::checkPrecision(int desiredPrecision)
-{
-  if(desiredPrecision != prec_source) 
-    throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
-}
-
 size_t sourcefileparameters::sizeOfGaugefieldBuffer()
 {
   return num_entries_source * sizeof(hmc_float);
@@ -457,7 +451,7 @@ void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destinat
 	}
 }
 
-void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** destination)
+void sourcefileparameters::readLimeFile(char ** destination)
 {
   FILE *limeFileOpenedForReading;
   LimeReader *limeReader;
@@ -471,17 +465,17 @@ void sourcefileparameters::readLimeFile(std::string sourceFilename, char ** dest
   fclose(limeFileOpenedForReading); 
 }
 
-void sourcefileparameters::readDataFromLimeFile(std::string sourceFilename, char ** destination)
+void sourcefileparameters::readDataFromLimeFile(char ** destination)
 {
   logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
-  readLimeFile(sourceFilename, destination);
+  readLimeFile(destination);
   logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
 }
 
-void sourcefileparameters::readMetaDataFromLimeFile(std::string sourceFilename)
+void sourcefileparameters::readMetaDataFromLimeFile()
 {
   logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
-  readLimeFile(sourceFilename, NULL);
+  readLimeFile(NULL);
 	limeFileProp.readMetaData = true;
   logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
@@ -497,11 +491,17 @@ void checkIfFileExists(std::string file)
   return;
 }
 
-void sourcefileparameters::printMetaDataToScreen(std::string file)
+void checkPrecision(int desiredPrecision, int actualPrecision)
+{
+  if(desiredPrecision != actualPrecision) 
+    throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting", __FILE__, __LINE__);
+}
+
+void sourcefileparameters::printMetaDataToScreen()
 {
   logger.info() << "*************************************************************" ;
   logger.info() << "*************************************************************" ;
-  logger.info() << "Metadata from file " << file << ":";
+  logger.info() << "Metadata from file " << sourceFilename << ":";
   logger.info() << "\treading XML-data gave:";
   logger.info() << "\t\tfield type:\t" << field_source ;
   logger.info() << "\t\tprecision:\t" << prec_source ;
@@ -564,30 +564,34 @@ void sourcefileparameters::set_defaults()
 	return;
 }
 
-void sourcefileparameters::extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision)
+void sourcefileparameters::extractMetadataFromLimeFile()
 {
-  readMetaDataFromLimeFile(sourceFilename);
+  readMetaDataFromLimeFile();
 
-  printMetaDataToScreen(sourceFilename);
+  printMetaDataToScreen();
 
   //todo: this may be unified with a check against the inputparameters..
-  checkPrecision(desiredPrecision);  
+  checkPrecision(desiredPrecision, prec_source);  
 }
 
-void sourcefileparameters::extractDataFromLimeFile(std::string sourceFilename, char ** destination)
+void sourcefileparameters::extractDataFromLimeFile(char ** destination)
 {
-  readDataFromLimeFile(sourceFilename, destination);
+  readDataFromLimeFile(destination);
   //todo: put conversion to numbers in here...
 }
 
 //todo: make char ** std::vector<char*>
-void sourcefileparameters::readsourcefile(std::string sourceFilename, int desiredPrecision, char ** destination)
+void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination)
 {
-  checkIfFileExists(sourceFilename);
-
-  extractMetadataFromLimeFile(sourceFilename, desiredPrecision);
+	//todo: move all this to constructor!
+  checkIfFileExists(sourceFilenameIn);
 	
-  extractDataFromLimeFile(sourceFilename, destination);
+	sourceFilename = sourceFilenameIn;
+	desiredPrecision = desiredPrecisionIn;
+
+  extractMetadataFromLimeFile();
+	
+  extractDataFromLimeFile(destination);
 }
 
 LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()

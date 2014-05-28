@@ -107,13 +107,12 @@ public:
 	std::string date_solver_source;
 
  private:
-	void readMetaDataFromLimeFile(std::string sourceFilename);
+	void readMetaDataFromLimeFile();
 	void get_XML_infos(const char * buffer, int size);
 	void get_XLF_infos(const char * filename);
 	void get_inverter_infos(const char * filename, char * solver, char * hmcversion, char * date );
-	void printMetaDataToScreen(std::string sourceFilename);
-	void readDataFromLimeFile(std::string sourceFilename, char ** destination);
-	void checkPrecision(int desiredPrecision);
+	void printMetaDataToScreen();
+	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(char * fieldType);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
@@ -128,15 +127,18 @@ public:
 	void checkSizeOfBinaryDataForGaugefield(size_t actualSize);
 	void extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
 	void extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, LimeHeaderData limeHeaderData);
-	void readLimeFile(std::string sourceFilename, char ** destination);
-	void extractMetadataFromLimeFile(std::string sourceFilename, int desiredPrecision);
-	void extractDataFromLimeFile(std::string sourceFilename, char ** destination);
+	void readLimeFile(char ** destination);
+	void extractMetadataFromLimeFile();
+	void extractDataFromLimeFile(char ** destination);
 	Checksum get_checksum(const char * buffer, int size);
 	void extractInformationFromLimeEntry(LimeReader * r, char ** destination);
 	void goThroughLimeRecords(LimeReader * r, char ** destination);
 
 	int numberOfFermionFieldsRead;
 	LimeFilePropertiesCollector limeFileProp;
+	
+	std::string sourceFilename;
+	int desiredPrecision;
 };
 
 #endif /* _READGAUGEH_ */
