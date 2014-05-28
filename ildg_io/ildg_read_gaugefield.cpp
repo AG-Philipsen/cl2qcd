@@ -352,7 +352,7 @@ int checkLimeEntryForBinaryData(std::string lime_type)
 			return 0;
 }
 
-LimeFileProperties sourcefileparameters::checkLimeEntry(LimeFileProperties & limeFileProp, LimeReader * r, LimeHeaderData limeHeaderData)
+LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
 {
 	LimeFileProperties props;
  
@@ -421,45 +421,30 @@ static void checkIfMetaDataHasBeenRead(bool readMetaData)
 	}
 }
 
-void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination)
+void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, LimeHeaderData limeHeaderData)
 {
 	checkIfMetaDataHasBeenRead(limeFileProp.readMetaData);
-	
-	LimeHeaderData limeHeaderData(r);
-	
-	if (limeHeaderData.MB_flag == 1) 
+	if( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) )
 	{
-		if( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) )
-		{
-			logger.fatal() << limeHeaderData.limeEntryType;
-			extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination);
-		}
+		logger.fatal() << limeHeaderData.limeEntryType;
+		extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination);
 	}
-}
-
-LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r)
-{
-	LimeFileProperties limeFileProp;
-	LimeHeaderData limeHeaderData(r);
-
-	if (limeHeaderData.MB_flag == 1) 
-	{
-		limeFileProp += checkLimeEntry(limeFileProp, r, limeHeaderData);
-	}
-
-	return limeFileProp;
 }
 
 void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination, bool readMetaData)
 {
-  if( readMetaData)
-    {
-      this->limeFileProp += extractMetaDataFromLimeEntry(r);
-    }
-  else 
-    {
-      extractBinaryDataFromLimeEntry(r, destination);
-    }
+	LimeHeaderData limeHeaderData(r);
+	if (limeHeaderData.MB_flag == 1) 
+	{
+		if( readMetaData)
+			{
+				this->limeFileProp += extractMetaDataFromLimeEntry(r, limeHeaderData);
+			}
+		else 
+			{
+				extractBinaryDataFromLimeEntry(r, destination, limeHeaderData);
+			}
+	}
 }
 
 void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destination, bool readMetaData)
