@@ -412,29 +412,98 @@ int sourcefileparameters::checkLimeEntryForFermionInformations(std::string lime_
 	return limeEntryTypes["propagator"] == lime_type ? 1 : 0;
 }
 
-int sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
+bool sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
 {
 	return	( 
 		limeEntryTypes["scidac binary data"] == lime_type || 
 		limeEntryTypes["ildg binary data"] == lime_type
-		) ? 1 : 0;
+		) ? true : false;
 }
 
 LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
 {
 	LimeFileProperties props;
- 
-	props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
-    
-	checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-	
-	checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-	
-	checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-	
-	checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-	
-	props.numberOfBinaryDataEntries = checkLimeEntryForBinaryData(limeHeaderData.limeEntryType);
+
+	if ( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) == 1)
+	{
+		props.numberOfBinaryDataEntries = 1;		
+	}
+	else
+	{
+		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
+
+		std::string lime_type = limeHeaderData.limeEntryType;
+		if(limeEntryTypes["scidac checksum"] == lime_type) 
+		{
+			logger_readLimeEntry( lime_type );
+			char * buffer = createBufferAndReadLimeDataIntoIt(r,  limeHeaderData.numberOfBytes);
+			get_checksum(buffer,  limeHeaderData.numberOfBytes, *this);
+			delete[] buffer;
+			logger_readLimeEntrySuccess();
+		}
+		//checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+
+
+		if( limeEntryTypes["inverter"] == lime_type)
+		{
+			if ( limeFileProp.numberOfFermionicEntries > 1 )
+			{
+				logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
+				
+			}
+			else
+			{
+			
+				logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
+				
+				char * buffer = createBufferAndReadLimeDataIntoIt(r, limeHeaderData.numberOfBytes);
+				get_inverter_infos(buffer, *this);
+				delete[] buffer;
+				logger_readLimeEntrySuccess();
+				
+				//todo: this should be moved elsewhere!
+				numberOfFermionFieldsRead++;
+			}
+		}
+		//checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+
+	//!!read XLF info, only FIRST fermion is read!!
+	if(limeEntryTypes["xlf"]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
+	{
+		logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
+		char * buffer = createBufferAndReadLimeDataIntoIt(r, limeHeaderData.numberOfBytes);
+		get_XLF_infos(buffer, *this);
+		delete[] buffer;
+		logger_readLimeEntrySuccess();
+	}
+		
+//		checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+		
+//		checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+
+		//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
+		if
+			(
+				(limeEntryTypes["etmc propagator"] == lime_type || limeEntryTypes["ildg"] == lime_type) &&
+				sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 
+				)
+		{
+			
+			std::map<std::string, std::string> helperMap;
+			fillHelperMap_xml(helperMap);
+			
+			logger.trace() << "\tfound XML-infos as lime_type";
+			char * buffer = createBufferAndReadLimeDataIntoIt(r, limeHeaderData.numberOfBytes);
+			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
+			delete[] buffer;
+			
+			setParametersToValues_xlm(*this, helperMap);
+			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
+			
+			logger_readLimeEntrySuccess();
+		}	
+}
+
 	props.numberOfEntries = 1;
 	
 	return props;

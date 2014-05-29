@@ -57,8 +57,6 @@ public:
 	void readMetaDataFromLimeFile();
 	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
-	int calcNumberOfEntriesForDiracFermionfield();
-	int calcNumberOfEntriesForGaugefield();
 	void checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes);
 	void checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes);
@@ -74,7 +72,7 @@ public:
 	void goThroughLimeRecords(LimeReader * r, char ** destination);
 
 	int checkLimeEntryForFermionInformations(std::string lime_type);
-	int checkLimeEntryForBinaryData(std::string lime_type);
+	bool checkLimeEntryForBinaryData(std::string lime_type);
 
 	LimeFilePropertiesCollector limeFileProp;
 	
