@@ -73,10 +73,14 @@ public:
 	void extractInformationFromLimeEntry(LimeReader * r, char ** destination);
 	void goThroughLimeRecords(LimeReader * r, char ** destination);
 
+	int checkLimeEntryForFermionInformations(std::string lime_type);
+	int checkLimeEntryForBinaryData(std::string lime_type);
+
 	LimeFilePropertiesCollector limeFileProp;
 	
 	std::string sourceFilename;
 	int desiredPrecision;
+	LimeEntryTypes limeEntryTypes;
 };
 
 #endif /* _READGAUGEH_ */

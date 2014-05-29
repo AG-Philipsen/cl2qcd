@@ -50,22 +50,6 @@ extern "C" {
 
 #define ENDIAN (htons(1) == 1)
 
-class LimeEntryTypes
-{
-public:
-	typedef std::map<std::string, std::string> Mapper;
-	static Mapper mapper;
-	std::string operator[](std::string key)
-	{
-		return mapper[key];
-	}
-};
-
-//todo: move to some .cpp file
-LimeEntryTypes::Mapper LimeEntryTypes::mapper = { {"propagator", "propagator-info"}, {"xlf", "xlf-info"} , {"inverter", "inverter-info"}, {"gauge-checksum-copy", "gauge-scidac-checksum-copy"}, {"etmc-propagator", "etmc-propagator-format"},  { "scidac binary data", "scidac-binary-data"}, {"scidac checksum", "scidac-checksum"}, {"ildg", "ildg-format"}, {"ildg binary data", "ildg-binary-data"}  };
-
-LimeEntryTypes limeEntryTypes;
-
 static std::string removeNewlines(std::string in)
 {
   in.erase(std::remove(in.begin(), in.end(), '\n'), in.end());
@@ -424,12 +408,12 @@ void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type
 	}
 }
 
-int checkLimeEntryForFermionInformations(std::string lime_type)
+int sourcefileparameters::checkLimeEntryForFermionInformations(std::string lime_type)
 {
 	return limeEntryTypes["propagator"] == lime_type ? 1 : 0;
 }
 
-int checkLimeEntryForBinaryData(std::string lime_type)
+int sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
 {
 	return	( 
 		limeEntryTypes["scidac binary data"] == lime_type || 

@@ -23,6 +23,7 @@
 #define _LIMEUTILITIES_HPP_
 
 #include <string>
+#include <map>
 
 extern "C" {
 #include <lime.h>
@@ -57,5 +58,17 @@ class LimeFilePropertiesCollector: public LimeFileProperties
  public:
   ~LimeFilePropertiesCollector();  
 };
+
+class LimeEntryTypes
+{
+public:
+	typedef std::map<std::string, std::string> Mapper;
+	static Mapper mapper;
+	std::string operator[](std::string key)
+	{
+		return mapper[key];
+	}
+};
+
 
 #endif
