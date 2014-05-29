@@ -188,8 +188,7 @@ void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, s
 	xmlFree(name);
 }
 
-
-void get_XML_infos(const char * buffer, int size, std::map<std::string, std::string> & helperMap)
+void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * buffer, int size, std::map<std::string, std::string> & helperMap)
 {
 	xmlTextReaderPtr reader;
 	int returnValue;
@@ -270,23 +269,23 @@ void get_checksum(const char * buffer, int size, sourcefileparameters & paramete
 
 //NOTE: these two functions are similar to some in the meta package,
 //      but I would rather not include the latter here.
-int sourcefileparameters::calcNumberOfEntriesForDiracFermionfield()
+int calcNumberOfEntriesForDiracFermionfield(const sourcefileparameters params)
 {
   //latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
-  return (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * NC * NSPIN * 2;
+  return (int) (params.lx_source) * (params.ly_source) * (params.lz_source) * (params.lt_source) * NC * NSPIN * 2;
 }
-int sourcefileparameters::calcNumberOfEntriesForGaugefield()
+int calcNumberOfEntriesForGaugefield(const sourcefileparameters params)
 {
   // latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
-  return (int) (lx_source) * (ly_source) * (lz_source) * (lt_source) * 2 * 4 * 9;
+  return (int) (params.lx_source) * (params.ly_source) * (params.lz_source) * (params.lt_source) * 2 * 4 * 9;
 }
 
 int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
 {
   if(fieldType == "diracFermion") {
-    return calcNumberOfEntriesForDiracFermionfield();
+    return calcNumberOfEntriesForDiracFermionfield(*this);
   } else if( fieldType == "su3gauge") {
-    return calcNumberOfEntriesForGaugefield();
+    return calcNumberOfEntriesForGaugefield(*this);
   } else {
 	  throw Print_Error_Message("Unknown ildg field type \"" + fieldType + "\"", __FILE__, __LINE__);
     return 0; //to get rid of a warning
@@ -310,6 +309,30 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 		throw Print_Error_Message("Error while reading data from LIME file...", __FILE__, __LINE__);
 	buffer[nbytes] = 0;
 	return buffer;
+}
+
+static void setParametersToValues_xlm(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+{
+	parameters.prec_source = castStringToInt(helperMap["precision"]);
+	parameters.lx_source = castStringToInt(helperMap["lx"]);
+	parameters.ly_source = castStringToInt(helperMap["ly"]);
+	parameters.lz_source = castStringToInt(helperMap["lz"]);
+	parameters.lt_source = castStringToInt(helperMap["lt"]);
+	parameters.flavours_source = castStringToInt(helperMap["flavours"]);
+
+	parameters.field_source = helperMap["field"];
+}
+
+static void fillHelperMap_xml(std::map<std::string, std::string> & helperMap)
+{
+	helperMap["field"] = "";
+	helperMap["precision"] = "";
+	//todo: this is not in su3gauge entries! Distinct between cases
+	helperMap["flavours"] = "0";
+	helperMap["lx"] = "";
+	helperMap["ly"] = "";
+	helperMap["lz"] = "";
+	helperMap["lt"] = "";
 }
 
 void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes)
@@ -347,30 +370,6 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, Lime
 	}
 }
 
-static void setParametersToValues_xlm(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
-{
-	parameters.prec_source = castStringToInt(helperMap["precision"]);
-	parameters.lx_source = castStringToInt(helperMap["lx"]);
-	parameters.ly_source = castStringToInt(helperMap["ly"]);
-	parameters.lz_source = castStringToInt(helperMap["lz"]);
-	parameters.lt_source = castStringToInt(helperMap["lt"]);
-	parameters.flavours_source = castStringToInt(helperMap["flavours"]);
-
-	parameters.field_source = helperMap["field"];
-}
-
-static void fillHelperMap_xml(std::map<std::string, std::string> & helperMap)
-{
-	helperMap["field"] = "";
-	helperMap["precision"] = "";
-	//todo: this is not in su3gauge entries! Distinct between cases
-	helperMap["flavours"] = "0";
-	helperMap["lx"] = "";
-	helperMap["ly"] = "";
-	helperMap["lz"] = "";
-	helperMap["lt"] = "";
-}
-
 void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
 	//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
@@ -386,7 +385,7 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, Lime
 
 		logger.trace() << "\tfound XML-infos as lime_type";
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_XML_infos(buffer, nbytes, helperMap);
+		goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, nbytes, helperMap);
 		delete[] buffer;
 		
 		setParametersToValues_xlm(*this, helperMap);
