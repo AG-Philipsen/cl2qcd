@@ -59,8 +59,7 @@ public:
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData);
 	size_t	sizeOfGaugefieldBuffer();
-	void extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
-	void extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, LimeHeaderData limeHeaderData);
+	void extractBinaryDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
 	void readLimeFile(char ** destination);
 	void extractMetadataFromLimeFile();
 	void extractDataFromLimeFile(char ** destination);

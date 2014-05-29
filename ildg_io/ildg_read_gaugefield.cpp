@@ -23,11 +23,6 @@
 #include "limeUtilities.hpp"
 
 #include "../host_functionality/logger.hpp"
-#include <sstream>
-
-#include <iostream>
-#include <vector>
-
 extern "C" {
 #include <lime_fixed_types.h>
 #include <libxml/parser.h>
@@ -38,12 +33,12 @@ extern "C" {
 #include <arpa/inet.h>
 }
 
-//#include "parser_utils.h"
-
+#include <sstream>
+#include <iostream>
 #include <string>
-#include <algorithm>    // copy
-#include <iterator>     // back_inserter
-#include <boost/regex.hpp>        // regex, sregex_token_iterator
+#include <algorithm>
+#include <iterator>
+#include <boost/regex.hpp>
 #include <vector>
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
@@ -389,52 +384,37 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 
 size_t sourcefileparameters::sizeOfGaugefieldBuffer()
 {
-  return num_entries_source * sizeof(hmc_float);
+	return num_entries_source * sizeof(hmc_float);
 }
 
 char* createBuffer(size_t datasize)
 {
-  char * buffer = new char[datasize];
-  return buffer;
+	char * buffer = new char[datasize];
+	return buffer;
 }
 
 static void checkBufferSize(size_t actualSize, size_t expectedSize)
 {
-  if(actualSize != expectedSize) {
-    throw Invalid_Parameters("Binary data does not have expected size.", expectedSize, actualSize);
-  }
-}
-
-void sourcefileparameters::extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination)
-{
-  if (limeFileProp.numberOfBinaryDataEntries == 1)
-    {
-      //todo: generalize for diff. field types..
-      checkBufferSize(limeHeaderData.numberOfBytes, sizeOfGaugefieldBuffer());
-      destination[limeFileProp.numberOfBinaryDataEntries-1] = createBuffer(sizeOfGaugefieldBuffer());
-      limeReaderReadData(destination[limeFileProp.numberOfBinaryDataEntries-1], &limeHeaderData.numberOfBytes, r);
-    }
-  else
-    {
-      logger.fatal() << "Reading of more than one binary data entry from LIME file not yet implemented...";
-    }
-}
-
-static void checkIfMetaDataHasBeenRead(bool readMetaData)
-{
-	if(! readMetaData)
-	{
-		throw std::logic_error("Did not read metadata yet. Will not read in binary data. Aborting...");
+	if(actualSize != expectedSize) {
+		throw Invalid_Parameters("Binary data does not have expected size.", expectedSize, actualSize);
 	}
 }
 
-void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, char ** destination, LimeHeaderData limeHeaderData)
+void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination)
 {
-	checkIfMetaDataHasBeenRead(limeFileProp.readMetaData);
 	if( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) )
 	{
-		logger.fatal() << limeHeaderData.limeEntryType;
-		extractBinaryDataFromLimeEntry_NeedsDifferentName(r, limeHeaderData, destination);
+		if (limeFileProp.numberOfBinaryDataEntries == 1)
+		{
+			//todo: generalize for diff. field types..
+			checkBufferSize(limeHeaderData.numberOfBytes, sizeOfGaugefieldBuffer());
+			destination[limeFileProp.numberOfBinaryDataEntries-1] = createBuffer(sizeOfGaugefieldBuffer());
+			limeReaderReadData(destination[limeFileProp.numberOfBinaryDataEntries-1], &limeHeaderData.numberOfBytes, r);
+		}
+		else
+		{
+			logger.fatal() << "Reading of more than one binary data entry from LIME file not yet implemented...";
+		}
 	}
 }
 
@@ -444,13 +424,13 @@ void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char 
 	if (limeHeaderData.MB_flag == 1) 
 	{
 		if( ! limeFileProp.readMetaData )
-			{
-				this->limeFileProp += extractMetaDataFromLimeEntry(r, limeHeaderData);
-			}
+		{
+			this->limeFileProp += extractMetaDataFromLimeEntry(r, limeHeaderData);
+		}
 		else 
-			{
-				extractBinaryDataFromLimeEntry(r, destination, limeHeaderData);
-			}
+		{
+			extractBinaryDataFromLimeEntry(r, limeHeaderData, destination);
+		}
 	}
 }
 
@@ -466,76 +446,77 @@ void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destinat
 
 void sourcefileparameters::readLimeFile(char ** destination)
 {
-  FILE *limeFileOpenedForReading;
-  LimeReader *limeReader;
-
-  limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
-  limeReader = limeCreateReader(limeFileOpenedForReading);
-
-  goThroughLimeRecords(limeReader, destination);
-
-  limeDestroyReader(limeReader);
-  fclose(limeFileOpenedForReading); 
+	FILE *limeFileOpenedForReading;
+	LimeReader *limeReader;
+	
+	limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
+	limeReader = limeCreateReader(limeFileOpenedForReading);
+	
+	goThroughLimeRecords(limeReader, destination);
+	
+	limeDestroyReader(limeReader);
+	fclose(limeFileOpenedForReading); 
 }
 
 void sourcefileparameters::readDataFromLimeFile(char ** destination)
 {
-  logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
-  readLimeFile(destination);
-  logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
+	logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
+	readLimeFile(destination);
+	logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
 }
 
 void sourcefileparameters::readMetaDataFromLimeFile()
 {
-  logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
-  readLimeFile(NULL);
+	logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
+	readLimeFile(NULL);
 	limeFileProp.readMetaData = true;
-  logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
+	logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
 
 void checkIfFileExists(std::string file)
 {
-  FILE * checker;
-  checker = fopen(file.c_str(), "r");
-  if(checker == 0) {
-    throw File_Exception(file);
-  }
-  fclose(checker);
-  return;
+	FILE * checker;
+	checker = fopen(file.c_str(), "r");
+	if(checker == 0) {
+		throw File_Exception(file);
+	}
+	fclose(checker);
+	return;
 }
 
 void checkPrecision(int desiredPrecision, int actualPrecision)
 {
-  if(desiredPrecision != actualPrecision) 
-    throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting", __FILE__, __LINE__);
+	if(desiredPrecision != actualPrecision) 
+		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting", __FILE__, __LINE__);
 }
 
 void sourcefileparameters::extractMetadataFromLimeFile()
 {
-  readMetaDataFromLimeFile();
-
-  printMetaDataToScreen(sourceFilename);
-
-  //todo: this may be unified with a check against the inputparameters..
-  checkPrecision(desiredPrecision, prec_source);  
+	readMetaDataFromLimeFile();
+	
+	printMetaDataToScreen(sourceFilename);
+	
+	//todo: this may be unified with a check against the inputparameters..
+	checkPrecision(desiredPrecision, prec_source);  
 }
 
 void sourcefileparameters::extractDataFromLimeFile(char ** destination)
 {
-  readDataFromLimeFile(destination);
-  //todo: put conversion to numbers in here...
+	readDataFromLimeFile(destination);
+	//todo: put conversion to numbers in here...
 }
 
+//todo: this must be readsourcefile_gaugefield or so, and then one has to check if the entry is in fact "su3gauge"
 //todo: make char ** std::vector<char*>
 void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination)
 {
 	//todo: move all this to constructor!
-  checkIfFileExists(sourceFilenameIn);
+	checkIfFileExists(sourceFilenameIn);
 	
 	sourceFilename = sourceFilenameIn;
 	desiredPrecision = desiredPrecisionIn;
-
-  extractMetadataFromLimeFile();
 	
-  extractDataFromLimeFile(destination);
+	extractMetadataFromLimeFile();
+	
+	extractDataFromLimeFile(destination);
 }
