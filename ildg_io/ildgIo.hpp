@@ -31,6 +31,7 @@
 
 namespace ildgIo {
 	Matrixsu3 * readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, sourcefileparameters & parameters_source_in);
+	void writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf, const meta::Inputparameters * parameters, int number, double plaq);
 }
 
 #endif 

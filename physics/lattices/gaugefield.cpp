@@ -47,7 +47,6 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const p
 static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
-static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 static hmc_float make_float_from_big_endian(const char* in);
@@ -123,7 +122,8 @@ static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardwa
 	std::vector<const SU3 *> buffers;
 
 	auto const devices = system.get_devices();
-	for(auto device: devices) {
+	for(auto device: devices) 
+	{
 		buffers.push_back(new SU3(get_vol4d(device->get_mem_lattice_size()) * 4, device));
 	}
 	return buffers;
@@ -131,7 +131,8 @@ static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardwa
 
 static void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers)
 {
-for(auto buffer: *buffers) {
+	for(auto buffer: *buffers) 
+	{
 		delete buffer;
 	}
 	buffers->clear();
@@ -147,7 +148,8 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const p
 {
 	using hardware::Device;
 
-for(auto buffer: buffers) {
+	for(auto buffer: buffers) 
+	{
 		size_t elems = buffer->get_elements();
 		Matrixsu3 * tmp = new Matrixsu3[elems];
 		set_hot(tmp, prng, elems);
@@ -162,7 +164,8 @@ static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers)
 {
 	using hardware::Device;
 
-for(auto buffer: buffers) {
+	for(auto buffer: buffers) 
+	{
 		size_t elems = buffer->get_elements();
 		Matrixsu3 * tmp = new Matrixsu3[elems];
 		set_cold(tmp, elems);
@@ -202,74 +205,16 @@ void physics::lattices::Gaugefield::saveToSpecificFile(int number)
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
 	logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
-	auto parameters = system.get_inputparameters();
-	const size_t NTIME = parameters.get_ntime();
-	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME * sizeof(hmc_float);
-	char * gaugefield_buf = new char[gaugefield_buf_size];
+	const meta::Inputparameters * parameters = this->getParameters();
+	Matrixsu3 * host_buf = new Matrixsu3[meta::get_vol4d(*parameters) * NDIM];
+	fetch_gaugefield_from_buffers(host_buf, buffers, *parameters);
+      	double plaq = physics::observables::measurePlaquette(this);
 
-	//these are not yet used...
-	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
+	ildgIo::writeGaugefieldToFile(outputfile, host_buf, parameters, number, plaq);
 
-	{
-		Matrixsu3 * host_buf = new Matrixsu3[meta::get_vol4d(parameters) * NDIM];
-		fetch_gaugefield_from_buffers(host_buf, buffers, parameters);
-		copy_gaugefield_to_ildg_format(gaugefield_buf, host_buf, parameters);
-		delete host_buf;
-	}
-
-	hmc_float plaq = physics::observables::measurePlaquette(this);
-
-	const size_t NSPACE = parameters.get_nspace();
-
-	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, parameters);
-
-	write_gaugefield(gaugefield_buf, gaugefield_buf_size, checksum, NSPACE, NSPACE, NSPACE, NTIME, parameters.get_precision(), number, plaq, parameters.get_beta(), parameters.get_kappa(), parameters.get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
-
-	delete[] gaugefield_buf;
+	delete host_buf;
 }
 
-static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters)
-{
-	const size_t NSPACE = parameters.get_nspace();
-	for (int t = 0; t < parameters.get_ntime(); t++) {
-		for (size_t x = 0; x < NSPACE; x++) {
-			for (size_t y = 0; y < NSPACE; y++) {
-				for (size_t z = 0; z < NSPACE; z++) {
-					for (int l = 0; l < NDIM; l++) {
-						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
-						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
-						int coord[4];
-						coord[0] = t;
-						coord[1] = z;
-						coord[2] = y;
-						coord[3] = x;
-						int spacepos = get_nspace(coord, parameters);
-						hmc_complex destElem [NC][NC];
-
-						Matrixsu3 srcElem = source_in[get_global_link_pos((l + 1) % NDIM, spacepos, t, parameters)];
-						destElem[0][0] = srcElem.e00;
-						destElem[0][1] = srcElem.e01;
-						destElem[0][2] = srcElem.e02;
-						destElem[1][0] = srcElem.e10;
-						destElem[1][1] = srcElem.e11;
-						destElem[1][2] = srcElem.e12;
-						destElem[2][0] = srcElem.e20;
-						destElem[2][1] = srcElem.e21;
-						destElem[2][2] = srcElem.e22;
-
-						for (int m = 0; m < NC; m++) {
-							for (int n = 0; n < NC; n++) {
-								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
-								make_big_endian_from_float(&dest[pos * sizeof(hmc_float)], destElem[m][n].re);
-								make_big_endian_from_float(&dest[(pos + 1) * sizeof(hmc_float)], destElem[m][n].im);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
 
 //move to namespace ildg_io
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float plaquette, sourcefileparameters& parameters_source)

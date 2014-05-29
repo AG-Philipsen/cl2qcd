@@ -24,8 +24,10 @@
 #include "../meta/util.hpp"
 #include "checksum.h"
 #include <cassert>
+#include "../meta/version.hpp"
 
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
+static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
@@ -58,13 +60,27 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	parameters_source_in = parameters_source;
 
 	return gf_host;
-/*
-	send_gaugefield_to_buffers(buffers, gf_host, *parameters);
-	delete[] gf_host;
-	
-	hmc_float plaq = physics::observables::measurePlaquette(this);
-	check_sourcefileparameters(*parameters, plaq, parameters_source);
-*/
+}
+
+void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf, const meta::Inputparameters * parameters, int number, double plaq)
+{
+	const size_t NTIME = parameters->get_ntime();
+	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * NTIME * sizeof(hmc_float);
+	char * gaugefield_buf = new char[gaugefield_buf_size];
+
+	//these are not yet used...
+	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
+
+
+	copy_gaugefield_to_ildg_format(gaugefield_buf, host_buf, *parameters);
+
+	const size_t NSPACE = parameters->get_nspace();
+
+	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, *parameters);
+
+	write_gaugefield(gaugefield_buf, gaugefield_buf_size, checksum, NSPACE, NSPACE, NSPACE, NTIME, parameters->get_precision(), number, plaq, parameters->get_beta(), parameters->get_kappa(), parameters->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+
+	delete[] gaugefield_buf;
 
 }
 
@@ -188,3 +204,45 @@ static void make_big_endian_from_float(char* out, const hmc_float in)
 	}
 }
 
+static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters)
+{
+	const size_t NSPACE = parameters.get_nspace();
+	for (int t = 0; t < parameters.get_ntime(); t++) {
+		for (size_t x = 0; x < NSPACE; x++) {
+			for (size_t y = 0; y < NSPACE; y++) {
+				for (size_t z = 0; z < NSPACE; z++) {
+					for (int l = 0; l < NDIM; l++) {
+						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
+						int coord[4];
+						coord[0] = t;
+						coord[1] = z;
+						coord[2] = y;
+						coord[3] = x;
+						int spacepos = get_nspace(coord, parameters);
+						hmc_complex destElem [NC][NC];
+
+						Matrixsu3 srcElem = source_in[get_global_link_pos((l + 1) % NDIM, spacepos, t, parameters)];
+						destElem[0][0] = srcElem.e00;
+						destElem[0][1] = srcElem.e01;
+						destElem[0][2] = srcElem.e02;
+						destElem[1][0] = srcElem.e10;
+						destElem[1][1] = srcElem.e11;
+						destElem[1][2] = srcElem.e12;
+						destElem[2][0] = srcElem.e20;
+						destElem[2][1] = srcElem.e21;
+						destElem[2][2] = srcElem.e22;
+
+						for (int m = 0; m < NC; m++) {
+							for (int n = 0; n < NC; n++) {
+								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
+								make_big_endian_from_float(&dest[pos * sizeof(hmc_float)], destElem[m][n].re);
+								make_big_endian_from_float(&dest[(pos + 1) * sizeof(hmc_float)], destElem[m][n].im);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
