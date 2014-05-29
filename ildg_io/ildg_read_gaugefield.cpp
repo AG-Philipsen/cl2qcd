@@ -269,12 +269,12 @@ void get_checksum(const char * buffer, int size, sourcefileparameters & paramete
 
 //NOTE: these two functions are similar to some in the meta package,
 //      but I would rather not include the latter here.
-int calcNumberOfEntriesForDiracFermionfield(const sourcefileparameters params)
+int calcNumberOfEntriesForDiracFermionfield(const sourcefileparameters_values params)
 {
   //latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
   return (int) (params.lx_source) * (params.ly_source) * (params.lz_source) * (params.lt_source) * NC * NSPIN * 2;
 }
-int calcNumberOfEntriesForGaugefield(const sourcefileparameters params)
+int calcNumberOfEntriesForGaugefield(const sourcefileparameters_values params)
 {
   // latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
   return (int) (params.lx_source) * (params.ly_source) * (params.lz_source) * (params.lt_source) * 2 * 4 * 9;
@@ -282,14 +282,19 @@ int calcNumberOfEntriesForGaugefield(const sourcefileparameters params)
 
 int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
 {
-  if(fieldType == "diracFermion") {
-    return calcNumberOfEntriesForDiracFermionfield(*this);
-  } else if( fieldType == "su3gauge") {
-    return calcNumberOfEntriesForGaugefield(*this);
-  } else {
-	  throw Print_Error_Message("Unknown ildg field type \"" + fieldType + "\"", __FILE__, __LINE__);
-    return 0; //to get rid of a warning
-  }
+	if(fieldType == "diracFermion") 
+	{
+		return calcNumberOfEntriesForDiracFermionfield( *this );
+	} 
+	else if( fieldType == "su3gauge") 
+	{
+		return calcNumberOfEntriesForGaugefield( *this);
+	} 
+	else 
+	{
+		throw Print_Error_Message("Unknown ildg field type \"" + fieldType + "\"", __FILE__, __LINE__);
+	}
+	return 0; //to get rid of a warning
 }
 
 void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
@@ -350,6 +355,7 @@ bool sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
 
 LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
 {
+	logger.fatal()<<  "run";
 	LimeFileProperties props;
 
 	if ( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) == 1)
@@ -360,7 +366,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	{
 		//todo: is this meaningful?
 		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
-		if ( sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
+		if ( sourcefileparameters::limeFileProp.numberOfFermionicEntries > 1 )
 		{
 			logger.warn() << "Reading more than one fermion field is not implemented yet!";
 		}
@@ -396,7 +402,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			logger_readLimeEntry( lime_type);
 			get_XLF_infos(buffer, *this);
 		}
-		
+
 		if ( limeEntryTypes["ildg"] == lime_type )
 		{
 			std::map<std::string, std::string> helperMap;
@@ -420,7 +426,8 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	}
 
 	props.numberOfEntries = 1;
-	
+
+	logger.fatal() << "here";
 	return props;
 }
 
