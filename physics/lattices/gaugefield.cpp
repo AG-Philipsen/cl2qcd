@@ -101,8 +101,12 @@ void physics::lattices::Gaugefield::initializeHotOrCold(bool hot)
 	}
 }
 
+#include "../../ildg_io/ildgIo.hpp"
 void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ildgfile)
 {
+
+/*
+
 	auto parameters = system.get_inputparameters();
 	Matrixsu3 * gf_host = new Matrixsu3[meta::get_vol4d(parameters) * 4];
 
@@ -123,13 +127,17 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
 
-	send_gaugefield_to_buffers(buffers, gf_host, parameters);
+*/
+	//todo: I guess parameters_source can be removed completely from the gaugefield class!
+	const meta::Inputparameters * parameters = this->getParameters();
+	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, parameters, parameters_source);
 
-	delete[] gf_ildg;
+	send_gaugefield_to_buffers(buffers, gf_host, *parameters);
+
 	delete[] gf_host;
 
 	hmc_float plaq = physics::observables::measurePlaquette(this);
-	check_sourcefileparameters(parameters, plaq, parameters_source);
+	check_sourcefileparameters(*parameters, plaq, parameters_source);
 }
 
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system)

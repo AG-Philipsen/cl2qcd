@@ -25,6 +25,7 @@ add_library(ildg_io
 	limeUtilities.cpp
 	SourcefileParameters_values.cpp
 	ildgIo_gaugefield.cpp
+	ildgIo.cpp
 )
 
 target_link_libraries(ildg_io
