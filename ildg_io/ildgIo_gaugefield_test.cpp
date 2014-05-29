@@ -24,7 +24,7 @@
 #define BOOST_TEST_MODULE ildg_read_gaugefield
 #include <boost/test/unit_test.hpp>
 
-#include "ildg_read_gaugefield.h"
+#include "ildgIo_gaugefield.hpp"
 
 int expectedPrecision = 64;
 std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
