@@ -335,78 +335,6 @@ static void fillHelperMap_xml(std::map<std::string, std::string> & helperMap)
 	helperMap["lt"] = "";
 }
 
-void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes)
-{
-	if( limeEntryTypes["inverter"] == lime_type)
-	{
-		if ( limeFileProp.numberOfFermionicEntries > 1 )
-		{
-			logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
-			return;
-		}
-	
-		logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
-		
-		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_inverter_infos(buffer, *this);
-		delete[] buffer;
-		logger_readLimeEntrySuccess();
-
-		//todo: this should be moved elsewhere!
-		numberOfFermionFieldsRead++;
-	}
-}
-
-void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes)
-{
-	//!!read XLF info, only FIRST fermion is read!!
-	if(limeEntryTypes["xlf"]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
-	{
-		logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
-		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_XLF_infos(buffer, *this);
-		delete[] buffer;
-		logger_readLimeEntrySuccess();
-	}
-}
-
-void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes)
-{
-	//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
-	if
-		(
-			(limeEntryTypes["etmc propagator"] == lime_type || limeEntryTypes["ildg"] == lime_type) &&
-			limeFileProp.numberOfFermionicEntries < 2 
-			)
-	{
-
-		std::map<std::string, std::string> helperMap;
-		fillHelperMap_xml(helperMap);
-
-		logger.trace() << "\tfound XML-infos as lime_type";
-		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, nbytes, helperMap);
-		delete[] buffer;
-		
-		setParametersToValues_xlm(*this, helperMap);
-		num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
-
-		logger_readLimeEntrySuccess();
-	}
-}
-
-void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes)
-{
-	if(limeEntryTypes["scidac checksum"] == lime_type) 
-	{
-		logger_readLimeEntry( lime_type );
-		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_checksum(buffer, nbytes, *this);
-		delete[] buffer;
-		logger_readLimeEntrySuccess();
-	}
-}
-
 int sourcefileparameters::checkLimeEntryForFermionInformations(std::string lime_type)
 {
 	return limeEntryTypes["propagator"] == lime_type ? 1 : 0;
@@ -432,7 +360,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	{
 		//todo: is this meaningful?
 		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
-		if ( && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
+		if ( sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
 		{
 			logger.warn() << "Reading more than one fermion field is not implemented yet!";
 		}

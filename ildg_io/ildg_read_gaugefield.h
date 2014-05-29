@@ -57,10 +57,6 @@ public:
 	void readMetaDataFromLimeFile();
 	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
-	void checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes);
-	void checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes);
-	void checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes);
-	void checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData);
 	size_t	sizeOfGaugefieldBuffer();
 	void extractBinaryDataFromLimeEntry_NeedsDifferentName(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
