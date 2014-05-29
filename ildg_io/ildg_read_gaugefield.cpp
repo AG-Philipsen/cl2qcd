@@ -50,13 +50,21 @@ extern "C" {
 
 #define ENDIAN (htons(1) == 1)
 
-//todo: use these instead of hardcoded strings.
-//todo: move to .h ?
-//possible limeEntryTypes
-const std::vector<std::string> limeEntryTypes = {
-  "propagator-type", "xlf-info", "inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
-  "scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
+class LimeEntryTypes
+{
+public:
+	typedef std::map<std::string, std::string> Mapper;
+	static Mapper mapper;
+	std::string operator[](std::string key)
+	{
+		return mapper[key];
+	}
 };
+
+//todo: move to some .cpp file
+LimeEntryTypes::Mapper LimeEntryTypes::mapper = { {"propagator", "propagator-info"}, {"xlf", "xlf-info"} , {"inverter", "inverter-info"}, {"gauge-checksum-copy", "gauge-scidac-checksum-copy"}, {"etmc-propagator", "etmc-propagator-format"},  { "scidac binary data", "scidac-binary-data"}, {"scidac checksum", "scidac-checksum"}, {"ildg", "ildg-format"}, {"ildg binary data", "ildg-binary-data"}  };
+
+LimeEntryTypes limeEntryTypes;
 
 static std::string removeNewlines(std::string in)
 {
@@ -322,7 +330,7 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 
 void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
-	if( limeEntryTypes[2] == lime_type)
+	if( limeEntryTypes["inverter"] == lime_type)
 	{
 		if ( limeFileProp.numberOfFermionicEntries > 1 )
 		{
@@ -345,7 +353,7 @@ void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type,
 void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
 	//!!read XLF info, only FIRST fermion is read!!
-	if(limeEntryTypes[1]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
+	if(limeEntryTypes["xlf"]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
 	{
 		logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
@@ -384,7 +392,7 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, Lime
 	//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
 	if
 		(
-			(limeEntryTypes[4] == lime_type || limeEntryTypes[7] == lime_type) &&
+			(limeEntryTypes["etmc propagator"] == lime_type || limeEntryTypes["ildg"] == lime_type) &&
 			limeFileProp.numberOfFermionicEntries < 2 
 			)
 	{
@@ -406,9 +414,9 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, Lime
 
 void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes)
 {
-	if(limeEntryTypes[6] == lime_type) 
+	if(limeEntryTypes["scidac checksum"] == lime_type) 
 	{
-		logger_readLimeEntry( limeEntryTypes[6] );
+		logger_readLimeEntry( lime_type );
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
 		get_checksum(buffer, nbytes, *this);
 		delete[] buffer;
@@ -418,14 +426,14 @@ void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type
 
 int checkLimeEntryForFermionInformations(std::string lime_type)
 {
-	return limeEntryTypes[0] == lime_type ? 1 : 0;
+	return limeEntryTypes["propagator"] == lime_type ? 1 : 0;
 }
 
 int checkLimeEntryForBinaryData(std::string lime_type)
 {
 	return	( 
-		limeEntryTypes[5] == lime_type || 
-		limeEntryTypes[8] == lime_type
+		limeEntryTypes["scidac binary data"] == lime_type || 
+		limeEntryTypes["ildg binary data"] == lime_type
 		) ? 1 : 0;
 }
 
