@@ -21,24 +21,15 @@
  */
 
 #include "gaugefield.hpp"
-#include "../../meta/version.hpp"
 #include "../../meta/util.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../host_functionality/host_operations_gaugefield.h"
-#include "../../ildg_io/checksum.h"
 #include <fstream>
 #include "../../hardware/device.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
 #include "../observables/gaugeObservables.h"
 #include <cassert>
 #include "../../ildg_io/ildgIo.hpp"
-
-/**
- * Version number.
- *
- * @deprecated move this into some specific header or so
- */
-extern std::string const version;
 
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system);
 static void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers);
@@ -48,9 +39,6 @@ static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
-static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
-static hmc_float make_float_from_big_endian(const char* in);
-static void make_big_endian_from_float(char* out, const hmc_float in);
 static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params);
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
@@ -295,64 +283,6 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield::get_buffers() const noexcept
 {
 	return buffers;
-}
-
-static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
-{
-	const size_t elem_size = 4 * sizeof(Matrixsu3);
-
-	const size_t NT = inputparameters.get_ntime();
-	const size_t NS = inputparameters.get_nspace();
-
-	if(nbytes != (NT * NS * NS * NS * elem_size)) {
-		logger.error() << "Buffer does not contain a gaugefield!";
-		throw Invalid_Parameters("Buffer size not match possible gaugefield size", (NT * NS * NS * NS * elem_size), nbytes);
-	}
-
-	Checksum checksum;
-
-	size_t offset = 0;
-	for(uint32_t t = 0; t < NT; ++t) {
-		for(uint32_t z = 0; z < NS; ++z) {
-			for(uint32_t y = 0; y < NS; ++y) {
-				for(uint32_t x = 0; x < NS; ++x) {
-					assert(offset < nbytes);
-					uint32_t rank = ((t * NS + z) * NS + y) * NS + x;
-					checksum.accumulate(&buf[offset], elem_size, rank);
-					offset += elem_size;
-				}
-			}
-		}
-	}
-
-	return checksum;
-}
-
-static hmc_float make_float_from_big_endian(const char* in)
-{
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
-
-	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		val.b[i] = in[sizeof(hmc_float) - 1 - i];
-	}
-	return val.f;
-}
-
-static void make_big_endian_from_float(char* out, const hmc_float in)
-{
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
-
-	val.f = in;
-
-	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		out[i] = val.b[sizeof(hmc_float) - 1 - i];
-	}
 }
 
 void physics::lattices::Gaugefield::smear()
