@@ -38,7 +38,6 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const p
 static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
-static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
 static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params);
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
@@ -88,6 +87,24 @@ void physics::lattices::Gaugefield::initializeHotOrCold(bool hot)
 	}
 }
 
+//move to namespace ildg_io
+static void check_plaq(const hmc_float plaquette, sourcefileparameters& parameters_source)
+{
+	logger.info() << "Checking plaquette against sourcefile value...";
+	std::string msg = "Minor parameters do not match: ";
+	hmc_float float1, float2;
+	std::string testobj = msg + "plaquette";
+	float1 = plaquette;
+	float2 = parameters_source.plaquettevalue_source;
+	if(float1 != float2) {
+		logger.warn() << testobj;
+		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+	}
+
+	logger.info() << "...done";
+	return;
+}
+
 void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ildgfile)
 {
 	//todo: I guess parameters_source can be removed completely from the gaugefield class!
@@ -100,7 +117,7 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 
 	//todo: move this to ildgIo
 	hmc_float plaq = physics::observables::measurePlaquette(this);
-	check_sourcefileparameters(*parameters, plaq, parameters_source);
+	check_plaq(plaq, parameters_source);
 }
 
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system)
@@ -201,83 +218,6 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	ildgIo::writeGaugefieldToFile(outputfile, host_buf, parameters, number, plaq);
 
 	delete host_buf;
-}
-
-
-//move to namespace ildg_io
-static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float plaquette, sourcefileparameters& parameters_source)
-{
-	logger.info() << "Checking sourcefile parameters against inputparameters...";
-	//checking major parameters
-	int tmp1, tmp2;
-	std::string testobj;
-	std::string msg = "Major parameters do not match: ";
-
-	testobj = msg + "NT";
-	tmp1 = parameters.get_ntime();
-	tmp2 = parameters_source.lt_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NX";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lx_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NY";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.ly_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NZ";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lz_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "PRECISION";
-	tmp1 = parameters.get_precision();
-	tmp2 = parameters_source.prec_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-
-	//checking minor parameters
-	msg = "Minor parameters do not match: ";
-	hmc_float float1, float2;
-	testobj = msg + "plaquette";
-	float1 = plaquette;
-	float2 = parameters_source.plaquettevalue_source;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-	testobj = msg + "beta";
-	float1 = parameters.get_beta();
-	float2 = parameters_source.beta_source;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-	testobj = msg + "kappa";
-	float1 = parameters.get_kappa();
-	float2 = parameters_source.kappa_source;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-	testobj = msg + "mu";
-	float1 = parameters.get_mu();
-	float2 = parameters_source.mu_source;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-
-	logger.info() << "...done";
-	return;
 }
 
 const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield::get_buffers() const noexcept
