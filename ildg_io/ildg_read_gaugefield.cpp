@@ -171,27 +171,7 @@ void get_inverter_infos(const char * buffer, sourcefileparameters & parameters)
 	//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 }
 
-
-// from http://www.codecodex.com/wiki/Remove_blanks_from_a_string#C
-void trim(char * buff)
-{
-	int i = 0, j = 0;
-	int len = (int)strlen(buff);
-	while (i != len) {
-		if (buff[i] != ' ')
-			buff[j++] = buff[i];
-		i++;
-	}
-	buff[j] = 0;
-}
-
-
-// http://xmlsoft.org/xmlreader.html
-// compile with gcc ReadXML.c $(xml2-config --cflags) -Wall $(xml2-config --libs)
-
 const int xmlNodeType_startElement = 1;
-const int xmlNodeType_endElement = 15;
-
 
 void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, std::string> * map)
 {
@@ -217,32 +197,10 @@ void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, s
 }
 
 
-static void setParametersToValues_xlm(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
-{
-	parameters.prec_source = castStringToInt(helperMap["precision"]);
-	parameters.lx_source = castStringToInt(helperMap["lx"]);
-	parameters.ly_source = castStringToInt(helperMap["ly"]);
-	parameters.lz_source = castStringToInt(helperMap["lz"]);
-	parameters.lt_source = castStringToInt(helperMap["lt"]);
-	parameters.flavours_source = castStringToInt(helperMap["flavours"]);
-
-	parameters.field_source = helperMap["field"];
-}
-
-void get_XML_infos(const char * buffer, int size, sourcefileparameters & parameters)
+void get_XML_infos(const char * buffer, int size, std::map<std::string, std::string> & helperMap)
 {
 	xmlTextReaderPtr reader;
 	int returnValue;
-
-	std::map<std::string, std::string> helperMap;
-	helperMap["field"] = "";
-	helperMap["precision"] = "";
-	//todo: this is not in su3gauge entries! Distinct between cases
-	helperMap["flavours"] = "0";
-	helperMap["lx"] = "";
-	helperMap["ly"] = "";
-	helperMap["lz"] = "";
-	helperMap["lt"] = "";
 
 	//This fct. takes a URL as 3rd argument, but this seems to be unimportant here, so it is left out.
 	//See http://xmlsoft.org/html/libxml-xmlreader.html#xmlReaderForMemory
@@ -263,8 +221,6 @@ void get_XML_infos(const char * buffer, int size, sourcefileparameters & paramet
 	} 
 	else 
 		throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
-
-	setParametersToValues_xlm(parameters, helperMap);
 }
 
 //todo: merge with xml fcts. above!!
@@ -399,6 +355,30 @@ void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, Lime
 	}
 }
 
+static void setParametersToValues_xlm(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+{
+	parameters.prec_source = castStringToInt(helperMap["precision"]);
+	parameters.lx_source = castStringToInt(helperMap["lx"]);
+	parameters.ly_source = castStringToInt(helperMap["ly"]);
+	parameters.lz_source = castStringToInt(helperMap["lz"]);
+	parameters.lt_source = castStringToInt(helperMap["lt"]);
+	parameters.flavours_source = castStringToInt(helperMap["flavours"]);
+
+	parameters.field_source = helperMap["field"];
+}
+
+static void fillHelperMap_xml(std::map<std::string, std::string> & helperMap)
+{
+	helperMap["field"] = "";
+	helperMap["precision"] = "";
+	//todo: this is not in su3gauge entries! Distinct between cases
+	helperMap["flavours"] = "0";
+	helperMap["lx"] = "";
+	helperMap["ly"] = "";
+	helperMap["lz"] = "";
+	helperMap["lt"] = "";
+}
+
 void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
 	//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
@@ -408,11 +388,18 @@ void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, Lime
 			limeFileProp.numberOfFermionicEntries < 2 
 			)
 	{
+
+		std::map<std::string, std::string> helperMap;
+		fillHelperMap_xml(helperMap);
+
 		logger.trace() << "\tfound XML-infos as lime_type";
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_XML_infos(buffer, nbytes, *this);
+		get_XML_infos(buffer, nbytes, helperMap);
 		delete[] buffer;
+		
+		setParametersToValues_xlm(*this, helperMap);
 		num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
+
 		logger_readLimeEntrySuccess();
 	}
 }
