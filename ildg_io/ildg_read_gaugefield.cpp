@@ -178,11 +178,12 @@ void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, s
 		{
 			xmlTextReaderRead(reader);
 			value = xmlTextReaderValue(reader);
-			std::string tmp2 (reinterpret_cast<char*> (value) );
-			it->second = tmp2;
-			xmlFree(value);
+			if(value != nullptr) {
+				std::string tmp2 (reinterpret_cast<char*> (value) );
+				it->second = tmp2;
+				xmlFree(value);
+			}
 		}
-
 	}
 
 	xmlFree(name);
@@ -212,59 +213,6 @@ void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * bu
 	} 
 	else 
 		throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
-}
-
-//todo: merge with xml fcts. above!!
-void get_checksum(const char * buffer, int size, sourcefileparameters & parameters)
-{
-	uint32_t suma, sumb;
-
-	// see comment in get_XML_infos(..)
-	xmlTextReaderPtr reader = xmlReaderForMemory(buffer, size, NULL, NULL, 0);
-	if(reader == NULL) {
-	  throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
-	}
-
-	int xml_state = xmlTextReaderRead(reader);
-	while(xml_state == 1) {
-		std::stringstream name_buf;
-		xmlChar* name_xml = xmlTextReaderName(reader);
-		name_buf << name_xml;
-		free(name_xml);
-		std::string name = name_buf.str();
-
-
-		if("suma" == name) {
-			xmlTextReaderRead(reader);
-			xmlChar * value = xmlTextReaderValue(reader);
-			if(value != nullptr) {
-				std::stringstream tmp;
-				tmp << value;
-				tmp >> std::hex >> suma;
-				free(value);
-			}
-			xmlTextReaderRead(reader);
-		}
-		if("sumb" == name) {
-			xmlTextReaderRead(reader);
-			xmlChar * value = xmlTextReaderValue(reader);
-			if(value != nullptr) {
-				std::stringstream tmp;
-				tmp << value;
-				tmp >> std::hex >> sumb;
-				free(value);
-			}
-			xmlTextReaderRead(reader);
-		}
-
-		xml_state = xmlTextReaderRead(reader);
-	}
-	if(xml_state == -1) {
-	  throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
-	}
-	xmlFreeTextReader(reader);
-
-	parameters.checksum =  Checksum(suma, sumb);
 }
 
 //NOTE: these two functions are similar to some in the meta package,
@@ -323,7 +271,6 @@ static void setParametersToValues_xlm(sourcefileparameters & parameters, std::ma
 	parameters.ly_source = castStringToInt(helperMap["ly"]);
 	parameters.lz_source = castStringToInt(helperMap["lz"]);
 	parameters.lt_source = castStringToInt(helperMap["lt"]);
-	parameters.flavours_source = castStringToInt(helperMap["flavours"]);
 
 	parameters.field_source = helperMap["field"];
 }
@@ -332,12 +279,29 @@ static void fillHelperMap_xml(std::map<std::string, std::string> & helperMap)
 {
 	helperMap["field"] = "";
 	helperMap["precision"] = "";
-	//todo: this is not in su3gauge entries! Distinct between cases
-	helperMap["flavours"] = "0";
 	helperMap["lx"] = "";
 	helperMap["ly"] = "";
 	helperMap["lz"] = "";
 	helperMap["lt"] = "";
+}
+
+static void fillHelperMap_scidacChecksum(std::map<std::string, std::string> & helperMap)
+{
+	helperMap["suma"] = "";
+	helperMap["sumb"] = "";
+}
+
+static void setParametersToValues_scidacChecksum(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+{
+	uint32_t suma, sumb;
+	
+	std::stringstream tmp, tmp2;
+	tmp << helperMap["suma"];
+	tmp >> std::hex >> suma;
+	tmp2 << helperMap["sumb"];
+	tmp2 >> std::hex >> sumb;
+	
+	parameters.checksum =  Checksum(suma, sumb);
 }
 
 int sourcefileparameters::checkLimeEntryForFermionInformations(std::string lime_type)
@@ -355,7 +319,6 @@ bool sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
 
 LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
 {
-	logger.fatal()<<  "run";
 	LimeFileProperties props;
 
 	if ( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) == 1)
@@ -377,7 +340,11 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 		if(limeEntryTypes["scidac checksum"] == lime_type) 
 		{
 			logger_readLimeEntry( lime_type );
-			get_checksum(buffer,  limeHeaderData.numberOfBytes, *this);
+
+			std::map<std::string, std::string> helperMap;
+			fillHelperMap_scidacChecksum(helperMap);
+			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
+			setParametersToValues_scidacChecksum(*this, helperMap);		  
 		}
 
 		if( limeEntryTypes["inverter"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2)
@@ -427,7 +394,6 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 
 	props.numberOfEntries = 1;
 
-	logger.fatal() << "here";
 	return props;
 }
 
