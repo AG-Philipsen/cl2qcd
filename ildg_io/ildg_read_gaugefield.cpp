@@ -430,7 +430,12 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	}
 	else
 	{
+		//todo: is this meaningful?
 		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
+		if ( && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
+		{
+			logger.warn() << "Reading more than one fermion field is not implemented yet!";
+		}
 
 		char * buffer = createBufferAndReadLimeDataIntoIt(r,  limeHeaderData.numberOfBytes);
 		std::string lime_type = limeHeaderData.limeEntryType;
@@ -441,17 +446,15 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			get_checksum(buffer,  limeHeaderData.numberOfBytes, *this);
 		}
 
-		if( limeEntryTypes["inverter"] == lime_type)
+		if( limeEntryTypes["inverter"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2)
 		{
 			if ( limeFileProp.numberOfFermionicEntries > 1 )
 			{
 				logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
-				
 			}
 			else
 			{
-				logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
-				
+				logger_readLimeEntry( lime_type );
 				get_inverter_infos(buffer, *this);
 				
 				//todo: this should be moved elsewhere!
@@ -460,20 +463,14 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 		}
 		
 		//!!read XLF info, only FIRST fermion is read!!
-		if(limeEntryTypes["xlf"]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
+		if(limeEntryTypes["xlf"]  == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2) 
 		{
-			logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
+			logger_readLimeEntry( lime_type);
 			get_XLF_infos(buffer, *this);
 		}
 		
-		//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
-		if
-			(
-				(limeEntryTypes["etmc propagator"] == lime_type || limeEntryTypes["ildg"] == lime_type) &&
-				sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 
-				)
+		if ( limeEntryTypes["ildg"] == lime_type )
 		{
-			
 			std::map<std::string, std::string> helperMap;
 			fillHelperMap_xml(helperMap);
 			
@@ -482,6 +479,12 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			
 			setParametersToValues_xlm(*this, helperMap);
 			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
+		}	
+
+		//!!read etmc-propagator-format, only FIRST fermion is read!!
+		if( limeEntryTypes["etmc propagator"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
+		{
+			throw std::logic_error("Reading of etmc propagator not yet implemented. Aborting...");
 		}	
 		
 		delete[] buffer;
