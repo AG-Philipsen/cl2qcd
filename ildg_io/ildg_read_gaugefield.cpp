@@ -92,12 +92,12 @@ public:
 
 static double castStringToDouble(std::string in)
 {
-  return boost::lexical_cast<double>(in);
+	return boost::lexical_cast<double>(in);
 }
 
 static int castStringToInt(std::string in)
 {
-  return boost::lexical_cast<int>(in);
+	return boost::lexical_cast<int>(in);
 }
 
 static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
@@ -132,7 +132,7 @@ static void setParametersToXlfValues(sourcefileparameters & parameters, std::map
 	parameters.date_source = helperMap["date"].value;
 }
 
-void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  helperMap)
+static void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  helperMap)
 {
 	//todo: find out about ::iterator
 	for (std::map<std::string, helper>::iterator it = helperMap.begin(); it != helperMap.end(); it++)
@@ -151,7 +151,7 @@ void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  help
 	}
 }
 
-void sourcefileparameters::get_XLF_infos(const char * buffer)
+void get_XLF_infos(const char * buffer, sourcefileparameters & parameters)
 {
 	std::string str(buffer);
 	//todo: make class out of this
@@ -159,10 +159,10 @@ void sourcefileparameters::get_XLF_infos(const char * buffer)
 
 	fillHelperMap_xlf(helperMap);
 	mapStringToHelperMap(str, helperMap);
-	setParametersToXlfValues(*this, helperMap);
+	setParametersToXlfValues(parameters, helperMap);
 }
 
-void sourcefileparameters::get_inverter_infos(const char * buffer)
+void get_inverter_infos(const char * buffer, sourcefileparameters & parameters)
 {
 	std::string str(buffer);
 	logger.fatal() << str;
@@ -171,7 +171,7 @@ void sourcefileparameters::get_inverter_infos(const char * buffer)
 	//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 }
 
-void sourcefileparameters::get_XML_infos(const char * buffer, int size)
+void get_XML_infos(const char * buffer, int size, sourcefileparameters & parameters)
 {
 	xmlTextReaderPtr reader;
 	int returnValue;
@@ -194,18 +194,17 @@ void sourcefileparameters::get_XML_infos(const char * buffer, int size)
 		xmlFreeTextReader(reader);
 	} else throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
 
-	prec_source = tmpArray[0];
-	flavours_source = tmpArray[1];
-	lx_source = tmpArray[2];
-	ly_source = tmpArray[3];
-	lz_source = tmpArray[4];
-	lt_source = tmpArray[5];
-	field_source = field;
-	num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
+	parameters.prec_source = tmpArray[0];
+	parameters.flavours_source = tmpArray[1];
+	parameters.lx_source = tmpArray[2];
+	parameters.ly_source = tmpArray[3];
+	parameters.lz_source = tmpArray[4];
+	parameters.lt_source = tmpArray[5];
+	parameters.field_source = field;
 }
 
 //todo: merge with xml fcts. above!!
-Checksum sourcefileparameters::get_checksum(const char * buffer, int size)
+void get_checksum(const char * buffer, int size, sourcefileparameters & parameters)
 {
 	uint32_t suma, sumb;
 
@@ -254,7 +253,7 @@ Checksum sourcefileparameters::get_checksum(const char * buffer, int size)
 	}
 	xmlFreeTextReader(reader);
 
-	return Checksum(suma, sumb);
+	parameters.checksum =  Checksum(suma, sumb);
 }
 
 //NOTE: these two functions are similar to some in the meta package,
@@ -284,21 +283,21 @@ int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldT
 
 void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
 {
-  if( returnValueFromLimeRecordRead != LIME_SUCCESS ) {
-    std::ostringstream errorMessage;
-    errorMessage << "\t\tlimeReaderNextRecord returned status = "  << returnValueFromLimeRecordRead;
-    throw Print_Error_Message( errorMessage.str(), __FILE__, __LINE__);
-  }
+	if( returnValueFromLimeRecordRead != LIME_SUCCESS ) {
+		std::ostringstream errorMessage;
+		errorMessage << "\t\tlimeReaderNextRecord returned status = "  << returnValueFromLimeRecordRead;
+		throw Print_Error_Message( errorMessage.str(), __FILE__, __LINE__);
+	}
 }
 
 char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 {
-  char * buffer = new char[nbytes + 1];
-  int error = limeReaderReadData(buffer, &nbytes, r);
-  if(error != 0) 
-    throw Print_Error_Message("Error while reading data from LIME file...", __FILE__, __LINE__);
+	char * buffer = new char[nbytes + 1];
+	int error = limeReaderReadData(buffer, &nbytes, r);
+	if(error != 0) 
+		throw Print_Error_Message("Error while reading data from LIME file...", __FILE__, __LINE__);
 	buffer[nbytes] = 0;
-  return buffer;
+	return buffer;
 }
 
 void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type, LimeReader *r, size_t nbytes)
@@ -314,7 +313,7 @@ void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type,
 		logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
 		
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_inverter_infos(buffer);
+		get_inverter_infos(buffer, *this);
 		delete[] buffer;
 		logger_readLimeEntrySuccess();
 
@@ -325,56 +324,58 @@ void sourcefileparameters::checkLimeEntryForInverterInfos(std::string lime_type,
 
 void sourcefileparameters::checkLimeEntryForXlfInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
-  //!!read XLF info, only FIRST fermion is read!!
-  if(limeEntryTypes[1]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
-  {
-      logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
-      char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-      get_XLF_infos(buffer);
-      delete[] buffer;
-      logger_readLimeEntrySuccess();
-  }
+	//!!read XLF info, only FIRST fermion is read!!
+	if(limeEntryTypes[1]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
+	{
+		logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
+		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
+		get_XLF_infos(buffer, *this);
+		delete[] buffer;
+		logger_readLimeEntrySuccess();
+	}
 }
 
 void sourcefileparameters::checkLimeEntryForXlmInfos(std::string lime_type, LimeReader *r, size_t nbytes)
 {
-  //!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
-	if(
+	//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
+	if
+		(
 			(limeEntryTypes[4] == lime_type || limeEntryTypes[7] == lime_type) &&
 			limeFileProp.numberOfFermionicEntries < 2 
-		) 
+			)
 	{
 		logger.trace() << "\tfound XML-infos as lime_type";
 		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-		get_XML_infos(buffer, nbytes);
+		get_XML_infos(buffer, nbytes, *this);
 		delete[] buffer;
+		num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
 		logger_readLimeEntrySuccess();
-  }
+	}
 }
 
 void sourcefileparameters::checkLimeEntryForScidacChecksum(std::string lime_type, LimeReader *r, size_t nbytes)
 {
 	if(limeEntryTypes[6] == lime_type) 
 	{
-    logger_readLimeEntry( limeEntryTypes[6] );
-    char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
-    checksum = get_checksum(buffer, nbytes);
-    delete[] buffer;
+		logger_readLimeEntry( limeEntryTypes[6] );
+		char * buffer = createBufferAndReadLimeDataIntoIt(r, nbytes);
+		get_checksum(buffer, nbytes, *this);
+		delete[] buffer;
 		logger_readLimeEntrySuccess();
-  }
+	}
 }
 
 int checkLimeEntryForFermionInformations(std::string lime_type)
 {
-  return limeEntryTypes[0] == lime_type ? 1 : 0;
+	return limeEntryTypes[0] == lime_type ? 1 : 0;
 }
 
 int checkLimeEntryForBinaryData(std::string lime_type)
 {
 	return	( 
-						limeEntryTypes[5] == lime_type || 
-						limeEntryTypes[8] == lime_type
-					) ? 1 : 0;
+		limeEntryTypes[5] == lime_type || 
+		limeEntryTypes[8] == lime_type
+		) ? 1 : 0;
 }
 
 LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
@@ -383,14 +384,14 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
  
 	props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
     
-  checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-  
-  checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-  
-  checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-  
-  checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-
+	checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+	
+	checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+	
+	checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+	
+	checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+	
 	props.numberOfBinaryDataEntries = checkLimeEntryForBinaryData(limeHeaderData.limeEntryType);
 	props.numberOfEntries = 1;
 	

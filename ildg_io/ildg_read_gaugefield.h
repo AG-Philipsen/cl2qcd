@@ -55,9 +55,6 @@ public:
 	
  private:
 	void readMetaDataFromLimeFile();
-	void get_XML_infos(const char * buffer, int size);
-	void get_XLF_infos(const char * buffer);
-	void get_inverter_infos(const char * buffer);
 	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	int calcNumberOfEntriesForDiracFermionfield();
@@ -73,7 +70,6 @@ public:
 	void readLimeFile(char ** destination);
 	void extractMetadataFromLimeFile();
 	void extractDataFromLimeFile(char ** destination);
-	Checksum get_checksum(const char * buffer, int size);
 	void extractInformationFromLimeEntry(LimeReader * r, char ** destination);
 	void goThroughLimeRecords(LimeReader * r, char ** destination);
 
