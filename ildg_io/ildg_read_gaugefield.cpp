@@ -38,7 +38,7 @@ extern "C" {
 #include <arpa/inet.h>
 }
 
-#include "parser_utils.h"
+//#include "parser_utils.h"
 
 #include <string>
 #include <algorithm>    // copy
@@ -115,7 +115,7 @@ static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
  	helperMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 }
 
-static void setParametersToXlfValues(sourcefileparameters & parameters, std::map<std::string, helper>  helperMap)
+static void setParametersToValues_xlf(sourcefileparameters & parameters, std::map<std::string, helper>  helperMap)
 {
 	parameters.plaquettevalue_source = castStringToDouble(helperMap["plaquette"].value);
 	parameters.kappa_source = castStringToDouble(helperMap["kappa"].value);
@@ -159,7 +159,7 @@ void get_XLF_infos(const char * buffer, sourcefileparameters & parameters)
 
 	fillHelperMap_xlf(helperMap);
 	mapStringToHelperMap(str, helperMap);
-	setParametersToXlfValues(parameters, helperMap);
+	setParametersToValues_xlf(parameters, helperMap);
 }
 
 void get_inverter_infos(const char * buffer, sourcefileparameters & parameters)
@@ -171,12 +171,78 @@ void get_inverter_infos(const char * buffer, sourcefileparameters & parameters)
 	//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 }
 
+
+// from http://www.codecodex.com/wiki/Remove_blanks_from_a_string#C
+void trim(char * buff)
+{
+	int i = 0, j = 0;
+	int len = (int)strlen(buff);
+	while (i != len) {
+		if (buff[i] != ' ')
+			buff[j++] = buff[i];
+		i++;
+	}
+	buff[j] = 0;
+}
+
+
+// http://xmlsoft.org/xmlreader.html
+// compile with gcc ReadXML.c $(xml2-config --cflags) -Wall $(xml2-config --libs)
+
+const int xmlNodeType_startElement = 1;
+const int xmlNodeType_endElement = 15;
+
+
+void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, std::string> * map)
+{
+	xmlChar *name, *value;
+	name = xmlTextReaderName(reader);
+	int type = xmlTextReaderNodeType(reader);
+	std::string tmp(reinterpret_cast<char*> (name) );
+
+	for (std::map<std::string, std::string>::iterator it = map->begin(); it != map->end(); it++)
+	{
+		if(it->first == tmp && type == xmlNodeType_startElement)
+		{
+			xmlTextReaderRead(reader);
+			value = xmlTextReaderValue(reader);
+			std::string tmp2 (reinterpret_cast<char*> (value) );
+			it->second = tmp2;
+			xmlFree(value);
+		}
+
+	}
+
+	xmlFree(name);
+}
+
+
+static void setParametersToValues_xlm(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+{
+	parameters.prec_source = castStringToInt(helperMap["precision"]);
+	parameters.lx_source = castStringToInt(helperMap["lx"]);
+	parameters.ly_source = castStringToInt(helperMap["ly"]);
+	parameters.lz_source = castStringToInt(helperMap["lz"]);
+	parameters.lt_source = castStringToInt(helperMap["lt"]);
+	parameters.flavours_source = castStringToInt(helperMap["flavours"]);
+
+	parameters.field_source = helperMap["field"];
+}
+
 void get_XML_infos(const char * buffer, int size, sourcefileparameters & parameters)
 {
 	xmlTextReaderPtr reader;
 	int returnValue;
-	int tmpArray[6];
-	char field[100];
+
+	std::map<std::string, std::string> helperMap;
+	helperMap["field"] = "";
+	helperMap["precision"] = "";
+	//todo: this is not in su3gauge entries! Distinct between cases
+	helperMap["flavours"] = "0";
+	helperMap["lx"] = "";
+	helperMap["ly"] = "";
+	helperMap["lz"] = "";
+	helperMap["lt"] = "";
 
 	//This fct. takes a URL as 3rd argument, but this seems to be unimportant here, so it is left out.
 	//See http://xmlsoft.org/html/libxml-xmlreader.html#xmlReaderForMemory
@@ -184,23 +250,21 @@ void get_XML_infos(const char * buffer, int size, sourcefileparameters & paramet
 
 	if (reader != NULL) {
 		returnValue = xmlTextReaderRead(reader);
-		while (returnValue == 1) {
-			get_XML_info_simple(reader, tmpArray, field);
+		while (returnValue == 1) 
+		{
+			extractXmlValuesBasedOnMap(reader, &helperMap);
 			returnValue = xmlTextReaderRead(reader);
 		}
-		if (returnValue == -1) {
-		  throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
+		if (returnValue == -1) 
+		{
+			throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
 		}
 		xmlFreeTextReader(reader);
-	} else throw Print_Error_Message( "There was an error the XML parser...", __FILE__, __LINE__);
+	} 
+	else 
+		throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
 
-	parameters.prec_source = tmpArray[0];
-	parameters.flavours_source = tmpArray[1];
-	parameters.lx_source = tmpArray[2];
-	parameters.ly_source = tmpArray[3];
-	parameters.lz_source = tmpArray[4];
-	parameters.lt_source = tmpArray[5];
-	parameters.field_source = field;
+	setParametersToValues_xlm(parameters, helperMap);
 }
 
 //todo: merge with xml fcts. above!!
@@ -276,7 +340,7 @@ int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldT
   } else if( fieldType == "su3gauge") {
     return calcNumberOfEntriesForGaugefield();
   } else {
-    throw Print_Error_Message("Unknown ildg field type...", __FILE__, __LINE__);
+	  throw Print_Error_Message("Unknown ildg field type \"" + fieldType + "\"", __FILE__, __LINE__);
     return 0; //to get rid of a warning
   }
 }
