@@ -143,26 +143,6 @@ static void mapStringToHelperMap(std::string str, std::map<std::string, helper> 
 	}
 }
 
-void get_XLF_infos(const char * buffer, sourcefileparameters & parameters)
-{
-	std::string str(buffer);
-	//todo: make class out of this
-	std::map<std::string, helper> helperMap;
-
-	fillHelperMap_xlf(helperMap);
-	mapStringToHelperMap(str, helperMap);
-	setParametersToValues_xlf(parameters, helperMap);
-}
-
-void get_inverter_infos(const char * buffer, sourcefileparameters & parameters)
-{
-	std::string str(buffer);
-	logger.fatal() << str;
-	throw std::logic_error("parsing of inverter infos is not implemented yet. Aborting...");
-	//todo: implement similar to xlf infos parsing
-	//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
-}
-
 const int xmlNodeType_startElement = 1;
 
 void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, std::string> * map)
@@ -264,7 +244,7 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 	return buffer;
 }
 
-static void setParametersToValues_xlm(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+static void setParametersToValues_ildg(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
 {
 	parameters.prec_source = castStringToInt(helperMap["precision"]);
 	parameters.lx_source = castStringToInt(helperMap["lx"]);
@@ -275,7 +255,7 @@ static void setParametersToValues_xlm(sourcefileparameters & parameters, std::ma
 	parameters.field_source = helperMap["field"];
 }
 
-static void fillHelperMap_xml(std::map<std::string, std::string> & helperMap)
+static void fillHelperMap_ildg(std::map<std::string, std::string> & helperMap)
 {
 	helperMap["field"] = "";
 	helperMap["precision"] = "";
@@ -306,7 +286,11 @@ static void setParametersToValues_scidacChecksum(sourcefileparameters & paramete
 
 int sourcefileparameters::checkLimeEntryForFermionInformations(std::string lime_type)
 {
-	return limeEntryTypes["propagator"] == lime_type ? 1 : 0;
+	return ( 
+		limeEntryTypes["propagator"] == lime_type || 
+		limeEntryTypes["inverter"] == lime_type || 
+		limeEntryTypes["etmc-propagator"] == lime_type
+		) ? 1 : 0;
 }
 
 bool sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
@@ -325,6 +309,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	{
 		props.numberOfBinaryDataEntries = 1;		
 	}
+	//todo: create class for the different cases
 	else
 	{
 		//todo: is this meaningful?
@@ -356,33 +341,38 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			else
 			{
 				logger_readLimeEntry( lime_type );
-				get_inverter_infos(buffer, *this);
+				throw std::logic_error("parsing of inverter infos is not implemented yet. Aborting...");
+				//todo: implement similar to xlf infos parsing
+				//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 				
 				//todo: this should be moved elsewhere!
 				numberOfFermionFieldsRead++;
 			}
 		}
 		
-		//!!read XLF info, only FIRST fermion is read!!
 		if(limeEntryTypes["xlf"]  == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2) 
 		{
 			logger_readLimeEntry( lime_type);
-			get_XLF_infos(buffer, *this);
+			std::string str(buffer);
+			std::map<std::string, helper> helperMap;			
+			fillHelperMap_xlf(helperMap);
+
+			mapStringToHelperMap(str, helperMap);
+			setParametersToValues_xlf(*this, helperMap);
 		}
 
 		if ( limeEntryTypes["ildg"] == lime_type )
 		{
+			logger_readLimeEntry( lime_type);
 			std::map<std::string, std::string> helperMap;
-			fillHelperMap_xml(helperMap);
+			fillHelperMap_ildg(helperMap);
 			
-			logger.trace() << "\tfound XML-infos as lime_type";
 			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
 			
-			setParametersToValues_xlm(*this, helperMap);
+			setParametersToValues_ildg(*this, helperMap);
 			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
 		}	
 
-		//!!read etmc-propagator-format, only FIRST fermion is read!!
 		if( limeEntryTypes["etmc propagator"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
 		{
 			throw std::logic_error("Reading of etmc propagator not yet implemented. Aborting...");
