@@ -44,19 +44,20 @@ static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> bu
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()) , parameters_source()
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters())
 {
 	initializeBasedOnParameters();
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, bool hot)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters(&system.get_inputparameters()), parameters_source() 
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters(&system.get_inputparameters())
 {
 	initializeHotOrCold(hot);
+	trajectoryNumberAtInit = 0;
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, std::string ildgfile)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()), parameters_source() 
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters())
 {
 	initializeFromILDGSourcefile(ildgfile);
 }
@@ -69,9 +70,11 @@ void physics::lattices::Gaugefield::initializeBasedOnParameters()
 			break;
 		case meta::Inputparameters::cold_start:
 			set_cold(buffers);
+			trajectoryNumberAtInit = 0;
 			break;
 		case meta::Inputparameters::hot_start:
 			set_hot(buffers, prng);
+			trajectoryNumberAtInit = 0;
 			update_halo();
 			break;
 	}
@@ -88,14 +91,14 @@ void physics::lattices::Gaugefield::initializeHotOrCold(bool hot)
 }
 
 //move to namespace ildg_io
-static void check_plaq(const hmc_float plaquette, sourcefileparameters& parameters_source)
+static void check_plaq(const hmc_float plaquette, double plaqSourcefile)
 {
 	logger.info() << "Checking plaquette against sourcefile value...";
 	std::string msg = "Minor parameters do not match: ";
 	hmc_float float1, float2;
 	std::string testobj = msg + "plaquette";
 	float1 = plaquette;
-	float2 = parameters_source.plaquettevalue_source;
+	float2 = plaqSourcefile;
 	if(float1 != float2) {
 		logger.warn() << testobj;
 		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
@@ -107,9 +110,10 @@ static void check_plaq(const hmc_float plaquette, sourcefileparameters& paramete
 
 void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ildgfile)
 {
-	//todo: I guess parameters_source can be removed completely from the gaugefield class!
+	double plaqSourcefile;
+
 	const meta::Inputparameters * parameters = this->getParameters();
-	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, parameters, parameters_source);
+	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, parameters, trajectoryNumberAtInit, plaqSourcefile);
 
 	send_gaugefield_to_buffers(buffers, gf_host, *parameters);
 
@@ -117,7 +121,7 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 
 	//todo: move this to ildgIo
 	hmc_float plaq = physics::observables::measurePlaquette(this);
-	check_plaq(plaq, parameters_source);
+	check_plaq(plaq, plaqSourcefile);
 }
 
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system)
@@ -284,11 +288,6 @@ void physics::lattices::Gaugefield::unsmear()
 	release_buffers(&unsmeared_buffers);
 }
 
-sourcefileparameters physics::lattices::Gaugefield::get_parameters_source()
-{
-  return parameters_source;
-}
-
 static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params) {
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
@@ -404,5 +403,10 @@ const hardware::System * physics::lattices::Gaugefield::getSystem() const
 const meta::Inputparameters * physics::lattices::Gaugefield::getParameters() const
 {
   return parameters;
+}
+
+int physics::lattices::Gaugefield::get_trajectoryNumberAtInit() const
+{
+	return trajectoryNumberAtInit;
 }
 

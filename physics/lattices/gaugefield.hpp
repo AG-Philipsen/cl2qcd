@@ -26,7 +26,6 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
-#include "../../ildg_io/ildgIo_gaugefield.hpp"
 #include "../../hardware/code/gaugefield.hpp"
 #include "../../meta/inputparameters.hpp"
 
@@ -36,12 +35,12 @@
  */
 namespace physics {
 	namespace lattices {
-
+		
 		/**
 		 * Representation of a gaugefield.
 		 */
 		class Gaugefield {
-
+			
 		public:
 			/**
 			 * Construct a gaugefield based on the input-files of the system
@@ -106,14 +105,7 @@ namespace physics {
 			void unsmear();
 			void unsmear() const;
 
-			/**
-			 * Get sourcefileparameters
-			 */
-			sourcefileparameters get_parameters_source();
-			sourcefileparameters get_parameters_source() const
-		  {
-		    return parameters_source;
-		  }
+			int get_trajectoryNumberAtInit() const;
 
 			/**
 			 * Update the halo cells of each buffer from its neighbours.
@@ -122,10 +114,10 @@ namespace physics {
 			 */
 			void update_halo() const;
 
-		  const  physics::PRNG * getPrng() const;
-		  const hardware::System * getSystem() const;
+			const  physics::PRNG * getPrng() const;
+			const hardware::System * getSystem() const;
 			const meta::Inputparameters * getParameters() const;
-
+			
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
@@ -140,10 +132,7 @@ namespace physics {
 			void initializeHotOrCold(bool hot);
 			void initializeFromILDGSourcefile(std::string);
 
-		  /**
-		   * Contains metadata of sourcefile
-		   */
-		  sourcefileparameters parameters_source;
+			int trajectoryNumberAtInit;
 		};
 	}
 }

@@ -219,7 +219,7 @@ void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
-        TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, gaugefield->get_parameters_source().trajectorynr_source);
+        TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, gaugefield->get_trajectoryNumberAtInit());
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();

@@ -33,7 +33,7 @@ static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, sourcefileparameters& parameters_source);
 
-Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, sourcefileparameters & parameters_source_in)
+Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
 	sourcefileparameters parameters_source;
 
@@ -58,7 +58,8 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	
 	delete[] gf_ildg;
 
-	parameters_source_in = parameters_source;
+	trajectoryNumberAtInit = parameters_source.trajectorynr_source;
+	plaq = parameters_source.plaquettevalue_source;
 
 	check_sourcefileparameters(*parameters, parameters_source);
 
