@@ -432,17 +432,14 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	{
 		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
 
+		char * buffer = createBufferAndReadLimeDataIntoIt(r,  limeHeaderData.numberOfBytes);
 		std::string lime_type = limeHeaderData.limeEntryType;
+
 		if(limeEntryTypes["scidac checksum"] == lime_type) 
 		{
 			logger_readLimeEntry( lime_type );
-			char * buffer = createBufferAndReadLimeDataIntoIt(r,  limeHeaderData.numberOfBytes);
 			get_checksum(buffer,  limeHeaderData.numberOfBytes, *this);
-			delete[] buffer;
-			logger_readLimeEntrySuccess();
 		}
-		//checkLimeEntryForScidacChecksum(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-
 
 		if( limeEntryTypes["inverter"] == lime_type)
 		{
@@ -453,34 +450,22 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			}
 			else
 			{
-			
 				logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
 				
-				char * buffer = createBufferAndReadLimeDataIntoIt(r, limeHeaderData.numberOfBytes);
 				get_inverter_infos(buffer, *this);
-				delete[] buffer;
-				logger_readLimeEntrySuccess();
 				
 				//todo: this should be moved elsewhere!
 				numberOfFermionFieldsRead++;
 			}
 		}
-		//checkLimeEntryForInverterInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-
-	//!!read XLF info, only FIRST fermion is read!!
-	if(limeEntryTypes["xlf"]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
-	{
-		logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
-		char * buffer = createBufferAndReadLimeDataIntoIt(r, limeHeaderData.numberOfBytes);
-		get_XLF_infos(buffer, *this);
-		delete[] buffer;
-		logger_readLimeEntrySuccess();
-	}
 		
-//		checkLimeEntryForXlfInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
+		//!!read XLF info, only FIRST fermion is read!!
+		if(limeEntryTypes["xlf"]  == lime_type && limeFileProp.numberOfFermionicEntries < 2) 
+		{
+			logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
+			get_XLF_infos(buffer, *this);
+		}
 		
-//		checkLimeEntryForXlmInfos(limeHeaderData.limeEntryType, r, limeHeaderData.numberOfBytes);
-
 		//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
 		if
 			(
@@ -493,16 +478,15 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			fillHelperMap_xml(helperMap);
 			
 			logger.trace() << "\tfound XML-infos as lime_type";
-			char * buffer = createBufferAndReadLimeDataIntoIt(r, limeHeaderData.numberOfBytes);
 			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
-			delete[] buffer;
 			
 			setParametersToValues_xlm(*this, helperMap);
 			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
-			
-			logger_readLimeEntrySuccess();
 		}	
-}
+		
+		delete[] buffer;
+		logger_readLimeEntrySuccess();
+	}
 
 	props.numberOfEntries = 1;
 	
