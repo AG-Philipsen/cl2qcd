@@ -52,5 +52,6 @@ void dksBenchmark::printProfilingDataToScreen()
   double gbytes = static_cast<double>(byte_count) * 2 * benchmarkSteps / executionTime / 1e3;
   logger.info() << "D_KS_eo performance: " << gflops << " GFLOPS";
   logger.info() << "D_KS_eo memory: " << gbytes << " GB/S";
+  logger.info() << "Measured TIME: " << executionTime / 1.e3 << "msec";
 }
 
