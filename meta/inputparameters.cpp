@@ -319,15 +319,15 @@ Inputparameters::solver Inputparameters::get_solver_mp() const noexcept
 }
 
 //HMC specific parameters
-double Inputparameters::get_tau() const noexcept
+double ParametersHmc::get_tau() const noexcept
 {
   return tau;
 }
-bool Inputparameters::get_reversibility_check() const noexcept
+bool ParametersHmc::get_reversibility_check() const noexcept
 {
   return reversibility_check;
 }
-int Inputparameters::get_integrationsteps(size_t timescale) const noexcept
+int ParametersHmc::get_integrationsteps(size_t timescale) const noexcept
 {
 switch(timescale) {
 case 0:
@@ -340,7 +340,7 @@ default:
 throw std::out_of_range("No such timescale");
 }
 }
-int Inputparameters::get_hmcsteps() const noexcept
+int ParametersHmc::get_hmcsteps() const noexcept
 {
   return hmcsteps;
 }
@@ -348,11 +348,11 @@ int Inputparameters::get_benchmarksteps() const noexcept
 {
   return benchmarksteps;
 }
-int Inputparameters::get_num_timescales() const noexcept
+int ParametersHmc::get_num_timescales() const noexcept
 {
   return num_timescales;
 }
-Inputparameters::integrator Inputparameters::get_integrator(size_t timescale) const noexcept
+ParametersHmc::integrator ParametersHmc::get_integrator(size_t timescale) const noexcept
 {
 switch(timescale) {
 case 0:
@@ -365,7 +365,7 @@ default:
 throw std::out_of_range("No such timescale");
 }
 }
-double Inputparameters::get_lambda(size_t timescale) const noexcept
+double ParametersHmc::get_lambda(size_t timescale) const noexcept
 {
 switch(timescale) {
 case 0:

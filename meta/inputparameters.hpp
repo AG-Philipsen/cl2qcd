@@ -38,18 +38,47 @@ namespace po = boost::program_options;
  */
 namespace meta {
 
+class ParametersHmc
+{
+public:
+	enum integrator { leapfrog = 1, twomn };
+
+	double get_tau() const noexcept;
+	bool get_reversibility_check() const noexcept;
+	int get_integrationsteps(size_t timescale) const noexcept;
+	int get_hmcsteps() const noexcept;
+	int get_num_timescales() const noexcept;
+	integrator get_integrator(size_t timescale) const noexcept;
+	double get_lambda(size_t timescale) const noexcept;
+
+protected:
+	double tau;
+	bool reversibility_check;
+	int integrationsteps0;
+	int integrationsteps1;
+	int integrationsteps2;
+	int hmcsteps;
+	int benchmarksteps;
+	int num_timescales;
+	integrator integrator0;
+	integrator integrator1;
+	integrator integrator2;
+	double lambda0;
+	double lambda1;
+	double lambda2;
+};
+
 /**
  * Parser and representation of an input file.
  *
  * This class is copyable and assignable, but should
  * be used as a const value after initialization.
  */
-class Inputparameters {
+	class Inputparameters : public ParametersHmc{
 
 public:
 
 	enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2, rooted_stagg };
-	enum integrator { leapfrog = 1, twomn };
 	enum startcondition { cold_start = 1, hot_start, start_from_source };
 	enum solver { cg = 1, bicgstab, bicgstab_save };
 	enum sourcetypes {point = 1, volume, timeslice, zslice};
@@ -92,6 +121,8 @@ public:
 	bool get_use_mp() const noexcept;
 	int get_nspace() const noexcept;
 	int get_ntime() const noexcept;
+
+	int get_benchmarksteps() const noexcept;
 
 	startcondition get_startcondition() const noexcept;
 	int get_writefrequency() const noexcept;
@@ -150,17 +181,6 @@ public:
 	int get_iter_refresh() const noexcept;
 	int get_iter_refresh_mp() const noexcept;
 
-	//HMC specific parameters
-	double get_tau() const noexcept;
-	bool get_reversibility_check() const noexcept;
-	int get_integrationsteps(size_t timescale) const noexcept;
-	int get_hmcsteps() const noexcept;
-	int get_benchmarksteps() const noexcept;
-	int get_num_timescales() const noexcept;
-	integrator get_integrator(size_t timescale) const noexcept;
-	//this is the optimal value...
-	double get_lambda(size_t timescale) const noexcept;
-	
 	//RHMC specific parameters
 	int get_md_approx_ord() const noexcept;
 	int get_metro_approx_ord() const noexcept;
@@ -310,22 +330,7 @@ private:
 	int iter_refresh;
 	int iter_refresh_mp;
 
-	//HMC specific parameters
-	double tau;
-	bool reversibility_check;
-	int integrationsteps0;
-	int integrationsteps1;
-	int integrationsteps2;
-	int hmcsteps;
-	int benchmarksteps;
-	int num_timescales;
-	integrator integrator0;
-	integrator integrator1;
-	integrator integrator2;
-	double lambda0;
-	double lambda1;
-	double lambda2;
-	
+
 	//RHMC specific parameters
 	/** @TODO If the rational approximation is read from file than its parameters could differ
 	 *        from the following! This means, for example, that one could use get_md_approx_ord()
