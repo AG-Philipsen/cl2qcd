@@ -29,6 +29,10 @@
 
 #include "../host_functionality/logger.hpp"
 
+#include <boost/program_options.hpp>
+#include <boost/algorithm/string.hpp>
+namespace po = boost::program_options;
+
 /**
  * This namespace contains generic utility code required by the other packages.
  */
@@ -66,6 +70,8 @@ public:
 	 * @throws parse_aborted
 	 */
 	Inputparameters(int argc, const char** argv);
+
+	po::options_description getParameters_hmc();
 
 	/*
 	 * Read accessor functions

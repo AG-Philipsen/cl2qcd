@@ -27,11 +27,10 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <boost/program_options.hpp>
-#include <boost/algorithm/string.hpp>
-namespace po = boost::program_options;
 
 #include "config_file_normalizer.hpp"
+
+#include "inputparameters_hmc.hpp"
 
 using namespace meta;
 
@@ -785,7 +784,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
 		("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
 
-	//HMC specific parameters
 	po::options_description options_hmc("HMC options");
 	options_hmc.add_options()
 		("tau", po::value<double>(&tau)->default_value(0.5))
@@ -825,7 +823,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
 	
 	po::options_description desc;
-	desc.add(cmd_opts).add(config).add(options_io).add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver).add(options_obs).add(options_test).add(options_hmc).add(options_rhmc);
+	desc.add(cmd_opts).add(config).add(options_io).add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver).add(options_obs).add(options_test).add(getParameters_hmc()).add(options_rhmc);
 	
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
