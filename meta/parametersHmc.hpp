@@ -24,6 +24,9 @@
 #include <vector>
 #include <string>
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 namespace meta{
 class ParametersHmc
 {
@@ -37,6 +40,8 @@ public:
 	int get_num_timescales() const noexcept;
 	integrator get_integrator(size_t timescale) const noexcept;
 	double get_lambda(size_t timescale) const noexcept;
+	bool get_use_gauge_only() const noexcept;
+	bool get_use_mp() const noexcept;
 
 protected:
 	double tau;
@@ -53,6 +58,10 @@ protected:
 	double lambda0;
 	double lambda1;
 	double lambda2;
+	bool use_gauge_only;
+	bool use_mp;
+
+	po::options_description getOptions();
 };
 
 }

@@ -30,8 +30,6 @@
 
 #include "config_file_normalizer.hpp"
 
-#include "inputparameters_hmc.hpp"
-
 using namespace meta;
 
 /**
@@ -108,10 +106,6 @@ bool Inputparameters::get_use_chem_pot_im() const noexcept
 bool Inputparameters::get_use_smearing() const noexcept
 {
   return use_smearing;
-}
-bool Inputparameters::get_use_mp() const noexcept
-{
-  return use_mp;
 }
 int Inputparameters::get_nspace() const noexcept
 {
@@ -263,10 +257,6 @@ double Inputparameters::get_chem_pot_im() const noexcept
 bool Inputparameters::get_use_eo() const noexcept
 {
   return use_eo;
-}
-bool Inputparameters::get_use_gauge_only() const noexcept
-{
-  return use_gauge_only;
 }
 int Inputparameters::get_num_sources() const noexcept
 {
@@ -766,7 +756,12 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
 	
 	po::options_description desc;
-	desc.add(cmd_opts).add(config).add(options_io).add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver).add(options_obs).add(options_test).add(getParameters_hmc()).add(options_rhmc);
+	desc.add(cmd_opts)
+		.add(config)
+		.add(options_io)
+		.add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver).add(options_obs).add(options_test)
+		.add(ParametersHmc::getOptions())
+		.add(options_rhmc);
 	
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);

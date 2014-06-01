@@ -88,7 +88,6 @@ public:
 	bool get_use_chem_pot_re() const noexcept;
 	bool get_use_chem_pot_im() const noexcept;
 	bool get_use_smearing() const noexcept;
-	bool get_use_mp() const noexcept;
 	int get_nspace() const noexcept;
 	int get_ntime() const noexcept;
 
@@ -138,7 +137,6 @@ public:
 	//at the moment, only 2 solvers are implemented..
 	solver get_solver() const noexcept;
 	solver get_solver_mp() const noexcept;
-	bool get_use_gauge_only() const noexcept;
 	int get_num_sources() const noexcept;
 	int get_source_x() const noexcept;
 	int get_source_y() const noexcept;
@@ -239,7 +237,6 @@ private:
 	bool use_chem_pot_re;
 	bool use_chem_pot_im;
 	bool use_smearing;
-	bool use_mp;
 	int nspace;
 	int ntime;
 
@@ -287,7 +284,6 @@ private:
 	//at the moment, only 2 solvers are implemented..
 	solver _solver;
 	solver _solver_mp;
-	bool use_gauge_only;
 	int num_sources;
 	int source_x;
 	int source_y;

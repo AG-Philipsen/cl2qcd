@@ -83,3 +83,38 @@ double ParametersHmc::get_lambda(size_t timescale) const noexcept
 		throw std::out_of_range("No such timescale");
 	}
 }
+
+po::options_description ParametersHmc::getOptions()
+{
+	po::options_description options("HMC options");
+	options.add_options()
+		("tau", po::value<double>(&tau)->default_value(0.5))
+		("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
+		("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
+		("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
+		("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
+		("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
+		("benchmarksteps", po::value<int>(&benchmarksteps)->default_value(500))
+		("num_timescales", po::value<int>(&num_timescales)->default_value(1))
+		("integrator0", po::value<std::string>()->default_value("leapfrog"))
+		("integrator1", po::value<std::string>()->default_value("leapfrog"))
+		("integrator2", po::value<std::string>()->default_value("leapfrog"))
+		// this is the optimal value...
+		("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
+		("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
+		("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
+		("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
+		("use_mp", po::value<bool>(&use_mp)->default_value(false));
+	
+	return options;
+}
+
+bool ParametersHmc::get_use_gauge_only() const noexcept
+{
+	return use_gauge_only;
+}
+
+bool ParametersHmc::get_use_mp() const noexcept
+{
+	return use_mp;
+}
