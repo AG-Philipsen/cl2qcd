@@ -22,6 +22,7 @@
 #
 
 add_library(meta
+	parametersHmc.cpp
 	inputparameters.cpp
 	util.cpp
 	util_io.cpp

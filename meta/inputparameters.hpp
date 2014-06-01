@@ -24,49 +24,19 @@
 #ifndef _META_INPUTPARAMETERS_HPP_
 #define _META_INPUTPARAMETERS_HPP_
 
-#include <vector>
-#include <string>
-
 #include "../host_functionality/logger.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 namespace po = boost::program_options;
 
+#include "parametersHmc.hpp"
+
 /**
  * This namespace contains generic utility code required by the other packages.
  */
 namespace meta {
 
-class ParametersHmc
-{
-public:
-	enum integrator { leapfrog = 1, twomn };
-
-	double get_tau() const noexcept;
-	bool get_reversibility_check() const noexcept;
-	int get_integrationsteps(size_t timescale) const noexcept;
-	int get_hmcsteps() const noexcept;
-	int get_num_timescales() const noexcept;
-	integrator get_integrator(size_t timescale) const noexcept;
-	double get_lambda(size_t timescale) const noexcept;
-
-protected:
-	double tau;
-	bool reversibility_check;
-	int integrationsteps0;
-	int integrationsteps1;
-	int integrationsteps2;
-	int hmcsteps;
-	int benchmarksteps;
-	int num_timescales;
-	integrator integrator0;
-	integrator integrator1;
-	integrator integrator2;
-	double lambda0;
-	double lambda1;
-	double lambda2;
-};
 
 /**
  * Parser and representation of an input file.

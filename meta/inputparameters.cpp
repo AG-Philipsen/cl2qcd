@@ -317,66 +317,9 @@ Inputparameters::solver Inputparameters::get_solver_mp() const noexcept
 {
   return _solver_mp;
 }
-
-//HMC specific parameters
-double ParametersHmc::get_tau() const noexcept
-{
-  return tau;
-}
-bool ParametersHmc::get_reversibility_check() const noexcept
-{
-  return reversibility_check;
-}
-int ParametersHmc::get_integrationsteps(size_t timescale) const noexcept
-{
-switch(timescale) {
-case 0:
-return integrationsteps0;
-case 1:
-return integrationsteps1;
-case 2:
-return integrationsteps2;
-default:
-throw std::out_of_range("No such timescale");
-}
-}
-int ParametersHmc::get_hmcsteps() const noexcept
-{
-  return hmcsteps;
-}
 int Inputparameters::get_benchmarksteps() const noexcept
 {
   return benchmarksteps;
-}
-int ParametersHmc::get_num_timescales() const noexcept
-{
-  return num_timescales;
-}
-ParametersHmc::integrator ParametersHmc::get_integrator(size_t timescale) const noexcept
-{
-switch(timescale) {
-case 0:
-return integrator0;
-case 1:
-return integrator1;
-case 2:
-return integrator2;
-default:
-throw std::out_of_range("No such timescale");
-}
-}
-double ParametersHmc::get_lambda(size_t timescale) const noexcept
-{
-switch(timescale) {
-case 0:
-return lambda0;
-case 1:
-return lambda1;
-case 2:
-return lambda2;
-default:
-throw std::out_of_range("No such timescale");
-}
 }
 
 //RHMC specific parameters
