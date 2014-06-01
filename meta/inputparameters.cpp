@@ -634,189 +634,199 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	 */
 	po::options_description cmd_opts("Generic options");
 	cmd_opts.add_options()
-	("help,h", "Produce this help message")
-	("input-file", po::value<std::string>(), "File containing the input parameters");
+		("help,h", "Produce this help message")
+		("input-file", po::value<std::string>(), "File containing the input parameters");
 	// TODO add log-level etc
 	po::positional_options_description pos_opts;
 	pos_opts.add("input-file", 1);
-
+	
 	po::options_description config("Configuration options");
 	config.add_options()
-	("prec", po::value<size_t>(&precision)->default_value(sizeof(double) * 8))
-	("device,d", po::value<std::vector<int>>(&selected_devices), "ID of a divice to use. Can be specified multiple times.")
-	("num_dev", po::value<int>(&device_count)->default_value(0), "Maximum number of devices to use.")
-	("use_gpu", po::value<bool>(&use_gpu)->default_value(true), "Use GPUs")
-	("use_cpu", po::value<bool>(&use_cpu)->default_value(true), "Use CPUs")
-	("enable_profiling", po::value<bool>(&enable_profiling)->default_value(false), "Enable profiling of kernel execution. Implies slower performance due to synchronization after each kernel call.")
-	("nspace", po::value<int>(&nspace)->default_value(4))
-	("ntime", po::value<int>(&ntime)->default_value(8))
-	("startcondition", po::value<std::string>()->default_value("cold_start"))
-	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
-	("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
-	("host_seed", po::value<uint32_t>(&host_seed)->default_value(4815))
-	("initial_prng_state", po::value<std::string>(&initial_prng_state)->default_value(""))
-	("use_same_rnd_numbers", po::value<bool>(&use_same_rnd_numbers)->default_value(false), "Use random numbers compatible with a scalar version. SLOW!")
-	("disable-ocl-compiler-opt", po::value<bool>(&ocl_compiler_opt_disabled)->default_value(false), "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)")
-	("use_rec12", po::value<bool>(&use_rec12)->default_value(false), "Use reconstruct 12 compression for SU3 matrices")
-	("log-level", po::value<std::string>(&log_level)->default_value("ALL"), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
-	("read_multiple_configs", po::value<bool>(&read_multiple_configs)->default_value(false), "Read in more than one gaugefield configuration")
-	("config_read_start", po::value<int>(&config_read_start)->default_value(0), "Number to begin with when reading in more than one gaugefield configuration")
-	("config_read_end", po::value<int>(&config_read_end)->default_value(1), "Number to end with when reading in more than one gaugefield configuration")
-	("config_read_incr", po::value<int>(&config_read_incr)->default_value(1), "Increment for gaugefield configuration number when reading in more than one gaugefield configuration")
-	("split_cpu", po::value<bool>(&split_cpu)->default_value(false), "Split the CPU into multiple devices to avoid numa issues. (Requires OpenCL 1.2 at least)")
-
+		("prec", po::value<size_t>(&precision)->default_value(sizeof(double) * 8))
+		("device,d", po::value<std::vector<int>>(&selected_devices), "ID of a divice to use. Can be specified multiple times.")
+		("num_dev", po::value<int>(&device_count)->default_value(0), "Maximum number of devices to use.")
+		("use_gpu", po::value<bool>(&use_gpu)->default_value(true), "Use GPUs")
+		("use_cpu", po::value<bool>(&use_cpu)->default_value(true), "Use CPUs")
+		("enable_profiling", po::value<bool>(&enable_profiling)->default_value(false), "Enable profiling of kernel execution. Implies slower performance due to synchronization after each kernel call.")
+		("nspace", po::value<int>(&nspace)->default_value(4))
+		("ntime", po::value<int>(&ntime)->default_value(8))
+		("startcondition", po::value<std::string>()->default_value("cold_start"))
+		("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
+		("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
+		("host_seed", po::value<uint32_t>(&host_seed)->default_value(4815))
+		("initial_prng_state", po::value<std::string>(&initial_prng_state)->default_value(""))
+		("use_same_rnd_numbers", po::value<bool>(&use_same_rnd_numbers)->default_value(false), "Use random numbers compatible with a scalar version. SLOW!")
+		("disable-ocl-compiler-opt", po::value<bool>(&ocl_compiler_opt_disabled)->default_value(false), "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)")
+		("use_rec12", po::value<bool>(&use_rec12)->default_value(false), "Use reconstruct 12 compression for SU3 matrices")
+		("log-level", po::value<std::string>(&log_level)->default_value("ALL"), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
+		("read_multiple_configs", po::value<bool>(&read_multiple_configs)->default_value(false), "Read in more than one gaugefield configuration")
+		("config_read_start", po::value<int>(&config_read_start)->default_value(0), "Number to begin with when reading in more than one gaugefield configuration")
+		("config_read_end", po::value<int>(&config_read_end)->default_value(1), "Number to end with when reading in more than one gaugefield configuration")
+		("config_read_incr", po::value<int>(&config_read_incr)->default_value(1), "Increment for gaugefield configuration number when reading in more than one gaugefield configuration")
+		("split_cpu", po::value<bool>(&split_cpu)->default_value(false), "Split the CPU into multiple devices to avoid numa issues. (Requires OpenCL 1.2 at least)")
+		
 		//todo: this is not used ?!
-	("use_aniso", po::value<bool>(&use_aniso)->default_value(false))
+		("use_aniso", po::value<bool>(&use_aniso)->default_value(false));
+	
+	po::options_description options_io("IO options");
+	options_io.add_options()
+		("writefrequency", po::value<int>(&writefrequency)->default_value(1))
+		("savefrequency", po::value<int>(&savefrequency)->default_value(100))
+		("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
+		("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
+		("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")
+		("prng_prefix", po::value<std::string>(&prng_prefix)->default_value("prng."), "Prefix for PRNG configuration")
+		("prng_postfix", po::value<std::string>(&prng_postfix)->default_value(""), "Postfix for PRNG configuration")
+		("rectanglesFilename", po::value<std::string>(&rectanglesFilename)->default_value("gaugeObsRectangles.dat"), "Filename for rectangles measurements")
+		("transportcoefficientKappaFilename", po::value<std::string>(&transportcoefficientKappaFilename)->default_value("GaugeObsKappa"), "Filename for transportcoefficient kappa measurements")
+		("profiling_data_prefix", po::value<std::string>(&profiling_data_prefix)->default_value(""), "Prefix for profiling data filename")
+		("profiling_data_postfix", po::value<std::string>(&profiling_data_postfix)->default_value("_profiling_data"), "Postfix for profiling data filename")
+		//parameters to write out observables
+		("gauge_obs_to_single_file", po::value<bool>(&gauge_obs_to_single_file)->default_value(true), "Save gauge observables to one single file")
+		("gauge_obs_prefix", po::value<std::string>(&gauge_obs_prefix)->default_value("gaugeObs"), "Prefix for gauge observables file")
+		("gauge_obs_postfix", po::value<std::string>(&gauge_obs_postfix)->default_value(".dat"), "Postfix for gauge observables file")
+		("ferm_obs_to_single_file", po::value<bool>(&ferm_obs_to_single_file)->default_value(false), "Save fermionic observables to one single file")
+		("ferm_obs_corr_prefix", po::value<std::string>(&ferm_obs_corr_prefix)->default_value(""), "Prefix for fermionic observables (correlators) file")
+		("ferm_obs_corr_postfix", po::value<std::string>(&ferm_obs_corr_postfix)->default_value("_correlators.dat"), "Postfix for fermionic observables (correlators) file")
+		("ferm_obs_pbp_prefix", po::value<std::string>(&ferm_obs_pbp_prefix)->default_value(""), "Prefix for fermionic observables (chiral condensate) file")
+		("ferm_obs_pbp_postfix", po::value<std::string>(&ferm_obs_pbp_postfix)->default_value("_pbp.dat"), "Postfix for fermionic observables (chiral condensate) file")
+		("hmc_obs_to_single_file", po::value<bool>(&hmc_obs_to_single_file)->default_value(true), "Save hmc observables to one single file")
+		("hmc_obs_prefix", po::value<std::string>(&hmc_obs_prefix)->default_value("hmc_output"), "Prefix for hmc observables file")
+		("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file")
+		("rhmc_obs_to_single_file", po::value<bool>(&rhmc_obs_to_single_file)->default_value(true), "Save rhmc observables to one single file")
+		("rhmc_obs_prefix", po::value<std::string>(&rhmc_obs_prefix)->default_value("rhmc_output"), "Prefix for rhmc observables file")
+		("rhmc_obs_postfix", po::value<std::string>(&rhmc_obs_postfix)->default_value(""), "Postfix for rhmc observables file");
 
-		//IO
-	("writefrequency", po::value<int>(&writefrequency)->default_value(1))
-	("savefrequency", po::value<int>(&savefrequency)->default_value(100))
-	("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
-	("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
-	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")
-	("prng_prefix", po::value<std::string>(&prng_prefix)->default_value("prng."), "Prefix for PRNG configuration")
-	("prng_postfix", po::value<std::string>(&prng_postfix)->default_value(""), "Postfix for PRNG configuration")
-	("rectanglesFilename", po::value<std::string>(&rectanglesFilename)->default_value("gaugeObsRectangles.dat"), "Filename for rectangles measurements")
-	("transportcoefficientKappaFilename", po::value<std::string>(&transportcoefficientKappaFilename)->default_value("GaugeObsKappa"), "Filename for transportcoefficient kappa measurements")
-	("profiling_data_prefix", po::value<std::string>(&profiling_data_prefix)->default_value(""), "Prefix for profiling data filename")
-	("profiling_data_postfix", po::value<std::string>(&profiling_data_postfix)->default_value("_profiling_data"), "Postfix for profiling data filename")
-	//parameters to write out observables
-	("gauge_obs_to_single_file", po::value<bool>(&gauge_obs_to_single_file)->default_value(true), "Save gauge observables to one single file")
-	("gauge_obs_prefix", po::value<std::string>(&gauge_obs_prefix)->default_value("gaugeObs"), "Prefix for gauge observables file")
-	("gauge_obs_postfix", po::value<std::string>(&gauge_obs_postfix)->default_value(".dat"), "Postfix for gauge observables file")
-	("ferm_obs_to_single_file", po::value<bool>(&ferm_obs_to_single_file)->default_value(false), "Save fermionic observables to one single file")
-	("ferm_obs_corr_prefix", po::value<std::string>(&ferm_obs_corr_prefix)->default_value(""), "Prefix for fermionic observables (correlators) file")
-	("ferm_obs_corr_postfix", po::value<std::string>(&ferm_obs_corr_postfix)->default_value("_correlators.dat"), "Postfix for fermionic observables (correlators) file")
-	("ferm_obs_pbp_prefix", po::value<std::string>(&ferm_obs_pbp_prefix)->default_value(""), "Prefix for fermionic observables (chiral condensate) file")
-	("ferm_obs_pbp_postfix", po::value<std::string>(&ferm_obs_pbp_postfix)->default_value("_pbp.dat"), "Postfix for fermionic observables (chiral condensate) file")
-	("hmc_obs_to_single_file", po::value<bool>(&hmc_obs_to_single_file)->default_value(true), "Save hmc observables to one single file")
-	("hmc_obs_prefix", po::value<std::string>(&hmc_obs_prefix)->default_value("hmc_output"), "Prefix for hmc observables file")
-	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file")
-	("rhmc_obs_to_single_file", po::value<bool>(&rhmc_obs_to_single_file)->default_value(true), "Save rhmc observables to one single file")
-	("rhmc_obs_prefix", po::value<std::string>(&rhmc_obs_prefix)->default_value("rhmc_output"), "Prefix for rhmc observables file")
-	("rhmc_obs_postfix", po::value<std::string>(&rhmc_obs_postfix)->default_value(""), "Postfix for rhmc observables file")
-
-
-	//gaugefield parameters
-	("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
-	("beta", po::value<double>(&beta)->default_value(4.0))
-	("use_smearing", po::value<bool>(&use_smearing)->default_value(false))
-	("rho", po::value<double>(&rho)->default_value(0.))
-	("rho_iter", po::value<int>(&rho_iter)->default_value(0))
-	("gaugeact", po::value<std::string>()->default_value("wilson"))
-
-	//heatbath parameters
-	("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
-	("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
-	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
+	
+	po::options_description options_gaugefield("Gaugefield options");
+	options_gaugefield.add_options()
+		("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
+		("beta", po::value<double>(&beta)->default_value(4.0))
+		("use_smearing", po::value<bool>(&use_smearing)->default_value(false))
+		("rho", po::value<double>(&rho)->default_value(0.))
+		("rho_iter", po::value<int>(&rho_iter)->default_value(0))
+		("gaugeact", po::value<std::string>()->default_value("wilson"));
+	
+	po::options_description options_heatbath("Heatbath options");
+	options_heatbath.add_options()
+		//todo: this is also needed in the HMC!
+		("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
+		("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
+		("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
 		//todo: is this used?
-	("xi", po::value<int>(&xi)->default_value(1))
+		("xi", po::value<int>(&xi)->default_value(1));
 
-	//fermionic parameters
-	("fermact", po::value<std::string>()->default_value("wilson"))
-	("fermact_mp", po::value<std::string>()->default_value("wilson"))
-	("kappa", po::value<double>(&kappa)->default_value(0.125))
-	("mass", po::value<double>(&mass)->default_value(0.1))
-	("mu", po::value<double>(&mu)->default_value(0.006))
-	("csw", po::value<double>(&csw)->default_value(0.))
-	("kappa_mp", po::value<double>(&kappa_mp)->default_value(0.125))
-	("mu_mp", po::value<double>(&mu_mp)->default_value(0.006))
-	("csw_mp", po::value<double>(&csw_mp)->default_value(0.))
-	("theta_fermion_spatial", po::value<double>(&theta_fermion_spatial)->default_value(0.))
-	("theta_fermion_temporal", po::value<double>(&theta_fermion_temporal)->default_value(0.))
-	("chem_pot_re", po::value<double>(&chem_pot_re)->default_value(0.))
-	("chem_pot_im", po::value<double>(&chem_pot_im)->default_value(0.))
-	("use_chem_pot_re", po::value<bool>(&use_chem_pot_re)->default_value(false))
-	("use_chem_pot_im", po::value<bool>(&use_chem_pot_im)->default_value(false))
-	("use_eo", po::value<bool>(&use_eo)->default_value(true))
-	("use_merge_kernels_spinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Use kernel merging for spinor kernels")
-	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels")
+	po::options_description options_fermion("Fermion options");
+	options_fermion.add_options()
+		("fermact", po::value<std::string>()->default_value("wilson"))
+		("fermact_mp", po::value<std::string>()->default_value("wilson"))
+		//todo: change this default value!
+		("kappa", po::value<double>(&kappa)->default_value(0.125))
+		("mass", po::value<double>(&mass)->default_value(0.1))
+		("mu", po::value<double>(&mu)->default_value(0.006))
+		("csw", po::value<double>(&csw)->default_value(0.))
+		("kappa_mp", po::value<double>(&kappa_mp)->default_value(0.125))
+		("mu_mp", po::value<double>(&mu_mp)->default_value(0.006))
+		("csw_mp", po::value<double>(&csw_mp)->default_value(0.))
+		("theta_fermion_spatial", po::value<double>(&theta_fermion_spatial)->default_value(0.))
+		("theta_fermion_temporal", po::value<double>(&theta_fermion_temporal)->default_value(0.))
+		("chem_pot_re", po::value<double>(&chem_pot_re)->default_value(0.))
+		("chem_pot_im", po::value<double>(&chem_pot_im)->default_value(0.))
+		("use_chem_pot_re", po::value<bool>(&use_chem_pot_re)->default_value(false))
+		("use_chem_pot_im", po::value<bool>(&use_chem_pot_im)->default_value(false))
+		("use_eo", po::value<bool>(&use_eo)->default_value(true))
+		("use_merge_kernels_spinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Use kernel merging for spinor kernels")
+		("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels");
 
 
-		//sources
-	("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
-	("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
-	("num_sources", po::value<int>(&num_sources)->default_value(12))
-	("source_x", po::value<int>(&source_x)->default_value(0))
-	("source_y", po::value<int>(&source_y)->default_value(0))
-	("source_z", po::value<int>(&source_z)->default_value(0))
-	("source_t", po::value<int>(&source_t)->default_value(0))
-	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false))
+	po::options_description options_source("Source options");
+	options_source.add_options()
+		("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
+		("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
+		("num_sources", po::value<int>(&num_sources)->default_value(12))
+		("source_x", po::value<int>(&source_x)->default_value(0))
+		("source_y", po::value<int>(&source_y)->default_value(0))
+		("source_z", po::value<int>(&source_z)->default_value(0))
+		("source_t", po::value<int>(&source_t)->default_value(0))
+		("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
 
-		//solver
-	("solver", po::value<std::string>()->default_value("bicgstab"))
-	("solver_mp", po::value<std::string>()->default_value("bicgstab"))
-	("cgmax", po::value<int>(&cgmax)->default_value(1000))
-	("cgmax_mp", po::value<int>(&cgmax_mp)->default_value(1000))
+	po::options_description options_solver("Solver options");
+	options_solver.add_options()
+		("solver", po::value<std::string>()->default_value("bicgstab"))
+		("solver_mp", po::value<std::string>()->default_value("bicgstab"))
+		("cgmax", po::value<int>(&cgmax)->default_value(1000))
+		("cgmax_mp", po::value<int>(&cgmax_mp)->default_value(1000))
 #ifdef _USEDOUBLEPREC_
-	("solver_prec", po::value<double>(&solver_prec)->default_value(1e-23))
-	("force_prec", po::value<double>(&force_prec)->default_value(1e-12))
+		("solver_prec", po::value<double>(&solver_prec)->default_value(1e-23))
+		("force_prec", po::value<double>(&force_prec)->default_value(1e-12))
 #else
-	("solver_prec", po::value<double>(&solver_prec)->default_value(1e-16))
-	("force_prec", po::value<double>(&force_prec)->default_value(1e-8))
+		("solver_prec", po::value<double>(&solver_prec)->default_value(1e-16))
+		("force_prec", po::value<double>(&force_prec)->default_value(1e-8))
 #endif
-	("iter_refresh", po::value<int>(&iter_refresh)->default_value(100))
-	("iter_refresh_mp", po::value<int>(&iter_refresh_mp)->default_value(100))
-		//is this used?
-	("profile_solver", po::value<bool>(&profile_solver)->default_value(false))
-	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
-	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
-	("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!")
+		("iter_refresh", po::value<int>(&iter_refresh)->default_value(100))
+		("iter_refresh_mp", po::value<int>(&iter_refresh_mp)->default_value(100))
+		//this is not used. Remove!
+		("profile_solver", po::value<bool>(&profile_solver)->default_value(false))
+		("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
+		("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
+		("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!");
 
-		//observables
-	("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
-	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
-	("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
-	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
-	("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
-	("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) )
+	po::options_description options_obs("Observables options");
+	options_obs.add_options()
+		("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
+		("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
+		("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
+		("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
+		("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
+		("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) );
 
-		//test related
-	("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
+	po::options_description options_test("Test options");
+	options_test.add_options()
+		("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
 		("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
 
 	//HMC specific parameters
 	po::options_description options_hmc("HMC options");
 	options_hmc.add_options()
-	("tau", po::value<double>(&tau)->default_value(0.5))
-	("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
-	("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
-	("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
-	("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
-	("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
-	("benchmarksteps", po::value<int>(&benchmarksteps)->default_value(500))
-	("num_timescales", po::value<int>(&num_timescales)->default_value(1))
-	("integrator0", po::value<std::string>()->default_value("leapfrog"))
-	("integrator1", po::value<std::string>()->default_value("leapfrog"))
-	("integrator2", po::value<std::string>()->default_value("leapfrog"))
-	// this is the optimal value...
-	("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
-	("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
-	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
-	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
-	("use_mp", po::value<bool>(&use_mp)->default_value(false));
-
+		("tau", po::value<double>(&tau)->default_value(0.5))
+		("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
+		("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
+		("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
+		("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
+		("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
+		("benchmarksteps", po::value<int>(&benchmarksteps)->default_value(500))
+		("num_timescales", po::value<int>(&num_timescales)->default_value(1))
+		("integrator0", po::value<std::string>()->default_value("leapfrog"))
+		("integrator1", po::value<std::string>()->default_value("leapfrog"))
+		("integrator2", po::value<std::string>()->default_value("leapfrog"))
+		// this is the optimal value...
+		("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
+		("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
+		("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
+		("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
+		("use_mp", po::value<bool>(&use_mp)->default_value(false));
+	
 	//RHMC specific parameters
 	po::options_description options_rhmc("RHMC options");
 	options_rhmc.add_options()
-	("md_approx_ord", po::value<int>(&md_approx_ord)->default_value(8))
-	("metro_approx_ord", po::value<int>(&metro_approx_ord)->default_value(15))
-	("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
-	("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
-	("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
-	("conservative", po::value<bool>(&conservative)->default_value(false))
-	("num_tastes", po::value<int>(&num_tastes)->default_value(2))
-	("approx_lower", po::value<double>(&approx_lower)->default_value(1.e-5))
-	("approx_upper", po::value<double>(&approx_upper)->default_value(1.))
-	("rhmcsteps", po::value<int>(&rhmcsteps)->default_value(10))
-	("approx_heatbath_file", po::value<std::string>(&approx_heatbath_file)->default_value("Approx_Heatbath"))
-	("approx_md_file", po::value<std::string>(&approx_md_file)->default_value("Approx_MD"))
-	("approx_metropolis_file", po::value<std::string>(&approx_metropolis_file)->default_value("Approx_Metropolis"))
-	("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
-
+		("md_approx_ord", po::value<int>(&md_approx_ord)->default_value(8))
+		("metro_approx_ord", po::value<int>(&metro_approx_ord)->default_value(15))
+		("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
+		("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
+		("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
+		("conservative", po::value<bool>(&conservative)->default_value(false))
+		("num_tastes", po::value<int>(&num_tastes)->default_value(2))
+		("approx_lower", po::value<double>(&approx_lower)->default_value(1.e-5))
+		("approx_upper", po::value<double>(&approx_upper)->default_value(1.))
+		("rhmcsteps", po::value<int>(&rhmcsteps)->default_value(10))
+		("approx_heatbath_file", po::value<std::string>(&approx_heatbath_file)->default_value("Approx_Heatbath"))
+		("approx_md_file", po::value<std::string>(&approx_md_file)->default_value("Approx_MD"))
+		("approx_metropolis_file", po::value<std::string>(&approx_metropolis_file)->default_value("Approx_Metropolis"))
+		("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
+	
 	po::options_description desc;
-	desc.add(cmd_opts).add(config).add(options_hmc).add(options_rhmc);
-
+	desc.add(cmd_opts).add(config).add(options_io).add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver).add(options_obs).add(options_test).add(options_hmc).add(options_rhmc);
+	
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
 	if(vm.count("help")) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
