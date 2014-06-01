@@ -23,6 +23,7 @@
 
 add_library(meta
 	parametersHmc.cpp
+	parametersRhmc.cpp
 	inputparameters.cpp
 	util.cpp
 	util_io.cpp

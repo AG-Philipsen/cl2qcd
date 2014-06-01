@@ -312,63 +312,6 @@ int Inputparameters::get_benchmarksteps() const noexcept
   return benchmarksteps;
 }
 
-//RHMC specific parameters
-int Inputparameters::get_md_approx_ord() const noexcept
-{
-  return md_approx_ord;
-}
-int Inputparameters::get_metro_approx_ord() const noexcept
-{
-  return metro_approx_ord;
-}
-int Inputparameters::get_findminmax_iteration_block_size() const noexcept
-{
-  return findminmax_iteration_block_size;
-}
-int Inputparameters::get_findminmax_max() const noexcept
-{
-  return findminmax_max;
-}
-double Inputparameters::get_findminmax_prec() const noexcept
-{
-  return findminmax_prec;
-}
-bool Inputparameters::get_conservative() const noexcept
-{
-  return conservative;
-}
-int Inputparameters::get_num_tastes() const noexcept
-{
-  return num_tastes;
-}
-double Inputparameters::get_approx_lower() const noexcept
-{
-  return approx_lower;
-}
-double Inputparameters::get_approx_upper() const noexcept
-{
-  return approx_upper;
-}
-int Inputparameters::get_rhmcsteps() const noexcept
-{
-  return rhmcsteps;
-}
-std::string Inputparameters::get_approx_heatbath_file() const noexcept
-{
-  return approx_heatbath_file;
-}
-std::string Inputparameters::get_approx_md_file() const noexcept
-{
-  return approx_md_file;
-}
-std::string Inputparameters::get_approx_metropolis_file() const noexcept
-{
-  return approx_metropolis_file;
-}
-bool Inputparameters::get_read_rational_approximations_from_file() const noexcept
-{
-  return read_rational_approximations_from_file;
-}
 
 //direction for the correlator
 int Inputparameters::get_corr_dir() const noexcept
