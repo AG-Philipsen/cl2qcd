@@ -21,14 +21,10 @@
 #ifndef _META_PARAMETERS_RHMC_HPP_
 #define _META_PARAMETERS_RHMC_HPP_
 
-#include <vector>
-#include <string>
-
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "parametersBasic.hpp"
 
 namespace meta{
-class ParametersRhmc
+	class ParametersRhmc : public ParametersBasic
 {
 public:
 	int get_md_approx_ord() const noexcept;
@@ -45,7 +41,6 @@ public:
 	std::string get_approx_md_file() const noexcept;
 	std::string get_approx_metropolis_file() const noexcept;
 	bool get_read_rational_approximations_from_file() const noexcept;
-
 
 protected:
 	/** @TODO If the rational approximation is read from file than its parameters could differ

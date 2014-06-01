@@ -21,11 +21,7 @@
 #ifndef _META_PARAMETERS_HMC_HPP_
 #define _META_PARAMETERS_HMC_HPP_
 
-#include <vector>
-#include <string>
-
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "parametersBasic.hpp"
 
 namespace meta{
 class ParametersHmc
