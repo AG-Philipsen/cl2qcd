@@ -680,23 +680,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
 		("use_mp", po::value<bool>(&use_mp)->default_value(false));
 	
-	//RHMC specific parameters
-	po::options_description options_rhmc("RHMC options");
-	options_rhmc.add_options()
-		("md_approx_ord", po::value<int>(&md_approx_ord)->default_value(8))
-		("metro_approx_ord", po::value<int>(&metro_approx_ord)->default_value(15))
-		("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
-		("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
-		("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
-		("conservative", po::value<bool>(&conservative)->default_value(false))
-		("num_tastes", po::value<int>(&num_tastes)->default_value(2))
-		("approx_lower", po::value<double>(&approx_lower)->default_value(1.e-5))
-		("approx_upper", po::value<double>(&approx_upper)->default_value(1.))
-		("rhmcsteps", po::value<int>(&rhmcsteps)->default_value(10))
-		("approx_heatbath_file", po::value<std::string>(&approx_heatbath_file)->default_value("Approx_Heatbath"))
-		("approx_md_file", po::value<std::string>(&approx_md_file)->default_value("Approx_MD"))
-		("approx_metropolis_file", po::value<std::string>(&approx_metropolis_file)->default_value("Approx_Metropolis"))
-		("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
 	
 	po::options_description desc;
 	desc.add(cmd_opts)
@@ -704,7 +687,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		.add(options_io)
 		.add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver).add(options_obs).add(options_test)
 		.add(ParametersHmc::getOptions())
-		.add(options_rhmc);
+		.add(ParametersRhmc::getOptions());
 	
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
