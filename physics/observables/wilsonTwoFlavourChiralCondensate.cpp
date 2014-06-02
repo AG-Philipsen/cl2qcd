@@ -66,8 +66,8 @@ TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::
 void checkFermionAction(const meta::Inputparameters * parameters)
 {
 	if( ! (  
-					( parameters->get_fermact() == meta::Inputparameters::twistedmass) ||
-					( parameters->get_fermact() == meta::Inputparameters::wilson)
+					( parameters->get_fermact() == meta::action::twistedmass) ||
+					( parameters->get_fermact() == meta::action::wilson)
 				)
 		)
 		throw std::logic_error("Chiral condensate not implemented for chosen fermion action.");
@@ -77,7 +77,7 @@ void checkChiralCondensateVersion(const meta::Inputparameters * parameters)
 {
 	if( ! (  
 					( parameters->get_pbp_version() == meta::Inputparameters::std) ||
-					( (parameters->get_fermact() == meta::Inputparameters::twistedmass && parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) )
+					( (parameters->get_fermact() == meta::action::twistedmass && parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) )
 				)
 		)
 		throw std::logic_error("No valid chiral condensate version has been selected.");
@@ -174,16 +174,16 @@ double TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::la
 	*/
 	double result;
 
-	if(parameters->get_fermact() == meta::Inputparameters::twistedmass) {
+	if(parameters->get_fermact() == meta::action::twistedmass) {
 		xi->gamma5();
 	}
 	hmc_complex tmp = scalar_product(*xi, *phi);
 
 	switch(parameters->get_fermact()) {
-		case  meta::Inputparameters::wilson:
+		case  meta::action::wilson:
 			result = tmp.re * norm_std();
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			result = (-1.) * tmp.im * norm_std();
 			break;
 		default:

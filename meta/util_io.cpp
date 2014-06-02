@@ -52,7 +52,7 @@ void meta::print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## NTIME:   " << params.get_ntime();
 	logger.info() << "## NDIM:    " << NDIM;
 	logger.info() << "## NCOLOR:  " << NC;
-	if(params.get_fermact()!=Inputparameters::rooted_stagg) logger.info() << "## NSPIN:   " << NSPIN;
+	if(params.get_fermact()!=meta::action::rooted_stagg) logger.info() << "## NSPIN:   " << NSPIN;
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Computational parameters:";
 	logger.info() << "## PREC:    " << params.get_precision();
@@ -206,21 +206,21 @@ static void print_info_fermion(const meta::Inputparameters& params)
 	else
 		logger.info() << "## do not use imag. chem. pot.";
 	logger.info() << "##" ;
-	if(params.get_fermact() == Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		logger.info() <<  "## fermion action: unimproved Wilson";
 		logger.info() << "## kappa  = " << params.get_kappa();
 	}
-	if(params.get_fermact() == Inputparameters::twistedmass) {
+	if(params.get_fermact() == meta::action::twistedmass) {
 		logger.info() <<  "## fermion action: twisted mass Wilson";
 		logger.info() << "## kappa  = " << params.get_kappa();
 		logger.info() << "## mu     = " << params.get_mu();
 	}
-	if(params.get_fermact() == Inputparameters::clover) {
+	if(params.get_fermact() == meta::action::clover) {
 		logger.info() <<  "## fermion action: clover Wilson";
 		logger.info() << "## kappa  = " << params.get_kappa();
 		logger.info() << "## csw    = " << params.get_csw();
 	}
-	if(params.get_fermact() == Inputparameters::rooted_stagg) {
+	if(params.get_fermact() == meta::action::rooted_stagg) {
 		logger.info() <<  "## fermion action: staggered standard ";
 		logger.info() << "## mass           = " << params.get_mass();
 		logger.info() << "## Num. of tastes = " << params.get_num_tastes();
@@ -232,7 +232,7 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(params.get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
-	if(params.get_fermact() != Inputparameters::rooted_stagg){
+	if(params.get_fermact() != meta::action::rooted_stagg){
 		switch(params.get_solver()) {
 			case Inputparameters::cg:
 				logger.info() << "## Use CG-solver for inversions" ;
@@ -288,21 +288,21 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 	else
 		*os  << "## do not use imag. chem. pot." << endl;
 	*os  << "##" << endl;
-	if(params.get_fermact() == Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		*os <<  "## fermion action: unimproved Wilson" << endl;
 		*os  << "## kappa  = " << params.get_kappa() << endl;
 	}
-	if(params.get_fermact() == Inputparameters::twistedmass) {
+	if(params.get_fermact() == meta::action::twistedmass) {
 		*os <<  "## fermion action: twisted mass Wilson" << endl;
 		*os  << "## kappa  = " << params.get_kappa() << endl;
 		*os  << "## mu     = " << params.get_mu() << endl;
 	}
-	if(params.get_fermact() == Inputparameters::clover) {
+	if(params.get_fermact() == meta::action::clover) {
 		*os <<  "## fermion action: clover Wilson" << endl;
 		*os  << "## kappa  = " << params.get_kappa() << endl;
 		*os  << "## csw    = " << params.get_csw() << endl;
 	}
-	if(params.get_fermact() == Inputparameters::rooted_stagg) {
+	if(params.get_fermact() == meta::action::rooted_stagg) {
 		*os <<  "## fermion action: staggered standard " << endl;
 		*os << "## mass           = " << params.get_mass() << endl;
 		*os << "## Num. of tastes = " << params.get_num_tastes() << endl;
@@ -314,7 +314,7 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(params.get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
-	if(params.get_fermact() != Inputparameters::rooted_stagg){
+	if(params.get_fermact() != meta::action::rooted_stagg){
 		switch(params.get_solver()) {
 			case Inputparameters::cg:
 				*os << "## Use CG-solver for inversions" << endl;
@@ -357,10 +357,10 @@ static void print_info_gauge(std::ostream* os, const meta::Inputparameters& para
 	*os << "## Gauge parameters:" << endl;
 	*os << "##" << endl;
 	*os << "## beta:  " << params.get_beta() << endl;
-	if(params.get_gaugeact() == Inputparameters::wilson) {
+	if(params.get_gaugeact() == meta::action::wilson) {
 		*os <<  "## gauge action: unimproved Wilson" << endl;
 	}
-	if(params.get_gaugeact() == Inputparameters::tlsym) {
+	if(params.get_gaugeact() == meta::action::tlsym) {
 		*os <<  "## gauge action: tree level Symanzik" << endl;
 		*os << "## c0  = " << get_c0(params) << endl;
 		*os << "## c1  = " << get_c1(params) << endl;
@@ -375,10 +375,10 @@ static void print_info_gauge(const meta::Inputparameters& params)
 	logger.info() << "## Gauge parameters:";
 	logger.info() << "##" ;
 	logger.info() << "## beta:  " << params.get_beta();
-	if(params.get_gaugeact() == Inputparameters::wilson) {
+	if(params.get_gaugeact() == meta::action::wilson) {
 		logger.info() <<  "## gauge action: unimproved Wilson";
 	}
-	if(params.get_gaugeact() == Inputparameters::tlsym) {
+	if(params.get_gaugeact() == meta::action::tlsym) {
 		logger.info() <<  "## gauge action: tree level Symanzik";
 		logger.info() << "## c0  = " << get_c0(params);
 		logger.info() << "## c1  = " << get_c1(params);
@@ -479,16 +479,16 @@ void meta::print_info_hmc(const Inputparameters& params)
 	if(params.get_use_mp() == true) {
 		logger.info() << "##  ";
 		logger.info() <<  "## use mass preconditioning:";
-		if(params.get_fermact_mp() == Inputparameters::wilson) {
+		if(params.get_fermact_mp() == meta::action::wilson) {
 			logger.info() <<  "## mp action: unimproved Wilson";
 			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
 		}
-		if(params.get_fermact_mp() == Inputparameters::twistedmass) {
+		if(params.get_fermact_mp() == meta::action::twistedmass) {
 			logger.info() <<  "## mp action: twisted mass Wilson";
 			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
 			logger.info() << "## mu_mp     = " << params.get_mu_mp();
 		}
-		if(params.get_fermact_mp() == Inputparameters::clover) {
+		if(params.get_fermact_mp() == meta::action::clover) {
 			logger.info() <<  "## mp action: clover Wilson";
 			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
 			logger.info() << "## csw_mp   = " << params.get_csw_mp();
@@ -541,16 +541,16 @@ void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
 	if(params.get_use_mp() == true) {
 		*os << "##  " << '\n';
 		*os <<  "## use mass preconditioning:"  << '\n';
-		if(params.get_fermact_mp() == Inputparameters::wilson) {
+		if(params.get_fermact_mp() == meta::action::wilson) {
 			*os <<  "## mp action: unimproved Wilson"  << '\n';
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 		}
-		if(params.get_fermact_mp() == Inputparameters::twistedmass) {
+		if(params.get_fermact_mp() == meta::action::twistedmass) {
 			*os <<  "## mp action: twisted mass Wilson"  << '\n';
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 			*os << "## mu_mp     = " << params.get_mu_mp()  << '\n';
 		}
-		if(params.get_fermact_mp() == Inputparameters::clover) {
+		if(params.get_fermact_mp() == meta::action::clover) {
 		  *os <<  "## mp action: clover Wilson" << endl;
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 			*os << "## csw_mp   = " << params.get_csw_mp()  << '\n';
@@ -864,7 +864,7 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 			logger.info() << "## measure chiral condensate in standard version";
 		if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ) {
 			logger.info() << "## measure chiral condensate in twisted-mass one end trick version";
-			if(params.get_fermact() != Inputparameters::twistedmass)
+			if(params.get_fermact() != meta::action::twistedmass)
 				logger.fatal() << "## using the one end trick without twisted-mass action!";
 		}
 		if(params.get_sourcetype() == Inputparameters::point)
@@ -898,7 +898,7 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 			*os << "## measure chiral condensate in standard version" << endl;
 		if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ) {
 			*os << "## measure chiral condensate in twisted-mass one end trick version" << endl;
-			if(params.get_fermact() != Inputparameters::twistedmass)
+			if(params.get_fermact() != meta::action::twistedmass)
 				*os << "## using the one end trick without twisted-mass action!" << endl;
 		}
 		if(params.get_sourcetype() == Inputparameters::point)

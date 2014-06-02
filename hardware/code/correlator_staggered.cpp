@@ -31,7 +31,7 @@ using namespace std;
 
 void hardware::code::Correlator_staggered::fill_kernels()
 {
-	if(get_parameters().get_fermact() != meta::Inputparameters::rooted_stagg){
+	if(get_parameters().get_fermact() != meta::action::rooted_stagg){
 		throw Print_Error_Message("Correlator_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
 	}
 	

@@ -61,7 +61,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_beta(), 4.0);
 	BOOST_REQUIRE_EQUAL(params.get_rho(), 0.);
 	BOOST_REQUIRE_EQUAL(params.get_rho_iter(), 0);
-	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), Inputparameters::wilson);
+	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), meta::action::wilson);
 
 	//heatbath parameters
 	BOOST_REQUIRE_EQUAL(params.get_thermalizationsteps(), 0);
@@ -72,8 +72,8 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_measure_rectangles(), false);
 
 	//fermionic parameters
-	BOOST_REQUIRE_EQUAL(params.get_fermact(), Inputparameters::wilson);
-	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), Inputparameters::wilson);
+	BOOST_REQUIRE_EQUAL(params.get_fermact(), meta::action::wilson);
+	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), meta::action::wilson);
 	BOOST_REQUIRE_EQUAL(params.get_kappa(), 0.125);
 	BOOST_REQUIRE_EQUAL(params.get_mu(), 0.006);
 	BOOST_REQUIRE_EQUAL(params.get_csw(), 0.);
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_beta(), 4.1);
 	BOOST_REQUIRE_EQUAL(params.get_rho(), 0.1);
 	BOOST_REQUIRE_EQUAL(params.get_rho_iter(), 4);
-	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), Inputparameters::twistedmass);
+	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), meta::action::twistedmass);
 
 	//heatbath parameters
 	BOOST_REQUIRE_EQUAL(params.get_thermalizationsteps(), 10);
@@ -198,8 +198,8 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_measure_transportcoefficient_kappa(), true);
 
 	//fermionic parameters
-	BOOST_REQUIRE_EQUAL(params.get_fermact(), Inputparameters::tlsym);
-	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), Inputparameters::iwasaki);
+	BOOST_REQUIRE_EQUAL(params.get_fermact(), meta::action::tlsym);
+	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), meta::action::iwasaki);
 	BOOST_REQUIRE_EQUAL(params.get_kappa(), 0.25);
 	BOOST_REQUIRE_EQUAL(params.get_mu(), 0.06);
 	BOOST_REQUIRE_EQUAL(params.get_csw(), 0.1);

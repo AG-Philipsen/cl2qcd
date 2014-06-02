@@ -135,11 +135,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 * This changes the even source according to (with A = M + D):
 		 *  b_e = b_e - D_eo M_inv b_o
 		 */
-		if(params.get_fermact() == meta::Inputparameters::wilson) {
+		if(params.get_fermact() == meta::action::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp1, gf, source_odd, EVEN);
 			saxpy(&source_even, one, source_even, tmp1);
-		} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+		} else if(params.get_fermact() == meta::action::twistedmass) {
 			M_tm_inverse_sitediagonal(&tmp1, source_odd);
 			dslash(&tmp2, gf, tmp1, EVEN);
 			saxpy(&source_even, one, source_even, tmp2);
@@ -174,12 +174,12 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 *  x_o = - M_inv b_o - M_inv D x_e
 		 *      = -(M_inv D x_e + M_inv b_o)
 		 */
-		if(params.get_fermact() == meta::Inputparameters::wilson) {
+		if(params.get_fermact() == meta::action::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp1, gf, result_eo, ODD);
 			saxpy(&tmp1, mone, tmp1, source_odd);
 			sax(&tmp1, mone, tmp1);
-		} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+		} else if(params.get_fermact() == meta::action::twistedmass) {
 			dslash(&tmp2, gf, result_eo, ODD);
 			M_tm_inverse_sitediagonal(&tmp1, tmp2);
 			M_tm_inverse_sitediagonal(&tmp2, source_odd);

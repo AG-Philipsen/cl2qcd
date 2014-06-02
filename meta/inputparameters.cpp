@@ -35,7 +35,7 @@ using namespace meta;
 /**
  * Get the action describe by the given string.
  */
-static Inputparameters::action get_action(std::string);
+static meta::action get_action(std::string);
 /**
  * Get the integrator describe by the given string.
  */
@@ -65,14 +65,6 @@ static Inputparameters::sourcecontents get_sourcecontent(std::string s);
  */
 static void add_option_aliases(meta::ConfigFileNormalizer * const);
 
-bool Inputparameters::get_use_chem_pot_re() const noexcept
-{
-  return use_chem_pot_re;
-}
-bool Inputparameters::get_use_chem_pot_im() const noexcept
-{
-  return use_chem_pot_im;
-}
 bool Inputparameters::get_use_smearing() const noexcept
 {
   return use_smearing;
@@ -91,7 +83,7 @@ int Inputparameters::get_rho_iter() const noexcept
 {
   return rho_iter;
 }
-Inputparameters::action Inputparameters::get_gaugeact() const noexcept
+meta::action Inputparameters::get_gaugeact() const noexcept
 {
   return gaugeact;
 }
@@ -115,43 +107,7 @@ int Inputparameters::get_xi() const noexcept
 }
 
 
-//fermionic parameters
-Inputparameters::action Inputparameters::get_fermact() const noexcept
-{
-  return fermact;
-}
-Inputparameters::action Inputparameters::get_fermact_mp() const noexcept
-{
-  return fermact_mp;
-}
-double Inputparameters::get_kappa() const noexcept
-{
-  return kappa;
-}
-double Inputparameters::get_mass() const noexcept
-{
-  return mass;
-}
-double Inputparameters::get_mu() const noexcept
-{
-  return mu;
-}
-double Inputparameters::get_csw() const noexcept
-{
-  return csw;
-}
-double Inputparameters::get_kappa_mp() const noexcept
-{
-  return kappa_mp;
-}
-double Inputparameters::get_mu_mp() const noexcept
-{
-  return mu_mp;
-}
-double Inputparameters::get_csw_mp() const noexcept
-{
-  return csw_mp;
-}
+
 int Inputparameters::get_cgmax() const noexcept
 {
   return cgmax;
@@ -159,26 +115,6 @@ int Inputparameters::get_cgmax() const noexcept
 int Inputparameters::get_cgmax_mp() const noexcept
 {
   return cgmax_mp;
-}
-double Inputparameters::get_theta_fermion_spatial() const noexcept
-{
-  return theta_fermion_spatial;
-}
-double Inputparameters::get_theta_fermion_temporal() const noexcept
-{
-  return theta_fermion_temporal;
-}
-double Inputparameters::get_chem_pot_re() const noexcept
-{
-  return chem_pot_re;
-}
-double Inputparameters::get_chem_pot_im() const noexcept
-{
-  return chem_pot_im;
-}
-bool Inputparameters::get_use_eo() const noexcept
-{
-  return use_eo;
 }
 int Inputparameters::get_num_sources() const noexcept
 {
@@ -228,15 +164,6 @@ Inputparameters::solver Inputparameters::get_solver() const noexcept
 Inputparameters::solver Inputparameters::get_solver_mp() const noexcept
 {
   return _solver_mp;
-}
-
-bool Inputparameters::get_use_merge_kernels_fermion() const noexcept
-{
-  return use_merge_kernels_fermion;
-}
-bool Inputparameters::get_use_merge_kernels_spinor() const noexcept
-{
-  return use_merge_kernels_spinor;
 }
 
 Inputparameters::sourcetypes Inputparameters::get_sourcetype() const noexcept
@@ -294,28 +221,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		//todo: is this used?
 		("xi", po::value<int>(&xi)->default_value(1));
 
-	po::options_description options_fermion("Fermion options");
-	options_fermion.add_options()
-		("fermact", po::value<std::string>()->default_value("wilson"))
-		("fermact_mp", po::value<std::string>()->default_value("wilson"))
-		//todo: change this default value!
-		("kappa", po::value<double>(&kappa)->default_value(0.125))
-		("mass", po::value<double>(&mass)->default_value(0.1))
-		("mu", po::value<double>(&mu)->default_value(0.006))
-		("csw", po::value<double>(&csw)->default_value(0.))
-		("kappa_mp", po::value<double>(&kappa_mp)->default_value(0.125))
-		("mu_mp", po::value<double>(&mu_mp)->default_value(0.006))
-		("csw_mp", po::value<double>(&csw_mp)->default_value(0.))
-		("theta_fermion_spatial", po::value<double>(&theta_fermion_spatial)->default_value(0.))
-		("theta_fermion_temporal", po::value<double>(&theta_fermion_temporal)->default_value(0.))
-		("chem_pot_re", po::value<double>(&chem_pot_re)->default_value(0.))
-		("chem_pot_im", po::value<double>(&chem_pot_im)->default_value(0.))
-		("use_chem_pot_re", po::value<bool>(&use_chem_pot_re)->default_value(false))
-		("use_chem_pot_im", po::value<bool>(&use_chem_pot_im)->default_value(false))
-		("use_eo", po::value<bool>(&use_eo)->default_value(true))
-		("use_merge_kernels_spinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Use kernel merging for spinor kernels")
-		("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels");
-
 
 	po::options_description options_source("Source options");
 	options_source.add_options()
@@ -355,7 +260,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	desc.add(cmd_opts)
 		.add(ParametersConfig::getOptions())
 		.add(ParametersIo::getOptions())
-		.add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver)
+		.add(options_gaugefield).add(options_heatbath)
+		.add(ParametersFermion::getOptions())
+		.add(options_source).add(options_solver)
 		.add(ParametersObs::getOptions())
 		.add(ParametersHmc::getOptions())
 		.add(ParametersRhmc::getOptions())
@@ -402,19 +309,19 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	pbp_version_ = ::get_pbp_version(vm["pbp_version"].as<std::string>() );
 }
 
-static Inputparameters::action get_action(std::string s)
+static meta::action get_action(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::action> m;
-	m["wilson"] = Inputparameters::wilson;
-	m["clover"] = Inputparameters::clover;
-	m["twistedmass"] = Inputparameters::twistedmass;
-	m["tlsym"] = Inputparameters::tlsym;
-	m["iwasaki"] = Inputparameters::iwasaki;
-	m["dbw2"] = Inputparameters::dbw2;
-	m["rooted_stagg"] = Inputparameters::rooted_stagg;
+	std::map<std::string, meta::action> m;
+	m["wilson"] = meta::action::wilson;
+	m["clover"] = meta::action::clover;
+	m["twistedmass"] = meta::action::twistedmass;
+	m["tlsym"] = meta::action::tlsym;
+	m["iwasaki"] = meta::action::iwasaki;
+	m["dbw2"] = meta::action::dbw2;
+	m["rooted_stagg"] = meta::action::rooted_stagg;
 
-	Inputparameters::action a = m[s];
+	meta::action a = m[s];
 	if(a) { // map returns 0 if element is not found
 		return a;
 	} else {

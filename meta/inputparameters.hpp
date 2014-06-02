@@ -30,9 +30,11 @@
 #include <boost/algorithm/string.hpp>
 namespace po = boost::program_options;
 
+#include "parametersBasic.hpp"
 #include "parametersConfig.hpp"
 #include "parametersIo.hpp"
 #include "parametersObs.hpp"
+#include "parametersFermion.hpp"
 #include "parametersHmc.hpp"
 #include "parametersRhmc.hpp"
 #include "parametersTest.hpp"
@@ -52,6 +54,7 @@ namespace meta {
 		public ParametersConfig,
 		public ParametersIo,
 		public ParametersObs, 
+		public ParametersFermion,
 		public ParametersHmc, 
 		public ParametersRhmc,
 		public ParametersTest
@@ -59,7 +62,6 @@ namespace meta {
 
 public:
 
-	enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2, rooted_stagg };
 	enum solver { cg = 1, bicgstab, bicgstab_save };
 	enum sourcetypes {point = 1, volume, timeslice, zslice};
 	enum sourcecontents {one = 1, z4, gaussian, z2};
@@ -92,26 +94,6 @@ public:
 	int get_overrelaxsteps() const noexcept;
 	int get_xi() const noexcept;
 
-	//fermionic parameters
-	action get_fermact() const noexcept;
-	action get_fermact_mp() const noexcept;
-	double get_kappa() const noexcept;
-	double get_mass() const noexcept;
-	double get_mu() const noexcept;
-	double get_csw() const noexcept;
-	double get_kappa_mp() const noexcept;
-	double get_mu_mp() const noexcept;
-	double get_csw_mp() const noexcept;
-	double get_theta_fermion_spatial() const noexcept;
-	double get_theta_fermion_temporal() const noexcept;
-	double get_chem_pot_re() const noexcept;
-	double get_chem_pot_im() const noexcept;
-	bool get_use_chem_pot_re() const noexcept;
-	bool get_use_chem_pot_im() const noexcept;
-	bool get_use_eo() const noexcept;
-	bool get_use_merge_kernels_fermion() const noexcept;
-	bool get_use_merge_kernels_spinor() const noexcept;
-	
 	int get_num_sources() const noexcept;
 	int get_source_x() const noexcept;
 	int get_source_y() const noexcept;
@@ -148,26 +130,7 @@ private:
 	int overrelaxsteps;
 	int xi;
 
-	//fermionic parameters
-	action fermact;
-	action fermact_mp;
-	double kappa;
-	double mass; //staggered quark mass
-	double mu;
-	double csw;
-	double kappa_mp;
-	double mu_mp;
-	double csw_mp;
-	double theta_fermion_spatial;
-	double theta_fermion_temporal;
-	bool use_chem_pot_re;
-	bool use_chem_pot_im;
-	double chem_pot_re;
-	double chem_pot_im;
-	bool use_eo;
-	bool use_merge_kernels_fermion;
-	bool use_merge_kernels_spinor;
-	
+
 	int num_sources;
 	int source_x;
 	int source_y;

@@ -142,13 +142,13 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	}
 
 	switch (params.get_fermact()) {
-		case meta::Inputparameters::twistedmass :
+		case meta::action::twistedmass :
 			options << " -D _TWISTEDMASS_";
 			break;
-		case meta::Inputparameters::clover :
+		case meta::action::clover :
 			options << " -D _CLOVER_";
 			break;
-		case meta::Inputparameters::rooted_stagg :
+		case meta::action::rooted_stagg :
 			options << " -D _RHMC_";
 			options << " -D RA_MAX_ORDER=" << std::max(params.get_metro_approx_ord(), params.get_md_approx_ord());
 			break;
@@ -172,7 +172,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options <<  " -D BETA=" << params.get_beta();
 	
 	//Options for correlators
-	if(params.get_fermact() != meta::Inputparameters::rooted_stagg){
+	if(params.get_fermact() != meta::action::rooted_stagg){
 		hmc_float kappa_tmp = params.get_kappa();
 		options << " -D KAPPA=" << kappa_tmp;
 		options << " -D MKAPPA=" << -kappa_tmp;

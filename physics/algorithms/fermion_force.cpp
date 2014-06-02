@@ -132,10 +132,10 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
 	//  this is used as a default in the force-function.
 	Spinorfield_eo tmp_1(system);
-	if(params.get_fermact() == meta::Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		dslash(&tmp_1, gf, solution, ODD, kappa);
 		sax(&tmp_1, { -1., 0.}, tmp_1);
-	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+	} else if(params.get_fermact() == meta::action::twistedmass) {
 		Spinorfield_eo tmp_2(system);
 		dslash(&tmp_1, gf, solution, ODD, kappa);
 		M_tm_inverse_sitediagonal_minus(&tmp_2, tmp_1, mubar);
@@ -150,10 +150,10 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	//calculate Y_odd
 	//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 	//  this is used as a default in the force-function.
-	if(params.get_fermact() == meta::Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		dslash(&tmp_1, gf, phi_inv, ODD, kappa);
 		sax(&tmp_1, { -1., 0.}, tmp_1);
-	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+	} else if(params.get_fermact() == meta::action::twistedmass) {
 		Spinorfield_eo tmp_2(system);
 		dslash(&tmp_1, gf, phi_inv, ODD, kappa);
 		M_tm_inverse_sitediagonal(&tmp_2, tmp_1, mubar);
@@ -517,10 +517,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	///@NOTE the following calculations could also go in a new function for convenience
 	//calculate X_odd
 	//therefore, sf_eo_tmp is used as intermediate state.
-	if(params.get_fermact() == meta::Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		dslash(&tmp1, gf, solution, ODD);
 		sax(&tmp, mone, tmp1);
-	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+	} else if(params.get_fermact() == meta::action::twistedmass) {
 		dslash(&tmp1, gf, solution, ODD);
 		M_tm_inverse_sitediagonal_minus(&tmp2, tmp1);
 		sax(&tmp, mone, tmp2);
@@ -534,10 +534,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	//calculate Y_odd
 	//therefore, clmem_tmp_eo_1 is used as intermediate state.
-	if(params.get_fermact() == meta::Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		dslash(&tmp1, gf, phi_inv, ODD);
 		sax(&tmp1, mone, tmp1);
-	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+	} else if(params.get_fermact() == meta::action::twistedmass) {
 		dslash(&tmp1, gf, phi_inv, ODD);
 		M_tm_inverse_sitediagonal(&tmp2, tmp1);
 		sax(&tmp1, mone, tmp2);
@@ -559,10 +559,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	//(re-) calculate X_odd (with other masses)
 	//therefore, sf_eo_tmp is used as intermediate state.
-	if(params.get_fermact() == meta::Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		dslash(&tmp1, gf, solution, ODD, kappa2);
 		sax(&tmp, mone, tmp1);
-	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+	} else if(params.get_fermact() == meta::action::twistedmass) {
 		dslash(&tmp1, gf, solution, ODD, kappa2);
 		M_tm_inverse_sitediagonal_minus(&tmp2, tmp1, mubar2);
 		sax(&tmp, mone, tmp2);
@@ -577,10 +577,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	//calculate phi_odd
 	//this works in the same way as with Y above, since -phi_even is saved in the same buffer as Y_even
 	//therefore, clmem_tmp_eo_1 is used as intermediate state.
-	if(params.get_fermact() == meta::Inputparameters::wilson) {
+	if(params.get_fermact() == meta::action::wilson) {
 		dslash(&tmp1, gf, phi_inv, ODD, kappa2);
 		sax(&tmp1, mone, tmp1);
-	} else if(params.get_fermact() == meta::Inputparameters::twistedmass) {
+	} else if(params.get_fermact() == meta::action::twistedmass) {
 		dslash(&tmp1, gf, phi_inv, ODD, kappa2);
 		M_tm_inverse_sitediagonal(&tmp2, tmp1, mubar2);
 		sax(&tmp1, mone, tmp2);

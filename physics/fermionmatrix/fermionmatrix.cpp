@@ -49,11 +49,11 @@ const hardware::System& physics::fermionmatrix::Fermionmatrix_basic::get_system(
 void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
 	switch(get_system().get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			M_tm_plus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
@@ -66,23 +66,23 @@ cl_ulong physics::fermionmatrix::M::get_flops() const
 	auto devices = system.get_devices();
 	auto fermion_code = devices[0]->get_fermion_code();
 	switch(system.get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			return fermion_code->get_flop_size("M_wilson");
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			return fermion_code->get_flop_size("M_tm_plus");
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
 	}
 }
 
 void physics::fermionmatrix::Qplus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
 	switch(get_system().get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			M_tm_plus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
@@ -98,14 +98,14 @@ cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			res = fermion_code->get_flop_size("M_wilson");
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			res = fermion_code->get_flop_size("M_tm_plus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
 	}
 	res += fermion_code->get_flop_size("gamma5");
 	return res;
@@ -113,11 +113,11 @@ cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 void physics::fermionmatrix::Qminus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
 	switch(get_system().get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			M_tm_minus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
@@ -133,14 +133,14 @@ cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			res = fermion_code->get_flop_size("M_wilson");
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			res = fermion_code->get_flop_size("M_tm_minus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
 	}
 	res += fermion_code->get_flop_size("gamma5");
 	return res;
@@ -172,13 +172,13 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 	hmc_float mubar = get_mubar();
 
 	switch(system.get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
@@ -186,7 +186,7 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 			saxpy(out, {1., 0.}, *out, tmp);
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
 	}
 }
 cl_ulong physics::fermionmatrix::Aee::get_flops() const
@@ -198,18 +198,18 @@ cl_ulong physics::fermionmatrix::Aee::get_flops() const
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal");
 			res += fermion_code->get_flop_size("M_tm_sitediagonal");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
 	}
 	logger.trace() << "Aee flops: " << res;
 	return res;
@@ -232,13 +232,13 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 	hmc_float mubar = get_mubar();
 
 	switch(system.get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal_minus(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
@@ -246,7 +246,7 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 			saxpy(out, {1., 0.}, *out, tmp);
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
 	}
 }
 cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
@@ -258,18 +258,18 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
-		case meta::Inputparameters::wilson:
+		case meta::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
-		case meta::Inputparameters::twistedmass:
+		case meta::action::twistedmass:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal_minus");
 			res += fermion_code->get_flop_size("M_tm_sitediagonal_minus");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
 	}
 	logger.trace() << "Aee_minus flops: " << res;
 	return res;

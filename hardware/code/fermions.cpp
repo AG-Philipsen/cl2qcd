@@ -39,12 +39,12 @@ void hardware::code::Fermions::fill_kernels()
 
 	logger.debug() << "Creating Fermions kernels...";
 	
-	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
+	if(get_parameters().get_fermact() == meta::action::wilson) {
 		M_wilson = createKernel("M_wilson") << sources << "fermionmatrix.cl" << "fermionmatrix_m.cl";
-	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+	} else if(get_parameters().get_fermact() == meta::action::twistedmass) {
 		M_tm_plus = createKernel("M_tm_plus") << sources << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 		M_tm_minus = createKernel("M_tm_minus") << sources << "fermionmatrix.cl" << "fermionmatrix_m_tm_minus.cl";
-	} else if(get_parameters().get_fermact() == meta::Inputparameters::clover) {
+	} else if(get_parameters().get_fermact() == meta::action::clover) {
 		throw Print_Error_Message("no kernels for CLOVER-discretization implemented yet, aborting... ", __FILE__, __LINE__);
 	} else {
 		throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ", __FILE__, __LINE__);
@@ -53,7 +53,7 @@ void hardware::code::Fermions::fill_kernels()
 	gamma5 = createKernel("gamma5") << sources << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
 	//Kernels needed if eoprec is used
 	if(get_parameters().get_use_eo() == true) {
-		if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		if(get_parameters().get_fermact() == meta::action::twistedmass) {
 			M_tm_sitediagonal = createKernel("M_tm_sitediagonal") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 			M_tm_inverse_sitediagonal = createKernel("M_tm_inverse_sitediagonal") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 			M_tm_sitediagonal_minus = createKernel("M_tm_sitediagonal_minus") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
@@ -106,7 +106,7 @@ void hardware::code::Fermions::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(gamma5_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		if(get_parameters().get_fermact() == meta::action::twistedmass) {
 			clerr = clReleaseKernel(M_tm_sitediagonal);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 			clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
