@@ -89,16 +89,16 @@ static int castStringToInt(std::string in)
 
 static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
 {
-	helperMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+\\d\\.\\d+");
-	helperMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+\\d+");
-	helperMap["beta"].re = boost::regex ("beta\\s+=\\s+\\d.\\d+");
-	helperMap["kappa"].re = boost::regex ("kappa\\s+=\\s+\\d.\\d+");
-	helperMap["mu"].re = boost::regex ("mu\\s+=\\s+\\d.\\d+");
-	helperMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+\\d.\\d+");
- 	helperMap["time"].re = boost::regex ("time\\s+=\\s+[\\+\\-]\\d+");
+	helperMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+[\\+\\-]*\\d\\.\\d+");
+	helperMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
+	helperMap["beta"].re = boost::regex ("beta\\s+=\\s+[\\+\\-]*\\d.\\d+");
+	helperMap["kappa"].re = boost::regex ("kappa\\s+=\\s+[\\+\\-]*\\d.\\d+");
+	helperMap["mu"].re = boost::regex ("mu\\s+=\\s+[\\+\\-]*\\d.\\d+");
+	helperMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+[\\+\\-]*\\d.\\d+");
+ 	helperMap["time"].re = boost::regex ("time\\s+=\\s+[\\+\\-]*\\d+");
  	helperMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+[a-z]*");
-	helperMap["mubar"].re = boost::regex ("mubar\\s+=\\s+\\d.\\d+");
-	helperMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+\\d.\\d+");
+	helperMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d.\\d+");
+	helperMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d.\\d+");
  	helperMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 }
 
@@ -121,9 +121,13 @@ static void setParametersToValues_xlf(sourcefileparameters & parameters, std::ma
 
 static void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  helperMap)
 {
+	logger.warn() << str;
+	
 	//todo: find out about ::iterator
 	for (std::map<std::string, helper>::iterator it = helperMap.begin(); it != helperMap.end(); it++)
 	{
+		logger.warn() << it->first;
+		
 		//todo: add check if re is found
 		
 		//todo: make this more beautiful
