@@ -65,29 +65,6 @@ static Inputparameters::sourcecontents get_sourcecontent(std::string s);
  */
 static void add_option_aliases(meta::ConfigFileNormalizer * const);
 
-bool Inputparameters::get_use_smearing() const noexcept
-{
-  return use_smearing;
-}
-
-//gaugefield parameters
-double Inputparameters::get_beta() const noexcept
-{
-  return beta;
-}
-double Inputparameters::get_rho() const noexcept
-{
-  return rho;
-}
-int Inputparameters::get_rho_iter() const noexcept
-{
-  return rho_iter;
-}
-meta::action Inputparameters::get_gaugeact() const noexcept
-{
-  return gaugeact;
-}
-
 //heatbath parameters
 int Inputparameters::get_thermalizationsteps() const noexcept
 {
@@ -121,15 +98,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	po::positional_options_description pos_opts;
 	pos_opts.add("input-file", 1);
 	
-	po::options_description options_gaugefield("Gaugefield options");
-	options_gaugefield.add_options()
-		("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
-		("beta", po::value<double>(&beta)->default_value(4.0))
-		("use_smearing", po::value<bool>(&use_smearing)->default_value(false))
-		("rho", po::value<double>(&rho)->default_value(0.))
-		("rho_iter", po::value<int>(&rho_iter)->default_value(0))
-		("gaugeact", po::value<std::string>()->default_value("wilson"));
-	
 	po::options_description options_heatbath("Heatbath options");
 	options_heatbath.add_options()
 		//todo: this is also needed in the HMC!
@@ -143,7 +111,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	desc.add(cmd_opts)
 		.add(ParametersConfig::getOptions())
 		.add(ParametersIo::getOptions())
-		.add(options_gaugefield).add(options_heatbath)
+		.add(ParametersGauge::getOptions())
+		.add(options_heatbath)
 		.add(ParametersFermion::getOptions())
 		.add(ParametersSolver::getOptions())
 		.add(ParametersSources::getOptions())

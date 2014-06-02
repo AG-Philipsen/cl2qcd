@@ -161,6 +161,7 @@ po::options_description meta::ParametersConfig::getOptions()
 		("config_read_incr", po::value<int>(&config_read_incr)->default_value(1), "Increment for gaugefield configuration number when reading in more than one gaugefield configuration")
 		("split_cpu", po::value<bool>(&split_cpu)->default_value(false), "Split the CPU into multiple devices to avoid numa issues. (Requires OpenCL 1.2 at least)")
 		("benchmarksteps", po::value<int>(&benchmarksteps)->default_value(500))
+		("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
 		//todo: this is not used ?!
 		("use_aniso", po::value<bool>(&use_aniso)->default_value(false));
 	

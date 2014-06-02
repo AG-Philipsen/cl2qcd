@@ -24,6 +24,7 @@
 add_library(meta
 	parametersConfig.cpp
 	parametersIo.cpp
+	parametersGauge.cpp
 	parametersFermion.cpp
 	parametersSources.cpp
 	parametersSolver.cpp

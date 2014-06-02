@@ -34,6 +34,7 @@ namespace po = boost::program_options;
 #include "parametersConfig.hpp"
 #include "parametersIo.hpp"
 #include "parametersObs.hpp"
+#include "parametersGauge.hpp"
 #include "parametersFermion.hpp"
 #include "parametersSources.hpp"
 #include "parametersSolver.hpp"
@@ -56,6 +57,7 @@ namespace meta {
 		public ParametersConfig,
 		public ParametersIo,
 		public ParametersObs, 
+		public ParametersGauge,
 		public ParametersFermion,
 		public ParametersSources,
 		public ParametersSolver,
@@ -81,12 +83,7 @@ public:
 	 */
 	Inputparameters(int argc, const char** argv);
 
-	//gaugefield parameters
-	double get_beta() const noexcept;
-	double get_rho() const noexcept;
-	int get_rho_iter() const noexcept;
-	action get_gaugeact() const noexcept;
-	bool get_use_smearing() const noexcept;
+
 
 	//heatbath parameters
 	int get_thermalizationsteps() const noexcept;
@@ -95,12 +92,6 @@ public:
 	int get_xi() const noexcept;
 
 private:
-	//gaugefield parameters
-	double beta;
-	double rho;
-	int rho_iter;
-	action gaugeact;
-	bool use_smearing;
 	
 	//heatbath parameters
 	int thermalizationsteps;
