@@ -318,14 +318,6 @@ bool Inputparameters::is_ocl_compiler_opt_disabled() const noexcept
 {
   return ocl_compiler_opt_disabled;
 }
-double Inputparameters::get_test_ref_value() const noexcept
-{
-  return test_ref_value;
-}
-double Inputparameters::get_test_ref_value2() const noexcept
-{
-  return test_ref_value2;
-}
 
 std::string Inputparameters::get_log_level() const noexcept
 {
@@ -621,10 +613,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
 		("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!");
 
-	po::options_description options_test("Test options");
-	options_test.add_options()
-		("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
-		("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
+
 	
 	po::options_description desc;
 	desc.add(cmd_opts)
@@ -632,9 +621,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		.add(options_io)
 		.add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver)
 		.add(ParametersObs::getOptions())
-		.add(options_test)
 		.add(ParametersHmc::getOptions())
-		.add(ParametersRhmc::getOptions());
+		.add(ParametersRhmc::getOptions())
+		.add(ParametersTest::getOptions());
 	
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);

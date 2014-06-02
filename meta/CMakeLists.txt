@@ -25,6 +25,7 @@ add_library(meta
 	parametersObs.cpp
 	parametersHmc.cpp
 	parametersRhmc.cpp
+	parametersTest.cpp
 	inputparameters.cpp
 	util.cpp
 	util_io.cpp

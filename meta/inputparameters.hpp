@@ -33,6 +33,7 @@ namespace po = boost::program_options;
 #include "parametersObs.hpp"
 #include "parametersHmc.hpp"
 #include "parametersRhmc.hpp"
+#include "parametersTest.hpp"
 
 /**
  * This namespace contains generic utility code required by the other packages.
@@ -49,7 +50,8 @@ namespace meta {
 	class Inputparameters : 
 		public ParametersObs, 
 		public ParametersHmc, 
-		public ParametersRhmc
+		public ParametersRhmc,
+		public ParametersTest
 	{
 
 public:
@@ -155,8 +157,7 @@ public:
 
 	bool get_use_same_rnd_numbers() const noexcept;
 	bool get_profile_solver() const noexcept;
-	double get_test_ref_value() const noexcept;
-	double get_test_ref_value2() const noexcept;
+
 
 	bool is_ocl_compiler_opt_disabled() const noexcept;
 
@@ -279,8 +280,7 @@ private:
 
 	bool use_same_rnd_numbers;
 	bool profile_solver;
-	double test_ref_value;
-	double test_ref_value2;
+
 
 	bool ocl_compiler_opt_disabled;
 
