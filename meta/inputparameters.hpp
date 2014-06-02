@@ -30,6 +30,7 @@
 #include <boost/algorithm/string.hpp>
 namespace po = boost::program_options;
 
+#include "parametersIo.hpp"
 #include "parametersObs.hpp"
 #include "parametersHmc.hpp"
 #include "parametersRhmc.hpp"
@@ -48,6 +49,7 @@ namespace meta {
  * be used as a const value after initialization.
  */
 	class Inputparameters : 
+		public ParametersIo,
 		public ParametersObs, 
 		public ParametersHmc, 
 		public ParametersRhmc,
@@ -101,8 +103,6 @@ public:
 	int get_benchmarksteps() const noexcept;
 
 	startcondition get_startcondition() const noexcept;
-	int get_writefrequency() const noexcept;
-	int get_savefrequency() const noexcept;
 	std::string get_sourcefile() const noexcept;
 	bool get_ignore_checksum_errors() const noexcept;
 	bool get_print_to_screen() const noexcept;
@@ -165,36 +165,11 @@ public:
 	bool get_use_merge_kernels_spinor() const noexcept;
 	bool get_use_rec12() const noexcept;
 
-  std::string get_profiling_data_prefix() const noexcept;
-  std::string get_profiling_data_postfix() const noexcept;
-
 	//parameters to read in gauge configurations
 	bool get_read_multiple_configs() const noexcept;
 	int get_config_read_start() const noexcept;
 	int get_config_read_end() const noexcept;
 	int get_config_read_incr() const noexcept;
-	int get_config_number_digits() const noexcept;
-	std::string get_prng_prefix() const noexcept;
-	std::string get_prng_postfix() const noexcept;
-	std::string get_config_prefix() const noexcept;
-	std::string get_config_postfix() const noexcept;
-	std::string get_ferm_obs_corr_prefix() const noexcept;
-	std::string get_ferm_obs_corr_postfix() const noexcept;
-	std::string get_ferm_obs_pbp_prefix() const noexcept;
-	std::string get_ferm_obs_pbp_postfix() const noexcept;
-	std::string get_gauge_obs_prefix() const noexcept;
-	std::string get_gauge_obs_postfix() const noexcept;
-	bool get_ferm_obs_to_single_file() const noexcept;
-	bool get_gauge_obs_to_single_file() const noexcept;
-	std::string get_hmc_obs_prefix() const noexcept;
-	std::string get_hmc_obs_postfix() const noexcept;
-	bool get_hmc_obs_to_single_file() const noexcept;
-	std::string get_rhmc_obs_prefix() const noexcept;
-	std::string get_rhmc_obs_postfix() const noexcept;
-	bool get_rhmc_obs_to_single_file() const noexcept;
-
-	std::string get_rectanglesFilename() const noexcept;
-	std::string get_transportcoefficientKappaFilename() const noexcept;
 
 	std::string get_log_level() const noexcept;
 
@@ -225,8 +200,7 @@ private:
 	int ntime;
 
 	startcondition _startcondition;
-	int writefrequency;
-	int savefrequency;
+
 	std::string sourcefile;
 	bool ignore_checksum_errors;
 	bool print_to_screen;
@@ -293,35 +267,6 @@ private:
 	int config_read_start;
 	int config_read_end;
 	int config_read_incr;
-	int config_number_digits;
-	std::string config_prefix;
-	std::string config_postfix;
-
-	std::string prng_prefix;
-	std::string prng_postfix;
-
-	std::string rectanglesFilename;
-	std::string transportcoefficientKappaFilename;
-
-	std::string profiling_data_prefix;
-	std::string profiling_data_postfix;
-
-	//parameters to write out observables
-	bool gauge_obs_to_single_file;
-	std::string gauge_obs_prefix;
-	std::string gauge_obs_postfix;
-	bool ferm_obs_to_single_file;
-	std::string ferm_obs_corr_prefix;
-	std::string ferm_obs_corr_postfix;
-	std::string ferm_obs_pbp_prefix;
-	std::string ferm_obs_pbp_postfix;
-	bool hmc_obs_to_single_file;
-	std::string hmc_obs_prefix;
-	std::string hmc_obs_postfix;
-	bool rhmc_obs_to_single_file;
-	std::string rhmc_obs_prefix;
-	std::string rhmc_obs_postfix;
-
 
 	std::string log_level;
 
