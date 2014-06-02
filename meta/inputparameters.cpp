@@ -184,14 +184,7 @@ int Inputparameters::get_xi() const noexcept
 {
   return xi;
 }
-bool Inputparameters::get_measure_transportcoefficient_kappa() const noexcept
-{
-	return measure_transportcoefficient_kappa;
-}
-bool Inputparameters::get_measure_rectangles() const noexcept
-{
-  return measure_rectangles;
-}
+
 
 //fermionic parameters
 Inputparameters::action Inputparameters::get_fermact() const noexcept
@@ -310,13 +303,6 @@ Inputparameters::solver Inputparameters::get_solver_mp() const noexcept
 int Inputparameters::get_benchmarksteps() const noexcept
 {
   return benchmarksteps;
-}
-
-
-//direction for the correlator
-int Inputparameters::get_corr_dir() const noexcept
-{
-  return corr_dir;
 }
 
 bool Inputparameters::get_use_same_rnd_numbers() const noexcept
@@ -475,18 +461,7 @@ Inputparameters::sourcecontents Inputparameters::get_sourcecontent() const noexc
 {
   return sourcecontent;
 }
-bool Inputparameters::get_measure_correlators() const noexcept
-{
-  return measure_correlators;
-}
-bool Inputparameters::get_measure_pbp() const noexcept
-{
-  return measure_pbp;
-}
-Inputparameters::pbp_version Inputparameters::get_pbp_version() const noexcept
-{
-  return pbp_version_;
-}
+
 int Inputparameters::get_cg_iteration_block_size() const noexcept
 {
   return cg_iteration_block_size;
@@ -646,46 +621,18 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
 		("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!");
 
-	po::options_description options_obs("Observables options");
-	options_obs.add_options()
-		("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
-		("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
-		("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
-		("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
-		("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
-		("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) );
-
 	po::options_description options_test("Test options");
 	options_test.add_options()
 		("test_ref_val", po::value<double>(&test_ref_value)->default_value(0.))
 		("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
-
-	po::options_description options_hmc("HMC options");
-	options_hmc.add_options()
-		("tau", po::value<double>(&tau)->default_value(0.5))
-		("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
-		("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
-		("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
-		("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
-		("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
-		("benchmarksteps", po::value<int>(&benchmarksteps)->default_value(500))
-		("num_timescales", po::value<int>(&num_timescales)->default_value(1))
-		("integrator0", po::value<std::string>()->default_value("leapfrog"))
-		("integrator1", po::value<std::string>()->default_value("leapfrog"))
-		("integrator2", po::value<std::string>()->default_value("leapfrog"))
-		// this is the optimal value...
-		("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
-		("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
-		("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
-		("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
-		("use_mp", po::value<bool>(&use_mp)->default_value(false));
-	
 	
 	po::options_description desc;
 	desc.add(cmd_opts)
 		.add(config)
 		.add(options_io)
-		.add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver).add(options_obs).add(options_test)
+		.add(options_gaugefield).add(options_heatbath).add(options_fermion).add(options_source).add(options_solver)
+		.add(ParametersObs::getOptions())
+		.add(options_test)
 		.add(ParametersHmc::getOptions())
 		.add(ParametersRhmc::getOptions());
 	

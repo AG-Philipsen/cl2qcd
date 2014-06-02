@@ -30,6 +30,7 @@
 #include <boost/algorithm/string.hpp>
 namespace po = boost::program_options;
 
+#include "parametersObs.hpp"
 #include "parametersHmc.hpp"
 #include "parametersRhmc.hpp"
 
@@ -45,7 +46,10 @@ namespace meta {
  * This class is copyable and assignable, but should
  * be used as a const value after initialization.
  */
-	class Inputparameters : public ParametersHmc, public ParametersRhmc
+	class Inputparameters : 
+		public ParametersObs, 
+		public ParametersHmc, 
+		public ParametersRhmc
 	{
 
 public:
@@ -55,7 +59,6 @@ public:
 	enum solver { cg = 1, bicgstab, bicgstab_save };
 	enum sourcetypes {point = 1, volume, timeslice, zslice};
 	enum sourcecontents {one = 1, z4, gaussian, z2};
-	enum pbp_version {std = 1, tm_one_end_trick};
 
 	/**
 	 * The parsing of the input parameters aborted for some reason.
@@ -116,8 +119,7 @@ public:
 	int get_heatbathsteps() const noexcept;
 	int get_overrelaxsteps() const noexcept;
 	int get_xi() const noexcept;
-	bool get_measure_transportcoefficient_kappa() const noexcept;
-	bool get_measure_rectangles() const noexcept;
+
 
 	//fermionic parameters
 	action get_fermact() const noexcept;
@@ -150,9 +152,6 @@ public:
 	double get_force_prec() const noexcept;
 	int get_iter_refresh() const noexcept;
 	int get_iter_refresh_mp() const noexcept;
-
-	//direction for the correlator
-	int get_corr_dir() const noexcept;
 
 	bool get_use_same_rnd_numbers() const noexcept;
 	bool get_profile_solver() const noexcept;
@@ -192,8 +191,6 @@ public:
 	std::string get_rhmc_obs_prefix() const noexcept;
 	std::string get_rhmc_obs_postfix() const noexcept;
 	bool get_rhmc_obs_to_single_file() const noexcept;
-	bool get_measure_correlators() const noexcept;
-	bool get_measure_pbp() const noexcept;
 
 	std::string get_rectanglesFilename() const noexcept;
 	std::string get_transportcoefficientKappaFilename() const noexcept;
@@ -202,7 +199,7 @@ public:
 
 	sourcetypes get_sourcetype() const noexcept;
 	sourcecontents get_sourcecontent() const noexcept;
-	pbp_version get_pbp_version() const noexcept;
+
 
 	int get_cg_iteration_block_size() const noexcept;
 	bool get_cg_use_async_copy() const noexcept;
@@ -247,8 +244,6 @@ private:
 	int heatbathsteps;
 	int overrelaxsteps;
 	int xi;
-	bool measure_transportcoefficient_kappa;
-        bool measure_rectangles;
 
 	//fermionic parameters
 	action fermact;
@@ -281,10 +276,6 @@ private:
 	double force_prec;
 	int iter_refresh;
 	int iter_refresh_mp;
-
-
-	//direction for the correlator
-	int corr_dir;
 
 	bool use_same_rnd_numbers;
 	bool profile_solver;
@@ -331,15 +322,11 @@ private:
 	std::string rhmc_obs_prefix;
 	std::string rhmc_obs_postfix;
 
-	bool measure_correlators;
-	bool measure_pbp;
 
 	std::string log_level;
 
 	sourcetypes sourcetype;
 	sourcecontents sourcecontent;
-
-	pbp_version pbp_version_;
 
 	int cg_iteration_block_size;
 	bool cg_use_async_copy;
