@@ -576,8 +576,6 @@ void write_gaugefield (
 	sprintf(xlf_info, "%s", "plaquette = ");
 	sprintf(dummystring, "%f", plaquettevalue);
 	strcat(xlf_info, dummystring);
-	sprintf(dummystring, "%s", "\n trajectory nr = ");
-	strcat(xlf_info, dummystring);
 	strcat(xlf_info, "\n trajectory nr = ");
 	sprintf(dummystring, "%i", trajectorynr);
 	strcat(xlf_info, dummystring);
