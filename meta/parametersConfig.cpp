@@ -129,11 +129,6 @@ bool meta::ParametersConfig::get_use_rec12() const noexcept
   return use_rec12;
 }
 
-bool meta::ParametersConfig::get_profile_solver() const noexcept
-{
-  return profile_solver;
-}
-
 bool meta::ParametersConfig::get_split_cpu() const noexcept
 {
 	return split_cpu;

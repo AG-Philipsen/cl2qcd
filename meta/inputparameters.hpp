@@ -35,6 +35,7 @@ namespace po = boost::program_options;
 #include "parametersIo.hpp"
 #include "parametersObs.hpp"
 #include "parametersFermion.hpp"
+#include "parametersSolver.hpp"
 #include "parametersHmc.hpp"
 #include "parametersRhmc.hpp"
 #include "parametersTest.hpp"
@@ -55,6 +56,7 @@ namespace meta {
 		public ParametersIo,
 		public ParametersObs, 
 		public ParametersFermion,
+		public ParametersSolver,
 		public ParametersHmc, 
 		public ParametersRhmc,
 		public ParametersTest
@@ -62,7 +64,6 @@ namespace meta {
 
 public:
 
-	enum solver { cg = 1, bicgstab, bicgstab_save };
 	enum sourcetypes {point = 1, volume, timeslice, zslice};
 	enum sourcecontents {one = 1, z4, gaussian, z2};
 
@@ -103,19 +104,6 @@ public:
 	sourcetypes get_sourcetype() const noexcept;
 	sourcecontents get_sourcecontent() const noexcept;
 
-	//at the moment, only 2 solvers are implemented..
-	solver get_solver() const noexcept;
-	solver get_solver_mp() const noexcept;
-	double get_solver_prec() const noexcept;
-	double get_force_prec() const noexcept;
-	int get_iter_refresh() const noexcept;
-	int get_iter_refresh_mp() const noexcept;
-	int get_cg_iteration_block_size() const noexcept;
-	bool get_cg_use_async_copy() const noexcept;
-	int get_cg_minimum_iteration_count() const noexcept;
-	int get_cgmax() const noexcept;
-	int get_cgmax_mp() const noexcept;
-
 private:
 	//gaugefield parameters
 	double beta;
@@ -139,19 +127,6 @@ private:
 	bool place_sources_on_host;
 	sourcetypes sourcetype;
 	sourcecontents sourcecontent;
-	
-	double solver_prec;
-	double force_prec;
-	int iter_refresh;
-	int iter_refresh_mp;
-	//at the moment, only 2 solvers are implemented..
-	solver _solver;
-	solver _solver_mp;
-	int cgmax;
-	int cgmax_mp;
-	int cg_iteration_block_size;
-	bool cg_use_async_copy;
-	int cg_minimum_iteration_count;
 };
 }
 

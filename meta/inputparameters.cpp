@@ -106,16 +106,6 @@ int Inputparameters::get_xi() const noexcept
   return xi;
 }
 
-
-
-int Inputparameters::get_cgmax() const noexcept
-{
-  return cgmax;
-}
-int Inputparameters::get_cgmax_mp() const noexcept
-{
-  return cgmax_mp;
-}
 int Inputparameters::get_num_sources() const noexcept
 {
   return num_sources;
@@ -141,31 +131,6 @@ bool Inputparameters::get_place_sources_on_host() const noexcept
 	return place_sources_on_host;
 }
 
-double Inputparameters::get_solver_prec() const noexcept
-{
-  return solver_prec;
-}
-double Inputparameters::get_force_prec() const noexcept
-{
-  return force_prec;
-}
-int Inputparameters::get_iter_refresh() const noexcept
-{
-  return iter_refresh;
-}
-int Inputparameters::get_iter_refresh_mp() const noexcept
-{
-  return iter_refresh_mp;
-}
-Inputparameters::solver Inputparameters::get_solver() const noexcept
-{
-  return _solver;
-}
-Inputparameters::solver Inputparameters::get_solver_mp() const noexcept
-{
-  return _solver_mp;
-}
-
 Inputparameters::sourcetypes Inputparameters::get_sourcetype() const noexcept
 {
   return sourcetype;
@@ -173,19 +138,6 @@ Inputparameters::sourcetypes Inputparameters::get_sourcetype() const noexcept
 Inputparameters::sourcecontents Inputparameters::get_sourcecontent() const noexcept
 {
   return sourcecontent;
-}
-
-int Inputparameters::get_cg_iteration_block_size() const noexcept
-{
-  return cg_iteration_block_size;
-}
-bool Inputparameters::get_cg_use_async_copy() const noexcept
-{
-  return cg_use_async_copy;
-}
-int Inputparameters::get_cg_minimum_iteration_count() const noexcept
-{
-  return cg_minimum_iteration_count;
 }
 
 Inputparameters::Inputparameters(int argc, const char** argv)
@@ -233,36 +185,14 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		("source_t", po::value<int>(&source_t)->default_value(0))
 		("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
 
-	po::options_description options_solver("Solver options");
-	options_solver.add_options()
-		("solver", po::value<std::string>()->default_value("bicgstab"))
-		("solver_mp", po::value<std::string>()->default_value("bicgstab"))
-		("cgmax", po::value<int>(&cgmax)->default_value(1000))
-		("cgmax_mp", po::value<int>(&cgmax_mp)->default_value(1000))
-#ifdef _USEDOUBLEPREC_
-		("solver_prec", po::value<double>(&solver_prec)->default_value(1e-23))
-		("force_prec", po::value<double>(&force_prec)->default_value(1e-12))
-#else
-		("solver_prec", po::value<double>(&solver_prec)->default_value(1e-16))
-		("force_prec", po::value<double>(&force_prec)->default_value(1e-8))
-#endif
-		("iter_refresh", po::value<int>(&iter_refresh)->default_value(100))
-		("iter_refresh_mp", po::value<int>(&iter_refresh_mp)->default_value(100))
-		//this is not used. Remove!
-		("profile_solver", po::value<bool>(&profile_solver)->default_value(false))
-		("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
-		("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.")
-		("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!");
-
-
-	
 	po::options_description desc;
 	desc.add(cmd_opts)
 		.add(ParametersConfig::getOptions())
 		.add(ParametersIo::getOptions())
 		.add(options_gaugefield).add(options_heatbath)
 		.add(ParametersFermion::getOptions())
-		.add(options_source).add(options_solver)
+		.add(ParametersSolver::getOptions())
+		.add(options_source)
 		.add(ParametersObs::getOptions())
 		.add(ParametersHmc::getOptions())
 		.add(ParametersRhmc::getOptions())
