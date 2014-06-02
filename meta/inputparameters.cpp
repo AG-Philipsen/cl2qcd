@@ -65,24 +65,6 @@ static Inputparameters::sourcecontents get_sourcecontent(std::string s);
  */
 static void add_option_aliases(meta::ConfigFileNormalizer * const);
 
-//heatbath parameters
-int Inputparameters::get_thermalizationsteps() const noexcept
-{
-  return thermalizationsteps;
-}
-int Inputparameters::get_heatbathsteps() const noexcept
-{
-  return heatbathsteps;
-}
-int Inputparameters::get_overrelaxsteps() const noexcept
-{
-  return overrelaxsteps;
-}
-int Inputparameters::get_xi() const noexcept
-{
-  return xi;
-}
-
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
 	logger.info() << "read in parameters...";
@@ -97,22 +79,13 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	// TODO add log-level etc
 	po::positional_options_description pos_opts;
 	pos_opts.add("input-file", 1);
-	
-	po::options_description options_heatbath("Heatbath options");
-	options_heatbath.add_options()
-		//todo: this is also needed in the HMC!
-		("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
-		("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
-		("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
-		//todo: is this used?
-		("xi", po::value<int>(&xi)->default_value(1));
 
 	po::options_description desc;
 	desc.add(cmd_opts)
 		.add(ParametersConfig::getOptions())
 		.add(ParametersIo::getOptions())
 		.add(ParametersGauge::getOptions())
-		.add(options_heatbath)
+		.add(ParametersHeatbath::getOptions())
 		.add(ParametersFermion::getOptions())
 		.add(ParametersSolver::getOptions())
 		.add(ParametersSources::getOptions())

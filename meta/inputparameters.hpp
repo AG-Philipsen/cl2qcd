@@ -26,9 +26,7 @@
 
 #include "../host_functionality/logger.hpp"
 
-#include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
-namespace po = boost::program_options;
 
 #include "parametersBasic.hpp"
 #include "parametersConfig.hpp"
@@ -39,6 +37,7 @@ namespace po = boost::program_options;
 #include "parametersSources.hpp"
 #include "parametersSolver.hpp"
 #include "parametersHmc.hpp"
+#include "parametersHeatbath.hpp"
 #include "parametersRhmc.hpp"
 #include "parametersTest.hpp"
 
@@ -62,43 +61,27 @@ namespace meta {
 		public ParametersSources,
 		public ParametersSolver,
 		public ParametersHmc, 
+		public ParametersHeatbath,
 		public ParametersRhmc,
 		public ParametersTest
 	{
 
 public:
+		/**
+		* The parsing of the input parameters aborted for some reason.
+		* Could either be invalid input or the specification of --help.
+		*/
+		struct parse_aborted {};
 
-	/**
-	 * The parsing of the input parameters aborted for some reason.
-	 * Could either be invalid input or the specification of --help.
-	 */
-	struct parse_aborted {};
-
-	/**
-	 * Construct from command line and config file.
-	 *
-	 * Config file will be retrieved from command line.
-	 *
-	 * @throws parse_aborted
-	 */
-	Inputparameters(int argc, const char** argv);
-
-
-
-	//heatbath parameters
-	int get_thermalizationsteps() const noexcept;
-	int get_heatbathsteps() const noexcept;
-	int get_overrelaxsteps() const noexcept;
-	int get_xi() const noexcept;
-
-private:
-	
-	//heatbath parameters
-	int thermalizationsteps;
-	int heatbathsteps;
-	int overrelaxsteps;
-	int xi;
-};
+		/**
+		* Construct from command line and config file.
+		*
+		* Config file will be retrieved from command line.
+		*
+		* @throws parse_aborted
+		*/
+		Inputparameters(int argc, const char** argv);
+	};
 }
 
 #endif /* _META_INPUTPARAMETERS_H_ */

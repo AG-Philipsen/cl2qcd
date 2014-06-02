@@ -30,6 +30,7 @@ add_library(meta
 	parametersSolver.cpp
 	parametersObs.cpp
 	parametersHmc.cpp
+	parametersHeatbath.cpp
 	parametersRhmc.cpp
 	parametersTest.cpp
 	inputparameters.cpp
