@@ -20,15 +20,15 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "chiral_condensate_staggered.hpp"
+#include "staggeredChiralCondensate.hpp"
 
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/scalar_complex.hpp"
 #include "../fermionmatrix/fermionmatrix_stagg.hpp"
 #include "../sources.hpp"
-#include "solver_shifted.hpp"
+#include "../algorithms/solver_shifted.hpp"
 
-hmc_complex physics::algorithms::chiral_condensate_staggered(const physics::lattices::Gaugefield& gf, physics::PRNG& prng, const hardware::System& system)
+hmc_complex physics::observables::staggered::measureChiralCondensate(const physics::lattices::Gaugefield& gf, physics::PRNG& prng, const hardware::System& system)
 {
 	/**
 	 * The chiral condensate in the RHMC algorithm turns out to be

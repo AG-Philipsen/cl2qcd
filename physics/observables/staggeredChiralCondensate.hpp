@@ -20,26 +20,26 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _PHYSICS_ALGORITHMS_CHIRAL_CONDENSATE_STAGG_
-#define _PHYSICS_ALGORITHMS_CHIRAL_CONDENSATE_STAGG_
+#ifndef _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_
+#define _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_
 
 #include "../lattices/gaugefield.hpp"
 
 namespace physics {
-
-namespace algorithms {
-
-/**
- * Calculate chiral condesate with noise estimators (only volume source is accepted so far)
- * with the content and the number of the sources as specified in Inputparameters
- * @param[in] gf The actual configuration used in the fermionmatrix
- * @param[in] prng The actual random number generator
- * @param[in] system The system to operate on
- */
-hmc_complex chiral_condensate_staggered(const physics::lattices::Gaugefield& gf, physics::PRNG& prng, const hardware::System& system);
-
+  namespace observables {
+    namespace staggered { 
+  
+      /**
+       * Calculate chiral condesate with noise estimators (only volume source is accepted so far)
+       * with the content and the number of the sources as specified in Inputparameters
+       * @param[in] gf The actual configuration used in the fermionmatrix
+       * @param[in] prng The actual random number generator
+       * @param[in] system The system to operate on
+       */
+      hmc_complex measureChiralCondensate(const physics::lattices::Gaugefield& gf, physics::PRNG& prng, const hardware::System& system);
+      
+    }
+  }
 }
 
-}
-
-#endif /* _PHYSICS_ALGORITHMS_CHIRAL_CONDENSATE_STAGG_ */
+#endif /* _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_ */

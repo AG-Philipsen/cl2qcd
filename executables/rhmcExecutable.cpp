@@ -119,7 +119,7 @@ void rhmcExecutable::printRhmcObservablesToFile(const std::string& filename)
 	if(parameters.get_measure_pbp()) {
 	     std::vector<hmc_complex> pbp(4);
 	     for(size_t i=0; i<pbp.size(); i++){
-	         pbp[i] = physics::algorithms::chiral_condensate_staggered(*gaugefield, *prng, *system);
+	         pbp[i] = physics::observables::staggered::measureChiralCondensate(*gaugefield, *prng, *system);
 		 outputToFile <<  "\t" << pbp[i].re << "\t" << pbp[i].im;
 	     }
 	}
