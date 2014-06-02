@@ -35,6 +35,7 @@ namespace po = boost::program_options;
 #include "parametersIo.hpp"
 #include "parametersObs.hpp"
 #include "parametersFermion.hpp"
+#include "parametersSources.hpp"
 #include "parametersSolver.hpp"
 #include "parametersHmc.hpp"
 #include "parametersRhmc.hpp"
@@ -56,6 +57,7 @@ namespace meta {
 		public ParametersIo,
 		public ParametersObs, 
 		public ParametersFermion,
+		public ParametersSources,
 		public ParametersSolver,
 		public ParametersHmc, 
 		public ParametersRhmc,
@@ -63,9 +65,6 @@ namespace meta {
 	{
 
 public:
-
-	enum sourcetypes {point = 1, volume, timeslice, zslice};
-	enum sourcecontents {one = 1, z4, gaussian, z2};
 
 	/**
 	 * The parsing of the input parameters aborted for some reason.
@@ -95,15 +94,6 @@ public:
 	int get_overrelaxsteps() const noexcept;
 	int get_xi() const noexcept;
 
-	int get_num_sources() const noexcept;
-	int get_source_x() const noexcept;
-	int get_source_y() const noexcept;
-	int get_source_z() const noexcept;
-	int get_source_t() const noexcept;
-	bool get_place_sources_on_host() const noexcept;
-	sourcetypes get_sourcetype() const noexcept;
-	sourcecontents get_sourcecontent() const noexcept;
-
 private:
 	//gaugefield parameters
 	double beta;
@@ -117,16 +107,6 @@ private:
 	int heatbathsteps;
 	int overrelaxsteps;
 	int xi;
-
-
-	int num_sources;
-	int source_x;
-	int source_y;
-	int source_z;
-	int source_t;
-	bool place_sources_on_host;
-	sourcetypes sourcetype;
-	sourcecontents sourcecontent;
 };
 }
 

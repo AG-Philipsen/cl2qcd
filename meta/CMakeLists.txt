@@ -25,6 +25,7 @@ add_library(meta
 	parametersConfig.cpp
 	parametersIo.cpp
 	parametersFermion.cpp
+	parametersSources.cpp
 	parametersSolver.cpp
 	parametersObs.cpp
 	parametersHmc.cpp

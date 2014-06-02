@@ -106,40 +106,6 @@ int Inputparameters::get_xi() const noexcept
   return xi;
 }
 
-int Inputparameters::get_num_sources() const noexcept
-{
-  return num_sources;
-}
-int Inputparameters::get_source_x() const noexcept
-{
-  return source_x;
-}
-int Inputparameters::get_source_y() const noexcept
-{
-  return source_y;
-}
-int Inputparameters::get_source_z() const noexcept
-{
-  return source_z;
-}
-int Inputparameters::get_source_t() const noexcept
-{
-  return source_t;
-}
-bool Inputparameters::get_place_sources_on_host() const noexcept
-{
-	return place_sources_on_host;
-}
-
-Inputparameters::sourcetypes Inputparameters::get_sourcetype() const noexcept
-{
-  return sourcetype;
-}
-Inputparameters::sourcecontents Inputparameters::get_sourcecontent() const noexcept
-{
-  return sourcecontent;
-}
-
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
 	logger.info() << "read in parameters...";
@@ -173,18 +139,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		//todo: is this used?
 		("xi", po::value<int>(&xi)->default_value(1));
 
-
-	po::options_description options_source("Source options");
-	options_source.add_options()
-		("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
-		("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
-		("num_sources", po::value<int>(&num_sources)->default_value(12))
-		("source_x", po::value<int>(&source_x)->default_value(0))
-		("source_y", po::value<int>(&source_y)->default_value(0))
-		("source_z", po::value<int>(&source_z)->default_value(0))
-		("source_t", po::value<int>(&source_t)->default_value(0))
-		("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
-
 	po::options_description desc;
 	desc.add(cmd_opts)
 		.add(ParametersConfig::getOptions())
@@ -192,7 +146,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		.add(options_gaugefield).add(options_heatbath)
 		.add(ParametersFermion::getOptions())
 		.add(ParametersSolver::getOptions())
-		.add(options_source)
+		.add(ParametersSources::getOptions())
 		.add(ParametersObs::getOptions())
 		.add(ParametersHmc::getOptions())
 		.add(ParametersRhmc::getOptions())
