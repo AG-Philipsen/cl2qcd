@@ -22,6 +22,7 @@
 #
 
 add_library(meta
+	parametersConfig.cpp
 	parametersIo.cpp
 	parametersObs.cpp
 	parametersHmc.cpp

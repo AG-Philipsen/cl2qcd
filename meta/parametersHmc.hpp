@@ -46,7 +46,6 @@ protected:
 	int integrationsteps1;
 	int integrationsteps2;
 	int hmcsteps;
-	int benchmarksteps;
 	int num_timescales;
 	integrator integrator0;
 	integrator integrator1;
