@@ -80,7 +80,7 @@ public:
 		*
 		* @throws parse_aborted
 		*/
-		Inputparameters(int argc, const char** argv);
+		Inputparameters(int argc, const char** argv, std::string parameterSet = "allParameters");
 	};
 }
 

@@ -65,7 +65,7 @@ static Inputparameters::sourcecontents get_sourcecontent(std::string s);
  */
 static void add_option_aliases(meta::ConfigFileNormalizer * const);
 
-Inputparameters::Inputparameters(int argc, const char** argv)
+Inputparameters::Inputparameters(int argc, const char** argv, std::string parameterSet)
 {
 	logger.info() << "read in parameters...";
 	/**
@@ -82,8 +82,54 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 
 	po::options_description desc;
 	desc.add(cmd_opts)
-		.add(ParametersConfig::getOptions())
-		.add(ParametersIo::getOptions())
+		.add(ParametersConfig::getOptions());
+		
+	if(parameterSet == "su3heatbath")
+	{
+		desc.add(ParametersIo::getOptions())
+		.add(ParametersGauge::getOptions())
+		.add(ParametersHeatbath::getOptions())
+		.add(ParametersObs::getOptions());
+	}
+	else if(parameterSet == "gaugeobservables")
+	{
+		desc.add(ParametersIo::getOptions())
+		.add(ParametersGauge::getOptions())
+		.add(ParametersObs::getOptions());
+	}
+	else if(parameterSet == "inverter")
+	{
+		desc.add(ParametersIo::getOptions())
+		.add(ParametersGauge::getOptions())
+		.add(ParametersFermion::getOptions())
+		.add(ParametersSolver::getOptions())
+		.add(ParametersSources::getOptions())
+		.add(ParametersObs::getOptions());
+	}
+	else if(parameterSet == "hmc")
+	{
+		desc.add(ParametersIo::getOptions())
+		.add(ParametersGauge::getOptions())
+		.add(ParametersFermion::getOptions())
+		.add(ParametersSolver::getOptions())
+		.add(ParametersSources::getOptions())
+		.add(ParametersObs::getOptions())
+		.add(ParametersHmc::getOptions());
+	}
+	else if(parameterSet == "rhmc")
+	{
+		desc.add(ParametersIo::getOptions())
+		.add(ParametersGauge::getOptions())
+		.add(ParametersFermion::getOptions())
+		.add(ParametersSolver::getOptions())
+		.add(ParametersSources::getOptions())
+		.add(ParametersObs::getOptions())
+		.add(ParametersHmc::getOptions())
+		.add(ParametersRhmc::getOptions());
+	}
+	else //default: add all options
+	{
+		desc.add(ParametersIo::getOptions())
 		.add(ParametersGauge::getOptions())
 		.add(ParametersHeatbath::getOptions())
 		.add(ParametersFermion::getOptions())
@@ -93,6 +139,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 		.add(ParametersHmc::getOptions())
 		.add(ParametersRhmc::getOptions())
 		.add(ParametersTest::getOptions());
+	}
 	
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
