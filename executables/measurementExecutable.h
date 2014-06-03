@@ -33,7 +33,7 @@
 class measurementExecutable : public generalExecutable
 {
 public:
-	measurementExecutable(int argc, const char* argv[]);
+	measurementExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
 
 	void performMeasurements();
 

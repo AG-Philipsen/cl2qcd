@@ -24,7 +24,7 @@
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 
 hmcExecutable::hmcExecutable(int argc, const char* argv[]) :
-  generationExecutable(argc, argv)
+  generationExecutable(argc, argv, "hmc")
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();

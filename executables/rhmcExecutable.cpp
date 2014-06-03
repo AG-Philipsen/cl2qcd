@@ -20,7 +20,7 @@
 
 #include "rhmcExecutable.h"
 
-rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecutable(argc, argv)
+rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecutable(argc, argv, "rhmc")
 {
 	using namespace physics::algorithms;
 	

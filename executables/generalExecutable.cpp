@@ -57,7 +57,7 @@ void generalExecutable::printProfilingDataToFile()
 	  }
 }
 
-generalExecutable::generalExecutable(int argc, const char* argv[]) : parameters(argc, argv)
+generalExecutable::generalExecutable(int argc, const char* argv[], std::string parameterSet) : parameters(argc, argv, parameterSet)
 {
 	totalRuntimeOfExecutable.reset();
 	initializationTimer.reset();

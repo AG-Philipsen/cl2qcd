@@ -23,7 +23,7 @@
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 #include "../physics/observables/wilsonTwoFlavourCorrelators.hpp"
 
-inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
+inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv, "inverter")
 {
 	initializationTimer.reset();
 	printParametersToScreenAndFile();

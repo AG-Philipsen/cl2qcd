@@ -21,7 +21,7 @@
 #include "su3heatbathExecutable.h"
 
 su3heatbathExecutable::su3heatbathExecutable(int argc, const char* argv[]) :
-  generationExecutable(argc, argv)
+  generationExecutable(argc, argv, "su3heatbath")
 {
 	initializationTimer.reset();
 	setIterationParameters();

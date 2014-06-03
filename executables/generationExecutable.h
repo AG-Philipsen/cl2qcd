@@ -35,7 +35,7 @@ public:
 
 protected:
 	//Protected since it makes no sense to allow the user to instatiate this class
-	generationExecutable(int argc, const char* argv[]);
+	generationExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
 	
 	int writeFrequency;
 	int saveFrequency;

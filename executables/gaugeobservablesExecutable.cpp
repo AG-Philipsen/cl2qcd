@@ -20,7 +20,7 @@
 
 #include "gaugeobservablesExecutable.h"
 
-gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv)
+gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv, "gaugeobservables")
 {
   	printParametersToScreenAndFile();
 }
