@@ -20,7 +20,6 @@
 
 #include "parametersHeatbath.hpp"
 
-//heatbath parameters
 int meta::ParametersHeatbath::get_thermalizationsteps() const noexcept
 {
   return thermalizationsteps;
