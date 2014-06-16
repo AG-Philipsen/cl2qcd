@@ -139,7 +139,7 @@ double TwoFlavourChiralCondensate::norm_std() const
 	 * The additional factor of 2 is inserted to fit the reference values.
 	 * The additional factor of 2 is Nf.
 	 */
-	double norm =  2. * 2.. * parameters->get_kappa() * 2. / meta::get_vol4d(*parameters) / 2. / 12.;
+	double norm =  2. * 2. * parameters->get_kappa() * 2. / meta::get_vol4d(*parameters) / 2. / 12.;
 	/**
 	 * Currently, there is a problem with the sign if even-odd is used (issue #389).
 	 * This seems to cause the a wrong sign in the chiral condensate, which will be compensated for now.
