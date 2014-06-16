@@ -121,12 +121,13 @@ static void setParametersToValues_xlf(sourcefileparameters & parameters, std::ma
 
 static void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  helperMap)
 {
-	logger.warn() << str;
+	logger.trace() << "Going through string:";
+	logger.trace() << str;
 	
 	//todo: find out about ::iterator
 	for (std::map<std::string, helper>::iterator it = helperMap.begin(); it != helperMap.end(); it++)
 	{
-		logger.warn() << it->first;
+		logger.trace() << "Found \"" + it->first + "\"";
 		
 		//todo: add check if re is found
 		
@@ -161,6 +162,7 @@ void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, s
 				std::string tmp2 (reinterpret_cast<char*> (value) );
 				it->second = tmp2;
 				xmlFree(value);
+				logger.trace() << "Found xml value:\t" + tmp2;
 			}
 		}
 	}
@@ -279,6 +281,8 @@ static void setParametersToValues_scidacChecksum(sourcefileparameters & paramete
 	tmp >> std::hex >> suma;
 	tmp2 << helperMap["sumb"];
 	tmp2 >> std::hex >> sumb;
+	logger.fatal() << suma;
+	logger.fatal() << sumb;
 	
 	parameters.checksum =  Checksum(suma, sumb);
 }
@@ -302,6 +306,7 @@ bool sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
 
 LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
 {
+	logger.trace() << "Extracting meta data from LIME entry...";
 	LimeFileProperties props;
 
 	if ( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) == 1)
@@ -330,8 +335,8 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
 			setParametersToValues_scidacChecksum(*this, helperMap);		  
 		}
-
-		if( limeEntryTypes["inverter"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2)
+		
+		else if( limeEntryTypes["inverter"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2)
 		{
 			if ( limeFileProp.numberOfFermionicEntries > 1 )
 			{
@@ -349,7 +354,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			}
 		}
 		
-		if(limeEntryTypes["xlf"]  == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2) 
+		else if(limeEntryTypes["xlf"]  == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2) 
 		{
 			logger_readLimeEntry( lime_type);
 			std::string str(buffer);
@@ -360,7 +365,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			setParametersToValues_xlf(*this, helperMap);
 		}
 
-		if ( limeEntryTypes["ildg"] == lime_type )
+		else if ( limeEntryTypes["ildg"] == lime_type )
 		{
 			logger_readLimeEntry( lime_type);
 			std::map<std::string, std::string> helperMap;
@@ -372,10 +377,15 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
 		}	
 
-		if( limeEntryTypes["etmc propagator"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
+		else if( limeEntryTypes["etmc propagator"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
 		{
 			throw std::logic_error("Reading of etmc propagator not yet implemented. Aborting...");
 		}	
+		
+		else
+		{
+			logger.warn() << "Do not know LIME entry type \"" + lime_type + "\"";
+		}
 		
 		delete[] buffer;
 		logger_readLimeEntrySuccess();
@@ -425,7 +435,8 @@ void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, LimeHe
 void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination)
 {
 	LimeHeaderData limeHeaderData(r);
-	if (limeHeaderData.MB_flag == 1) 
+	logger.trace() << "Found entry in LIME file of type \"" + limeHeaderData.limeEntryType + "\"";
+	if (limeHeaderData.MB_flag != LIME_ERR_MBME) 
 	{
 		if( ! limeFileProp.readMetaData )
 		{
@@ -435,6 +446,10 @@ void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char 
 		{
 			extractBinaryDataFromLimeEntry(r, limeHeaderData, destination);
 		}
+	}
+	else
+	{
+		logger.fatal() << "Error while reading LIME entry. MB flag is \"" + boost::lexical_cast<std::string>(limeHeaderData.MB_flag) + "\"";
 	}
 }
 

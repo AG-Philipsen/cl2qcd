@@ -142,6 +142,17 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
 }
 
+std::string nameOfExistingGaugefieldFileFromTmlqcd = std::string(SOURCEDIR) + "/ildg_io/conf.tmlqcd";
 
+BOOST_AUTO_TEST_CASE(readInGaugefieldFromTmlqcd_CheckChecksum)
+{
+  sourcefileparameters srcFileParams;
+  char * bufferToStoreGaugefield;
+  uint32_t referenceChecksumA = 398012545;
+  uint32_t referenceChecksumB = 1610757546;
+  srcFileParams.readsourcefile(nameOfExistingGaugefieldFileFromTmlqcd.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
+  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
+}
 
 
