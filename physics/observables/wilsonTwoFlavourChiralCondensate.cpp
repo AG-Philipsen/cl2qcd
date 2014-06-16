@@ -137,8 +137,9 @@ double TwoFlavourChiralCondensate::norm_std() const
 	 * Normalize for VOL4D, NF and spinor entries (NC * ND = 12)
 	 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
 	 * The additional factor of 2 is inserted to fit the reference values.
+	 * The additional factor of 2 is Nf.
 	 */
-	double norm =  4. * parameters->get_kappa() * 2. / meta::get_vol4d(*parameters) / 2. / 12.;
+	double norm =  2. * 2.. * parameters->get_kappa() * 2. / meta::get_vol4d(*parameters) / 2. / 12.;
 	/**
 	 * Currently, there is a problem with the sign if even-odd is used (issue #389).
 	 * This seems to cause the a wrong sign in the chiral condensate, which will be compensated for now.
