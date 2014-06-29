@@ -48,7 +48,7 @@ add_unit_test_withLibraries(hardware::Device device_test hardware crypto)
 add_unit_test_withLibraries(hardware::ProfilingData profiling_data_test hardware crypto)
 add_unit_test_withLibraries(hardware::SynchronizationEvent synchronization_event_test hardware crypto)
 
-add_executable(openclCompiler_test opencl_compiler_test.cpp opencl_compiler.cpp ../../host_functionality/logger.cpp ../../executables/exceptions.cpp)
+add_executable(openclCompiler_test opencl_compiler_test.cpp opencl_compiler.cpp ../host_functionality/logger.cpp ../executables/exceptions.cpp)
 target_link_libraries(openclCompiler_test ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(openclCompiler openclCompiler_test)
 
