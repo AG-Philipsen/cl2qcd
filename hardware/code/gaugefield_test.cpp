@@ -22,8 +22,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "kernelTester.hpp"
-#include "../physics/prng.hpp"
-#include "../physics/lattices/gaugefield.hpp"
+#include "../../physics/prng.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
 
 class GaugefieldTester : public KernelTester {
 public:

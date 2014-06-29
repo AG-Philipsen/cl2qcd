@@ -23,11 +23,11 @@
 #define BOOST_TEST_MODULE gaugefield_convert
 #include <boost/test/unit_test.hpp>
 
-#include "../meta/util.hpp"
-#include "../meta/type_ops.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/system.hpp"
-#include "../hardware/code/gaugefield.hpp"
+#include "../../../meta/util.hpp"
+#include "../../../meta/type_ops.hpp"
+#include "../../device.hpp"
+#include "../../system.hpp"
+#include "../gaugefield.hpp"
 
 void test(const hardware::System& system, const int seed)
 {

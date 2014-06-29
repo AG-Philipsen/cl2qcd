@@ -20,12 +20,12 @@
 
 #include "testUtilities.hpp"
 
-#include "../meta/util.hpp"
-#include "../host_functionality/host_random.h"
-#include "../physics/lattices/gaugefield.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/spinors.hpp"
-#include "../hardware/code/fermions.hpp"
+#include "../../meta/util.hpp"
+#include "../../host_functionality/host_random.h"
+#include "../../physics/lattices/gaugefield.hpp"
+#include "../device.hpp"
+#include "spinors.hpp"
+#include "fermions.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
