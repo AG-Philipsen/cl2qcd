@@ -43,8 +43,8 @@ private:
   std::string configurationName;
 };
 
-#include "../physics/sources.hpp"
-#include "../physics/algorithms/inversion.hpp"
+#include "../sources.hpp"
+#include "../algorithms/inversion.hpp"
 
 #include <cassert>
 #include <fstream>
