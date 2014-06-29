@@ -247,8 +247,13 @@ void hardware::Device::enqueue_marker(cl_event * event) const
 
 void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event) const
 {
-	cl_event cl_event = event.raw();
+	cl_event const cl_event = event.raw();
+#ifdef clEnqueueBarrierWithWaitList
+	// Only supported on OpenCL 1.2 and up
 	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 1, &cl_event, 0);
+#else
+	cl_int err = clEnqueueWaitForEvents(command_queue, 1, &cl_event);
+#endif
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueBarrier()", __FILE__, __LINE__);
 	}
@@ -256,8 +261,13 @@ void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& eve
 
 void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event1, const hardware::SynchronizationEvent& event2) const
 {
-	cl_event cl_events[] = {event1.raw(), event2.raw()};
+	cl_event const cl_events[] = {event1.raw(), event2.raw()};
+#ifdef clEnqueueBarrierWithWaitList
+	// Only supported on OpenCL 1.2 and up
 	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 2, cl_events, 0);
+#else
+	cl_int err = clEnqueueWaitForEvents(command_queue, 2, cl_events);
+#endif
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueBarrier()", __FILE__, __LINE__);
 	}
