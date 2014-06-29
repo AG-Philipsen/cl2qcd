@@ -20,7 +20,7 @@
 #ifndef SPINORTESTER_HPP_
 #define SPINORTESTER_HPP_
 
-#include "../hardware/code/kernelTester.hpp"
+#include "kernelTester.hpp"
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"

@@ -1,6 +1,6 @@
 #include "testUtilities.hpp"
 
-#include "../host_functionality/logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include <boost/test/unit_test.hpp>
 
 std::string defaultGpuOption = "--use_gpu=false";

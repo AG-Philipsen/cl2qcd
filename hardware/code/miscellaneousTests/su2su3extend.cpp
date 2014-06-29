@@ -18,10 +18,10 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../hardware/system.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/opencl_module.hpp"
-#include "../hardware/code/gaugefield.hpp"
+#include "../../system.hpp"
+#include "../../device.hpp"
+#include "../opencl_module.hpp"
+#include "../gaugefield.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

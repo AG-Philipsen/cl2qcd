@@ -22,7 +22,7 @@
 #ifndef _HARDWARE_CODE_SPINOR_STAGGERED_TESTER_
 #define _HARDWARE_CODE_SPINOR_STAGGERED_TESTER_
 
-#include "../hardware/code/kernelTester.hpp"
+#include "kernelTester.hpp"
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"

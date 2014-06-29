@@ -24,13 +24,13 @@
  *            refactoring!
  */
 
-#include "../physics/lattices/gaugefield.hpp"
-#include "../physics/lattices/staggeredfield_eo.hpp"
-#include "../meta/util.hpp"
-#include "../common_header_files/operations_complex.h"
-#include "../hardware/device.hpp"
-#include "../hardware/code/fermions_staggered.hpp"
-#include "../hardware/code/spinors.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
+#include "../../physics/lattices/staggeredfield_eo.hpp"
+#include "../../meta/util.hpp"
+#include "../../common_header_files/operations_complex.h"
+#include "../device.hpp"
+#include "fermions_staggered.hpp"
+#include "spinors.hpp"
 #include <vector>
 
 class TestGaugefield_stagg {

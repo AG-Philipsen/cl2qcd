@@ -18,10 +18,10 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../meta/util.hpp"
-#include "../hardware/system.hpp"
-#include "../hardware/device.hpp"
-#include "../physics/lattices/gaugefield.hpp"
+#include "../../../meta/util.hpp"
+#include "../../system.hpp"
+#include "../../device.hpp"
+#include "../../../physics/lattices/gaugefield.hpp"
 
 #include "../../../physics/observables/gaugeObservables.h"
 
