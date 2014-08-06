@@ -82,7 +82,7 @@ void rhmcExecutable::setIterationParameters()
 
 void rhmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 {
-	logger.warn() << "Thermalization is not yet implemented for RHMC algorithm: --> NOP!";
+        throw Print_Error_Message("Thermalization is not yet implemented for HMC algorithm");
 }
 
 void rhmcExecutable::generateAccordingToSpecificAlgorithm()
