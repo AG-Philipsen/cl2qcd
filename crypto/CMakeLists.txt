@@ -16,7 +16,7 @@
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
 find_package( Nettle REQUIRED )
-include_directories(SYSTEM ${Nettle_INCLUDE_DIRS})
+include_directories(SYSTEM ${Nettle_INCLUDE_DIR})
 
 # Build one crypto lib
 add_library(crypto
