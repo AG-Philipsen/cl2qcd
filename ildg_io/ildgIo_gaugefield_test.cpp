@@ -177,29 +177,29 @@ std::string getFieldType_gaugefield()
 sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 {
 	sourcefileparameters srcFileParams;
-	srcFileParams.lx_source = 2;
-	srcFileParams.ly_source = 2;
-	srcFileParams.lz_source = 2;
-	srcFileParams.lt_source = 2;
+	srcFileParams.lx_source = 3;
+	srcFileParams.ly_source = 3;
+	srcFileParams.lz_source = 3;
+	srcFileParams.lt_source = 5;
 	
 	srcFileParams.prec_source = getPrecisionOfDoubleInBits();
 	srcFileParams.num_entries_source = getElementsOfGaugefield(
 		srcFileParams.lx_source, srcFileParams.ly_source, srcFileParams.lz_source, srcFileParams.lt_source);
-	srcFileParams.flavours_source = 0;
-	srcFileParams.trajectorynr_source = 0;
-	srcFileParams.time_source = 0;
-	srcFileParams.time_solver_source = 0;
-	srcFileParams.noiter_source = 0;
-	srcFileParams.plaquettevalue_source = 0;
-	srcFileParams.beta_source = 0;
-	srcFileParams.kappa_source = 0;
-	srcFileParams.mu_source = 0;
-	srcFileParams.c2_rec_source = 0;
-	srcFileParams.mubar_source = 0;
-	srcFileParams.epsilonbar_source = 0;
-	srcFileParams.epssq_source = 0;
-	srcFileParams.kappa_solver_source = 0;
-	srcFileParams.mu_solver_source = 0;
+	srcFileParams.flavours_source = 33;
+	srcFileParams.trajectorynr_source = 1234567890;
+	srcFileParams.time_source = -12345;
+	srcFileParams.time_solver_source = -12345;
+	srcFileParams.noiter_source = -6789;
+	srcFileParams.plaquettevalue_source = -12.345678;
+	srcFileParams.beta_source = -12.345678;
+	srcFileParams.kappa_source = -56.7890;
+	srcFileParams.mu_source = -56.7890;
+	srcFileParams.c2_rec_source = -13.579;
+	srcFileParams.mubar_source = -2.4680;
+	srcFileParams.epsilonbar_source = -19.8273;
+	srcFileParams.epssq_source = -19.87654;
+	srcFileParams.kappa_solver_source = -45.6784;
+	srcFileParams.mu_solver_source = -10.9283;
 	
 	srcFileParams.field_source = getFieldType_gaugefield();
 	srcFileParams.date_source = "someDate";
@@ -212,8 +212,8 @@ sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 }
 
 // one cannot expect that date, time and time_solver will match..
-// not implemented anyway: solvertype_source, hmcversion_solver_source
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield, 5 )
+// not implemented or fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 11 )
 
 void compareTwoSourcefileParameters(sourcefileparameters toCheck1, sourcefileparameters toCheck2)
 {
@@ -223,14 +223,14 @@ void compareTwoSourcefileParameters(sourcefileparameters toCheck1, sourcefilepar
   BOOST_REQUIRE_EQUAL(toCheck1.lt_source, toCheck2.lt_source);
   BOOST_REQUIRE_EQUAL(toCheck1.prec_source, toCheck2.prec_source);
   BOOST_REQUIRE_EQUAL(toCheck1.num_entries_source, toCheck2.num_entries_source);
-  BOOST_REQUIRE_EQUAL(toCheck1.flavours_source, toCheck2.flavours_source);
+  BOOST_CHECK_EQUAL(toCheck1.flavours_source, toCheck2.flavours_source);
   BOOST_REQUIRE_EQUAL(toCheck1.trajectorynr_source, toCheck2.trajectorynr_source);
   BOOST_CHECK_EQUAL(toCheck1.time_source, toCheck2.time_source);
   BOOST_CHECK_EQUAL(toCheck1.time_solver_source, toCheck2.time_solver_source);
-  BOOST_REQUIRE_EQUAL(toCheck1.kappa_solver_source, toCheck2.kappa_solver_source);
-  BOOST_REQUIRE_EQUAL(toCheck1.mu_solver_source, toCheck2.mu_solver_source);
-  BOOST_REQUIRE_EQUAL(toCheck1.noiter_source, toCheck2.noiter_source);
-  BOOST_REQUIRE_EQUAL(toCheck1.epssq_source, toCheck2.epssq_source);
+  BOOST_CHECK_EQUAL(toCheck1.kappa_solver_source, toCheck2.kappa_solver_source);
+  BOOST_CHECK_EQUAL(toCheck1.mu_solver_source, toCheck2.mu_solver_source);
+  BOOST_CHECK_EQUAL(toCheck1.noiter_source, toCheck2.noiter_source);
+  BOOST_CHECK_EQUAL(toCheck1.epssq_source, toCheck2.epssq_source);
   BOOST_REQUIRE_EQUAL(toCheck1.plaquettevalue_source, toCheck2.plaquettevalue_source);
   BOOST_REQUIRE_EQUAL(toCheck1.beta_source, toCheck2.beta_source);
   BOOST_REQUIRE_EQUAL(toCheck1.kappa_source, toCheck2.kappa_source);
@@ -263,12 +263,12 @@ void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters srcFilePa
 	write_gaugefield (
 		binaryData, bufferSize_gaugefield, checksum,
 		ns, ns, ns, nt, precision,
-		srcFileParams.trajectorynr_source, srcFileParams.plaquettevalue_source, srcFileParams.beta_source, srcFileParams.kappa_solver_source, srcFileParams.mu_source, srcFileParams.c2_rec_source, srcFileParams.epsilonbar_source, srcFileParams.mubar_source, srcFileParams.hmcversion_source.c_str() ,configurationName.c_str());
+		srcFileParams.trajectorynr_source, srcFileParams.plaquettevalue_source, srcFileParams.beta_source, srcFileParams.kappa_source, srcFileParams.mu_source, srcFileParams.c2_rec_source, srcFileParams.epsilonbar_source, srcFileParams.mubar_source, srcFileParams.hmcversion_source.c_str() ,configurationName.c_str());
 	
 	delete binaryData;
 }
 
-BOOST_AUTO_TEST_CASE(writeGaugefield)
+BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 {
 	sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
 	
