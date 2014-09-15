@@ -67,9 +67,15 @@ void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization...";
 	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
-	for (; iteration < thermalizationSteps; iteration++)
-	 {
-		thermalizeAccordingToSpecificAlgorithm();
+	try
+	{
+	      for (; iteration < thermalizationSteps; iteration++)
+	      {
+		    thermalizeAccordingToSpecificAlgorithm();
+	      }
+	}
+	catch(Print_Error_Message exception){
+   	      logger.warn() << "The thermalization is not yet implemented!  It is just skipped.";
 	}
 	logger.info() << "...thermalization done";
 }

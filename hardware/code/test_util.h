@@ -25,7 +25,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "../host_functionality/logger.hpp"
+#include "../../host_functionality/logger.hpp"
 
 std::string defaultGpuOption_tmp = "--use_gpu=false";
 std::string defaultRec12Option_tmp = "--use_rec12=false";

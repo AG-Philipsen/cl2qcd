@@ -164,7 +164,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		//todo: do not pass the "help" option...
 		po::store(po::parse_config_file(normalized_file_stream, desc, false), vm);
 	}
-
+	
 	po::notify(vm); // checks whether all required arguments are set
 
 	// handle the enumeration types
@@ -172,9 +172,11 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 	gaugeact = ::get_action(vm["gaugeact"].as<std::string>());
 	fermact = ::get_action(vm["fermact"].as<std::string>());
 	fermact_mp = ::get_action(vm["fermact_mp"].as<std::string>());
-	integrator0 = ::get_integrator(vm["integrator0"].as<std::string>());
-	integrator1 = ::get_integrator(vm["integrator1"].as<std::string>());
-	integrator2 = ::get_integrator(vm["integrator2"].as<std::string>());
+	if(parameterSet != "inverter" && parameterSet != "gaugeobservables" && parameterSet != "su3heatbath"){
+	  integrator0 = ::get_integrator(vm["integrator0"].as<std::string>());
+	  integrator1 = ::get_integrator(vm["integrator1"].as<std::string>());
+	  integrator2 = ::get_integrator(vm["integrator2"].as<std::string>());
+	}
 	_solver = ::get_solver(vm["solver"].as<std::string>());
 	_solver_mp = ::get_solver(vm["solver_mp"].as<std::string>());
 	sourcetype = ::get_sourcetype(vm["sourcetype"].as<std::string>() );

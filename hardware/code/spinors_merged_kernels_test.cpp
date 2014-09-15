@@ -20,11 +20,11 @@
 
 #include "testUtilities.hpp"
 
-#include "../meta/util.hpp"
-#include "../host_functionality/host_random.h"
-#include "../hardware/system.hpp"
-#include "../hardware/device.hpp"
-#include "../hardware/code/spinors.hpp"
+#include "../../meta/util.hpp"
+#include "../../host_functionality/host_random.h"
+#include "../system.hpp"
+#include "../device.hpp"
+#include "spinors.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

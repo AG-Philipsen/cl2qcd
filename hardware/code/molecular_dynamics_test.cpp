@@ -26,7 +26,7 @@
 #include "SpinorStaggeredTester.hpp"
 #include "molecular_dynamics.hpp"
 
-#include "../physics/lattices/gaugefield.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
 
 class MolecularDynamicsTester : public GaugemomentumTester
 {

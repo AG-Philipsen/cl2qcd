@@ -82,7 +82,7 @@ void rhmcExecutable::setIterationParameters()
 
 void rhmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 {
-	logger.warn() << "Thermalization is not yet implemented for RHMC algorithm: --> NOP!";
+        throw Print_Error_Message("Thermalization is not yet implemented for HMC algorithm");
 }
 
 void rhmcExecutable::generateAccordingToSpecificAlgorithm()
@@ -158,8 +158,6 @@ void rhmcExecutable::checkRhmcParameters(const meta::Inputparameters& p)
 	  throw Invalid_Parameters("RHMC available only WITHOUT mass preconditionig!", "use_mp=0", p.get_use_mp());
 	if(p.get_use_chem_pot_re())
 	  throw Invalid_Parameters("RHMC available only WITHOUT real chemical potential!", "use_chem_pot_re=0", p.get_use_chem_pot_re());
-	if(p.get_use_chem_pot_im())
-	  throw Invalid_Parameters("RHMC available only WITHOUT imaginary chemical potential!", "use_chem_pot_im=0", p.get_use_chem_pot_im());
 	if(p.get_num_tastes()%4 == 0)
 	  throw Invalid_Parameters("RHMC not working with multiple of 4 tastes (there is no need of the rooting trick)!", "num_tastes%4 !=0", "num_tastes=" + std::to_string(p.get_num_tastes()));
 	if(p.get_cg_iteration_block_size() == 0 || p.get_findminmax_iteration_block_size() == 0)
