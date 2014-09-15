@@ -547,6 +547,8 @@ void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desi
 #include "../host_functionality/logger.hpp"
 #include <sstream>
 
+#include <time.h>
+
 void write_gaugefield (
   char * binary_data, n_uint64_t num_bytes, Checksum checksum,
   int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
@@ -566,10 +568,8 @@ void write_gaugefield (
 	//set values
 	const char * field_out = "su3gauge";
 	time_t rawtime;
-	//here is the problem with current_time: rawtime has to be converted into a meaningful format
-	current_time = rawtime;
-	time ( &rawtime );
-	const char * date = ctime (&rawtime);
+	time ( &current_time );
+	const char * date = ctime (&current_time);
 
 	// TODO replace this whole block by something templated
 	//get binary data
@@ -607,7 +607,7 @@ void write_gaugefield (
 	sprintf(dummystring, "%f", c2_rec);
 	strcat(xlf_info, dummystring);
 	strcat(xlf_info, "\n time = ");
-	sprintf(dummystring, "%i", (int) current_time);
+	sprintf(dummystring, "%i", current_time);
 	strcat(xlf_info, dummystring);
 	strcat(xlf_info, "\n hmcversion = ");
 	sprintf(dummystring, "%s", hmc_version);

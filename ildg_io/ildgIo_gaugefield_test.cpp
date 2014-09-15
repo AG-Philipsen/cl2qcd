@@ -156,4 +156,132 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldFromTmlqcd_CheckChecksum)
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
 }
 
+size_t getPrecisionOfDoubleInBits()
+{
+	return 8 * sizeof(double);
+}
+
+size_t getElementsOfGaugefield(int lx, int ly, int lz, int lt)
+{
+	const size_t spatialVolume = lx * ly * lz;
+
+	return 2 * NC * NC * NDIM * spatialVolume * lt;
+}
+
+//todo: put this into a common file
+std::string getFieldType_gaugefield()
+{
+	return "su3gauge";
+}
+
+sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
+{
+	sourcefileparameters srcFileParams;
+	srcFileParams.lx_source = 2;
+	srcFileParams.ly_source = 2;
+	srcFileParams.lz_source = 2;
+	srcFileParams.lt_source = 2;
+	
+	srcFileParams.prec_source = getPrecisionOfDoubleInBits();
+	srcFileParams.num_entries_source = getElementsOfGaugefield(
+		srcFileParams.lx_source, srcFileParams.ly_source, srcFileParams.lz_source, srcFileParams.lt_source);
+	srcFileParams.flavours_source = 0;
+	srcFileParams.trajectorynr_source = 0;
+	srcFileParams.time_source = 0;
+	srcFileParams.time_solver_source = 0;
+	srcFileParams.noiter_source = 0;
+	srcFileParams.plaquettevalue_source = 0;
+	srcFileParams.beta_source = 0;
+	srcFileParams.kappa_source = 0;
+	srcFileParams.mu_source = 0;
+	srcFileParams.c2_rec_source = 0;
+	srcFileParams.mubar_source = 0;
+	srcFileParams.epsilonbar_source = 0;
+	srcFileParams.epssq_source = 0;
+	srcFileParams.kappa_solver_source = 0;
+	srcFileParams.mu_solver_source = 0;
+	
+	srcFileParams.field_source = getFieldType_gaugefield();
+	srcFileParams.date_source = "someDate";
+	srcFileParams.hmcversion_source = "0.0";
+	srcFileParams.solvertype_source = "someSolver";
+	srcFileParams.hmcversion_solver_source = "notImplemented";
+	srcFileParams.date_solver_source = "someDate";
+	
+	return srcFileParams;
+}
+
+// one cannot expect that date, time and time_solver will match..
+// not implemented anyway: solvertype_source, hmcversion_solver_source
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield, 5 )
+
+void compareTwoSourcefileParameters(sourcefileparameters toCheck1, sourcefileparameters toCheck2)
+{
+  BOOST_REQUIRE_EQUAL(toCheck1.lx_source, toCheck2.lx_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.ly_source, toCheck2.ly_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.lz_source, toCheck2.lz_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.lt_source, toCheck2.lt_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.prec_source, toCheck2.prec_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.num_entries_source, toCheck2.num_entries_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.flavours_source, toCheck2.flavours_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.trajectorynr_source, toCheck2.trajectorynr_source);
+  BOOST_CHECK_EQUAL(toCheck1.time_source, toCheck2.time_source);
+  BOOST_CHECK_EQUAL(toCheck1.time_solver_source, toCheck2.time_solver_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.kappa_solver_source, toCheck2.kappa_solver_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.mu_solver_source, toCheck2.mu_solver_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.noiter_source, toCheck2.noiter_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.epssq_source, toCheck2.epssq_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.plaquettevalue_source, toCheck2.plaquettevalue_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.beta_source, toCheck2.beta_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.kappa_source, toCheck2.kappa_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.mu_source, toCheck2.mu_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.c2_rec_source, toCheck2.c2_rec_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.mubar_source, toCheck2.mubar_source);
+  BOOST_REQUIRE_EQUAL(toCheck1.epsilonbar_source, toCheck2.epsilonbar_source);
+	
+	BOOST_REQUIRE_EQUAL(toCheck1.field_source, toCheck2.field_source);
+	BOOST_CHECK_EQUAL(toCheck1.date_source, toCheck2.date_source);
+	BOOST_REQUIRE_EQUAL(toCheck1.hmcversion_source, toCheck2.hmcversion_source);
+	BOOST_CHECK_EQUAL(toCheck1.hmcversion_solver_source, toCheck2.hmcversion_solver_source);
+	BOOST_CHECK_EQUAL(toCheck1.date_solver_source, toCheck2.date_solver_source);
+	BOOST_CHECK_EQUAL(toCheck1.solvertype_source, toCheck2.solvertype_source);
+}
+
+void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters srcFileParams, std::string configurationName)
+{
+	Checksum checksum;
+	
+	int ns = srcFileParams.lx_source;
+	int nt = srcFileParams.lt_source;
+	size_t precision = srcFileParams.prec_source;
+	
+	const n_uint64_t bufferSize_gaugefield = getElementsOfGaugefield(srcFileParams.lx_source, srcFileParams.ly_source, srcFileParams.lz_source, srcFileParams.lt_source) * sizeof(double);
+	
+	char * binaryData = new char[ bufferSize_gaugefield ];
+	
+	//TODO: hmc version currently can not be anything else than #.# !!
+	write_gaugefield (
+		binaryData, bufferSize_gaugefield, checksum,
+		ns, ns, ns, nt, precision,
+		srcFileParams.trajectorynr_source, srcFileParams.plaquettevalue_source, srcFileParams.beta_source, srcFileParams.kappa_solver_source, srcFileParams.mu_source, srcFileParams.c2_rec_source, srcFileParams.epsilonbar_source, srcFileParams.mubar_source, srcFileParams.hmcversion_source.c_str() ,configurationName.c_str());
+	
+	delete binaryData;
+}
+
+BOOST_AUTO_TEST_CASE(writeGaugefield)
+{
+	sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
+	
+	//TODO: test with single?
+	std::string configurationName = "conf.test";
+	
+	writeEmptyGaugefieldFromSourcefileParameters(srcFileParams_1, configurationName);
+	
+	sourcefileparameters srcFileParams_2;
+	char * readBinaryData;
+	srcFileParams_2.readsourcefile(configurationName.c_str(), srcFileParams_1.prec_source, &readBinaryData);
+	delete readBinaryData;
+	
+	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2);
+}
 
