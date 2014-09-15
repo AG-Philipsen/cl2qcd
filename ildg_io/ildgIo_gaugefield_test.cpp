@@ -190,7 +190,7 @@ sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 	srcFileParams.time_source = -12345;
 	srcFileParams.time_solver_source = -12345;
 	srcFileParams.noiter_source = -6789;
-	srcFileParams.plaquettevalue_source = -12.345678;
+	srcFileParams.plaquettevalue_source = -12.34567833;
 	srcFileParams.beta_source = -12.345678;
 	srcFileParams.kappa_source = -56.7890;
 	srcFileParams.mu_source = -56.7890;

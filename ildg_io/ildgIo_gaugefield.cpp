@@ -580,50 +580,19 @@ void write_gaugefield (
 		throw Invalid_Parameters("Precision does not match executables.", sizeof(hmc_float) * 8, prec);
 	}
 
-	//write xlf-info to string, should look like this
-	/*
-	char xlf_info [] = "plaquette = 6.225960e-01\n trajectory nr = 67336\n beta = 6.000000, kappa = 0.177000, mu = 0.500000, c2_rec = 0.000000\n time = 1278542490\n hmcversion = 5.1.5\n mubar = 0.000000\n epsilonbar = 0.000000\n date = Thu Jul  8 00:41:30 2010\n";
-	*/
-
-	//note: it is not clear what "time" is supposed to be
-	char dummystring[1000];
-	char xlf_info[1000];
-	sprintf(xlf_info, "%s", "plaquette = ");
-	sprintf(dummystring, "%f", plaquettevalue);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, "\n trajectory nr = ");
-	sprintf(dummystring, "%i", trajectorynr);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, "\n beta = ");
-	sprintf(dummystring, "%f", beta);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, ", kappa = ");
-	sprintf(dummystring, "%f", kappa);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, ", mu = ");
-	sprintf(dummystring, "%f", mu);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, ", c2_rec = ");
-	sprintf(dummystring, "%f", c2_rec);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, "\n time = ");
-	sprintf(dummystring, "%i", current_time);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, "\n hmcversion = ");
-	sprintf(dummystring, "%s", hmc_version);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, "\n mubar = ");
-	sprintf(dummystring, "%f", mubar);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, "\n epsilonbar = ");
-	sprintf(dummystring, "%f", epsilonbar);
-	strcat(xlf_info, dummystring);
-	strcat(xlf_info, "\n date = ");
-	sprintf(dummystring, "%s", date);
-	strcat(xlf_info, dummystring);
-
-	length_xlf_info = strlen(xlf_info);
-
+	std::string xlfInfo = "";
+	xlfInfo += "plaquette = " + boost::lexical_cast<std::string>(plaquettevalue) + "\n";
+	xlfInfo += "trajectory nr = " + boost::lexical_cast<std::string>(trajectorynr) + "\n";
+	xlfInfo += "beta = " + boost::lexical_cast<std::string>(beta) + "\n";
+	xlfInfo += "kappa = " + boost::lexical_cast<std::string>(kappa) + "\n";
+	xlfInfo += "mu = " + boost::lexical_cast<std::string>(mu) + "\n";
+	xlfInfo += "c2_rec = " + boost::lexical_cast<std::string>(c2_rec) + "\n";
+	xlfInfo += "time = " + boost::lexical_cast<std::string>(current_time) + "\n";
+	xlfInfo += "hmcversion = " + boost::lexical_cast<std::string>(hmc_version) + "\n";
+	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(mubar) + "\n";
+	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(epsilonbar) + "\n";
+	xlfInfo += "date = " + boost::lexical_cast<std::string>(date) + "\n";
+	
 	//write scidac checksum, this is stubb
 	std::string scidac_checksum;
 	{
@@ -674,10 +643,21 @@ void write_gaugefield (
 
 	//xlf-info
 	ME_flag = 1;
-	header_xlf_info = limeCreateHeader(MB_flag, ME_flag, (char*) types[0], length_xlf_info);
+	length_xlf_info = xlfInfo.size();
+	header_xlf_info = limeCreateHeader(MB_flag, ME_flag, (char*) types[0], xlfInfo.size());
 	limeWriteRecordHeader(header_xlf_info, writer);
 	limeDestroyHeader(header_xlf_info);
-	limeWriteRecordData( xlf_info, &length_xlf_info, writer);
+	int returnCode = 0;
+	returnCode = limeWriteRecordData( (void*) xlfInfo.c_str(), &length_xlf_info, writer);
+	if ( returnCode != LIME_SUCCESS )
+	{
+		throw Print_Error_Message( "Could not write to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
+	}
+	else if ( length_xlf_info != xlfInfo.size() )
+	{
+		throw Print_Error_Message( "There was an error writing xlf-info...", __FILE__, __LINE__);
+	}
+	
 	logger.debug() << "  xlf-info written";
 
 	//ildg-format
