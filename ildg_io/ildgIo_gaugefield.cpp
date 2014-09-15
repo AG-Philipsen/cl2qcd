@@ -609,29 +609,18 @@ void write_gaugefield (
 	/*
 	char ildg_format [] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n  <field>su3gauge</field>\n  <precision>64</precision>\n  <lx>4</lx>\n  <ly>4</ly>\n  <lz>4</lz>\n  <lt>4</lt>\n</ildgFormat>";
 	*/
-	char dummystring2[1000];
-	char ildg_format[1000];
-	sprintf(ildg_format, "%s", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n  <field>");
-	strcat(ildg_format, field_out);
-	strcat(ildg_format, "</field>\n  <precision>");
-	sprintf(dummystring2, "%i", prec);
-	strcat(ildg_format, dummystring2);
-	strcat(ildg_format, "</precision>\n  <lx>");
-	sprintf(dummystring2, "%i", lx);
-	strcat(ildg_format, dummystring2);
-	strcat(ildg_format, "</lx>\n  <ly>");
-	sprintf(dummystring2, "%i", ly);
-	strcat(ildg_format, dummystring2);
-	strcat(ildg_format, "</ly>\n  <lz>");
-	sprintf(dummystring2, "%i", lz);
-	strcat(ildg_format, dummystring2);
-	strcat(ildg_format, "</lz>\n  <lt>");
-	sprintf(dummystring2, "%i", lt);
-	strcat(ildg_format, dummystring2);
-	strcat(ildg_format, "</lt>\n</ildgFormat>");
+	
+	std::string ildgFormat = "";
+	ildgFormat += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n";
+	ildgFormat += "  <field>" + boost::lexical_cast<std::string>(field_out) + "</field>\n";
+	ildgFormat += "  <precision>" + boost::lexical_cast<std::string>(prec) + "</precision>\n";
+	ildgFormat += "  <lx>" + boost::lexical_cast<std::string>(lx) + "</lx>\n";
+	ildgFormat += "  <ly>" + boost::lexical_cast<std::string>(ly) + "</ly>\n";
+	ildgFormat += "  <lz>" + boost::lexical_cast<std::string>(lz) + "</lz>\n";
+	ildgFormat += "  <lt>" + boost::lexical_cast<std::string>(lt) + "</lt>\n";
+	ildgFormat += "</ildgFormat>";
 
-	length_ildg_format = strlen(ildg_format);
-
+	length_ildg_format = ildgFormat.size();
 
 	//write the lime file
 	MB_flag = 1;
@@ -665,7 +654,7 @@ void write_gaugefield (
 	header_ildg_format = limeCreateHeader(MB_flag, ME_flag, (char*) types[1], length_ildg_format);
 	limeWriteRecordHeader(header_ildg_format, writer);
 	limeDestroyHeader(header_ildg_format);
-	limeWriteRecordData( ildg_format, &length_ildg_format, writer);
+	limeWriteRecordData( (void *) ildgFormat.c_str(), &length_ildg_format, writer);
 	logger.debug() << "  ildg-format written";
 
 	//binary data
