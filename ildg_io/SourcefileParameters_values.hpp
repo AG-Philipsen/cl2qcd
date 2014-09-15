@@ -24,10 +24,14 @@
 
 #include "../host_functionality/logger.hpp"
 #include "checksum.h"
+#include "../meta/inputparameters.hpp"
 
+//TODO: separate between gaugefield and fermion field parameters
+//TODO: remove "source" postfix
 class sourcefileparameters_values {
 public:
   sourcefileparameters_values();
+	sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette);
 	
 	int lx_source, ly_source, lz_source, lt_source, prec_source, num_entries_source, flavours_source,
 	    trajectorynr_source, time_source, time_solver_source, noiter_source;

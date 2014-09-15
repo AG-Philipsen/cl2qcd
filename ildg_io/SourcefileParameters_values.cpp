@@ -25,6 +25,22 @@ sourcefileparameters_values::sourcefileparameters_values()
 	set_defaults();
 }
 
+sourcefileparameters_values::sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette)
+{
+	set_defaults();
+	
+	lx_source = parameters->get_nspace();
+	ly_source = parameters->get_nspace();
+	lz_source = parameters->get_nspace();
+	lt_source = parameters->get_ntime();
+	prec_source = parameters->get_precision();
+	trajectorynr_source = trajectoryNumber;
+	plaquettevalue_source = plaquette;
+	beta_source = parameters->get_beta();
+	kappa_source = parameters->get_kappa();
+	mu_source = parameters->get_mu();
+}
+
 void sourcefileparameters_values::printMetaDataToScreen(std::string sourceFilename)
 {
   logger.info() << "*************************************************************" ;

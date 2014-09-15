@@ -37,6 +37,7 @@ target_link_libraries(ildg_io
 	einhard
 	logger
 	exceptions
+	meta
 )
 
 add_unit_test_withLibraries(ildgIo_gaugefield ildgIo_gaugefield_test ildg_io)
