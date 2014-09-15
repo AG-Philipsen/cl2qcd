@@ -542,12 +542,33 @@ void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desi
 
 //todo: refactor!
 
+void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes,  LimeWriter *writer)
+{
+	n_uint64_t bytesToBeWritten = bytes;
+	int returnCode = 0;
+	
+	returnCode = limeWriteRecordData( memoryPointer, &bytesToBeWritten, writer);
+	if ( returnCode != LIME_SUCCESS )
+	{
+		throw Print_Error_Message( "Could not write to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
+	}
+	else if ( bytesToBeWritten != bytes )
+	{
+		throw Print_Error_Message( "There was an error writing xlf-info...", __FILE__, __LINE__);
+	}
+}
+
 #include <assert.h>
 
 #include "../host_functionality/logger.hpp"
 #include <sstream>
 
 #include <time.h>
+
+void* createVoidPointerFromString(std::string stringIn)
+{
+	return (void*) stringIn.c_str();
+}
 
 void write_gaugefield (
   char * binary_data, n_uint64_t num_bytes, Checksum checksum,
@@ -605,11 +626,6 @@ void write_gaugefield (
 	}
 	length_scidac_checksum = scidac_checksum.length();
 
-	//write ildg_format to string, should look like this:
-	/*
-	char ildg_format [] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n  <field>su3gauge</field>\n  <precision>64</precision>\n  <lx>4</lx>\n  <ly>4</ly>\n  <lz>4</lz>\n  <lt>4</lt>\n</ildgFormat>";
-	*/
-	
 	std::string ildgFormat = "";
 	ildgFormat += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n";
 	ildgFormat += "  <field>" + boost::lexical_cast<std::string>(field_out) + "</field>\n";
@@ -636,17 +652,7 @@ void write_gaugefield (
 	header_xlf_info = limeCreateHeader(MB_flag, ME_flag, (char*) types[0], xlfInfo.size());
 	limeWriteRecordHeader(header_xlf_info, writer);
 	limeDestroyHeader(header_xlf_info);
-	int returnCode = 0;
-	returnCode = limeWriteRecordData( (void*) xlfInfo.c_str(), &length_xlf_info, writer);
-	if ( returnCode != LIME_SUCCESS )
-	{
-		throw Print_Error_Message( "Could not write to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
-	}
-	else if ( length_xlf_info != xlfInfo.size() )
-	{
-		throw Print_Error_Message( "There was an error writing xlf-info...", __FILE__, __LINE__);
-	}
-	
+	writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), writer);
 	logger.debug() << "  xlf-info written";
 
 	//ildg-format
@@ -654,7 +660,7 @@ void write_gaugefield (
 	header_ildg_format = limeCreateHeader(MB_flag, ME_flag, (char*) types[1], length_ildg_format);
 	limeWriteRecordHeader(header_ildg_format, writer);
 	limeDestroyHeader(header_ildg_format);
-	limeWriteRecordData( (void *) ildgFormat.c_str(), &length_ildg_format, writer);
+	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), writer);
 	logger.debug() << "  ildg-format written";
 
 	//binary data
