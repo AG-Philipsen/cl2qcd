@@ -26,7 +26,7 @@
 #include "checksum.h"
 #include "../meta/inputparameters.hpp"
 
-//TODO: separate between gaugefield and fermion field parameters
+//TODO: it may be advantageous to separate between gaugefield and fermion field parameters
 //TODO: remove "source" postfix
 class sourcefileparameters_values {
 public:

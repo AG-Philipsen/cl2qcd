@@ -106,4 +106,11 @@ void sourcefileparameters_values::set_defaults()
 	mu_solver_source = 0;
 	
 	numberOfFermionFieldsRead = 0;
+	
+	field_source = "";
+	date_source = "";
+	hmcversion_source = "";
+	solvertype_source = "";
+	hmcversion_solver_source = "";
+	date_solver_source = "";
 }
