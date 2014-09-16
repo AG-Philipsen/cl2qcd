@@ -26,6 +26,8 @@
 
 #include "SourcefileParameters_values.hpp"
 
+#include "../executables/exceptions.h"
+
 void checkDefaults(sourcefileparameters_values toCheck)
 {
   BOOST_REQUIRE_EQUAL(toCheck.lx, 0);
@@ -139,4 +141,56 @@ BOOST_AUTO_TEST_CASE(checkAgainstParameters_exception)
 		meta::Inputparameters standardParameters(iteration, _params);
 		BOOST_REQUIRE_THROW(srcFileParams.checkAgainstInputparameters(&standardParameters), std::invalid_argument );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(checkAgainstChecksum)
+{
+	Checksum checksum;
+	sourcefileparameters_values values;
+	
+	BOOST_REQUIRE(checksum == values.checksum);
+}
+
+BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exception)
+{
+	Checksum checksum(1,2);
+	sourcefileparameters_values values;
+	
+	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, false, "nameOfFile"), File_Exception );
+}
+
+BOOST_AUTO_TEST_CASE(checkAgainstChecksum_noExceptionByParameters)
+{
+	Checksum checksum(1,2);
+	sourcefileparameters_values values;
+	
+	const char * _params[] = {"foo", "--ignore_checksum_errors=true" };
+	meta::Inputparameters parameters(2, _params);
+	sourcefileparameters_values srcFileParams(&parameters, 123, 4.56, checksum, "8.9");
+	
+	BOOST_CHECK_NO_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"));
+}
+
+BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exceptionByParameters)
+{
+	Checksum checksum(1,2);
+	sourcefileparameters_values values;
+	
+	const char * _params[] = {"foo", "--ignore_checksum_errors=false" };
+	meta::Inputparameters parameters(2, _params);
+	sourcefileparameters_values srcFileParams(&parameters, 123, 4.56, checksum, "8.9");
+	
+	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"),  File_Exception);
+}
+
+BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exceptionByParameters_defaultSetting)
+{
+	Checksum checksum(1,2);
+	sourcefileparameters_values values;
+	
+	const char * _params[] = {"foo"};
+	meta::Inputparameters parameters(1, _params);
+	sourcefileparameters_values srcFileParams(&parameters, 123, 4.56, checksum, "8.9");
+	
+	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"),  File_Exception);
 }

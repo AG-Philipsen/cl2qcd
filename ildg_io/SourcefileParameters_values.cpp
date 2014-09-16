@@ -218,3 +218,15 @@ void sourcefileparameters_values::checkAgainstInputparameters(const meta::Inputp
 	checkMinorParameter_double(this->mu, parameters->get_mu(), "mu" );
 }
 
+void sourcefileparameters_values::checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors, std::string filename)
+{
+	if(checksum != this->checksum) {
+		logger.error() << "Checksum of data does not match checksum given in file.";
+		logger.error() << "Calculated Checksum: " << checksum;
+		logger.error() << "Embedded Checksum:   " << this->checksum;
+		if(!ignoreChecksumErrors) 
+		{
+			throw File_Exception(filename);
+		}
+	}
+}

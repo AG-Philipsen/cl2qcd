@@ -30,8 +30,6 @@
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
-static hmc_float make_float_from_big_endian(const char* in);
-static void make_big_endian_from_float(char* out, const hmc_float in);
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
@@ -66,9 +64,14 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	return gf_host;
 }
 
+static size_t getBufferSize_gaugefield(const meta::Inputparameters * parameters) noexcept
+{
+	return 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * parameters->get_ntime() * sizeof(hmc_float);
+}
+
 void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf, const meta::Inputparameters * parameters, int number, double plaq)
 {
-	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * parameters->get_ntime() * sizeof(hmc_float);
+	const size_t gaugefield_buf_size = getBufferSize_gaugefield(parameters);
 	char * gaugefield_buf = new char[gaugefield_buf_size];
 
 	copy_gaugefield_to_ildg_format(gaugefield_buf, host_buf, *parameters);
@@ -80,7 +83,19 @@ void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf,
 	IldgIoWriter_gaugefield writer(gaugefield_buf, gaugefield_buf_size, srcFileParameters, outputfile);
 
 	delete[] gaugefield_buf;
+}
 
+static hmc_float make_float_from_big_endian(const char* in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		val.b[i] = in[sizeof(hmc_float) - 1 - i];
+	}
+	return val.f;
 }
 
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters)
@@ -174,19 +189,6 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 	}
 
 	return checksum;
-}
-
-static hmc_float make_float_from_big_endian(const char* in)
-{
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
-
-	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		val.b[i] = in[sizeof(hmc_float) - 1 - i];
-	}
-	return val.f;
 }
 
 static void make_big_endian_from_float(char* out, const hmc_float in)

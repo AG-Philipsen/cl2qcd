@@ -45,6 +45,7 @@ public:
 	void printMetaDataToScreen(std::string sourceFilename);
 	
 	void checkAgainstInputparameters(const meta::Inputparameters * toCheck);
+	void checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors = false, std::string filename = "");
 	
 private:
 	void set_defaults();
