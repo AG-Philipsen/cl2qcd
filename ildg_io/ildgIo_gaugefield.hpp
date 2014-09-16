@@ -45,7 +45,7 @@ extern "C" {
 class sourcefileparameters : public sourcefileparameters_values {
 public:
 	sourcefileparameters() : sourcefileparameters_values() {};
-	sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette) : sourcefileparameters_values(parameters, trajectoryNumber, plaquette) {};
+	sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, std::string hmcVersion) : sourcefileparameters_values(parameters, trajectoryNumber, plaquette, hmcVersion) {};
 	
 	/**
 	 * Read gauge configuration from the given file into the given array.

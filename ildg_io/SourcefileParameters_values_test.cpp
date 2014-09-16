@@ -94,7 +94,7 @@ void checkSpecificParameters(sourcefileparameters_values toCheck)
 	
 	BOOST_REQUIRE_EQUAL(toCheck.field_source, "");
 	BOOST_REQUIRE_EQUAL(toCheck.date_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_source, "3.95");
 	BOOST_REQUIRE_EQUAL(toCheck.solvertype_source, "");
 	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver_source, "");
 	BOOST_REQUIRE_EQUAL(toCheck.date_solver_source, "");
@@ -104,12 +104,13 @@ BOOST_AUTO_TEST_CASE(initFromParameters)
 {
 	int trajectoryNumber = -1982;
 	double plaquette = -4.321;
+	std::string hmcVersion = "3.95";
 	const char * _params[] = {"foo", 
 		"--ntime=41", "--nspace=65", "--kappa=-12.345", "--prec=32", "--beta=4.5", "--mu=23.41"
 	};
 	meta::Inputparameters parameters(7, _params);
 	
-  sourcefileparameters_values srcFileParams(&parameters, trajectoryNumber, plaquette);
+  sourcefileparameters_values srcFileParams(&parameters, trajectoryNumber, plaquette, hmcVersion);
   checkSpecificParameters(srcFileParams);
 }
 

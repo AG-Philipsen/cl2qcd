@@ -25,7 +25,7 @@ sourcefileparameters_values::sourcefileparameters_values()
 	set_defaults();
 }
 
-sourcefileparameters_values::sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette)
+sourcefileparameters_values::sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, std::string hmcVersion)
 {
 	set_defaults();
 	
@@ -39,6 +39,8 @@ sourcefileparameters_values::sourcefileparameters_values(const meta::Inputparame
 	beta_source = parameters->get_beta();
 	kappa_source = parameters->get_kappa();
 	mu_source = parameters->get_mu();
+	
+	hmcversion_source = hmcVersion;
 }
 
 void sourcefileparameters_values::printMetaDataToScreen(std::string sourceFilename)
