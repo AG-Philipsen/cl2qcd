@@ -104,19 +104,19 @@ static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
 
 static void setParametersToValues_xlf(sourcefileparameters & parameters, std::map<std::string, helper>  helperMap)
 {
-	parameters.plaquettevalue_source = castStringToDouble(helperMap["plaquette"].value);
-	parameters.kappa_source = castStringToDouble(helperMap["kappa"].value);
-	parameters.mu_source = castStringToDouble(helperMap["mu"].value);
-	parameters.beta_source = castStringToDouble(helperMap["beta"].value);
-	parameters.c2_rec_source = castStringToDouble(helperMap["c2_rec"].value);
-	parameters.mubar_source = castStringToDouble(helperMap["mubar"].value);
-	parameters.epsilonbar_source = castStringToDouble(helperMap["epsilonbar"].value);
+	parameters.plaquettevalue = castStringToDouble(helperMap["plaquette"].value);
+	parameters.kappa = castStringToDouble(helperMap["kappa"].value);
+	parameters.mu = castStringToDouble(helperMap["mu"].value);
+	parameters.beta = castStringToDouble(helperMap["beta"].value);
+	parameters.c2_rec = castStringToDouble(helperMap["c2_rec"].value);
+	parameters.mubar = castStringToDouble(helperMap["mubar"].value);
+	parameters.epsilonbar = castStringToDouble(helperMap["epsilonbar"].value);
 
-	parameters.trajectorynr_source = castStringToInt(helperMap["trajectory_nr"].value);
-	parameters.time_source = castStringToInt(helperMap["time"].value);
+	parameters.trajectorynr = castStringToInt(helperMap["trajectory_nr"].value);
+	parameters.time = castStringToInt(helperMap["time"].value);
 
-	parameters.hmcversion_source = helperMap["hmcversion"].value;
-	parameters.date_source = helperMap["date"].value;
+	parameters.hmcversion = helperMap["hmcversion"].value;
+	parameters.date = helperMap["date"].value;
 }
 
 static void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  helperMap)
@@ -201,12 +201,12 @@ void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * bu
 int calcNumberOfEntriesForDiracFermionfield(const sourcefileparameters_values params)
 {
   //latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
-  return (int) (params.lx_source) * (params.ly_source) * (params.lz_source) * (params.lt_source) * NC * NSPIN * 2;
+  return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * NC * NSPIN * 2;
 }
 int calcNumberOfEntriesForGaugefield(const sourcefileparameters_values params)
 {
   // latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
-  return (int) (params.lx_source) * (params.ly_source) * (params.lz_source) * (params.lt_source) * 2 * 4 * 9;
+  return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * 2 * 4 * 9;
 }
 
 int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
@@ -247,13 +247,13 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 
 static void setParametersToValues_ildg(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
 {
-	parameters.prec_source = castStringToInt(helperMap["precision"]);
-	parameters.lx_source = castStringToInt(helperMap["lx"]);
-	parameters.ly_source = castStringToInt(helperMap["ly"]);
-	parameters.lz_source = castStringToInt(helperMap["lz"]);
-	parameters.lt_source = castStringToInt(helperMap["lt"]);
+	parameters.prec = castStringToInt(helperMap["precision"]);
+	parameters.lx = castStringToInt(helperMap["lx"]);
+	parameters.ly = castStringToInt(helperMap["ly"]);
+	parameters.lz = castStringToInt(helperMap["lz"]);
+	parameters.lt = castStringToInt(helperMap["lt"]);
 
-	parameters.field_source = helperMap["field"];
+	parameters.field = helperMap["field"];
 }
 
 static void fillHelperMap_ildg(std::map<std::string, std::string> & helperMap)
@@ -374,7 +374,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
 			
 			setParametersToValues_ildg(*this, helperMap);
-			num_entries_source = calcNumberOfEntriesBasedOnFieldType(field_source);
+			num_entries = calcNumberOfEntriesBasedOnFieldType(field);
 		}	
 
 		else if( limeEntryTypes["etmc propagator"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
@@ -398,7 +398,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 
 size_t sourcefileparameters::sizeOfGaugefieldBuffer()
 {
-	return num_entries_source * sizeof(hmc_float);
+	return num_entries * sizeof(hmc_float);
 }
 
 char* createBuffer(size_t datasize)
@@ -516,7 +516,7 @@ void sourcefileparameters::extractMetadataFromLimeFile()
 	printMetaDataToScreen(sourceFilename);
 	
 	//todo: this may be unified with a check against the inputparameters..
-	checkPrecision(desiredPrecision, prec_source);  
+	checkPrecision(desiredPrecision, prec);  
 }
 
 void sourcefileparameters::extractDataFromLimeFile(char ** destination)

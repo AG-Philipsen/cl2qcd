@@ -28,36 +28,36 @@
 
 void checkDefaults(sourcefileparameters_values toCheck)
 {
-  BOOST_REQUIRE_EQUAL(toCheck.lx_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.ly_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.lz_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.lt_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.prec_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.num_entries_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.flavours_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.trajectorynr_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.time_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.time_solver_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.beta_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.kappa_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.mu_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.c2_rec_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.mubar_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.epsilonbar_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.mu_solver_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.lx, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.ly, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.lz, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.lt, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.prec, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.num_entries, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.flavours, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.trajectorynr, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.time, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.time_solver, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.noiter, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.beta, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mu, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.c2_rec, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mubar, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epsilonbar, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epssq, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mu_solver, 0);
 	
   BOOST_REQUIRE_EQUAL(toCheck.numberOfFermionFieldsRead, 0);
 	
-	BOOST_REQUIRE_EQUAL(toCheck.field_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.date_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.solvertype_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.date_solver_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.field, "");
+	BOOST_REQUIRE_EQUAL(toCheck.date, "");
+	BOOST_REQUIRE_EQUAL(toCheck.hmcversion, "");
+	BOOST_REQUIRE_EQUAL(toCheck.solvertype, "");
+	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver, "");
+	BOOST_REQUIRE_EQUAL(toCheck.date_solver, "");
 	
 	Checksum checksum;
 	BOOST_REQUIRE(toCheck.checksum == checksum);
@@ -71,36 +71,36 @@ BOOST_AUTO_TEST_CASE(defaults)
 
 void checkSpecificParameters(sourcefileparameters_values toCheck)
 {
-  BOOST_REQUIRE_EQUAL(toCheck.lx_source, 65);
-  BOOST_REQUIRE_EQUAL(toCheck.ly_source, 65);
-  BOOST_REQUIRE_EQUAL(toCheck.lz_source, 65);
-  BOOST_REQUIRE_EQUAL(toCheck.lt_source, 41);
-  BOOST_REQUIRE_EQUAL(toCheck.prec_source, 32);
-  BOOST_REQUIRE_EQUAL(toCheck.num_entries_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.flavours_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.trajectorynr_source, -1982);
-  BOOST_REQUIRE_EQUAL(toCheck.time_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.time_solver_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue_source, -4.321);
-  BOOST_REQUIRE_EQUAL(toCheck.beta_source, 4.5);
-  BOOST_REQUIRE_EQUAL(toCheck.kappa_source, -12.345);
-  BOOST_REQUIRE_EQUAL(toCheck.mu_source, 23.41);
-  BOOST_REQUIRE_EQUAL(toCheck.c2_rec_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.mubar_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.epsilonbar_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver_source, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.mu_solver_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.lx, 65);
+  BOOST_REQUIRE_EQUAL(toCheck.ly, 65);
+  BOOST_REQUIRE_EQUAL(toCheck.lz, 65);
+  BOOST_REQUIRE_EQUAL(toCheck.lt, 41);
+  BOOST_REQUIRE_EQUAL(toCheck.prec, 32);
+  BOOST_REQUIRE_EQUAL(toCheck.num_entries, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.flavours, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.trajectorynr, -1982);
+  BOOST_REQUIRE_EQUAL(toCheck.time, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.time_solver, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.noiter, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue, -4.321);
+  BOOST_REQUIRE_EQUAL(toCheck.beta, 4.5);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa, -12.345);
+  BOOST_REQUIRE_EQUAL(toCheck.mu, 23.41);
+  BOOST_REQUIRE_EQUAL(toCheck.c2_rec, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mubar, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epsilonbar, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epssq, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mu_solver, 0);
 	
   BOOST_REQUIRE_EQUAL(toCheck.numberOfFermionFieldsRead, 0);
 	
-	BOOST_REQUIRE_EQUAL(toCheck.field_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.date_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_source, "3.95");
-	BOOST_REQUIRE_EQUAL(toCheck.solvertype_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver_source, "");
-	BOOST_REQUIRE_EQUAL(toCheck.date_solver_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.field, "");
+	BOOST_REQUIRE_EQUAL(toCheck.date, "");
+	BOOST_REQUIRE_EQUAL(toCheck.hmcversion, "3.95");
+	BOOST_REQUIRE_EQUAL(toCheck.solvertype, "");
+	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver, "");
+	BOOST_REQUIRE_EQUAL(toCheck.date_solver, "");
 	
 	Checksum checksum(1,2);
 	BOOST_REQUIRE(toCheck.checksum == checksum);	

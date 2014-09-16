@@ -42,7 +42,7 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	char * gf_ildg; // filled by readsourcefile
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
 	
-	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.num_entries_source * sizeof(hmc_float), *parameters);
+	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.num_entries * sizeof(hmc_float), *parameters);
 	logger.debug() << "Calculated Checksum: " << checksum;
 	
 	if(checksum != parameters_source.checksum) {
@@ -54,12 +54,12 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 		}
 	}
 	
-	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, *parameters);
+	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries, *parameters);
 	
 	delete[] gf_ildg;
 
-	trajectoryNumberAtInit = parameters_source.trajectorynr_source;
-	plaq = parameters_source.plaquettevalue_source;
+	trajectoryNumberAtInit = parameters_source.trajectorynr;
+	plaq = parameters_source.plaquettevalue;
 
 	check_sourcefileparameters(*parameters, parameters_source);
 
@@ -258,31 +258,31 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 
 	testobj = msg + "NT";
 	tmp1 = parameters.get_ntime();
-	tmp2 = parameters_source.lt_source;
+	tmp2 = parameters_source.lt;
 	if(tmp1 != tmp2) {
 		throw Invalid_Parameters(testobj , tmp1, tmp2);
 	}
 	testobj = msg + "NX";
 	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lx_source;
+	tmp2 = parameters_source.lx;
 	if(tmp1 != tmp2) {
 		throw Invalid_Parameters(testobj , tmp1, tmp2);
 	}
 	testobj = msg + "NY";
 	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.ly_source;
+	tmp2 = parameters_source.ly;
 	if(tmp1 != tmp2) {
 		throw Invalid_Parameters(testobj , tmp1, tmp2);
 	}
 	testobj = msg + "NZ";
 	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lz_source;
+	tmp2 = parameters_source.lz;
 	if(tmp1 != tmp2) {
 		throw Invalid_Parameters(testobj , tmp1, tmp2);
 	}
 	testobj = msg + "PRECISION";
 	tmp1 = parameters.get_precision();
-	tmp2 = parameters_source.prec_source;
+	tmp2 = parameters_source.prec;
 	if(tmp1 != tmp2) {
 		throw Invalid_Parameters(testobj , tmp1, tmp2);
 	}
@@ -292,21 +292,21 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 	hmc_float float1, float2;
 	testobj = msg + "beta";
 	float1 = parameters.get_beta();
-	float2 = parameters_source.beta_source;
+	float2 = parameters_source.beta;
 	if(float1 != float2) {
 		logger.warn() << testobj;
 		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
 	}
 	testobj = msg + "kappa";
 	float1 = parameters.get_kappa();
-	float2 = parameters_source.kappa_source;
+	float2 = parameters_source.kappa;
 	if(float1 != float2) {
 		logger.warn() << testobj;
 		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
 	}
 	testobj = msg + "mu";
 	float1 = parameters.get_mu();
-	float2 = parameters_source.mu_source;
+	float2 = parameters_source.mu;
 	if(float1 != float2) {
 		logger.warn() << testobj;
 		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
