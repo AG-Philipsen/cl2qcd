@@ -77,7 +77,7 @@ void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf,
 
 	sourcefileparameters_values srcFileParameters(parameters, number, plaq, checksum, version);
 	
-	write_gaugefield(gaugefield_buf, gaugefield_buf_size, srcFileParameters, outputfile);
+	IldgIoWriter_gaugefield writer(gaugefield_buf, gaugefield_buf_size, srcFileParameters, outputfile);
 
 	delete[] gaugefield_buf;
 

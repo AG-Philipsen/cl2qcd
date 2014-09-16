@@ -222,7 +222,7 @@ void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters_values sr
 	char * binaryData = new char[ bufferSize_gaugefield ];
 	
 	//TODO: hmc version currently can not be anything else than #.# !!
-	write_gaugefield ( binaryData, bufferSize_gaugefield, srcFileParams ,configurationName);
+	IldgIoWriter_gaugefield writer( binaryData, bufferSize_gaugefield, srcFileParams ,configurationName);
 	
 	delete binaryData;
 }

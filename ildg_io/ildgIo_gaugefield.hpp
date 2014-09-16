@@ -80,15 +80,19 @@ public:
 };
 
 /**
- * Write the gaugefield to a file
+ * Writer class for the gaugefield
  *
- * \param array The float array representing the gaugefield.
- * \param array_size The number of floats in the gaugefield array.
+ * \param binary_data The gaugefield in binary format.
+ * \param num_bytes The number of bytes to be written.
+ * \param srcFileParameters_values Collection of parameters associated with the gaugefield.
  *
  * \todo complete documentation
  */
-void write_gaugefield (
-  char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filename);
+class IldgIoWriter_gaugefield: public LimeFileWriter
+{
+public:
+	IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filenameIn);
+};
 
 
 #endif /* _READGAUGEH_ */
