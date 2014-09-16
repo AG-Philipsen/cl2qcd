@@ -540,12 +540,27 @@ void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desi
 	extractDataFromLimeFile(destination);
 }
 
-//todo: refactor!
-
-void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes,  LimeWriter *writer)
+void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)
 {
+	int returnCode = 0;
+	
+	returnCode = limeWriteRecordHeader(header, writer);
+	if ( returnCode != LIME_SUCCESS )
+	{
+		throw Print_Error_Message( "Could not write header to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
+	}
+}
+
+n_uint64_t writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes,  LimeWriter *writer, int MB_flag, int ME_flag, std::string description)
+{
+	logger.debug() << "writing \"" + description + "\" to lime file...";
+
 	n_uint64_t bytesToBeWritten = bytes;
 	int returnCode = 0;
+	
+	LimeRecordHeader * header = limeCreateHeader(MB_flag, ME_flag, (char*) description.c_str(), bytesToBeWritten);
+	writeLimeHeaderToLimeFile(header, writer);
+	limeDestroyHeader(header);	
 	
 	returnCode = limeWriteRecordData( memoryPointer, &bytesToBeWritten, writer);
 	if ( returnCode != LIME_SUCCESS )
@@ -556,17 +571,8 @@ void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes,  LimeWriter *
 	{
 		throw Print_Error_Message( "There was an error writing to Lime file...", __FILE__, __LINE__);
 	}
-}
 
-void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)
-{
-	int returnCode = 0;
-	
-	returnCode = limeWriteRecordHeader(header, writer);
-	if ( returnCode != LIME_SUCCESS )
-	{
-		throw Print_Error_Message( "Could not write header to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
-	}
+	return bytesToBeWritten;
 }
 
 #include "../host_functionality/logger.hpp"
@@ -585,65 +591,31 @@ void write_gaugefield (
 	outputfile = fopen(filename.c_str(), "w");
 	int MB_flag;
 	int ME_flag;
-	n_uint64_t length_xlf_info = 0, length_ildg_format = 0, length_scidac_checksum = 0;
-	LimeRecordHeader * header_ildg_format, *header_scidac_checksum, * header_ildg_binary_data, * header_xlf_info;
-
-	// TODO replace this whole block by something templated
+	
+	n_uint64_t writtenBytes = 0;
 	
 	std::string xlfInfo = srcFileParameters_values.getInfo_xlfInfo();
-	length_xlf_info = xlfInfo.size();
-	
 	std::string scidac_checksum = srcFileParameters_values.getInfo_scidacChecksum();
-	length_scidac_checksum = scidac_checksum.length();
-
 	std::string ildgFormat = srcFileParameters_values.getInfo_ildgFormat_gaugefield();
-	length_ildg_format = ildgFormat.size();
 
 	//write the lime file
 	MB_flag = 1;
+	ME_flag = 0;
 
 	LimeWriter *writer;
 	writer = limeCreateWriter(outputfile);
 
-	const char * types[] = {"xlf-info", "ildg-format", "ildg-binary-data", "scidac-checksum"};
+	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), writer, MB_flag, ME_flag++, "xlf-info");
 
-	//xlf-info
-	ME_flag = 1;
-	header_xlf_info = limeCreateHeader(MB_flag, ME_flag, (char*) types[0], xlfInfo.size());
-	writeLimeHeaderToLimeFile(header_xlf_info, writer);
-	limeDestroyHeader(header_xlf_info);
-	writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), writer);
-	logger.debug() << "  xlf-info written";
+	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), writer, MB_flag, ME_flag++, "ildg-format");
 
-	//ildg-format
-	ME_flag = 2;
-	header_ildg_format = limeCreateHeader(MB_flag, ME_flag, (char*) types[1], length_ildg_format);
-	writeLimeHeaderToLimeFile(header_ildg_format, writer);
-	limeDestroyHeader(header_ildg_format);
-	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), writer);
-	logger.debug() << "  ildg-format written";
+	writtenBytes += writeMemoryToLimeFile( binary_data, num_bytes, writer, MB_flag, ME_flag++, "ildg-binary-data");
 
-	//binary data
-	ME_flag = 3;
-	header_ildg_binary_data = limeCreateHeader(MB_flag, ME_flag, (char*) types[2], num_bytes);
-	writeLimeHeaderToLimeFile(header_ildg_binary_data, writer);
-	limeDestroyHeader(header_ildg_binary_data);
-	//todo: replace with writeMemoryToLimeFile once a meaningful test is implemented
-	limeWriteRecordData(binary_data, &num_bytes, writer);
-	logger.debug() << "  ildg_binary_data written";
-
-	//scidac-checksum
-	ME_flag = 4;
-	header_scidac_checksum = limeCreateHeader(MB_flag, ME_flag, (char*) types[3], length_scidac_checksum);
-	writeLimeHeaderToLimeFile(header_scidac_checksum, writer);
-	limeDestroyHeader(header_scidac_checksum);
-	//todo: replace with writeMemoryToLimeFile
-	limeWriteRecordData(const_cast<char*>(scidac_checksum.c_str()), &length_scidac_checksum, writer);
-	logger.debug() << "  scidac-checksum written";
+	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), writer, MB_flag, ME_flag++, "scidac-checksum");
 
 	//closing
 	fclose(outputfile);
 	limeDestroyWriter(writer);
-	logger.info() << "  " << (float) ( (float) (length_xlf_info + length_ildg_format + num_bytes + length_scidac_checksum) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
+	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
 }
 
