@@ -142,9 +142,9 @@ std::string getFieldType_gaugefield()
 	return "su3gauge";
 }
 
-sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
+sourcefileparameters_values setSourceFileParametersToSpecificValuesForGaugefield()
 {
-	sourcefileparameters srcFileParams;
+	sourcefileparameters_values srcFileParams;
 	srcFileParams.lx_source = 3;
 	srcFileParams.ly_source = 3;
 	srcFileParams.lz_source = 3;
@@ -183,7 +183,7 @@ sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 // not implemented or fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 11 )
 
-void compareTwoSourcefileParameters(sourcefileparameters toCheck1, sourcefileparameters toCheck2)
+void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, sourcefileparameters toCheck2)
 {
   BOOST_REQUIRE_EQUAL(toCheck1.lx_source, toCheck2.lx_source);
   BOOST_REQUIRE_EQUAL(toCheck1.ly_source, toCheck2.ly_source);
@@ -215,30 +215,23 @@ void compareTwoSourcefileParameters(sourcefileparameters toCheck1, sourcefilepar
 	BOOST_CHECK_EQUAL(toCheck1.solvertype_source, toCheck2.solvertype_source);
 }
 
-void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters srcFileParams, std::string configurationName)
+void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters_values srcFileParams, std::string configurationName)
 {
 	Checksum checksum;
-	
-	int ns = srcFileParams.lx_source;
-	int nt = srcFileParams.lt_source;
-	size_t precision = srcFileParams.prec_source;
 	
 	const n_uint64_t bufferSize_gaugefield = getElementsOfGaugefield(srcFileParams.lx_source, srcFileParams.ly_source, srcFileParams.lz_source, srcFileParams.lt_source) * sizeof(double);
 	
 	char * binaryData = new char[ bufferSize_gaugefield ];
 	
 	//TODO: hmc version currently can not be anything else than #.# !!
-	write_gaugefield (
-		binaryData, bufferSize_gaugefield, checksum,
-		ns, ns, ns, nt, precision,
-		srcFileParams.trajectorynr_source, srcFileParams.plaquettevalue_source, srcFileParams.beta_source, srcFileParams.kappa_source, srcFileParams.mu_source, srcFileParams.c2_rec_source, srcFileParams.epsilonbar_source, srcFileParams.mubar_source, srcFileParams.hmcversion_source.c_str() ,configurationName.c_str());
+	write_gaugefield ( binaryData, bufferSize_gaugefield, checksum, srcFileParams ,configurationName);
 	
 	delete binaryData;
 }
 
 BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 {
-	sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
+	sourcefileparameters_values srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
 	
 	//TODO: test with single?
 	std::string configurationName = "conf.test";

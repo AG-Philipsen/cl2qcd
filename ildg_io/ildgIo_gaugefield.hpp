@@ -88,9 +88,7 @@ public:
  * \todo complete documentation
  */
 void write_gaugefield (
-  char * binary_data, n_uint64_t num_bytes, Checksum checksum,
-  int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
-  const char * hmc_version, const char * filename);
+  char * binary_data, n_uint64_t num_bytes, Checksum checksum, sourcefileparameters_values srcFileParameters_values, std::string filename);
 
 
 #endif /* _READGAUGEH_ */

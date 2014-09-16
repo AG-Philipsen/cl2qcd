@@ -583,15 +583,14 @@ void* createVoidPointerFromString(std::string stringIn)
 
 void write_gaugefield (
   char * binary_data, n_uint64_t num_bytes, Checksum checksum,
-  int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
-  const char * hmc_version, const char * filename)
+  sourcefileparameters_values srcFileParameters_values, std::string filename)
 {
 
 	logger.info() << "writing gaugefield to lime-file...";
 
 	time_t current_time;
 	FILE *outputfile;
-	outputfile = fopen(filename, "w");
+	outputfile = fopen(filename.c_str(), "w");
 	int MB_flag;
 	int ME_flag;
 	n_uint64_t length_xlf_info = 0, length_ildg_format = 0, length_scidac_checksum = 0;
@@ -607,22 +606,22 @@ void write_gaugefield (
 	//here it must not be assumed that the argument prec and sizeof(hmc_float) are the same!!
 	logger.debug() << "  num_bytes = " << num_bytes;
 
-	if(sizeof(hmc_float) * 8 != prec) {
-		throw Invalid_Parameters("Precision does not match executables.", sizeof(hmc_float) * 8, prec);
+	if(sizeof(hmc_float) * 8 != srcFileParameters_values.prec_source) {
+		throw Invalid_Parameters("Precision does not match executables.", sizeof(hmc_float) * 8, srcFileParameters_values.prec_source);
 	}
-
+	
 	std::string xlfInfo = "";
-	xlfInfo += "plaquette = " + boost::lexical_cast<std::string>(plaquettevalue) + "\n";
-	xlfInfo += "trajectory nr = " + boost::lexical_cast<std::string>(trajectorynr) + "\n";
-	xlfInfo += "beta = " + boost::lexical_cast<std::string>(beta) + "\n";
-	xlfInfo += "kappa = " + boost::lexical_cast<std::string>(kappa) + "\n";
-	xlfInfo += "mu = " + boost::lexical_cast<std::string>(mu) + "\n";
-	xlfInfo += "c2_rec = " + boost::lexical_cast<std::string>(c2_rec) + "\n";
+	xlfInfo += "plaquette = " + boost::lexical_cast<std::string>(srcFileParameters_values.plaquettevalue_source) + "\n";
+	xlfInfo += "trajectory nr = " + boost::lexical_cast<std::string>(srcFileParameters_values.trajectorynr_source) + "\n";
+	xlfInfo += "beta = " + boost::lexical_cast<std::string>(srcFileParameters_values.beta_source) + "\n";
+	xlfInfo += "kappa = " + boost::lexical_cast<std::string>(srcFileParameters_values.kappa_source) + "\n";
+	xlfInfo += "mu = " + boost::lexical_cast<std::string>(srcFileParameters_values.mu_source) + "\n";
+	xlfInfo += "c2_rec = " + boost::lexical_cast<std::string>(srcFileParameters_values.c2_rec_source) + "\n";
 	xlfInfo += "time = " + boost::lexical_cast<std::string>(current_time) + "\n";
-	xlfInfo += "hmcversion = " + boost::lexical_cast<std::string>(hmc_version) + "\n";
-	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(mubar) + "\n";
-	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(epsilonbar) + "\n";
-	xlfInfo += "date = " + boost::lexical_cast<std::string>(date) + "\n";
+	xlfInfo += "hmcversion = " + boost::lexical_cast<std::string>(srcFileParameters_values.hmcversion_source) + "\n";
+	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(srcFileParameters_values.mubar_source) + "\n";
+	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(srcFileParameters_values.epsilonbar_source) + "\n";
+	xlfInfo += "date = " + boost::lexical_cast<std::string>(srcFileParameters_values.date_source) + "\n";
 	
 	//write scidac checksum, this is stubb
 	std::string scidac_checksum;
@@ -639,11 +638,11 @@ void write_gaugefield (
 	std::string ildgFormat = "";
 	ildgFormat += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n";
 	ildgFormat += "  <field>" + boost::lexical_cast<std::string>(field_out) + "</field>\n";
-	ildgFormat += "  <precision>" + boost::lexical_cast<std::string>(prec) + "</precision>\n";
-	ildgFormat += "  <lx>" + boost::lexical_cast<std::string>(lx) + "</lx>\n";
-	ildgFormat += "  <ly>" + boost::lexical_cast<std::string>(ly) + "</ly>\n";
-	ildgFormat += "  <lz>" + boost::lexical_cast<std::string>(lz) + "</lz>\n";
-	ildgFormat += "  <lt>" + boost::lexical_cast<std::string>(lt) + "</lt>\n";
+	ildgFormat += "  <precision>" + boost::lexical_cast<std::string>(srcFileParameters_values.prec_source) + "</precision>\n";
+	ildgFormat += "  <lx>" + boost::lexical_cast<std::string>(srcFileParameters_values.lx_source) + "</lx>\n";
+	ildgFormat += "  <ly>" + boost::lexical_cast<std::string>(srcFileParameters_values.ly_source) + "</ly>\n";
+	ildgFormat += "  <lz>" + boost::lexical_cast<std::string>(srcFileParameters_values.lz_source) + "</lz>\n";
+	ildgFormat += "  <lt>" + boost::lexical_cast<std::string>(srcFileParameters_values.lt_source) + "</lt>\n";
 	ildgFormat += "</ildgFormat>";
 
 	length_ildg_format = ildgFormat.size();

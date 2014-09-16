@@ -68,21 +68,16 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 
 void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf, const meta::Inputparameters * parameters, int number, double plaq)
 {
-	const size_t NTIME = parameters->get_ntime();
-	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * NTIME * sizeof(hmc_float);
+	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * parameters->get_ntime() * sizeof(hmc_float);
 	char * gaugefield_buf = new char[gaugefield_buf_size];
-
-	//these are not yet used...
-	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
-
 
 	copy_gaugefield_to_ildg_format(gaugefield_buf, host_buf, *parameters);
 
-	const size_t NSPACE = parameters->get_nspace();
-
 	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, *parameters);
 
-	write_gaugefield(gaugefield_buf, gaugefield_buf_size, checksum, NSPACE, NSPACE, NSPACE, NTIME, parameters->get_precision(), number, plaq, parameters->get_beta(), parameters->get_kappa(), parameters->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	sourcefileparameters_values srcFileParameters(parameters, number, plaq, version);
+	
+	write_gaugefield(gaugefield_buf, gaugefield_buf_size, checksum, srcFileParameters, outputfile);
 
 	delete[] gaugefield_buf;
 
