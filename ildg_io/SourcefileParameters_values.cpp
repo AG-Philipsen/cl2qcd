@@ -230,3 +230,8 @@ void sourcefileparameters_values::checkAgainstChecksum(Checksum checksum, bool i
 		}
 	}
 }
+
+size_t sourcefileparameters_values::getSizeInBytes() noexcept
+{
+	return (size_t) num_entries * prec / 8;
+}

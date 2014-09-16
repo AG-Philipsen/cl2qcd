@@ -47,6 +47,8 @@ public:
 	void checkAgainstInputparameters(const meta::Inputparameters * toCheck);
 	void checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors = false, std::string filename = "");
 	
+	size_t getSizeInBytes() noexcept;
+	
 private:
 	void set_defaults();
 };

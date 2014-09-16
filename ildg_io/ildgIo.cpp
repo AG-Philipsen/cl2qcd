@@ -34,32 +34,23 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
 	sourcefileparameters parameters_source;
-
-	Matrixsu3 * gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
-
-	char * gf_ildg; // filled by readsourcefile
+	Matrixsu3 * gf_host;
+	char * gf_ildg;
+	
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
 	
-	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.num_entries * sizeof(hmc_float), *parameters);
-	logger.debug() << "Calculated Checksum: " << checksum;
-	
-	if(checksum != parameters_source.checksum) {
-		logger.error() << "Checksum of data does not match checksum given in file.";
-		logger.error() << "Calculated Checksum: " << checksum;
-		logger.error() << "Embedded Checksum:   " << parameters_source.checksum;
-		if(!parameters->get_ignore_checksum_errors()) {
-			throw File_Exception(ildgfile);
-		}
-	}
-	
+	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.getSizeInBytes(), *parameters);
+
+	//todo: this should not be that explicit here!	
+	gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries, *parameters);
-	
 	delete[] gf_ildg;
 
 	trajectoryNumberAtInit = parameters_source.trajectorynr;
 	plaq = parameters_source.plaquettevalue;
 
 	parameters_source.checkAgainstInputparameters(parameters);
+	parameters_source.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
 
 	return gf_host;
 }
@@ -188,6 +179,7 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 		}
 	}
 
+	logger.debug() << "Calculated Checksum: " << checksum;
 	return checksum;
 }
 
