@@ -217,14 +217,12 @@ void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, source
 
 void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters_values srcFileParams, std::string configurationName)
 {
-	Checksum checksum;
-	
 	const n_uint64_t bufferSize_gaugefield = getElementsOfGaugefield(srcFileParams.lx_source, srcFileParams.ly_source, srcFileParams.lz_source, srcFileParams.lt_source) * sizeof(double);
 	
 	char * binaryData = new char[ bufferSize_gaugefield ];
 	
 	//TODO: hmc version currently can not be anything else than #.# !!
-	write_gaugefield ( binaryData, bufferSize_gaugefield, checksum, srcFileParams ,configurationName);
+	write_gaugefield ( binaryData, bufferSize_gaugefield, srcFileParams ,configurationName);
 	
 	delete binaryData;
 }

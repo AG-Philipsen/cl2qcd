@@ -31,7 +31,7 @@
 class sourcefileparameters_values {
 public:
   sourcefileparameters_values();
-	sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, std::string hmcVersion);
+	sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion);
 	
 	int lx_source, ly_source, lz_source, lt_source, prec_source, num_entries_source, flavours_source,
 	    trajectorynr_source, time_source, time_solver_source, noiter_source;

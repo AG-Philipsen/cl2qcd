@@ -625,14 +625,14 @@ std::string parametersToIldgFormat(sourcefileparameters_values srcFileParameters
 	return ildgFormat;
 }
 
-std::string checksumToScidacChecksum(Checksum checksum)
+std::string parametersToScidacChecksum(sourcefileparameters_values srcFileParameters_values)
 {
 	std::string scidac_checksum;
 	{
 		std::ostringstream tmp;
 		tmp << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n<version>1.0</version>\n";
-		tmp << "<suma>" << std::hex << checksum.get_suma() << "</suma>\n";
-		tmp << "<sumb>" << std::hex << checksum.get_sumb() << "</sumb>\n";
+		tmp << "<suma>" << std::hex << srcFileParameters_values.checksum.get_suma() << "</suma>\n";
+		tmp << "<sumb>" << std::hex << srcFileParameters_values.checksum.get_sumb() << "</sumb>\n";
 		tmp << "</scidacChecksum>";
 		scidac_checksum = tmp.str();
 	}
@@ -640,8 +640,7 @@ std::string checksumToScidacChecksum(Checksum checksum)
 }
 
 void write_gaugefield (
-  char * binary_data, n_uint64_t num_bytes, Checksum checksum,
-  sourcefileparameters_values srcFileParameters_values, std::string filename)
+  char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filename)
 {
 	logger.info() << "writing gaugefield to lime-file...";
 
@@ -662,7 +661,7 @@ void write_gaugefield (
 	std::string xlfInfo = parametersToXlfInfo(srcFileParameters_values, current_time, date);
 	length_xlf_info = xlfInfo.size();
 	
-	std::string scidac_checksum = checksumToScidacChecksum(checksum);
+	std::string scidac_checksum = parametersToScidacChecksum(srcFileParameters_values);
 	length_scidac_checksum = scidac_checksum.length();
 
 	std::string ildgFormat = parametersToIldgFormat(srcFileParameters_values, field_out);

@@ -45,7 +45,7 @@ extern "C" {
 class sourcefileparameters : public sourcefileparameters_values {
 public:
 	sourcefileparameters() : sourcefileparameters_values() {};
-	sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, std::string hmcVersion) : sourcefileparameters_values(parameters, trajectoryNumber, plaquette, hmcVersion) {};
+	sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksum, std::string hmcVersion) : sourcefileparameters_values(parameters, trajectoryNumber, plaquette, checksum, hmcVersion) {};
 	
 	/**
 	 * Read gauge configuration from the given file into the given array.
@@ -88,7 +88,7 @@ public:
  * \todo complete documentation
  */
 void write_gaugefield (
-  char * binary_data, n_uint64_t num_bytes, Checksum checksum, sourcefileparameters_values srcFileParameters_values, std::string filename);
+  char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filename);
 
 
 #endif /* _READGAUGEH_ */
