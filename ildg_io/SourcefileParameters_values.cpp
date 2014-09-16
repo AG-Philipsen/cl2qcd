@@ -118,3 +118,70 @@ void sourcefileparameters_values::set_defaults()
 	hmcversion_solver_source = "";
 	date_solver_source = "";
 }
+
+#include <time.h>
+
+time_t getCurrentTime()
+{
+	time_t current_time;
+	return time ( &current_time );
+}
+
+const char * getDateFromTime(time_t currentTime)
+{
+	return ctime (&currentTime);
+}
+
+std::string sourcefileparameters_values::getInfo_xlfInfo()
+{
+	time_t current_time = getCurrentTime();
+	const char * date = getDateFromTime(current_time);
+	
+	std::string xlfInfo = "";
+	xlfInfo += "plaquette = " + boost::lexical_cast<std::string>(this->plaquettevalue_source) + "\n";
+	xlfInfo += "trajectory nr = " + boost::lexical_cast<std::string>(this->trajectorynr_source) + "\n";
+	xlfInfo += "beta = " + boost::lexical_cast<std::string>(this->beta_source) + "\n";
+	xlfInfo += "kappa = " + boost::lexical_cast<std::string>(this->kappa_source) + "\n";
+	xlfInfo += "mu = " + boost::lexical_cast<std::string>(this->mu_source) + "\n";
+	xlfInfo += "c2_rec = " + boost::lexical_cast<std::string>(this->c2_rec_source) + "\n";
+	xlfInfo += "time = " + boost::lexical_cast<std::string>(current_time) + "\n";
+	xlfInfo += "hmcversion = " + boost::lexical_cast<std::string>(this->hmcversion_source) + "\n";
+	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(this->mubar_source) + "\n";
+	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(this->epsilonbar_source) + "\n";
+	xlfInfo += "date = " + boost::lexical_cast<std::string>(this->date_source) + "\n";
+	
+	return xlfInfo;
+}
+
+std::string sourcefileparameters_values::getInfo_ildgFormat_gaugefield()
+{
+	std::string description = "su3gauge";
+	
+	std::string ildgFormat = "";
+	ildgFormat += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n";
+	ildgFormat += "  <field>" + description + "</field>\n";
+	ildgFormat += "  <precision>" + boost::lexical_cast<std::string>(this->prec_source) + "</precision>\n";
+	ildgFormat += "  <lx>" + boost::lexical_cast<std::string>(this->lx_source) + "</lx>\n";
+	ildgFormat += "  <ly>" + boost::lexical_cast<std::string>(this->ly_source) + "</ly>\n";
+	ildgFormat += "  <lz>" + boost::lexical_cast<std::string>(this->lz_source) + "</lz>\n";
+	ildgFormat += "  <lt>" + boost::lexical_cast<std::string>(this->lt_source) + "</lt>\n";
+	ildgFormat += "</ildgFormat>";
+	
+	return ildgFormat;
+}
+
+std::string sourcefileparameters_values::getInfo_scidacChecksum()
+{
+	std::string scidac_checksum;
+	{
+		std::ostringstream tmp;
+		tmp << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n<version>1.0</version>\n";
+		tmp << "<suma>" << std::hex << this->checksum.get_suma() << "</suma>\n";
+		tmp << "<sumb>" << std::hex << this->checksum.get_sumb() << "</sumb>\n";
+		tmp << "</scidacChecksum>";
+		scidac_checksum = tmp.str();
+	}
+	return scidac_checksum;
+}
+	
+

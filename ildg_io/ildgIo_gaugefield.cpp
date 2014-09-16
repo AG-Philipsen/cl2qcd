@@ -569,83 +569,17 @@ void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)
 	}
 }
 
-#include <assert.h>
-
 #include "../host_functionality/logger.hpp"
-#include <sstream>
-
-#include <time.h>
 
 void* createVoidPointerFromString(std::string stringIn)
 {
 	return (void*) stringIn.c_str();
 }
 
-time_t getCurrentTime()
-{
-	time_t current_time;
-	return time ( &current_time );
-}
-
-const char * getDateFromTime(time_t currentTime)
-{
-	return ctime (&currentTime);
-}
-
-std::string parametersToXlfInfo(sourcefileparameters_values srcFileParameters_values, time_t current_time, const char * date)
-{
-	std::string xlfInfo = "";
-	xlfInfo += "plaquette = " + boost::lexical_cast<std::string>(srcFileParameters_values.plaquettevalue_source) + "\n";
-	xlfInfo += "trajectory nr = " + boost::lexical_cast<std::string>(srcFileParameters_values.trajectorynr_source) + "\n";
-	xlfInfo += "beta = " + boost::lexical_cast<std::string>(srcFileParameters_values.beta_source) + "\n";
-	xlfInfo += "kappa = " + boost::lexical_cast<std::string>(srcFileParameters_values.kappa_source) + "\n";
-	xlfInfo += "mu = " + boost::lexical_cast<std::string>(srcFileParameters_values.mu_source) + "\n";
-	xlfInfo += "c2_rec = " + boost::lexical_cast<std::string>(srcFileParameters_values.c2_rec_source) + "\n";
-	xlfInfo += "time = " + boost::lexical_cast<std::string>(current_time) + "\n";
-	xlfInfo += "hmcversion = " + boost::lexical_cast<std::string>(srcFileParameters_values.hmcversion_source) + "\n";
-	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(srcFileParameters_values.mubar_source) + "\n";
-	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(srcFileParameters_values.epsilonbar_source) + "\n";
-	xlfInfo += "date = " + boost::lexical_cast<std::string>(srcFileParameters_values.date_source) + "\n";
-	
-	return xlfInfo;
-}
-
-std::string parametersToIldgFormat(sourcefileparameters_values srcFileParameters_values, std::string field_out)
-{
-	std::string ildgFormat = "";
-	ildgFormat += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n";
-	ildgFormat += "  <field>" + field_out + "</field>\n";
-	ildgFormat += "  <precision>" + boost::lexical_cast<std::string>(srcFileParameters_values.prec_source) + "</precision>\n";
-	ildgFormat += "  <lx>" + boost::lexical_cast<std::string>(srcFileParameters_values.lx_source) + "</lx>\n";
-	ildgFormat += "  <ly>" + boost::lexical_cast<std::string>(srcFileParameters_values.ly_source) + "</ly>\n";
-	ildgFormat += "  <lz>" + boost::lexical_cast<std::string>(srcFileParameters_values.lz_source) + "</lz>\n";
-	ildgFormat += "  <lt>" + boost::lexical_cast<std::string>(srcFileParameters_values.lt_source) + "</lt>\n";
-	ildgFormat += "</ildgFormat>";
-	
-	return ildgFormat;
-}
-
-std::string parametersToScidacChecksum(sourcefileparameters_values srcFileParameters_values)
-{
-	std::string scidac_checksum;
-	{
-		std::ostringstream tmp;
-		tmp << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n<version>1.0</version>\n";
-		tmp << "<suma>" << std::hex << srcFileParameters_values.checksum.get_suma() << "</suma>\n";
-		tmp << "<sumb>" << std::hex << srcFileParameters_values.checksum.get_sumb() << "</sumb>\n";
-		tmp << "</scidacChecksum>";
-		scidac_checksum = tmp.str();
-	}
-	return scidac_checksum;
-}
-
 void write_gaugefield (
   char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filename)
 {
 	logger.info() << "writing gaugefield to lime-file...";
-
-	time_t current_time = getCurrentTime();
-	const char * date = getDateFromTime(current_time);
 
 	FILE *outputfile;
 	outputfile = fopen(filename.c_str(), "w");
@@ -654,17 +588,15 @@ void write_gaugefield (
 	n_uint64_t length_xlf_info = 0, length_ildg_format = 0, length_scidac_checksum = 0;
 	LimeRecordHeader * header_ildg_format, *header_scidac_checksum, * header_ildg_binary_data, * header_xlf_info;
 
-	std::string field_out = "su3gauge";
-
 	// TODO replace this whole block by something templated
 	
-	std::string xlfInfo = parametersToXlfInfo(srcFileParameters_values, current_time, date);
+	std::string xlfInfo = srcFileParameters_values.getInfo_xlfInfo();
 	length_xlf_info = xlfInfo.size();
 	
-	std::string scidac_checksum = parametersToScidacChecksum(srcFileParameters_values);
+	std::string scidac_checksum = srcFileParameters_values.getInfo_scidacChecksum();
 	length_scidac_checksum = scidac_checksum.length();
 
-	std::string ildgFormat = parametersToIldgFormat(srcFileParameters_values, field_out);
+	std::string ildgFormat = srcFileParameters_values.getInfo_ildgFormat_gaugefield();
 	length_ildg_format = ildgFormat.size();
 
 	//write the lime file
