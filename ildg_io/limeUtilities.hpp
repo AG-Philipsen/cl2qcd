@@ -75,14 +75,17 @@ class LimeFileWriter
 public:
 	LimeFileWriter(std::string filenameIn);
 	~LimeFileWriter();
+	void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes, std::string description);
 protected:
+	LimeEntryTypes limeEntryTypes;
+private:
 	std::string filename;
 	FILE *outputfile;
 	int MB_flag;
 	int ME_flag;
 	n_uint64_t writtenBytes;
 	LimeWriter *writer;
-	LimeEntryTypes limeEntryTypes;
+	void writeLimeHeaderToLimeFile(LimeRecordHeader * header);
 };
 
 

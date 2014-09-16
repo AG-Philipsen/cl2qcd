@@ -540,43 +540,6 @@ void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desi
 	extractDataFromLimeFile(destination);
 }
 
-void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)
-{
-	int returnCode = 0;
-	
-	returnCode = limeWriteRecordHeader(header, writer);
-	if ( returnCode != LIME_SUCCESS )
-	{
-		throw Print_Error_Message( "Could not write header to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
-	}
-}
-
-n_uint64_t writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes,  LimeWriter *writer, int MB_flag, int ME_flag, std::string description)
-{
-	logger.debug() << "writing \"" + description + "\" to lime file...";
-
-	n_uint64_t bytesToBeWritten = bytes;
-	int returnCode = 0;
-	
-	LimeRecordHeader * header = limeCreateHeader(MB_flag, ME_flag, (char*) description.c_str(), bytesToBeWritten);
-	writeLimeHeaderToLimeFile(header, writer);
-	limeDestroyHeader(header);	
-	
-	returnCode = limeWriteRecordData( memoryPointer, &bytesToBeWritten, writer);
-	if ( returnCode != LIME_SUCCESS )
-	{
-		throw Print_Error_Message( "Could not write to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
-	}
-	else if ( bytesToBeWritten != bytes )
-	{
-		throw Print_Error_Message( "There was an error writing to Lime file...", __FILE__, __LINE__);
-	}
-
-	return bytesToBeWritten;
-}
-
-#include "../host_functionality/logger.hpp"
-
 void* createVoidPointerFromString(std::string stringIn)
 {
 	return (void*) stringIn.c_str();
@@ -584,21 +547,16 @@ void* createVoidPointerFromString(std::string stringIn)
 
 IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filenameIn): LimeFileWriter(filenameIn)
 {
-	logger.info() << "writing gaugefield to lime-file...";
+	logger.info() << "writing gaugefield to lime-file \""  + filenameIn + "\"";
+	
 	std::string xlfInfo = srcFileParameters_values.getInfo_xlfInfo();
 	std::string scidac_checksum = srcFileParameters_values.getInfo_scidacChecksum();
 	std::string ildgFormat = srcFileParameters_values.getInfo_ildgFormat_gaugefield();
 	
-	MB_flag = 1;
-	ME_flag = 0;
-	
-	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), writer, MB_flag, ME_flag++, limeEntryTypes["xlf"]);
-
-	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), writer, MB_flag, ME_flag++, limeEntryTypes["ildg"]);
-
-	writtenBytes += writeMemoryToLimeFile( binary_data, num_bytes, writer, MB_flag, ME_flag++, limeEntryTypes["ildg binary data"]);
-
-	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), writer, MB_flag, ME_flag++, limeEntryTypes["scidac checksum"]);
+	writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), limeEntryTypes["xlf"]);
+	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), limeEntryTypes["ildg"]);
+	writeMemoryToLimeFile( binary_data, num_bytes, limeEntryTypes["ildg binary data"]);
+	writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), limeEntryTypes["scidac checksum"]);
 }
 
 

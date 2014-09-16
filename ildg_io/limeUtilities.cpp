@@ -21,6 +21,8 @@
 #include "limeUtilities.hpp"
 
 #include "../host_functionality/logger.hpp"
+#include <boost/lexical_cast.hpp>
+#include "../executables/exceptions.h"
 
 LimeHeaderData::LimeHeaderData(LimeReader *r)
 {
@@ -64,8 +66,8 @@ LimeEntryTypes::Mapper LimeEntryTypes::mapper = { {"propagator", "propagator-inf
 
 LimeFileWriter::LimeFileWriter(std::string filenameIn)
 {
-	MB_flag = 0;
-	ME_flag = 0;
+	MB_flag = 1;
+	ME_flag = 1;
 	writtenBytes = 0;
 	writer = NULL;
 	filename = filenameIn;
@@ -81,4 +83,38 @@ LimeFileWriter::~LimeFileWriter()
 	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
 }
 
+void LimeFileWriter::writeLimeHeaderToLimeFile(LimeRecordHeader * header)
+{
+	int returnCode = 0;
+	
+	returnCode = limeWriteRecordHeader(header, this->writer);
+	if ( returnCode != LIME_SUCCESS )
+	{
+		throw Print_Error_Message( "Could not write header to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
+	}
+}
 
+void LimeFileWriter::writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes, std::string description)
+{
+	logger.debug() << "writing \"" + description + "\" to lime file...";
+
+	n_uint64_t bytesToBeWritten = bytes;
+	int returnCode = 0;
+	
+	LimeRecordHeader * header = limeCreateHeader(this->MB_flag, this->ME_flag, (char*) description.c_str(), bytesToBeWritten);
+	this->ME_flag++;
+	writeLimeHeaderToLimeFile(header);
+	limeDestroyHeader(header);
+	
+	returnCode = limeWriteRecordData( memoryPointer, &bytesToBeWritten, this->writer);
+	if ( returnCode != LIME_SUCCESS )
+	{
+		throw Print_Error_Message( "Could not write to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
+	}
+	else if ( bytesToBeWritten != bytes )
+	{
+		throw Print_Error_Message( "There was an error writing to Lime file...", __FILE__, __LINE__);
+	}
+
+	this->writtenBytes += bytesToBeWritten;
+}
