@@ -25,13 +25,13 @@
 #include "checksum.h"
 #include <cassert>
 #include "../meta/version.hpp"
+#include "../executables/exceptions.h"
 
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 static hmc_float make_float_from_big_endian(const char* in);
 static void make_big_endian_from_float(char* out, const hmc_float in);
-static void check_sourcefileparameters(const meta::Inputparameters& parameters, sourcefileparameters& parameters_source);
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
@@ -61,7 +61,7 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	trajectoryNumberAtInit = parameters_source.trajectorynr;
 	plaq = parameters_source.plaquettevalue;
 
-	check_sourcefileparameters(*parameters, parameters_source);
+	parameters_source.checkAgainstInputparameters(parameters);
 
 	return gf_host;
 }
@@ -244,74 +244,4 @@ static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, c
 			}
 		}
 	}
-}
-
-static void check_sourcefileparameters(const meta::Inputparameters& parameters, sourcefileparameters& parameters_source)
-{
-	//todo: add check on plaquette
-
-	logger.info() << "Checking sourcefile parameters against inputparameters...";
-	//checking major parameters
-	int tmp1, tmp2;
-	std::string testobj;
-	std::string msg = "Major parameters do not match: ";
-
-	testobj = msg + "NT";
-	tmp1 = parameters.get_ntime();
-	tmp2 = parameters_source.lt;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NX";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lx;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NY";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.ly;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NZ";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lz;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "PRECISION";
-	tmp1 = parameters.get_precision();
-	tmp2 = parameters_source.prec;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-
-	//checking minor parameters
-	msg = "Minor parameters do not match: ";
-	hmc_float float1, float2;
-	testobj = msg + "beta";
-	float1 = parameters.get_beta();
-	float2 = parameters_source.beta;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-	testobj = msg + "kappa";
-	float1 = parameters.get_kappa();
-	float2 = parameters_source.kappa;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-	testobj = msg + "mu";
-	float1 = parameters.get_mu();
-	float2 = parameters_source.mu;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-
-	logger.info() << "...done";
-	return;
 }

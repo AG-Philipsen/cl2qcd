@@ -121,3 +121,22 @@ BOOST_AUTO_TEST_CASE(initFromParameters)
   checkSpecificParameters(srcFileParams);
 }
 
+BOOST_AUTO_TEST_CASE(checkAgainstParameters_exception)
+{
+	int trajectoryNumber = -1982;
+	double plaquette = -4.321;
+	std::string hmcVersion = "3.95";
+	Checksum checksum(1,2);
+	const char * _params[] = {"foo", 
+		"--ntime=41", "--nspace=65", "--prec=32", "--beta=4.5",  "--kappa=-12.345", "--mu=23.41"
+	};
+	int numberOfParameters = 7;
+	meta::Inputparameters parameters(numberOfParameters, _params);
+  sourcefileparameters_values srcFileParams(&parameters, trajectoryNumber, plaquette, checksum, hmcVersion);
+
+	for(int iteration = 1; iteration < 3 + 1; iteration++)
+	{
+		meta::Inputparameters standardParameters(iteration, _params);
+		BOOST_REQUIRE_THROW(srcFileParams.checkAgainstInputparameters(&standardParameters), std::invalid_argument );
+	}
+}

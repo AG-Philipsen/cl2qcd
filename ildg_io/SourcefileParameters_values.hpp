@@ -22,7 +22,6 @@
 #ifndef _SOURCEFILEPARAMETERS_HPP_
 #define _SOURCEFILEPARAMETERS_HPP_
 
-#include "../host_functionality/logger.hpp"
 #include "checksum.h"
 #include "../meta/inputparameters.hpp"
 
@@ -44,6 +43,8 @@ public:
 	int numberOfFermionFieldsRead;
 	
 	void printMetaDataToScreen(std::string sourceFilename);
+	
+	void checkAgainstInputparameters(const meta::Inputparameters * toCheck);
 	
 private:
 	void set_defaults();

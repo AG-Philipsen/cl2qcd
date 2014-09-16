@@ -20,6 +20,9 @@
 
 #include "SourcefileParameters_values.hpp"
 
+#include "../executables/exceptions.h"
+#include "../host_functionality/logger.hpp"
+
 sourcefileparameters_values::sourcefileparameters_values()
 {
 	set_defaults();
@@ -148,7 +151,7 @@ std::string sourcefileparameters_values::getInfo_xlfInfo()
 	xlfInfo += "hmcversion = " + boost::lexical_cast<std::string>(this->hmcversion) + "\n";
 	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(this->mubar) + "\n";
 	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(this->epsilonbar) + "\n";
-	xlfInfo += "date = " + boost::lexical_cast<std::string>(this->date) + "\n";
+	xlfInfo += "date = " + boost::lexical_cast<std::string>(date) + "\n";
 	
 	return xlfInfo;
 }
@@ -184,4 +187,34 @@ std::string sourcefileparameters_values::getInfo_scidacChecksum()
 	return scidac_checksum;
 }
 	
+static void checkMajorParameter_int(int int1, int int2, std::string message)
+{
+	if(int1 != int2) {
+		throw Invalid_Parameters("Major parameter \"" + message + "\" does not match! ", int1, int2);
+	}
+}
+
+static void checkMinorParameter_double(double value1, double value2, std::string message)
+{
+	if(value1 != value2) {
+		logger.warn() << "Minor parameter \"" + message + "\" does not match! ";
+		logger.warn() << "\tExpected: " << value1 << "\tFound: " << value2;
+	}
+}
+	
+//todo: add check on plaquette
+void sourcefileparameters_values::checkAgainstInputparameters(const meta::Inputparameters * parameters)
+{
+	logger.info() << "Checking sourcefile parameters against inputparameters...";
+	
+	checkMajorParameter_int(this->lt, parameters->get_ntime(), "lt");
+	checkMajorParameter_int(this->lx, parameters->get_nspace(), "lx");
+	checkMajorParameter_int(this->ly, parameters->get_nspace(), "ly");
+	checkMajorParameter_int(this->lz, parameters->get_nspace(), "lz");
+	checkMajorParameter_int(this->prec, parameters->get_precision(), "precision");	
+	
+	checkMinorParameter_double(this->beta, parameters->get_beta(), "beta" );
+	checkMinorParameter_double(this->kappa, parameters->get_kappa(), "kappa" );
+	checkMinorParameter_double(this->mu, parameters->get_mu(), "mu" );
+}
 
