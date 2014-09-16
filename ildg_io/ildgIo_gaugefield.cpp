@@ -582,40 +582,32 @@ void* createVoidPointerFromString(std::string stringIn)
 	return (void*) stringIn.c_str();
 }
 
+class IldgIoWriter_gaugefield: public LimeFileWriter
+{
+public:
+	IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filenameIn): LimeFileWriter(filenameIn)
+	{
+		logger.info() << "writing gaugefield to lime-file...";
+		std::string xlfInfo = srcFileParameters_values.getInfo_xlfInfo();
+		std::string scidac_checksum = srcFileParameters_values.getInfo_scidacChecksum();
+		std::string ildgFormat = srcFileParameters_values.getInfo_ildgFormat_gaugefield();
+		
+		MB_flag = 1;
+		ME_flag = 0;
+		
+		writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), writer, MB_flag, ME_flag++, limeEntryTypes["xlf"]);
+
+		writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), writer, MB_flag, ME_flag++, limeEntryTypes["ildg"]);
+
+		writtenBytes += writeMemoryToLimeFile( binary_data, num_bytes, writer, MB_flag, ME_flag++, limeEntryTypes["ildg binary data"]);
+
+		writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), writer, MB_flag, ME_flag++, limeEntryTypes["scidac checksum"]);
+	}
+};
+
 void write_gaugefield (
   char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filename)
 {
-	logger.info() << "writing gaugefield to lime-file...";
-
-	FILE *outputfile;
-	outputfile = fopen(filename.c_str(), "w");
-	int MB_flag;
-	int ME_flag;
-	
-	n_uint64_t writtenBytes = 0;
-	
-	std::string xlfInfo = srcFileParameters_values.getInfo_xlfInfo();
-	std::string scidac_checksum = srcFileParameters_values.getInfo_scidacChecksum();
-	std::string ildgFormat = srcFileParameters_values.getInfo_ildgFormat_gaugefield();
-
-	//write the lime file
-	MB_flag = 1;
-	ME_flag = 0;
-
-	LimeWriter *writer;
-	writer = limeCreateWriter(outputfile);
-
-	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), writer, MB_flag, ME_flag++, "xlf-info");
-
-	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), writer, MB_flag, ME_flag++, "ildg-format");
-
-	writtenBytes += writeMemoryToLimeFile( binary_data, num_bytes, writer, MB_flag, ME_flag++, "ildg-binary-data");
-
-	writtenBytes += writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), writer, MB_flag, ME_flag++, "scidac-checksum");
-
-	//closing
-	fclose(outputfile);
-	limeDestroyWriter(writer);
-	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
+	IldgIoWriter_gaugefield tmp(binary_data, num_bytes, srcFileParameters_values, filename);
 }
 

@@ -70,5 +70,20 @@ public:
 	}
 };
 
+class LimeFileWriter
+{
+public:
+	LimeFileWriter(std::string filenameIn);
+	~LimeFileWriter();
+protected:
+	std::string filename;
+	FILE *outputfile;
+	int MB_flag;
+	int ME_flag;
+	n_uint64_t writtenBytes;
+	LimeWriter *writer;
+	LimeEntryTypes limeEntryTypes;
+};
+
 
 #endif

@@ -61,3 +61,24 @@ LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 }
 
 LimeEntryTypes::Mapper LimeEntryTypes::mapper = { {"propagator", "propagator-info"}, {"xlf", "xlf-info"} , {"inverter", "inverter-info"}, {"gauge-checksum-copy", "gauge-scidac-checksum-copy"}, {"etmc-propagator", "etmc-propagator-format"},  { "scidac binary data", "scidac-binary-data"}, {"scidac checksum", "scidac-checksum"}, {"ildg", "ildg-format"}, {"ildg binary data", "ildg-binary-data"}  };
+
+LimeFileWriter::LimeFileWriter(std::string filenameIn)
+{
+	MB_flag = 0;
+	ME_flag = 0;
+	writtenBytes = 0;
+	writer = NULL;
+	filename = filenameIn;
+	
+	outputfile = fopen(filename.c_str(), "w");
+	writer = limeCreateWriter(outputfile);
+}
+
+LimeFileWriter::~LimeFileWriter()
+{
+	fclose(outputfile);
+	limeDestroyWriter(writer);
+	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
+}
+
+
