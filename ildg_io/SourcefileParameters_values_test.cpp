@@ -65,3 +65,51 @@ BOOST_AUTO_TEST_CASE(defaults)
   sourcefileparameters_values srcFileParams;
   checkDefaults(srcFileParams);
 }
+
+void checkSpecificParameters(sourcefileparameters_values toCheck)
+{
+  BOOST_REQUIRE_EQUAL(toCheck.lx_source, 65);
+  BOOST_REQUIRE_EQUAL(toCheck.ly_source, 65);
+  BOOST_REQUIRE_EQUAL(toCheck.lz_source, 65);
+  BOOST_REQUIRE_EQUAL(toCheck.lt_source, 41);
+  BOOST_REQUIRE_EQUAL(toCheck.prec_source, 32);
+  BOOST_REQUIRE_EQUAL(toCheck.num_entries_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.flavours_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.trajectorynr_source, -1982);
+  BOOST_REQUIRE_EQUAL(toCheck.time_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.time_solver_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.noiter_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue_source, -4.321);
+  BOOST_REQUIRE_EQUAL(toCheck.beta_source, 4.5);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa_source, -12.345);
+  BOOST_REQUIRE_EQUAL(toCheck.mu_source, 23.41);
+  BOOST_REQUIRE_EQUAL(toCheck.c2_rec_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mubar_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epsilonbar_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.epssq_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver_source, 0);
+  BOOST_REQUIRE_EQUAL(toCheck.mu_solver_source, 0);
+	
+  BOOST_REQUIRE_EQUAL(toCheck.numberOfFermionFieldsRead, 0);
+	
+	BOOST_REQUIRE_EQUAL(toCheck.field_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.date_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.solvertype_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver_source, "");
+	BOOST_REQUIRE_EQUAL(toCheck.date_solver_source, "");
+}
+
+BOOST_AUTO_TEST_CASE(initFromParameters)
+{
+	int trajectoryNumber = -1982;
+	double plaquette = -4.321;
+	const char * _params[] = {"foo", 
+		"--ntime=41", "--nspace=65", "--kappa=-12.345", "--prec=32", "--beta=4.5", "--mu=23.41"
+	};
+	meta::Inputparameters parameters(7, _params);
+	
+  sourcefileparameters_values srcFileParams(&parameters, trajectoryNumber, plaquette);
+  checkSpecificParameters(srcFileParams);
+}
+
