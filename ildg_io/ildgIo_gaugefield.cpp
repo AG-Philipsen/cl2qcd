@@ -599,7 +599,6 @@ void write_gaugefield (
 
 	//set values
 	const char * field_out = "su3gauge";
-	time_t rawtime;
 	time ( &current_time );
 	const char * date = ctime (&current_time);
 

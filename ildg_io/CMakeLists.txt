@@ -40,5 +40,6 @@ target_link_libraries(ildg_io
 	meta
 )
 
+add_unit_test_withLibraries(sourcefileParameters_values SourcefileParameters_values_test ildg_io)
 add_unit_test_withLibraries(ildgIo_gaugefield ildgIo_gaugefield_test ildg_io)
 
