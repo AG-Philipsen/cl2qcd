@@ -9,6 +9,8 @@
 \#*\#
 .\#*
 
+.idea
+
 doc/*.toc
 doc/*.aux
 doc/*.bbl
