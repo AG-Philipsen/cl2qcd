@@ -11,16 +11,6 @@
 
 .idea
 
-doc/*.toc
-doc/*.aux
-doc/*.bbl
-doc/*.blg
-doc/*.dvi
-doc/main.pdf
-doc/*.ps
-
-hmc.v0.1
-
 gaugeobservables_beta*
 conf.?????
 cl_kernelsource.cl
