@@ -25,13 +25,26 @@
 
 using namespace ildgIo;
 
+void checkLimeFileForFieldType(std::string fieldTypeIn) throw(std::logic_error)
+{
+	if (fieldTypeIn != "su3gauge")
+	{
+		throw std::logic_error("LIME file does not seem to include gaugefield data. Aborting...");
+	}
+}
+
 //todo: make char ** std::vector<char*>
 IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn)
 {
-	logger.fatal() << limeFileProp.numberOfBinaryDataEntries;
-	extractDataFromLimeFile(destination);
-	
-	//todo: one has to check if the lime entry of the binary data is in fact "su3gauge"
+	if ( limeFileProp.numberOfBinaryDataEntries >= 1 )
+	{
+		checkLimeFileForFieldType(parameters.field);
+		extractDataFromLimeFile(destination);
+	}
+	else 
+	{
+		throw std::logic_error("LIME file does not seem to include binary data. Aborting...");
+	}
 }
 
 void* createVoidPointerFromString(std::string stringIn) noexcept
