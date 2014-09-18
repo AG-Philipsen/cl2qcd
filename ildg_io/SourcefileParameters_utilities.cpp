@@ -118,7 +118,7 @@ static void mapStringToParserMap(std::string str, std::map<std::string, ParserMa
 	}
 }
 
-void sourcefileParameters_utilities::setFromLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer)
+void sourcefileParameters::setFromLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer)
 {
 	std::string str(buffer);
 	std::map<std::string, ParserMap_xlf> parserMap = createParserMap_xlf();
@@ -262,7 +262,7 @@ int calcNumberOfEntriesBasedOnFieldType(const Sourcefileparameters params) throw
 	return 0; //to get rid of a warning
 }
 
-void sourcefileParameters_utilities::setFromLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, size_t numberOfBytes)
+void sourcefileParameters::setFromLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, size_t numberOfBytes)
 {
 	std::map<std::string, std::string> parserMap;
 	fillParserMap_ildg(parserMap);
@@ -273,7 +273,7 @@ void sourcefileParameters_utilities::setFromLimeEntry_ildg(Sourcefileparameters 
 	parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(parameters);
 }
 
-void sourcefileParameters_utilities::setFromLimeEntry_scidacChecksum(Sourcefileparameters & parameters, char * buffer, size_t numberOfBytes)
+void sourcefileParameters::setFromLimeEntry_scidacChecksum(Sourcefileparameters & parameters, char * buffer, size_t numberOfBytes)
 {
 	std::map<std::string, std::string> parserMap;
 	fillParserMap_scidacChecksum(parserMap);

@@ -25,17 +25,6 @@
 #include "../executables/exceptions.h"
 #include "SourcefileParameters_utilities.hpp"
 
-#include <sstream>
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <iterator>
-#include <boost/regex.hpp>
-#include <vector>
-#include <boost/lexical_cast.hpp>
-
-#define ENDIAN (htons(1) == 1)
-
 void checkIfFileExists(std::string file) throw(File_Exception)
 {
 	FILE * checker;
@@ -202,11 +191,6 @@ static void logger_readLimeEntrySuccess()
 	logger.trace() << "\t...succesfully read entry";
 }
 
-static int castStringToInt(std::string in)
-{
-	return boost::lexical_cast<int>(in);
-}
-
 char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 {
 	char * buffer = new char[nbytes + 1];
@@ -243,19 +227,19 @@ void LimeFileReader::handleLimeEntry_xlf(Sourcefileparameters & parameters, char
 	}
 	logger_readLimeEntry( lime_type);
 	
-	sourcefileParameters_utilities::setFromLimeEntry_xlf(parameters, buffer);
+	sourcefileParameters::setFromLimeEntry_xlf(parameters, buffer);
 }
 
 void LimeFileReader::handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes)
 {
 	logger_readLimeEntry( lime_type);
-	sourcefileParameters_utilities::setFromLimeEntry_ildg(parameters, buffer, numberOfBytes);
+	sourcefileParameters::setFromLimeEntry_ildg(parameters, buffer, numberOfBytes);
 }
 
 void LimeFileReader::handleLimeEntry_scidacChecksum(char * buffer, std::string lime_type, size_t numberOfBytes)
 {
 	logger_readLimeEntry( lime_type );
-	sourcefileParameters_utilities::setFromLimeEntry_scidacChecksum(parameters, buffer, numberOfBytes);
+	sourcefileParameters::setFromLimeEntry_scidacChecksum(parameters, buffer, numberOfBytes);
 }
 
 void LimeFileReader::handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error)
@@ -285,6 +269,7 @@ void LimeFileReader::handleLimeEntry_etmcPropagator(std::string lime_type) throw
 		return;
 	}
 	throw std::logic_error("Reading of etmc propagator not yet implemented. Aborting...");
+	logger_readLimeEntry( lime_type );
 }
 
 LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData)

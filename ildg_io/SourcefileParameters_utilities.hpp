@@ -24,7 +24,7 @@
 
 #include "SourcefileParameters.hpp"
 
-namespace sourcefileParameters_utilities
+namespace sourcefileParameters
 {
 	void setFromLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer);
 	void setFromLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, size_t numberOfBytes);
