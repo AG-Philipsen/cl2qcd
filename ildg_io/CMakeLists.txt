@@ -23,6 +23,8 @@
 
 add_library(ildg_io
 	limeUtilities.cpp
+	limeFileReader.cpp
+	limeFileWriter.cpp
 	SourcefileParameters.cpp
 	ildgIo_gaugefield.cpp
 	ildgIo.cpp
@@ -41,6 +43,6 @@ target_link_libraries(ildg_io
 )
 
 add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test ildg_io)
-add_unit_test_withLibraries(limeUtilities limeUtilities_test ildg_io)
+add_unit_test_withLibraries(limeFileReader limeFileReader_test ildg_io)
 add_unit_test_withLibraries(ildgIo_gaugefield ildgIo_gaugefield_test ildg_io)
 

@@ -21,10 +21,10 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE limeUtilities
+#define BOOST_TEST_MODULE limeFileReader
 #include <boost/test/unit_test.hpp>
 
-#include "limeUtilities.hpp"
+#include "limeFileReader.hpp"
 
 #include "../executables/exceptions.h"
 
@@ -38,4 +38,11 @@ BOOST_AUTO_TEST_CASE(readInLimeFile_failureWithFileException)
 	
 	BOOST_CHECK_THROW(LimeFileReader srcFileParams(nameOfNonexistingLimeFile, expectedPrecision, &bufferToStore), File_Exception);
 }
+
+// BOOST_AUTO_TEST_CASE(readInLimeFile_failureWithWrongPrecision)
+// {
+//   char * bufferToStore;
+//   int wrongPrecision = 27;
+//   BOOST_CHECK_THROW(LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, wrongPrecision, &bufferToStore), std::exception);
+// }
 

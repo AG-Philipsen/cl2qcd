@@ -70,40 +70,4 @@ public:
 	}
 };
 
-class LimeFileWriter
-{
-	//todo: make this protected
-public:
-	LimeFileWriter(std::string filenameIn);
-	~LimeFileWriter();
-	void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes, std::string description);
-protected:
-	LimeEntryTypes limeEntryTypes;
-private:
-	std::string filename;
-	FILE *outputfile;
-	int MB_flag;
-	int ME_flag;
-	n_uint64_t writtenBytes;
-	LimeWriter *writer;
-	void writeLimeHeaderToLimeFile(LimeRecordHeader * header);
-};
-
-class LimeFileReader
-{
-public:
-	//todo: remove precision?
-	LimeFileReader(std::string sourceFilenameIn, int precision, char ** data);
-	~LimeFileReader();
-protected:
-	void openFile();
-	void closeFile();
-	
-	std::string sourceFilename;
-	int desiredPrecision;
-	LimeReader * limeReader;
-	FILE *limeFileOpenedForReading;
-};
-
-
 #endif

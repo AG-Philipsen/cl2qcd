@@ -28,6 +28,8 @@
 
 //todo: remove this eventually
 #include "limeUtilities.hpp"
+#include "limeFileReader.hpp"
+#include "limeFileWriter.hpp"
 #include "SourcefileParameters.hpp"
 
 #include "checksum.h"
