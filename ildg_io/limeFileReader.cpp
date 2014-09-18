@@ -461,6 +461,11 @@ bool LimeFileReader::checkLimeEntryForBinaryData(std::string lime_type)
 
 void LimeFileReader::handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type)
 {
+	if ( LimeFileReader::limeFileProp.numberOfFermionicEntries > 1 )
+	{
+		logger.warn() << "Reading more than one fermion field is not implemented yet! Skip this entry...";
+		return;
+	}
 	logger_readLimeEntry( lime_type);
 	
 	std::string str(buffer);
@@ -482,6 +487,45 @@ void LimeFileReader::handleLimeEntry_ildg(Sourcefileparameters & parameters, cha
 	parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(parameters.field);
 }
 
+void LimeFileReader::handleLimeEntry_scidacChecksum(char * buffer, std::string lime_type, size_t numberOfBytes)
+{
+	logger_readLimeEntry( lime_type );
+
+	std::map<std::string, std::string> parserMap;
+	fillParserMap_scidacChecksum(parserMap);
+	goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, numberOfBytes, parserMap);
+	setParametersToValues_scidacChecksum(this->parameters, parserMap);		  
+}
+
+void LimeFileReader::handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error)
+{
+	if ( LimeFileReader::limeFileProp.numberOfFermionicEntries > 1 )
+	{
+		logger.warn() << "Reading more than one fermion field is not implemented yet! Skip this entry...";
+		return;
+	}
+	else
+	{
+		logger_readLimeEntry( lime_type );
+		throw std::logic_error("parsing of inverter infos is not implemented yet. Aborting...");
+		//todo: implement similar to xlf infos parsing
+		//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
+		
+		//todo: this should be moved elsewhere!
+		this->parameters.numberOfFermionFieldsRead++;
+	}
+}
+
+void LimeFileReader::handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error)
+{
+	if ( LimeFileReader::limeFileProp.numberOfFermionicEntries > 1 )
+	{
+		logger.warn() << "Reading more than one fermion field is not implemented yet! Skip this entry...";
+		return;
+	}
+	throw std::logic_error("Reading of etmc propagator not yet implemented. Aborting...");
+}
+
 LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData)
 {
 	logger.trace() << "Extracting meta data from LIME entry...";
@@ -496,57 +540,30 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 	{
 		//todo: is this meaningful?
 		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
-		if ( LimeFileReader::limeFileProp.numberOfFermionicEntries > 1 )
-		{
-			logger.warn() << "Reading more than one fermion field is not implemented yet!";
-		}
 
 		char * buffer = createBufferAndReadLimeDataIntoIt(limeReader,  limeHeaderData.numberOfBytes);
 		std::string lime_type = limeHeaderData.limeEntryType;
 
 		if(limeEntryTypes["scidac checksum"] == lime_type) 
 		{
-			logger_readLimeEntry( lime_type );
-
-			std::map<std::string, std::string> parserMap;
-			fillParserMap_scidacChecksum(parserMap);
-			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, parserMap);
-			setParametersToValues_scidacChecksum(this->parameters, parserMap);		  
+			handleLimeEntry_scidacChecksum(buffer, lime_type, limeHeaderData.numberOfBytes); 
 		}
-		
-		else if( limeEntryTypes["inverter"] == lime_type && LimeFileReader::limeFileProp.numberOfFermionicEntries < 2)
+		else if( limeEntryTypes["inverter"] == lime_type )
 		{
-			if ( limeFileProp.numberOfFermionicEntries > 1 )
-			{
-				logger.fatal() << "Reading more than one fermion field is not implemented yet. Aborting...";
-			}
-			else
-			{
-				logger_readLimeEntry( lime_type );
-				throw std::logic_error("parsing of inverter infos is not implemented yet. Aborting...");
-				//todo: implement similar to xlf infos parsing
-				//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
-				
-				//todo: this should be moved elsewhere!
-				this->parameters.numberOfFermionFieldsRead++;
-			}
+			handleLimeEntry_inverter(lime_type);
 		}
-		
-		else if(limeEntryTypes["xlf"]  == lime_type && LimeFileReader::limeFileProp.numberOfFermionicEntries < 2) 
+		else if(limeEntryTypes["xlf"]  == lime_type ) 
 		{
 			handleLimeEntry_xlf(this->parameters, buffer, lime_type);
 		}
-
 		else if ( limeEntryTypes["ildg"] == lime_type )
 		{
 			handleLimeEntry_ildg(this->parameters, buffer, lime_type, limeHeaderData.numberOfBytes);
-		}	
-
-		else if( limeEntryTypes["etmc propagator"] == lime_type && LimeFileReader::limeFileProp.numberOfFermionicEntries < 2 )
+		}
+		else if( limeEntryTypes["etmc propagator"] == lime_type )
 		{
-			throw std::logic_error("Reading of etmc propagator not yet implemented. Aborting...");
-		}	
-		
+			handleLimeEntry_etmcPropagator(lime_type);
+		}
 		else
 		{
 			logger.warn() << "Do not know LIME entry type \"" + lime_type + "\"";

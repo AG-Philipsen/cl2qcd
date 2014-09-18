@@ -49,6 +49,9 @@ protected:
 	
 	void handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type);
 	void handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes);
+	void handleLimeEntry_scidacChecksum(char * buffer, std::string lime_type, size_t numberOfBytes);
+	void handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error);
+	void handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error);
 	
 	size_t	sizeOfGaugefieldBuffer();
 	
