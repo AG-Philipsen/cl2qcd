@@ -22,26 +22,19 @@
 #ifndef _LIMEFILEWRITER_HPP_
 #define _LIMEFILEWRITER_HPP_
 
-#include <string>
 #include "limeUtilities.hpp"
 
-class LimeFileWriter
+class LimeFileWriter : public LimeFile_basic
 {
-	//todo: make this protected
-public:
+protected:
 	LimeFileWriter(std::string filenameIn);
 	~LimeFileWriter();
 	void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes, std::string description);
-protected:
-	LimeEntryTypes limeEntryTypes;
 private:
-	std::string filename;
-	FILE *outputfile;
 	int MB_flag;
 	int ME_flag;
 	n_uint64_t writtenBytes;
 	LimeWriter *writer;
-	void writeLimeHeaderToLimeFile(LimeRecordHeader * header);
 };
 
 #endif

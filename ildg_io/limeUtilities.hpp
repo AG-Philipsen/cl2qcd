@@ -70,4 +70,12 @@ public:
 	}
 };
 
+class LimeFile_basic
+{
+protected:
+	std::string filename;
+	FILE *outputfile;
+	LimeEntryTypes limeEntryTypes;
+};
+
 #endif

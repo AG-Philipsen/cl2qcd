@@ -43,11 +43,11 @@ LimeFileWriter::~LimeFileWriter()
 	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
 }
 
-void LimeFileWriter::writeLimeHeaderToLimeFile(LimeRecordHeader * header)
+void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)
 {
 	int returnCode = 0;
 	
-	returnCode = limeWriteRecordHeader(header, this->writer);
+	returnCode = limeWriteRecordHeader(header, writer);
 	if ( returnCode != LIME_SUCCESS )
 	{
 		throw Print_Error_Message( "Could not write header to LIME file. Return code: " + boost::lexical_cast<std::string>(returnCode), __FILE__, __LINE__);
@@ -63,7 +63,7 @@ void LimeFileWriter::writeMemoryToLimeFile(void * memoryPointer, n_uint64_t byte
 	
 	LimeRecordHeader * header = limeCreateHeader(this->MB_flag, this->ME_flag, (char*) description.c_str(), bytesToBeWritten);
 	this->ME_flag++;
-	writeLimeHeaderToLimeFile(header);
+	writeLimeHeaderToLimeFile(header, this->writer);
 	limeDestroyHeader(header);
 	
 	returnCode = limeWriteRecordData( memoryPointer, &bytesToBeWritten, this->writer);
