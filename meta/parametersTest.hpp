@@ -37,6 +37,9 @@ private:
 
 protected:
 	ParametersTest();
+	virtual ~ParametersTest();
+	ParametersTest(ParametersTest const&) = delete;
+	ParametersTest & operator=(ParametersTest const&) = delete;
 	po::options_description & getOptions();
 };
 

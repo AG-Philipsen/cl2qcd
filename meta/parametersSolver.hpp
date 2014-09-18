@@ -57,6 +57,9 @@ private:
 
 protected:
 	ParametersSolver();
+	virtual ~ParametersSolver();
+	ParametersSolver(ParametersSolver const&) = delete;
+	ParametersSolver & operator=(ParametersSolver const&) = delete;
 	po::options_description & getOptions();
 
 	//at the moment, only 2 solvers are implemented..

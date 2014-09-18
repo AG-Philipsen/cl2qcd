@@ -267,8 +267,8 @@ void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_correlators";
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("correlator" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("correlator" + inputfile);
+	hardware::System system(*params);
 	for(auto device: system.get_devices()) {
 		device->get_correlator_code();
 	}
@@ -283,21 +283,21 @@ void test_src_volume(std::string inputfile)
 	kernelName = "create_volume_source";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("correlator" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("correlator" + inputfile);
+	hardware::System system(*params);
 
 	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
 	auto * device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	//CP: run the kernel a couple of times times
-	int iterations = params.get_integrationsteps(0);
+	int iterations = params->get_integrationsteps(0);
 
 	spinor * sf_out;
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
@@ -320,7 +320,7 @@ void test_src_volume(std::string inputfile)
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
-	if(params.get_read_multiple_configs()  == false){
+	if(params->get_read_multiple_configs()  == false){
 	  //CP: calc std derivation
 	  hmc_float var=0.;
 	  for (int i=0; i<iterations; i++){
@@ -333,10 +333,10 @@ void test_src_volume(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	if(params.get_sourcecontent() == meta::Inputparameters::one){
-	  testFloatAgainstInputparameters(cpu_res, params);
+	if(params->get_sourcecontent() == meta::Inputparameters::one){
+	  testFloatAgainstInputparameters(cpu_res, *params);
 	} else{
-	  testFloatSizeAgainstInputparameters(cpu_res, params);
+	  testFloatSizeAgainstInputparameters(cpu_res, *params);
 	}
 	BOOST_MESSAGE("Test done");
 }
@@ -349,23 +349,23 @@ void test_src_zslice(std::string inputfile)
 	kernelName = "create_zslice_source";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("correlator" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("correlator" + inputfile);
+	hardware::System system(*params);
 
 	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
 	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
 	//CP: this source does have a weight only on one slice
-	size_t NUM_ELEMENTS_SRC = meta::get_volspace(params);
+	size_t NUM_ELEMENTS_SRC = meta::get_volspace(*params);
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	//CP: run the kernel a couple of times times
-	int iterations = params.get_integrationsteps(0);
+	int iterations = params->get_integrationsteps(0);
 
 	spinor * sf_out;
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
@@ -378,7 +378,7 @@ void test_src_zslice(std::string inputfile)
 	for (int i = 0; i< iterations; i++){
 	  logger.info() << "Run kernel";
 	  out.clear();
-	  device->create_zslice_source_device(&out, prng_buf, params.get_source_z());
+	  device->create_zslice_source_device(&out, prng_buf, params->get_source_z());
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
 	}
@@ -388,7 +388,7 @@ void test_src_zslice(std::string inputfile)
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
-	if(params.get_read_multiple_configs()  == false){
+	if(params->get_read_multiple_configs()  == false){
 	  //CP: calc std derivation
 	  hmc_float var=0.;
 	  for (int i=0; i<iterations; i++){
@@ -401,10 +401,10 @@ void test_src_zslice(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	if(params.get_sourcecontent() == meta::Inputparameters::one){
-	  testFloatAgainstInputparameters(cpu_res, params);
+	if(params->get_sourcecontent() == meta::Inputparameters::one){
+	  testFloatAgainstInputparameters(cpu_res, *params);
 	} else{
-	  testFloatSizeAgainstInputparameters(cpu_res, params);
+	  testFloatSizeAgainstInputparameters(cpu_res, *params);
 	}
 	BOOST_MESSAGE("Test done");
 }
@@ -417,23 +417,23 @@ void test_src_tslice(std::string inputfile)
 	kernelName = "create_timeslice_source";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("correlator" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("correlator" + inputfile);
+	hardware::System system(*params);
 
 	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
 	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
 	//CP: this source does have a weight only on one slice
-	size_t NUM_ELEMENTS_SRC = params.get_ntime() * params.get_nspace() * params.get_nspace();
+	size_t NUM_ELEMENTS_SRC = params->get_ntime() * params->get_nspace() * params->get_nspace();
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	//CP: run the kernel a couple of times times
-	int iterations = params.get_integrationsteps(0);
+	int iterations = params->get_integrationsteps(0);
 
 	spinor * sf_out;
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
@@ -446,7 +446,7 @@ void test_src_tslice(std::string inputfile)
 	for (int i = 0; i< iterations; i++){
 	  logger.info() << "Run kernel";
 	  out.clear();
-	  device->create_timeslice_source_device(&out, prng_buf, params.get_source_t());
+	  device->create_timeslice_source_device(&out, prng_buf, params->get_source_t());
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
 	}
@@ -456,7 +456,7 @@ void test_src_tslice(std::string inputfile)
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
-	if(params.get_read_multiple_configs()  == false){
+	if(params->get_read_multiple_configs()  == false){
 	  //CP: calc std derivation
 	  hmc_float var=0.;
 	  for (int i=0; i<iterations; i++){
@@ -469,10 +469,10 @@ void test_src_tslice(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	if(params.get_sourcecontent() == meta::Inputparameters::one){
-	  testFloatAgainstInputparameters(cpu_res, params);
+	if(params->get_sourcecontent() == meta::Inputparameters::one){
+	  testFloatAgainstInputparameters(cpu_res, *params);
 	} else{
-	  testFloatSizeAgainstInputparameters(cpu_res, params);
+	  testFloatSizeAgainstInputparameters(cpu_res, *params);
 	}
 	BOOST_MESSAGE("Test done");
 }
@@ -485,15 +485,15 @@ void test_src_point(std::string inputfile)
 	kernelName = "create_point_source";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("correlator" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("correlator" + inputfile);
+	hardware::System system(*params);
 
 	physics::PRNG prng(system);
 	cl_int err = CL_SUCCESS;
 	auto device = system.get_devices().at(0)->get_correlator_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
 	//CP: this source does have a weight only on one site
 	size_t NUM_ELEMENTS_SRC = 1;
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
@@ -501,7 +501,7 @@ void test_src_point(std::string inputfile)
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	//CP: run the kernel a couple of times times
-	int iterations = params.get_integrationsteps(0);
+	int iterations = params->get_integrationsteps(0);
 
 	spinor * sf_out;
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
@@ -514,7 +514,7 @@ void test_src_point(std::string inputfile)
 	for (int i = 0; i< iterations; i++){
 	  logger.info() << "Run kernel";
 	  out.clear();
-	  device->create_point_source_device(&out,i, get_source_pos_spatial(params),params.get_source_t());
+	  device->create_point_source_device(&out,i, get_source_pos_spatial(*params),params->get_source_t());
 	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
 	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
 	}
@@ -525,7 +525,7 @@ void test_src_point(std::string inputfile)
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
-	if(params.get_read_multiple_configs()  == false){
+	if(params->get_read_multiple_configs()  == false){
 	  //CP: calc std derivation
 	  hmc_float var=0.;
 	  for (int i=0; i<iterations; i++){
@@ -538,10 +538,10 @@ void test_src_point(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	if(params.get_sourcecontent() == meta::Inputparameters::one){
-	  testFloatAgainstInputparameters(cpu_res, params);
+	if(params->get_sourcecontent() == meta::Inputparameters::one){
+	  testFloatAgainstInputparameters(cpu_res, *params);
 	} else{
-	  testFloatSizeAgainstInputparameters(cpu_res, params);
+	  testFloatSizeAgainstInputparameters(cpu_res, *params);
 	}
 	BOOST_MESSAGE("Test done");
 }

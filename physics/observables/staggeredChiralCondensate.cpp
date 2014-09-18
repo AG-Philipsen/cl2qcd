@@ -77,7 +77,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	
-	auto params = system.get_inputparameters();
+	auto & params = system.get_inputparameters();
 	const int number_sources = params.get_num_sources();
 	const hmc_float mass = params.get_mass();
 	//Result

@@ -62,6 +62,8 @@ meta::ParametersObs::ParametersObs()
 	("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) );
 }
 
+meta::ParametersObs::~ParametersObs() = default;
+
 po::options_description & meta::ParametersObs::getOptions()
 {
 	return options;

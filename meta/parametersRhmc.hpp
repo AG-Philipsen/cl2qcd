@@ -66,6 +66,9 @@ protected:
 
 protected:
 	ParametersRhmc();
+	virtual ~ParametersRhmc();
+	ParametersRhmc(ParametersRhmc const&) = delete;
+	ParametersRhmc & operator=(ParametersRhmc const&) = delete;
 	po::options_description & getOptions();
 };
 

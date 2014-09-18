@@ -103,6 +103,8 @@ ParametersHmc::ParametersHmc()
 	("use_mp", po::value<bool>(&use_mp)->default_value(false));
 }
 
+meta::ParametersHmc::~ParametersHmc() = default;
+
 po::options_description & ParametersHmc::getOptions()
 {
 	return options;

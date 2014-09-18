@@ -99,6 +99,8 @@ meta::ParametersRhmc::ParametersRhmc()
 	("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
 }
 
+meta::ParametersRhmc::~ParametersRhmc() = default;
+
 po::options_description & meta::ParametersRhmc::getOptions()
 {
 	return options;

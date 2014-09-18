@@ -41,6 +41,9 @@ private:
 
 protected:
 	ParametersGauge();
+	virtual ~ParametersGauge();
+	ParametersGauge(ParametersGauge const&) = delete;
+	ParametersGauge & operator=(ParametersGauge const&) = delete;
 	po::options_description & getOptions();
 
 	action gaugeact;

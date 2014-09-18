@@ -50,6 +50,9 @@ private:
 
 protected:
 	ParametersSources();
+	virtual ~ParametersSources();
+	ParametersSources(ParametersSources const&) = delete;
+	ParametersSources & operator=(ParametersSources const&) = delete;
 	po::options_description & getOptions();
 
 	sourcetypes sourcetype;

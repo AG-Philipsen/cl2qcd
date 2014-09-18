@@ -54,6 +54,8 @@ meta::ParametersGauge::ParametersGauge()
 	("gaugeact", po::value<std::string>()->default_value("wilson"));
 }
 
+meta::ParametersGauge::~ParametersGauge() = default;
+
 po::options_description & meta::ParametersGauge::getOptions()
 {
 	return options;

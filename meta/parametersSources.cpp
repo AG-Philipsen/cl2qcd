@@ -68,6 +68,8 @@ meta::ParametersSources::ParametersSources()
 	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
 }
 
+meta::ParametersSources::~ParametersSources() = default;
+
 po::options_description & meta::ParametersSources::getOptions()
 {
 	return options;

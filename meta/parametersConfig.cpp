@@ -166,6 +166,7 @@ meta::ParametersConfig::ParametersConfig()
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false));
 }
 
+meta::ParametersConfig::~ParametersConfig() = default;
 
 po::options_description & meta::ParametersConfig::getOptions()
 {

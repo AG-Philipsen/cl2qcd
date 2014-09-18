@@ -25,7 +25,7 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
   kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
 	printKernelInformation(kernelNameIn);
-	parameters = new meta::Inputparameters( createParameters(inputfileIn) );
+	parameters = createParameters(inputfileIn).release();
 
 	system = new hardware::System(*parameters);
 	device = system->get_devices()[0];

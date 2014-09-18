@@ -38,8 +38,8 @@ static void print_info_observables_hmc_io(const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_rhmc_io(const meta::Inputparameters& params);
 static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputparameters& params);
-static void print_info_source(const meta::Inputparameters params);
-static void print_info_source(std::ostream * os, const meta::Inputparameters params);
+static void print_info_source(const meta::Inputparameters& params);
+static void print_info_source(std::ostream * os, const meta::Inputparameters& params);
 
 void meta::print_info_global(const meta::Inputparameters& params)
 {
@@ -974,7 +974,7 @@ static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputp
 	}
 }
 
-static void print_info_source(const meta::Inputparameters params)
+static void print_info_source(const meta::Inputparameters& params)
 {
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Source parameters:";
@@ -1010,7 +1010,7 @@ static void print_info_source(const meta::Inputparameters params)
 	}
 }
 
-static void print_info_source(std::ostream * os, const meta::Inputparameters params)
+static void print_info_source(std::ostream * os, const meta::Inputparameters& params)
 {
 	*os << "## **********************************************************" << endl;
 	*os << "## Source parameters:" << endl;
@@ -1046,7 +1046,7 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
 	}
 }
 
-void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters params)
+void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -1060,7 +1060,7 @@ void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters pa
 	}
 }
 
-void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params)
+void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 

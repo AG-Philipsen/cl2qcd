@@ -56,6 +56,9 @@ private:
 
 protected:
 	ParametersHmc();
+	virtual ~ParametersHmc();
+	ParametersHmc(ParametersHmc const&) = delete;
+	ParametersHmc & operator=(ParametersHmc const&) = delete;
 	po::options_description & getOptions();
 
 	integrator integrator0;

@@ -97,6 +97,9 @@ private:
 
 protected:
 	ParametersConfig();
+	virtual ~ParametersConfig();
+	ParametersConfig(ParametersConfig const&) = delete;
+	ParametersConfig & operator=(ParametersConfig const&) = delete;
 	po::options_description & getOptions();
 
 	startcondition _startcondition;

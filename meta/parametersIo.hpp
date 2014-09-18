@@ -82,6 +82,9 @@ private:
 
 protected:
 	ParametersIo();
+	virtual ~ParametersIo();
+	ParametersIo(ParametersIo const&) = delete;
+	ParametersIo & operator=(ParametersIo const&) = delete;
 	po::options_description & getOptions();
 };
 

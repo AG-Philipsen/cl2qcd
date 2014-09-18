@@ -31,7 +31,7 @@
 
 void test(const hardware::System& system, const int seed)
 {
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const size_t NUM_ELEMENTS = meta::get_vol4d(params) * NDIM;
 for(auto device: system.get_devices()) {
 		Matrixsu3 * const in = new Matrixsu3[NUM_ELEMENTS];

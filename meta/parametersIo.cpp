@@ -174,6 +174,8 @@ meta::ParametersIo::ParametersIo()
 	("rhmc_obs_postfix", po::value<std::string>(&rhmc_obs_postfix)->default_value(""), "Postfix for rhmc observables file");
 }
 
+meta::ParametersIo::~ParametersIo() = default;
+
 po::options_description & meta::ParametersIo::getOptions()
 {
 	return options;

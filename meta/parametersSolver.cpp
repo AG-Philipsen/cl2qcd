@@ -96,6 +96,8 @@ meta::ParametersSolver::ParametersSolver()
 	("cg_minimum_iteration_count", po::value<int>(&cg_minimum_iteration_count)->default_value(0), "CG will perform at least this many itertions. USE ONLY FOR BENCHMARKS!");
 }
 
+meta::ParametersSolver::~ParametersSolver() = default;
+
 po::options_description & meta::ParametersSolver::getOptions()
 {
 	return options;

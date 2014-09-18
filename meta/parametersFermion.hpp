@@ -67,6 +67,9 @@ private:
 
 protected:
 	ParametersFermion();
+	virtual ~ParametersFermion();
+	ParametersFermion(ParametersFermion const&) = delete;
+	ParametersFermion & operator=(ParametersFermion const&) = delete;
 	po::options_description & getOptions();
 
 	action fermact;

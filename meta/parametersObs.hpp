@@ -46,6 +46,9 @@ private:
 
 protected:
 	ParametersObs();
+	virtual ~ParametersObs();
+	ParametersObs(ParametersObs const&) = delete;
+	ParametersObs & operator=(ParametersObs const&) = delete;
 	po::options_description & getOptions();
 
 	pbp_version pbp_version_;

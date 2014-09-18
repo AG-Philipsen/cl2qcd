@@ -121,6 +121,8 @@ meta::ParametersFermion::ParametersFermion()
 	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels");
 }
 
+meta::ParametersFermion::~ParametersFermion() = default;
+
 po::options_description & meta::ParametersFermion::getOptions()
 {
 	return options;

@@ -41,6 +41,9 @@ private:
 
 protected:
 	ParametersHeatbath();
+	virtual ~ParametersHeatbath();
+	ParametersHeatbath(ParametersHeatbath const&) = delete;
+	ParametersHeatbath & operator=(ParametersHeatbath const&) = delete;
 	po::options_description & getOptions();
 };
 

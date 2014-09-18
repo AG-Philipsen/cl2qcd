@@ -38,7 +38,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -173,7 +173,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	Spinorfield solution(system);
 	Spinorfield phi_inv(system);
@@ -271,7 +271,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	logger.debug() << "\t\tcalc fermion_force_detratio...";
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/**
 	 * For detratio = det(kappa, mubar) / det(kappa2, mubar2) = det(Q_1^+Q_1^-) / det(Q_2^+Q_2^-)
@@ -401,7 +401,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	logger.debug() << "\t\tcalc fermion_force_detratio...";
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/**
 	 * For detratio = det(kappa, mubar) / det(kappa2, mubar2) = det(Q_1^+Q_1^-) / det(Q_2^+Q_2^-)
@@ -598,7 +598,7 @@ template<class SPINORFIELD> static void calc_fermion_forces(const physics::latti
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
 	const int rho_iter = params.get_rho_iter();
@@ -678,7 +678,7 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
 	const int rho_iter = params.get_rho_iter();

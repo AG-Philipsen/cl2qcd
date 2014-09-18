@@ -49,6 +49,8 @@ meta::ParametersHeatbath::ParametersHeatbath()
 	("xi", po::value<int>(&xi)->default_value(1));
 }
 
+meta::ParametersHeatbath::~ParametersHeatbath() = default;
+
 po::options_description & meta::ParametersHeatbath::getOptions()
 {
 	return options;

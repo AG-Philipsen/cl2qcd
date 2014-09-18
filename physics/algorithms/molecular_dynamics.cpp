@@ -85,7 +85,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, const hmc_float mass)
 {
 	logger.debug() << "\tRHMC [UP]:\tupdate SF";
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const physics::fermionmatrix::MdagM_eo fm(system, mass);
 	
 	//Temporary fields for shifted inverter
@@ -113,7 +113,7 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
 {
         SPINORFIELD tmp(system);
 	FERMIONMATRIX qplus(kappa, mubar, system);
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	log_squarenorm("Spinorfield before update: ", orig);
 

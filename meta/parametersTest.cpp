@@ -37,6 +37,8 @@ meta::ParametersTest::ParametersTest()
 	("test_ref_val2", po::value<double>(&test_ref_value2)->default_value(0.));
 }
 
+meta::ParametersTest::~ParametersTest() = default;
+
 po::options_description & meta::ParametersTest::getOptions()
 {
 	return options;
