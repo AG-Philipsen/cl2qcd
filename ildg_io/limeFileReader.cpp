@@ -231,7 +231,7 @@ static void logger_readLimeEntrySuccess()
 	logger.trace() << "\t...succesfully read entry";
 }
 
-class helper
+class ParserMap
 {
 public:
 	boost::regex re;
@@ -249,45 +249,45 @@ static int castStringToInt(std::string in)
 	return boost::lexical_cast<int>(in);
 }
 
-static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
+static void fillParserMap_xlf(std::map<std::string, ParserMap> & parserMap)
 {
-	helperMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+[\\+\\-]*\\d+\\.\\d+");
-	helperMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
-	helperMap["beta"].re = boost::regex ("beta\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	helperMap["kappa"].re = boost::regex ("kappa\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	helperMap["mu"].re = boost::regex ("mu\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	helperMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+[\\+\\-]*\\d+.\\d+");
- 	helperMap["time"].re = boost::regex ("time\\s+=\\s+[\\+\\-]*\\d+");
- 	helperMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+[a-z]*");
-	helperMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	helperMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
- 	helperMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
+	parserMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+[\\+\\-]*\\d+\\.\\d+");
+	parserMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
+	parserMap["beta"].re = boost::regex ("beta\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+	parserMap["kappa"].re = boost::regex ("kappa\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+	parserMap["mu"].re = boost::regex ("mu\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+	parserMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+ 	parserMap["time"].re = boost::regex ("time\\s+=\\s+[\\+\\-]*\\d+");
+ 	parserMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+[a-z]*");
+	parserMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+	parserMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+ 	parserMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 }
 
-static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, helper>  helperMap)
+static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, ParserMap>  parserMap)
 {
-	parameters.plaquettevalue = castStringToDouble(helperMap["plaquette"].value);
-	parameters.kappa = castStringToDouble(helperMap["kappa"].value);
-	parameters.mu = castStringToDouble(helperMap["mu"].value);
-	parameters.beta = castStringToDouble(helperMap["beta"].value);
-	parameters.c2_rec = castStringToDouble(helperMap["c2_rec"].value);
-	parameters.mubar = castStringToDouble(helperMap["mubar"].value);
-	parameters.epsilonbar = castStringToDouble(helperMap["epsilonbar"].value);
+	parameters.plaquettevalue = castStringToDouble(parserMap["plaquette"].value);
+	parameters.kappa = castStringToDouble(parserMap["kappa"].value);
+	parameters.mu = castStringToDouble(parserMap["mu"].value);
+	parameters.beta = castStringToDouble(parserMap["beta"].value);
+	parameters.c2_rec = castStringToDouble(parserMap["c2_rec"].value);
+	parameters.mubar = castStringToDouble(parserMap["mubar"].value);
+	parameters.epsilonbar = castStringToDouble(parserMap["epsilonbar"].value);
 
-	parameters.trajectorynr = castStringToInt(helperMap["trajectory_nr"].value);
-	parameters.time = castStringToInt(helperMap["time"].value);
+	parameters.trajectorynr = castStringToInt(parserMap["trajectory_nr"].value);
+	parameters.time = castStringToInt(parserMap["time"].value);
 
-	parameters.hmcversion = helperMap["hmcversion"].value;
-	parameters.date = helperMap["date"].value;
+	parameters.hmcversion = parserMap["hmcversion"].value;
+	parameters.date = parserMap["date"].value;
 }
 
-static void mapStringToHelperMap(std::string str, std::map<std::string, helper> &  helperMap)
+static void mapStringToHelperMap(std::string str, std::map<std::string, ParserMap> &  parserMap)
 {
 	logger.trace() << "Going through string:";
 	logger.trace() << str;
 	
 	//todo: find out about ::iterator
-	for (std::map<std::string, helper>::iterator it = helperMap.begin(); it != helperMap.end(); it++)
+	for (std::map<std::string, ParserMap>::iterator it = parserMap.begin(); it != parserMap.end(); it++)
 	{
 		logger.trace() << "Found \"" + it->first + "\"";
 		
@@ -332,7 +332,7 @@ void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, s
 	xmlFree(name);
 }
 
-void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * buffer, int size, std::map<std::string, std::string> & helperMap)
+void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * buffer, int size, std::map<std::string, std::string> & parserMap)
 {
 	xmlTextReaderPtr reader;
 	int returnValue;
@@ -345,7 +345,7 @@ void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * bu
 		returnValue = xmlTextReaderRead(reader);
 		while (returnValue == 1) 
 		{
-			extractXmlValuesBasedOnMap(reader, &helperMap);
+			extractXmlValuesBasedOnMap(reader, &parserMap);
 			returnValue = xmlTextReaderRead(reader);
 		}
 		if (returnValue == -1) 
@@ -398,44 +398,42 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 	return buffer;
 }
 
-static void setParametersToValues_ildg(Sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+static void setParametersToValues_ildg(Sourcefileparameters & parameters, std::map <std::string, std::string> parserMap)
 {
-	parameters.prec = castStringToInt(helperMap["precision"]);
-	parameters.lx = castStringToInt(helperMap["lx"]);
-	parameters.ly = castStringToInt(helperMap["ly"]);
-	parameters.lz = castStringToInt(helperMap["lz"]);
-	parameters.lt = castStringToInt(helperMap["lt"]);
+	parameters.prec = castStringToInt(parserMap["precision"]);
+	parameters.lx = castStringToInt(parserMap["lx"]);
+	parameters.ly = castStringToInt(parserMap["ly"]);
+	parameters.lz = castStringToInt(parserMap["lz"]);
+	parameters.lt = castStringToInt(parserMap["lt"]);
 
-	parameters.field = helperMap["field"];
+	parameters.field = parserMap["field"];
 }
 
-static void fillHelperMap_ildg(std::map<std::string, std::string> & helperMap)
+static void fillParserMap_ildg(std::map<std::string, std::string> & parserMap)
 {
-	helperMap["field"] = "";
-	helperMap["precision"] = "";
-	helperMap["lx"] = "";
-	helperMap["ly"] = "";
-	helperMap["lz"] = "";
-	helperMap["lt"] = "";
+	parserMap["field"] = "";
+	parserMap["precision"] = "";
+	parserMap["lx"] = "";
+	parserMap["ly"] = "";
+	parserMap["lz"] = "";
+	parserMap["lt"] = "";
 }
 
-static void fillHelperMap_scidacChecksum(std::map<std::string, std::string> & helperMap)
+static void fillParserMap_scidacChecksum(std::map<std::string, std::string> & parserMap)
 {
-	helperMap["suma"] = "";
-	helperMap["sumb"] = "";
+	parserMap["suma"] = "";
+	parserMap["sumb"] = "";
 }
 
-static void setParametersToValues_scidacChecksum(Sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+static void setParametersToValues_scidacChecksum(Sourcefileparameters & parameters, std::map <std::string, std::string> parserMap)
 {
 	uint32_t suma, sumb;
 	
 	std::stringstream tmp, tmp2;
-	tmp << helperMap["suma"];
+	tmp << parserMap["suma"];
 	tmp >> std::hex >> suma;
-	tmp2 << helperMap["sumb"];
+	tmp2 << parserMap["sumb"];
 	tmp2 >> std::hex >> sumb;
-	logger.fatal() << suma;
-	logger.fatal() << sumb;
 	
 	parameters.checksum =  Checksum(suma, sumb);
 }
@@ -483,10 +481,10 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 		{
 			logger_readLimeEntry( lime_type );
 
-			std::map<std::string, std::string> helperMap;
-			fillHelperMap_scidacChecksum(helperMap);
-			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
-			setParametersToValues_scidacChecksum(this->parameters, helperMap);		  
+			std::map<std::string, std::string> parserMap;
+			fillParserMap_scidacChecksum(parserMap);
+			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, parserMap);
+			setParametersToValues_scidacChecksum(this->parameters, parserMap);		  
 		}
 		
 		else if( limeEntryTypes["inverter"] == lime_type && LimeFileReader::limeFileProp.numberOfFermionicEntries < 2)
@@ -511,22 +509,22 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 		{
 			logger_readLimeEntry( lime_type);
 			std::string str(buffer);
-			std::map<std::string, helper> helperMap;
-			fillHelperMap_xlf(helperMap);
+			std::map<std::string, ParserMap> parserMap;
+			fillParserMap_xlf(parserMap);
 
-			mapStringToHelperMap(str, helperMap);
-			setParametersToValues_xlf(this->parameters, helperMap);
+			mapStringToHelperMap(str, parserMap);
+			setParametersToValues_xlf(this->parameters, parserMap);
 		}
 
 		else if ( limeEntryTypes["ildg"] == lime_type )
 		{
 			logger_readLimeEntry( lime_type);
-			std::map<std::string, std::string> helperMap;
-			fillHelperMap_ildg(helperMap);
+			std::map<std::string, std::string> parserMap;
+			fillParserMap_ildg(parserMap);
 			
-			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
+			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, parserMap);
 			
-			setParametersToValues_ildg(this->parameters, helperMap);
+			setParametersToValues_ildg(this->parameters, parserMap);
 			this->parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(this->parameters.field);
 		}	
 
