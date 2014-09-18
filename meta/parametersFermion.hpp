@@ -45,9 +45,9 @@ public:
 	bool get_use_merge_kernels_fermion() const noexcept;
 	bool get_use_merge_kernels_spinor() const noexcept;
 
-protected:
-	action fermact;
-	action fermact_mp;
+private:
+	po::options_description options;
+
 	double kappa;
 	double mass; //staggered quark mass
 	double mu;
@@ -65,7 +65,12 @@ protected:
 	bool use_merge_kernels_fermion;
 	bool use_merge_kernels_spinor;
 
-	po::options_description getOptions();
+protected:
+	ParametersFermion();
+	po::options_description & getOptions();
+
+	action fermact;
+	action fermact_mp;
 };
 
 }

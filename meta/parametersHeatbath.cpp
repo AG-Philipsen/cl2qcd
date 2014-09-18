@@ -37,9 +37,9 @@ int meta::ParametersHeatbath::get_xi() const noexcept
 	return xi;
 }
 
-po::options_description meta::ParametersHeatbath::getOptions()
+meta::ParametersHeatbath::ParametersHeatbath()
+	: options("Heatbath options")
 {
-	po::options_description options("Heatbath options");
 	options.add_options()
 	//todo: this is also needed in the HMC!
 	("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
@@ -47,6 +47,9 @@ po::options_description meta::ParametersHeatbath::getOptions()
 	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
 	//todo: is this used?
 	("xi", po::value<int>(&xi)->default_value(1));
+}
 
+po::options_description & meta::ParametersHeatbath::getOptions()
+{
 	return options;
 }

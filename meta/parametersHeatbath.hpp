@@ -31,13 +31,17 @@ public:
 	int get_overrelaxsteps() const noexcept;
 	int get_xi() const noexcept;
 
-protected:
+private:
+	po::options_description options;
+
 	int thermalizationsteps;
 	int heatbathsteps;
 	int overrelaxsteps;
 	int xi;
 
-	po::options_description getOptions();
+protected:
+	ParametersHeatbath();
+	po::options_description & getOptions();
 };
 
 }

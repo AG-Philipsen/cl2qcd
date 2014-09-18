@@ -35,15 +35,20 @@ public:
 	pbp_version get_pbp_version() const noexcept;
 	int get_corr_dir() const noexcept;
 
-protected:
+private:
+	po::options_description options;
+
 	bool measure_transportcoefficient_kappa;
 	bool measure_rectangles;
 	bool measure_correlators;
 	bool measure_pbp;
 	int corr_dir;
-	pbp_version pbp_version_;
 
-	po::options_description getOptions();
+protected:
+	ParametersObs();
+	po::options_description & getOptions();
+
+	pbp_version pbp_version_;
 };
 
 }

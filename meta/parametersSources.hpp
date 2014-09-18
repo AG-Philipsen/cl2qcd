@@ -37,17 +37,23 @@ public:
 	bool get_place_sources_on_host() const noexcept;
 	sourcetypes get_sourcetype() const noexcept;
 	sourcecontents get_sourcecontent() const noexcept;
-protected:
+
+private:
+	po::options_description options;
+
 	int num_sources;
 	int source_x;
 	int source_y;
 	int source_z;
 	int source_t;
 	bool place_sources_on_host;
+
+protected:
+	ParametersSources();
+	po::options_description & getOptions();
+
 	sourcetypes sourcetype;
 	sourcecontents sourcecontent;
-
-	po::options_description getOptions();
 };
 
 }

@@ -96,9 +96,9 @@ bool meta::ParametersFermion::get_use_merge_kernels_spinor() const noexcept
 	return use_merge_kernels_spinor;
 }
 
-po::options_description meta::ParametersFermion::getOptions()
+meta::ParametersFermion::ParametersFermion()
+	: options("Fermion options")
 {
-	po::options_description options("Fermion options");
 	options.add_options()
 	("fermact", po::value<std::string>()->default_value("wilson"))
 	("fermact_mp", po::value<std::string>()->default_value("wilson"))
@@ -119,5 +119,9 @@ po::options_description meta::ParametersFermion::getOptions()
 	("use_eo", po::value<bool>(&use_eo)->default_value(true))
 	("use_merge_kernels_spinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Use kernel merging for spinor kernels")
 	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels");
+}
+
+po::options_description & meta::ParametersFermion::getOptions()
+{
 	return options;
 }

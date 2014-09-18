@@ -81,9 +81,9 @@ double ParametersHmc::get_lambda(size_t timescale) const noexcept
 	}
 }
 
-po::options_description ParametersHmc::getOptions()
+ParametersHmc::ParametersHmc()
+	: options("HMC options")
 {
-	po::options_description options("HMC options");
 	options.add_options()
 	("tau", po::value<double>(&tau)->default_value(0.5))
 	("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
@@ -101,7 +101,10 @@ po::options_description ParametersHmc::getOptions()
 	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
 	("use_mp", po::value<bool>(&use_mp)->default_value(false));
+}
 
+po::options_description & ParametersHmc::getOptions()
+{
 	return options;
 }
 

@@ -54,9 +54,9 @@ meta::ParametersSources::sourcecontents meta::ParametersSources::get_sourceconte
 	return sourcecontent;
 }
 
-po::options_description meta::ParametersSources::getOptions()
+meta::ParametersSources::ParametersSources()
+	: options("Source options")
 {
-	po::options_description options("Source options");
 	options.add_options()
 	("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
 	("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
@@ -66,6 +66,9 @@ po::options_description meta::ParametersSources::getOptions()
 	("source_z", po::value<int>(&source_z)->default_value(0))
 	("source_t", po::value<int>(&source_t)->default_value(0))
 	("place_sources_on_host", po::value<bool>(&place_sources_on_host)->default_value(false));
+}
 
+po::options_description & meta::ParametersSources::getOptions()
+{
 	return options;
 }

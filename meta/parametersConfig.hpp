@@ -61,7 +61,9 @@ public:
 
 	bool get_use_aniso() const noexcept;
 
-protected:
+private:
+	po::options_description options;
+
 	size_t precision;
 
 	std::vector<int> selected_devices;
@@ -74,7 +76,6 @@ protected:
 	int nspace;
 	int ntime;
 
-	startcondition _startcondition;
 	//parameters to read in gauge configurations
 	bool read_multiple_configs;
 	int config_read_start;
@@ -94,7 +95,11 @@ protected:
 	std::string log_level;
 	bool split_cpu;
 
-	po::options_description getOptions();
+protected:
+	ParametersConfig();
+	po::options_description & getOptions();
+
+	startcondition _startcondition;
 };
 
 }

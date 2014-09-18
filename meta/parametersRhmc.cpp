@@ -79,9 +79,9 @@ bool ParametersRhmc::get_read_rational_approximations_from_file() const noexcept
 	return read_rational_approximations_from_file;
 }
 
-po::options_description meta::ParametersRhmc::getOptions()
+meta::ParametersRhmc::ParametersRhmc()
+	: options("RHMC options")
 {
-	po::options_description options("RHMC options");
 	options.add_options()
 	("md_approx_ord", po::value<int>(&md_approx_ord)->default_value(8))
 	("metro_approx_ord", po::value<int>(&metro_approx_ord)->default_value(15))
@@ -97,5 +97,9 @@ po::options_description meta::ParametersRhmc::getOptions()
 	("approx_md_file", po::value<std::string>(&approx_md_file)->default_value("Approx_MD"))
 	("approx_metropolis_file", po::value<std::string>(&approx_metropolis_file)->default_value("Approx_Metropolis"))
 	("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
+}
+
+po::options_description & meta::ParametersRhmc::getOptions()
+{
 	return options;
 }

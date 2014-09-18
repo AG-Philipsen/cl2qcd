@@ -50,9 +50,9 @@ int meta::ParametersObs::get_corr_dir() const noexcept
 	return corr_dir;
 }
 
-po::options_description meta::ParametersObs::getOptions()
+meta::ParametersObs::ParametersObs()
+	: options("Observables options")
 {
-	po::options_description options("Observables options");
 	options.add_options()
 	("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
 	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
@@ -60,6 +60,9 @@ po::options_description meta::ParametersObs::getOptions()
 	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
 	("measure_transportcoefficient_kappa", po::value<bool>(&measure_transportcoefficient_kappa)->default_value(false) )
 	("measure_rectangles", po::value<bool>(&measure_rectangles)->default_value(false) );
+}
 
+po::options_description & meta::ParametersObs::getOptions()
+{
 	return options;
 }

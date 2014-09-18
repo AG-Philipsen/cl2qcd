@@ -52,8 +52,8 @@ public:
 	std::string get_rectanglesFilename() const noexcept;
 	std::string get_transportcoefficientKappaFilename() const noexcept;
 
-
-protected:
+private:
+	po::options_description options;
 	int writefrequency;
 	int savefrequency;
 	int config_number_digits;
@@ -80,7 +80,9 @@ protected:
 	std::string rhmc_obs_prefix;
 	std::string rhmc_obs_postfix;
 
-	po::options_description getOptions();
+protected:
+	ParametersIo();
+	po::options_description & getOptions();
 };
 
 }

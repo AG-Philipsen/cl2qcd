@@ -41,14 +41,13 @@ public:
 	int get_cgmax_mp() const noexcept;
 	bool get_profile_solver() const noexcept;
 
-protected:
+private:
+	po::options_description options;
+
 	double solver_prec;
 	double force_prec;
 	int iter_refresh;
 	int iter_refresh_mp;
-	//at the moment, only 2 solvers are implemented..
-	solver _solver;
-	solver _solver_mp;
 	int cgmax;
 	int cgmax_mp;
 	int cg_iteration_block_size;
@@ -56,7 +55,13 @@ protected:
 	int cg_minimum_iteration_count;
 	bool profile_solver;
 
-	po::options_description getOptions();
+protected:
+	ParametersSolver();
+	po::options_description & getOptions();
+
+	//at the moment, only 2 solvers are implemented..
+	solver _solver;
+	solver _solver_mp;
 };
 
 }

@@ -134,9 +134,9 @@ bool meta::ParametersConfig::get_split_cpu() const noexcept
 	return split_cpu;
 }
 
-po::options_description meta::ParametersConfig::getOptions()
+meta::ParametersConfig::ParametersConfig()
+	: options("Configuration options")
 {
-	po::options_description options("Configuration options");
 	options.add_options()
 	("prec", po::value<size_t>(&precision)->default_value(sizeof(double) * 8))
 	("device,d", po::value<std::vector<int>>(&selected_devices), "ID of a divice to use. Can be specified multiple times.")
@@ -164,6 +164,10 @@ po::options_description meta::ParametersConfig::getOptions()
 	("ignore_checksum_errors", po::value<bool>(&ignore_checksum_errors)->default_value(false))
 	//todo: this is not used ?!
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false));
+}
 
+
+po::options_description & meta::ParametersConfig::getOptions()
+{
 	return options;
 }
