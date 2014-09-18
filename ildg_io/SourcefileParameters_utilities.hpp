@@ -22,4 +22,13 @@
 #ifndef _SOURCEFILEPARAMETERS_UTILITIES_HPP_
 #define _SOURCEFILEPARAMETERS_UTILITIES_HPP_
 
+#include "SourcefileParameters.hpp"
+
+namespace sourcefileParameters_utilities
+{
+	void setFromLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer);
+	void setFromLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, size_t numberOfBytes);
+	void setFromLimeEntry_scidacChecksum(Sourcefileparameters & parameters, char * buffer, size_t numberOfBytes);
+}
+
 #endif

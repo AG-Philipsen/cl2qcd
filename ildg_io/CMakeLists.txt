@@ -22,11 +22,11 @@
 #
 
 add_library(ildg_io
+	SourcefileParameters.cpp
+	SourcefileParameters_utilities.cpp
 	limeUtilities.cpp
 	limeFileReader.cpp
 	limeFileWriter.cpp
-	SourcefileParameters.cpp
-	SourcefileParameters_utilities.cpp
 	ildgIo_gaugefield.cpp
 	ildgIo.cpp
 )

@@ -30,7 +30,6 @@ class LimeFileReader
 public:
 	//todo: remove precision?
 	LimeFileReader(std::string sourceFilenameIn, int precision, char ** data);
-	~LimeFileReader();
 	//todo: make this private or remove/find better solution?
 	Sourcefileparameters parameters;
 protected:
@@ -45,7 +44,6 @@ protected:
 	void extractInformationFromLimeEntry(char ** destination);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData);
 	void extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char ** destination);
-	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	
 	void handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type);
 	void handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes);

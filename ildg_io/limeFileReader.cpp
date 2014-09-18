@@ -23,6 +23,18 @@
 #include "../host_functionality/logger.hpp"
 #include <boost/lexical_cast.hpp>
 #include "../executables/exceptions.h"
+#include "SourcefileParameters_utilities.hpp"
+
+#include <sstream>
+#include <iostream>
+#include <string>
+#include <algorithm>
+#include <iterator>
+#include <boost/regex.hpp>
+#include <vector>
+#include <boost/lexical_cast.hpp>
+
+#define ENDIAN (htons(1) == 1)
 
 void checkIfFileExists(std::string file) throw(File_Exception)
 {
@@ -43,10 +55,6 @@ LimeFileReader::LimeFileReader(std::string sourceFilenameIn, int precision, char
 	extractMetadataFromLimeFile();
 	
 	extractDataFromLimeFile(data);
-}
-
-LimeFileReader::~LimeFileReader()
-{
 }
 
 void LimeFileReader::openFile()
@@ -73,7 +81,6 @@ void LimeFileReader::readDataFromLimeFile(char ** destination)
 	readLimeFile(destination);
 	logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
 }
-
 
 size_t LimeFileReader::sizeOfGaugefieldBuffer()
 {
@@ -185,42 +192,6 @@ void LimeFileReader::extractInformationFromLimeEntry(char ** destination)
 	}
 }
 
-extern "C" {
-#include <lime_fixed_types.h>
-#include <libxml/parser.h>
-#include <libxml/xmlreader.h>
-#include <stdio.h>
-#include <string.h>
-//this is for htons
-#include <arpa/inet.h>
-}
-
-#include <sstream>
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <iterator>
-#include <boost/regex.hpp>
-#include <vector>
-#include <algorithm>
-#include <boost/lexical_cast.hpp>
-
-#define ENDIAN (htons(1) == 1)
-
-static std::string removeNewlines(std::string in)
-{
-  in.erase(std::remove(in.begin(), in.end(), '\n'), in.end());
-  return in;
-}
-
-static std::string trimStringBeforeEqual(std::string in)
-{
-	unsigned found = in.find_last_of("=");
-	std::string withoutEqual = in.substr(found+1);
-	found = ( withoutEqual ).find_first_of(" ");
-	return  withoutEqual.substr(found+1);
-}
-
 static void logger_readLimeEntry(std::string type)
 {
 	logger.trace() << "\tfound \"" << type << "\" entry...";
@@ -231,165 +202,9 @@ static void logger_readLimeEntrySuccess()
 	logger.trace() << "\t...succesfully read entry";
 }
 
-class ParserMap_xlf
-{
-public:
-	boost::regex re;
-	std::string str;
-	std::string value;
-};
-
-static double castStringToDouble(std::string in)
-{
-	return boost::lexical_cast<double>(in);
-}
-
 static int castStringToInt(std::string in)
 {
 	return boost::lexical_cast<int>(in);
-}
-
-static std::map<std::string, ParserMap_xlf> createParserMap_xlf()
-{
-	std::map<std::string, ParserMap_xlf> parserMap;
-	
-	parserMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+[\\+\\-]*\\d+\\.\\d+");
-	parserMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
-	parserMap["beta"].re = boost::regex ("beta\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["kappa"].re = boost::regex ("kappa\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["mu"].re = boost::regex ("mu\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+[\\+\\-]*\\d+.\\d+");
- 	parserMap["time"].re = boost::regex ("time\\s+=\\s+[\\+\\-]*\\d+");
- 	parserMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+[a-z]*");
-	parserMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
- 	parserMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
-	
-	return parserMap;
-}
-
-static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, ParserMap_xlf>  parserMap)
-{
-	parameters.plaquettevalue = castStringToDouble(parserMap["plaquette"].value);
-	parameters.kappa = castStringToDouble(parserMap["kappa"].value);
-	parameters.mu = castStringToDouble(parserMap["mu"].value);
-	parameters.beta = castStringToDouble(parserMap["beta"].value);
-	parameters.c2_rec = castStringToDouble(parserMap["c2_rec"].value);
-	parameters.mubar = castStringToDouble(parserMap["mubar"].value);
-	parameters.epsilonbar = castStringToDouble(parserMap["epsilonbar"].value);
-
-	parameters.trajectorynr = castStringToInt(parserMap["trajectory_nr"].value);
-	parameters.time = castStringToInt(parserMap["time"].value);
-
-	parameters.hmcversion = parserMap["hmcversion"].value;
-	parameters.date = parserMap["date"].value;
-}
-
-static void mapStringToParserMap(std::string str, std::map<std::string, ParserMap_xlf> &  parserMap)
-{
-	logger.trace() << "Going through string:";
-	logger.trace() << str;
-	
-	//todo: find out about ::iterator
-	for (std::map<std::string, ParserMap_xlf>::iterator it = parserMap.begin(); it != parserMap.end(); it++)
-	{
-		logger.trace() << "Found \"" + it->first + "\"";
-		
-		//todo: add check if re is found
-		
-		//todo: make this more beautiful
-		//http://stackoverflow.com/questions/10058606/c-splitting-a-string-by-a-character
-		//start/end points of tokens in str
-		std::vector<std::string> tokens;
-		boost::sregex_token_iterator begin(str.begin(), str.end(), it->second.re), end;
-		std::copy(begin, end, std::back_inserter(tokens));
-
-		it->second.str = removeNewlines( tokens[0] );
-		it->second.value =  trimStringBeforeEqual(it->second.str);
-	}
-}
-
-const int xmlNodeType_startElement = 1;
-
-void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, std::string> * map)
-{
-	xmlChar *name, *value;
-	name = xmlTextReaderName(reader);
-	int type = xmlTextReaderNodeType(reader);
-	std::string tmp(reinterpret_cast<char*> (name) );
-
-	for (std::map<std::string, std::string>::iterator it = map->begin(); it != map->end(); it++)
-	{
-		if(it->first == tmp && type == xmlNodeType_startElement)
-		{
-			xmlTextReaderRead(reader);
-			value = xmlTextReaderValue(reader);
-			if(value != nullptr) {
-				std::string tmp2 (reinterpret_cast<char*> (value) );
-				it->second = tmp2;
-				xmlFree(value);
-				logger.trace() << "Found xml value:\t" + tmp2;
-			}
-		}
-	}
-
-	xmlFree(name);
-}
-
-void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * buffer, int size, std::map<std::string, std::string> & parserMap)
-{
-	xmlTextReaderPtr reader;
-	int returnValue;
-
-	//This fct. takes a URL as 3rd argument, but this seems to be unimportant here, so it is left out.
-	//See http://xmlsoft.org/html/libxml-xmlreader.html#xmlReaderForMemory
-	reader = xmlReaderForMemory(buffer, size, NULL, NULL, 0);
-
-	if (reader != NULL) {
-		returnValue = xmlTextReaderRead(reader);
-		while (returnValue == 1) 
-		{
-			extractXmlValuesBasedOnMap(reader, &parserMap);
-			returnValue = xmlTextReaderRead(reader);
-		}
-		if (returnValue == -1) 
-		{
-			throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
-		}
-		xmlFreeTextReader(reader);
-	} 
-	else 
-		throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
-}
-
-//NOTE: these two functions are similar to some in the meta package,
-//      but I would rather not include the latter here.
-int calcNumberOfEntriesForDiracFermionfield(const Sourcefileparameters params)
-{
-  //latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
-  return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * NC * NSPIN * 2;
-}
-int calcNumberOfEntriesForGaugefield(const Sourcefileparameters params)
-{
-  // latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
-  return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * 2 * 4 * 9;
-}
-
-int LimeFileReader::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
-{
-	if(fieldType == "diracFermion") 
-	{
-		return calcNumberOfEntriesForDiracFermionfield( this->parameters );
-	} 
-	else if( fieldType == "su3gauge") 
-	{
-		return calcNumberOfEntriesForGaugefield( this->parameters );
-	} 
-	else 
-	{
-		throw Print_Error_Message("Unknown ildg field type \"" + fieldType + "\"", __FILE__, __LINE__);
-	}
-	return 0; //to get rid of a warning
 }
 
 char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
@@ -400,46 +215,6 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 		throw Print_Error_Message("Error while reading data from LIME file...", __FILE__, __LINE__);
 	buffer[nbytes] = 0;
 	return buffer;
-}
-
-static void setParametersToValues_ildg(Sourcefileparameters & parameters, std::map <std::string, std::string> parserMap)
-{
-	parameters.prec = castStringToInt(parserMap["precision"]);
-	parameters.lx = castStringToInt(parserMap["lx"]);
-	parameters.ly = castStringToInt(parserMap["ly"]);
-	parameters.lz = castStringToInt(parserMap["lz"]);
-	parameters.lt = castStringToInt(parserMap["lt"]);
-
-	parameters.field = parserMap["field"];
-}
-
-static void fillParserMap_ildg(std::map<std::string, std::string> & parserMap)
-{
-	parserMap["field"] = "";
-	parserMap["precision"] = "";
-	parserMap["lx"] = "";
-	parserMap["ly"] = "";
-	parserMap["lz"] = "";
-	parserMap["lt"] = "";
-}
-
-static void fillParserMap_scidacChecksum(std::map<std::string, std::string> & parserMap)
-{
-	parserMap["suma"] = "";
-	parserMap["sumb"] = "";
-}
-
-static void setParametersToValues_scidacChecksum(Sourcefileparameters & parameters, std::map <std::string, std::string> parserMap)
-{
-	uint32_t suma, sumb;
-	
-	std::stringstream tmp, tmp2;
-	tmp << parserMap["suma"];
-	tmp >> std::hex >> suma;
-	tmp2 << parserMap["sumb"];
-	tmp2 >> std::hex >> sumb;
-	
-	parameters.checksum =  Checksum(suma, sumb);
 }
 
 int LimeFileReader::checkLimeEntryForFermionInformations(std::string lime_type)
@@ -468,33 +243,19 @@ void LimeFileReader::handleLimeEntry_xlf(Sourcefileparameters & parameters, char
 	}
 	logger_readLimeEntry( lime_type);
 	
-	std::string str(buffer);
-	std::map<std::string, ParserMap_xlf> parserMap = createParserMap_xlf();
-
-	mapStringToParserMap(str, parserMap);
-	setParametersToValues_xlf(parameters, parserMap);
+	sourcefileParameters_utilities::setFromLimeEntry_xlf(parameters, buffer);
 }
 
 void LimeFileReader::handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes)
 {
 	logger_readLimeEntry( lime_type);
-	std::map<std::string, std::string> parserMap;
-	fillParserMap_ildg(parserMap);
-			
-	goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, numberOfBytes, parserMap);
-			
-	setParametersToValues_ildg(parameters, parserMap);
-	parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(parameters.field);
+	sourcefileParameters_utilities::setFromLimeEntry_ildg(parameters, buffer, numberOfBytes);
 }
 
 void LimeFileReader::handleLimeEntry_scidacChecksum(char * buffer, std::string lime_type, size_t numberOfBytes)
 {
 	logger_readLimeEntry( lime_type );
-
-	std::map<std::string, std::string> parserMap;
-	fillParserMap_scidacChecksum(parserMap);
-	goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, numberOfBytes, parserMap);
-	setParametersToValues_scidacChecksum(this->parameters, parserMap);		  
+	sourcefileParameters_utilities::setFromLimeEntry_scidacChecksum(parameters, buffer, numberOfBytes);
 }
 
 void LimeFileReader::handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error)
