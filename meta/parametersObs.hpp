@@ -23,19 +23,18 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersObs
-{
+namespace meta {
+class ParametersObs {
 public:
 	enum pbp_version {std = 1, tm_one_end_trick};
-	
+
 	bool get_measure_transportcoefficient_kappa() const noexcept;
 	bool get_measure_rectangles() const noexcept;
 	bool get_measure_correlators() const noexcept;
 	bool get_measure_pbp() const noexcept;
 	pbp_version get_pbp_version() const noexcept;
 	int get_corr_dir() const noexcept;
-	
+
 protected:
 	bool measure_transportcoefficient_kappa;
 	bool measure_rectangles;

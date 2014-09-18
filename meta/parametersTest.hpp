@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersTest
-{
+namespace meta {
+class ParametersTest {
 public:
 	double get_test_ref_value() const noexcept;
 	double get_test_ref_value2() const noexcept;
@@ -33,7 +32,7 @@ public:
 protected:
 	double test_ref_value;
 	double test_ref_value2;
-	
+
 	po::options_description getOptions();
 };
 

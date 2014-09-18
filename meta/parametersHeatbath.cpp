@@ -22,31 +22,31 @@
 
 int meta::ParametersHeatbath::get_thermalizationsteps() const noexcept
 {
-  return thermalizationsteps;
+	return thermalizationsteps;
 }
 int meta::ParametersHeatbath::get_heatbathsteps() const noexcept
 {
-  return heatbathsteps;
+	return heatbathsteps;
 }
 int meta::ParametersHeatbath::get_overrelaxsteps() const noexcept
 {
-  return overrelaxsteps;
+	return overrelaxsteps;
 }
 int meta::ParametersHeatbath::get_xi() const noexcept
 {
-  return xi;
+	return xi;
 }
 
 po::options_description meta::ParametersHeatbath::getOptions()
 {
 	po::options_description options("Heatbath options");
 	options.add_options()
-		//todo: this is also needed in the HMC!
-		("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
-		("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
-		("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
-		//todo: is this used?
-		("xi", po::value<int>(&xi)->default_value(1));
-		
+	//todo: this is also needed in the HMC!
+	("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
+	("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
+	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
+	//todo: is this used?
+	("xi", po::value<int>(&xi)->default_value(1));
+
 	return options;
 }

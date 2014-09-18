@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersFermion
-{
+namespace meta {
+class ParametersFermion {
 public:
 	action get_fermact() const noexcept;
 	action get_fermact_mp() const noexcept;
@@ -45,7 +44,7 @@ public:
 	bool get_use_eo() const noexcept;
 	bool get_use_merge_kernels_fermion() const noexcept;
 	bool get_use_merge_kernels_spinor() const noexcept;
-	
+
 protected:
 	action fermact;
 	action fermact_mp;
@@ -65,7 +64,7 @@ protected:
 	bool use_eo;
 	bool use_merge_kernels_fermion;
 	bool use_merge_kernels_spinor;
-	
+
 	po::options_description getOptions();
 };
 

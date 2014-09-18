@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersHmc
-{
+namespace meta {
+class ParametersHmc {
 public:
 	enum integrator { leapfrog = 1, twomn };
 

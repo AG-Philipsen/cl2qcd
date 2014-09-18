@@ -23,13 +23,12 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersConfig
-{
+namespace meta {
+class ParametersConfig {
 public:
 	enum startcondition { cold_start = 1, hot_start, start_from_source };
-	
-		size_t get_precision() const noexcept;
+
+	size_t get_precision() const noexcept;
 
 	const std::vector<int> get_selected_devices() const noexcept;
 	int get_device_count() const noexcept;
@@ -38,23 +37,23 @@ public:
 	bool get_enable_profiling() const noexcept;
 	int get_nspace() const noexcept;
 	int get_ntime() const noexcept;
-	
+
 	//should this go into IO?
 	startcondition get_startcondition() const noexcept;
 	std::string get_sourcefile() const noexcept;
 	bool get_ignore_checksum_errors() const noexcept;
 	bool get_print_to_screen() const noexcept;
-		//parameters to read in gauge configurations
+	//parameters to read in gauge configurations
 	bool get_read_multiple_configs() const noexcept;
 	int get_config_read_start() const noexcept;
 	int get_config_read_end() const noexcept;
 	int get_config_read_incr() const noexcept;
-	
+
 	std::string get_log_level() const noexcept;
 	bool get_use_rec12() const noexcept;
 	uint32_t get_host_seed() const noexcept;
 	std::string get_initial_prng_state() const noexcept;
-	
+
 	bool get_use_same_rnd_numbers() const noexcept;
 	bool is_ocl_compiler_opt_disabled() const noexcept;
 	bool get_split_cpu() const noexcept;
@@ -74,7 +73,7 @@ protected:
 	bool use_aniso;
 	int nspace;
 	int ntime;
-	
+
 	startcondition _startcondition;
 	//parameters to read in gauge configurations
 	bool read_multiple_configs;
@@ -86,15 +85,15 @@ protected:
 	bool print_to_screen;
 	uint32_t host_seed;
 	std::string initial_prng_state;
-	
+
 	int benchmarksteps;
 	bool use_same_rnd_numbers;
 	bool use_rec12;
 	bool ocl_compiler_opt_disabled;
-	
+
 	std::string log_level;
 	bool split_cpu;
-	
+
 	po::options_description getOptions();
 };
 

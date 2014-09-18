@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-	class ParametersRhmc : public ParametersBasic
-{
+namespace meta {
+class ParametersRhmc : public ParametersBasic {
 public:
 	int get_md_approx_ord() const noexcept;
 	int get_metro_approx_ord() const noexcept;

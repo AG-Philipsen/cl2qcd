@@ -23,35 +23,35 @@
 //gaugefield parameters
 double meta::ParametersGauge::get_beta() const noexcept
 {
-  return beta;
+	return beta;
 }
 double meta::ParametersGauge::get_rho() const noexcept
 {
-  return rho;
+	return rho;
 }
 int meta::ParametersGauge::get_rho_iter() const noexcept
 {
-  return rho_iter;
+	return rho_iter;
 }
 meta::action meta::ParametersGauge::get_gaugeact() const noexcept
 {
-  return gaugeact;
+	return gaugeact;
 }
 
 bool meta::ParametersGauge::get_use_smearing() const noexcept
 {
-  return use_smearing;
+	return use_smearing;
 }
 
 po::options_description meta::ParametersGauge::getOptions()
 {
 	po::options_description options("Gaugefield options");
 	options.add_options()
-		("beta", po::value<double>(&beta)->default_value(4.0))
-		("use_smearing", po::value<bool>(&use_smearing)->default_value(false))
-		("rho", po::value<double>(&rho)->default_value(0.))
-		("rho_iter", po::value<int>(&rho_iter)->default_value(0))
-		("gaugeact", po::value<std::string>()->default_value("wilson"));
-		
+	("beta", po::value<double>(&beta)->default_value(4.0))
+	("use_smearing", po::value<bool>(&use_smearing)->default_value(false))
+	("rho", po::value<double>(&rho)->default_value(0.))
+	("rho_iter", po::value<int>(&rho_iter)->default_value(0))
+	("gaugeact", po::value<std::string>()->default_value("wilson"));
+
 	return options;
 }
