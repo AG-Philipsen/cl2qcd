@@ -102,7 +102,7 @@ static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
  	helperMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 }
 
-static void setParametersToValues_xlf(sourcefileparameters & parameters, std::map<std::string, helper>  helperMap)
+static void setParametersToValues_xlf(sourcefileparameters_values & parameters, std::map<std::string, helper>  helperMap)
 {
 	parameters.plaquettevalue = castStringToDouble(helperMap["plaquette"].value);
 	parameters.kappa = castStringToDouble(helperMap["kappa"].value);
@@ -213,11 +213,11 @@ int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldT
 {
 	if(fieldType == "diracFermion") 
 	{
-		return calcNumberOfEntriesForDiracFermionfield( *this );
+		return calcNumberOfEntriesForDiracFermionfield( this->parameters );
 	} 
 	else if( fieldType == "su3gauge") 
 	{
-		return calcNumberOfEntriesForGaugefield( *this);
+		return calcNumberOfEntriesForGaugefield( this->parameters );
 	} 
 	else 
 	{
@@ -245,7 +245,7 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 	return buffer;
 }
 
-static void setParametersToValues_ildg(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+static void setParametersToValues_ildg(sourcefileparameters_values & parameters, std::map <std::string, std::string> helperMap)
 {
 	parameters.prec = castStringToInt(helperMap["precision"]);
 	parameters.lx = castStringToInt(helperMap["lx"]);
@@ -272,7 +272,7 @@ static void fillHelperMap_scidacChecksum(std::map<std::string, std::string> & he
 	helperMap["sumb"] = "";
 }
 
-static void setParametersToValues_scidacChecksum(sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
+static void setParametersToValues_scidacChecksum(sourcefileparameters_values & parameters, std::map <std::string, std::string> helperMap)
 {
 	uint32_t suma, sumb;
 	
@@ -333,7 +333,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			std::map<std::string, std::string> helperMap;
 			fillHelperMap_scidacChecksum(helperMap);
 			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
-			setParametersToValues_scidacChecksum(*this, helperMap);		  
+			setParametersToValues_scidacChecksum(this->parameters, helperMap);		  
 		}
 		
 		else if( limeEntryTypes["inverter"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2)
@@ -350,7 +350,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 				//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 				
 				//todo: this should be moved elsewhere!
-				numberOfFermionFieldsRead++;
+				this->parameters.numberOfFermionFieldsRead++;
 			}
 		}
 		
@@ -362,7 +362,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			fillHelperMap_xlf(helperMap);
 
 			mapStringToHelperMap(str, helperMap);
-			setParametersToValues_xlf(*this, helperMap);
+			setParametersToValues_xlf(this->parameters, helperMap);
 		}
 
 		else if ( limeEntryTypes["ildg"] == lime_type )
@@ -373,8 +373,8 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			
 			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
 			
-			setParametersToValues_ildg(*this, helperMap);
-			num_entries = calcNumberOfEntriesBasedOnFieldType(field);
+			setParametersToValues_ildg(this->parameters, helperMap);
+			this->parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(this->parameters.field);
 		}	
 
 		else if( limeEntryTypes["etmc propagator"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
@@ -398,7 +398,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 
 size_t sourcefileparameters::sizeOfGaugefieldBuffer()
 {
-	return num_entries * sizeof(hmc_float);
+	return this->parameters.num_entries * sizeof(hmc_float);
 }
 
 char* createBuffer(size_t datasize)
@@ -502,10 +502,10 @@ void sourcefileparameters::extractMetadataFromLimeFile()
 {
 	readMetaDataFromLimeFile();
 	
-	printMetaDataToScreen(sourceFilename);
+	this->parameters.printMetaDataToScreen(sourceFilename);
 	
 	//todo: this may be unified with a check against the inputparameters..
-	checkPrecision(desiredPrecision, prec);  
+	checkPrecision(desiredPrecision, this->parameters.prec);  
 }
 
 void sourcefileparameters::extractDataFromLimeFile(char ** destination)

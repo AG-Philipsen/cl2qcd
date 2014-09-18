@@ -29,7 +29,7 @@
 int expectedPrecision = 64;
 std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
 
-void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters toCheck)
+void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters_values toCheck)
 {
   BOOST_REQUIRE_EQUAL(toCheck.lx, 4);
   BOOST_REQUIRE_EQUAL(toCheck.ly, 4);
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckMetadata)
 {
   char * bufferToStoreGaugefield;
   sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
-  checkMetadataOfSpecificGaugefieldFile(srcFileParams);
+  checkMetadataOfSpecificGaugefieldFile(srcFileParams.parameters);
 }
 
 //todo: this test probably will never work!
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
 {
   char * bufferToStoreGaugefield;
 	sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
-  size_t expectedSizeOfBuffer = srcFileParams.num_entries * sizeof(hmc_float);
+  size_t expectedSizeOfBuffer = srcFileParams.parameters.num_entries * sizeof(hmc_float);
   size_t actualSizeOfBuffer = sizeof(bufferToStoreGaugefield);
 	BOOST_CHECK_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
 }
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)
   uint32_t referenceChecksumB = 3618036129;
   sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
-  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
+  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.parameters.checksum, true);
 }
 
 std::string nameOfExistingGaugefieldFileFromTmlqcd = std::string(SOURCEDIR) + "/ildg_io/conf.tmlqcd";
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldFromTmlqcd_CheckChecksum)
   uint32_t referenceChecksumB = 1610757546;
   sourcefileparameters srcFileParams(nameOfExistingGaugefieldFileFromTmlqcd.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
-  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
+  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.parameters.checksum, true);
 }
 
 size_t getPrecisionOfDoubleInBits()
@@ -176,7 +176,7 @@ sourcefileparameters_values setSourceFileParametersToSpecificValuesForGaugefield
 // not implemented or fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 11 )
 
-void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, sourcefileparameters toCheck2)
+void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, sourcefileparameters_values toCheck2)
 {
   BOOST_REQUIRE_EQUAL(toCheck1.lx, toCheck2.lx);
   BOOST_REQUIRE_EQUAL(toCheck1.ly, toCheck2.ly);
@@ -233,5 +233,5 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 	sourcefileparameters srcFileParams_2(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
 	delete readBinaryData;
 	
-	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2);
+	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2.parameters);
 }

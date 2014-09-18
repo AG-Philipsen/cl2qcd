@@ -49,9 +49,11 @@ extern "C" {
  * @param[in] precision The precision expected for the gaugefield.
  * @param[out] data    The loaded gaugefield
  */
-class sourcefileparameters : public sourcefileparameters_values {
+class sourcefileparameters{
 public:
 	sourcefileparameters(std::string file, int precision, char ** data);
+	//todo: make this private?
+	sourcefileparameters_values parameters;
 private:
 	void readMetaDataFromLimeFile();
 	void readDataFromLimeFile(char ** destination);

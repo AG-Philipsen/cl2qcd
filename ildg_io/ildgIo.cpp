@@ -38,18 +38,19 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 
 	sourcefileparameters parameters_source(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
 	
-	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.getSizeInBytes(), *parameters);
+	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.parameters.getSizeInBytes(), *parameters);
 
 	//todo: this should not be that explicit here!	
 	gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
-	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries, *parameters);
+	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.parameters.num_entries, *parameters);
 	delete[] gf_ildg;
 
-	trajectoryNumberAtInit = parameters_source.trajectorynr;
-	plaq = parameters_source.plaquettevalue;
+	trajectoryNumberAtInit = parameters_source.parameters.trajectorynr;
+	plaq = parameters_source.parameters.plaquettevalue;
 
-	parameters_source.checkAgainstInputparameters(parameters);
-	parameters_source.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
+	//todo: move this to destructor or so...
+	parameters_source.parameters.checkAgainstInputparameters(parameters);
+	parameters_source.parameters.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
 
 	return gf_host;
 }
