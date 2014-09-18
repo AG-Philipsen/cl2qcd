@@ -119,7 +119,7 @@ void LimeFileWriter::writeMemoryToLimeFile(void * memoryPointer, n_uint64_t byte
 	this->writtenBytes += bytesToBeWritten;
 }
 
-void checkIfFileExists_tmp(std::string file) noexcept
+void checkIfFileExists_tmp(std::string file) throw(File_Exception)
 {
 	FILE * checker;
 	checker = fopen(file.c_str(), "r");
