@@ -33,13 +33,20 @@ void checkLimeFileForFieldType(std::string fieldTypeIn) throw(std::logic_error)
 	}
 }
 
+size_t sizeOfGaugefieldBuffer(size_t num_entries)
+{
+	return num_entries * sizeof(hmc_float);
+}
+
 //todo: make char ** std::vector<char*>
 IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn)
 {
 	if ( limeFileProp.numberOfBinaryDataEntries >= 1 )
 	{
 		checkLimeFileForFieldType(parameters.field);
-		extractDataFromLimeFile(destination);
+		size_t numberOfBytes = sizeOfGaugefieldBuffer(parameters.num_entries);
+		
+		extractDataFromLimeFile(destination, numberOfBytes);
 	}
 	else 
 	{

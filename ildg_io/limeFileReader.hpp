@@ -37,23 +37,18 @@ protected:
 	void closeFile();
 	void readMetaDataFromLimeFile();
 	void extractMetadataFromLimeFile();
-	void readLimeFile(char ** destination);
-	void extractDataFromLimeFile(char ** destination);
-	void goThroughLimeRecords(char ** destination);
-	void extractInformationFromLimeEntry(char ** destination);
+	void readLimeFile(char ** destination, size_t expectedNumberOfBytes = 0);
+	void extractDataFromLimeFile(char ** destination, size_t expectedNumberOfBytes);
+	void goThroughLimeRecords(char ** destination, size_t expectedNumberOfBytes);
+	void extractInformationFromLimeEntry(char ** destination, size_t expectedNumberOfBytes);
 	LimeFileProperties extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData);
-	void extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char ** destination);
+	void extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char ** destination, size_t expectedNumberOfBytes);
 	
 	void handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type);
 	void handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes);
 	void handleLimeEntry_scidacChecksum(char * buffer, std::string lime_type, size_t numberOfBytes);
 	void handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error);
 	void handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error);
-	
-	size_t	sizeOfGaugefieldBuffer();
-	
-	int checkLimeEntryForFermionInformations(std::string lime_type);
-	bool checkLimeEntryForBinaryData(std::string lime_type);
 	
 	std::string sourceFilename;
 	int desiredPrecision;

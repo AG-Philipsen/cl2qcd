@@ -25,6 +25,23 @@
 #include "../executables/exceptions.h"
 #include "SourcefileParameters_utilities.hpp"
 
+int checkLimeEntryForFermionInformations(std::string lime_type, LimeEntryTypes limeEntryTypes)
+{
+	return ( 
+		limeEntryTypes["propagator"] == lime_type || 
+		limeEntryTypes["inverter"] == lime_type || 
+		limeEntryTypes["etmc-propagator"] == lime_type
+		) ? 1 : 0;
+}
+
+bool checkLimeEntryForBinaryData(std::string lime_type, LimeEntryTypes limeEntryTypes)
+{
+	return	( 
+		limeEntryTypes["scidac binary data"] == lime_type || 
+		limeEntryTypes["ildg binary data"] == lime_type
+		) ? true : false;
+}
+
 void checkIfFileExists(std::string file) throw(File_Exception)
 {
 	FILE * checker;
@@ -56,16 +73,11 @@ void LimeFileReader::closeFile()
 	fclose(limeFileOpenedForReading);
 }
 
-void LimeFileReader::extractDataFromLimeFile(char ** destination)
+void LimeFileReader::extractDataFromLimeFile(char ** destination, size_t expectedNumberOfBytes)
 {
 	logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
-	readLimeFile(destination);
+	readLimeFile(destination, expectedNumberOfBytes);
 	logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
-}
-
-size_t LimeFileReader::sizeOfGaugefieldBuffer()
-{
-	return this->parameters.num_entries * sizeof(hmc_float);
 }
 
 char* createBuffer(size_t datasize)
@@ -81,15 +93,15 @@ static void checkBufferSize(size_t actualSize, size_t expectedSize)
 	}
 }
 
-void LimeFileReader::extractBinaryDataFromLimeEntry( LimeHeaderData limeHeaderData, char ** destination)
+void LimeFileReader::extractBinaryDataFromLimeEntry( LimeHeaderData limeHeaderData, char ** destination, size_t expectedNumberOfBytes)
 {
-	if( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) )
+	if( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType, limeEntryTypes) )
 	{
 		if (limeFileProp.numberOfBinaryDataEntries == 1)
 		{
 			//todo: generalize for diff. field types..
-			checkBufferSize(limeHeaderData.numberOfBytes, sizeOfGaugefieldBuffer());
-			destination[limeFileProp.numberOfBinaryDataEntries-1] = createBuffer(sizeOfGaugefieldBuffer());
+			checkBufferSize(limeHeaderData.numberOfBytes, expectedNumberOfBytes);
+			destination[limeFileProp.numberOfBinaryDataEntries-1] = createBuffer(limeHeaderData.numberOfBytes);
 			limeReaderReadData(destination[limeFileProp.numberOfBinaryDataEntries-1], &limeHeaderData.numberOfBytes, limeReader);
 		}
 		else
@@ -123,12 +135,12 @@ void LimeFileReader::readMetaDataFromLimeFile()
 	logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
 
-void LimeFileReader::readLimeFile(char ** destination)
+void LimeFileReader::readLimeFile(char ** destination, size_t expectedNumberOfBytes)
 {
 	//TODO: this construction is not nice, but currently necessary as the file is potentially read multiple times
 	openFile();
 	
-	goThroughLimeRecords(destination);
+	goThroughLimeRecords(destination, expectedNumberOfBytes);
 	
 	closeFile();
 }
@@ -142,17 +154,17 @@ void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
 	}
 }
 
-void LimeFileReader::goThroughLimeRecords(char ** destination)
+void LimeFileReader::goThroughLimeRecords(char ** destination, size_t expectedNumberOfBytes)
 {
 	int statusOfLimeReader = LIME_SUCCESS;
 	while( (statusOfLimeReader = limeReaderNextRecord(limeReader)) != LIME_EOF ) 
 	{
 		checkLimeRecordReadForFailure(statusOfLimeReader);
-		extractInformationFromLimeEntry(destination);
+		extractInformationFromLimeEntry(destination, expectedNumberOfBytes);
 	}
 }
 
-void LimeFileReader::extractInformationFromLimeEntry(char ** destination)
+void LimeFileReader::extractInformationFromLimeEntry(char ** destination, size_t expectedNumberOfBytes)
 {
 	LimeHeaderData limeHeaderData(limeReader);
 	logger.trace() << "Found entry in LIME file of type \"" + limeHeaderData.limeEntryType + "\"";
@@ -164,7 +176,7 @@ void LimeFileReader::extractInformationFromLimeEntry(char ** destination)
 		}
 		else 
 		{
-			extractBinaryDataFromLimeEntry(limeHeaderData, destination);
+			extractBinaryDataFromLimeEntry(limeHeaderData, destination, expectedNumberOfBytes);
 		}
 	}
 	else
@@ -191,23 +203,6 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 		throw Print_Error_Message("Error while reading data from LIME file...", __FILE__, __LINE__);
 	buffer[nbytes] = 0;
 	return buffer;
-}
-
-int LimeFileReader::checkLimeEntryForFermionInformations(std::string lime_type)
-{
-	return ( 
-		limeEntryTypes["propagator"] == lime_type || 
-		limeEntryTypes["inverter"] == lime_type || 
-		limeEntryTypes["etmc-propagator"] == lime_type
-		) ? 1 : 0;
-}
-
-bool LimeFileReader::checkLimeEntryForBinaryData(std::string lime_type)
-{
-	return	( 
-		limeEntryTypes["scidac binary data"] == lime_type || 
-		limeEntryTypes["ildg binary data"] == lime_type
-		) ? true : false;
 }
 
 void LimeFileReader::handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type)
@@ -269,14 +264,14 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 	logger.trace() << "Extracting meta data from LIME entry...";
 	LimeFileProperties props;
 
-	if ( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) == 1)
+	if ( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType, limeEntryTypes) == 1)
 	{
 		props.numberOfBinaryDataEntries = 1;		
 	}
 	//todo: create class for the different cases
 	else
 	{
-		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
+		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType, limeEntryTypes);
 
 		char * buffer = createBufferAndReadLimeDataIntoIt(limeReader,  limeHeaderData.numberOfBytes);
 		std::string lime_type = limeHeaderData.limeEntryType;
