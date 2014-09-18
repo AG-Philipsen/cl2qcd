@@ -41,12 +41,13 @@ namespace ildgIo {
 	*
 	* @param[in] file      The file to read the gauge configuration from
 	* @param[in] precision The precision expected for the gaugefield.
+	* @param[in] parameters The input parameters @Todo: remove this
 	* @param[out] data    The loaded gaugefield
 	*/
 	class IldgIoReader_gaugefield : public LimeFileReader
 	{
 	public:
-		IldgIoReader_gaugefield(std::string file, int precision, char ** data);
+		IldgIoReader_gaugefield(std::string file, int precision, const meta::Inputparameters * parameters, Matrixsu3 * data);
 	};
 
 	/**
@@ -61,6 +62,9 @@ namespace ildgIo {
 	public:
 		IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, Sourcefileparameters srcFileParameters, std::string filenameIn);
 	};
+	
+	Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
+	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const 	meta::Inputparameters& parameters);
 
 }
 

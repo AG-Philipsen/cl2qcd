@@ -22,6 +22,8 @@
 
 #include "limeUtilities.hpp"
 #include "../host_functionality/logger.hpp"
+#include "../host_functionality/host_geometry.h"
+#include "../meta/util.hpp"
 
 using namespace ildgIo;
 
@@ -39,14 +41,27 @@ size_t sizeOfGaugefieldBuffer(size_t num_entries)
 }
 
 //todo: make char ** std::vector<char*>
-IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn)
+IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, const meta::Inputparameters * parametersIn, Matrixsu3 * destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn)
 {
 	if ( limeFileProp.numberOfBinaryDataEntries >= 1 )
 	{
+		char * gf_ildg;
+		
 		checkLimeFileForFieldType(parameters.field);
 		size_t numberOfBytes = sizeOfGaugefieldBuffer(parameters.num_entries);
 		
-		extractDataFromLimeFile(destination, numberOfBytes);
+		logger.fatal() << "adfasf";
+		extractDataFromLimeFile(&gf_ildg, numberOfBytes);
+		logger.fatal() << "adfasf";
+		
+		Checksum checksum = ildgIo::calculate_ildg_checksum(gf_ildg, parameters.getSizeInBytes(), *parametersIn);
+	
+		ildgIo::copy_gaugefield_from_ildg_format(destination, gf_ildg, parameters.num_entries, *parametersIn);
+		
+		delete[] gf_ildg;
+		
+		parameters.checkAgainstChecksum(checksum, parametersIn->get_ignore_checksum_errors(), sourceFilenameIn);
+		parameters.checkAgainstInputparameters(parametersIn);
 	}
 	else 
 	{
@@ -73,4 +88,124 @@ IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(char * binary_data, n_uint64_t 
 	writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), limeEntryTypes["scidac checksum"]);
 }
 
+Checksum ildgIo::calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
+{
+	const size_t elem_size = 4 * sizeof(Matrixsu3);
+
+	const size_t NT = inputparameters.get_ntime();
+	const size_t NS = inputparameters.get_nspace();
+
+	if(nbytes != (NT * NS * NS * NS * elem_size)) {
+		logger.error() << "Buffer does not contain a gaugefield!";
+		throw Invalid_Parameters("Buffer size not match possible gaugefield size", (NT * NS * NS * NS * elem_size), nbytes);
+	}
+
+	Checksum checksum;
+
+	size_t offset = 0;
+	for(uint32_t t = 0; t < NT; ++t) {
+		for(uint32_t z = 0; z < NS; ++z) {
+			for(uint32_t y = 0; y < NS; ++y) {
+				for(uint32_t x = 0; x < NS; ++x) {
+					assert(offset < nbytes);
+					uint32_t rank = ((t * NS + z) * NS + y) * NS + x;
+					checksum.accumulate(&buf[offset], elem_size, rank);
+					offset += elem_size;
+				}
+			}
+		}
+	}
+
+	logger.debug() << "Calculated Checksum: " << checksum;
+	return checksum;
+}
+
+static void make_big_endian_from_float(char* out, const hmc_float in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	val.f = in;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		out[i] = val.b[sizeof(hmc_float) - 1 - i];
+	}
+}
+
+static hmc_float make_float_from_big_endian(const char* in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		val.b[i] = in[sizeof(hmc_float) - 1 - i];
+	}
+	return val.f;
+}
+
+void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters)
+{
+	//little check if arrays are big enough
+	if ((int) (meta::get_vol4d(parameters) *NDIM * NC * NC * 2) != check) {
+		std::stringstream errstr;
+		errstr << "Error in setting gaugefield to source values!!\nCheck global settings!!";
+		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+	}
+
+	const size_t NSPACE = parameters.get_nspace();
+	int cter = 0;
+	for (int t = 0; t < parameters.get_ntime(); t++) {
+		for (size_t x = 0; x < NSPACE; x++) {
+			for (size_t y = 0; y < NSPACE; y++) {
+				for (size_t z = 0; z < NSPACE; z++) {
+					for (int l = 0; l < NDIM; l++) {
+						//save current link in a complex array
+						hmc_complex tmp [NC][NC];
+						for (int m = 0; m < NC; m++) {
+							for (int n = 0; n < NC; n++) {
+								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
+								tmp[m][n].re = make_float_from_big_endian(&gaugefield_tmp[pos * sizeof(hmc_float)]);
+								tmp[m][n].im = make_float_from_big_endian(&gaugefield_tmp[(pos + 1) * sizeof(hmc_float)]);
+								cter++;
+							}
+						}
+						//store su3matrix tmp in our format
+						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
+						int coord[4];
+						coord[0] = t;
+						coord[1] = z;
+						coord[2] = y;
+						coord[3] = x;
+						int spacepos = get_nspace(coord, parameters);
+
+						//copy hmc_su3matrix to Matrixsu3 format
+						Matrixsu3 destElem;
+						destElem.e00 = tmp[0][0];
+						destElem.e01 = tmp[0][1];
+						destElem.e02 = tmp[0][2];
+						destElem.e10 = tmp[1][0];
+						destElem.e11 = tmp[1][1];
+						destElem.e12 = tmp[1][2];
+						destElem.e20 = tmp[2][0];
+						destElem.e21 = tmp[2][1];
+						destElem.e22 = tmp[2][2];
+
+						gaugefield[get_global_link_pos((l + 1) % NDIM, spacepos, t, parameters)] = destElem;
+					}
+				}
+			}
+		}
+	}
+
+	if(cter * 2 != check) {
+		std::stringstream errstr;
+		errstr << "Error in setting gaugefield to source values! there were " << cter * 2 << " vals set and not " << check << ".";
+		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+	}
+}
 

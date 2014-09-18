@@ -41,6 +41,7 @@ target_link_libraries(ildg_io
 	logger
 	exceptions
 	meta
+	host_functionality
 )
 
 add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test ildg_io)

@@ -137,14 +137,17 @@ void writeEmptyGaugefieldFromSourcefileParameters(Sourcefileparameters srcFilePa
 BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 {
 	Sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
-	
+	//do not consider the checksum in this test
+	const char * tmp [] = {"foo", "--nspace=3", "--ntime=5", "--ignore_checksum_errors=true"};
+	meta::Inputparameters parameters(4, tmp);
 	//TODO: test with single?
 	std::string configurationName = "conf.test";
 	
 	writeEmptyGaugefieldFromSourcefileParameters(srcFileParams_1, configurationName);
 	
-	char * readBinaryData;
-	IldgIoReader_gaugefield srcFileParams_2(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
+	Matrixsu3 * readBinaryData;
+	readBinaryData = new Matrixsu3[3*3*3*5*4];
+	IldgIoReader_gaugefield srcFileParams_2(configurationName, srcFileParams_1.prec, &parameters, readBinaryData);
 	delete readBinaryData;
 	
 	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2.parameters);
