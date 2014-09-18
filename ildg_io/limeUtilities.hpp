@@ -72,6 +72,7 @@ public:
 
 class LimeFileWriter
 {
+	//todo: make this protected
 public:
 	LimeFileWriter(std::string filenameIn);
 	~LimeFileWriter();
@@ -86,6 +87,18 @@ private:
 	n_uint64_t writtenBytes;
 	LimeWriter *writer;
 	void writeLimeHeaderToLimeFile(LimeRecordHeader * header);
+};
+
+class LimeFileReader
+{
+public:
+	//todo: remove precision?
+	LimeFileReader(std::string sourceFilenameIn, int precision, char ** data);
+	~LimeFileReader();
+protected:
+	std::string sourceFilename;
+	int desiredPrecision;
+	LimeReader * r;
 };
 
 
