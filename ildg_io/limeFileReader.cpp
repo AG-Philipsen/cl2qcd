@@ -80,13 +80,13 @@ size_t LimeFileReader::sizeOfGaugefieldBuffer()
 	return this->parameters.num_entries * sizeof(hmc_float);
 }
 
-char* createBuffer_tmp(size_t datasize)
+char* createBuffer(size_t datasize)
 {
 	char * buffer = new char[datasize];
 	return buffer;
 }
 
-static void checkBufferSize_tmp(size_t actualSize, size_t expectedSize)
+static void checkBufferSize(size_t actualSize, size_t expectedSize)
 {
 	if(actualSize != expectedSize) {
 		throw Invalid_Parameters("Binary data does not have expected size.", expectedSize, actualSize);
@@ -100,8 +100,8 @@ void LimeFileReader::extractBinaryDataFromLimeEntry( LimeHeaderData limeHeaderDa
 		if (limeFileProp.numberOfBinaryDataEntries == 1)
 		{
 			//todo: generalize for diff. field types..
-			checkBufferSize_tmp(limeHeaderData.numberOfBytes, sizeOfGaugefieldBuffer());
-			destination[limeFileProp.numberOfBinaryDataEntries-1] = createBuffer_tmp(sizeOfGaugefieldBuffer());
+			checkBufferSize(limeHeaderData.numberOfBytes, sizeOfGaugefieldBuffer());
+			destination[limeFileProp.numberOfBinaryDataEntries-1] = createBuffer(sizeOfGaugefieldBuffer());
 			limeReaderReadData(destination[limeFileProp.numberOfBinaryDataEntries-1], &limeHeaderData.numberOfBytes, limeReader);
 		}
 		else
@@ -111,7 +111,7 @@ void LimeFileReader::extractBinaryDataFromLimeEntry( LimeHeaderData limeHeaderDa
 	}
 }
 
-void checkPrecision_tmp(int desiredPrecision, int actualPrecision) throw(Print_Error_Message)
+void checkPrecision(int desiredPrecision, int actualPrecision) throw(Print_Error_Message)
 {
 	if(desiredPrecision != actualPrecision) 
 		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting", __FILE__, __LINE__);
@@ -124,7 +124,7 @@ void LimeFileReader::extractMetadataFromLimeFile()
 	this->parameters.printMetaDataToScreen(sourceFilename);
 	
 	//todo: this may be unified with a check against the inputparameters..
-	checkPrecision_tmp(desiredPrecision, this->parameters.prec);
+	checkPrecision(desiredPrecision, this->parameters.prec);
 }
 
 void LimeFileReader::readMetaDataFromLimeFile()
@@ -145,7 +145,7 @@ void LimeFileReader::readLimeFile(char ** destination)
 	closeFile();
 }
 
-void checkLimeRecordReadForFailure_tmp(int returnValueFromLimeRecordRead)
+void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
 {
 	if( returnValueFromLimeRecordRead != LIME_SUCCESS ) {
 		std::ostringstream errorMessage;
@@ -159,7 +159,7 @@ void LimeFileReader::goThroughLimeRecords(char ** destination)
 	int statusOfLimeReader = LIME_SUCCESS;
 	while( (statusOfLimeReader = limeReaderNextRecord(limeReader)) != LIME_EOF ) 
 	{
-		checkLimeRecordReadForFailure_tmp(statusOfLimeReader);
+		checkLimeRecordReadForFailure(statusOfLimeReader);
 		extractInformationFromLimeEntry(destination);
 	}
 }
@@ -307,7 +307,7 @@ static void mapStringToHelperMap(std::string str, std::map<std::string, helper> 
 
 const int xmlNodeType_startElement = 1;
 
-void extractXmlValuesBasedOnMap_tmp(xmlTextReaderPtr reader, std::map<std::string, std::string> * map)
+void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, std::string> * map)
 {
 	xmlChar *name, *value;
 	name = xmlTextReaderName(reader);
@@ -332,7 +332,7 @@ void extractXmlValuesBasedOnMap_tmp(xmlTextReaderPtr reader, std::map<std::strin
 	xmlFree(name);
 }
 
-void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap_tmp(const char * buffer, int size, std::map<std::string, std::string> & helperMap)
+void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * buffer, int size, std::map<std::string, std::string> & helperMap)
 {
 	xmlTextReaderPtr reader;
 	int returnValue;
@@ -345,7 +345,7 @@ void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap_tmp(const char 
 		returnValue = xmlTextReaderRead(reader);
 		while (returnValue == 1) 
 		{
-			extractXmlValuesBasedOnMap_tmp(reader, &helperMap);
+			extractXmlValuesBasedOnMap(reader, &helperMap);
 			returnValue = xmlTextReaderRead(reader);
 		}
 		if (returnValue == -1) 
@@ -360,12 +360,12 @@ void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap_tmp(const char 
 
 //NOTE: these two functions are similar to some in the meta package,
 //      but I would rather not include the latter here.
-int calcNumberOfEntriesForDiracFermionfield_tmp(const Sourcefileparameters params)
+int calcNumberOfEntriesForDiracFermionfield(const Sourcefileparameters params)
 {
   //latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
   return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * NC * NSPIN * 2;
 }
-int calcNumberOfEntriesForGaugefield_tmp(const Sourcefileparameters params)
+int calcNumberOfEntriesForGaugefield(const Sourcefileparameters params)
 {
   // latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
   return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * 2 * 4 * 9;
@@ -375,11 +375,11 @@ int LimeFileReader::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
 {
 	if(fieldType == "diracFermion") 
 	{
-		return calcNumberOfEntriesForDiracFermionfield_tmp( this->parameters );
+		return calcNumberOfEntriesForDiracFermionfield( this->parameters );
 	} 
 	else if( fieldType == "su3gauge") 
 	{
-		return calcNumberOfEntriesForGaugefield_tmp( this->parameters );
+		return calcNumberOfEntriesForGaugefield( this->parameters );
 	} 
 	else 
 	{
@@ -388,7 +388,7 @@ int LimeFileReader::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
 	return 0; //to get rid of a warning
 }
 
-char * createBufferAndReadLimeDataIntoIt_tmp(LimeReader * r, size_t nbytes)
+char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 {
 	char * buffer = new char[nbytes + 1];
 	int error = limeReaderReadData(buffer, &nbytes, r);
@@ -476,7 +476,7 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 			logger.warn() << "Reading more than one fermion field is not implemented yet!";
 		}
 
-		char * buffer = createBufferAndReadLimeDataIntoIt_tmp(limeReader,  limeHeaderData.numberOfBytes);
+		char * buffer = createBufferAndReadLimeDataIntoIt(limeReader,  limeHeaderData.numberOfBytes);
 		std::string lime_type = limeHeaderData.limeEntryType;
 
 		if(limeEntryTypes["scidac checksum"] == lime_type) 
@@ -485,7 +485,7 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 
 			std::map<std::string, std::string> helperMap;
 			fillHelperMap_scidacChecksum(helperMap);
-			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap_tmp(buffer, limeHeaderData.numberOfBytes, helperMap);
+			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
 			setParametersToValues_scidacChecksum(this->parameters, helperMap);		  
 		}
 		
@@ -511,7 +511,7 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 		{
 			logger_readLimeEntry( lime_type);
 			std::string str(buffer);
-			std::map<std::string, helper> helperMap;			
+			std::map<std::string, helper> helperMap;
 			fillHelperMap_xlf(helperMap);
 
 			mapStringToHelperMap(str, helperMap);
@@ -524,7 +524,7 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 			std::map<std::string, std::string> helperMap;
 			fillHelperMap_ildg(helperMap);
 			
-			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap_tmp(buffer, limeHeaderData.numberOfBytes, helperMap);
+			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, helperMap);
 			
 			setParametersToValues_ildg(this->parameters, helperMap);
 			this->parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(this->parameters.field);
