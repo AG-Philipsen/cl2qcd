@@ -59,32 +59,28 @@ void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters toCheck)
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithFileException)
 {
-  sourcefileparameters srcFileParams;
   std::string nameOfNonexistingGaugefieldFile = "thisfileshouldnotbethere";
   char * bufferToStoreGaugefield;
-  BOOST_CHECK_THROW(srcFileParams.readsourcefile(nameOfNonexistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), File_Exception);
+  BOOST_CHECK_THROW(sourcefileparameters srcFileParams(nameOfNonexistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), File_Exception);
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithWrongPrecision)
 {
-  sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
   int wrongPrecision = 27;
-  BOOST_CHECK_THROW(srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), wrongPrecision, &bufferToStoreGaugefield), std::exception);
+  BOOST_CHECK_THROW(sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), wrongPrecision, &bufferToStoreGaugefield), std::exception);
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldSuccess)
 {
-  sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  BOOST_REQUIRE_NO_THROW(srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield));
+  BOOST_REQUIRE_NO_THROW(sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield));
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldCheckMetadata)
 {
-  sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-  srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   checkMetadataOfSpecificGaugefieldFile(srcFileParams);
 }
 
@@ -92,9 +88,8 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckMetadata)
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( readInGaugefieldCheckBufferSize, 1 )
 BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
 {
-  sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
-	srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+	sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   size_t expectedSizeOfBuffer = srcFileParams.num_entries * sizeof(hmc_float);
   size_t actualSizeOfBuffer = sizeof(bufferToStoreGaugefield);
 	BOOST_CHECK_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
@@ -102,11 +97,10 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)
 {
-  sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
   uint32_t referenceChecksumA = 171641288;
   uint32_t referenceChecksumB = 3618036129;
-  srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
 }
@@ -115,11 +109,10 @@ std::string nameOfExistingGaugefieldFileFromTmlqcd = std::string(SOURCEDIR) + "/
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldFromTmlqcd_CheckChecksum)
 {
-  sourcefileparameters srcFileParams;
   char * bufferToStoreGaugefield;
   uint32_t referenceChecksumA = 398012545;
   uint32_t referenceChecksumB = 1610757546;
-  srcFileParams.readsourcefile(nameOfExistingGaugefieldFileFromTmlqcd.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  sourcefileparameters srcFileParams(nameOfExistingGaugefieldFileFromTmlqcd.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
 }
@@ -236,13 +229,9 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 	
 	writeEmptyGaugefieldFromSourcefileParameters(srcFileParams_1, configurationName);
 	
-	sourcefileparameters srcFileParams_2;
 	char * readBinaryData;
-	srcFileParams_2.readsourcefile(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
+	sourcefileparameters srcFileParams_2(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
 	delete readBinaryData;
 	
 	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2);
 }
-
-
-

@@ -21,7 +21,7 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE ildg_read_gaugefield
+#define BOOST_TEST_MODULE sourcefileparameters_values
 #include <boost/test/unit_test.hpp>
 
 #include "SourcefileParameters_values.hpp"

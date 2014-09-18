@@ -33,11 +33,10 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
-	sourcefileparameters parameters_source;
 	Matrixsu3 * gf_host;
 	char * gf_ildg;
-	
-	parameters_source.readsourcefile(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
+
+	sourcefileparameters parameters_source(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
 	
 	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.getSizeInBytes(), *parameters);
 

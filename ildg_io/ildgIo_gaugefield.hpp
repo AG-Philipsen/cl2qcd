@@ -42,21 +42,17 @@ extern "C" {
  *
  * Contains metadata of the parsed gaugefield as members.
  */
+/**
+ * Read gauge configuration from the given file into the given array.
+ *
+ * @param[in] file      The file to read the gauge configuration from
+ * @param[in] precision The precision expected for the gaugefield.
+ * @param[out] data    The loaded gaugefield
+ */
 class sourcefileparameters : public sourcefileparameters_values {
 public:
-	sourcefileparameters() : sourcefileparameters_values() {};
-	sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksum, std::string hmcVersion) : sourcefileparameters_values(parameters, trajectoryNumber, plaquette, checksum, hmcVersion) {};
-	
-	/**
-	 * Read gauge configuration from the given file into the given array.
-	 *
-	 * @param[in] file      The file to read the gauge configuration from
-	 * @param[in] precision The precision expected for the gaugefield.
-	 * @param[out] array    The loaded gaugefield
-	 */
-  void readsourcefile(std::string file, int precision, char ** data);
-	
- private:
+	sourcefileparameters(std::string file, int precision, char ** data);
+private:
 	void readMetaDataFromLimeFile();
 	void readDataFromLimeFile(char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);

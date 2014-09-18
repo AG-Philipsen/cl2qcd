@@ -492,17 +492,6 @@ void sourcefileparameters::readMetaDataFromLimeFile()
 	logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
 }
 
-void checkIfFileExists(std::string file)
-{
-	FILE * checker;
-	checker = fopen(file.c_str(), "r");
-	if(checker == 0) {
-		throw File_Exception(file);
-	}
-	fclose(checker);
-	return;
-}
-
 void checkPrecision(int desiredPrecision, int actualPrecision)
 {
 	if(desiredPrecision != actualPrecision) 
@@ -527,10 +516,10 @@ void sourcefileparameters::extractDataFromLimeFile(char ** destination)
 
 //todo: this must be readsourcefile_gaugefield or so, and then one has to check if the entry is in fact "su3gauge"
 //todo: make char ** std::vector<char*>
-void sourcefileparameters::readsourcefile(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination)
+sourcefileparameters::sourcefileparameters(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination)
 {
-	//todo: move all this to constructor!
-	checkIfFileExists(sourceFilenameIn);
+	// this currently only checks if file exists...
+	LimeFileReader tmp(sourceFilenameIn, desiredPrecisionIn, destination);
 	
 	sourceFilename = sourceFilenameIn;
 	desiredPrecision = desiredPrecisionIn;

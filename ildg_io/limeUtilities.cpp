@@ -119,7 +119,7 @@ void LimeFileWriter::writeMemoryToLimeFile(void * memoryPointer, n_uint64_t byte
 	this->writtenBytes += bytesToBeWritten;
 }
 
-void checkIfFileExists_tmp(std::string file) throw(File_Exception)
+void checkIfFileExists(std::string file) throw(File_Exception)
 {
 	FILE * checker;
 	checker = fopen(file.c_str(), "r");
@@ -135,7 +135,7 @@ LimeFileReader::LimeFileReader(std::string sourceFilenameIn, int precision, char
 	sourceFilename = sourceFilenameIn;
 	desiredPrecision = precision;
 	
-	checkIfFileExists_tmp(sourceFilenameIn);
+	checkIfFileExists(sourceFilenameIn);
 	
 // 	extractMetadataFromLimeFile();
 // 	
