@@ -16,10 +16,10 @@ http://www.gnu.org/licenses/gpl-howto.en.html.
    name. If there is none, add one directly below any existing copyright
    remarks. If there is already a copyright remark with your name, ensure it
    contains the current name. Otherwise add the current year. The years should
-   form a comma-seperated list. If more than two subsequent years are given, the
+   form a comma-separated list. If more than two subsequent years are given, the
    list can be merged into a range.
 
-The following sample shows what the top level comment of a C++ source fiel
+The following sample shows what the top level comment of a C++ source file
 should look like. Please include an empty line between the comment and the first
 line of code.
 

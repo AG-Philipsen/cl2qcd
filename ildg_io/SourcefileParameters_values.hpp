@@ -22,28 +22,32 @@
 #ifndef _SOURCEFILEPARAMETERS_HPP_
 #define _SOURCEFILEPARAMETERS_HPP_
 
-#include "../host_functionality/logger.hpp"
 #include "checksum.h"
+#include "../meta/inputparameters.hpp"
 
+//TODO: it may be advantageous to separate between gaugefield and fermion field parameters
 class sourcefileparameters_values {
 public:
   sourcefileparameters_values();
+	sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion);
 	
-	int lx_source, ly_source, lz_source, lt_source, prec_source, num_entries_source, flavours_source,
-	    trajectorynr_source, time_source, time_solver_source, noiter_source;
-	double plaquettevalue_source, beta_source, kappa_source, mu_source, c2_rec_source, mubar_source, epsilonbar_source, epssq_source, kappa_solver_source, mu_solver_source;
+	std::string getInfo_ildgFormat_gaugefield();
+	std::string getInfo_scidacChecksum();
+	std::string getInfo_xlfInfo();
+	
+	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
+	double plaquettevalue, beta, kappa, mu, c2_rec, mubar, epsilonbar, epssq, kappa_solver, mu_solver;
 	Checksum checksum;
-	
-	std::string field_source;
-	std::string date_source;
-	std::string hmcversion_source;
-	std::string solvertype_source;
-	std::string hmcversion_solver_source;
-	std::string date_solver_source;
+	std::string field, date, hmcversion, solvertype, hmcversion_solver, date_solver;
 	
 	int numberOfFermionFieldsRead;
 	
 	void printMetaDataToScreen(std::string sourceFilename);
+	
+	void checkAgainstInputparameters(const meta::Inputparameters * toCheck);
+	void checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors = false, std::string filename = "");
+	
+	size_t getSizeInBytes() noexcept;
 	
 private:
 	void set_defaults();

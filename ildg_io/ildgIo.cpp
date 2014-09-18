@@ -25,67 +25,68 @@
 #include "checksum.h"
 #include <cassert>
 #include "../meta/version.hpp"
+#include "../executables/exceptions.h"
 
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
-static hmc_float make_float_from_big_endian(const char* in);
-static void make_big_endian_from_float(char* out, const hmc_float in);
-static void check_sourcefileparameters(const meta::Inputparameters& parameters, sourcefileparameters& parameters_source);
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
 	sourcefileparameters parameters_source;
-
-	Matrixsu3 * gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
-
-	char * gf_ildg; // filled by readsourcefile
+	Matrixsu3 * gf_host;
+	char * gf_ildg;
+	
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
 	
-	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.num_entries_source * sizeof(hmc_float), *parameters);
-	logger.debug() << "Calculated Checksum: " << checksum;
-	
-	if(checksum != parameters_source.checksum) {
-		logger.error() << "Checksum of data does not match checksum given in file.";
-		logger.error() << "Calculated Checksum: " << checksum;
-		logger.error() << "Embedded Checksum:   " << parameters_source.checksum;
-		if(!parameters->get_ignore_checksum_errors()) {
-			throw File_Exception(ildgfile);
-		}
-	}
-	
-	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, *parameters);
-	
+	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.getSizeInBytes(), *parameters);
+
+	//todo: this should not be that explicit here!	
+	gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
+	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries, *parameters);
 	delete[] gf_ildg;
 
-	trajectoryNumberAtInit = parameters_source.trajectorynr_source;
-	plaq = parameters_source.plaquettevalue_source;
+	trajectoryNumberAtInit = parameters_source.trajectorynr;
+	plaq = parameters_source.plaquettevalue;
 
-	check_sourcefileparameters(*parameters, parameters_source);
+	parameters_source.checkAgainstInputparameters(parameters);
+	parameters_source.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
 
 	return gf_host;
 }
 
+static size_t getBufferSize_gaugefield(const meta::Inputparameters * parameters) noexcept
+{
+	return 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * parameters->get_ntime() * sizeof(hmc_float);
+}
+
 void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf, const meta::Inputparameters * parameters, int number, double plaq)
 {
-	const size_t NTIME = parameters->get_ntime();
-	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * NTIME * sizeof(hmc_float);
+	const size_t gaugefield_buf_size = getBufferSize_gaugefield(parameters);
 	char * gaugefield_buf = new char[gaugefield_buf_size];
-
-	//these are not yet used...
-	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
-
 
 	copy_gaugefield_to_ildg_format(gaugefield_buf, host_buf, *parameters);
 
-	const size_t NSPACE = parameters->get_nspace();
-
 	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, *parameters);
 
-	write_gaugefield(gaugefield_buf, gaugefield_buf_size, checksum, NSPACE, NSPACE, NSPACE, NTIME, parameters->get_precision(), number, plaq, parameters->get_beta(), parameters->get_kappa(), parameters->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	sourcefileparameters_values srcFileParameters(parameters, number, plaq, checksum, version);
+	
+	IldgIoWriter_gaugefield writer(gaugefield_buf, gaugefield_buf_size, srcFileParameters, outputfile);
 
 	delete[] gaugefield_buf;
+}
 
+static hmc_float make_float_from_big_endian(const char* in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		val.b[i] = in[sizeof(hmc_float) - 1 - i];
+	}
+	return val.f;
 }
 
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters)
@@ -178,20 +179,8 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 		}
 	}
 
+	logger.debug() << "Calculated Checksum: " << checksum;
 	return checksum;
-}
-
-static hmc_float make_float_from_big_endian(const char* in)
-{
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
-
-	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		val.b[i] = in[sizeof(hmc_float) - 1 - i];
-	}
-	return val.f;
 }
 
 static void make_big_endian_from_float(char* out, const hmc_float in)
@@ -249,74 +238,4 @@ static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, c
 			}
 		}
 	}
-}
-
-static void check_sourcefileparameters(const meta::Inputparameters& parameters, sourcefileparameters& parameters_source)
-{
-	//todo: add check on plaquette
-
-	logger.info() << "Checking sourcefile parameters against inputparameters...";
-	//checking major parameters
-	int tmp1, tmp2;
-	std::string testobj;
-	std::string msg = "Major parameters do not match: ";
-
-	testobj = msg + "NT";
-	tmp1 = parameters.get_ntime();
-	tmp2 = parameters_source.lt_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NX";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lx_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NY";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.ly_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "NZ";
-	tmp1 = parameters.get_nspace();
-	tmp2 = parameters_source.lz_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-	testobj = msg + "PRECISION";
-	tmp1 = parameters.get_precision();
-	tmp2 = parameters_source.prec_source;
-	if(tmp1 != tmp2) {
-		throw Invalid_Parameters(testobj , tmp1, tmp2);
-	}
-
-	//checking minor parameters
-	msg = "Minor parameters do not match: ";
-	hmc_float float1, float2;
-	testobj = msg + "beta";
-	float1 = parameters.get_beta();
-	float2 = parameters_source.beta_source;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-	testobj = msg + "kappa";
-	float1 = parameters.get_kappa();
-	float2 = parameters_source.kappa_source;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-	testobj = msg + "mu";
-	float1 = parameters.get_mu();
-	float2 = parameters_source.mu_source;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
-
-	logger.info() << "...done";
-	return;
 }

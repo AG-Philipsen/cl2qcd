@@ -20,9 +20,32 @@
 
 #include "SourcefileParameters_values.hpp"
 
+#include "../executables/exceptions.h"
+#include "../host_functionality/logger.hpp"
+
 sourcefileparameters_values::sourcefileparameters_values()
 {
 	set_defaults();
+}
+
+sourcefileparameters_values::sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion)
+{
+	set_defaults();
+	
+	lx = parameters->get_nspace();
+	ly = parameters->get_nspace();
+	lz = parameters->get_nspace();
+	lt = parameters->get_ntime();
+	prec = parameters->get_precision();
+	trajectorynr = trajectoryNumber;
+	plaquettevalue = plaquette;
+	beta = parameters->get_beta();
+	kappa = parameters->get_kappa();
+	mu = parameters->get_mu();
+	
+	hmcversion = hmcVersion;
+	
+	checksum = checksumIn;
 }
 
 void sourcefileparameters_values::printMetaDataToScreen(std::string sourceFilename)
@@ -31,35 +54,35 @@ void sourcefileparameters_values::printMetaDataToScreen(std::string sourceFilena
   logger.info() << "*************************************************************" ;
   logger.info() << "Metadata from file " << sourceFilename << ":";
   logger.info() << "\treading XML-data gave:";
-  logger.info() << "\t\tfield type:\t" << field_source ;
-  logger.info() << "\t\tprecision:\t" << prec_source ;
-  logger.info() << "\t\tlx:\t\t" << lx_source ;
-  logger.info() << "\t\tly:\t\t" << ly_source ;
-  logger.info() << "\t\tlz:\t\t" << lz_source ;
-  logger.info() << "\t\tlt:\t\t" << lt_source ;
-  logger.info() << "\t\tflavours:\t" << flavours_source ;
+  logger.info() << "\t\tfield type:\t" << field ;
+  logger.info() << "\t\tprecision:\t" << prec ;
+  logger.info() << "\t\tlx:\t\t" << lx ;
+  logger.info() << "\t\tly:\t\t" << ly ;
+  logger.info() << "\t\tlz:\t\t" << lz ;
+  logger.info() << "\t\tlt:\t\t" << lt ;
+  logger.info() << "\t\tflavours:\t" << flavours ;
   logger.info() << "\treading XLF-data gave:";
-  logger.info() << "\t\tplaquette:\t" << plaquettevalue_source;
-  logger.info() << "\t\ttrajectorynr:\t" << trajectorynr_source;
-  logger.info() << "\t\tbeta:\t\t" << beta_source;
-  logger.info() << "\t\tkappa:\t\t" << kappa_source;
-  logger.info() << "\t\tmu:\t\t" << mu_source;
-  logger.info() << "\t\tc2_rec:\t\t" << c2_rec_source;
-  logger.info() << "\t\ttime:\t\t" << time_source;
-  logger.info() << "\t\thmc-version:\t" << hmcversion_source;
-  logger.info() << "\t\tmubar:\t\t" << mubar_source;
-  logger.info() << "\t\tepsilonbar:\t" << epsilonbar_source;
-  logger.info() << "\t\tdate:\t\t" << date_source;
+  logger.info() << "\t\tplaquette:\t" << plaquettevalue;
+  logger.info() << "\t\ttrajectorynr:\t" << trajectorynr;
+  logger.info() << "\t\tbeta:\t\t" << beta;
+  logger.info() << "\t\tkappa:\t\t" << kappa;
+  logger.info() << "\t\tmu:\t\t" << mu;
+  logger.info() << "\t\tc2_rec:\t\t" << c2_rec;
+  logger.info() << "\t\ttime:\t\t" << time;
+  logger.info() << "\t\thmc-version:\t" << hmcversion;
+  logger.info() << "\t\tmubar:\t\t" << mubar;
+  logger.info() << "\t\tepsilonbar:\t" << epsilonbar;
+  logger.info() << "\t\tdate:\t\t" << date;
   if(numberOfFermionFieldsRead != 0) {
     logger.info() << "\treading inverter-data gave:";
-    logger.info() << "\t\tsolvertype:\t" << solvertype_source;
-    logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << epssq_source;
-    logger.info() << "\t\tnoiter:\t\t" << noiter_source;
-    logger.info() << "\t\tkappa_solver:\t" << kappa_solver_source;
-    logger.info() << "\t\tmu_solver:\t" << mu_solver_source;
-    logger.info() << "\t\ttime_solver:\t" << time_solver_source;
-    logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver_source;
-    logger.info() << "\t\tdate_solver:\t" << date_solver_source;
+    logger.info() << "\t\tsolvertype:\t" << solvertype;
+    logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << epssq;
+    logger.info() << "\t\tnoiter:\t\t" << noiter;
+    logger.info() << "\t\tkappa_solver:\t" << kappa_solver;
+    logger.info() << "\t\tmu_solver:\t" << mu_solver;
+    logger.info() << "\t\ttime_solver:\t" << time_solver;
+    logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver;
+    logger.info() << "\t\tdate_solver:\t" << date_solver;
   }
   logger.info() << "\tfile-checksum:\t" << checksum;
   logger.info() << "*************************************************************" ;
@@ -67,27 +90,148 @@ void sourcefileparameters_values::printMetaDataToScreen(std::string sourceFilena
 
 void sourcefileparameters_values::set_defaults()
 {
-	lx_source = 0;
-	ly_source = 0;
-	lz_source = 0;
-	lt_source = 0;
-	prec_source = 0;
-	num_entries_source = 0;
-	flavours_source = 0;
-	trajectorynr_source = 0;
-	time_source = 0;
-	time_solver_source = 0;
-	noiter_source = 0;
-	plaquettevalue_source = 0;
-	beta_source = 0;
-	kappa_source = 0;
-	mu_source = 0;
-	c2_rec_source = 0;
-	mubar_source = 0;
-	epsilonbar_source = 0;
-	epssq_source = 0;
-	kappa_solver_source = 0;
-	mu_solver_source = 0;
+	lx = 0;
+	ly = 0;
+	lz = 0;
+	lt = 0;
+	prec = 0;
+	num_entries = 0;
+	flavours = 0;
+	trajectorynr = 0;
+	time = 0;
+	time_solver = 0;
+	noiter = 0;
+	plaquettevalue = 0;
+	beta = 0;
+	kappa = 0;
+	mu = 0;
+	c2_rec = 0;
+	mubar = 0;
+	epsilonbar = 0;
+	epssq = 0;
+	kappa_solver = 0;
+	mu_solver = 0;
 	
 	numberOfFermionFieldsRead = 0;
+	
+	field = "";
+	date = "";
+	hmcversion = "";
+	solvertype = "";
+	hmcversion_solver = "";
+	date_solver = "";
+}
+
+#include <time.h>
+
+time_t getCurrentTime()
+{
+	time_t current_time;
+	return time ( &current_time );
+}
+
+const char * getDateFromTime(time_t currentTime)
+{
+	return ctime (&currentTime);
+}
+
+std::string sourcefileparameters_values::getInfo_xlfInfo()
+{
+	time_t current_time = getCurrentTime();
+	const char * date = getDateFromTime(current_time);
+	
+	std::string xlfInfo = "";
+	xlfInfo += "plaquette = " + boost::lexical_cast<std::string>(this->plaquettevalue) + "\n";
+	xlfInfo += "trajectory nr = " + boost::lexical_cast<std::string>(this->trajectorynr) + "\n";
+	xlfInfo += "beta = " + boost::lexical_cast<std::string>(this->beta) + "\n";
+	xlfInfo += "kappa = " + boost::lexical_cast<std::string>(this->kappa) + "\n";
+	xlfInfo += "mu = " + boost::lexical_cast<std::string>(this->mu) + "\n";
+	xlfInfo += "c2_rec = " + boost::lexical_cast<std::string>(this->c2_rec) + "\n";
+	xlfInfo += "time = " + boost::lexical_cast<std::string>(current_time) + "\n";
+	xlfInfo += "hmcversion = " + boost::lexical_cast<std::string>(this->hmcversion) + "\n";
+	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(this->mubar) + "\n";
+	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(this->epsilonbar) + "\n";
+	xlfInfo += "date = " + boost::lexical_cast<std::string>(date) + "\n";
+	
+	return xlfInfo;
+}
+
+std::string sourcefileparameters_values::getInfo_ildgFormat_gaugefield()
+{
+	std::string description = "su3gauge";
+	
+	std::string ildgFormat = "";
+	ildgFormat += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n";
+	ildgFormat += "  <field>" + description + "</field>\n";
+	ildgFormat += "  <precision>" + boost::lexical_cast<std::string>(this->prec) + "</precision>\n";
+	ildgFormat += "  <lx>" + boost::lexical_cast<std::string>(this->lx) + "</lx>\n";
+	ildgFormat += "  <ly>" + boost::lexical_cast<std::string>(this->ly) + "</ly>\n";
+	ildgFormat += "  <lz>" + boost::lexical_cast<std::string>(this->lz) + "</lz>\n";
+	ildgFormat += "  <lt>" + boost::lexical_cast<std::string>(this->lt) + "</lt>\n";
+	ildgFormat += "</ildgFormat>";
+	
+	return ildgFormat;
+}
+
+std::string sourcefileparameters_values::getInfo_scidacChecksum()
+{
+	std::string scidac_checksum;
+	{
+		std::ostringstream tmp;
+		tmp << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n<version>1.0</version>\n";
+		tmp << "<suma>" << std::hex << this->checksum.get_suma() << "</suma>\n";
+		tmp << "<sumb>" << std::hex << this->checksum.get_sumb() << "</sumb>\n";
+		tmp << "</scidacChecksum>";
+		scidac_checksum = tmp.str();
+	}
+	return scidac_checksum;
+}
+	
+static void checkMajorParameter_int(int int1, int int2, std::string message)
+{
+	if(int1 != int2) {
+		throw Invalid_Parameters("Major parameter \"" + message + "\" does not match! ", int1, int2);
+	}
+}
+
+static void checkMinorParameter_double(double value1, double value2, std::string message)
+{
+	if(value1 != value2) {
+		logger.warn() << "Minor parameter \"" + message + "\" does not match! ";
+		logger.warn() << "\tExpected: " << value1 << "\tFound: " << value2;
+	}
+}
+	
+//todo: add check on plaquette
+void sourcefileparameters_values::checkAgainstInputparameters(const meta::Inputparameters * parameters)
+{
+	logger.info() << "Checking sourcefile parameters against inputparameters...";
+	
+	checkMajorParameter_int(this->lt, parameters->get_ntime(), "lt");
+	checkMajorParameter_int(this->lx, parameters->get_nspace(), "lx");
+	checkMajorParameter_int(this->ly, parameters->get_nspace(), "ly");
+	checkMajorParameter_int(this->lz, parameters->get_nspace(), "lz");
+	checkMajorParameter_int(this->prec, parameters->get_precision(), "precision");	
+	
+	checkMinorParameter_double(this->beta, parameters->get_beta(), "beta" );
+	checkMinorParameter_double(this->kappa, parameters->get_kappa(), "kappa" );
+	checkMinorParameter_double(this->mu, parameters->get_mu(), "mu" );
+}
+
+void sourcefileparameters_values::checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors, std::string filename)
+{
+	if(checksum != this->checksum) {
+		logger.error() << "Checksum of data does not match checksum given in file.";
+		logger.error() << "Calculated Checksum: " << checksum;
+		logger.error() << "Embedded Checksum:   " << this->checksum;
+		if(!ignoreChecksumErrors) 
+		{
+			throw File_Exception(filename);
+		}
+	}
+}
+
+size_t sourcefileparameters_values::getSizeInBytes() noexcept
+{
+	return (size_t) num_entries * prec / 8;
 }
