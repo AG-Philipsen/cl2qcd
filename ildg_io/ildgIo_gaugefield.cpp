@@ -523,7 +523,7 @@ IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, i
 	extractDataFromLimeFile(destination);
 }
 
-void* createVoidPointerFromString(std::string stringIn)
+void* createVoidPointerFromString(std::string stringIn) noexcept
 {
 	return (void*) stringIn.c_str();
 }
