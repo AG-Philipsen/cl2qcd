@@ -47,6 +47,9 @@ protected:
 	void extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char ** destination);
 	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
 	
+	void handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type);
+	void handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes);
+	
 	size_t	sizeOfGaugefieldBuffer();
 	
 	int checkLimeEntryForFermionInformations(std::string lime_type);

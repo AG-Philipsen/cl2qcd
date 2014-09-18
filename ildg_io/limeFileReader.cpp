@@ -249,8 +249,10 @@ static int castStringToInt(std::string in)
 	return boost::lexical_cast<int>(in);
 }
 
-static void fillParserMap_xlf(std::map<std::string, ParserMap_xlf> & parserMap)
+static std::map<std::string, ParserMap_xlf> createParserMap_xlf()
 {
+	std::map<std::string, ParserMap_xlf> parserMap;
+	
 	parserMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+[\\+\\-]*\\d+\\.\\d+");
 	parserMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
 	parserMap["beta"].re = boost::regex ("beta\\s+=\\s+[\\+\\-]*\\d+.\\d+");
@@ -262,6 +264,8 @@ static void fillParserMap_xlf(std::map<std::string, ParserMap_xlf> & parserMap)
 	parserMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
 	parserMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
  	parserMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
+	
+	return parserMap;
 }
 
 static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, ParserMap_xlf>  parserMap)
@@ -455,6 +459,29 @@ bool LimeFileReader::checkLimeEntryForBinaryData(std::string lime_type)
 		) ? true : false;
 }
 
+void LimeFileReader::handleLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer, std::string lime_type)
+{
+	logger_readLimeEntry( lime_type);
+	
+	std::string str(buffer);
+	std::map<std::string, ParserMap_xlf> parserMap = createParserMap_xlf();
+
+	mapStringToParserMap(str, parserMap);
+	setParametersToValues_xlf(parameters, parserMap);
+}
+
+void LimeFileReader::handleLimeEntry_ildg(Sourcefileparameters & parameters, char * buffer, std::string lime_type, size_t numberOfBytes)
+{
+	logger_readLimeEntry( lime_type);
+	std::map<std::string, std::string> parserMap;
+	fillParserMap_ildg(parserMap);
+			
+	goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, numberOfBytes, parserMap);
+			
+	setParametersToValues_ildg(parameters, parserMap);
+	parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(parameters.field);
+}
+
 LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData)
 {
 	logger.trace() << "Extracting meta data from LIME entry...";
@@ -507,25 +534,12 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 		
 		else if(limeEntryTypes["xlf"]  == lime_type && LimeFileReader::limeFileProp.numberOfFermionicEntries < 2) 
 		{
-			logger_readLimeEntry( lime_type);
-			std::string str(buffer);
-			std::map<std::string, ParserMap_xlf> parserMap;
-			fillParserMap_xlf(parserMap);
-
-			mapStringToParserMap(str, parserMap);
-			setParametersToValues_xlf(this->parameters, parserMap);
+			handleLimeEntry_xlf(this->parameters, buffer, lime_type);
 		}
 
 		else if ( limeEntryTypes["ildg"] == lime_type )
 		{
-			logger_readLimeEntry( lime_type);
-			std::map<std::string, std::string> parserMap;
-			fillParserMap_ildg(parserMap);
-			
-			goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, limeHeaderData.numberOfBytes, parserMap);
-			
-			setParametersToValues_ildg(this->parameters, parserMap);
-			this->parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(this->parameters.field);
+			handleLimeEntry_ildg(this->parameters, buffer, lime_type, limeHeaderData.numberOfBytes);
 		}	
 
 		else if( limeEntryTypes["etmc propagator"] == lime_type && LimeFileReader::limeFileProp.numberOfFermionicEntries < 2 )
