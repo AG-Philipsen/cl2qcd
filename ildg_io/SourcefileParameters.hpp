@@ -52,5 +52,7 @@ public:
 private:
 	void set_defaults();
 };
+
+
 	
 #endif
