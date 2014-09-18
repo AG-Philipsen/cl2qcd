@@ -465,16 +465,12 @@ void IldgIoReader_gaugefield::goThroughLimeRecords(LimeReader * r, char ** desti
 
 void IldgIoReader_gaugefield::readLimeFile(char ** destination)
 {
-	FILE *limeFileOpenedForReading;
-	LimeReader *limeReader;
-	
-	limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
-	limeReader = limeCreateReader(limeFileOpenedForReading);
+	//TODO: this construction is not nice, but currently necessary as the file is potentially read multiple times
+	openFile();
 	
 	goThroughLimeRecords(limeReader, destination);
 	
-	limeDestroyReader(limeReader);
-	fclose(limeFileOpenedForReading); 
+	closeFile();
 }
 
 void IldgIoReader_gaugefield::readDataFromLimeFile(char ** destination)

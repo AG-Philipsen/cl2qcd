@@ -144,6 +144,16 @@ LimeFileReader::LimeFileReader(std::string sourceFilenameIn, int precision, char
 
 LimeFileReader::~LimeFileReader()
 {
-	
 }
 
+void LimeFileReader::openFile()
+{
+	limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
+	limeReader = limeCreateReader(limeFileOpenedForReading);
+}
+
+void LimeFileReader::closeFile()
+{
+	limeDestroyReader(limeReader);
+	fclose(limeFileOpenedForReading);
+}

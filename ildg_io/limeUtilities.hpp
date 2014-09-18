@@ -96,9 +96,13 @@ public:
 	LimeFileReader(std::string sourceFilenameIn, int precision, char ** data);
 	~LimeFileReader();
 protected:
+	void openFile();
+	void closeFile();
+	
 	std::string sourceFilename;
 	int desiredPrecision;
-	LimeReader * r;
+	LimeReader * limeReader;
+	FILE *limeFileOpenedForReading;
 };
 
 
