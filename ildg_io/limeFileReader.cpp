@@ -36,14 +36,12 @@ void checkIfFileExists(std::string file) throw(File_Exception)
 	return;
 }
 
-LimeFileReader::LimeFileReader(std::string sourceFilenameIn, int precision, char ** data) : 
+LimeFileReader::LimeFileReader(std::string sourceFilenameIn, int precision) : 
 	sourceFilename(sourceFilenameIn), desiredPrecision(precision)
 {
 	checkIfFileExists(sourceFilename);
 	
 	extractMetadataFromLimeFile();
-	
-	extractDataFromLimeFile(data);
 }
 
 void LimeFileReader::openFile()
@@ -59,12 +57,6 @@ void LimeFileReader::closeFile()
 }
 
 void LimeFileReader::extractDataFromLimeFile(char ** destination)
-{
-	readDataFromLimeFile(destination);
-	//todo: put conversion to numbers in here...
-}
-
-void LimeFileReader::readDataFromLimeFile(char ** destination)
 {
 	logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
 	readLimeFile(destination);
@@ -284,7 +276,6 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 	//todo: create class for the different cases
 	else
 	{
-		//todo: is this meaningful?
 		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
 
 		char * buffer = createBufferAndReadLimeDataIntoIt(limeReader,  limeHeaderData.numberOfBytes);

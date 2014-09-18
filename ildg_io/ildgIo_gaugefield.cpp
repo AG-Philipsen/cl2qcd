@@ -26,8 +26,11 @@
 using namespace ildgIo;
 
 //todo: make char ** std::vector<char*>
-IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn, destination)
+IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn)
 {
+	logger.fatal() << limeFileProp.numberOfBinaryDataEntries;
+	extractDataFromLimeFile(destination);
+	
 	//todo: one has to check if the lime entry of the binary data is in fact "su3gauge"
 }
 

@@ -34,22 +34,19 @@ std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/co
 BOOST_AUTO_TEST_CASE(readInLimeFile_failureWithFileException)
 {
   std::string nameOfNonexistingLimeFile = "thisfileshouldnotbethere";
-  char * bufferToStore;
 	
-	BOOST_CHECK_THROW(LimeFileReader srcFileParams(nameOfNonexistingLimeFile, expectedPrecision, &bufferToStore), File_Exception);
+	BOOST_CHECK_THROW(LimeFileReader srcFileParams(nameOfNonexistingLimeFile, expectedPrecision), File_Exception);
 }
 
 BOOST_AUTO_TEST_CASE(readInLimeFile_failureWithWrongPrecision)
 {
-  char * bufferToStore;
   int wrongPrecision = 27;
-  BOOST_CHECK_THROW(LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, wrongPrecision, &bufferToStore), std::exception);
+  BOOST_CHECK_THROW(LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, wrongPrecision), std::exception);
 }
 
 BOOST_AUTO_TEST_CASE(readInLimeFile_Success)
 {
-  char * bufferToStore;
-  BOOST_REQUIRE_NO_THROW(LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, expectedPrecision, &bufferToStore));
+  BOOST_REQUIRE_NO_THROW(LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, expectedPrecision));
 }
 
 void checkMetadataOfSpecificGaugefieldFile(Sourcefileparameters toCheck)
@@ -82,28 +79,15 @@ void checkMetadataOfSpecificGaugefieldFile(Sourcefileparameters toCheck)
 
 BOOST_AUTO_TEST_CASE(readInLimeFile_CheckMetadata)
 {
-  char * bufferToStore;
-  LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, expectedPrecision, &bufferToStore);
+  LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, expectedPrecision);
   checkMetadataOfSpecificGaugefieldFile(srcFileParams.parameters);
-}
-
-//todo: this test probably will never work!
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( readInLimeFile_CheckBufferSize, 1 )
-BOOST_AUTO_TEST_CASE(readInLimeFile_CheckBufferSize)
-{
-  char * bufferToStore;
-	LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, expectedPrecision, &bufferToStore);
-  size_t expectedSizeOfBuffer = srcFileParams.parameters.num_entries * sizeof(hmc_float);
-  size_t actualSizeOfBuffer = sizeof(bufferToStore);
-	BOOST_CHECK_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
 }
 
 BOOST_AUTO_TEST_CASE(readInLimeFile_CheckChecksum)
 {
-  char * bufferToStore;
   uint32_t referenceChecksumA = 171641288;
   uint32_t referenceChecksumB = 3618036129;
-  LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, expectedPrecision, &bufferToStore);
+  LimeFileReader srcFileParams(nameOfExistingGaugefieldFile, expectedPrecision);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.parameters.checksum, true);
 }
@@ -112,10 +96,9 @@ std::string nameOfExistingGaugefieldFileFromTmlqcd = std::string(SOURCEDIR) + "/
 
 BOOST_AUTO_TEST_CASE(readInLimeFile_FromTmlqcd_CheckChecksum)
 {
-  char * bufferToStore;
   uint32_t referenceChecksumA = 398012545;
   uint32_t referenceChecksumB = 1610757546;
-  LimeFileReader srcFileParams(nameOfExistingGaugefieldFileFromTmlqcd, expectedPrecision, &bufferToStore);
+  LimeFileReader srcFileParams(nameOfExistingGaugefieldFileFromTmlqcd, expectedPrecision);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.parameters.checksum, true);
 }
