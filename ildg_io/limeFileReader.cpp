@@ -231,7 +231,7 @@ static void logger_readLimeEntrySuccess()
 	logger.trace() << "\t...succesfully read entry";
 }
 
-class ParserMap
+class ParserMap_xlf
 {
 public:
 	boost::regex re;
@@ -249,7 +249,7 @@ static int castStringToInt(std::string in)
 	return boost::lexical_cast<int>(in);
 }
 
-static void fillParserMap_xlf(std::map<std::string, ParserMap> & parserMap)
+static void fillParserMap_xlf(std::map<std::string, ParserMap_xlf> & parserMap)
 {
 	parserMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+[\\+\\-]*\\d+\\.\\d+");
 	parserMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
@@ -264,7 +264,7 @@ static void fillParserMap_xlf(std::map<std::string, ParserMap> & parserMap)
  	parserMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 }
 
-static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, ParserMap>  parserMap)
+static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, ParserMap_xlf>  parserMap)
 {
 	parameters.plaquettevalue = castStringToDouble(parserMap["plaquette"].value);
 	parameters.kappa = castStringToDouble(parserMap["kappa"].value);
@@ -281,13 +281,13 @@ static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::ma
 	parameters.date = parserMap["date"].value;
 }
 
-static void mapStringToHelperMap(std::string str, std::map<std::string, ParserMap> &  parserMap)
+static void mapStringToParserMap(std::string str, std::map<std::string, ParserMap_xlf> &  parserMap)
 {
 	logger.trace() << "Going through string:";
 	logger.trace() << str;
 	
 	//todo: find out about ::iterator
-	for (std::map<std::string, ParserMap>::iterator it = parserMap.begin(); it != parserMap.end(); it++)
+	for (std::map<std::string, ParserMap_xlf>::iterator it = parserMap.begin(); it != parserMap.end(); it++)
 	{
 		logger.trace() << "Found \"" + it->first + "\"";
 		
@@ -509,10 +509,10 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 		{
 			logger_readLimeEntry( lime_type);
 			std::string str(buffer);
-			std::map<std::string, ParserMap> parserMap;
+			std::map<std::string, ParserMap_xlf> parserMap;
 			fillParserMap_xlf(parserMap);
 
-			mapStringToHelperMap(str, parserMap);
+			mapStringToParserMap(str, parserMap);
 			setParametersToValues_xlf(this->parameters, parserMap);
 		}
 
