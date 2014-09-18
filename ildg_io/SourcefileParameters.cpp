@@ -18,17 +18,17 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SourcefileParameters_values.hpp"
+#include "SourcefileParameters.hpp"
 
 #include "../executables/exceptions.h"
 #include "../host_functionality/logger.hpp"
 
-sourcefileparameters_values::sourcefileparameters_values()
+Sourcefileparameters::Sourcefileparameters()
 {
 	set_defaults();
 }
 
-sourcefileparameters_values::sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion)
+Sourcefileparameters::Sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion)
 {
 	set_defaults();
 	
@@ -48,7 +48,7 @@ sourcefileparameters_values::sourcefileparameters_values(const meta::Inputparame
 	checksum = checksumIn;
 }
 
-void sourcefileparameters_values::printMetaDataToScreen(std::string sourceFilename)
+void Sourcefileparameters::printMetaDataToScreen(std::string sourceFilename)
 {
   logger.info() << "*************************************************************" ;
   logger.info() << "*************************************************************" ;
@@ -88,7 +88,7 @@ void sourcefileparameters_values::printMetaDataToScreen(std::string sourceFilena
   logger.info() << "*************************************************************" ;
 }
 
-void sourcefileparameters_values::set_defaults()
+void Sourcefileparameters::set_defaults()
 {
 	lx = 0;
 	ly = 0;
@@ -135,7 +135,7 @@ const char * getDateFromTime(time_t currentTime)
 	return ctime (&currentTime);
 }
 
-std::string sourcefileparameters_values::getInfo_xlfInfo()
+std::string Sourcefileparameters::getInfo_xlfInfo()
 {
 	time_t current_time = getCurrentTime();
 	const char * date = getDateFromTime(current_time);
@@ -156,7 +156,7 @@ std::string sourcefileparameters_values::getInfo_xlfInfo()
 	return xlfInfo;
 }
 
-std::string sourcefileparameters_values::getInfo_ildgFormat_gaugefield()
+std::string Sourcefileparameters::getInfo_ildgFormat_gaugefield()
 {
 	std::string description = "su3gauge";
 	
@@ -173,7 +173,7 @@ std::string sourcefileparameters_values::getInfo_ildgFormat_gaugefield()
 	return ildgFormat;
 }
 
-std::string sourcefileparameters_values::getInfo_scidacChecksum()
+std::string Sourcefileparameters::getInfo_scidacChecksum()
 {
 	std::string scidac_checksum;
 	{
@@ -203,7 +203,7 @@ static void checkMinorParameter_double(double value1, double value2, std::string
 }
 	
 //todo: add check on plaquette
-void sourcefileparameters_values::checkAgainstInputparameters(const meta::Inputparameters * parameters)
+void Sourcefileparameters::checkAgainstInputparameters(const meta::Inputparameters * parameters)
 {
 	logger.info() << "Checking sourcefile parameters against inputparameters...";
 	
@@ -218,7 +218,7 @@ void sourcefileparameters_values::checkAgainstInputparameters(const meta::Inputp
 	checkMinorParameter_double(this->mu, parameters->get_mu(), "mu" );
 }
 
-void sourcefileparameters_values::checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors, std::string filename)
+void Sourcefileparameters::checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors, std::string filename)
 {
 	if(checksum != this->checksum) {
 		logger.error() << "Checksum of data does not match checksum given in file.";
@@ -231,7 +231,7 @@ void sourcefileparameters_values::checkAgainstChecksum(Checksum checksum, bool i
 	}
 }
 
-size_t sourcefileparameters_values::getSizeInBytes() noexcept
+size_t Sourcefileparameters::getSizeInBytes() noexcept
 {
 	return (size_t) num_entries * prec / 8;
 }

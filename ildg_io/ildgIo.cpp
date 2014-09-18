@@ -69,7 +69,7 @@ void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf,
 
 	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, *parameters);
 
-	sourcefileparameters_values srcFileParameters(parameters, number, plaq, checksum, version);
+	Sourcefileparameters srcFileParameters(parameters, number, plaq, checksum, version);
 	
 	IldgIoWriter_gaugefield writer(gaugefield_buf, gaugefield_buf_size, srcFileParameters, outputfile);
 

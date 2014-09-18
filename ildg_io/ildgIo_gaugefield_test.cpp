@@ -29,7 +29,7 @@
 int expectedPrecision = 64;
 std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
 
-void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters_values toCheck)
+void checkMetadataOfSpecificGaugefieldFile(Sourcefileparameters toCheck)
 {
   BOOST_REQUIRE_EQUAL(toCheck.lx, 4);
   BOOST_REQUIRE_EQUAL(toCheck.ly, 4);
@@ -135,9 +135,9 @@ std::string getFieldType_gaugefield()
 	return "su3gauge";
 }
 
-sourcefileparameters_values setSourceFileParametersToSpecificValuesForGaugefield()
+Sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 {
-	sourcefileparameters_values srcFileParams;
+	Sourcefileparameters srcFileParams;
 	srcFileParams.lx = 3;
 	srcFileParams.ly = 3;
 	srcFileParams.lz = 3;
@@ -176,7 +176,7 @@ sourcefileparameters_values setSourceFileParametersToSpecificValuesForGaugefield
 // not implemented or fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 11 )
 
-void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, sourcefileparameters_values toCheck2)
+void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefileparameters toCheck2)
 {
   BOOST_REQUIRE_EQUAL(toCheck1.lx, toCheck2.lx);
   BOOST_REQUIRE_EQUAL(toCheck1.ly, toCheck2.ly);
@@ -208,7 +208,7 @@ void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, source
 	BOOST_CHECK_EQUAL(toCheck1.solvertype, toCheck2.solvertype);
 }
 
-void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters_values srcFileParams, std::string configurationName)
+void writeEmptyGaugefieldFromSourcefileParameters(Sourcefileparameters srcFileParams, std::string configurationName)
 {
 	const n_uint64_t bufferSize_gaugefield = getElementsOfGaugefield(srcFileParams.lx, srcFileParams.ly, srcFileParams.lz, srcFileParams.lt) * sizeof(double);
 	
@@ -222,7 +222,7 @@ void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters_values sr
 
 BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 {
-	sourcefileparameters_values srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
+	Sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
 	
 	//TODO: test with single?
 	std::string configurationName = "conf.test";

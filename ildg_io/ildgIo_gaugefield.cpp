@@ -102,7 +102,7 @@ static void fillHelperMap_xlf(std::map<std::string, helper> & helperMap)
  	helperMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 }
 
-static void setParametersToValues_xlf(sourcefileparameters_values & parameters, std::map<std::string, helper>  helperMap)
+static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, helper>  helperMap)
 {
 	parameters.plaquettevalue = castStringToDouble(helperMap["plaquette"].value);
 	parameters.kappa = castStringToDouble(helperMap["kappa"].value);
@@ -198,12 +198,12 @@ void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * bu
 
 //NOTE: these two functions are similar to some in the meta package,
 //      but I would rather not include the latter here.
-int calcNumberOfEntriesForDiracFermionfield(const sourcefileparameters_values params)
+int calcNumberOfEntriesForDiracFermionfield(const Sourcefileparameters params)
 {
   //latSize sites, 4 dirac indices, Nc colour indices, 2 complex indices
   return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * NC * NSPIN * 2;
 }
-int calcNumberOfEntriesForGaugefield(const sourcefileparameters_values params)
+int calcNumberOfEntriesForGaugefield(const Sourcefileparameters params)
 {
   // latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
   return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * 2 * 4 * 9;
@@ -245,7 +245,7 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 	return buffer;
 }
 
-static void setParametersToValues_ildg(sourcefileparameters_values & parameters, std::map <std::string, std::string> helperMap)
+static void setParametersToValues_ildg(Sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
 {
 	parameters.prec = castStringToInt(helperMap["precision"]);
 	parameters.lx = castStringToInt(helperMap["lx"]);
@@ -272,7 +272,7 @@ static void fillHelperMap_scidacChecksum(std::map<std::string, std::string> & he
 	helperMap["sumb"] = "";
 }
 
-static void setParametersToValues_scidacChecksum(sourcefileparameters_values & parameters, std::map <std::string, std::string> helperMap)
+static void setParametersToValues_scidacChecksum(Sourcefileparameters & parameters, std::map <std::string, std::string> helperMap)
 {
 	uint32_t suma, sumb;
 	
@@ -534,13 +534,13 @@ void* createVoidPointerFromString(std::string stringIn)
 	return (void*) stringIn.c_str();
 }
 
-IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filenameIn): LimeFileWriter(filenameIn)
+IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, Sourcefileparameters srcFileParameters, std::string filenameIn): LimeFileWriter(filenameIn)
 {
 	logger.info() << "writing gaugefield to lime-file \""  + filenameIn + "\"";
 	
-	std::string xlfInfo = srcFileParameters_values.getInfo_xlfInfo();
-	std::string scidac_checksum = srcFileParameters_values.getInfo_scidacChecksum();
-	std::string ildgFormat = srcFileParameters_values.getInfo_ildgFormat_gaugefield();
+	std::string xlfInfo = srcFileParameters.getInfo_xlfInfo();
+	std::string scidac_checksum = srcFileParameters.getInfo_scidacChecksum();
+	std::string ildgFormat = srcFileParameters.getInfo_ildgFormat_gaugefield();
 	
 	writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), limeEntryTypes["xlf"]);
 	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), limeEntryTypes["ildg"]);

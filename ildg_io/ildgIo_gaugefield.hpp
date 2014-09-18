@@ -28,7 +28,7 @@
 
 //todo: remove this eventually
 #include "limeUtilities.hpp"
-#include "SourcefileParameters_values.hpp"
+#include "SourcefileParameters.hpp"
 
 #include "checksum.h"
 extern "C" {
@@ -40,7 +40,7 @@ extern "C" {
 /**
  * ILDG compatible reader class for gaugefield.
  *
- * Contains metadata of the parsed gaugefield as members.
+ * Contains metadata of the parsed gaugefield as member.
  * TODO: change this.
  *
  * @param[in] file      The file to read the gauge configuration from
@@ -51,7 +51,7 @@ class IldgIoReader_gaugefield{
 public:
 	IldgIoReader_gaugefield(std::string file, int precision, char ** data);
 	//todo: make this private?
-	sourcefileparameters_values parameters;
+	Sourcefileparameters parameters;
 private:
 	void readMetaDataFromLimeFile();
 	void readDataFromLimeFile(char ** destination);
@@ -80,12 +80,12 @@ private:
  *
  * \param binary_data The gaugefield in binary format.
  * \param num_bytes The number of bytes to be written.
- * \param srcFileParameters_values Collection of parameters associated with the gaugefield.
+ * \param srcFileParameters Collection of parameters associated with the gaugefield.
  */
 class IldgIoWriter_gaugefield: public LimeFileWriter
 {
 public:
-	IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filenameIn);
+	IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, Sourcefileparameters srcFileParameters, std::string filenameIn);
 };
 
 
