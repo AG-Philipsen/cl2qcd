@@ -47,7 +47,8 @@ extern "C" {
  * @param[in] precision The precision expected for the gaugefield.
  * @param[out] data    The loaded gaugefield
  */
-class IldgIoReader_gaugefield{
+class IldgIoReader_gaugefield : public LimeFileReader
+{
 public:
 	IldgIoReader_gaugefield(std::string file, int precision, char ** data);
 	//todo: make this private?

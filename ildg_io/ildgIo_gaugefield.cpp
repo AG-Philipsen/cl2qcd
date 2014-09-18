@@ -516,11 +516,9 @@ void IldgIoReader_gaugefield::extractDataFromLimeFile(char ** destination)
 
 //todo: this must be readsourcefile_gaugefield or so, and then one has to check if the entry is in fact "su3gauge"
 //todo: make char ** std::vector<char*>
-IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination)
+IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn, destination)
 {
-	// this currently only checks if file exists...
-	LimeFileReader tmp(sourceFilenameIn, desiredPrecisionIn, destination);
-	
+	//todo: remove, should be done in base class
 	sourceFilename = sourceFilenameIn;
 	desiredPrecision = desiredPrecisionIn;
 	
