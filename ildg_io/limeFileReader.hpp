@@ -22,11 +22,8 @@
 #ifndef _LIMEFILEREADER_HPP_
 #define _LIMEFILEREADER_HPP_
 
-#include <string>
-
-extern "C" {
-#include <lime.h>
-}
+#include "limeUtilities.hpp"
+#include "SourcefileParameters.hpp"
 
 class LimeFileReader
 {
@@ -34,14 +31,34 @@ public:
 	//todo: remove precision?
 	LimeFileReader(std::string sourceFilenameIn, int precision, char ** data);
 	~LimeFileReader();
+	//todo: make this private or remove/find better solution?
+	Sourcefileparameters parameters;
 protected:
 	void openFile();
 	void closeFile();
+	void readMetaDataFromLimeFile();
+	void extractMetadataFromLimeFile();
+	void readLimeFile(char ** destination);
+	void extractDataFromLimeFile(char ** destination);
+	void readDataFromLimeFile(char ** destination);
+	void goThroughLimeRecords(char ** destination);
+	void extractInformationFromLimeEntry(char ** destination);
+	LimeFileProperties extractMetaDataFromLimeEntry(LimeHeaderData limeHeaderData);
+	void extractBinaryDataFromLimeEntry(LimeHeaderData limeHeaderData, char ** destination);
+	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
+	
+	size_t	sizeOfGaugefieldBuffer();
+	
+	int checkLimeEntryForFermionInformations(std::string lime_type);
+	bool checkLimeEntryForBinaryData(std::string lime_type);
 	
 	std::string sourceFilename;
 	int desiredPrecision;
 	LimeReader * limeReader;
 	FILE *limeFileOpenedForReading;
+	
+	LimeFilePropertiesCollector limeFileProp;
+	LimeEntryTypes limeEntryTypes;
 };
 
 #endif
