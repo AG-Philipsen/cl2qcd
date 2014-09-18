@@ -209,7 +209,7 @@ int calcNumberOfEntriesForGaugefield(const sourcefileparameters_values params)
   return (int) (params.lx) * (params.ly) * (params.lz) * (params.lt) * 2 * 4 * 9;
 }
 
-int sourcefileparameters::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
+int IldgIoReader_gaugefield::calcNumberOfEntriesBasedOnFieldType(std::string fieldType)
 {
 	if(fieldType == "diracFermion") 
 	{
@@ -287,7 +287,7 @@ static void setParametersToValues_scidacChecksum(sourcefileparameters_values & p
 	parameters.checksum =  Checksum(suma, sumb);
 }
 
-int sourcefileparameters::checkLimeEntryForFermionInformations(std::string lime_type)
+int IldgIoReader_gaugefield::checkLimeEntryForFermionInformations(std::string lime_type)
 {
 	return ( 
 		limeEntryTypes["propagator"] == lime_type || 
@@ -296,7 +296,7 @@ int sourcefileparameters::checkLimeEntryForFermionInformations(std::string lime_
 		) ? 1 : 0;
 }
 
-bool sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
+bool IldgIoReader_gaugefield::checkLimeEntryForBinaryData(std::string lime_type)
 {
 	return	( 
 		limeEntryTypes["scidac binary data"] == lime_type || 
@@ -304,7 +304,7 @@ bool sourcefileparameters::checkLimeEntryForBinaryData(std::string lime_type)
 		) ? true : false;
 }
 
-LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
+LimeFileProperties IldgIoReader_gaugefield::extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData)
 {
 	logger.trace() << "Extracting meta data from LIME entry...";
 	LimeFileProperties props;
@@ -318,7 +318,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	{
 		//todo: is this meaningful?
 		props.numberOfFermionicEntries += checkLimeEntryForFermionInformations(limeHeaderData.limeEntryType);
-		if ( sourcefileparameters::limeFileProp.numberOfFermionicEntries > 1 )
+		if ( IldgIoReader_gaugefield::limeFileProp.numberOfFermionicEntries > 1 )
 		{
 			logger.warn() << "Reading more than one fermion field is not implemented yet!";
 		}
@@ -336,7 +336,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			setParametersToValues_scidacChecksum(this->parameters, helperMap);		  
 		}
 		
-		else if( limeEntryTypes["inverter"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2)
+		else if( limeEntryTypes["inverter"] == lime_type && IldgIoReader_gaugefield::limeFileProp.numberOfFermionicEntries < 2)
 		{
 			if ( limeFileProp.numberOfFermionicEntries > 1 )
 			{
@@ -354,7 +354,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			}
 		}
 		
-		else if(limeEntryTypes["xlf"]  == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2) 
+		else if(limeEntryTypes["xlf"]  == lime_type && IldgIoReader_gaugefield::limeFileProp.numberOfFermionicEntries < 2) 
 		{
 			logger_readLimeEntry( lime_type);
 			std::string str(buffer);
@@ -377,7 +377,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 			this->parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(this->parameters.field);
 		}	
 
-		else if( limeEntryTypes["etmc propagator"] == lime_type && sourcefileparameters::limeFileProp.numberOfFermionicEntries < 2 )
+		else if( limeEntryTypes["etmc propagator"] == lime_type && IldgIoReader_gaugefield::limeFileProp.numberOfFermionicEntries < 2 )
 		{
 			throw std::logic_error("Reading of etmc propagator not yet implemented. Aborting...");
 		}	
@@ -396,7 +396,7 @@ LimeFileProperties sourcefileparameters::extractMetaDataFromLimeEntry(LimeReader
 	return props;
 }
 
-size_t sourcefileparameters::sizeOfGaugefieldBuffer()
+size_t IldgIoReader_gaugefield::sizeOfGaugefieldBuffer()
 {
 	return this->parameters.num_entries * sizeof(hmc_float);
 }
@@ -414,7 +414,7 @@ static void checkBufferSize(size_t actualSize, size_t expectedSize)
 	}
 }
 
-void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination)
+void IldgIoReader_gaugefield::extractBinaryDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination)
 {
 	if( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType) )
 	{
@@ -432,7 +432,7 @@ void sourcefileparameters::extractBinaryDataFromLimeEntry(LimeReader * r, LimeHe
 	}
 }
 
-void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char ** destination)
+void IldgIoReader_gaugefield::extractInformationFromLimeEntry(LimeReader * r, char ** destination)
 {
 	LimeHeaderData limeHeaderData(r);
 	logger.trace() << "Found entry in LIME file of type \"" + limeHeaderData.limeEntryType + "\"";
@@ -453,7 +453,7 @@ void sourcefileparameters::extractInformationFromLimeEntry(LimeReader * r, char 
 	}
 }
 
-void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destination)
+void IldgIoReader_gaugefield::goThroughLimeRecords(LimeReader * r, char ** destination)
 {
 	int statusOfLimeReader = LIME_SUCCESS;
 	while( (statusOfLimeReader = limeReaderNextRecord(r)) != LIME_EOF ) 
@@ -463,7 +463,7 @@ void sourcefileparameters::goThroughLimeRecords(LimeReader * r, char ** destinat
 	}
 }
 
-void sourcefileparameters::readLimeFile(char ** destination)
+void IldgIoReader_gaugefield::readLimeFile(char ** destination)
 {
 	FILE *limeFileOpenedForReading;
 	LimeReader *limeReader;
@@ -477,14 +477,14 @@ void sourcefileparameters::readLimeFile(char ** destination)
 	fclose(limeFileOpenedForReading); 
 }
 
-void sourcefileparameters::readDataFromLimeFile(char ** destination)
+void IldgIoReader_gaugefield::readDataFromLimeFile(char ** destination)
 {
 	logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
 	readLimeFile(destination);
 	logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
 }
 
-void sourcefileparameters::readMetaDataFromLimeFile()
+void IldgIoReader_gaugefield::readMetaDataFromLimeFile()
 {
 	logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
 	readLimeFile(NULL);
@@ -498,7 +498,7 @@ void checkPrecision(int desiredPrecision, int actualPrecision)
 		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting", __FILE__, __LINE__);
 }
 
-void sourcefileparameters::extractMetadataFromLimeFile()
+void IldgIoReader_gaugefield::extractMetadataFromLimeFile()
 {
 	readMetaDataFromLimeFile();
 	
@@ -508,7 +508,7 @@ void sourcefileparameters::extractMetadataFromLimeFile()
 	checkPrecision(desiredPrecision, this->parameters.prec);  
 }
 
-void sourcefileparameters::extractDataFromLimeFile(char ** destination)
+void IldgIoReader_gaugefield::extractDataFromLimeFile(char ** destination)
 {
 	readDataFromLimeFile(destination);
 	//todo: put conversion to numbers in here...
@@ -516,7 +516,7 @@ void sourcefileparameters::extractDataFromLimeFile(char ** destination)
 
 //todo: this must be readsourcefile_gaugefield or so, and then one has to check if the entry is in fact "su3gauge"
 //todo: make char ** std::vector<char*>
-sourcefileparameters::sourcefileparameters(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination)
+IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination)
 {
 	// this currently only checks if file exists...
 	LimeFileReader tmp(sourceFilenameIn, desiredPrecisionIn, destination);

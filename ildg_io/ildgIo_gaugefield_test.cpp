@@ -61,26 +61,26 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithFileException)
 {
   std::string nameOfNonexistingGaugefieldFile = "thisfileshouldnotbethere";
   char * bufferToStoreGaugefield;
-  BOOST_CHECK_THROW(sourcefileparameters srcFileParams(nameOfNonexistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), File_Exception);
+  BOOST_CHECK_THROW(IldgIoReader_gaugefield srcFileParams(nameOfNonexistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), File_Exception);
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithWrongPrecision)
 {
   char * bufferToStoreGaugefield;
   int wrongPrecision = 27;
-  BOOST_CHECK_THROW(sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), wrongPrecision, &bufferToStoreGaugefield), std::exception);
+  BOOST_CHECK_THROW(IldgIoReader_gaugefield srcFileParams(nameOfExistingGaugefieldFile.c_str(), wrongPrecision, &bufferToStoreGaugefield), std::exception);
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldSuccess)
 {
   char * bufferToStoreGaugefield;
-  BOOST_REQUIRE_NO_THROW(sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield));
+  BOOST_REQUIRE_NO_THROW(IldgIoReader_gaugefield srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield));
 }
 
 BOOST_AUTO_TEST_CASE(readInGaugefieldCheckMetadata)
 {
   char * bufferToStoreGaugefield;
-  sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  IldgIoReader_gaugefield srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   checkMetadataOfSpecificGaugefieldFile(srcFileParams.parameters);
 }
 
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( readInGaugefieldCheckBufferSize, 1 )
 BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
 {
   char * bufferToStoreGaugefield;
-	sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+	IldgIoReader_gaugefield srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   size_t expectedSizeOfBuffer = srcFileParams.parameters.num_entries * sizeof(hmc_float);
   size_t actualSizeOfBuffer = sizeof(bufferToStoreGaugefield);
 	BOOST_CHECK_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)
   char * bufferToStoreGaugefield;
   uint32_t referenceChecksumA = 171641288;
   uint32_t referenceChecksumB = 3618036129;
-  sourcefileparameters srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  IldgIoReader_gaugefield srcFileParams(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.parameters.checksum, true);
 }
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(readInGaugefieldFromTmlqcd_CheckChecksum)
   char * bufferToStoreGaugefield;
   uint32_t referenceChecksumA = 398012545;
   uint32_t referenceChecksumB = 1610757546;
-  sourcefileparameters srcFileParams(nameOfExistingGaugefieldFileFromTmlqcd.c_str(), expectedPrecision, &bufferToStoreGaugefield);
+  IldgIoReader_gaugefield srcFileParams(nameOfExistingGaugefieldFileFromTmlqcd.c_str(), expectedPrecision, &bufferToStoreGaugefield);
   Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
   BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.parameters.checksum, true);
 }
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 	writeEmptyGaugefieldFromSourcefileParameters(srcFileParams_1, configurationName);
 	
 	char * readBinaryData;
-	sourcefileparameters srcFileParams_2(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
+	IldgIoReader_gaugefield srcFileParams_2(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
 	delete readBinaryData;
 	
 	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2.parameters);

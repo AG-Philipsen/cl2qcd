@@ -36,21 +36,21 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	Matrixsu3 * gf_host;
 	char * gf_ildg;
 
-	sourcefileparameters parameters_source(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
+	IldgIoReader_gaugefield reader(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
 	
-	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.parameters.getSizeInBytes(), *parameters);
+	Checksum checksum = calculate_ildg_checksum(gf_ildg, reader.parameters.getSizeInBytes(), *parameters);
 
 	//todo: this should not be that explicit here!	
 	gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
-	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.parameters.num_entries, *parameters);
+	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, reader.parameters.num_entries, *parameters);
 	delete[] gf_ildg;
 
-	trajectoryNumberAtInit = parameters_source.parameters.trajectorynr;
-	plaq = parameters_source.parameters.plaquettevalue;
+	trajectoryNumberAtInit = reader.parameters.trajectorynr;
+	plaq = reader.parameters.plaquettevalue;
 
 	//todo: move this to destructor or so...
-	parameters_source.parameters.checkAgainstInputparameters(parameters);
-	parameters_source.parameters.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
+	reader.parameters.checkAgainstInputparameters(parameters);
+	reader.parameters.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
 
 	return gf_host;
 }

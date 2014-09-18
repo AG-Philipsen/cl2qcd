@@ -38,20 +38,18 @@ extern "C" {
 //todo: add namespace ildg_io
 
 /**
- * Parser class for a stored gaugefield.
+ * ILDG compatible reader class for gaugefield.
  *
  * Contains metadata of the parsed gaugefield as members.
- */
-/**
- * Read gauge configuration from the given file into the given array.
+ * TODO: change this.
  *
  * @param[in] file      The file to read the gauge configuration from
  * @param[in] precision The precision expected for the gaugefield.
  * @param[out] data    The loaded gaugefield
  */
-class sourcefileparameters{
+class IldgIoReader_gaugefield{
 public:
-	sourcefileparameters(std::string file, int precision, char ** data);
+	IldgIoReader_gaugefield(std::string file, int precision, char ** data);
 	//todo: make this private?
 	sourcefileparameters_values parameters;
 private:
@@ -78,13 +76,11 @@ private:
 };
 
 /**
- * Writer class for the gaugefield
+ * ILDG compatible writer class for gaugefield.
  *
  * \param binary_data The gaugefield in binary format.
  * \param num_bytes The number of bytes to be written.
  * \param srcFileParameters_values Collection of parameters associated with the gaugefield.
- *
- * \todo complete documentation
  */
 class IldgIoWriter_gaugefield: public LimeFileWriter
 {
