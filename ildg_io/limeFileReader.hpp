@@ -25,7 +25,7 @@
 #include "limeUtilities.hpp"
 #include "SourcefileParameters.hpp"
 
-class LimeFileReader
+class LimeFileReader : public LimeFileReader_basic
 {
 public:
 	//todo: remove precision?
@@ -33,8 +33,6 @@ public:
 	//todo: make this private or remove/find better solution?
 	Sourcefileparameters parameters;
 protected:
-	void openFile();
-	void closeFile();
 	void readMetaDataFromLimeFile();
 	void extractMetadataFromLimeFile();
 	void readLimeFile(char ** destination, size_t expectedNumberOfBytes = 0);
@@ -50,13 +48,7 @@ protected:
 	void handleLimeEntry_inverter(std::string lime_type) throw(std::logic_error);
 	void handleLimeEntry_etmcPropagator(std::string lime_type) throw(std::logic_error);
 	
-	std::string sourceFilename;
 	int desiredPrecision;
-	LimeReader * limeReader;
-	FILE *limeFileOpenedForReading;
-	
-	LimeFilePropertiesCollector limeFileProp;
-	LimeEntryTypes limeEntryTypes;
 };
 
 #endif

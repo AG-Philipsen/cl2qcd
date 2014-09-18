@@ -70,12 +70,23 @@ public:
 	}
 };
 
-class LimeFile_basic
+class LimeFile_basic 
 {
 protected:
+	LimeFile_basic(std::string filenameIn) : filename(filenameIn) {};
 	std::string filename;
 	FILE *outputfile;
 	LimeEntryTypes limeEntryTypes;
+};
+
+class LimeFileReader_basic : public LimeFile_basic
+{
+protected:
+	LimeFileReader_basic(std::string filenameIn) : LimeFile_basic(filenameIn) {};
+	LimeReader * limeReader;
+	LimeFilePropertiesCollector limeFileProp;
+	void openFile();
+	void closeFile();
 };
 
 #endif

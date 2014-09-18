@@ -24,13 +24,12 @@
 #include <boost/lexical_cast.hpp>
 #include "../executables/exceptions.h"
 
-LimeFileWriter::LimeFileWriter(std::string filenameIn)
+LimeFileWriter::LimeFileWriter(std::string filenameIn) : LimeFile_basic(filenameIn)
 {
 	MB_flag = 1;
 	ME_flag = 1;
 	writtenBytes = 0;
 	writer = NULL;
-	filename = filenameIn;
 	
 	outputfile = fopen(filename.c_str(), "w");
 	writer = limeCreateWriter(outputfile);

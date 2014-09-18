@@ -53,31 +53,19 @@ void checkIfFileExists(std::string file) throw(File_Exception)
 	return;
 }
 
-LimeFileReader::LimeFileReader(std::string sourceFilenameIn, int precision) : 
-	sourceFilename(sourceFilenameIn), desiredPrecision(precision)
+LimeFileReader::LimeFileReader(std::string filenameIn, int precision) : 
+	LimeFileReader_basic(filenameIn), desiredPrecision(precision)
 {
-	checkIfFileExists(sourceFilename);
+	checkIfFileExists(filename);
 	
 	extractMetadataFromLimeFile();
 }
 
-void LimeFileReader::openFile()
-{
-	limeFileOpenedForReading = fopen (sourceFilename.c_str(), "r");
-	limeReader = limeCreateReader(limeFileOpenedForReading);
-}
-
-void LimeFileReader::closeFile()
-{
-	limeDestroyReader(limeReader);
-	fclose(limeFileOpenedForReading);
-}
-
 void LimeFileReader::extractDataFromLimeFile(char ** destination, size_t expectedNumberOfBytes)
 {
-	logger.trace() << "Reading data from LIME file \"" << sourceFilename << "\"...";
+	logger.trace() << "Reading data from LIME file \"" << filename << "\"...";
 	readLimeFile(destination, expectedNumberOfBytes);
-	logger.trace() << "\tsuccesfully read data from LIME file " << sourceFilename;
+	logger.trace() << "\tsuccesfully read data from LIME file " << filename;
 }
 
 char* createBuffer(size_t datasize)
@@ -121,7 +109,7 @@ void LimeFileReader::extractMetadataFromLimeFile()
 {
 	readMetaDataFromLimeFile();
 	
-	this->parameters.printMetaDataToScreen(sourceFilename);
+	this->parameters.printMetaDataToScreen(filename);
 	
 	//todo: this may be unified with a check against the inputparameters..
 	checkPrecision(desiredPrecision, this->parameters.prec);
@@ -129,10 +117,10 @@ void LimeFileReader::extractMetadataFromLimeFile()
 
 void LimeFileReader::readMetaDataFromLimeFile()
 {
-	logger.trace() << "Reading metadata from LIME file \"" << sourceFilename << "\"...";
+	logger.trace() << "Reading metadata from LIME file \"" << filename << "\"...";
 	readLimeFile(NULL);
 	limeFileProp.readMetaData = true;
-	logger.trace() << "\tsuccesfully read metadata from LIME file " << sourceFilename;
+	logger.trace() << "\tsuccesfully read metadata from LIME file " << filename;
 }
 
 void LimeFileReader::readLimeFile(char ** destination, size_t expectedNumberOfBytes)
