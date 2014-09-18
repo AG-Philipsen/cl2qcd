@@ -70,9 +70,6 @@ private:
 	bool checkLimeEntryForBinaryData(std::string lime_type);
 
 	LimeFilePropertiesCollector limeFileProp;
-	
-	std::string sourceFilename;
-	int desiredPrecision;
 	LimeEntryTypes limeEntryTypes;
 };
 

@@ -514,14 +514,10 @@ void IldgIoReader_gaugefield::extractDataFromLimeFile(char ** destination)
 	//todo: put conversion to numbers in here...
 }
 
-//todo: this must be readsourcefile_gaugefield or so, and then one has to check if the entry is in fact "su3gauge"
+//todo: one has to check if the entry is in fact "su3gauge"
 //todo: make char ** std::vector<char*>
 IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, char ** destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn, destination)
 {
-	//todo: remove, should be done in base class
-	sourceFilename = sourceFilenameIn;
-	desiredPrecision = desiredPrecisionIn;
-	
 	extractMetadataFromLimeFile();
 	
 	extractDataFromLimeFile(destination);

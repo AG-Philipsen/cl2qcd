@@ -135,7 +135,7 @@ LimeFileReader::LimeFileReader(std::string sourceFilenameIn, int precision, char
 	sourceFilename = sourceFilenameIn;
 	desiredPrecision = precision;
 	
-	checkIfFileExists(sourceFilenameIn);
+	checkIfFileExists(sourceFilename);
 	
 // 	extractMetadataFromLimeFile();
 // 	
