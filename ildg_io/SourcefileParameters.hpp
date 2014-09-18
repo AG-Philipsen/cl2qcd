@@ -26,10 +26,10 @@
 #include "../meta/inputparameters.hpp"
 
 //TODO: it may be advantageous to separate between gaugefield and fermion field parameters
-class sourcefileparameters_values {
+class Sourcefileparameters {
 public:
-  sourcefileparameters_values();
-	sourcefileparameters_values(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion);
+  Sourcefileparameters();
+	Sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion);
 	
 	std::string getInfo_ildgFormat_gaugefield();
 	std::string getInfo_scidacChecksum();
@@ -52,5 +52,7 @@ public:
 private:
 	void set_defaults();
 };
+
+
 	
 #endif

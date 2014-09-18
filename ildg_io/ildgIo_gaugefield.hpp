@@ -27,72 +27,41 @@
 #include "../executables/exceptions.h"
 
 //todo: remove this eventually
-#include "limeUtilities.hpp"
-#include "SourcefileParameters_values.hpp"
+#include "limeFileReader.hpp"
+#include "limeFileWriter.hpp"
+#include "SourcefileParameters.hpp"
 
-#include "checksum.h"
-extern "C" {
-#include <lime.h>
-}
+namespace ildgIo {
 
-//todo: add namespace ildg_io
-
-/**
- * Parser class for a stored gaugefield.
- *
- * Contains metadata of the parsed gaugefield as members.
- */
-class sourcefileparameters : public sourcefileparameters_values {
-public:
-	sourcefileparameters() : sourcefileparameters_values() {};
-	sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksum, std::string hmcVersion) : sourcefileparameters_values(parameters, trajectoryNumber, plaquette, checksum, hmcVersion) {};
-	
 	/**
-	 * Read gauge configuration from the given file into the given array.
-	 *
-	 * @param[in] file      The file to read the gauge configuration from
-	 * @param[in] precision The precision expected for the gaugefield.
-	 * @param[out] array    The loaded gaugefield
-	 */
-  void readsourcefile(std::string file, int precision, char ** data);
-	
- private:
-	void readMetaDataFromLimeFile();
-	void readDataFromLimeFile(char ** destination);
-	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
-	LimeFileProperties extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData);
-	size_t	sizeOfGaugefieldBuffer();
-	void extractBinaryDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
-	void readLimeFile(char ** destination);
-	void extractMetadataFromLimeFile();
-	void extractDataFromLimeFile(char ** destination);
-	void extractInformationFromLimeEntry(LimeReader * r, char ** destination);
-	void goThroughLimeRecords(LimeReader * r, char ** destination);
+	* ILDG compatible reader class for gaugefield.
+	*
+	* Contains metadata of the parsed gaugefield as member.
+	* TODO: change this.
+	*
+	* @param[in] file      The file to read the gauge configuration from
+	* @param[in] precision The precision expected for the gaugefield.
+	* @param[out] data    The loaded gaugefield
+	*/
+	class IldgIoReader_gaugefield : public LimeFileReader
+	{
+	public:
+		IldgIoReader_gaugefield(std::string file, int precision, char ** data);
+	};
 
-	int checkLimeEntryForFermionInformations(std::string lime_type);
-	bool checkLimeEntryForBinaryData(std::string lime_type);
+	/**
+	* ILDG compatible writer class for gaugefield.
+	*
+	* \param binary_data The gaugefield in binary format.
+	* \param num_bytes The number of bytes to be written.
+	* \param srcFileParameters Collection of parameters associated with the gaugefield.
+	*/
+	class IldgIoWriter_gaugefield: public LimeFileWriter
+	{
+	public:
+		IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, Sourcefileparameters srcFileParameters, std::string filenameIn);
+	};
 
-	LimeFilePropertiesCollector limeFileProp;
-	
-	std::string sourceFilename;
-	int desiredPrecision;
-	LimeEntryTypes limeEntryTypes;
-};
-
-/**
- * Writer class for the gaugefield
- *
- * \param binary_data The gaugefield in binary format.
- * \param num_bytes The number of bytes to be written.
- * \param srcFileParameters_values Collection of parameters associated with the gaugefield.
- *
- * \todo complete documentation
- */
-class IldgIoWriter_gaugefield: public LimeFileWriter
-{
-public:
-	IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, sourcefileparameters_values srcFileParameters_values, std::string filenameIn);
-};
-
+}
 
 #endif /* _READGAUGEH_ */

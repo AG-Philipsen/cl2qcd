@@ -33,24 +33,24 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
-	sourcefileparameters parameters_source;
 	Matrixsu3 * gf_host;
 	char * gf_ildg;
+
+	IldgIoReader_gaugefield reader(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
 	
-	parameters_source.readsourcefile(ildgfile.c_str(), parameters->get_precision(), &gf_ildg);
-	
-	Checksum checksum = calculate_ildg_checksum(gf_ildg, parameters_source.getSizeInBytes(), *parameters);
+	Checksum checksum = calculate_ildg_checksum(gf_ildg, reader.parameters.getSizeInBytes(), *parameters);
 
 	//todo: this should not be that explicit here!	
 	gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
-	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries, *parameters);
+	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, reader.parameters.num_entries, *parameters);
 	delete[] gf_ildg;
 
-	trajectoryNumberAtInit = parameters_source.trajectorynr;
-	plaq = parameters_source.plaquettevalue;
+	trajectoryNumberAtInit = reader.parameters.trajectorynr;
+	plaq = reader.parameters.plaquettevalue;
 
-	parameters_source.checkAgainstInputparameters(parameters);
-	parameters_source.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
+	//todo: move this to destructor or so...
+	reader.parameters.checkAgainstInputparameters(parameters);
+	reader.parameters.checkAgainstChecksum(checksum, parameters->get_ignore_checksum_errors(), ildgfile);
 
 	return gf_host;
 }
@@ -69,7 +69,7 @@ void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf,
 
 	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, *parameters);
 
-	sourcefileparameters_values srcFileParameters(parameters, number, plaq, checksum, version);
+	Sourcefileparameters srcFileParameters(parameters, number, plaq, checksum, version);
 	
 	IldgIoWriter_gaugefield writer(gaugefield_buf, gaugefield_buf_size, srcFileParameters, outputfile);
 

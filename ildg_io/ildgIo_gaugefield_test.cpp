@@ -29,100 +29,7 @@
 int expectedPrecision = 64;
 std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
 
-void checkMetadataOfSpecificGaugefieldFile(sourcefileparameters toCheck)
-{
-  BOOST_REQUIRE_EQUAL(toCheck.lx, 4);
-  BOOST_REQUIRE_EQUAL(toCheck.ly, 4);
-  BOOST_REQUIRE_EQUAL(toCheck.lz, 4);
-  BOOST_REQUIRE_EQUAL(toCheck.lt, 4);
-  BOOST_REQUIRE_EQUAL(toCheck.prec, 64);
-  BOOST_REQUIRE_EQUAL(toCheck.num_entries, 18432);
-  BOOST_REQUIRE_EQUAL(toCheck.flavours, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.trajectorynr, 200);
-  /**
-   * Some values (time!) are not properly written to file, or their values are not correctly gathered.
-   */
-  BOOST_REQUIRE_EQUAL(toCheck.time, -619635472);
-  BOOST_REQUIRE_EQUAL(toCheck.time_solver, 0.);
-  BOOST_REQUIRE_EQUAL(toCheck.kappa_solver, 0.);
-  BOOST_REQUIRE_EQUAL(toCheck.mu_solver, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.noiter, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.epssq, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.plaquettevalue, 0.571077);
-  BOOST_REQUIRE_EQUAL(toCheck.beta, 5.69);
-  BOOST_REQUIRE_EQUAL(toCheck.kappa, 0.125);
-  BOOST_REQUIRE_EQUAL(toCheck.mu, 0.006);
-  BOOST_REQUIRE_EQUAL(toCheck.c2_rec, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.mubar, 0);
-  BOOST_REQUIRE_EQUAL(toCheck.epsilonbar, 0);
-}
-
-BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithFileException)
-{
-  sourcefileparameters srcFileParams;
-  std::string nameOfNonexistingGaugefieldFile = "thisfileshouldnotbethere";
-  char * bufferToStoreGaugefield;
-  BOOST_CHECK_THROW(srcFileParams.readsourcefile(nameOfNonexistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield), File_Exception);
-}
-
-BOOST_AUTO_TEST_CASE(readInGaugefieldFailureWithWrongPrecision)
-{
-  sourcefileparameters srcFileParams;
-  char * bufferToStoreGaugefield;
-  int wrongPrecision = 27;
-  BOOST_CHECK_THROW(srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), wrongPrecision, &bufferToStoreGaugefield), std::exception);
-}
-
-BOOST_AUTO_TEST_CASE(readInGaugefieldSuccess)
-{
-  sourcefileparameters srcFileParams;
-  char * bufferToStoreGaugefield;
-  BOOST_REQUIRE_NO_THROW(srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield));
-}
-
-BOOST_AUTO_TEST_CASE(readInGaugefieldCheckMetadata)
-{
-  sourcefileparameters srcFileParams;
-  char * bufferToStoreGaugefield;
-  srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
-  checkMetadataOfSpecificGaugefieldFile(srcFileParams);
-}
-
-//todo: this test probably will never work!
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( readInGaugefieldCheckBufferSize, 1 )
-BOOST_AUTO_TEST_CASE(readInGaugefieldCheckBufferSize)
-{
-  sourcefileparameters srcFileParams;
-  char * bufferToStoreGaugefield;
-	srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
-  size_t expectedSizeOfBuffer = srcFileParams.num_entries * sizeof(hmc_float);
-  size_t actualSizeOfBuffer = sizeof(bufferToStoreGaugefield);
-	BOOST_CHECK_EQUAL(expectedSizeOfBuffer, actualSizeOfBuffer);
-}
-
-BOOST_AUTO_TEST_CASE(readInGaugefieldCheckChecksum)
-{
-  sourcefileparameters srcFileParams;
-  char * bufferToStoreGaugefield;
-  uint32_t referenceChecksumA = 171641288;
-  uint32_t referenceChecksumB = 3618036129;
-  srcFileParams.readsourcefile(nameOfExistingGaugefieldFile.c_str(), expectedPrecision, &bufferToStoreGaugefield);
-  Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
-  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
-}
-
-std::string nameOfExistingGaugefieldFileFromTmlqcd = std::string(SOURCEDIR) + "/ildg_io/conf.tmlqcd";
-
-BOOST_AUTO_TEST_CASE(readInGaugefieldFromTmlqcd_CheckChecksum)
-{
-  sourcefileparameters srcFileParams;
-  char * bufferToStoreGaugefield;
-  uint32_t referenceChecksumA = 398012545;
-  uint32_t referenceChecksumB = 1610757546;
-  srcFileParams.readsourcefile(nameOfExistingGaugefieldFileFromTmlqcd.c_str(), expectedPrecision, &bufferToStoreGaugefield);
-  Checksum referenceChecksum(referenceChecksumA, referenceChecksumB);
-  BOOST_REQUIRE_EQUAL(referenceChecksum == srcFileParams.checksum, true);
-}
+using namespace ildgIo;
 
 size_t getPrecisionOfDoubleInBits()
 {
@@ -142,9 +49,9 @@ std::string getFieldType_gaugefield()
 	return "su3gauge";
 }
 
-sourcefileparameters_values setSourceFileParametersToSpecificValuesForGaugefield()
+Sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 {
-	sourcefileparameters_values srcFileParams;
+	Sourcefileparameters srcFileParams;
 	srcFileParams.lx = 3;
 	srcFileParams.ly = 3;
 	srcFileParams.lz = 3;
@@ -183,7 +90,7 @@ sourcefileparameters_values setSourceFileParametersToSpecificValuesForGaugefield
 // not implemented or fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 11 )
 
-void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, sourcefileparameters toCheck2)
+void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefileparameters toCheck2)
 {
   BOOST_REQUIRE_EQUAL(toCheck1.lx, toCheck2.lx);
   BOOST_REQUIRE_EQUAL(toCheck1.ly, toCheck2.ly);
@@ -215,7 +122,7 @@ void compareTwoSourcefileParameters(sourcefileparameters_values toCheck1, source
 	BOOST_CHECK_EQUAL(toCheck1.solvertype, toCheck2.solvertype);
 }
 
-void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters_values srcFileParams, std::string configurationName)
+void writeEmptyGaugefieldFromSourcefileParameters(Sourcefileparameters srcFileParams, std::string configurationName)
 {
 	const n_uint64_t bufferSize_gaugefield = getElementsOfGaugefield(srcFileParams.lx, srcFileParams.ly, srcFileParams.lz, srcFileParams.lt) * sizeof(double);
 	
@@ -229,20 +136,16 @@ void writeEmptyGaugefieldFromSourcefileParameters(sourcefileparameters_values sr
 
 BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 {
-	sourcefileparameters_values srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
+	Sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
 	
 	//TODO: test with single?
 	std::string configurationName = "conf.test";
 	
 	writeEmptyGaugefieldFromSourcefileParameters(srcFileParams_1, configurationName);
 	
-	sourcefileparameters srcFileParams_2;
 	char * readBinaryData;
-	srcFileParams_2.readsourcefile(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
+	IldgIoReader_gaugefield srcFileParams_2(configurationName.c_str(), srcFileParams_1.prec, &readBinaryData);
 	delete readBinaryData;
 	
-	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2);
+	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2.parameters);
 }
-
-
-

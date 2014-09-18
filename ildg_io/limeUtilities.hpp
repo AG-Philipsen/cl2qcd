@@ -70,23 +70,23 @@ public:
 	}
 };
 
-class LimeFileWriter
+class LimeFile_basic 
 {
-public:
-	LimeFileWriter(std::string filenameIn);
-	~LimeFileWriter();
-	void writeMemoryToLimeFile(void * memoryPointer, n_uint64_t bytes, std::string description);
 protected:
-	LimeEntryTypes limeEntryTypes;
-private:
+	LimeFile_basic(std::string filenameIn) : filename(filenameIn) {};
 	std::string filename;
 	FILE *outputfile;
-	int MB_flag;
-	int ME_flag;
-	n_uint64_t writtenBytes;
-	LimeWriter *writer;
-	void writeLimeHeaderToLimeFile(LimeRecordHeader * header);
+	LimeEntryTypes limeEntryTypes;
 };
 
+class LimeFileReader_basic : public LimeFile_basic
+{
+protected:
+	LimeFileReader_basic(std::string filenameIn) : LimeFile_basic(filenameIn) {};
+	LimeReader * limeReader;
+	LimeFilePropertiesCollector limeFileProp;
+	void openFile();
+	void closeFile();
+};
 
 #endif
