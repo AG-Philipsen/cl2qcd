@@ -24,6 +24,7 @@
 #include "../host_functionality/logger.hpp"
 #include "../host_functionality/host_geometry.h"
 #include "../meta/util.hpp"
+#include "../meta/version.hpp"
 
 using namespace ildgIo;
 
@@ -50,9 +51,7 @@ IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, i
 		checkLimeFileForFieldType(parameters.field);
 		size_t numberOfBytes = sizeOfGaugefieldBuffer(parameters.num_entries);
 		
-		logger.fatal() << "adfasf";
 		extractDataFromLimeFile(&gf_ildg, numberOfBytes);
-		logger.fatal() << "adfasf";
 		
 		Checksum checksum = ildgIo::calculate_ildg_checksum(gf_ildg, parameters.getSizeInBytes(), *parametersIn);
 	
@@ -74,9 +73,16 @@ void* createVoidPointerFromString(std::string stringIn) noexcept
 	return (void*) stringIn.c_str();
 }
 
-IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, Sourcefileparameters srcFileParameters, std::string filenameIn): LimeFileWriter(filenameIn)
+IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(Matrixsu3 * data, n_uint64_t num_bytes, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue): LimeFileWriter(filenameIn)
 {
 	logger.info() << "writing gaugefield to lime-file \""  + filenameIn + "\"";
+	
+	char * binary_data = new char[num_bytes];
+	copy_gaugefield_to_ildg_format(binary_data, data, *parameters);
+	
+	const Checksum checksum = calculate_ildg_checksum(binary_data, num_bytes, *parameters);
+
+	Sourcefileparameters srcFileParameters(parameters, trajectoryNumber, plaquetteValue, checksum, version);	
 	
 	std::string xlfInfo = srcFileParameters.getInfo_xlfInfo();
 	std::string scidac_checksum = srcFileParameters.getInfo_scidacChecksum();
@@ -86,6 +92,8 @@ IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(char * binary_data, n_uint64_t 
 	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), limeEntryTypes["ildg"]);
 	writeMemoryToLimeFile( binary_data, num_bytes, limeEntryTypes["ildg binary data"]);
 	writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), limeEntryTypes["scidac checksum"]);
+	
+	delete[] binary_data;		
 }
 
 Checksum ildgIo::calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
@@ -118,20 +126,6 @@ Checksum ildgIo::calculate_ildg_checksum(const char * buf, size_t nbytes, const 
 
 	logger.debug() << "Calculated Checksum: " << checksum;
 	return checksum;
-}
-
-static void make_big_endian_from_float(char* out, const hmc_float in)
-{
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
-
-	val.f = in;
-
-	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		out[i] = val.b[sizeof(hmc_float) - 1 - i];
-	}
 }
 
 static hmc_float make_float_from_big_endian(const char* in)
@@ -206,6 +200,63 @@ void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gau
 		std::stringstream errstr;
 		errstr << "Error in setting gaugefield to source values! there were " << cter * 2 << " vals set and not " << check << ".";
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
+	}
+}
+
+static void make_big_endian_from_float(char* out, const hmc_float in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	val.f = in;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		out[i] = val.b[sizeof(hmc_float) - 1 - i];
+	}
+}
+
+void ildgIo::copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters)
+{
+	const size_t NSPACE = parameters.get_nspace();
+	for (int t = 0; t < parameters.get_ntime(); t++) {
+		for (size_t x = 0; x < NSPACE; x++) {
+			for (size_t y = 0; y < NSPACE; y++) {
+				for (size_t z = 0; z < NSPACE; z++) {
+					for (int l = 0; l < NDIM; l++) {
+						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
+						int coord[4];
+						coord[0] = t;
+						coord[1] = z;
+						coord[2] = y;
+						coord[3] = x;
+						int spacepos = get_nspace(coord, parameters);
+						hmc_complex destElem [NC][NC];
+
+						Matrixsu3 srcElem = source_in[get_global_link_pos((l + 1) % NDIM, spacepos, t, parameters)];
+						destElem[0][0] = srcElem.e00;
+						destElem[0][1] = srcElem.e01;
+						destElem[0][2] = srcElem.e02;
+						destElem[1][0] = srcElem.e10;
+						destElem[1][1] = srcElem.e11;
+						destElem[1][2] = srcElem.e12;
+						destElem[2][0] = srcElem.e20;
+						destElem[2][1] = srcElem.e21;
+						destElem[2][2] = srcElem.e22;
+
+						for (int m = 0; m < NC; m++) {
+							for (int n = 0; n < NC; n++) {
+								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
+								make_big_endian_from_float(&dest[pos * sizeof(hmc_float)], destElem[m][n].re);
+								make_big_endian_from_float(&dest[(pos + 1) * sizeof(hmc_float)], destElem[m][n].im);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 

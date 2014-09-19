@@ -53,19 +53,19 @@ namespace ildgIo {
 	/**
 	* ILDG compatible writer class for gaugefield.
 	*
-	* \param binary_data The gaugefield in binary format.
+	* \param data The gaugefield to write
 	* \param num_bytes The number of bytes to be written.
 	* \param srcFileParameters Collection of parameters associated with the gaugefield.
 	*/
 	class IldgIoWriter_gaugefield: public LimeFileWriter
 	{
 	public:
-		IldgIoWriter_gaugefield(char * binary_data, n_uint64_t num_bytes, Sourcefileparameters srcFileParameters, std::string filenameIn);
+		IldgIoWriter_gaugefield(Matrixsu3 * data, n_uint64_t num_bytes, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue);
 	};
 	
 	Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const 	meta::Inputparameters& parameters);
-
+	void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 }
 
 #endif /* _READGAUGEH_ */
