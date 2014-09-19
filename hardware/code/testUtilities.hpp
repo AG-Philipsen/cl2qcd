@@ -21,9 +21,11 @@
 #ifndef _TESTUTILITIES_HPP_
 #define _TESTUTILITIES_HPP_
 
+#include <memory>
+
 #include "../../meta/inputparameters.hpp"
 
-meta::Inputparameters createParameters(std::string inputfile);
+std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile);
 void printKernelInformation(std::string name);
 
 #endif // _TESTUTILITIES_HPP_

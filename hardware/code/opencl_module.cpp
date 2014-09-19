@@ -193,9 +193,9 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::vector<std::string> collect_build_files()
 {
 	std::vector<std::string> out;
+	out.push_back("opencl_header.cl");
 	out.push_back("globaldefs.h");
 	out.push_back("types.h");
-	out.push_back("opencl_header.cl");
 
 	return out;
 }

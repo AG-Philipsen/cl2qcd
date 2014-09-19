@@ -222,7 +222,7 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 		auto device = buffers[0]->get_device();
 		device->get_gaugemomentum_code()->importGaugemomentumBuffer(buffers[0], host);
 	} else {
-		auto const params = system.get_inputparameters();
+		auto const & params = system.get_inputparameters();
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
 		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());

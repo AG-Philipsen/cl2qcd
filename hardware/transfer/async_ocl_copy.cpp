@@ -89,6 +89,7 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 	}
 
 	// migrate source cache back to source device
+#ifdef clEnqueueMigrateMemObjects
 	{
 		auto const events = get_raw_events({load_event, transfer_event, back_migration_event});
 		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
@@ -104,6 +105,12 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 			throw Opencl_Error(clerr, "clReleaseEvent", __FILE__, __LINE__);
 		}
 	}
+#else
+	// back migration is a performance optimization that is not functionally required.
+	// if it is not available just work
+	back_migration_event = transfer_event;
+#pragma message "clEnqueueMigrateMemObjects is not available on your system. This might negativly affect multi-device performance. Please upgrade to OpenCL 1.2 or higher."
+#endif
 
 	return transfer_event;
 }

@@ -30,7 +30,7 @@
 
 using namespace meta;
 
-void checkDefaults(const Inputparameters params)
+void checkDefaults(const Inputparameters & params)
 {
 	BOOST_REQUIRE_EQUAL(params.get_precision(), sizeof(double) * 8);
 

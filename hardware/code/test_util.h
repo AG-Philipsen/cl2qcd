@@ -23,6 +23,8 @@
 
 //todo: remove this file eventually
 
+#include <memory>
+
 #include <boost/test/unit_test.hpp>
 
 #include "../../host_functionality/logger.hpp"
@@ -73,7 +75,7 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 	}
 }
 
-meta::Inputparameters create_parameters(std::string inputfile)
+std::unique_ptr<meta::Inputparameters> create_parameters(std::string inputfile)
 {
 	std::string inputfile_location = defaultSourceDirectory_tmp;
 	std::string gpu_opt = defaultGpuOption_tmp;
@@ -87,8 +89,7 @@ meta::Inputparameters create_parameters(std::string inputfile)
 	logger.info() << "inputfile used: " << inputfile_location;
 	
 	const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str(), "--device=0"};
-	meta::Inputparameters params(num_par + 1, _params_cpu);
-	return params;
+	return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(num_par + 1, _params_cpu));
 }
 
 void printKernelInfo(std::string name)
@@ -96,7 +97,7 @@ void printKernelInfo(std::string name)
   logger.info() << "Test kernel\t\"" << name << "\"\tagainst reference value";
 }
 
-void testFloatAgainstInputparameters(hmc_float cpu_res, meta::Inputparameters params)
+void testFloatAgainstInputparameters(hmc_float cpu_res, const meta::Inputparameters & params)
 {
 	logger.info() << "Choosing reference value and acceptance precision";
 	hmc_float ref_val = params.get_test_ref_value();
@@ -108,7 +109,7 @@ void testFloatAgainstInputparameters(hmc_float cpu_res, meta::Inputparameters pa
 	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
 }
 
-void testFloatSizeAgainstInputparameters(hmc_float cpu_res, meta::Inputparameters params)
+void testFloatSizeAgainstInputparameters(hmc_float cpu_res, const meta::Inputparameters & params)
 {
 	logger.info() << "Choosing reference value and acceptance precision";
 	hmc_float ref_val = params.get_test_ref_value();

@@ -44,7 +44,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 	
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
   
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;

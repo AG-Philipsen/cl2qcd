@@ -38,7 +38,7 @@ class TestGaugefield_stagg {
  public:
  TestGaugefield_stagg(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
-    auto inputfile = system->get_inputparameters();
+    const auto & inputfile = system->get_inputparameters();
     meta::print_info_hmc(inputfile);
   };
 
@@ -174,7 +174,7 @@ inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor
  *  @note: In our program mu=0 is the TIME direction and mu=1,2,3 are the x,y,z direction!!!   
  * 
  */
-void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg * cpu, meta::Inputparameters params)
+void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg * cpu, const meta::Inputparameters & params)
 {
   int nt=params.get_ntime();
   int ns=params.get_nspace();
@@ -292,7 +292,7 @@ void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg *
  *  I have to print it to a text file according this scheme.
  */
 
-void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta::Inputparameters params)
+void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, const meta::Inputparameters & params)
 {
   int nt=params.get_ntime();
   int ns=params.get_nspace();
@@ -331,7 +331,7 @@ void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf, meta:
   file.close();
 }
 
-void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf, meta::Inputparameters params)
+void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf, const meta::Inputparameters &  params)
 {
   int nt=params.get_ntime();
   int ns=params.get_nspace();
@@ -353,7 +353,7 @@ void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf, me
 
 void print_staggeredfield_eo_to_textfile(std::string outputfile, const physics::lattices::Staggeredfield_eo* sf, const hardware::System& system)
 {
-  meta::Inputparameters params = system.get_inputparameters();
+  const auto & params = system.get_inputparameters();
   su3vec * out_sf;
   size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
   out_sf = new su3vec[NUM_ELEMENTS_SF_EO];

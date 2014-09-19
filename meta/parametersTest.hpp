@@ -23,18 +23,24 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersTest
-{
+namespace meta {
+class ParametersTest {
 public:
 	double get_test_ref_value() const noexcept;
 	double get_test_ref_value2() const noexcept;
 
-protected:
+private:
+	po::options_description options;
+
 	double test_ref_value;
 	double test_ref_value2;
-	
-	po::options_description getOptions();
+
+protected:
+	ParametersTest();
+	virtual ~ParametersTest();
+	ParametersTest(ParametersTest const&) = delete;
+	ParametersTest & operator=(ParametersTest const&) = delete;
+	po::options_description & getOptions();
 };
 
 }

@@ -41,7 +41,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 {
 	using hardware::buffers::PRNGBuffer;
 
-	auto params = system.get_inputparameters();
+	auto & params = system.get_inputparameters();
 
 	// initialize host prng
 	uint32_t seed = params.get_host_seed();

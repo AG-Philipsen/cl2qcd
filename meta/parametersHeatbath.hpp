@@ -23,22 +23,28 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersHeatbath
-{
+namespace meta {
+class ParametersHeatbath {
 public:
 	int get_thermalizationsteps() const noexcept;
 	int get_heatbathsteps() const noexcept;
 	int get_overrelaxsteps() const noexcept;
 	int get_xi() const noexcept;
-	
-protected:
+
+private:
+	po::options_description options;
+
 	int thermalizationsteps;
 	int heatbathsteps;
 	int overrelaxsteps;
 	int xi;
-	
-	po::options_description getOptions();
+
+protected:
+	ParametersHeatbath();
+	virtual ~ParametersHeatbath();
+	ParametersHeatbath(ParametersHeatbath const&) = delete;
+	ParametersHeatbath & operator=(ParametersHeatbath const&) = delete;
+	po::options_description & getOptions();
 };
 
 }

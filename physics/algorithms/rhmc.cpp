@@ -46,7 +46,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 
 	klepsydra::Monotonic step_timer;
 
-	const auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	logger.debug() << "\tRHMC:\tinit spinorfield and gaugemomentum" ;
 	const Gaugemomenta p(system);
@@ -110,7 +110,7 @@ hmc_observables physics::algorithms::perform_rhmc_step(const physics::algorithms
 {
 	using namespace physics::lattices;
 
-	const auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	if(params.get_use_eo()) {
 		return ::perform_rhmc_step<Rooted_Staggeredfield_eo>(approx1, approx2, approx3, gf, iter, rnd_number, prng, system);
 	} else {
@@ -123,7 +123,7 @@ template <class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * ph
 {
 	using namespace physics::algorithms;
 
-	const auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	const SPINORFIELD initial(system);
 
@@ -141,7 +141,7 @@ template <class SPINORFIELD> static void init_spinorfield_mp(const SPINORFIELD *
 {
 	using namespace physics::algorithms;
 
-	const auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	const SPINORFIELD initial(system);
 

@@ -23,13 +23,12 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersSources
-{
+namespace meta {
+class ParametersSources {
 public:
 	enum sourcetypes {point = 1, volume, timeslice, zslice};
 	enum sourcecontents {one = 1, z4, gaussian, z2};
-	
+
 	int get_num_sources() const noexcept;
 	int get_source_x() const noexcept;
 	int get_source_y() const noexcept;
@@ -38,17 +37,26 @@ public:
 	bool get_place_sources_on_host() const noexcept;
 	sourcetypes get_sourcetype() const noexcept;
 	sourcecontents get_sourcecontent() const noexcept;
-protected:
+
+private:
+	po::options_description options;
+
 	int num_sources;
 	int source_x;
 	int source_y;
 	int source_z;
 	int source_t;
 	bool place_sources_on_host;
+
+protected:
+	ParametersSources();
+	virtual ~ParametersSources();
+	ParametersSources(ParametersSources const&) = delete;
+	ParametersSources & operator=(ParametersSources const&) = delete;
+	po::options_description & getOptions();
+
 	sourcetypes sourcetype;
 	sourcecontents sourcecontent;
-	
-	po::options_description getOptions();
 };
 
 }

@@ -56,7 +56,7 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
 	//Auxiliary field
 	Staggeredfield_eo v2(system);
 	//How often to check resid
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int RESID_CHECK_FREQUENCY = params.get_findminmax_iteration_block_size();
 	
 	log_squarenorm(create_log_prefix_find_max(0) + "v1 (initial): ", v1);
@@ -165,7 +165,7 @@ hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix
 	//Auxiliary field
 	Staggeredfield_eo v2(system);
 	//How often to check resid
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int RESID_CHECK_FREQUENCY = params.get_findminmax_iteration_block_size();
 	
 	log_squarenorm(create_log_prefix_find_min(0) + "v1 (initial): ", v1);

@@ -87,8 +87,8 @@ namespace meta {
   std::string create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept;
   std::string create_configuration_name(const Inputparameters& parameters) noexcept;
   std::string create_prng_name(const Inputparameters& parameters) noexcept;
-  void print_info_flavour_doublet_correlators(const meta::Inputparameters params);
-  void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params);
+  void print_info_flavour_doublet_correlators(const meta::Inputparameters& params);
+  void print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters& params);
   template<typename Container> void free_container(Container& c) noexcept;
   std::string createLogfileName(const char* name);
   std::pair<int,std::vector<const char*>> addOptionsToArgv(int argc, const char** argv, std::vector<const char*> op);
