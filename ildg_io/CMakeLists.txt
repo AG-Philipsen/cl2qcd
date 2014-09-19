@@ -29,6 +29,7 @@ add_library(ildg_io
 	limeFileWriter.cpp
 	ildgIo_gaugefield.cpp
 	ildgIo.cpp
+	matrixSu3_utilities.cpp
 )
 
 target_link_libraries(ildg_io
