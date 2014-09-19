@@ -25,6 +25,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "ildgIo_gaugefield.hpp"
+#include "../meta/util.hpp"
 
 int expectedPrecision = 64;
 std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
@@ -114,8 +115,6 @@ void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefilepar
 	BOOST_CHECK_EQUAL(toCheck1.solvertype, toCheck2.solvertype);
 }
 
-#include "../meta/util.hpp"
-
 void writeEmptyGaugefieldFromSourcefileParameters(const meta::Inputparameters * parameters, std::string configurationName)
 {
 	const n_uint64_t numberElements = getNumberOfElements_gaugefield(parameters);
@@ -144,4 +143,29 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 	delete readBinaryData;
 	
 	compareTwoSourcefileParameters(srcFileParams_1, readGaugefield.parameters);
+}
+
+#include "matrixSu3_utilities.hpp"
+
+BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat)
+{
+	const char * tmp [] = {"foo", "--nspace=4", "--ntime=4"};
+	const meta::Inputparameters parameters(3, tmp);
+	
+	const n_uint64_t numberOfElements = getNumberOfElements_gaugefield(&parameters);
+	Matrixsu3 * gaugefield = new Matrixsu3[ numberOfElements ];
+	fillMatrixSu3Array(gaugefield, numberOfElements);
+	
+	hmc_complex sumBeforeConversion = sumUpAllMatrixElements(gaugefield, numberOfElements);
+	
+	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
+	char * binary_data = new char[num_bytes];
+	
+	copy_gaugefield_to_ildg_format(binary_data, gaugefield, parameters);
+	copy_gaugefield_from_ildg_format(gaugefield, binary_data, numberOfElements * 9 * 2, parameters);
+	
+	hmc_complex sumAfterConversion = sumUpAllMatrixElements(gaugefield, numberOfElements);
+	
+	BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, sumAfterConversion.re);
+	BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, sumAfterConversion.im);
 }
