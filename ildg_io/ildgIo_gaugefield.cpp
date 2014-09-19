@@ -46,6 +46,8 @@ IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, i
 {
 	if ( limeFileProp.numberOfBinaryDataEntries >= 1 )
 	{
+		destination = new Matrixsu3[getNumberOfElements_gaugefield(parametersIn)];
+	
 		char * gf_ildg;
 		
 		checkLimeFileForFieldType(parameters.field);
@@ -73,10 +75,12 @@ void* createVoidPointerFromString(std::string stringIn) noexcept
 	return (void*) stringIn.c_str();
 }
 
-IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(Matrixsu3 * data, n_uint64_t num_bytes, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue): LimeFileWriter(filenameIn)
+IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(Matrixsu3 * data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue): LimeFileWriter(filenameIn)
 {
 	logger.info() << "writing gaugefield to lime-file \""  + filenameIn + "\"";
 	
+	size_t numberOfElements = getNumberOfElements_gaugefield(parameters);
+	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
 	char * binary_data = new char[num_bytes];
 	copy_gaugefield_to_ildg_format(binary_data, data, *parameters);
 	
@@ -260,3 +264,12 @@ void ildgIo::copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, 
 	}
 }
 
+size_t ildgIo::getNumberOfElements_gaugefield(const meta::Inputparameters * parameters)
+{
+	return meta::get_vol4d(*parameters) * NDIM;
+}
+
+n_uint64_t ildgIo::getSizeInBytes_gaugefield(size_t numberOfElements)
+{
+	return 2 * NC * NC * numberOfElements * sizeof(hmc_float);
+}

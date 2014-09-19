@@ -22,15 +22,10 @@
 
 #include "ildgIo_gaugefield.hpp"
 #include "../meta/util.hpp"
-#include "checksum.h"
-#include <cassert>
-#include "../executables/exceptions.h"
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
 	Matrixsu3 * gf_host;
-	//todo: this should not be that explicit here!	
-	gf_host = new Matrixsu3[meta::get_vol4d(*parameters) * 4];
 
 	IldgIoReader_gaugefield reader(ildgfile, parameters->get_precision(), parameters, gf_host);
 
@@ -41,14 +36,7 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	return gf_host;
 }
 
-static size_t getBufferSize_gaugefield(const meta::Inputparameters * parameters) noexcept
-{
-	return 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * parameters->get_ntime() * sizeof(hmc_float);
-}
-
 void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf, const meta::Inputparameters * parameters, int trajectoryNumber, double plaquetteValue)
 {
-	//todo: move this into the writer class!
-	const size_t gaugefield_buf_size = getBufferSize_gaugefield(parameters);
-	IldgIoWriter_gaugefield writer(host_buf, gaugefield_buf_size, parameters, outputfile, trajectoryNumber, plaquetteValue);
+	IldgIoWriter_gaugefield writer(host_buf, parameters, outputfile, trajectoryNumber, plaquetteValue);
 }

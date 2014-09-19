@@ -60,21 +60,13 @@ Sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 	srcFileParams.prec = getPrecisionOfDoubleInBits();
 	srcFileParams.num_entries = getElementsOfGaugefield(
 		srcFileParams.lx, srcFileParams.ly, srcFileParams.lz, srcFileParams.lt);
-	srcFileParams.flavours = 33;
 	srcFileParams.trajectorynr = 1234567890;
 	srcFileParams.time = -12345;
 	srcFileParams.time_solver = -12345;
-	srcFileParams.noiter = -6789;
 	srcFileParams.plaquettevalue = -12.34567833;
 	srcFileParams.beta = -12.345678;
 	srcFileParams.kappa = -56.7890;
 	srcFileParams.mu = -56.7890;
-	srcFileParams.c2_rec = -13.579;
-	srcFileParams.mubar = -2.4680;
-	srcFileParams.epsilonbar = -19.8273;
-	srcFileParams.epssq = -19.87654;
-	srcFileParams.kappa_solver = -45.6784;
-	srcFileParams.mu_solver = -10.9283;
 	
 	srcFileParams.field = getFieldType_gaugefield();
 	srcFileParams.date = "someDate";
@@ -86,9 +78,9 @@ Sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 	return srcFileParams;
 }
 
-// one cannot expect that date, time and time_solver will match..
+// one cannot expect that hmcVersion, date, time and time_solver will match..
 // not implemented or fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 11 )
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 12 )
 
 void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefileparameters toCheck2)
 {
@@ -116,7 +108,7 @@ void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefilepar
 	
 	BOOST_REQUIRE_EQUAL(toCheck1.field, toCheck2.field);
 	BOOST_CHECK_EQUAL(toCheck1.date, toCheck2.date);
-	BOOST_REQUIRE_EQUAL(toCheck1.hmcversion, toCheck2.hmcversion);
+	BOOST_CHECK_EQUAL(toCheck1.hmcversion, toCheck2.hmcversion);
 	BOOST_CHECK_EQUAL(toCheck1.hmcversion_solver, toCheck2.hmcversion_solver);
 	BOOST_CHECK_EQUAL(toCheck1.date_solver, toCheck2.date_solver);
 	BOOST_CHECK_EQUAL(toCheck1.solvertype, toCheck2.solvertype);
@@ -124,21 +116,12 @@ void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefilepar
 
 #include "../meta/util.hpp"
 
-static size_t getBufferSize_gaugefield(const meta::Inputparameters * parameters) noexcept
-{
-	return 2 * NC * NC * NDIM * meta::get_volspace(*parameters) * parameters->get_ntime() * sizeof(hmc_float);
-}
-
 void writeEmptyGaugefieldFromSourcefileParameters(const meta::Inputparameters * parameters, std::string configurationName)
 {
-	//todo: make this better!
-	const n_uint64_t numberElements = meta::get_vol4d(*parameters) * 4;//getElementsOfGaugefield(srcFileParams.lx, srcFileParams.ly, srcFileParams.lz, srcFileParams.lt) * 4;
-	
+	const n_uint64_t numberElements = getNumberOfElements_gaugefield(parameters);
 	Matrixsu3 * gaugefield = new Matrixsu3[ numberElements ];
 	
-	const n_uint64_t numBytes = getBufferSize_gaugefield(parameters);
-	
-	IldgIoWriter_gaugefield writer( gaugefield, numBytes, parameters ,configurationName, 0, 0.);
+	IldgIoWriter_gaugefield writer( gaugefield, parameters ,configurationName, 1234567890, -12.34567833);
 	
 	delete gaugefield;
 }
@@ -147,17 +130,18 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 {
 	Sourcefileparameters srcFileParams_1 = setSourceFileParametersToSpecificValuesForGaugefield();
 	//do not consider the checksum in this test
-	const char * tmp [] = {"foo", "--nspace=3", "--ntime=5", "--ignore_checksum_errors=true"};
-	const meta::Inputparameters parameters(4, tmp);
+	const char * tmp [] = {"foo", "--nspace=3", "--ntime=5", "--ignore_checksum_errors=true", "--beta=-12.345678", "--kappa=-56.7890", "--mu=-56.7890"};
+	const meta::Inputparameters parameters(7, tmp);
 	//TODO: test with single?
 	std::string configurationName = "conf.test";
 	
 	writeEmptyGaugefieldFromSourcefileParameters(&parameters, configurationName);
 	
-// 	Matrixsu3 * readBinaryData;
-// 	readBinaryData = new Matrixsu3[3*3*3*5*4];
-// 	IldgIoReader_gaugefield srcFileParams_2(configurationName, srcFileParams_1.prec, &parameters, readBinaryData);
-// 	delete readBinaryData;
-// 	
-// 	compareTwoSourcefileParameters(srcFileParams_1, srcFileParams_2.parameters);
+	Matrixsu3 * readBinaryData;
+	const n_uint64_t numberElements = getNumberOfElements_gaugefield(&parameters);
+	readBinaryData = new Matrixsu3[numberElements];
+	IldgIoReader_gaugefield readGaugefield(configurationName, srcFileParams_1.prec, &parameters, readBinaryData);
+	delete readBinaryData;
+	
+	compareTwoSourcefileParameters(srcFileParams_1, readGaugefield.parameters);
 }

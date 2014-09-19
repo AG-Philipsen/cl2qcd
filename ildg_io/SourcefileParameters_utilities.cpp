@@ -26,14 +26,40 @@
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 
+extern "C" {
+#include <lime_fixed_types.h>
+#include <libxml/parser.h>
+#include <libxml/xmlreader.h>
+#include <stdio.h>
+#include <string.h>
+//this is for htons
+#include <arpa/inet.h>
+}
+
+const int xmlNodeType_startElement = 1;
+
 static double castStringToDouble(std::string in)
 {
-	return boost::lexical_cast<double>(in);
+	try
+	{
+		return boost::lexical_cast<double>(in);
+	}
+	catch (std::bad_cast)
+	{
+		throw Print_Error_Message( "Could not cast string \"" + in + "\" to double!", __FILE__, __LINE__);
+	}
 }
 
 static int castStringToInt(std::string in)
 {
-	return boost::lexical_cast<int>(in);
+	try
+	{
+		return boost::lexical_cast<int>(in);
+	}
+	catch (std::bad_cast)
+	{
+		throw Print_Error_Message( "Could not cast string \"" + in + "\" to int!", __FILE__, __LINE__);
+	}
 }
 
 static std::string removeNewlines(std::string in)
@@ -55,23 +81,23 @@ class ParserMap_xlf
 public:
 	boost::regex re;
 	std::string str;
-	std::string value;
+	std::string value = "-1";
 };
 
 static std::map<std::string, ParserMap_xlf> createParserMap_xlf()
 {
 	std::map<std::string, ParserMap_xlf> parserMap;
 	
-	parserMap["plaquette"].re = boost::regex ("plaquette\\s+=\\s+[\\+\\-]*\\d+\\.\\d+");
+	parserMap["plaquette"].re = boost::regex ("plaquette\\s*=\\s*[\\+\\-]*\\d+[.]*\\d*");
 	parserMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
-	parserMap["beta"].re = boost::regex ("beta\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["kappa"].re = boost::regex ("kappa\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["mu"].re = boost::regex ("mu\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+	parserMap["beta"].re = boost::regex ("beta\\s*=\\s*[\\+\\-]*\\d+[.]*\\d*");
+	parserMap["kappa"].re = boost::regex ("kappa\\s+=\\s+[\\+\\-]*\\d+[.]*\\d*");
+	parserMap["mu"].re = boost::regex ("mu\\s+=\\s+[\\+\\-]*\\d+[.]*\\d*");
+	parserMap["c2_rec"].re= boost::regex ("c2_rec\\s+=\\s+[\\+\\-]*\\d+[.]*\\d*");
  	parserMap["time"].re = boost::regex ("time\\s+=\\s+[\\+\\-]*\\d+");
- 	parserMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.\\d+[a-z]*");
-	parserMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
-	parserMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d+.\\d+");
+ 	parserMap["hmcversion"].re = boost::regex ("hmcversion\\s+=\\s+\\d.+\\d+[a-z]*");
+	parserMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d+[.]*\\d*");
+	parserMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d+[.]*\\d*");
  	parserMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
 	
 	return parserMap;
@@ -79,6 +105,7 @@ static std::map<std::string, ParserMap_xlf> createParserMap_xlf()
 
 static void setParametersToValues_xlf(Sourcefileparameters & parameters, std::map<std::string, ParserMap_xlf>  parserMap)
 {
+	logger.trace() << "setting sourcefile parameters from xlf entry...";
 	parameters.plaquettevalue = castStringToDouble(parserMap["plaquette"].value);
 	parameters.kappa = castStringToDouble(parserMap["kappa"].value);
 	parameters.mu = castStringToDouble(parserMap["mu"].value);
@@ -102,20 +129,31 @@ static void mapStringToParserMap(std::string str, std::map<std::string, ParserMa
 	//todo: find out about ::iterator
 	for (std::map<std::string, ParserMap_xlf>::iterator it = parserMap.begin(); it != parserMap.end(); it++)
 	{
-		logger.trace() << "Found \"" + it->first + "\"";
-		
-		//todo: add check if re is found
+		logger.trace() << "Check for \"" + it->first + "\"";
 		
 		//todo: make this more beautiful
 		//http://stackoverflow.com/questions/10058606/c-splitting-a-string-by-a-character
 		//start/end points of tokens in str
 		std::vector<std::string> tokens;
 		boost::sregex_token_iterator begin(str.begin(), str.end(), it->second.re), end;
-		std::copy(begin, end, std::back_inserter(tokens));
-
-		it->second.str = removeNewlines( tokens[0] );
-		it->second.value =  trimStringBeforeEqual(it->second.str);
+		if(begin == end) //re is not found!
+		{
+			logger.fatal() << "Did not find match for \"" << it->first << "\"!";
+		}
+		else
+		{
+			std::copy(begin, end, std::back_inserter(tokens));
+			logger.trace() << "Found match for \"" << it->first << "\":";
+			for (int i = 0; i<(int) tokens.size(); i++)
+				logger.trace() << tokens[i];
+			
+			it->second.str = removeNewlines( tokens[0] );
+			it->second.value =  trimStringBeforeEqual(it->second.str);
+			logger.trace() << "Match for \"" + it->first << "\": " + it->second.str;
+			logger.trace() << "Extracted value for \"" + it->first << "\": " + it->second.value;
+		}
 	}
+	logger.trace() << "done...";
 }
 
 void sourcefileParameters::setFromLimeEntry_xlf(Sourcefileparameters & parameters, char * buffer)
@@ -126,18 +164,6 @@ void sourcefileParameters::setFromLimeEntry_xlf(Sourcefileparameters & parameter
 	mapStringToParserMap(str, parserMap);
 	setParametersToValues_xlf(parameters, parserMap);
 }
-
-extern "C" {
-#include <lime_fixed_types.h>
-#include <libxml/parser.h>
-#include <libxml/xmlreader.h>
-#include <stdio.h>
-#include <string.h>
-//this is for htons
-#include <arpa/inet.h>
-}
-
-const int xmlNodeType_startElement = 1;
 
 void extractXmlValuesBasedOnMap(xmlTextReaderPtr reader, std::map<std::string, std::string> * map)
 {
