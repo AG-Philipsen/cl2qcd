@@ -25,8 +25,8 @@
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
-	Matrixsu3 * gf_host;
-	IldgIoReader_gaugefield reader(ildgfile, parameters, gf_host);
+	Matrixsu3 * gf_host = nullptr; // will be allocated by the following line, init to 0 to ensure error in case we fuck up.
+	IldgIoReader_gaugefield reader(ildgfile, parameters, &gf_host);
 
 	trajectoryNumberAtInit = reader.getReadTrajectoryNumber();
 	plaq = reader.getReadPlaquetteValue();
