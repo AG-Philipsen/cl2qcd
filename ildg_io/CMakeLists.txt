@@ -48,4 +48,5 @@ target_link_libraries(ildg_io
 add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test ildg_io)
 add_unit_test_withLibraries(limeFileReader limeFileReader_test ildg_io)
 add_unit_test_withLibraries(ildgIo_gaugefield ildgIo_gaugefield_test ildg_io)
+add_unit_test_withLibraries(matrixSu3_utilities matrixSu3_utilities_test ildg_io)
 

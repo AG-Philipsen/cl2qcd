@@ -19,12 +19,32 @@
  */
 
 #include "matrixSu3_utilities.hpp"
+#include <stdexcept>
+#include <string>
 
-void Matrixsu3_utilities::fillMatrixSu3Array(Matrixsu3 * in, size_t numberOfElements)
+using namespace Matrixsu3_utilities;
+
+Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
+{
+	if (fillTypeIn == ONE)
+	{
+		return { {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0} };
+	}
+	else if (fillTypeIn == ZERO)
+	{
+		return { {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} };
+	}
+	else
+	{
+		throw std::logic_error("Do not know fill type for matrixSu3!");
+	}
+}
+
+void Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(Matrixsu3 * in, size_t numberOfElements, FillType fillType)
 {
 	for(int iteration = 0; iteration < (int) numberOfElements; iteration ++)
 	{
-		in[iteration] = { {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0}, {1.0, 1.0} };
+		in[iteration] = createMatrixSu3BasedOnFillType(fillType);
 	}
 }
 

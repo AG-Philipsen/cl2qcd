@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat)
 	
 	const n_uint64_t numberOfElements = getNumberOfElements_gaugefield(&parameters);
 	Matrixsu3 * gaugefield = new Matrixsu3[ numberOfElements ];
-	Matrixsu3_utilities::fillMatrixSu3Array(gaugefield, numberOfElements);
+	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, numberOfElements, Matrixsu3_utilities::FillType::ONE);
 	
 	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield, numberOfElements);
 	

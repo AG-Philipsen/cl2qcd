@@ -27,10 +27,10 @@
 
 namespace Matrixsu3_utilities
 {
+	enum FillType {ZERO, ONE};
 
-	void fillMatrixSu3Array(Matrixsu3 * in, size_t numberOfElements);
+	void fillMatrixSu3Array_constantMatrix(Matrixsu3 * in, size_t numberOfElements, FillType fillType);
 	hmc_complex sumUpAllMatrixElements(Matrixsu3 * in, size_t numberOfElements);
-
 }
 
 #endif
