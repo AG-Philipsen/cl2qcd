@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 	Matrixsu3 * readBinaryData;
 	const n_uint64_t numberElements = getNumberOfElements_gaugefield(&parameters);
 	readBinaryData = new Matrixsu3[numberElements];
-	IldgIoReader_gaugefield readGaugefield(configurationName, srcFileParams_1.prec, &parameters, readBinaryData);
+	IldgIoReader_gaugefield readGaugefield(configurationName, &parameters, readBinaryData);
 	delete readBinaryData;
 	
 	compareTwoSourcefileParameters(srcFileParams_1, readGaugefield.parameters);

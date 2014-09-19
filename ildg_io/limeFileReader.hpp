@@ -32,6 +32,9 @@ public:
 	LimeFileReader(std::string sourceFilenameIn, int precision);
 	//todo: make this private or remove/find better solution?
 	Sourcefileparameters parameters;
+	
+	int getReadTrajectoryNumber() noexcept;
+	double getReadPlaquetteValue() noexcept;
 protected:
 	void readMetaDataFromLimeFile();
 	void extractMetadataFromLimeFile();

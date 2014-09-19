@@ -42,7 +42,7 @@ size_t sizeOfGaugefieldBuffer(size_t num_entries)
 }
 
 //todo: make char ** std::vector<char*>
-IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, int desiredPrecisionIn, const meta::Inputparameters * parametersIn, Matrixsu3 * destination) : LimeFileReader(sourceFilenameIn, desiredPrecisionIn)
+IldgIoReader_gaugefield::IldgIoReader_gaugefield(std::string sourceFilenameIn, const meta::Inputparameters * parametersIn, Matrixsu3 * destination) : LimeFileReader(sourceFilenameIn, parametersIn->get_precision())
 {
 	if ( limeFileProp.numberOfBinaryDataEntries >= 1 )
 	{

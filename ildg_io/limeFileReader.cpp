@@ -297,3 +297,13 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 
 	return props;
 }
+
+int LimeFileReader::getReadTrajectoryNumber() noexcept
+{
+	return this->parameters.trajectorynr;
+}
+
+double LimeFileReader::getReadPlaquetteValue() noexcept
+{
+	return this->parameters.plaquettevalue;
+}

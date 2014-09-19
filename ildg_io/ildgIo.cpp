@@ -18,20 +18,18 @@
  * You should have received a copy of the GNU General Public License
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "ildgIo.hpp"
 
 #include "ildgIo_gaugefield.hpp"
-#include "../meta/util.hpp"
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
 	Matrixsu3 * gf_host;
+	IldgIoReader_gaugefield reader(ildgfile, parameters, gf_host);
 
-	IldgIoReader_gaugefield reader(ildgfile, parameters->get_precision(), parameters, gf_host);
-
-	//todo: make access member fcts.
-	trajectoryNumberAtInit = reader.parameters.trajectorynr;
-	plaq = reader.parameters.plaquettevalue;
+	trajectoryNumberAtInit = reader.getReadTrajectoryNumber();
+	plaq = reader.getReadPlaquetteValue();
 
 	return gf_host;
 }
