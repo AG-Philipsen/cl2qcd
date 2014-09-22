@@ -41,7 +41,7 @@ void generationExecutable::setIterationParameters()
 
 void generationExecutable::saveGaugefield()
 {
-        gaugefield->save(iteration+1);
+	gaugefield->save(iteration+1);
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		gaugefield->saveToSpecificFile(iteration + 1);
 	}
@@ -49,7 +49,7 @@ void generationExecutable::saveGaugefield()
 
 void generationExecutable::savePrng()
 {
-	prng->save(iteration + 1);
+	prng->save();
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		prng->saveToSpecificFile(iteration + 1);
 	}

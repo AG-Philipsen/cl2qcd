@@ -254,16 +254,14 @@ void physics::PRNG::store(const std::string filename) const
 	}
 }
 
-void physics::PRNG::save(int number)
+void physics::PRNG::save()
 {
 	std::string outputfile = meta::create_prng_name(system.get_inputparameters());
-	//TODO: Include trajectory number in file
 	store(outputfile);
 }
 
 void physics::PRNG::saveToSpecificFile(int number)
 {
 	std::string outputfile = meta::create_prng_name(system.get_inputparameters(), number);
-	//TODO: Include trajectory number in file
 	store(outputfile);
 }

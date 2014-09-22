@@ -71,10 +71,10 @@ namespace physics {
 			void store(const std::string filename) const;
 
 			/**
-			 * Save current PRNG state to a file with name prng_prefix + number + prng_postfix
+			 * Save current PRNG state to a file with name prng_prefix + 'save' + prng_postfix
 			 * @param[in] number The trajectory number to be stored in the file
 			 */
-			void save(int number);
+			void save();
 			/**
 			 * Save current PRNG state to a file with specific name based on
 			 * current trajectory number.

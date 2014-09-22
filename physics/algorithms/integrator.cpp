@@ -371,9 +371,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 	//NOTE: With 2MN, the stepsize for the lower integration step is deltaTau1/(2 Ni-1)!!
 	const hmc_float deltaTau1 = deltaTau2 / ( 2.* (hmc_float) n1 );
 	const hmc_float deltaTau0 = deltaTau1 / ( 2.* (hmc_float) n0 );
-	const hmc_float deltaTau1_half = 0.5 * deltaTau1;
 	const hmc_float deltaTau0_half = 0.5 * deltaTau0;
-	//const hmc_float deltaTau1_half = 0.5 * deltaTau1;
 	const hmc_float lambda0_times_deltaTau0 = deltaTau0 * params.get_lambda(0);
 	const hmc_float lambda1_times_deltaTau1 = deltaTau1 * params.get_lambda(1);
 	const hmc_float lambda2_times_deltaTau2 = deltaTau2 * params.get_lambda(2);
