@@ -214,18 +214,15 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	in2.load(sf_in2);
 	alpha.load(&alpha_host);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
-
 	logger.info() << "Run kernel";
 	device->saxpy_AND_squarenorm_eo_device(&in, &in2, &alpha, &out, &sqnorm);
 
 	logger.info() << "result:";
-	hmc_float cpu_res;
-	//spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-	//sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+	hmc_complex cpu_res = {0., 0.};
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res.re;
 
-	testFloatAgainstInputparameters(cpu_res, *params);
+	testFloatAgainstInputparameters(cpu_res.re, *params);
 	BOOST_MESSAGE("Test done");
 }
 
