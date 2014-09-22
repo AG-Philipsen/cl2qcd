@@ -137,7 +137,7 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
 	  out->gamma5();
 	  
 	  FERMIONMATRIX qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-	  const int iterations = physics::algorithms::solvers::bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
+	  physics::algorithms::solvers::bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
 	} //try
 	catch (physics::algorithms::solvers::SolverException& e ) {
 	  logger.fatal() << e.what();
@@ -151,7 +151,7 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
 	  tmp2.gamma5();
 
 	  FERMIONMATRIX_HERM fm_herm(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-	  const int iterations_cg = physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, tmp, system, params.get_solver_prec());
+	  physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, tmp, system, params.get_solver_prec());
 	  FERMIONMATRIX_CONJ fm_conj(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
 	  fm_conj(out, gf, tmp2);
 	}
