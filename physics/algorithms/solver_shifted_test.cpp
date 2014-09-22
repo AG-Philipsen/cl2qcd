@@ -314,7 +314,6 @@ BOOST_AUTO_TEST_CASE(cgm_5)
 	}
 }
 
-/*
 BOOST_AUTO_TEST_CASE(cgm_6)
 {
 	using physics::fermionmatrix::DKS_eo;
