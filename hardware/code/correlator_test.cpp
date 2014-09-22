@@ -303,7 +303,6 @@ void test_src_volume(std::string inputfile)
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
 	BOOST_REQUIRE(sf_out);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
 	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
@@ -371,7 +370,6 @@ void test_src_zslice(std::string inputfile)
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
 	BOOST_REQUIRE(sf_out);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
 	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
@@ -439,7 +437,6 @@ void test_src_tslice(std::string inputfile)
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
 	BOOST_REQUIRE(sf_out);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
 	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
@@ -506,9 +503,6 @@ void test_src_point(std::string inputfile)
 	spinor * sf_out;
 	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
 	BOOST_REQUIRE(sf_out);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-	auto prng_buf = prng.get_buffers().at(0);
 
 	hmc_float sum = 0;
 	for (int i = 0; i< iterations; i++){
