@@ -114,8 +114,6 @@ double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_deg
 				unsigned long pnum, unsigned long pden,
 				int a_len, double *a_param, int *a_pow)
 {
-  char *fname = "generateApprox(int, unsigned long, unsigned long)";
-
   if(logger.beDebug()){
     logger.trace() << "Degree of the approximation is (" << num_degree << "," << den_degree << ")";
     logger.trace() << "Approximating the function x^(" << pnum << "/" << pden << ")";
