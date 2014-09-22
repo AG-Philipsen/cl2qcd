@@ -53,7 +53,7 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 }
 
 KernelTester::KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
-	parameters(parameters), system(system), device(device), kernelResult(0, 0), referenceValue(0, 0), typeOfComparison(1), allocatedObjects(false)
+	testPrecision(1e-8), typeOfComparison(1), kernelResult(0, 0), referenceValue(0, 0), allocatedObjects(false), parameters(parameters), system(system), device(device)
 {}
 
 #include <boost/test/floating_point_comparison.hpp>
