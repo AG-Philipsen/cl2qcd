@@ -56,7 +56,7 @@ size_t meta::get_float_size(const Inputparameters& params)
 {
 	return params.get_precision() / 8;
 }
-size_t meta::get_mat_size(const Inputparameters& params)
+size_t meta::get_mat_size(const Inputparameters&)
 {
 	// TODO with rec12 this becomes 6
 	return 9;
