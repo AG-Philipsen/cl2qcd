@@ -123,7 +123,7 @@ void test_build(std::string inputfile)
 hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
 {
 	hmc_float res = 0.;
-	for(int i = 0; i < NUM_ELEMS; i++) {
+	for(size_t i = 0; i < NUM_ELEMS; i++) {
 		spinor tmp = in[i];
 		res +=
 		  tmp.e0.e0.re + tmp.e0.e0.im +
@@ -188,7 +188,6 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
@@ -255,7 +254,6 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
