@@ -769,7 +769,7 @@ size_t hardware::code::Fermions::get_read_write_size(const std::string& in) cons
 	return 0;
 }
 
-static int flop_dslash_per_site(const meta::Inputparameters & parameters)
+static int flop_dslash_per_site(const meta::Inputparameters &)
 {
 	/** @NOTE: this is the "original" dslash without any simplifications, counting everything "full". this is a much too hight number!!
 	   *  //this kernel performs for each eo site a 2*NDIM sum over (1 + gamma_mu) * su3matrix * spinor
