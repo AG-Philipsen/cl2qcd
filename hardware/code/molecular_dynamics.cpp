@@ -535,13 +535,9 @@ void hardware::code::Molecular_Dynamics::fermion_staggered_partial_force_device(
 }
 
 
-void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate) const
+void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>&) const
 {
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(stout_smear_fermion_force, &ls2, &gs2, &num_groups);
-	//set arguments
+	throw std::runtime_error("Not implemented!");
 }
 
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
