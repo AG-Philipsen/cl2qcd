@@ -185,7 +185,7 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 		return (C * 3 * (8) + C * 4 * R + 4 * A) * D * Seo;
 	}
 	if (in == "stout_smear_fermion_force") {
-		return 10000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	return 0;
 }
@@ -238,7 +238,7 @@ uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in
 		                     18 + R * 18 + meta::get_flop_complex_mult() + 9 + 16);
 	}
 	if (in == "stout_smear_fermion_force") {
-		return 10000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	return 0;
 }
