@@ -80,7 +80,7 @@ float benchmark(hardware::Transfer * const transfer)
 	using hardware::buffers::Buffer;
 	using hardware::SynchronizationEvent;
 
-	auto const size = 4u * 1024u *1024u;
+	auto const size = 4u * 1024u * 1024u;
 	auto const iterations = 25;
 
 	Buffer src(size, transfer->get_src_device());

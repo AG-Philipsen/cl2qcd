@@ -26,7 +26,7 @@
 #include "../device.hpp"
 
 namespace {
-	size_t get_required_buffer_size(const size_t * region);
+size_t get_required_buffer_size(const size_t * region);
 }
 
 hardware::transfer::OclCopy::OclCopy(hardware::Device * const from, hardware::Device * const to)
@@ -84,8 +84,8 @@ hardware::buffers::Buffer * hardware::transfer::OclCopy::get_transfer_buffer(con
 }
 
 namespace {
-	size_t get_required_buffer_size(const size_t * const region)
-	{
-		return region[0] * region[1] * region[2];
-	}
+size_t get_required_buffer_size(const size_t * const region)
+{
+	return region[0] * region[1] * region[2];
+}
 }

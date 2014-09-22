@@ -31,22 +31,22 @@
 #define DGMA_EXTENSION "cl_amd_bus_addressable_memory"
 
 namespace {
-	size_t get_required_buffer_size(const size_t * region);
+size_t get_required_buffer_size(const size_t * region);
 }
 
 namespace hardware {
 namespace transfer {
 
 class DGMAGhostBuffer {
-	public:
-		DGMAGhostBuffer(cl_command_queue device, hardware::buffers::Buffer * src, hardware::System const & system);
-		DGMAGhostBuffer(DGMAGhostBuffer const &) = delete;
-		~DGMAGhostBuffer();
-		cl_mem get_cl_buffer() const;
+public:
+	DGMAGhostBuffer(cl_command_queue device, hardware::buffers::Buffer * src, hardware::System const & system);
+	DGMAGhostBuffer(DGMAGhostBuffer const &) = delete;
+	~DGMAGhostBuffer();
+	cl_mem get_cl_buffer() const;
 
-	private:
-		size_t size;
-		cl_mem buffer;
+private:
+	size_t size;
+	cl_mem buffer;
 };
 
 }
@@ -94,7 +94,7 @@ hardware::SynchronizationEvent hardware::transfer::DirectGMA::transfer()
 	}
 
 	// transfer data to destination device
-	auto const events = get_raw_events({load_event, transfer_event, dump_event});
+	auto const events = get_raw_events( {load_event, transfer_event, dump_event});
 	cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
 
 	cl_event raw_transfer_event;
@@ -192,10 +192,10 @@ cl_mem hardware::transfer::DGMAGhostBuffer::get_cl_buffer() const
 }
 
 namespace {
-	size_t get_required_buffer_size(const size_t * const region)
-	{
-		return region[0] * region[1] * region[2];
-	}
+size_t get_required_buffer_size(const size_t * const region)
+{
+	return region[0] * region[1] * region[2];
+}
 }
 
 #endif

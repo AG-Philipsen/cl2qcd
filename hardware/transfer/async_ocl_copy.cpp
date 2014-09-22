@@ -27,7 +27,7 @@
 #include "../system.hpp"
 
 namespace {
-	size_t get_required_buffer_size(const size_t * region);
+size_t get_required_buffer_size(const size_t * region);
 }
 
 hardware::transfer::AsyncOclCopy::AsyncOclCopy(hardware::Device * const from, hardware::Device * const to, hardware::System const & system)
@@ -71,7 +71,7 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 
 	// transfer data to destination device
 	{
-		auto const events = get_raw_events({load_event, transfer_event, dump_event, back_migration_event});
+		auto const events = get_raw_events( {load_event, transfer_event, dump_event, back_migration_event});
 		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
 
 		cl_event raw_transfer_event;
@@ -91,7 +91,7 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 	// migrate source cache back to source device
 #ifdef clEnqueueMigrateMemObjects
 	{
-		auto const events = get_raw_events({load_event, transfer_event, back_migration_event});
+		auto const events = get_raw_events( {load_event, transfer_event, back_migration_event});
 		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
 
 		cl_event raw_back_migration_event;
@@ -150,8 +150,8 @@ hardware::buffers::Buffer * hardware::transfer::AsyncOclCopy::get_dest_cache(siz
 }
 
 namespace {
-	size_t get_required_buffer_size(const size_t * const region)
-	{
-		return region[0] * region[1] * region[2];
-	}
+size_t get_required_buffer_size(const size_t * const region)
+{
+	return region[0] * region[1] * region[2];
+}
 }

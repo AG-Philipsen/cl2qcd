@@ -1,7 +1,7 @@
 # Build specifications for the contents of the buffers package
 #
 # Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
-# 	        2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+#           2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #
@@ -23,16 +23,16 @@
 #
 
 add_library(transfer
-	transfer.cpp
-	ocl_copy.cpp
-	async_ocl_copy.cpp
-	dgma.cpp
-)
+            transfer.cpp
+            ocl_copy.cpp
+            async_ocl_copy.cpp
+            dgma.cpp
+           )
 
 target_link_libraries(transfer
-	hardware
-	buffers
-)
+                      hardware
+                      buffers
+                     )
 
 #
 # Definition of tests

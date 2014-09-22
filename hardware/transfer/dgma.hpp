@@ -46,34 +46,34 @@ struct DGMAUnsupported { };
  */
 class DirectGMA : public Transfer {
 
-	public:
-		/**
-		 * Create a DirectGMA transfer link.
-		 *
-		 * \throw DGMAUnsupported if DirectGMA is not supported by all involved devices.
-		 */
-		DirectGMA(hardware::Device * from, hardware::Device * to, hardware::System const & context);
-		virtual ~DirectGMA();
+public:
+	/**
+	 * Create a DirectGMA transfer link.
+	 *
+	 * \throw DGMAUnsupported if DirectGMA is not supported by all involved devices.
+	 */
+	DirectGMA(hardware::Device * from, hardware::Device * to, hardware::System const & context);
+	virtual ~DirectGMA();
 
-		SynchronizationEvent load(const hardware::buffers::Buffer* orig, const size_t *src_origin, const size_t *region, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event) override;
-		SynchronizationEvent transfer() override;
-		SynchronizationEvent dump(const hardware::buffers::Buffer* dest, const size_t *dest_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, const hardware::SynchronizationEvent& event) override;
+	SynchronizationEvent load(const hardware::buffers::Buffer* orig, const size_t *src_origin, const size_t *region, size_t src_row_pitch, size_t src_slice_pitch, const hardware::SynchronizationEvent& event) override;
+	SynchronizationEvent transfer() override;
+	SynchronizationEvent dump(const hardware::buffers::Buffer* dest, const size_t *dest_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, const hardware::SynchronizationEvent& event) override;
 
-	private:
-		std::unique_ptr<hardware::buffers::Buffer> src_cache;
-		std::unique_ptr<hardware::transfer::DGMAGhostBuffer> ghost;
-		std::unique_ptr<hardware::buffers::Buffer> dest_cache;
-		hardware::SynchronizationEvent load_event;
-		hardware::SynchronizationEvent transfer_event;
-		hardware::SynchronizationEvent dump_event;
-		cl_command_queue transfer_queue;
-		size_t active_size;
-		hardware::System const & system;
+private:
+	std::unique_ptr<hardware::buffers::Buffer> src_cache;
+	std::unique_ptr<hardware::transfer::DGMAGhostBuffer> ghost;
+	std::unique_ptr<hardware::buffers::Buffer> dest_cache;
+	hardware::SynchronizationEvent load_event;
+	hardware::SynchronizationEvent transfer_event;
+	hardware::SynchronizationEvent dump_event;
+	cl_command_queue transfer_queue;
+	size_t active_size;
+	hardware::System const & system;
 
-		/**
-		 * Make sure that the transfer buffers have the proper size.
-		 */
-		void ensure_buffers(size_t const size);
+	/**
+	 * Make sure that the transfer buffers have the proper size.
+	 */
+	void ensure_buffers(size_t const size);
 };
 
 }
