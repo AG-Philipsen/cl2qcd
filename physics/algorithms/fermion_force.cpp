@@ -601,7 +601,7 @@ template<class SPINORFIELD> static void calc_fermion_forces(const physics::latti
 	const auto & params = system.get_inputparameters();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
-	const int rho_iter = params.get_rho_iter();
+	// const int rho_iter = params.get_rho_iter();
 	//array to save the intermediate fields
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
@@ -681,7 +681,7 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	const auto & params = system.get_inputparameters();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
-	const int rho_iter = params.get_rho_iter();
+	// const int rho_iter = params.get_rho_iter();
 	//array to save the intermediate fields
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
