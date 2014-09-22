@@ -209,7 +209,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
  * (using the multi-shifted inverter). Then a scalar product give the returning value.
  * 
  */
-hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
+hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float)
 {
 	using physics::lattices::Rooted_Staggeredfield_eo;
 	using namespace physics::algorithms::solvers;
