@@ -35,8 +35,6 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *>
 static void update_halo_soa_async(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_soa_finalize(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
-static void extract_boundary(char* host, const hardware::buffers::Spinor * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
-static void send_halo(const hardware::buffers::Spinor * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
 
 physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
