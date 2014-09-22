@@ -195,10 +195,9 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	return squarenorm(phi_inv);
 }
 
-hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi_mp, const hardware::System& system)
+hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield&, const physics::lattices::Rooted_Staggeredfield_eo&, const hardware::System&)
 {
-   //Function not yet implemented!
-  return 0.;
+	throw std::runtime_error("Not implemented!");
 }
 
 /**
