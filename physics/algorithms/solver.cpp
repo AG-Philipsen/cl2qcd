@@ -90,7 +90,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 	klepsydra::Monotonic timer;
 
 	hmc_float resid;
-	hmc_complex alpha, omega, rho;
+	hmc_complex alpha, omega, rho{std::nan(""), std::nan("")};
 
 	const Spinorfield v(system);
 	const Spinorfield p(system);
