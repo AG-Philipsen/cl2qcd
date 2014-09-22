@@ -1008,7 +1008,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 	hmc_complex beta;
 	hmc_complex omega;
 	hmc_complex rho;
-	hmc_complex rho_next = (hmc_complex) {std::nan(""), std::nan("")};
+	hmc_complex rho_next{std::nan(""), std::nan("")};
 	hmc_complex tmp1;
 	hmc_complex tmp2;
 
@@ -1032,7 +1032,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 			copyData(&p, rn);
 			log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 			//omega = (rn,rn)
-			omega = (hmc_complex) {squarenorm(rn, &tmp_float), 0};
+			omega = hmc_complex{squarenorm(rn, &tmp_float), 0};
 		} else {
 			//update omega
 			omega = rho_next;
@@ -1069,7 +1069,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 			//calc residuum
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 			resid = squarenorm(rn, &tmp_float);
-			rho_next = (hmc_complex) {resid, 0.};
+			rho_next = hmc_complex{resid, 0.};
 		}
 		logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
 		//test if resid is NAN
