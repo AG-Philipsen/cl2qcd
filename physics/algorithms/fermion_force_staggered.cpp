@@ -96,7 +96,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		Y.push_back(new Staggeredfield_eo(system));
 	}
 	const MdagM_eo fm(system, mass);
-	const int iterations = cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_force_prec());
+	cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_force_prec());
 	logger.debug() << "\t\t\t  end solver";
 	
 	//Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
