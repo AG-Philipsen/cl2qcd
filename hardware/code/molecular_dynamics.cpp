@@ -193,7 +193,6 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in) const
 {
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = get_spinorfieldsize(get_parameters());
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the number of links in the system (and of gaugemomenta)
 	uint64_t G = meta::get_vol4d(get_parameters()) * NDIM;
