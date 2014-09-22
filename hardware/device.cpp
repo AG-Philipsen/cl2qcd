@@ -248,10 +248,11 @@ void hardware::Device::enqueue_marker(cl_event * event) const
 void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event) const
 {
 	cl_event const cl_event = event.raw();
-#ifdef clEnqueueBarrierWithWaitList
+#if CL_VERSION_1_2
 	// Only supported on OpenCL 1.2 and up
 	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 1, &cl_event, 0);
 #else
+#pragma message "Using legacy function clEnqueueWaitForEvents, upgrade to OpenCL 1.2 to enable the usage of clEnqueueBarrierWithWaitList()."
 	cl_int err = clEnqueueWaitForEvents(command_queue, 1, &cl_event);
 #endif
 	if(err) {
@@ -262,10 +263,11 @@ void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& eve
 void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event1, const hardware::SynchronizationEvent& event2) const
 {
 	cl_event const cl_events[] = {event1.raw(), event2.raw()};
-#ifdef clEnqueueBarrierWithWaitList
+#if CL_VERSION_1_2
 	// Only supported on OpenCL 1.2 and up
 	cl_int err = clEnqueueBarrierWithWaitList(command_queue, 2, cl_events, 0);
 #else
+#pragma message "Using legacy function clEnqueueWaitForEvents, upgrade to OpenCL 1.2 to enable the usage of clEnqueueBarrierWithWaitList()."
 	cl_int err = clEnqueueWaitForEvents(command_queue, 2, cl_events);
 #endif
 	if(err) {
