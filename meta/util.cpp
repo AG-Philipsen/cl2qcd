@@ -99,10 +99,10 @@ size_t meta::get_flop_su3_su3vec() noexcept {
 	return (get_flop_complex_mult() * NC + (NC - 1) * 2) * NC;
 }
 size_t meta::get_flop_su3vec_su3vec() noexcept {
-  	// NC * complex_mult + (NC -1) complex adds
+	// NC * complex_mult + (NC -1) complex adds
 	return NC * get_flop_complex_mult() + (NC - 1) * 2;
 }
-size_t meta::get_flop_su3vec_direct_su3vec() noexcept{
+size_t meta::get_flop_su3vec_direct_su3vec() noexcept {
 	// NC*NC complex_mult
 	return NC * NC * get_flop_complex_mult();
 }
@@ -161,101 +161,95 @@ size_t meta::get_flop_su3vec_sqnorm() noexcept {
 	return NC * get_flop_complex_mult() * 0.5 + (NC - 1);
 }
 
-std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
-{
-  if(parameters.get_ferm_obs_to_single_file() ){
-    return parameters.get_ferm_obs_pbp_prefix() +  parameters.get_ferm_obs_pbp_postfix();
-  } else {
+std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept {
+	if(parameters.get_ferm_obs_to_single_file() ) {
+		return parameters.get_ferm_obs_pbp_prefix() +  parameters.get_ferm_obs_pbp_postfix();
+	} else {
 		return  parameters.get_ferm_obs_pbp_prefix() + conf_name + parameters.get_ferm_obs_pbp_postfix();
-  }
+	}
 }
 
-std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
-{
-  if(parameters.get_ferm_obs_to_single_file() ){
-    return parameters.get_ferm_obs_corr_prefix() +  parameters.get_ferm_obs_corr_postfix();
-  } else {
-    switch ( parameters.get_startcondition() ) {
-    case meta::Inputparameters::start_from_source :
-      return  parameters.get_ferm_obs_corr_prefix() + conf_name + parameters.get_ferm_obs_corr_postfix();
-      break;
-    case meta::Inputparameters::hot_start :
-      return  parameters.get_ferm_obs_corr_prefix() + "conf.hot" +   parameters.get_ferm_obs_corr_postfix() ;
-      break;
-    case meta::Inputparameters::cold_start :
-      return  parameters.get_ferm_obs_corr_prefix() + "conf.cold" + parameters.get_ferm_obs_corr_postfix() ;
-      break;
-    default:
-      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
-    }
-  }
+std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept {
+	if(parameters.get_ferm_obs_to_single_file() ) {
+		return parameters.get_ferm_obs_corr_prefix() +  parameters.get_ferm_obs_corr_postfix();
+	} else {
+		switch ( parameters.get_startcondition() ) {
+			case meta::Inputparameters::start_from_source :
+				return  parameters.get_ferm_obs_corr_prefix() + conf_name + parameters.get_ferm_obs_corr_postfix();
+				break;
+			case meta::Inputparameters::hot_start :
+				return  parameters.get_ferm_obs_corr_prefix() + "conf.hot" +   parameters.get_ferm_obs_corr_postfix() ;
+				break;
+			case meta::Inputparameters::cold_start :
+				return  parameters.get_ferm_obs_corr_prefix() + "conf.cold" + parameters.get_ferm_obs_corr_postfix() ;
+				break;
+			default:
+				throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
+		}
+	}
 }
 
-std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
-{
-  if(parameters.get_gauge_obs_to_single_file() ){
-    return parameters.get_gauge_obs_prefix() +  parameters.get_gauge_obs_postfix();
-  } else {
-    switch ( parameters.get_startcondition() ) {
-    case meta::Inputparameters::start_from_source :
-      return  parameters.get_gauge_obs_prefix() + conf_name + parameters.get_gauge_obs_postfix();
-      break;
-    case meta::Inputparameters::hot_start :
-      return  parameters.get_gauge_obs_prefix() + "conf.hot" +   parameters.get_gauge_obs_postfix() ;
-      break;
-    case meta::Inputparameters::cold_start :
-      return  parameters.get_gauge_obs_prefix() + "conf.cold" + parameters.get_gauge_obs_postfix() ;
-      break;
-    default:
-      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
-    }
-  }
+std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept {
+	if(parameters.get_gauge_obs_to_single_file() ) {
+		return parameters.get_gauge_obs_prefix() +  parameters.get_gauge_obs_postfix();
+	} else {
+		switch ( parameters.get_startcondition() ) {
+			case meta::Inputparameters::start_from_source :
+				return  parameters.get_gauge_obs_prefix() + conf_name + parameters.get_gauge_obs_postfix();
+				break;
+			case meta::Inputparameters::hot_start :
+				return  parameters.get_gauge_obs_prefix() + "conf.hot" +   parameters.get_gauge_obs_postfix() ;
+				break;
+			case meta::Inputparameters::cold_start :
+				return  parameters.get_gauge_obs_prefix() + "conf.cold" + parameters.get_gauge_obs_postfix() ;
+				break;
+			default:
+				throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
+		}
+	}
 }
 
-std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
-{
-  if(parameters.get_hmc_obs_to_single_file() ){
-    return parameters.get_hmc_obs_prefix() +  parameters.get_hmc_obs_postfix();
-  } else {
-    switch ( parameters.get_startcondition() ) {
-    case meta::Inputparameters::start_from_source :
-      return  parameters.get_hmc_obs_prefix() + conf_name + parameters.get_hmc_obs_postfix();
-      break;
-    case meta::Inputparameters::hot_start :
-      return  parameters.get_hmc_obs_prefix() + "conf.hot" +   parameters.get_hmc_obs_postfix() ;
-      break;
-    case meta::Inputparameters::cold_start :
-      return  parameters.get_hmc_obs_prefix() + "conf.cold" + parameters.get_hmc_obs_postfix() ;
-      break;
-    default:
-      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
-    }
-  }
+std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept {
+	if(parameters.get_hmc_obs_to_single_file() ) {
+		return parameters.get_hmc_obs_prefix() +  parameters.get_hmc_obs_postfix();
+	} else {
+		switch ( parameters.get_startcondition() ) {
+			case meta::Inputparameters::start_from_source :
+				return  parameters.get_hmc_obs_prefix() + conf_name + parameters.get_hmc_obs_postfix();
+				break;
+			case meta::Inputparameters::hot_start :
+				return  parameters.get_hmc_obs_prefix() + "conf.hot" +   parameters.get_hmc_obs_postfix() ;
+				break;
+			case meta::Inputparameters::cold_start :
+				return  parameters.get_hmc_obs_prefix() + "conf.cold" + parameters.get_hmc_obs_postfix() ;
+				break;
+			default:
+				throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
+		}
+	}
 }
 
-std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
-{
-  if(parameters.get_rhmc_obs_to_single_file() ){
-    return parameters.get_rhmc_obs_prefix() +  parameters.get_rhmc_obs_postfix();
-  } else {
-    switch ( parameters.get_startcondition() ) {
-    case meta::Inputparameters::start_from_source :
-      return  parameters.get_rhmc_obs_prefix() + conf_name + parameters.get_rhmc_obs_postfix();
-      break;
-    case meta::Inputparameters::hot_start :
-      return  parameters.get_rhmc_obs_prefix() + "conf.hot" +   parameters.get_rhmc_obs_postfix() ;
-      break;
-    case meta::Inputparameters::cold_start :
-      return  parameters.get_rhmc_obs_prefix() + "conf.cold" + parameters.get_rhmc_obs_postfix() ;
-      break;
-    default:
-      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
-    }
-  }
+std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept {
+	if(parameters.get_rhmc_obs_to_single_file() ) {
+		return parameters.get_rhmc_obs_prefix() +  parameters.get_rhmc_obs_postfix();
+	} else {
+		switch ( parameters.get_startcondition() ) {
+			case meta::Inputparameters::start_from_source :
+				return  parameters.get_rhmc_obs_prefix() + conf_name + parameters.get_rhmc_obs_postfix();
+				break;
+			case meta::Inputparameters::hot_start :
+				return  parameters.get_rhmc_obs_prefix() + "conf.hot" +   parameters.get_rhmc_obs_postfix() ;
+				break;
+			case meta::Inputparameters::cold_start :
+				return  parameters.get_rhmc_obs_prefix() + "conf.cold" + parameters.get_rhmc_obs_postfix() ;
+				break;
+			default:
+				throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
+		}
+	}
 }
 
-std::string meta::create_configuration_name(const Inputparameters& parameters, int number) noexcept
-{
+std::string meta::create_configuration_name(const Inputparameters& parameters, int number) noexcept {
 	using namespace std;
 	std::stringstream strnumber;
 	strnumber.fill('0');
@@ -267,8 +261,7 @@ std::string meta::create_configuration_name(const Inputparameters& parameters, i
 	return outputfile;
 }
 
-std::string meta::create_configuration_name(const Inputparameters& parameters) noexcept
-{
+std::string meta::create_configuration_name(const Inputparameters& parameters) noexcept {
 	using namespace std;
 	stringstream outfilename;
 	outfilename << parameters.get_config_prefix() << "save" << parameters.get_config_postfix();
@@ -276,8 +269,7 @@ std::string meta::create_configuration_name(const Inputparameters& parameters) n
 	return outputfile;
 }
 
-std::string meta::create_prng_name(const Inputparameters& parameters, int number) noexcept
-{
+std::string meta::create_prng_name(const Inputparameters& parameters, int number) noexcept {
 	using namespace std;
 	std::stringstream strnumber;
 	strnumber.fill('0');
@@ -289,8 +281,7 @@ std::string meta::create_prng_name(const Inputparameters& parameters, int number
 	return outputfile;
 }
 
-std::string meta::create_prng_name(const Inputparameters& parameters) noexcept
-{
+std::string meta::create_prng_name(const Inputparameters& parameters) noexcept {
 	using namespace std;
 	stringstream outfilename;
 	outfilename << parameters.get_prng_prefix() << "save" << parameters.get_prng_postfix();
@@ -298,8 +289,7 @@ std::string meta::create_prng_name(const Inputparameters& parameters) noexcept
 	return outputfile;
 }
 
-std::string meta::create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept
-{
+std::string meta::create_profiling_data_filename(const Inputparameters& parameters, std::string executableName) noexcept {
 	using namespace std;
 	stringstream outfilename;
 	outfilename << parameters.get_profiling_data_prefix() << executableName << parameters.get_profiling_data_postfix();
@@ -307,7 +297,7 @@ std::string meta::create_profiling_data_filename(const Inputparameters& paramete
 	return outputfile;
 }
 
-std::pair<int,std::vector<const char*>> meta::addOptionsToArgv(int argc, const char** argv, std::vector<const char*> new_options)
+std::pair<int, std::vector<const char*>> meta::addOptionsToArgv(int argc, const char** argv, std::vector<const char*> new_options)
 {
 	std::vector<const char*> argv_new(argv, argv + argc);
 	argc += new_options.size();
