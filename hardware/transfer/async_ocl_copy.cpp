@@ -89,7 +89,7 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 	}
 
 	// migrate source cache back to source device
-#ifdef clEnqueueMigrateMemObjects
+#if CL_VERSION_1_2
 	{
 		auto const events = get_raw_events( {load_event, transfer_event, back_migration_event});
 		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
