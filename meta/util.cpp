@@ -185,6 +185,8 @@ std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters,
     case meta::Inputparameters::cold_start :
       return  parameters.get_ferm_obs_corr_prefix() + "conf.cold" + parameters.get_ferm_obs_corr_postfix() ;
       break;
+    default:
+      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
     }
   }
 }
@@ -204,6 +206,8 @@ std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std
     case meta::Inputparameters::cold_start :
       return  parameters.get_gauge_obs_prefix() + "conf.cold" + parameters.get_gauge_obs_postfix() ;
       break;
+    default:
+      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
     }
   }
 }
@@ -223,6 +227,8 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
     case meta::Inputparameters::cold_start :
       return  parameters.get_hmc_obs_prefix() + "conf.cold" + parameters.get_hmc_obs_postfix() ;
       break;
+    default:
+      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
     }
   }
 }
@@ -242,6 +248,8 @@ std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std:
     case meta::Inputparameters::cold_start :
       return  parameters.get_rhmc_obs_prefix() + "conf.cold" + parameters.get_rhmc_obs_postfix() ;
       break;
+    default:
+      throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
     }
   }
 }
