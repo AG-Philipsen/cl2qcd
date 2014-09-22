@@ -383,7 +383,6 @@ static spinor fillSpinorWithNumber(hmc_complex content)
 void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * in2, int size)
 {
 		int x, y, z, t;
-		hmc_complex content;
 		int coord[4];
 		bool parityOfSite;
 		int nspace;
