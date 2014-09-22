@@ -276,8 +276,6 @@ void physics::lattices::Gaugefield::unsmear()
 		return;
 	}
 
-	const auto & parameters = system.get_inputparameters();
-
 	unsmeared_buffers = allocate_buffers(system);
 
 	for(size_t i = 0; i < buffers.size(); ++i) {
