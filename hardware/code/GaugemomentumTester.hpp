@@ -29,7 +29,7 @@ class GaugemomentumTester : public KernelTester
 {
 public:
   GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues = 1, int typeOfComparision = 1);
-  ~GaugemomentumTester();
+  virtual ~GaugemomentumTester();
 
 protected:
 	enum Filltype {one, zero};

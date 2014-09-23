@@ -37,15 +37,10 @@ public:
 			gaugefieldCode = device->get_gaugefield_code();
 			molecularDynamicsCode = device->get_molecular_dynamics_code();
 			
-			gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+			prng = std::unique_ptr<physics::PRNG>(new physics::PRNG(*system));
+			gaugefield = std::unique_ptr<physics::lattices::Gaugefield>(new physics::lattices::Gaugefield(*system, *prng));
 		}
-		
-		~MolecularDynamicsTester()
-		{
-			molecularDynamicsCode = NULL;
-			gaugefieldCode = NULL;
-		}
-		
+
 protected:
 	std::string getSpecificInputfile(std::string inputfileIn)
 	{
@@ -58,11 +53,11 @@ protected:
 		return gaugefield->get_buffers()[0];
 	}
 	
-	const hardware::code::Molecular_Dynamics * molecularDynamicsCode;
-	const hardware::code::Gaugefield * gaugefieldCode;
+	const hardware::code::Molecular_Dynamics * molecularDynamicsCode{nullptr};
+	const hardware::code::Gaugefield * gaugefieldCode{nullptr};
 	
-	physics::PRNG * prng;
-	physics::lattices::Gaugefield * gaugefield;
+	std::unique_ptr<physics::PRNG> prng{nullptr};
+	std::unique_ptr<physics::lattices::Gaugefield> gaugefield{nullptr};
 };
 
 BOOST_AUTO_TEST_SUITE(BUILD)
