@@ -163,8 +163,8 @@ void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_spinors";
 	logger.info() << "Init device";
-	meta::Inputparameters params =createParameters("spinorsMerged/" + inputfile);
-	hardware::System system(params);
+	auto params =createParameters("spinorsMerged/" + inputfile);
+	hardware::System system(*params);
 	for(auto device: system.get_devices()) {
 		device->get_spinor_code();
 	}
@@ -179,19 +179,19 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	kernelName = "saxpy_ANS_squarenorm_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params =createParameters("spinorsMerged/" + inputfile);
-	hardware::System system(params);
+	auto params =createParameters("spinorsMerged/" + inputfile);
+	hardware::System system(*params);
 	auto * device = system.get_devices().at(0)->get_spinor_code();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
 	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_complex> sqnorm(1, device->get_device());
 	hardware::buffers::Plain<hmc_complex> alpha(1, device->get_device());
 
-	hmc_complex alpha_host = {params.get_beta(), params.get_rho()};
+	hmc_complex alpha_host = {params->get_beta(), params->get_rho()};
 	logger.info() << "Use alpha = (" << alpha_host.re << ","<< alpha_host.im <<")";
 
 	spinor * sf_in;
@@ -199,7 +199,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_in2 = new spinor[NUM_ELEMENTS_SF];
 	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
+	if(params->get_solver() == meta::Inputparameters::cg) {
 	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 	}
@@ -214,18 +214,15 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	in2.load(sf_in2);
 	alpha.load(&alpha_host);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
-
 	logger.info() << "Run kernel";
 	device->saxpy_AND_squarenorm_eo_device(&in, &in2, &alpha, &out, &sqnorm);
 
 	logger.info() << "result:";
-	hmc_float cpu_res;
-	//spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-	//sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+	hmc_complex cpu_res = {0., 0.};
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res.re;
 
-	testFloatAgainstInputparameters(cpu_res, params);
+	testFloatAgainstInputparameters(cpu_res.re, *params);
 	BOOST_MESSAGE("Test done");
 }
 

@@ -44,7 +44,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 	
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
   
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
@@ -101,11 +101,11 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 	const Scalar<hmc_float> tmp3(system);                    //This is to store (p,v) as Scalar
 	
 	//Only if merged kernels are used (this is to store the single eq. residuum all at once)
-	const Vector<hmc_float>* single_eq_resid;
-	std::vector<hmc_float>* single_eq_resid_host;
+	std::unique_ptr<Vector<hmc_float>> single_eq_resid;
+	std::unique_ptr<std::vector<hmc_float>> single_eq_resid_host;
 	if(params.get_use_merge_kernels_spinor() == true){
-		single_eq_resid = new Vector<hmc_float>(Neqs, system);
-		single_eq_resid_host = new std::vector<hmc_float>;
+		single_eq_resid = std::unique_ptr<Vector<hmc_float>>{new Vector<hmc_float>(Neqs, system)};
+		single_eq_resid_host = std::unique_ptr<std::vector<hmc_float>>{new std::vector<hmc_float>};
 	}
 	
 	//Auxiliary constants as Scalar
@@ -178,7 +178,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 		//Check if single system converged: ||zeta_foll[k] * r||^2 < prec
 		// ---> v = zeta_foll[k] * r
 		if(params.get_use_merge_kernels_spinor() == true) {
-			sax_vec_and_squarenorm(single_eq_resid, zeta_foll, r);
+			sax_vec_and_squarenorm(single_eq_resid.get(), zeta_foll, r);
 			*single_eq_resid_host = single_eq_resid->get();
 		}
 
@@ -269,10 +269,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
 				
 				//Before returning I have to clean all the memory!!!
 				meta::free_container(ps);
-				if(params.get_use_merge_kernels_spinor() == true){
-					delete single_eq_resid;
-					delete single_eq_resid_host;
-				}
 
 				return iter;
 			}

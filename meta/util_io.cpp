@@ -38,8 +38,8 @@ static void print_info_observables_hmc_io(const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_rhmc_io(const meta::Inputparameters& params);
 static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputparameters& params);
-static void print_info_source(const meta::Inputparameters params);
-static void print_info_source(std::ostream * os, const meta::Inputparameters params);
+static void print_info_source(const meta::Inputparameters& params);
+static void print_info_source(std::ostream * os, const meta::Inputparameters& params);
 
 void meta::print_info_global(const meta::Inputparameters& params)
 {
@@ -52,7 +52,7 @@ void meta::print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## NTIME:   " << params.get_ntime();
 	logger.info() << "## NDIM:    " << NDIM;
 	logger.info() << "## NCOLOR:  " << NC;
-	if(params.get_fermact()!=meta::action::rooted_stagg) logger.info() << "## NSPIN:   " << NSPIN;
+	if(params.get_fermact() != meta::action::rooted_stagg) logger.info() << "## NSPIN:   " << NSPIN;
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Computational parameters:";
 	logger.info() << "## PREC:    " << params.get_precision();
@@ -133,7 +133,7 @@ void meta::print_info_global(std::ostream* os, const meta::Inputparameters& para
 	*os  << "## Number of devices demanded for calculations: " << params.get_device_count()  << endl;
 	*os  << "## PRNG SEED:\t" << params.get_host_seed() << endl;
 	if (! ( params.get_initial_prng_state() == "" ) )
-	  *os << "## INITIAL PRNG STATE:\t" << params.get_initial_prng_state() << endl;
+		*os << "## INITIAL PRNG STATE:\t" << params.get_initial_prng_state() << endl;
 	*os  << "## **********************************************************" << endl;
 	*os  << "## I/O parameters:" << endl;
 	*os  << "## Writefrequency:  " << params.get_writefrequency() << endl;
@@ -232,7 +232,7 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(params.get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
-	if(params.get_fermact() != meta::action::rooted_stagg){
+	if(params.get_fermact() != meta::action::rooted_stagg) {
 		switch(params.get_solver()) {
 			case Inputparameters::cg:
 				logger.info() << "## Use CG-solver for inversions" ;
@@ -250,7 +250,7 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## Use Multi-shifted CG-solver for inversions" ;
 		logger.info() << "## cgm_max  = " << params.get_cgmax();
 	}
-	
+
 	if(params.get_profile_solver() == true)
 		logger.warn() << "## Profiling of solver activated. This may influence the overall performance time!";
 
@@ -264,7 +264,7 @@ static void print_info_fermion(const meta::Inputparameters& params)
 	if ( params.get_theta_fermion_spatial() == 0. && params.get_theta_fermion_temporal() == 0.) {
 		logger.warn() << "NOTE: BCs have been set to periodic values by default!!\n\t\t\t  To change this use e.g. ThetaT/ThetaS in the input-file.";
 	}
-}	
+}
 
 static void print_info_fermion(std::ostream * os, const meta::Inputparameters& params)
 {
@@ -314,7 +314,7 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(params.get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
-	if(params.get_fermact() != meta::action::rooted_stagg){
+	if(params.get_fermact() != meta::action::rooted_stagg) {
 		switch(params.get_solver()) {
 			case Inputparameters::cg:
 				*os << "## Use CG-solver for inversions" << endl;
@@ -329,7 +329,7 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os << "## cgmax  = " << params.get_cgmax() << endl;
 		*os << "## iter_refresh  = " << params.get_iter_refresh() << endl;
 	} else {
-	  	*os << "## Use Multi-shifted CG-solver for inversions" << endl;
+		*os << "## Use Multi-shifted CG-solver for inversions" << endl;
 		*os << "## cgm_max  = " << params.get_cgmax() << endl;
 	}
 
@@ -551,20 +551,20 @@ void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
 			*os << "## mu_mp     = " << params.get_mu_mp()  << '\n';
 		}
 		if(params.get_fermact_mp() == meta::action::clover) {
-		  *os <<  "## mp action: clover Wilson" << endl;
+			*os <<  "## mp action: clover Wilson" << endl;
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 			*os << "## csw_mp   = " << params.get_csw_mp()  << '\n';
 		}
 		*os << "##"  << endl;
 		switch(params.get_solver_mp()) {
 			case Inputparameters::cg:
-			  *os << "## Use CG-solver for mp inversions" << endl;
+				*os << "## Use CG-solver for mp inversions" << endl;
 				break;
 			case Inputparameters::bicgstab:
-			  *os << "## Use BiCGStab for mp inversions" << endl;
+				*os << "## Use BiCGStab for mp inversions" << endl;
 				break;
 			case Inputparameters::bicgstab_save:
-			  *os << "## Use BiCGStab-SAVE for mp inversions" << endl;
+				*os << "## Use BiCGStab-SAVE for mp inversions" << endl;
 				break;
 		}
 		*os << "## cgmax_mp  = " << params.get_cgmax_mp()  << '\n';
@@ -591,17 +591,17 @@ void meta::print_info_rhmc(const Inputparameters& params)
 	logger.info() << "##       + x^(+" << params.get_num_tastes() << "/8)";
 	logger.info() << "##       + order = " << params.get_metro_approx_ord();
 	logger.info() << "##       + range = [" << params.get_approx_lower() << " , "
-	                                        << params.get_approx_upper() << "]";
+	              << params.get_approx_upper() << "]";
 	logger.info() << "##   - Molecular Dynamics:";
 	logger.info() << "##       + x^(-" << params.get_num_tastes() << "/4)";
 	logger.info() << "##       + order = " << params.get_md_approx_ord();
 	logger.info() << "##       + range = [" << params.get_approx_lower() << " , "
-	                                        << params.get_approx_upper() << "]";
+	              << params.get_approx_upper() << "]";
 	logger.info() << "##   - Evaluation of new action in Metropolis test:";
 	logger.info() << "##       + x^(-" << params.get_num_tastes() << "/4)";
 	logger.info() << "##       + order = " << params.get_metro_approx_ord();
 	logger.info() << "##       + range = [" << params.get_approx_lower() << " , "
-	                                        << params.get_approx_upper() << "]";
+	              << params.get_approx_upper() << "]";
 	logger.info() << "##  ";
 	logger.info() << "## Strategy for finding max and min MdagM eigenvalue: " << (params.get_conservative() ? "conservative" : "NOT conservative");
 	logger.info() << "##  ";
@@ -631,30 +631,30 @@ void meta::print_info_rhmc(const Inputparameters& params)
 		logger.info() << "##  ";
 		logger.info() <<  "## use mass preconditioning:";
 		if(params.get_fermact_mp() == Inputparameters::wilson) {
-			logger.info() <<  "## mp action: unimproved Wilson";
-			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
+		  logger.info() <<  "## mp action: unimproved Wilson";
+		  logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
 		}
 		if(params.get_fermact_mp() == Inputparameters::twistedmass) {
-			logger.info() <<  "## mp action: twisted mass Wilson";
-			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
-			logger.info() << "## mu_mp     = " << params.get_mu_mp();
+		  logger.info() <<  "## mp action: twisted mass Wilson";
+		  logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
+		  logger.info() << "## mu_mp     = " << params.get_mu_mp();
 		}
 		if(params.get_fermact_mp() == Inputparameters::clover) {
-			logger.info() <<  "## mp action: clover Wilson";
-			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
-			logger.info() << "## csw_mp   = " << params.get_csw_mp();
+		  logger.info() <<  "## mp action: clover Wilson";
+		  logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
+		  logger.info() << "## csw_mp   = " << params.get_csw_mp();
 		}
 		logger.info() << "##" ;
 		switch(params.get_solver_mp()) {
-			case Inputparameters::cg:
-				logger.info() << "## Use CG-solver for mp inversions" ;
-				break;
-			case Inputparameters::bicgstab:
-				logger.info() << "## Use BiCGStab for mp inversions";
-				break;
-			case Inputparameters::bicgstab_save:
-				logger.info() << "## Use BiCGStab-SAVE for mp inversions";
-				break;
+		  case Inputparameters::cg:
+		    logger.info() << "## Use CG-solver for mp inversions" ;
+		    break;
+		  case Inputparameters::bicgstab:
+		    logger.info() << "## Use BiCGStab for mp inversions";
+		    break;
+		  case Inputparameters::bicgstab_save:
+		    logger.info() << "## Use BiCGStab-SAVE for mp inversions";
+		    break;
 		}
 		logger.info() << "## cgmax_mp  = " << params.get_cgmax_mp();
 		logger.info() << "## iter_refresh_mp  = " << params.get_iter_refresh_mp();
@@ -681,17 +681,17 @@ void meta::print_info_rhmc(std::ostream* os, const Inputparameters& params)
 	*os << "##       + x^(+" << params.get_num_tastes() << "/8)" << endl;
 	*os << "##       + order = " << params.get_metro_approx_ord() << endl;
 	*os << "##       + range = [" << params.get_approx_lower() << " , "
-	                                        << params.get_approx_upper() << "]" << endl;
+	    << params.get_approx_upper() << "]" << endl;
 	*os << "##   - Molecular Dynamics:" << endl;
 	*os << "##       + x^(-" << params.get_num_tastes() << "/4)" << endl;
 	*os << "##       + order = " << params.get_md_approx_ord() << endl;
 	*os << "##       + range = [" << params.get_approx_lower() << " , "
-	                                        << params.get_approx_upper() << "]" << endl;
+	    << params.get_approx_upper() << "]" << endl;
 	*os << "##   - Evaluation of new action in Metropolis test:" << endl;
 	*os << "##       + x^(-" << params.get_num_tastes() << "/4)" << endl;
 	*os << "##       + order = " << params.get_metro_approx_ord() << endl;
 	*os << "##       + range = [" << params.get_approx_lower() << " , "
-	                                        << params.get_approx_upper() << "]" << endl;
+	    << params.get_approx_upper() << "]" << endl;
 	*os << "##  " << endl;
 	*os << "## Strategy for finding max and min MdagM eigenvalue: " << (params.get_conservative() ? "conservative" : "NOT conservative") << endl;
 	*os << "##  " << endl;
@@ -721,30 +721,30 @@ void meta::print_info_rhmc(std::ostream* os, const Inputparameters& params)
 		*os << "##  " << endl;
 		*os <<  "## use mass preconditioning:" << endl;
 		if(params.get_fermact_mp() == Inputparameters::wilson) {
-			*os <<  "## mp action: unimproved Wilson" << endl;
-			*os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
+		  *os <<  "## mp action: unimproved Wilson" << endl;
+		  *os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
 		}
 		if(params.get_fermact_mp() == Inputparameters::twistedmass) {
-			*os <<  "## mp action: twisted mass Wilson" << endl;
-			*os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
-			*os << "## mu_mp     = " << params.get_mu_mp() << endl;
+		  *os <<  "## mp action: twisted mass Wilson" << endl;
+		  *os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
+		  *os << "## mu_mp     = " << params.get_mu_mp() << endl;
 		}
 		if(params.get_fermact_mp() == Inputparameters::clover) {
-			*os <<  "## mp action: clover Wilson" << endl;
-			*os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
-			*os << "## csw_mp   = " << params.get_csw_mp() << endl;
+		  *os <<  "## mp action: clover Wilson" << endl;
+		  *os << "## kappa_mp  = " << params.get_kappa_mp() << endl;
+		  *os << "## csw_mp   = " << params.get_csw_mp() << endl;
 		}
 		*os << "##"  << endl;
 		switch(params.get_solver_mp()) {
-			case Inputparameters::cg:
-				*os << "## Use CG-solver for mp inversions"  << endl;
-				break;
-			case Inputparameters::bicgstab:
-				*os << "## Use BiCGStab for mp inversions" << endl;
-				break;
-			case Inputparameters::bicgstab_save:
-				*os << "## Use BiCGStab-SAVE for mp inversions" << endl;
-				break;
+		  case Inputparameters::cg:
+		    *os << "## Use CG-solver for mp inversions"  << endl;
+		    break;
+		  case Inputparameters::bicgstab:
+		    *os << "## Use BiCGStab for mp inversions" << endl;
+		    break;
+		  case Inputparameters::bicgstab_save:
+		    *os << "## Use BiCGStab-SAVE for mp inversions" << endl;
+		    break;
 		}
 		*os << "## cgmax_mp  = " << params.get_cgmax_mp() << endl;
 		*os << "## iter_refresh_mp  = " << params.get_iter_refresh_mp() << endl;
@@ -853,7 +853,7 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	logger.info() << "## **********************************************************";
 	logger.info() << "## fermionic observables file naming parameters:";
 	if (params.get_measure_correlators() == true) {
-	  logger.info() << "## measure correlators in direction: " << params.get_corr_dir();
+		logger.info() << "## measure correlators in direction: " << params.get_corr_dir();
 		logger.info() << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix();
 		logger.info() << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix();
 	}
@@ -887,7 +887,7 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	*os << "## **********************************************************" << endl;
 	*os << "## fermionic observables file naming parameters:" << endl;
 	if (params.get_measure_correlators() == true) {
-	  *os << "## measure correlators in direction: " << params.get_corr_dir() << endl;
+		*os << "## measure correlators in direction: " << params.get_corr_dir() << endl;
 		*os << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix() << endl;
 		*os << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix() << endl;
 	}
@@ -974,7 +974,7 @@ static void print_info_observables_rhmc_io(std::ostream * os, const meta::Inputp
 	}
 }
 
-static void print_info_source(const meta::Inputparameters params)
+static void print_info_source(const meta::Inputparameters& params)
 {
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Source parameters:";
@@ -1010,7 +1010,7 @@ static void print_info_source(const meta::Inputparameters params)
 	}
 }
 
-static void print_info_source(std::ostream * os, const meta::Inputparameters params)
+static void print_info_source(std::ostream * os, const meta::Inputparameters& params)
 {
 	*os << "## **********************************************************" << endl;
 	*os << "## Source parameters:" << endl;
@@ -1046,7 +1046,7 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
 	}
 }
 
-void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters params)
+void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -1060,7 +1060,7 @@ void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters pa
 	}
 }
 
-void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params)
+void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
@@ -1076,6 +1076,6 @@ void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta:
 
 std::string meta::createLogfileName(const char* name)
 {
-  return std::string(name) + std::string(".log");
+	return std::string(name) + std::string(".log");
 }
 

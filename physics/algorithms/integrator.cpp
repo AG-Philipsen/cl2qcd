@@ -66,7 +66,7 @@ void physics::algorithms::leapfrog(const physics::lattices::Gaugemomenta * const
 
 template<class SPINORFIELD> void leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
 {
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	logger.trace() << "\tHMC [INT]:\tstart leapfrog...";
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
@@ -84,7 +84,7 @@ template<class SPINORFIELD> void leapfrog(const physics::lattices::Gaugemomenta 
 
 template<class SPINORFIELD> void leapfrog(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	logger.trace() << "\tHMC [INT]:\tstart leapfrog...";
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
@@ -102,7 +102,7 @@ template<class SPINORFIELD> static void leapfrog_1ts(const physics::lattices::Ga
 {
 	using namespace physics::algorithms;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int n0 = params.get_integrationsteps(0);
 	const hmc_float deltaTau0 = params.get_tau() / ((hmc_float) n0);
 	const hmc_float deltaTau0_half = 0.5 * deltaTau0;
@@ -122,7 +122,7 @@ template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Ga
 
 	//this uses 2 timescales (more is not implemented yet): timescale0 for the gauge-part, timescale1 for the fermion part
 	//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int n0 = params.get_integrationsteps(0);
 	const int n1 = params.get_integrationsteps(1);
 	const hmc_float deltaTau1 = params.get_tau() / ((hmc_float) n1);
@@ -162,7 +162,7 @@ template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Ga
 	using namespace physics::algorithms;
 
 	// just like with 2 timescales...
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int n0 = params.get_integrationsteps(0);
 	const int n1 = params.get_integrationsteps(1);
 	const int n2 = params.get_integrationsteps(2);
@@ -230,7 +230,7 @@ void physics::algorithms::twomn(const physics::lattices::Gaugemomenta * const gm
 
 template<class SPINORFIELD> void twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
 {
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	logger.trace() << "\tHMC [INT]\tstarting 2MN...";
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
@@ -248,7 +248,7 @@ template<class SPINORFIELD> void twomn(const physics::lattices::Gaugemomenta * c
 
 template<class SPINORFIELD> void twomn(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	logger.trace() << "\tHMC [INT]\tstarting 2MN...";
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
@@ -266,7 +266,7 @@ template<class SPINORFIELD> void twomn_1ts(const physics::lattices::Gaugemomenta
 {
 	using namespace physics::algorithms;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int n0 = params.get_integrationsteps(0);
 	const hmc_float deltaTau0 = params.get_tau() / ((hmc_float) n0);
 	const hmc_float deltaTau0_half = 0.5 * deltaTau0;
@@ -293,7 +293,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
 	using namespace physics::algorithms;
 
 	//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int n0 = params.get_integrationsteps(0);
 	const int n1 = params.get_integrationsteps(1);
 
@@ -362,7 +362,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 	using namespace physics::algorithms;
 
 	//just like with 2 timescales...
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int n0 = params.get_integrationsteps(0);
 	const int n1 = params.get_integrationsteps(1);
 	const int n2 = params.get_integrationsteps(2);
@@ -371,9 +371,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
 	//NOTE: With 2MN, the stepsize for the lower integration step is deltaTau1/(2 Ni-1)!!
 	const hmc_float deltaTau1 = deltaTau2 / ( 2.* (hmc_float) n1 );
 	const hmc_float deltaTau0 = deltaTau1 / ( 2.* (hmc_float) n0 );
-	const hmc_float deltaTau1_half = 0.5 * deltaTau1;
 	const hmc_float deltaTau0_half = 0.5 * deltaTau0;
-	//const hmc_float deltaTau1_half = 0.5 * deltaTau1;
 	const hmc_float lambda0_times_deltaTau0 = deltaTau0 * params.get_lambda(0);
 	const hmc_float lambda1_times_deltaTau1 = deltaTau1 * params.get_lambda(1);
 	const hmc_float lambda2_times_deltaTau2 = deltaTau2 * params.get_lambda(2);
@@ -483,7 +481,7 @@ void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * con
 
 template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const hardware::System& system)
 {
-	auto const params = system.get_inputparameters();
+	auto const & params = system.get_inputparameters();
 
 	check_integrator_params(params);
 
@@ -510,7 +508,7 @@ void physics::algorithms::integrator(const physics::lattices::Gaugemomenta * con
 
 template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf, const SPINORFIELD& phi, const SPINORFIELD& phi_mp, const hardware::System& system)
 {
-	auto const params = system.get_inputparameters();
+	auto const & params = system.get_inputparameters();
 
 	check_integrator_params(params);
 

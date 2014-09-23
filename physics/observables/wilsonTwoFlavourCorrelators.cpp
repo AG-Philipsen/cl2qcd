@@ -82,7 +82,7 @@ void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfiel
 	auto result_ay = physics::observables::wilson::calculate_correlator("ay", result, sources, system);
 	auto result_az = physics::observables::wilson::calculate_correlator("az", result, sources, system);
 
-	auto parameters = system.get_inputparameters();
+	auto & parameters = system.get_inputparameters();
 
 	if(parameters.get_print_to_screen() )
 		meta::print_info_flavour_doublet_correlators(parameters);
@@ -123,7 +123,7 @@ void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfiel
 
 static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results, physics::lattices::Spinorfield* corr, physics::lattices::Spinorfield* source, const hardware::System& system)
 {
-	auto params = system.get_inputparameters();
+	auto & params = system.get_inputparameters();
 
 	try_swap_in(corr);
 	try_swap_in(source);
@@ -217,7 +217,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 
 static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {
-	auto params = system.get_inputparameters();
+	auto & params = system.get_inputparameters();
 	// assert single device
 	auto first_corr = corr.at(0);
 	try_swap_in(first_corr);

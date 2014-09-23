@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersFermion
-{
+namespace meta {
+class ParametersFermion {
 public:
 	action get_fermact() const noexcept;
 	action get_fermact_mp() const noexcept;
@@ -45,10 +44,10 @@ public:
 	bool get_use_eo() const noexcept;
 	bool get_use_merge_kernels_fermion() const noexcept;
 	bool get_use_merge_kernels_spinor() const noexcept;
-	
-protected:
-	action fermact;
-	action fermact_mp;
+
+private:
+	po::options_description options;
+
 	double kappa;
 	double mass; //staggered quark mass
 	double mu;
@@ -65,8 +64,16 @@ protected:
 	bool use_eo;
 	bool use_merge_kernels_fermion;
 	bool use_merge_kernels_spinor;
-	
-	po::options_description getOptions();
+
+protected:
+	ParametersFermion();
+	virtual ~ParametersFermion();
+	ParametersFermion(ParametersFermion const&) = delete;
+	ParametersFermion & operator=(ParametersFermion const&) = delete;
+	po::options_description & getOptions();
+
+	action fermact;
+	action fermact_mp;
 };
 
 }

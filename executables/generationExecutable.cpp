@@ -32,7 +32,8 @@ void generationExecutable::setIterationParameters()
 {
 	//NOTE: this is 0 in case of cold or hot start
 	iteration           = gaugefield->get_trajectoryNumberAtInit();
-	thermalizationSteps = iteration + parameters.get_thermalizationsteps();
+	//thermalization is not implemented yet, just do one step which prints this to screen
+	thermalizationSteps = iteration + 1;//parameters.get_thermalizationsteps();
 	generationSteps     = thermalizationSteps; //this is temp.: in each child it is incremented by the nr of tr.
 	writeFrequency      = parameters.get_writefrequency();
 	saveFrequency       = parameters.get_savefrequency();
@@ -40,7 +41,7 @@ void generationExecutable::setIterationParameters()
 
 void generationExecutable::saveGaugefield()
 {
-        gaugefield->save(iteration+1);
+	gaugefield->save(iteration+1);
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		gaugefield->saveToSpecificFile(iteration + 1);
 	}
@@ -48,7 +49,7 @@ void generationExecutable::saveGaugefield()
 
 void generationExecutable::savePrng()
 {
-	prng->save(iteration + 1);
+	prng->save();
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		prng->saveToSpecificFile(iteration + 1);
 	}

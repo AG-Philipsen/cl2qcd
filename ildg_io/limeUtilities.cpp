@@ -21,6 +21,8 @@
 #include "limeUtilities.hpp"
 
 #include "../host_functionality/logger.hpp"
+#include <boost/lexical_cast.hpp>
+#include "../executables/exceptions.h"
 
 LimeHeaderData::LimeHeaderData(LimeReader *r)
 {
@@ -61,3 +63,17 @@ LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 }
 
 LimeEntryTypes::Mapper LimeEntryTypes::mapper = { {"propagator", "propagator-info"}, {"xlf", "xlf-info"} , {"inverter", "inverter-info"}, {"gauge-checksum-copy", "gauge-scidac-checksum-copy"}, {"etmc-propagator", "etmc-propagator-format"},  { "scidac binary data", "scidac-binary-data"}, {"scidac checksum", "scidac-checksum"}, {"ildg", "ildg-format"}, {"ildg binary data", "ildg-binary-data"}  };
+
+
+void LimeFileReader_basic::openFile()
+{
+	outputfile = fopen (filename.c_str(), "r");
+	limeReader = limeCreateReader(outputfile);
+}
+
+void LimeFileReader_basic::closeFile()
+{
+	limeDestroyReader(limeReader);
+	fclose(outputfile);
+}
+

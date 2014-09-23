@@ -23,12 +23,11 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersSolver
-{
+namespace meta {
+class ParametersSolver {
 public:
 	enum solver { cg = 1, bicgstab, bicgstab_save };
-	
+
 	solver get_solver() const noexcept;
 	solver get_solver_mp() const noexcept;
 	double get_solver_prec() const noexcept;
@@ -41,23 +40,31 @@ public:
 	int get_cgmax() const noexcept;
 	int get_cgmax_mp() const noexcept;
 	bool get_profile_solver() const noexcept;
-	
-protected:
+
+private:
+	po::options_description options;
+
 	double solver_prec;
 	double force_prec;
 	int iter_refresh;
 	int iter_refresh_mp;
-	//at the moment, only 2 solvers are implemented..
-	solver _solver;
-	solver _solver_mp;
 	int cgmax;
 	int cgmax_mp;
 	int cg_iteration_block_size;
 	bool cg_use_async_copy;
 	int cg_minimum_iteration_count;
 	bool profile_solver;
-	
-	po::options_description getOptions();
+
+protected:
+	ParametersSolver();
+	virtual ~ParametersSolver();
+	ParametersSolver(ParametersSolver const&) = delete;
+	ParametersSolver & operator=(ParametersSolver const&) = delete;
+	po::options_description & getOptions();
+
+	//at the moment, only 2 solvers are implemented..
+	solver _solver;
+	solver _solver_mp;
 };
 
 }

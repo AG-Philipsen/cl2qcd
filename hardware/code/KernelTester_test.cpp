@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 		hardware::System * system;
 		hardware::Device * device;
 		
-		parameter = new meta::Inputparameters(2, _params);
+		parameter = new meta::Inputparameters(1, _params);
 		system = new hardware::System(*parameter);
 		device = system->get_devices()[0];
 		

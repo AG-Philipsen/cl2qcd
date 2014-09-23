@@ -2,7 +2,7 @@ NS=4
 NT=4
 
 # this specifies the number a gaussian spinorfield is created
-integrationsteps0=200
+integrationsteps0=400
 
 #this specifies the acceptance precision
 solver_prec=1e-8

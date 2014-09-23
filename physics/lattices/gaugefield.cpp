@@ -231,7 +231,7 @@ const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield:
 
 void physics::lattices::Gaugefield::smear()
 {
-	auto parameters = system.get_inputparameters();
+	const auto & parameters = system.get_inputparameters();
 
 	unsmeared_buffers = allocate_buffers(system);
 
@@ -275,8 +275,6 @@ void physics::lattices::Gaugefield::unsmear()
 		logger.warn() << "Tried to unsmear gaugefield that is not smeared.";
 		return;
 	}
-
-	auto parameters = system.get_inputparameters();
 
 	unsmeared_buffers = allocate_buffers(system);
 

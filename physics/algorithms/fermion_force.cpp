@@ -38,7 +38,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -62,7 +62,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.cold();
 
 		const QplusQminus_eo fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, phi, system, params.get_force_prec());
+		cg(&solution, fm, gf, phi, system, params.get_force_prec());
 
 		/**
 		 * Y_even is now just
@@ -94,7 +94,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.gamma5();
 
 		const Qplus_eo qplus(kappa, mubar, system);
-		int iterations = bicgstab(&solution, qplus, gf, phi, system, params.get_force_prec());
+		bicgstab(&solution, qplus, gf, phi, system, params.get_force_prec());
 
 		copyData(&phi_inv, solution);
 
@@ -116,7 +116,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.cold();
 
 		const Qminus_eo qminus(kappa, mubar, system);
-		iterations = bicgstab(&solution, qminus, gf, source_even, system, params.get_force_prec());
+		bicgstab(&solution, qminus, gf, source_even, system, params.get_force_prec());
 	}
 	/**
 	 * At this point, one has calculated X_odd and Y_odd.
@@ -173,7 +173,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	Spinorfield solution(system);
 	Spinorfield phi_inv(system);
@@ -199,7 +199,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const QplusQminus fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, phi, system, params.get_force_prec());
+		cg(&solution, fm, gf, phi, system, params.get_force_prec());
 
 		/**
 		 * Y is now just
@@ -231,7 +231,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const Qplus q_plus(kappa, mubar, system);
-		int iterations = bicgstab(&solution, q_plus, gf, phi, system, params.get_force_prec());
+		bicgstab(&solution, q_plus, gf, phi, system, params.get_force_prec());
 
 		//store this result in clmem_phi_inv
 		copyData(&phi_inv, solution);
@@ -253,7 +253,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		solution.cold();
 		const Qminus q_minus(kappa, mubar, system);
-		iterations = bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
+		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
 	}
 	log_squarenorm("\tY ", phi_inv);
 	log_squarenorm("\tX ", solution);
@@ -271,7 +271,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	logger.debug() << "\t\tcalc fermion_force_detratio...";
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/**
 	 * For detratio = det(kappa, mubar) / det(kappa2, mubar2) = det(Q_1^+Q_1^-) / det(Q_2^+Q_2^-)
@@ -319,7 +319,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const QplusQminus fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_force_prec());
+		cg(&solution, fm, gf, tmp, system, params.get_force_prec());
 
 		/**
 		 * Y is now just
@@ -351,7 +351,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		Qplus q_plus(kappa, mubar, system);
-		int iterations = bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec());
+		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec());
 
 		copyData(&phi_inv, solution);
 
@@ -373,7 +373,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		Qminus q_minus(kappa, mubar, system);
-		iterations = bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
+		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
 	}
 
 	log_squarenorm("\tY ", phi_inv);
@@ -401,7 +401,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	logger.debug() << "\t\tcalc fermion_force_detratio...";
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/**
 	 * For detratio = det(kappa, mubar) / det(kappa2, mubar2) = det(Q_1^+Q_1^-) / det(Q_2^+Q_2^-)
@@ -448,7 +448,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		const QplusQminus_eo fm(kappa, mubar, system);
-		const int iterations = cg(&solution, fm, gf, tmp, system, params.get_force_prec());
+		cg(&solution, fm, gf, tmp, system, params.get_force_prec());
 
 		/**
 		 * Y_even is now just
@@ -479,7 +479,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.gamma5();
 
 		const Qplus_eo q_plus(kappa, mubar, system);
-		int iterations = bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec());
+		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec());
 
 		//store this result in clmem_phi_inv
 		copyData(&phi_inv, solution);
@@ -500,7 +500,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		Qminus_eo q_minus(kappa, mubar, system);
-		iterations = bicgstab(&solution, q_minus, gf, source_even, system, params.get_force_prec());
+		bicgstab(&solution, q_minus, gf, source_even, system, params.get_force_prec());
 	}
 	/**
 	 * At this point, one has to calculate X_odd and Y_odd.
@@ -598,10 +598,10 @@ template<class SPINORFIELD> static void calc_fermion_forces(const physics::latti
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
-	const int rho_iter = params.get_rho_iter();
+	// const int rho_iter = params.get_rho_iter();
 	//array to save the intermediate fields
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
@@ -678,10 +678,10 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
-	const int rho_iter = params.get_rho_iter();
+	// const int rho_iter = params.get_rho_iter();
 	//array to save the intermediate fields
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here

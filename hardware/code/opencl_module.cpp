@@ -152,6 +152,12 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 			options << " -D _RHMC_";
 			options << " -D RA_MAX_ORDER=" << std::max(params.get_metro_approx_ord(), params.get_md_approx_ord());
 			break;
+		case meta::action::wilson :
+		case meta::action::tlsym :
+		case meta::action::iwasaki :
+		case meta::action::dbw2 :
+			// nothing to add
+			break;
 	}
 
 	//CP: These are the BCs in spatial and temporal direction
@@ -193,9 +199,9 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::vector<std::string> collect_build_files()
 {
 	std::vector<std::string> out;
+	out.push_back("opencl_header.cl");
 	out.push_back("globaldefs.h");
 	out.push_back("types.h");
-	out.push_back("opencl_header.cl");
 
 	return out;
 }

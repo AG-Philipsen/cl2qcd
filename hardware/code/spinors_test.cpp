@@ -976,7 +976,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 					for (int i = 0; i < iterations; i++) {
 						var += calc_var_sf(&outHost[i * spinorfieldElements], spinorfieldElements, sum);
 					}
-					var /= iterations * spinorfieldEvenOddElements * 24;
+					var /= iterations * spinorfieldElements * 24;
 					kernelResult[0] =  sqrt(var);
 				}
 			}

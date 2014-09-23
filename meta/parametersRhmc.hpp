@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-	class ParametersRhmc : public ParametersBasic
-{
+namespace meta {
+class ParametersRhmc {
 public:
 	int get_md_approx_ord() const noexcept;
 	int get_metro_approx_ord() const noexcept;
@@ -43,6 +42,7 @@ public:
 	bool get_read_rational_approximations_from_file() const noexcept;
 
 protected:
+	po::options_description options;
 	/** @TODO If the rational approximation is read from file than its parameters could differ
 	 *        from the following! This means, for example, that one could use get_md_approx_ord()
 	 *        to get a value that is not that loaded from the file!
@@ -64,7 +64,12 @@ protected:
 	std::string approx_md_file;
 	std::string approx_metropolis_file;
 
-	po::options_description getOptions();
+protected:
+	ParametersRhmc();
+	virtual ~ParametersRhmc();
+	ParametersRhmc(ParametersRhmc const&) = delete;
+	ParametersRhmc & operator=(ParametersRhmc const&) = delete;
+	po::options_description & getOptions();
 };
 
 }

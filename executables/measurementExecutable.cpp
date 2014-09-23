@@ -88,7 +88,7 @@ void measurementExecutable::performMeasurementsForSpecificIteration()
 	initializeGaugefield();
 	performanceTimer.reset();
 	performApplicationSpecificMeasurements();
-	prng->save(iteration);
+	prng->saveToSpecificFile(iteration);
 	delete gaugefield;
 	performanceTimer.add();
 }

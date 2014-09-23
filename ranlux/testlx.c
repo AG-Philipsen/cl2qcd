@@ -32,8 +32,8 @@ int main(void)
 
    sbase=(float)(ldexp(1.0,24));
    base=ldexp(1.0,48);
-   state1=malloc(rlxs_size()*sizeof(int));
-   state2=malloc(rlxd_size()*sizeof(int));
+   state1=(int*) malloc(rlxs_size()*sizeof(int));
+   state2=(int*) malloc(rlxd_size()*sizeof(int));
    
    rlxs_init(0,32767);
    rlxd_init(1,32767);
@@ -309,6 +309,10 @@ int main(void)
       printf("=> ranlxd works correctly on this machine\n");
       printf("\n");
    }
+
+   free(state2);
+   free(state1);
+
    exit(0);
 }
 

@@ -23,24 +23,30 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersGauge
-{
+namespace meta {
+class ParametersGauge {
 public:
 	double get_beta() const noexcept;
 	double get_rho() const noexcept;
 	int get_rho_iter() const noexcept;
 	action get_gaugeact() const noexcept;
 	bool get_use_smearing() const noexcept;
-	
-protected:
+
+private:
+	po::options_description options;
 	double beta;
 	double rho;
 	int rho_iter;
-	action gaugeact;
 	bool use_smearing;
-	
-	po::options_description getOptions();
+
+protected:
+	ParametersGauge();
+	virtual ~ParametersGauge();
+	ParametersGauge(ParametersGauge const&) = delete;
+	ParametersGauge & operator=(ParametersGauge const&) = delete;
+	po::options_description & getOptions();
+
+	action gaugeact;
 };
 
 }

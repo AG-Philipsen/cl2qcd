@@ -989,7 +989,7 @@ void hardware::code::Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::
 }
 
 hardware::code::Spinors::Spinors(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0)
+	: Opencl_Module(params, device), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0), saxpy_AND_squarenorm_eo(0) 
 {
 	fill_kernels();
 

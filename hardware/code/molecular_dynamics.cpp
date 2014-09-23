@@ -185,7 +185,7 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 		return (C * 3 * (8) + C * 4 * R + 4 * A) * D * Seo;
 	}
 	if (in == "stout_smear_fermion_force") {
-		return 10000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	return 0;
 }
@@ -193,7 +193,6 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in) const
 {
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = get_spinorfieldsize(get_parameters());
 	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
 	//this is the number of links in the system (and of gaugemomenta)
 	uint64_t G = meta::get_vol4d(get_parameters()) * NDIM;
@@ -238,7 +237,7 @@ uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in
 		                     18 + R * 18 + meta::get_flop_complex_mult() + 9 + 16);
 	}
 	if (in == "stout_smear_fermion_force") {
-		return 10000000000000000000;
+		return module_metric_not_implemented<uint64_t>();
 	}
 	return 0;
 }
@@ -536,21 +535,18 @@ void hardware::code::Molecular_Dynamics::fermion_staggered_partial_force_device(
 }
 
 
-void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate) const
+void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>&) const
 {
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(stout_smear_fermion_force, &ls2, &gs2, &num_groups);
-	//set arguments
+	throw std::runtime_error("Not implemented!");
 }
 
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), md_update_gaugefield (0), gauge_force (0),
 	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
-	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0), 
-	  gauge_force_tlsym_4 (0), gauge_force_tlsym_5 (0), gauge_force_tlsym_6 (0), 
-	  fermion_stagg_partial_force_eo(0), gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
+	  fermion_stagg_partial_force_eo(0),
+	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0),
+	  gauge_force_tlsym_4 (0), gauge_force_tlsym_5 (0), gauge_force_tlsym_6 (0),
+	  gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
 {
 	fill_kernels();
 }

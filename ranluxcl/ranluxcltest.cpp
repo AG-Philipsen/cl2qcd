@@ -543,7 +543,7 @@ int main(int argc, char *argv[])
 	//Set luxury value. If this is not defined the highest (4) is used by default.
 	BuildOptions += " -D RANLUXCL_LUX=" + to_string(lux);
 
-	Compile_OpenCL_Code(BuildOptions, FileName, context, program, 1);
+	Compile_OpenCL_Code(BuildOptions, FileName, context, program, ShowBuildLog);
 
 	//Setting kernels
 	cl::Kernel Kernel_RanluxclInit = cl::Kernel(program, "Kernel_Ranluxcl_Init", &err); checkErr(err, "cl::Kernel Kernel_RanluxclInit");

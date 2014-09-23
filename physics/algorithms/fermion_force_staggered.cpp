@@ -85,7 +85,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 	
-	auto params = system.get_inputparameters();	
+	const auto & params = system.get_inputparameters();	
 	logger.debug() << "\t\tcalc_fermion_force...";
 	
 	logger.debug() << "\t\t\tstart solver";
@@ -96,7 +96,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		Y.push_back(new Staggeredfield_eo(system));
 	}
 	const MdagM_eo fm(system, mass);
-	const int iterations = cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_force_prec());
+	cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_force_prec());
 	logger.debug() << "\t\t\t  end solver";
 	
 	//Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
@@ -126,7 +126,7 @@ void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemome
 
 	calc_fermion_force(force, gf, phi, system, mass);
 	
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	if(params.get_use_smearing() == true) {
 		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
 	}

@@ -53,7 +53,7 @@ static void setArguments(std::string & inputfile_location, std::string & gpu_opt
 	}
 }
 
-meta::Inputparameters createParameters(std::string inputfile)
+std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile)
 {
 	std::string inputfile_location = defaultSourceDirectory + defaultInputfilesSubdirectory;
 	std::string gpu_opt = defaultGpuOption;
@@ -67,8 +67,7 @@ meta::Inputparameters createParameters(std::string inputfile)
 	logger.info() << "inputfile used: " << inputfile_location;
 	
 	const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str(), "--device=0"};
-	meta::Inputparameters params(num_par + 1, _params_cpu);
-	return params;
+	return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(num_par + 1, _params_cpu));
 }
 
 void printKernelInformation(std::string name)

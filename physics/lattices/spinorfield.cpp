@@ -304,7 +304,7 @@ void physics::lattices::Spinorfield::import(const spinor * const host) const
 	if(buffers.size() == 1) {
 		buffers[0]->load(host);
 	} else {
-		auto params = system.get_inputparameters();
+		const auto & params = system.get_inputparameters();
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
 		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());

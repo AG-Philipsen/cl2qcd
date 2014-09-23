@@ -22,10 +22,14 @@
 #
 
 add_library(ildg_io
+	SourcefileParameters.cpp
+	SourcefileParameters_utilities.cpp
 	limeUtilities.cpp
-	SourcefileParameters_values.cpp
+	limeFileReader.cpp
+	limeFileWriter.cpp
 	ildgIo_gaugefield.cpp
 	ildgIo.cpp
+	matrixSu3_utilities.cpp
 )
 
 target_link_libraries(ildg_io
@@ -37,7 +41,12 @@ target_link_libraries(ildg_io
 	einhard
 	logger
 	exceptions
+	meta
+	host_functionality
 )
 
+add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test ildg_io)
+add_unit_test_withLibraries(limeFileReader limeFileReader_test ildg_io)
 add_unit_test_withLibraries(ildgIo_gaugefield ildgIo_gaugefield_test ildg_io)
+add_unit_test_withLibraries(matrixSu3_utilities matrixSu3_utilities_test ildg_io)
 

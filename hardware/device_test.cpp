@@ -65,8 +65,8 @@ BOOST_AUTO_TEST_CASE(compile)
 	const std::vector<Device*>& devices = system.get_devices();
 	BOOST_REQUIRE_GE(devices.size(), 1);
 
-	// query some data
+	// test compile
 for(const Device * device : devices) {
-		cl_kernel foo = device->create_kernel("foo", "") << "../hardware/device_test.cl";
+		device->create_kernel("foo", "") << "../hardware/device_test.cl";
 	}
 }

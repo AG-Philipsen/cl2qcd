@@ -94,7 +94,7 @@ for(Device * device : devices) {
 			dummy.load(host);
 			dummy.clear();
 			dummy.dump(host);
-			for(int i = 0; i < SIZE; ++i) {
+			for(size_t i = 0; i < SIZE; ++i) {
 				BOOST_REQUIRE_EQUAL(host[i], 0.f);
 			}
 		}
@@ -107,7 +107,7 @@ for(Device * device : devices) {
 			dummy.load(host);
 			dummy.clear();
 			dummy.dump(host);
-			for(int i = 0; i < SIZE; ++i) {
+			for(size_t i = 0; i < SIZE; ++i) {
 				BOOST_REQUIRE_EQUAL(host[i], 0);
 			}
 		}

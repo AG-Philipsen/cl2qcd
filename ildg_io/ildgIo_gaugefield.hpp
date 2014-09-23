@@ -27,67 +27,49 @@
 #include "../executables/exceptions.h"
 
 //todo: remove this eventually
-#include "limeUtilities.hpp"
-#include "SourcefileParameters_values.hpp"
+#include "limeFileReader.hpp"
+#include "limeFileWriter.hpp"
+#include "SourcefileParameters.hpp"
 
-#include "checksum.h"
-extern "C" {
-#include <lime.h>
-}
+namespace ildgIo {
 
-//todo: add namespace ildg_io
-
-/**
- * Parser class for a stored gaugefield.
- *
- * Contains metadata of the parsed gaugefield as members.
- */
-class sourcefileparameters : public sourcefileparameters_values {
-public:
 	/**
-	 * Read gauge configuration from the given file into the given array.
-	 *
-	 * @param[in] file      The file to read the gauge configuration from
-	 * @param[in] precision The precision expected for the gaugefield.
-	 * @param[out] array    The loaded gaugefield
-	 */
-  void readsourcefile(std::string file, int precision, char ** data);
+	* ILDG compatible reader class for gaugefield.
+	*
+	* Contains metadata of the parsed gaugefield as member.
+	* TODO: change this.
+	*
+	* @param[in] file      The file to read the gauge configuration from
+	* @param[in] parameters The input parameters @Todo: remove this
+	* @param[out] data    The loaded gaugefield, buffer will be allocated!
+	*/
+	class IldgIoReader_gaugefield : public LimeFileReader
+	{
+	public:
+		IldgIoReader_gaugefield(std::string file, const meta::Inputparameters * parameters, Matrixsu3 ** data);
+	};
+
+	/**
+	* ILDG compatible writer class for gaugefield.
+	*
+	* \param data The gaugefield to write
+	* \param num_bytes The number of bytes to be written.
+	* \param parameters Collection of parameters associated with the gaugefield.
+	* \param trajectoryNumber HMC trajectory number associated with the gaugefield.
+	* \param plaquetteValue Plaquette value of the gaugefield.
+	*/
+	class IldgIoWriter_gaugefield: public LimeFileWriter
+	{
+	public:
+		IldgIoWriter_gaugefield(Matrixsu3 * data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue);
+	};
 	
- private:
-	void readMetaDataFromLimeFile();
-	void readDataFromLimeFile(char ** destination);
-	int calcNumberOfEntriesBasedOnFieldType(std::string fieldType);
-	LimeFileProperties extractMetaDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData);
-	size_t	sizeOfGaugefieldBuffer();
-	void extractBinaryDataFromLimeEntry(LimeReader * r, LimeHeaderData limeHeaderData, char ** destination);
-	void readLimeFile(char ** destination);
-	void extractMetadataFromLimeFile();
-	void extractDataFromLimeFile(char ** destination);
-	void extractInformationFromLimeEntry(LimeReader * r, char ** destination);
-	void goThroughLimeRecords(LimeReader * r, char ** destination);
-
-	int checkLimeEntryForFermionInformations(std::string lime_type);
-	bool checkLimeEntryForBinaryData(std::string lime_type);
-
-	LimeFilePropertiesCollector limeFileProp;
+	Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
+	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const 	meta::Inputparameters& parameters);
+	void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 	
-	std::string sourceFilename;
-	int desiredPrecision;
-	LimeEntryTypes limeEntryTypes;
-};
-
-/**
- * Write the gaugefield to a file
- *
- * \param array The float array representing the gaugefield.
- * \param array_size The number of floats in the gaugefield array.
- *
- * \todo complete documentation
- */
-void write_gaugefield (
-  char * binary_data, n_uint64_t num_bytes, Checksum checksum,
-  int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
-  const char * hmc_version, const char * filename);
-
+	size_t getNumberOfElements_gaugefield(const meta::Inputparameters * parameters);
+	n_uint64_t getSizeInBytes_gaugefield(size_t numberOfElements);
+}
 
 #endif /* _READGAUGEH_ */

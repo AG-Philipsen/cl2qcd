@@ -68,7 +68,7 @@ static std::string create_log_prefix_bicgstab(int number) noexcept;
 
 int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec)
 {
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	if (params.get_solver() == meta::Inputparameters::bicgstab_save) {
 		return bicgstab_save(x, A, gf, b, system, prec);
@@ -84,13 +84,13 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
 
 	hmc_float resid;
-	hmc_complex alpha, omega, rho;
+	hmc_complex alpha, omega, rho{std::nan(""), std::nan("")};
 
 	const Spinorfield v(system);
 	const Spinorfield p(system);
@@ -236,7 +236,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
@@ -377,7 +377,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
@@ -478,7 +478,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 
 int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec)
 {
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	if (params.get_solver() == meta::Inputparameters::bicgstab_save) {
 	  return bicgstab_save(x, A, gf, b, system, prec);
@@ -496,7 +496,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 	// TODO start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
 
-	auto params = system.get_inputparameters();
+	auto & params = system.get_inputparameters();
 
 	const Spinorfield_eo s(system);
 	const Spinorfield_eo t(system);
@@ -650,7 +650,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 	// TODO start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
 
-	auto params = system.get_inputparameters();
+	auto & params = system.get_inputparameters();
 
 	const Spinorfield_eo p(system);
 	const Spinorfield_eo rn(system);
@@ -816,7 +816,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	const auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
@@ -988,7 +988,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
 
-	const auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
 	if(MINIMUM_ITERATIONS) {
 		logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
@@ -1008,7 +1008,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 	hmc_complex beta;
 	hmc_complex omega;
 	hmc_complex rho;
-	hmc_complex rho_next = (hmc_complex) {std::nan(""), std::nan("")};
+	hmc_complex rho_next{std::nan(""), std::nan("")};
 	hmc_complex tmp1;
 	hmc_complex tmp2;
 
@@ -1032,7 +1032,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 			copyData(&p, rn);
 			log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 			//omega = (rn,rn)
-			omega = (hmc_complex) {squarenorm(rn, &tmp_float), 0};
+			omega = hmc_complex{squarenorm(rn, &tmp_float), 0};
 		} else {
 			//update omega
 			omega = rho_next;
@@ -1069,7 +1069,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 			//calc residuum
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 			resid = squarenorm(rn, &tmp_float);
-			rho_next = (hmc_complex) {resid, 0.};
+			rho_next = hmc_complex{resid, 0.};
 		}
 		logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
 		//test if resid is NAN

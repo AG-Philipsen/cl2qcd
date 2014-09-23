@@ -35,16 +35,15 @@ bool ParametersHmc::get_reversibility_check() const noexcept
 }
 int ParametersHmc::get_integrationsteps(size_t timescale) const noexcept
 {
-	switch(timescale) 
-	{
-	case 0:
-		return integrationsteps0;
-	case 1:
-		return integrationsteps1;
-	case 2:
-		return integrationsteps2;
-	default:
-		throw std::out_of_range("No such timescale");
+	switch(timescale) {
+		case 0:
+			return integrationsteps0;
+		case 1:
+			return integrationsteps1;
+		case 2:
+			return integrationsteps2;
+		default:
+			throw std::out_of_range("No such timescale");
 	}
 }
 int ParametersHmc::get_hmcsteps() const noexcept
@@ -57,54 +56,57 @@ int ParametersHmc::get_num_timescales() const noexcept
 }
 ParametersHmc::integrator ParametersHmc::get_integrator(size_t timescale) const noexcept
 {
-	switch(timescale) 
-	{
-	case 0:
-		return integrator0;
-	case 1:
-		return integrator1;
-	case 2:
-		return integrator2;
-	default:
-		throw std::out_of_range("No such timescale");
+	switch(timescale) {
+		case 0:
+			return integrator0;
+		case 1:
+			return integrator1;
+		case 2:
+			return integrator2;
+		default:
+			throw std::out_of_range("No such timescale");
 	}
 }
 double ParametersHmc::get_lambda(size_t timescale) const noexcept
 {
-	switch(timescale)
-	{
-	case 0:
-		return lambda0;
-	case 1:
-		return lambda1;
-	case 2:
-		return lambda2;
-	default:
-		throw std::out_of_range("No such timescale");
+	switch(timescale) {
+		case 0:
+			return lambda0;
+		case 1:
+			return lambda1;
+		case 2:
+			return lambda2;
+		default:
+			throw std::out_of_range("No such timescale");
 	}
 }
 
-po::options_description ParametersHmc::getOptions()
+ParametersHmc::ParametersHmc()
+	: options("HMC options")
 {
-	po::options_description options("HMC options");
 	options.add_options()
-		("tau", po::value<double>(&tau)->default_value(0.5))
-		("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
-		("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
-		("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
-		("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
-		("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
-		("num_timescales", po::value<int>(&num_timescales)->default_value(1))
-		("integrator0", po::value<std::string>()->default_value("leapfrog"))
-		("integrator1", po::value<std::string>()->default_value("leapfrog"))
-		("integrator2", po::value<std::string>()->default_value("leapfrog"))
-		// this is the optimal value...
-		("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
-		("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
-		("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
-		("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
-		("use_mp", po::value<bool>(&use_mp)->default_value(false));
-	
+	("tau", po::value<double>(&tau)->default_value(0.5))
+	("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
+	("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
+	("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
+	("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
+	("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
+	("num_timescales", po::value<int>(&num_timescales)->default_value(1))
+	("integrator0", po::value<std::string>()->default_value("leapfrog"))
+	("integrator1", po::value<std::string>()->default_value("leapfrog"))
+	("integrator2", po::value<std::string>()->default_value("leapfrog"))
+	// this is the optimal value...
+	("lambda0", po::value<double>(&lambda0)->default_value(0.1931833275037836))
+	("lambda1", po::value<double>(&lambda1)->default_value(0.1931833275037836))
+	("lambda2", po::value<double>(&lambda2)->default_value(0.1931833275037836))
+	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
+	("use_mp", po::value<bool>(&use_mp)->default_value(false));
+}
+
+meta::ParametersHmc::~ParametersHmc() = default;
+
+po::options_description & ParametersHmc::getOptions()
+{
 	return options;
 }
 

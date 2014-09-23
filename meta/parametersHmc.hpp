@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersHmc
-{
+namespace meta {
+class ParametersHmc {
 public:
 	enum integrator { leapfrog = 1, twomn };
 
@@ -39,7 +38,9 @@ public:
 	bool get_use_gauge_only() const noexcept;
 	bool get_use_mp() const noexcept;
 
-protected:
+private:
+	po::options_description options;
+
 	double tau;
 	bool reversibility_check;
 	int integrationsteps0;
@@ -47,16 +48,22 @@ protected:
 	int integrationsteps2;
 	int hmcsteps;
 	int num_timescales;
-	integrator integrator0;
-	integrator integrator1;
-	integrator integrator2;
 	double lambda0;
 	double lambda1;
 	double lambda2;
 	bool use_gauge_only;
 	bool use_mp;
 
-	po::options_description getOptions();
+protected:
+	ParametersHmc();
+	virtual ~ParametersHmc();
+	ParametersHmc(ParametersHmc const&) = delete;
+	ParametersHmc & operator=(ParametersHmc const&) = delete;
+	po::options_description & getOptions();
+
+	integrator integrator0;
+	integrator integrator1;
+	integrator integrator2;
 };
 
 }

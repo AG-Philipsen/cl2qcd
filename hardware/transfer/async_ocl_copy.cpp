@@ -27,7 +27,7 @@
 #include "../system.hpp"
 
 namespace {
-	size_t get_required_buffer_size(const size_t * region);
+size_t get_required_buffer_size(const size_t * region);
 }
 
 hardware::transfer::AsyncOclCopy::AsyncOclCopy(hardware::Device * const from, hardware::Device * const to, hardware::System const & system)
@@ -71,7 +71,7 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 
 	// transfer data to destination device
 	{
-		auto const events = get_raw_events({load_event, transfer_event, dump_event, back_migration_event});
+		auto const events = get_raw_events( {load_event, transfer_event, dump_event, back_migration_event});
 		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
 
 		cl_event raw_transfer_event;
@@ -89,8 +89,9 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 	}
 
 	// migrate source cache back to source device
+#if CL_VERSION_1_2
 	{
-		auto const events = get_raw_events({load_event, transfer_event, back_migration_event});
+		auto const events = get_raw_events( {load_event, transfer_event, back_migration_event});
 		cl_event const * const events_p = (events.size() > 0) ? events.data() : nullptr;
 
 		cl_event raw_back_migration_event;
@@ -104,6 +105,12 @@ hardware::SynchronizationEvent hardware::transfer::AsyncOclCopy::transfer()
 			throw Opencl_Error(clerr, "clReleaseEvent", __FILE__, __LINE__);
 		}
 	}
+#else
+	// back migration is a performance optimization that is not functionally required.
+	// if it is not available just work
+	back_migration_event = transfer_event;
+#pragma message "clEnqueueMigrateMemObjects is not available on your system. This might negativly affect multi-device performance. Please upgrade to OpenCL 1.2 or higher."
+#endif
 
 	return transfer_event;
 }
@@ -143,8 +150,8 @@ hardware::buffers::Buffer * hardware::transfer::AsyncOclCopy::get_dest_cache(siz
 }
 
 namespace {
-	size_t get_required_buffer_size(const size_t * const region)
-	{
-		return region[0] * region[1] * region[2];
-	}
+size_t get_required_buffer_size(const size_t * const region)
+{
+	return region[0] * region[1] * region[2];
+}
 }

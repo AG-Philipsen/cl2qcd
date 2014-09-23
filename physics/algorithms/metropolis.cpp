@@ -38,7 +38,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	const Spinorfield phi_inv(system);
 
@@ -73,7 +73,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	const Spinorfield_eo phi_inv(system);
 
@@ -119,7 +119,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 
 	const Spinorfield phi_inv(system);
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const hmc_float kappa = params.get_kappa();
 	const hmc_float mubar = meta::get_mubar(params);
 
@@ -158,7 +158,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 
 	logger.trace() << "\tHMC [DH]:\tcalc final fermion energy...";
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const hmc_float kappa = params.get_kappa();
 	const hmc_float mubar = meta::get_mubar(params);
 
@@ -195,10 +195,9 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	return squarenorm(phi_inv);
 }
 
-hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi_mp, const hardware::System& system)
+hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugefield&, const physics::lattices::Rooted_Staggeredfield_eo&, const hardware::System&)
 {
-   //Function not yet implemented!
-  return 0.;
+	throw std::runtime_error("Not implemented!");
 }
 
 /**
@@ -210,7 +209,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
  * (using the multi-shifted inverter). Then a scalar product give the returning value.
  * 
  */
-hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float mubar)
+hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, const hmc_float mass, const hmc_float)
 {
 	using physics::lattices::Rooted_Staggeredfield_eo;
 	using namespace physics::algorithms::solvers;
@@ -218,7 +217,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	
 	logger.trace() << "\tRHMC [DH]:\tcalc final fermion energy...";
 	
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 	const physics::fermionmatrix::MdagM_eo fm(system, mass);
 	int iterations = 0;
 
@@ -247,7 +246,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 {
 	using namespace physics::algorithms;
 
-	auto params = system.get_inputparameters();
+	const auto & params = system.get_inputparameters();
 
 	//Calc Hamiltonian
 	print_info_debug(params, "[DH]:\tCalculate Hamiltonian", sqrt(-1.), false);

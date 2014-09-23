@@ -40,7 +40,7 @@ class TestGaugefield {
 public:
 	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
 		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
-		auto inputfile = system->get_inputparameters();
+		const auto & inputfile = system->get_inputparameters();
 		meta::print_info_hmc(inputfile);
 	};
 
@@ -114,8 +114,8 @@ void test_build(std::string inputfile)
 {
 	logger.info() << "build opencl_module_hmc";
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("fermionsMerged/" + inputfile);
+	hardware::System system(*params);
 	TestGaugefield cpu(&system);
 	BOOST_MESSAGE("Test done");
 }
@@ -123,7 +123,7 @@ void test_build(std::string inputfile)
 hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
 {
 	hmc_float res = 0.;
-	for(int i = 0; i < NUM_ELEMS; i++) {
+	for(size_t i = 0; i < NUM_ELEMS; i++) {
 		spinor tmp = in[i];
 		res +=
 		  tmp.e0.e0.re + tmp.e0.e0.im +
@@ -160,8 +160,8 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	std::string kernelName = "dslash_AND_gamma5_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("fermionsMerged/" + inputfile);
+	hardware::System system(*params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
 	auto * device = cpu.get_device();
@@ -169,13 +169,13 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	if(params->get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
@@ -188,7 +188,6 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
@@ -197,10 +196,10 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	if(params.get_read_multiple_configs()) {
-		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa() );
+	if(params->get_read_multiple_configs()) {
+		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params->get_kappa() );
 	} else {
-		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa() );
+		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params->get_kappa() );
 	}
 	in.dump(sf_out);
 	logger.info() << "result:";
@@ -212,7 +211,7 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	delete[] sf_in;
 	delete[] sf_out;
 
-	testFloatAgainstInputparameters(cpu_res, params);
+	testFloatAgainstInputparameters(cpu_res, *params);
 	BOOST_MESSAGE("Test done");
 }
 
@@ -227,8 +226,8 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 		kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("fermionsMerged/" + inputfile);
+	hardware::System system(*params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
 	auto * device = cpu.get_device();
@@ -236,13 +235,13 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	if(params->get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
@@ -255,7 +254,6 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
-	auto gf_code = device->get_device()->get_gaugefield_code();
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
@@ -264,16 +262,16 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	if(params.get_read_multiple_configs()) {
+	if(params->get_read_multiple_configs()) {
 		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params->get_kappa(), meta::get_mubar(*params));
 		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params->get_kappa(), meta::get_mubar(*params));
 	} else {
 		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params->get_kappa(), meta::get_mubar(*params));
 		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params->get_kappa(), meta::get_mubar(*params));
 	}
 	out.dump(sf_out);
 	logger.info() << "result:";
@@ -286,7 +284,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	delete[] sf_in;
 	delete[] sf_out;
 
-	testFloatAgainstInputparameters(cpu_res, params);
+	testFloatAgainstInputparameters(cpu_res, *params);
 	BOOST_MESSAGE("Test done");
 }
 
@@ -309,8 +307,8 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	else kernelName = "m_tm_sitediagonal_minus_AND_gamma5_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	meta::Inputparameters params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(params);
+	auto params = createParameters("fermionsMerged/" + inputfile);
+	hardware::System system(*params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
 	auto * device = cpu.get_device();
@@ -318,13 +316,13 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	if(params->get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
@@ -345,9 +343,9 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(switcher)
-		device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+		device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(*params));
 	else
-		device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+		device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(*params));
 	out.dump(sf_out);
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -358,7 +356,7 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	delete[] sf_in;
 	delete[] sf_out;
 
-	testFloatAgainstInputparameters(cpu_res, params);
+	testFloatAgainstInputparameters(cpu_res, *params);
 	BOOST_MESSAGE("Test done");
 }
 

@@ -23,9 +23,8 @@
 
 #include "parametersBasic.hpp"
 
-namespace meta{
-class ParametersIo
-{
+namespace meta {
+class ParametersIo {
 public:
 	int get_writefrequency() const noexcept;
 	int get_savefrequency() const noexcept;
@@ -53,8 +52,8 @@ public:
 	std::string get_rectanglesFilename() const noexcept;
 	std::string get_transportcoefficientKappaFilename() const noexcept;
 
-	
-protected:
+private:
+	po::options_description options;
 	int writefrequency;
 	int savefrequency;
 	int config_number_digits;
@@ -80,8 +79,13 @@ protected:
 	bool rhmc_obs_to_single_file;
 	std::string rhmc_obs_prefix;
 	std::string rhmc_obs_postfix;
-		
-	po::options_description getOptions();
+
+protected:
+	ParametersIo();
+	virtual ~ParametersIo();
+	ParametersIo(ParametersIo const&) = delete;
+	ParametersIo & operator=(ParametersIo const&) = delete;
+	po::options_description & getOptions();
 };
 
 }
