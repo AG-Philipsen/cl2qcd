@@ -125,7 +125,10 @@ private:
 	cl_kernel gauge_force;
 	cl_kernel gauge_force_tlsym;
 	cl_kernel fermion_force;
-	cl_kernel fermion_force_eo;
+	cl_kernel fermion_force_eo_0;
+	cl_kernel fermion_force_eo_1;
+	cl_kernel fermion_force_eo_2;
+	cl_kernel fermion_force_eo_3;
 	cl_kernel stout_smear_fermion_force;
 	
 	//staggered kernels

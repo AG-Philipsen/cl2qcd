@@ -50,7 +50,10 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
-		fermion_force_eo = createKernel("fermion_force_eo") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo_0 = createKernel("fermion_force_eo_0") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo_1 = createKernel("fermion_force_eo_1") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo_2 = createKernel("fermion_force_eo_2") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo_3 = createKernel("fermion_force_eo_3") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 		fermion_stagg_partial_force_eo = createKernel("fermion_staggered_partial_force_eo") << basic_molecular_dynamics_code << "operations_staggered.cl" << "spinorfield_staggered_eo.cl" << "force_staggered_fermion_eo.cl";
 	}
 	fermion_force = createKernel("fermion_force") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion.cl";
@@ -88,7 +91,10 @@ void hardware::code::Molecular_Dynamics::clear_kernels()
 	logger.debug() << "Clearing Molecular_Dynamics kernels.." ;
 	
 	if(get_parameters().get_use_eo() == true) {
-		clerr = clReleaseKernel(fermion_force_eo);
+		clerr = clReleaseKernel(fermion_force_eo_3);
+		clerr = clReleaseKernel(fermion_force_eo_2);
+		clerr = clReleaseKernel(fermion_force_eo_1);
+		clerr = clReleaseKernel(fermion_force_eo_0);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(fermion_stagg_partial_force_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -255,7 +261,10 @@ void hardware::code::Molecular_Dynamics::print_profiling(const std::string& file
 	Opencl_Module::print_profiling(filename, gauge_force_tlsym_5);
 	Opencl_Module::print_profiling(filename, gauge_force_tlsym_6);
 	Opencl_Module::print_profiling(filename, fermion_force);
-	Opencl_Module::print_profiling(filename, fermion_force_eo);
+	Opencl_Module::print_profiling(filename, fermion_force_eo_0);
+	Opencl_Module::print_profiling(filename, fermion_force_eo_1);
+	Opencl_Module::print_profiling(filename, fermion_force_eo_2);
+	Opencl_Module::print_profiling(filename, fermion_force_eo_3);
 	Opencl_Module::print_profiling(filename, fermion_stagg_partial_force_eo);
 	Opencl_Module::print_profiling(filename, stout_smear_fermion_force);
 }
@@ -451,31 +460,65 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
 
-	//fermion_force(field, Y, X, out);
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(fermion_force_eo, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(fermion_force_eo, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	if(logger.beDebug()) {
+		Plain<hmc_float> tmp(1, get_device());
+		auto spinor_code = get_device()->get_spinor_code();
+		hmc_float resid;
+		spinor_code->set_float_to_global_squarenorm_eoprec_device(Y, &tmp);
+		tmp.dump(&resid);
+		logger.debug() <<  "\t\t\tY:\t" << resid;
+		spinor_code->set_float_to_global_squarenorm_eoprec_device(X, &tmp);
+		tmp.dump(&resid);
+		logger.debug() <<  "\t\t\tX:\t" << resid;
 
-	clerr = clSetKernelArg(fermion_force_eo, 1, sizeof(cl_mem), Y->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		auto gf_code = get_device()->get_gaugefield_code();
+		Plain<hmc_complex> pol_dev(1, get_device());
+		gf_code->polyakov_device(gf, &pol_dev);
+		hmc_complex pol_host;
+		pol_dev.dump(&pol_host);
+		logger.debug() <<  "\t\t\tGf:\t" << pol_host.re << ' ' << pol_host.im;
 
-	clerr = clSetKernelArg(fermion_force_eo, 2, sizeof(cl_mem), X->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		logger.debug() << "Even-odd: " << evenodd;
+		logger.debug() << "Kappa: " << kappa_tmp;
 
-	clerr = clSetKernelArg(fermion_force_eo, 3, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		auto gm_code = get_device()->get_gaugemomentum_code();
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &tmp);
+		tmp.dump(&resid);
+		logger.debug() <<  "\t\t\tGm:\t" << resid;
+	}
 
-	clerr = clSetKernelArg(fermion_force_eo, 4, sizeof(int), &evenodd);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	auto run_kernel = [&](cl_kernel kernel) {
+		//fermion_force(field, Y, X, out);
+		//query work-sizes for kernel
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(kernel, &ls2, &gs2, &num_groups);
+		//set arguments
+		int clerr = clSetKernelArg(kernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eo, 5, sizeof(hmc_float), &kappa_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(kernel, 1, sizeof(cl_mem), Y->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel( fermion_force_eo , gs2, ls2);
+		clerr = clSetKernelArg(kernel, 2, sizeof(cl_mem), X->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		clerr = clSetKernelArg(kernel, 3, sizeof(cl_mem), out->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		clerr = clSetKernelArg(kernel, 4, sizeof(int), &evenodd);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		clerr = clSetKernelArg(kernel, 5, sizeof(hmc_float), &kappa_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		get_device()->enqueue_kernel( kernel , gs2, ls2);
+	};
+
+	run_kernel(fermion_force_eo_0);
+	run_kernel(fermion_force_eo_1);
+	run_kernel(fermion_force_eo_2);
+	run_kernel(fermion_force_eo_3);
 
 	if(logger.beDebug()) {
 		Plain<hmc_float> force_tmp(1, get_device());
@@ -542,7 +585,7 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), md_update_gaugefield (0), gauge_force (0),
-	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
+	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo_0(0), fermion_force_eo_1(0), fermion_force_eo_2(0), fermion_force_eo_3(0), stout_smear_fermion_force(0),
 	  fermion_stagg_partial_force_eo(0),
 	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0),
 	  gauge_force_tlsym_4 (0), gauge_force_tlsym_5 (0), gauge_force_tlsym_6 (0),
