@@ -26,10 +26,10 @@
 #include "../common_header_files/types.h"
 #include "../executables/exceptions.h"
 
-//todo: remove this eventually
+//todo: remove this eventually if there is a more general interface for readers and writers
 #include "lime/limeFileReader.hpp"
 #include "lime/limeFileWriter.hpp"
-#include "SourcefileParameters.hpp"
+#include "sourcefileParameters/SourcefileParameters.hpp"
 
 namespace ildgIo {
 

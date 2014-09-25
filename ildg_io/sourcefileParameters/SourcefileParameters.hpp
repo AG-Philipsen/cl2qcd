@@ -22,8 +22,8 @@
 #ifndef _SOURCEFILEPARAMETERS_HPP_
 #define _SOURCEFILEPARAMETERS_HPP_
 
-#include "checksum.h"
-#include "../meta/inputparameters.hpp"
+#include "../checksum.h"
+#include "../../meta/inputparameters.hpp"
 
 //TODO: it may be advantageous to separate between gaugefield and fermion field parameters
 class Sourcefileparameters {

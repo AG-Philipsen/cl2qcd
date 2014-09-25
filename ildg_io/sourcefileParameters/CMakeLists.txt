@@ -1,4 +1,4 @@
-# Build specifications for LIME utilities
+# Build specifications for sourcefileparameters
 #
 # Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de> 
 #
@@ -21,20 +21,16 @@
 # Collect all code in this part of the source tree
 #
 
-add_library(lime
-	limeUtilities.cpp
-	limeFileReader.cpp
-	limeFileWriter.cpp
+add_library(sourcefileParameters
+	SourcefileParameters.cpp
+	SourcefileParameters_utilities.cpp
 )
 
-target_link_libraries(lime
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	einhard
+target_link_libraries(sourcefileParameters
 	logger
 	exceptions
-	sourcefileParameters
+	meta
 )
 
-add_unit_test_withLibraries(limeFileReader limeFileReader_test lime)
+add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test sourcefileParameters)
 
