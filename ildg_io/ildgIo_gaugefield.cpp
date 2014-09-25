@@ -209,15 +209,10 @@ void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gau
 
 static void make_big_endian_from_float(char* out, const hmc_float in)
 {
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
-
-	val.f = in;
+	char const * const raw_in = reinterpret_cast<char const *>(&in);
 
 	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		out[i] = val.b[sizeof(hmc_float) - 1 - i];
+		out[i] = raw_in[sizeof(hmc_float) - 1 - i];
 	}
 }
 
