@@ -151,18 +151,22 @@ BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat)
 	const meta::Inputparameters parameters(3, tmp);
 	
 	const n_uint64_t numberOfElements = getNumberOfElements_gaugefield(&parameters);
-	Matrixsu3 * gaugefield = new Matrixsu3[ numberOfElements ];
-	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, numberOfElements, Matrixsu3_utilities::FillType::ONE);
+	std::vector<Matrixsu3> gaugefield = std::vector<Matrixsu3>(numberOfElements);
+	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, Matrixsu3_utilities::FillType::ONE);
 	
-	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield, numberOfElements);
+	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield);
 	
 	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
 	char * binary_data = new char[num_bytes];
+
+	Matrixsu3 * gaugefieldTmp = &gaugefield[0];
 	
-	copy_gaugefield_to_ildg_format(binary_data, gaugefield, parameters);
-	copy_gaugefield_from_ildg_format(gaugefield, binary_data, numberOfElements * 9 * 2, parameters);
+	copy_gaugefield_to_ildg_format(binary_data, gaugefieldTmp, parameters);
+	copy_gaugefield_from_ildg_format(gaugefieldTmp, binary_data, numberOfElements * 9 * 2, parameters);
 	
-	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield, numberOfElements);
+	gaugefield.assign(gaugefieldTmp, gaugefieldTmp + numberOfElements);
+	
+	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield);
 	
 	BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, sumAfterConversion.re);
 	BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, sumAfterConversion.im);
