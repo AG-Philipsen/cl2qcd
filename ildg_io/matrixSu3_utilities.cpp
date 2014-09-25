@@ -34,6 +34,10 @@ Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 	{
 		return { {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} };
 	}
+	else if (fillTypeIn == DIAGONAL)
+	{
+		return { {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0} };
+	}
 	else
 	{
 		throw std::logic_error("Do not know fill type for matrixSu3!");
