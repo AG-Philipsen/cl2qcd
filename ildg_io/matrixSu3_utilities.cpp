@@ -73,3 +73,39 @@ hmc_complex Matrixsu3_utilities::sumUpAllMatrixElements(const std::vector<Matrix
 	
 	return sum;
 }
+
+hmc_complex Matrixsu3_utilities::sumUpDiagonalMatrixElements(const std::vector<Matrixsu3> & in)
+{
+	hmc_complex sum = {0., 0.};
+	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
+	{
+		hmc_complex local_sum = {0.,0.};
+		local_sum = complexadd(local_sum, in[iteration].e00);
+		local_sum = complexadd(local_sum, in[iteration].e11);
+		local_sum = complexadd(local_sum, in[iteration].e22);
+		
+		sum = complexadd(sum, local_sum);
+	}
+	
+	return sum;
+}
+
+hmc_complex Matrixsu3_utilities::sumUpOffDiagonalMatrixElements(const std::vector<Matrixsu3> & in)
+{
+	hmc_complex sum = {0., 0.};
+	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
+	{
+		hmc_complex local_sum = {0.,0.};
+		local_sum = complexadd(local_sum, in[iteration].e01);
+		local_sum = complexadd(local_sum, in[iteration].e02);
+		local_sum = complexadd(local_sum, in[iteration].e10);
+		local_sum = complexadd(local_sum, in[iteration].e12);
+		local_sum = complexadd(local_sum, in[iteration].e20);
+		local_sum = complexadd(local_sum, in[iteration].e21);
+		
+		sum = complexadd(sum, local_sum);
+	}
+	
+	return sum;
+}
+

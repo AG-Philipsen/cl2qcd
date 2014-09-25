@@ -33,6 +33,8 @@ namespace Matrixsu3_utilities
 
 	void fillMatrixSu3Array_constantMatrix(std::vector<Matrixsu3> & in, FillType fillType);
 	hmc_complex sumUpAllMatrixElements(const std::vector<Matrixsu3> & in);
+	hmc_complex sumUpDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
+	hmc_complex sumUpOffDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
 }
 
 #endif
