@@ -29,6 +29,11 @@ Matrixsu3 Matrixsu3_utilities::getUnitMatrix()
 	return { {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0} };
 }
 
+Matrixsu3 Matrixsu3_utilities::getZeroMatrix()
+{
+	return { {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} };
+}
+
 Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 {
 	if (fillTypeIn == ONE)

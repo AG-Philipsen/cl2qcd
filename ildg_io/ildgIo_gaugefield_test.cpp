@@ -23,6 +23,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE ildg_read_gaugefield
 #include <boost/test/unit_test.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "ildgIo_gaugefield.hpp"
 #include "../meta/util.hpp"
@@ -198,9 +199,11 @@ void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
 class MatrixSu3Field
 {
 public:
-	MatrixSu3Field()
+	MatrixSu3Field(uint ntime, uint nspace)
 	{
-		const char * tmp [] = {"foo", "--nspace=13", "--ntime=17"};
+		std::string nspaceString = "--nspace=" + boost::lexical_cast<std::string>(nspace);
+		std::string ntimeString = "--ntime="  + boost::lexical_cast<std::string>(ntime);
+		const char * tmp [] = {"foo", nspaceString.c_str(), ntimeString.c_str()};
 		parameters = new meta::Inputparameters(3, tmp);
 		numberOfElements = getNumberOfElements_gaugefield(parameters);
 		gaugefield = std::vector<Matrixsu3>(numberOfElements);
@@ -243,23 +246,46 @@ void convertGaugefieldToAndFromIldg(MatrixSu3Field & in)
 
 BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific)
 {
-	MatrixSu3Field gaugefield;
+	uint nspace = 3;
+	uint ntime = 7;
+	uint positionToSet = 0;
+	size_4 cart(0,0,0,0);
+	MatrixSu3Field gaugefield(ntime, nspace);
 
-	size_4 cart = {12,12,12,16};
-	int positionToSet = get_global_link_pos(3, cart, *gaugefield.getParameters());
-	gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
+	for(uint x = 0; x<nspace; x++)
+	{
+		for(uint y = 0; y<nspace; y++)
+		{
+			for(uint z = 0; z<nspace; z++)
+			{
+				for(uint t = 0; t<nspace; t++)
+				{
+					for(uint mu = 0; mu < NDIM; mu++)
+					{
+						cart = {x,y,z,t};
+						positionToSet = get_global_link_pos(mu, cart, *gaugefield.getParameters());
+						gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
+						
+						hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
+						BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, 3.);
+						BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, 0.);
 	
-	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
-	
-	convertGaugefieldToAndFromIldg(gaugefield);
+						convertGaugefieldToAndFromIldg(gaugefield);
 		
-	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
-	
-	BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, sumAfterConversion.re);
-	BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, sumAfterConversion.im);
-	
-	Matrixsu3 set = gaugefield.getEntry(positionToSet);
-	checkMatrixSu3ForDiagonalType(set);
+						hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
+						
+						BOOST_REQUIRE_EQUAL(3., sumAfterConversion.re);
+						BOOST_REQUIRE_EQUAL(0., sumAfterConversion.im);
+						
+						Matrixsu3 set = gaugefield.getEntry(positionToSet);
+						checkMatrixSu3ForDiagonalType(set);
+						
+						gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
+					}
+				}
+			}
+		}
+	}
 }
-//todo: add more tests...
+
 

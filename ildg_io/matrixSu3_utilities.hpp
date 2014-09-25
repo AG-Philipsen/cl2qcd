@@ -36,6 +36,7 @@ namespace Matrixsu3_utilities
 	hmc_complex sumUpDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
 	hmc_complex sumUpOffDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
 	Matrixsu3 getUnitMatrix();
+	Matrixsu3 getZeroMatrix();
 }
 
 #endif
