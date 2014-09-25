@@ -30,13 +30,33 @@ using namespace Matrixsu3_utilities;
 
 const int numMatrixEntries = 9;
 
+class MatrixSu3Tester
+{
+public:
+	MatrixSu3Tester(int ntimeIn, int nspaceIn) : 
+		ntime(ntimeIn), nspace(nspaceIn)
+	{
+		vol4d = ntime * nspace * nspace * nspace;
+		numberOfElements = vol4d * 4;
+		gaugefield = std::vector<Matrixsu3>(numberOfElements);
+	}
+	
+	int getVol4d() {return vol4d;}
+	int getNumberOfElements() {return numberOfElements;}
+private:
+	int ntime;
+	int nspace;
+	int vol4d;
+	int numberOfElements;
+	//todo: make this a smart pointer?
+	std::vector<Matrixsu3> gaugefield;
+};
+
 BOOST_AUTO_TEST_CASE(setZero)
 {
-	int ntime = 4;
-	int nspace = 4;
-	int vol4d = ntime * nspace * nspace * nspace;
+	MatrixSu3Tester tester(4,4);
 	
-	const size_t numberOfElements = vol4d * 4;
+	const size_t numberOfElements = tester.getNumberOfElements();
 	Matrixsu3 * gaugefield = new Matrixsu3[ numberOfElements ];
 
 	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, numberOfElements, ZERO);
