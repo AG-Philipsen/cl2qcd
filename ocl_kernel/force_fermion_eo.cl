@@ -27,13 +27,13 @@
 //	EVEN corresponds to case where an odd site of Y is connected to an even site of X (because if x is odd x+mu is even)
 //	ODD is just the other way around.
 //The difference to the non-eo kernel is that one has to calculate the eo position of the "plus" spinor out of the neighbour coordinates on each occasion. This is done just like in the dslash_eo kernel!
-__kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
+__kernel void fermion_force_eo_0(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
 {
 	// must include HALO, as we are updating neighbouring sites
 	// -> not all local sites will fully updated if we don't calculate on halo indices, too
 	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
-		//caculate (pos,time) out of id_local depending on evenodd
-		//st_index pos = (evenodd == ODD) ? get_even_st_idx_local(id_local) : get_odd_st_idx_local(id_local);
+		// caculate (pos,time) out of id_mem depending on evenodd
+		// as we are positioning only on even or odd site we can update up- and downwards link without the danger of overwriting each other
 		st_index pos = (evenodd == ODD) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
 
 		Matrixsu3 U;
@@ -148,6 +148,37 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 		out_tmp = tr_lambda_u(v1);
 		update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
+	}
+}
+__kernel void fermion_force_eo_1(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
+{
+	// must include HALO, as we are updating neighbouring sites
+	// -> not all local sites will fully updated if we don't calculate on halo indices, too
+	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
+		// caculate (pos,time) out of id_mem depending on evenodd
+		// as we are positioning only on even or odd site we can update up- and downwards link without the danger of overwriting each other
+		st_index pos = (evenodd == ODD) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
+
+		Matrixsu3 U;
+		Matrix3x3 v1, v2, tmp;
+		su3vec psia, psib, phia, phib;
+		spinor y, plus;
+		int nn;
+		ae out_tmp;
+		int global_link_pos;
+		int global_link_pos_down;
+		//this is used to save the BC-conditions...
+		hmc_complex bc_tmp;
+		int dir;
+		int n = pos.space;
+		int t = pos.time;
+		int nn_eo;
+
+		y = getSpinor_eo(Y, get_eo_site_idx_from_st_idx(pos));
+		///////////////////////////////////
+		// Calculate gamma_5 y
+		///////////////////////////////////
+		y = gamma5_local(y);
 
 		//comments correspond to the mu=0 ones
 		/////////////////////////////////
@@ -213,11 +244,45 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 		out_tmp = tr_lambda_u(v1);
 		update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
+	}
+}
+__kernel void fermion_force_eo_2(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
+{
+	// must include HALO, as we are updating neighbouring sites
+	// -> not all local sites will fully updated if we don't calculate on halo indices, too
+	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
+		// caculate (pos,time) out of id_mem depending on evenodd
+		// as we are positioning only on even or odd site we can update up- and downwards link without the danger of overwriting each other
+		st_index pos = (evenodd == ODD) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
+
+		Matrixsu3 U;
+		Matrix3x3 v1, v2, tmp;
+		su3vec psia, psib, phia, phib;
+		spinor y, plus;
+		int nn;
+		ae out_tmp;
+		int global_link_pos;
+		int global_link_pos_down;
+		//this is used to save the BC-conditions...
+		hmc_complex bc_tmp;
+		int dir;
+		int n = pos.space;
+		int t = pos.time;
+		int nn_eo;
+
+		y = getSpinor_eo(Y, get_eo_site_idx_from_st_idx(pos));
+		///////////////////////////////////
+		// Calculate gamma_5 y
+		///////////////////////////////////
+		y = gamma5_local(y);
 
 		/////////////////////////////////
 		//mu = 2
 		/////////////////////////////////
 		dir = 2;
+		//this stays the same for all spatial directions at the moment
+		bc_tmp.re = 2.* kappa_in * SPATIAL_RE;
+		bc_tmp.im = 2.* kappa_in * SPATIAL_IM;
 
 		///////////////////////////////////
 		// mu = +2
@@ -275,11 +340,45 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 		out_tmp = tr_lambda_u(v1);
 		update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
+	}
+}
+__kernel void fermion_force_eo_3(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
+{
+	// must include HALO, as we are updating neighbouring sites
+	// -> not all local sites will fully updated if we don't calculate on halo indices, too
+	PARALLEL_FOR(id_mem, EOPREC_SPINORFIELDSIZE_MEM) {
+		// caculate (pos,time) out of id_mem depending on evenodd
+		// as we are positioning only on even or odd site we can update up- and downwards link without the danger of overwriting each other
+		st_index pos = (evenodd == ODD) ? get_even_st_idx(id_mem) : get_odd_st_idx(id_mem);
+
+		Matrixsu3 U;
+		Matrix3x3 v1, v2, tmp;
+		su3vec psia, psib, phia, phib;
+		spinor y, plus;
+		int nn;
+		ae out_tmp;
+		int global_link_pos;
+		int global_link_pos_down;
+		//this is used to save the BC-conditions...
+		hmc_complex bc_tmp;
+		int dir;
+		int n = pos.space;
+		int t = pos.time;
+		int nn_eo;
+
+		y = getSpinor_eo(Y, get_eo_site_idx_from_st_idx(pos));
+		///////////////////////////////////
+		// Calculate gamma_5 y
+		///////////////////////////////////
+		y = gamma5_local(y);
 
 		/////////////////////////////////
 		//mu = 3
 		/////////////////////////////////
 		dir = 3;
+		//this stays the same for all spatial directions at the moment
+		bc_tmp.re = 2.* kappa_in * SPATIAL_RE;
+		bc_tmp.im = 2.* kappa_in * SPATIAL_IM;
 
 		///////////////////////////////////
 		// mu = +3
