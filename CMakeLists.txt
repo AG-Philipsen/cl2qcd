@@ -51,6 +51,14 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 	set(CMAKE_C_FLAGS_DEBUGFULL   "-g3 -fno-linline")
 endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 
+# add endianess information
+include(TestBigEndian)
+TEST_BIG_ENDIAN(BIG_ENDIAN)
+message("Big Endian: ${BIG_ENDIAN}")
+if(BIG_ENDIAN)
+	add_dfinitions( "BIG_ENDIAN=1" )
+endif()
+
 # make sure we can compile agains opencl
 find_package( OpenCL REQUIRED )
 include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
