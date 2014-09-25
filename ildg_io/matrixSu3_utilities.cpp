@@ -40,18 +40,18 @@ Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 	}
 }
 
-void Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(Matrixsu3 * in, size_t numberOfElements, FillType fillType)
+void Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(std::vector<Matrixsu3> & in, FillType fillType)
 {
-	for(int iteration = 0; iteration < (int) numberOfElements; iteration ++)
+	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
 	{
 		in[iteration] = createMatrixSu3BasedOnFillType(fillType);
 	}
 }
 
-hmc_complex Matrixsu3_utilities::sumUpAllMatrixElements(Matrixsu3 * in, size_t numberOfElements)
+hmc_complex Matrixsu3_utilities::sumUpAllMatrixElements(const std::vector<Matrixsu3> & in)
 {
 	hmc_complex sum = {0., 0.};
-	for(int iteration = 0; iteration < (int) numberOfElements; iteration ++)
+	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
 	{
 		hmc_complex local_sum = {0.,0.};
 		local_sum = complexadd(local_sum, in[iteration].e00);

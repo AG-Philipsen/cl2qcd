@@ -33,16 +33,21 @@ const int numMatrixEntries = 9;
 class MatrixSu3Tester
 {
 public:
-	MatrixSu3Tester(int ntimeIn, int nspaceIn) : 
+	MatrixSu3Tester(int ntimeIn, int nspaceIn, Matrixsu3_utilities::FillType filltype = ZERO) : 
 		ntime(ntimeIn), nspace(nspaceIn)
 	{
 		vol4d = ntime * nspace * nspace * nspace;
 		numberOfElements = vol4d * 4;
 		gaugefield = std::vector<Matrixsu3>(numberOfElements);
+		
+		Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, filltype);
 	}
 	
 	int getVol4d() {return vol4d;}
 	int getNumberOfElements() {return numberOfElements;}
+	
+	const std::vector<Matrixsu3> &getGaugefield() const {return gaugefield;}
+	
 private:
 	int ntime;
 	int nspace;
@@ -56,12 +61,7 @@ BOOST_AUTO_TEST_CASE(setZero)
 {
 	MatrixSu3Tester tester(4,4);
 	
-	const size_t numberOfElements = tester.getNumberOfElements();
-	Matrixsu3 * gaugefield = new Matrixsu3[ numberOfElements ];
-
-	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, numberOfElements, ZERO);
-	
-	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield, numberOfElements);
+	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(tester.getGaugefield() );
 	
 	BOOST_REQUIRE_EQUAL(sum.re, 0.);
 	BOOST_REQUIRE_EQUAL(sum.im, 0.);
@@ -69,18 +69,10 @@ BOOST_AUTO_TEST_CASE(setZero)
 
 BOOST_AUTO_TEST_CASE(setOne)
 {
-	int ntime = 4;
-	int nspace = 4;
-	int vol4d = ntime * nspace * nspace * nspace;
-	
-	const size_t numberOfElements = vol4d * 4;
-	Matrixsu3 * gaugefield = new Matrixsu3[ numberOfElements ];
+	MatrixSu3Tester tester(4,4, ONE);
 
-	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, numberOfElements, ONE);
-	
-	double expectedResult = numberOfElements * numMatrixEntries;
-	
-	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield, numberOfElements);
+	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(tester.getGaugefield() );
+	double expectedResult = tester.getNumberOfElements() * numMatrixEntries;
 	
 	BOOST_REQUIRE_EQUAL(expectedResult, sum.re);
 	BOOST_REQUIRE_EQUAL(expectedResult, sum.im);
