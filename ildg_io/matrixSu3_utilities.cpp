@@ -24,6 +24,11 @@
 
 using namespace Matrixsu3_utilities;
 
+Matrixsu3 Matrixsu3_utilities::getUnitMatrix()
+{
+	return { {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0} };
+}
+
 Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 {
 	if (fillTypeIn == ONE)
@@ -36,7 +41,7 @@ Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 	}
 	else if (fillTypeIn == DIAGONAL)
 	{
-		return { {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0} };
+		return getUnitMatrix();
 	}
 	else
 	{

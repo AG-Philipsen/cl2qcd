@@ -48,7 +48,8 @@ public:
 	
 	const std::vector<Matrixsu3> &getGaugefield() const {return gaugefield;}
 	
-private:
+	Matrixsu3 getEntry(int position){ return gaugefield[position]; }
+protected:
 	int ntime;
 	int nspace;
 	int vol4d;
@@ -57,9 +58,26 @@ private:
 	std::vector<Matrixsu3> gaugefield;
 };
 
+#include "../executables/exceptions.h"
+
+#include <iostream>
+
+class MatrixSu3Specific : public MatrixSu3Tester
+{
+public:
+	MatrixSu3Specific(int ntime, int nspace, int position) : MatrixSu3Tester(ntime, nspace, ZERO)
+	{
+		if ( position > numberOfElements)
+		{
+			throw std::logic_error("Got invalid argument to set specific MatrixSu3 entry. Aborting...");
+		}
+		gaugefield[position] = getUnitMatrix();
+	}
+};
+
 BOOST_AUTO_TEST_CASE(setZero)
 {
-	MatrixSu3Tester tester(4,4);
+	MatrixSu3Tester tester(7,23);
 	
 	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(tester.getGaugefield() );
 	
@@ -69,7 +87,7 @@ BOOST_AUTO_TEST_CASE(setZero)
 
 BOOST_AUTO_TEST_CASE(setOne)
 {
-	MatrixSu3Tester tester(4,4, ONE);
+	MatrixSu3Tester tester(15,31, ONE);
 
 	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(tester.getGaugefield() );
 	double expectedResult = tester.getNumberOfElements() * numMatrixEntries;
@@ -80,7 +98,7 @@ BOOST_AUTO_TEST_CASE(setOne)
 
 BOOST_AUTO_TEST_CASE(setDiagonal)
 {
-	MatrixSu3Tester tester(4,4, DIAGONAL);
+	MatrixSu3Tester tester(3,8, DIAGONAL);
 
 	hmc_complex sum = Matrixsu3_utilities::sumUpDiagonalMatrixElements(tester.getGaugefield() );
 	double expectedResultForRealPart = tester.getNumberOfElements() * 3;
@@ -94,3 +112,47 @@ BOOST_AUTO_TEST_CASE(setDiagonal)
 	BOOST_REQUIRE_EQUAL(0., sum.im);	
 }
 
+BOOST_AUTO_TEST_CASE(setSpecific_throw)
+{
+	int positionToSet = 1000;
+	BOOST_REQUIRE_THROW(MatrixSu3Specific tester(3,3, positionToSet), std::logic_error );
+}
+
+void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
+{
+	BOOST_REQUIRE_EQUAL(1., in.e00.re);
+	BOOST_REQUIRE_EQUAL(0., in.e01.re);
+	BOOST_REQUIRE_EQUAL(0., in.e02.re);
+	BOOST_REQUIRE_EQUAL(0., in.e10.re);
+	BOOST_REQUIRE_EQUAL(1., in.e11.re);
+	BOOST_REQUIRE_EQUAL(0., in.e12.re);
+	BOOST_REQUIRE_EQUAL(0., in.e20.re);
+	BOOST_REQUIRE_EQUAL(0., in.e21.re);
+	BOOST_REQUIRE_EQUAL(1., in.e22.re);
+	
+	BOOST_REQUIRE_EQUAL(0., in.e00.im);
+	BOOST_REQUIRE_EQUAL(0., in.e01.im);
+	BOOST_REQUIRE_EQUAL(0., in.e02.im);
+	BOOST_REQUIRE_EQUAL(0., in.e10.im);
+	BOOST_REQUIRE_EQUAL(0., in.e11.im);
+	BOOST_REQUIRE_EQUAL(0., in.e12.im);
+	BOOST_REQUIRE_EQUAL(0., in.e20.im);
+	BOOST_REQUIRE_EQUAL(0., in.e21.im);
+	BOOST_REQUIRE_EQUAL(0., in.e22.im);	
+}
+
+BOOST_AUTO_TEST_CASE(setSpecific)
+{
+	int positionToSet = 24;
+	
+	MatrixSu3Specific tester(21,9, positionToSet);
+
+	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(tester.getGaugefield() );
+	double expectedResultForRealPart = 3;
+	
+	BOOST_REQUIRE_EQUAL(expectedResultForRealPart, sum.re);
+	BOOST_REQUIRE_EQUAL(0., sum.im);
+	
+	Matrixsu3 set = tester.getEntry(positionToSet);
+	checkMatrixSu3ForDiagonalType(set);	
+}
