@@ -138,7 +138,11 @@ static hmc_float make_float_from_big_endian(const char* in)
 	char * const raw_out = reinterpret_cast<char *>(&result);
 
 	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+#if BIG_ENDIAN_ARCH
+		raw_out[i] = in[i];
+#else
 		raw_out[i] = in[sizeof(hmc_float) - 1 - i];
+#endif
 	}
 
 	return result;
