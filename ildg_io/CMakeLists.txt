@@ -40,6 +40,7 @@ target_link_libraries(ildg_io
 	exceptions
 	meta
 	host_functionality
+	lime
 )
 
 add_subdirectory(lime)

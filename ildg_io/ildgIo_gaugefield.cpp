@@ -20,7 +20,6 @@
 
 #include "ildgIo_gaugefield.hpp"
 
-#include "limeUtilities.hpp"
 #include "../host_functionality/logger.hpp"
 #include "../host_functionality/host_geometry.h"
 #include "../meta/util.hpp"
