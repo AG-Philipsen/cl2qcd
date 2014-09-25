@@ -314,15 +314,39 @@ BOOST_AUTO_TEST_CASE(writeAndRead)
 	MatrixSu3Field gaugefield(ntime, nspace);
 	std::string filename = "conf.test";
 	
-	gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
-	
-	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
-	checkSumForOneDiagonalMatrix(sumBeforeConversion);
-	
-	writeFieldToFile(gaugefield, filename);
-	readFieldFromFile(gaugefield, filename);
+	for(uint x = 0; x<nspace; x++)
+	{
+		for(uint y = 0; y<nspace; y++)
+		{
+			for(uint z = 0; z<nspace; z++)
+			{
+				for(uint t = 0; t<nspace; t++)
+				{
+					for(uint mu = 0; mu < NDIM; mu++)
+					{
+						cart = {x,y,z,t};
+						positionToSet = get_global_link_pos(mu, cart, *gaugefield.getParameters());
+						gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
+						
+						hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
+						checkSumForOneDiagonalMatrix(sumBeforeConversion);
+						
+						writeFieldToFile(gaugefield, filename);
+						gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
+						
+						readFieldFromFile(gaugefield, filename);
 
-	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
-	checkSumForOneDiagonalMatrix(sumAfterConversion);
+						hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
+						checkSumForOneDiagonalMatrix(sumAfterConversion);
+						
+						Matrixsu3 set = gaugefield.getEntry(positionToSet);
+						checkMatrixSu3ForDiagonalType(set);
+	
+						gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
+					}
+				}
+			}
+		}
+	}
 }
 
