@@ -133,15 +133,18 @@ Checksum ildgIo::calculate_ildg_checksum(const char * buf, size_t nbytes, const 
 
 static hmc_float make_float_from_big_endian(const char* in)
 {
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
+	hmc_float result;
+	char * const raw_out = reinterpret_cast<char *>(&result);
 
 	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		val.b[i] = in[sizeof(hmc_float) - 1 - i];
+#if BIG_ENDIAN_ARCH
+		raw_out[i] = in[i];
+#else
+		raw_out[i] = in[sizeof(hmc_float) - 1 - i];
+#endif
 	}
-	return val.f;
+
+	return result;
 }
 
 void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters)
@@ -208,15 +211,14 @@ void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gau
 
 static void make_big_endian_from_float(char* out, const hmc_float in)
 {
-	union {
-		char b[sizeof(hmc_float)];
-		hmc_float f;
-	} val;
-
-	val.f = in;
+	char const * const raw_in = reinterpret_cast<char const *>(&in);
 
 	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
-		out[i] = val.b[sizeof(hmc_float) - 1 - i];
+#if BIG_ENDIAN_ARCH
+		out[i] = raw_in[i];
+#else
+		out[i] = raw_in[sizeof(hmc_float) - 1 - i];
+#endif
 	}
 }
 
