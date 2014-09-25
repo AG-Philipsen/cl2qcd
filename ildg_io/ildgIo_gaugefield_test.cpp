@@ -244,6 +244,12 @@ void convertGaugefieldToAndFromIldg(MatrixSu3Field & in)
 	in.setField(gaugefieldTmp);
 }
 
+void checkSumForOneDiagonalMatrix(hmc_complex sum)
+{
+	BOOST_REQUIRE_EQUAL(sum.re, 3.);
+	BOOST_REQUIRE_EQUAL(sum.im, 0.);
+}
+
 BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific)
 {
 	uint nspace = 3;
@@ -267,15 +273,13 @@ BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific)
 						gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
 						
 						hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
-						BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, 3.);
-						BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, 0.);
+						checkSumForOneDiagonalMatrix(sumBeforeConversion);
 	
 						convertGaugefieldToAndFromIldg(gaugefield);
 		
 						hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
 						
-						BOOST_REQUIRE_EQUAL(3., sumAfterConversion.re);
-						BOOST_REQUIRE_EQUAL(0., sumAfterConversion.im);
+						checkSumForOneDiagonalMatrix(sumAfterConversion);
 						
 						Matrixsu3 set = gaugefield.getEntry(positionToSet);
 						checkMatrixSu3ForDiagonalType(set);
@@ -286,6 +290,19 @@ BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific)
 			}
 		}
 	}
+}
+
+void writeFieldToFile(MatrixSu3Field &in, std::string filename)
+{
+	Matrixsu3 * gaugefieldTmp = in.getPointerToField();
+	IldgIoWriter_gaugefield writer( gaugefieldTmp, in.getParameters() , filename, 0, 0.);
+}
+
+void readFieldFromFile(MatrixSu3Field &out, std::string filename)
+{
+	Matrixsu3 * gaugefieldTmp = NULL;
+	IldgIoReader_gaugefield reader(filename, out.getParameters(), &gaugefieldTmp);
+	out.setField(gaugefieldTmp);
 }
 
 BOOST_AUTO_TEST_CASE(writeAndRead)
@@ -300,23 +317,12 @@ BOOST_AUTO_TEST_CASE(writeAndRead)
 	gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
 	
 	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
-	BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, 3.);
-	BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, 0.);
+	checkSumForOneDiagonalMatrix(sumBeforeConversion);
 	
-	{
-	Matrixsu3 * gaugefieldTmp = gaugefield.getPointerToField();
-	IldgIoWriter_gaugefield writer( gaugefieldTmp, gaugefield.getParameters() , filename, 0, 0.);
-	}
-	
-	{
-	Matrixsu3 * gaugefieldTmp = NULL;
-	IldgIoReader_gaugefield reader(filename, gaugefield.getParameters(), &gaugefieldTmp);
-	gaugefield.setField(gaugefieldTmp);
-	}
-	
+	writeFieldToFile(gaugefield, filename);
+	readFieldFromFile(gaugefield, filename);
+
 	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
-	
-	BOOST_REQUIRE_EQUAL(3., sumAfterConversion.re);
-	BOOST_REQUIRE_EQUAL(0., sumAfterConversion.im);
+	checkSumForOneDiagonalMatrix(sumAfterConversion);
 }
 
