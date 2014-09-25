@@ -56,7 +56,10 @@ include(TestBigEndian)
 TEST_BIG_ENDIAN(BIG_ENDIAN)
 message("Big Endian: ${BIG_ENDIAN}")
 if(BIG_ENDIAN)
-	add_dfinitions( "BIG_ENDIAN=1" )
+	message("Big endian arch..")
+	add_dfinitions( "BIG_ENDIAN_ARCH=1" )
+else()
+	message("Little endian arch..")
 endif()
 
 # make sure we can compile agains opencl
