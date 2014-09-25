@@ -23,7 +23,7 @@
 #define _LIMEFILEREADER_HPP_
 
 #include "limeUtilities.hpp"
-#include "SourcefileParameters.hpp"
+#include "../SourcefileParameters.hpp"
 
 class LimeFileReader : public LimeFileReader_basic
 {

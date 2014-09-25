@@ -20,10 +20,10 @@
 
 #include "limeFileReader.hpp"
 
-#include "../host_functionality/logger.hpp"
+#include "../../host_functionality/logger.hpp"
 #include <boost/lexical_cast.hpp>
-#include "../executables/exceptions.h"
-#include "SourcefileParameters_utilities.hpp"
+#include "../../executables/exceptions.h"
+#include "../SourcefileParameters_utilities.hpp"
 
 int checkLimeEntryForFermionInformations(std::string lime_type, LimeEntryTypes limeEntryTypes)
 {
