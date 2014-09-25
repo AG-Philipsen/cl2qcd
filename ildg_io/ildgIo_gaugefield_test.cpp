@@ -195,46 +195,71 @@ void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
 	BOOST_REQUIRE_EQUAL(0., in.e22.im);	
 }
 
+class MatrixSu3Field
+{
+public:
+	MatrixSu3Field()
+	{
+		const char * tmp [] = {"foo", "--nspace=13", "--ntime=17"};
+		parameters = new meta::Inputparameters(3, tmp);
+		numberOfElements = getNumberOfElements_gaugefield(parameters);
+		gaugefield = std::vector<Matrixsu3>(numberOfElements);
+		Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, Matrixsu3_utilities::FillType::ZERO);
+	}
+	
+	n_uint64_t getNumberOfElements() { return numberOfElements; }
+	void setSpecificEntry(Matrixsu3 in, int positionToSet)
+	{
+		if ( ((int) numberOfElements - positionToSet) < 0)
+			{
+				logger.fatal() << "Got bad coordinates to set matrix. Aborting...";
+				BOOST_REQUIRE_EQUAL(0,1);
+			}
+			gaugefield[positionToSet] = in;
+	}
+	
+	const std::vector<Matrixsu3> &getField() {return gaugefield; }
+	const meta::Inputparameters * getParameters() {return parameters;}
+	Matrixsu3 getEntry(int position) { return gaugefield[position];}
+	Matrixsu3 * getPointerToField() { return &gaugefield[0]; }
+	void setField(Matrixsu3 * in) { gaugefield.assign(in, in + getNumberOfElements()); }
+private:
+	const meta::Inputparameters * parameters;
+	n_uint64_t numberOfElements;
+	std::vector<Matrixsu3> gaugefield;
+};
+
+void convertGaugefieldToAndFromIldg(MatrixSu3Field & in)
+{
+	n_uint64_t num_bytes = getSizeInBytes_gaugefield(in.getNumberOfElements());
+	char * binary_data = new char[num_bytes];
+	Matrixsu3 * gaugefieldTmp = in.getPointerToField();
+	
+	copy_gaugefield_to_ildg_format(binary_data, gaugefieldTmp, *in.getParameters() );
+	copy_gaugefield_from_ildg_format(gaugefieldTmp, binary_data, in.getNumberOfElements() * 9 * 2, *in.getParameters() );
+	
+	in.setField(gaugefieldTmp);
+}
+
 BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific)
 {
-	const char * tmp [] = {"foo", "--nspace=13", "--ntime=17"};
-	const meta::Inputparameters parameters(3, tmp);
-	
-	const n_uint64_t numberOfElements = getNumberOfElements_gaugefield(&parameters);
-	std::vector<Matrixsu3> gaugefield = std::vector<Matrixsu3>(numberOfElements);
-	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, Matrixsu3_utilities::FillType::ZERO);
-	
-	size_4 cart = {12,12,12,16};
-	
-	int positionToSet = get_global_link_pos(3, cart, parameters);
-	
-	
-	logger.fatal() << numberOfElements << " " << positionToSet;
-	if ( ((int) numberOfElements - positionToSet) < 0)
-	{
-		logger.fatal() << "Got bad coordinates to set matrix. Aborting...";
-		BOOST_REQUIRE_EQUAL(0,1);
-	}
-	gaugefield[positionToSet] = Matrixsu3_utilities::getUnitMatrix();
-	
-	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield);
-	
-	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
-	char * binary_data = new char[num_bytes];
+	MatrixSu3Field gaugefield;
 
-	Matrixsu3 * gaugefieldTmp = &gaugefield[0];
+	size_4 cart = {12,12,12,16};
+	int positionToSet = get_global_link_pos(3, cart, *gaugefield.getParameters());
+	gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
 	
-	copy_gaugefield_to_ildg_format(binary_data, gaugefieldTmp, parameters);
-	copy_gaugefield_from_ildg_format(gaugefieldTmp, binary_data, numberOfElements * 9 * 2, parameters);
+	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
 	
-	gaugefield.assign(gaugefieldTmp, gaugefieldTmp + numberOfElements);
-	
-	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield);
+	convertGaugefieldToAndFromIldg(gaugefield);
+		
+	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
 	
 	BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, sumAfterConversion.re);
 	BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, sumAfterConversion.im);
 	
-	Matrixsu3 set = gaugefield[positionToSet];
-	checkMatrixSu3ForDiagonalType(set);		
-	
+	Matrixsu3 set = gaugefield.getEntry(positionToSet);
+	checkMatrixSu3ForDiagonalType(set);
 }
+//todo: add more tests...
+
