@@ -288,4 +288,35 @@ BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(writeAndRead)
+{
+	uint nspace = 2;
+	uint ntime = 2;
+	uint positionToSet = 0;
+	size_4 cart(0,0,0,0);
+	MatrixSu3Field gaugefield(ntime, nspace);
+	std::string filename = "conf.test";
+	
+	gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
+	
+	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
+	BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, 3.);
+	BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, 0.);
+	
+	{
+	Matrixsu3 * gaugefieldTmp = gaugefield.getPointerToField();
+	IldgIoWriter_gaugefield writer( gaugefieldTmp, gaugefield.getParameters() , filename, 0, 0.);
+	}
+	
+	{
+	Matrixsu3 * gaugefieldTmp = NULL;
+	IldgIoReader_gaugefield reader(filename, gaugefield.getParameters(), &gaugefieldTmp);
+	gaugefield.setField(gaugefieldTmp);
+	}
+	
+	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
+	
+	BOOST_REQUIRE_EQUAL(3., sumAfterConversion.re);
+	BOOST_REQUIRE_EQUAL(0., sumAfterConversion.im);
+}
 
