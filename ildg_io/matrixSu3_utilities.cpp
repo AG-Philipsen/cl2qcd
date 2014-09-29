@@ -38,8 +38,6 @@ Matrixsu3 Matrixsu3_utilities::getZeroMatrix()
 	return { {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} };
 }
 
-#include <iostream>
-
 Matrixsu3 getRandomMatrix(boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > > generateRandomNumbers)
 {
 	Matrixsu3 tmp = getZeroMatrix();
@@ -102,8 +100,6 @@ void Matrixsu3_utilities::fillMatrixSu3Array_randomMatrix(std::vector<Matrixsu3>
 	boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > > 
 	generateRandomNumbers( randomNumbergenerator, uniformDistribution );
 	
-	std::cout << generateRandomNumbers() << std::endl;
-	std::cout << generateRandomNumbers() << std::endl;
 	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
 	{
 		in[iteration] = getRandomMatrix(generateRandomNumbers);

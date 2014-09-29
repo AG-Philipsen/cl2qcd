@@ -201,7 +201,17 @@ public:
 	Matrixsu3 getEntry(int position) { return gaugefield[position];}
 	Matrixsu3 * getPointerToField() { return &gaugefield[0]; }
 	void setField(Matrixsu3 * in) { gaugefield.assign(in, in + getNumberOfElements()); }
-	void fillField(Matrixsu3_utilities::FillType fillType) { Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield,fillType); }
+	void fillField(Matrixsu3_utilities::FillType fillType) 
+	{ 
+		if (fillType == Matrixsu3_utilities::RANDOM)
+		{
+			Matrixsu3_utilities::fillMatrixSu3Array_randomMatrix(gaugefield);
+		}
+		else
+		{
+			Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, fillType);
+		}
+	}
 private:
 	const meta::Inputparameters * parameters;
 	n_uint64_t numberOfElements;
@@ -222,11 +232,11 @@ BOOST_AUTO_TEST_SUITE(conversionToAndFromIldgFormat)
 		in.setField(gaugefieldTmp);
 	}
 
-	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_global)
+	void fillAndConvert(Matrixsu3_utilities::FillType fillType)
 	{
 		MatrixSu3Field gaugefield(4,4);
 		
-		gaugefield.fillField( Matrixsu3_utilities::FillType::ONE);
+		gaugefield.fillField( fillType );
 		
 		hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
 		
@@ -236,6 +246,16 @@ BOOST_AUTO_TEST_SUITE(conversionToAndFromIldgFormat)
 		
 		BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, sumAfterConversion.re);
 		BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, sumAfterConversion.im);
+	}
+	
+	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_global_constant)
+	{
+		fillAndConvert(Matrixsu3_utilities::ONE);
+	}
+	
+	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_global_random)
+	{
+		fillAndConvert(Matrixsu3_utilities::RANDOM);
 	}
 	
 	void testConversion(uint nspace, uint ntime)
