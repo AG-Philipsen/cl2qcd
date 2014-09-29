@@ -66,7 +66,7 @@ namespace ildgIo {
 	
 	Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const 	meta::Inputparameters& parameters);
-	void copy_gaugefield_to_ildg_format(char * dest, const Matrixsu3 * source_in, const meta::Inputparameters& parameters);
+	void copy_gaugefield_to_ildg_format(std::vector<char> & dest, const std::vector<Matrixsu3> & source_in, const meta::Inputparameters& parameters);
 	
 	size_t getNumberOfElements_gaugefield(const meta::Inputparameters * parameters);
 	n_uint64_t getSizeInBytes_gaugefield(size_t numberOfElements);

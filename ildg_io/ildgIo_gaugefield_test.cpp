@@ -221,11 +221,13 @@ BOOST_AUTO_TEST_SUITE(conversionToAndFromIldgFormat)
 	void convertGaugefieldToAndFromIldg(MatrixSu3Field & in)
 	{
 		n_uint64_t num_bytes = getSizeInBytes_gaugefield(in.getNumberOfElements());
-		char * binary_data = new char[num_bytes];
+		std::vector<char> binary_data(num_bytes);
+		char * binary_data_ptr = &binary_data[0];
+		
 		Matrixsu3 * gaugefieldTmp = in.getPointerToField();
 		
-		copy_gaugefield_to_ildg_format(binary_data, gaugefieldTmp, *in.getParameters() );
-		copy_gaugefield_from_ildg_format(gaugefieldTmp, binary_data, in.getNumberOfElements() * 9 * 2, *in.getParameters() );
+		copy_gaugefield_to_ildg_format(binary_data, in.getField(), *in.getParameters() );
+		copy_gaugefield_from_ildg_format(gaugefieldTmp, binary_data_ptr, in.getNumberOfElements() * 9 * 2, *in.getParameters() );
 		
 		in.setField(gaugefieldTmp);
 	}

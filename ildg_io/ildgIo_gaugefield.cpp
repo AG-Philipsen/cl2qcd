@@ -80,10 +80,12 @@ IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & 
 	
 	size_t numberOfElements = getNumberOfElements_gaugefield(parameters);
 	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
-	char * binary_data = new char[num_bytes];
-	copy_gaugefield_to_ildg_format(binary_data, &data[0], *parameters);
+	std::vector<char> binary_data(num_bytes);
+	char * binary_data_ptr = &binary_data[0];
 	
-	const Checksum checksum = calculate_ildg_checksum(binary_data, num_bytes, *parameters);
+	copy_gaugefield_to_ildg_format(binary_data, data, *parameters);
+	
+	const Checksum checksum = calculate_ildg_checksum(binary_data_ptr, num_bytes, *parameters);
 
 	Sourcefileparameters srcFileParameters(parameters, trajectoryNumber, plaquetteValue, checksum, version);	
 	
@@ -93,10 +95,8 @@ IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & 
 	
 	writeMemoryToLimeFile( createVoidPointerFromString(xlfInfo), xlfInfo.size(), limeEntryTypes["xlf"]);
 	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), limeEntryTypes["ildg"]);
-	writeMemoryToLimeFile( binary_data, num_bytes, limeEntryTypes["ildg binary data"]);
+	writeMemoryToLimeFile( binary_data_ptr, num_bytes, limeEntryTypes["ildg binary data"]);
 	writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), limeEntryTypes["scidac checksum"]);
-	
-	delete[] binary_data;		
 }
 
 Checksum ildgIo::calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
@@ -222,7 +222,7 @@ static void make_big_endian_from_float(char* out, const hmc_float in)
 	}
 }
 
-void ildgIo::copy_gaugefield_to_ildg_format(char * dest, const Matrixsu3 * source_in, const meta::Inputparameters& parameters)
+void ildgIo::copy_gaugefield_to_ildg_format(std::vector<char> & dest, const std::vector<Matrixsu3> & source_in, const meta::Inputparameters& parameters)
 {
 	const size_t NSPACE = parameters.get_nspace();
 	for (int t = 0; t < parameters.get_ntime(); t++) {
