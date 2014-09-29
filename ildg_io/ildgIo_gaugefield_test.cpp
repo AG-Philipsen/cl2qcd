@@ -163,10 +163,39 @@ void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
 	BOOST_REQUIRE_EQUAL(0., in.e22.im);	
 }
 
+void checkMatrixSu3ForFilledType(Matrixsu3 in)
+{
+	BOOST_REQUIRE_EQUAL(1., in.e00.re);
+	BOOST_REQUIRE_EQUAL(2., in.e01.re);
+	BOOST_REQUIRE_EQUAL(3., in.e02.re);
+	BOOST_REQUIRE_EQUAL(4., in.e10.re);
+	BOOST_REQUIRE_EQUAL(5., in.e11.re);
+	BOOST_REQUIRE_EQUAL(6., in.e12.re);
+	BOOST_REQUIRE_EQUAL(7., in.e20.re);
+	BOOST_REQUIRE_EQUAL(8., in.e21.re);
+	BOOST_REQUIRE_EQUAL(9., in.e22.re);
+	
+	BOOST_REQUIRE_EQUAL(1., in.e00.im);
+	BOOST_REQUIRE_EQUAL(2., in.e01.im);
+	BOOST_REQUIRE_EQUAL(3., in.e02.im);
+	BOOST_REQUIRE_EQUAL(4., in.e10.im);
+	BOOST_REQUIRE_EQUAL(5., in.e11.im);
+	BOOST_REQUIRE_EQUAL(6., in.e12.im);
+	BOOST_REQUIRE_EQUAL(7., in.e20.im);
+	BOOST_REQUIRE_EQUAL(8., in.e21.im);
+	BOOST_REQUIRE_EQUAL(9., in.e22.im);	
+}
+
 void checkSumForOneDiagonalMatrix(hmc_complex sum)
 {
 	BOOST_REQUIRE_EQUAL(sum.re, 3.);
 	BOOST_REQUIRE_EQUAL(sum.im, 0.);
+}
+
+void checkSumForFilledMatrix(hmc_complex sum)
+{
+	BOOST_REQUIRE_EQUAL(sum.re, 45.);
+	BOOST_REQUIRE_EQUAL(sum.im, 45.);
 }
 
 class MatrixSu3Field
@@ -354,10 +383,10 @@ BOOST_AUTO_TEST_SUITE(writeAndRead)
 						{
 							cart = {x,y,z,t};
 							positionToSet = get_global_link_pos(mu, cart, *gaugefield.getParameters());
-							gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
+							gaugefield.setSpecificEntry(Matrixsu3_utilities::getFilledMatrix(), positionToSet);
 							
 							hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
-							checkSumForOneDiagonalMatrix(sumBeforeConversion);
+							checkSumForFilledMatrix(sumBeforeConversion);
 							
 							writeFieldToFile(gaugefield, filename);
 							gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
@@ -365,10 +394,10 @@ BOOST_AUTO_TEST_SUITE(writeAndRead)
 							readFieldFromFile(gaugefield, filename);
 
 							hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
-							checkSumForOneDiagonalMatrix(sumAfterConversion);
+							checkSumForFilledMatrix(sumAfterConversion);
 							
 							Matrixsu3 set = gaugefield.getEntry(positionToSet);
-							checkMatrixSu3ForDiagonalType(set);
+							checkMatrixSu3ForFilledType(set);
 		
 							gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
 							
