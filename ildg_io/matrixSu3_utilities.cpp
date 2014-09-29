@@ -22,6 +22,10 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
+
 using namespace Matrixsu3_utilities;
 
 Matrixsu3 Matrixsu3_utilities::getUnitMatrix()
@@ -34,6 +38,35 @@ Matrixsu3 Matrixsu3_utilities::getZeroMatrix()
 	return { {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} };
 }
 
+#include <iostream>
+
+Matrixsu3 getRandomMatrix(boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > > generateRandomNumbers)
+{
+	Matrixsu3 tmp = getZeroMatrix();
+	
+	tmp.e00.re = generateRandomNumbers();
+	tmp.e01.re = generateRandomNumbers();
+	tmp.e02.re = generateRandomNumbers();
+	tmp.e10.re = generateRandomNumbers();
+	tmp.e11.re = generateRandomNumbers();
+	tmp.e12.re = generateRandomNumbers();
+	tmp.e20.re = generateRandomNumbers();
+	tmp.e21.re = generateRandomNumbers();
+	tmp.e22.re = generateRandomNumbers();
+	
+	tmp.e00.im = generateRandomNumbers();
+	tmp.e01.im = generateRandomNumbers();
+	tmp.e02.im = generateRandomNumbers();
+	tmp.e10.im = generateRandomNumbers();
+	tmp.e11.im = generateRandomNumbers();
+	tmp.e12.im = generateRandomNumbers();
+	tmp.e20.im = generateRandomNumbers();
+	tmp.e21.im = generateRandomNumbers();
+	tmp.e22.im = generateRandomNumbers();
+	
+	return tmp;
+}
+
 Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 {
 	if (fillTypeIn == ONE)
@@ -42,7 +75,7 @@ Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 	}
 	else if (fillTypeIn == ZERO)
 	{
-		return { {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} };
+		return getZeroMatrix();
 	}
 	else if (fillTypeIn == DIAGONAL)
 	{
@@ -59,6 +92,21 @@ void Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(std::vector<Matrixsu
 	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
 	{
 		in[iteration] = createMatrixSu3BasedOnFillType(fillType);
+	}
+}
+
+void Matrixsu3_utilities::fillMatrixSu3Array_randomMatrix(std::vector<Matrixsu3> & in)
+{
+	boost::mt19937 randomNumbergenerator( time( 0 ) );
+	boost::random::uniform_real_distribution< double > uniformDistribution( 0.0, 1.0 );
+	boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > > 
+	generateRandomNumbers( randomNumbergenerator, uniformDistribution );
+	
+	std::cout << generateRandomNumbers() << std::endl;
+	std::cout << generateRandomNumbers() << std::endl;
+	for(int iteration = 0; iteration < (int) in.size(); iteration ++)
+	{
+		in[iteration] = getRandomMatrix(generateRandomNumbers);
 	}
 }
 

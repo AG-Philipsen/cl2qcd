@@ -40,7 +40,14 @@ public:
 		numberOfElements = vol4d * 4;
 		gaugefield = std::vector<Matrixsu3>(numberOfElements);
 		
-		Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, filltype);
+		if (filltype == Matrixsu3_utilities::RANDOM)
+		{
+			Matrixsu3_utilities::fillMatrixSu3Array_randomMatrix(gaugefield);
+		}
+		else
+		{
+			Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, filltype);
+		}
 	}
 	
 	int getVol4d() {return vol4d;}
