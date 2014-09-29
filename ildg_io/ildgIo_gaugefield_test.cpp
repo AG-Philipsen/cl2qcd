@@ -115,11 +115,9 @@ void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefilepar
 void writeEmptyGaugefieldFromSourcefileParameters(const meta::Inputparameters * parameters, std::string configurationName)
 {
 	const n_uint64_t numberElements = getNumberOfElements_gaugefield(parameters);
-	Matrixsu3 * gaugefield = new Matrixsu3[ numberElements ];
+	std::vector<Matrixsu3> gaugefield(numberElements);
 	
 	IldgIoWriter_gaugefield writer( gaugefield, parameters ,configurationName, 1234567890, -12.34567833);
-	
-	delete [] gaugefield;
 }
 
 BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
@@ -324,8 +322,7 @@ BOOST_AUTO_TEST_SUITE(writeAndRead)
 
 	void writeFieldToFile(MatrixSu3Field &in, std::string filename)
 	{
-		Matrixsu3 * gaugefieldTmp = in.getPointerToField();
-		IldgIoWriter_gaugefield writer( gaugefieldTmp, in.getParameters() , filename, 0, 0.);
+		IldgIoWriter_gaugefield writer( in.getField(), in.getParameters() , filename, 0, 0.);
 	}
 
 	void readFieldFromFile(MatrixSu3Field &out, std::string filename)

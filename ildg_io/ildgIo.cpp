@@ -34,7 +34,7 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	return gf_host;
 }
 
-void ildgIo::writeGaugefieldToFile(std::string outputfile, Matrixsu3 * host_buf, const meta::Inputparameters * parameters, int trajectoryNumber, double plaquetteValue)
+void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3> & host_buf, const meta::Inputparameters * parameters, int trajectoryNumber, double plaquetteValue)
 {
 	IldgIoWriter_gaugefield writer(host_buf, parameters, outputfile, trajectoryNumber, plaquetteValue);
 }

@@ -74,14 +74,14 @@ void* createVoidPointerFromString(std::string stringIn) noexcept
 	return (void*) stringIn.c_str();
 }
 
-IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(Matrixsu3 * data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue): LimeFileWriter(filenameIn)
+IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue): LimeFileWriter(filenameIn)
 {
 	logger.info() << "writing gaugefield to lime-file \""  + filenameIn + "\"";
 	
 	size_t numberOfElements = getNumberOfElements_gaugefield(parameters);
 	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
 	char * binary_data = new char[num_bytes];
-	copy_gaugefield_to_ildg_format(binary_data, data, *parameters);
+	copy_gaugefield_to_ildg_format(binary_data, &data[0], *parameters);
 	
 	const Checksum checksum = calculate_ildg_checksum(binary_data, num_bytes, *parameters);
 
@@ -222,7 +222,7 @@ static void make_big_endian_from_float(char* out, const hmc_float in)
 	}
 }
 
-void ildgIo::copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters)
+void ildgIo::copy_gaugefield_to_ildg_format(char * dest, const Matrixsu3 * source_in, const meta::Inputparameters& parameters)
 {
 	const size_t NSPACE = parameters.get_nspace();
 	for (int t = 0; t < parameters.get_ntime(); t++) {
