@@ -72,13 +72,20 @@ protected:
 class MatrixSu3Specific : public MatrixSu3Tester
 {
 public:
-	MatrixSu3Specific(int ntime, int nspace, int position) : MatrixSu3Tester(ntime, nspace, ZERO)
+	MatrixSu3Specific(int ntime, int nspace, int position, FillType filltype = DIAGONAL) : MatrixSu3Tester(ntime, nspace, ZERO)
 	{
 		if ( position > numberOfElements)
 		{
 			throw std::logic_error("Got invalid argument to set specific MatrixSu3 entry. Aborting...");
 		}
-		gaugefield[position] = getUnitMatrix();
+		if (filltype == FILLED)
+		{
+			gaugefield[position] = getFilledMatrix();
+		}
+		else
+		{
+			gaugefield[position] = getUnitMatrix();
+		}
 	}
 };
 
@@ -159,7 +166,30 @@ void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
 	BOOST_REQUIRE_EQUAL(0., in.e22.im);	
 }
 
-BOOST_AUTO_TEST_CASE(setSpecific)
+void checkMatrixSu3ForFilledType(Matrixsu3 in)
+{
+	BOOST_REQUIRE_EQUAL(1., in.e00.re);
+	BOOST_REQUIRE_EQUAL(2., in.e01.re);
+	BOOST_REQUIRE_EQUAL(3., in.e02.re);
+	BOOST_REQUIRE_EQUAL(4., in.e10.re);
+	BOOST_REQUIRE_EQUAL(5., in.e11.re);
+	BOOST_REQUIRE_EQUAL(6., in.e12.re);
+	BOOST_REQUIRE_EQUAL(7., in.e20.re);
+	BOOST_REQUIRE_EQUAL(8., in.e21.re);
+	BOOST_REQUIRE_EQUAL(9., in.e22.re);
+	
+	BOOST_REQUIRE_EQUAL(1., in.e00.im);
+	BOOST_REQUIRE_EQUAL(2., in.e01.im);
+	BOOST_REQUIRE_EQUAL(3., in.e02.im);
+	BOOST_REQUIRE_EQUAL(4., in.e10.im);
+	BOOST_REQUIRE_EQUAL(5., in.e11.im);
+	BOOST_REQUIRE_EQUAL(6., in.e12.im);
+	BOOST_REQUIRE_EQUAL(7., in.e20.im);
+	BOOST_REQUIRE_EQUAL(8., in.e21.im);
+	BOOST_REQUIRE_EQUAL(9., in.e22.im);	
+}
+
+BOOST_AUTO_TEST_CASE(setSpecific_diagonal)
 {
 	int positionToSet = 24;
 	
@@ -174,3 +204,20 @@ BOOST_AUTO_TEST_CASE(setSpecific)
 	Matrixsu3 set = tester.getEntry(positionToSet);
 	checkMatrixSu3ForDiagonalType(set);	
 }
+
+BOOST_AUTO_TEST_CASE(setSpecific_filled)
+{
+	int positionToSet = 13;
+	
+	MatrixSu3Specific tester(6,5, positionToSet, FILLED);
+
+	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(tester.getGaugefield() );
+	double expectedResult = ( 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9);
+	
+	BOOST_REQUIRE_EQUAL(expectedResult, sum.re);
+	BOOST_REQUIRE_EQUAL(expectedResult, sum.im);
+	
+	Matrixsu3 set = tester.getEntry(positionToSet);
+	checkMatrixSu3ForFilledType(set);	
+}
+
