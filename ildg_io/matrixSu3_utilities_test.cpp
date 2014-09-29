@@ -103,6 +103,17 @@ BOOST_AUTO_TEST_CASE(setOne)
 	BOOST_REQUIRE_EQUAL(expectedResult, sum.im);
 }
 
+BOOST_AUTO_TEST_CASE(setFilled)
+{
+	MatrixSu3Tester tester(15,31, FILLED);
+
+	hmc_complex sum = Matrixsu3_utilities::sumUpAllMatrixElements(tester.getGaugefield() );
+	double expectedResult = tester.getNumberOfElements() * ( 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9);
+	
+	BOOST_REQUIRE_EQUAL(expectedResult, sum.re);
+	BOOST_REQUIRE_EQUAL(expectedResult, sum.im);
+}
+
 BOOST_AUTO_TEST_CASE(setDiagonal)
 {
 	MatrixSu3Tester tester(3,8, DIAGONAL);

@@ -38,6 +38,11 @@ Matrixsu3 Matrixsu3_utilities::getZeroMatrix()
 	return { {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} };
 }
 
+Matrixsu3 Matrixsu3_utilities::getFilledMatrix()
+{
+	return { {1.0, 1.0}, {2.0, 2.0}, {3.0, 3.0}, {4.0, 4.0}, {5.0, 5.0}, {6.0, 6.0}, {7.0, 7.0}, {8.0, 8.0}, {9.0, 9.0} };
+}
+
 Matrixsu3 getRandomMatrix(boost::variate_generator< boost::mt19937&, boost::random::uniform_real_distribution < > > generateRandomNumbers)
 {
 	Matrixsu3 tmp = getZeroMatrix();
@@ -78,6 +83,10 @@ Matrixsu3 createMatrixSu3BasedOnFillType(FillType fillTypeIn)
 	else if (fillTypeIn == DIAGONAL)
 	{
 		return getUnitMatrix();
+	}
+	else if (fillTypeIn == FILLED)
+	{
+		return getFilledMatrix();
 	}
 	else
 	{

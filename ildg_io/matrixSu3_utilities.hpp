@@ -29,7 +29,7 @@
 
 namespace Matrixsu3_utilities
 {
-	enum FillType {ZERO, ONE, DIAGONAL, RANDOM};
+	enum FillType {ZERO, ONE, DIAGONAL, RANDOM, FILLED};
 
 	void fillMatrixSu3Array_constantMatrix(std::vector<Matrixsu3> & in, FillType fillType);
 	void fillMatrixSu3Array_randomMatrix(std::vector<Matrixsu3> & in);
@@ -38,6 +38,7 @@ namespace Matrixsu3_utilities
 	hmc_complex sumUpOffDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
 	Matrixsu3 getUnitMatrix();
 	Matrixsu3 getZeroMatrix();
+	Matrixsu3 getFilledMatrix();
 }
 
 #endif
