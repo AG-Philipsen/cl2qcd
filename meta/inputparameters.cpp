@@ -114,6 +114,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		.add(ParametersSolver::getOptions())
 		.add(ParametersSources::getOptions())
 		.add(ParametersObs::getOptions())
+		.add(ParametersHeatbath::getOptions()) //This is for the thermalizationsteps, not elegant... TODO: think another way!
 		.add(ParametersHmc::getOptions());
 	}
 	else if(parameterSet == "rhmc")
@@ -124,7 +125,8 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		.add(ParametersSolver::getOptions())
 		.add(ParametersSources::getOptions())
 		.add(ParametersObs::getOptions())
-		.add(ParametersHmc::getOptions())
+		.add(ParametersHmc::getOptions())      //This is for several parameters, not elegant... TODO: think another way!
+		.add(ParametersHeatbath::getOptions()) //This is for the thermalizationsteps, not elegant... TODO: think another way!
 		.add(ParametersRhmc::getOptions());
 	}
 	else //default: add all options
