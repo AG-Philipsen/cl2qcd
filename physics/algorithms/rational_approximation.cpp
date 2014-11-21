@@ -153,7 +153,7 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(std::string 
 
 void physics::algorithms::Rational_Approximation::Save_rational_approximation(std::string filename){
 	std::fstream outputToFile;
-	outputToFile.open(filename.c_str(), std::ios::out | std::ios::app);
+	outputToFile.open(filename.c_str(), std::ios::out);
 	if(!outputToFile.is_open()) throw File_Exception(filename);
 	outputToFile.precision(15);
 	outputToFile << Get_order()  << "     " << y << " " << z  << "     " << low << " " << high << "     ";
