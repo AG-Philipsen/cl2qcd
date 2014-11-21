@@ -151,6 +151,22 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(std::string 
 }
 
 
+void physics::algorithms::Rational_Approximation::Save_rational_approximation(std::string filename){
+	std::fstream outputToFile;
+	outputToFile.open(filename.c_str(), std::ios::out | std::ios::app);
+	if(!outputToFile.is_open()) throw File_Exception(filename);
+	outputToFile.precision(15);
+	outputToFile << Get_order()  << "     " << y << " " << z  << "     " << low << " " << high << "     ";
+	outputToFile << inv  << " " << precision << "     ";
+	outputToFile.setf( std::ios::scientific, std::ios::floatfield );
+	outputToFile << error << "\n\n" << Get_a0() << "\n";
+	std::vector<hmc_float> a_tmp = Get_a();
+	std::vector<hmc_float> b_tmp = Get_b();
+	for(int i=0; i<Get_order(); i++)
+		outputToFile << a_tmp[i] << "\t\t" << b_tmp[i] << "\n";
+	outputToFile.close();
+}
+
 hmc_float physics::algorithms::Rational_Approximation::Get_error() const
 {
 	return error;

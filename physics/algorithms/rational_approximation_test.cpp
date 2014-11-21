@@ -26,6 +26,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::algorithms::rational_approximation
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem.hpp>
 
 
 BOOST_AUTO_TEST_CASE(initialization)
@@ -211,4 +212,43 @@ BOOST_AUTO_TEST_CASE(rescale)
 	logger.info() << "Test done!";
 }
 
-
+BOOST_AUTO_TEST_CASE(input_output)
+{
+	using namespace physics::algorithms;
+	
+	int order = 5;
+	bool inv = true;         
+	int y = 1;            
+	int z = 2;            
+	int precision = 113;
+	hmc_float low = 0.001;    
+	hmc_float high = 1.0;
+	
+	std::vector<hmc_float> a, b;
+	hmc_float a0, error;  
+	Rational_Approximation approx(order, y, z, low, high, inv, precision);
+	a = approx.Get_a();
+	b = approx.Get_b();
+	a0 = approx.Get_a0();
+	error = approx.Get_error();
+	
+	std::string outputFileName="temporalFileForRationalApproximation";
+	BOOST_REQUIRE_MESSAGE(boost::filesystem::exists( outputFileName ) == false,
+			      "The file \"" << outputFileName << "\" exists for some reason! Aborting...");
+	approx.Save_rational_approximation("temporalFileForRationalApproximation");
+	BOOST_REQUIRE_EQUAL(boost::filesystem::exists( outputFileName ), true);
+	Rational_Approximation approx2(outputFileName);
+	
+	BOOST_REQUIRE_EQUAL(order, approx2.Get_order());
+	BOOST_REQUIRE_EQUAL(-(double)y/z, approx2.Get_exponent());
+	BOOST_REQUIRE_EQUAL(low, approx2.Get_lower_bound());
+	BOOST_REQUIRE_EQUAL(high, approx2.Get_upper_bound());
+	BOOST_REQUIRE_CLOSE(a0, approx2.Get_a0(), 1.e-13);
+	for(int i=0; i<order; i++){
+	  BOOST_REQUIRE_CLOSE(a[i], approx2.Get_a()[i], 1.e-13);
+	  BOOST_REQUIRE_CLOSE(b[i], approx2.Get_b()[i], 1.e-13);
+	}
+	BOOST_REQUIRE_CLOSE(error, approx2.Get_error(), 1.e-13);
+	
+	boost::filesystem::remove(outputFileName);
+}

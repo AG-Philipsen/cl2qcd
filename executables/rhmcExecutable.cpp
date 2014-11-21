@@ -47,6 +47,10 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 		approx_met = new Rational_Approximation(parameters.get_metro_approx_ord(),
 				  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
 				  parameters.get_approx_upper(), true);
+		//Save the rational approximations to three different files for later reuse
+		approx_hb->Save_rational_approximation(parameters.get_approx_heatbath_file());
+		approx_md->Save_rational_approximation(parameters.get_approx_md_file());
+		approx_met->Save_rational_approximation(parameters.get_approx_metropolis_file());
 	}
 }
 
