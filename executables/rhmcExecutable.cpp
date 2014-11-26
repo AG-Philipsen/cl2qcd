@@ -119,6 +119,9 @@ void rhmcExecutable::performOnlineMeasurements()
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
 		std::string gaugeout_name = meta::get_rhmc_obs_file_name(parameters, "");
 		printRhmcObservables(gaugeout_name);
+		if (parameters.get_measure_pbp()) {
+			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration);
+		}
 	}
 }
 
@@ -155,20 +158,6 @@ void rhmcExecutable::printRhmcObservablesToFile(const std::string& filename)
 	}
 	outputToFile << std::endl;
 	outputToFile.close();
-	if(parameters.get_measure_pbp()) {
-	     outputToFile.open((filename + "_pbp").c_str(), std::ios::out | std::ios::app);
-	     if(!outputToFile.is_open()) throw File_Exception(filename);
-	     outputToFile << iteration << "\t";
-	     outputToFile.precision(15);
-	     outputToFile.setf( std::ios::scientific, std::ios::floatfield );
-	     std::vector<hmc_complex> pbp(parameters.get_pbp_measurements());
-	     for(size_t i=0; i<pbp.size(); i++){
-	         pbp[i] = physics::observables::staggered::measureChiralCondensate(*gaugefield, *prng, *system);
-		 outputToFile << pbp[i].re << "   ";
-	     }
-	     outputToFile << std::endl;
-	     outputToFile.close();
-	}
 }
 
 void rhmcExecutable::printRhmcObservablesToScreen()
