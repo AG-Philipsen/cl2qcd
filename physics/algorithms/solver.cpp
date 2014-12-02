@@ -811,6 +811,14 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 
 namespace {
 
+void testIfResiduumIsNan(hmc_float resid, int iter)
+{
+	if(resid != resid) {
+		logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
+		throw physics::algorithms::solvers::SolverStuck(iter, __FILE__, __LINE__);
+	}
+}
+	
 int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
 {
 	using namespace physics::lattices;
@@ -859,51 +867,38 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(iter = 0; iter < params.get_cgmax() || iter < MINIMUM_ITERATIONS; iter ++) {
 		if(iter % params.get_iter_refresh() == 0) {
-			//rn = A*inout
-			f(&rn, gf, *x);
+			f(&rn, gf, *x); //rn = A*inout
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
-			//rn = source - A*inout
-			saxpy(&rn, one, rn, b);
+			
+			saxpy(&rn, one, rn, b); //rn = source - A*inout
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
-			//p = rn
-			copyData(&p, rn);
+			
+			copyData(&p, rn); //p = rn
 			log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
-			//omega = (rn,rn)
-			scalar_product(&omega, rn, rn);
+			
+			scalar_product(&omega, rn, rn); //omega = (rn,rn)
 		} else {
-			//update omega
 			copyData(&omega, rho_next);
 		}
-		//v = A pn
-		f(&v, gf, p);
+		f(&v, gf, p); //v = A pn
 		log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
 
-		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		scalar_product(&rho, p, v);
 		divide(&alpha, omega, rho);
-		multiply(&tmp1, minus_one, alpha);
+		multiply(&tmp1, minus_one, alpha); //alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 
-		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
-		saxpy(x, tmp1, p, *x);
+		saxpy(x, tmp1, p, *x); //xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
 
-		//switch between original version and kernel merged one
+		//rn+1 = rn - alpha*v -> rhat
+		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 		if(params.get_use_merge_kernels_spinor()) {
-			//merge two calls:
-			//rn+1 = rn - alpha*v -> rhat
-			//and
-			//rho_next = |rhat|^2
-			//rho_next is a complex number, set its imag to zero
 			physics::lattices::saxpy_AND_squarenorm(&rn, alpha, v, rn, rho_next);
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		} else {
-			//rn+1 = rn - alpha*v -> rhat
 			saxpy(&rn, alpha, v, rn);
-			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
-
-			//calc residuum
-			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 			scalar_product(&rho_next, rn, rn);
+			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		}
 		if(iter % RESID_CHECK_FREQUENCY == 0) {
 			resid = rho_next.get().re;
@@ -925,11 +920,8 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 			//}
 
 			logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
-			//test if resid is NAN
-			if(resid != resid) {
-				logger.fatal() << create_log_prefix_cg(iter) << "NAN occured!";
-				throw SolverStuck(iter, __FILE__, __LINE__);
-			}
+			testIfResiduumIsNan(resid, iter);
+			
 			if(resid < prec && iter >= MINIMUM_ITERATIONS) {
 				//if(USE_ASYNC_COPY) {
 				//  // make sure everything using our event is completed
@@ -1058,7 +1050,7 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 			//rho_next = |rhat|^2
 			//rho_next is a complex number, set its imag to zero
 			//spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
-			throw Print_Error_Message("Kernel merging currently not implemented", __FILE__, __LINE__);
+			throw Print_Error_Message("Kernel merging currently not implemented for multidev", __FILE__, __LINE__);
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		} else {
 			//rn+1 = rn - alpha*v -> rhat
