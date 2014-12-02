@@ -34,6 +34,7 @@ public:
 	bool get_measure_pbp() const noexcept;
 	pbp_version get_pbp_version() const noexcept;
 	int get_corr_dir() const noexcept;
+	int get_pbp_measurements() const noexcept;
 
 private:
 	po::options_description options;
@@ -43,6 +44,7 @@ private:
 	bool measure_correlators;
 	bool measure_pbp;
 	int corr_dir;
+	int pbp_measurements;
 
 protected:
 	ParametersObs();

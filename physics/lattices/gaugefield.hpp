@@ -114,7 +114,7 @@ namespace physics {
 			 */
 			void update_halo() const;
 
-			const  physics::PRNG * getPrng() const;
+			const physics::PRNG * getPrng() const;
 			const hardware::System * getSystem() const;
 			const meta::Inputparameters * getParameters() const;
 			
