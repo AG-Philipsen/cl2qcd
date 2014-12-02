@@ -818,12 +818,15 @@ void testIfResiduumIsNan(hmc_float resid, int iter)
 		throw physics::algorithms::solvers::SolverStuck(iter, __FILE__, __LINE__);
 	}
 }
+
+void reportPerformance_cg(int iter, const uint64_t duration, const uint64_t duration_noWarmup, cl_ulong total_flops, cl_ulong noWarmup_flops )
+{
+	logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << (noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
+}
 	
 int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
 {
 	using namespace physics::lattices;
-	using physics::algorithms::solvers::SolverStuck;
-	using physics::algorithms::solvers::SolverDidNotSolve;
 
 	const auto & params = system.get_inputparameters();
 
@@ -900,6 +903,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 			scalar_product(&rho_next, rn, rn);
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		}
+		
 		if(iter % RESID_CHECK_FREQUENCY == 0) {
 			resid = rho_next.get().re;
 			//if(USE_ASYNC_COPY) {
@@ -947,10 +951,8 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 					cl_ulong total_flops = iter * flops_per_iter + refreshs * flops_per_refresh;
 					cl_ulong noWarmup_flops = (iter - 1) * flops_per_iter + (refreshs - 1) * flops_per_refresh;
 
-					// report performance
-					logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << (noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
+					reportPerformance_cg(iter, duration, duration_noWarmup, total_flops, noWarmup_flops);
 				}
-				// report on solution
 				log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
 				return iter;
 			}
@@ -960,17 +962,15 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 			}
 		}
 
-		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-		divide(&beta, rho_next, omega);
+		divide(&beta, rho_next, omega); //beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 
-		//pn+1 = rn+1 + beta*pn
 		multiply(&tmp2, minus_one, beta);
-		saxpy(&p, tmp2, p, rn);
+		saxpy(&p, tmp2, p, rn); //pn+1 = rn+1 + beta*pn
 		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 	}
 
 	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
-	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+	throw physics::algorithms::solvers::SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
 int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
