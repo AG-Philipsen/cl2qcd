@@ -808,6 +808,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x
 	}
 }
 
+
 namespace {
 
 int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
@@ -877,7 +878,6 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 		f(&v, gf, p);
 		log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
 
-
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		scalar_product(&rho, p, v);
 		divide(&alpha, omega, rho);
@@ -894,8 +894,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 			//and
 			//rho_next = |rhat|^2
 			//rho_next is a complex number, set its imag to zero
-			//spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
-			throw Print_Error_Message("Kernel merging currently not implemented", __FILE__, __LINE__);
+			physics::lattices::saxpy_AND_squarenorm(&rn, alpha, v, rn, rho_next);
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		} else {
 			//rn+1 = rn - alpha*v -> rhat
