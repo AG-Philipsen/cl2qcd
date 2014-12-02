@@ -25,12 +25,20 @@
 #include "../common_header_files/types.h"
 #include "../common_header_files/operations_complex.h"
 
+#include <vector>
+
 namespace Matrixsu3_utilities
 {
-	enum FillType {ZERO, ONE};
+	enum FillType {ZERO, ONE, DIAGONAL, RANDOM, FILLED};
 
-	void fillMatrixSu3Array_constantMatrix(Matrixsu3 * in, size_t numberOfElements, FillType fillType);
-	hmc_complex sumUpAllMatrixElements(Matrixsu3 * in, size_t numberOfElements);
+	void fillMatrixSu3Array_constantMatrix(std::vector<Matrixsu3> & in, FillType fillType);
+	void fillMatrixSu3Array_randomMatrix(std::vector<Matrixsu3> & in);
+	hmc_complex sumUpAllMatrixElements(const std::vector<Matrixsu3> & in);
+	hmc_complex sumUpDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
+	hmc_complex sumUpOffDiagonalMatrixElements(const std::vector<Matrixsu3> & in);
+	Matrixsu3 getUnitMatrix();
+	Matrixsu3 getZeroMatrix();
+	Matrixsu3 getFilledMatrix();
 }
 
 #endif

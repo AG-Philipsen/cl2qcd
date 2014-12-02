@@ -114,6 +114,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		.add(ParametersSolver::getOptions())
 		.add(ParametersSources::getOptions())
 		.add(ParametersObs::getOptions())
+		.add(ParametersHeatbath::getOptions()) //This is for the thermalizationsteps, not elegant... TODO: think another way!
 		.add(ParametersHmc::getOptions());
 	}
 	else if(parameterSet == "rhmc")
@@ -124,7 +125,8 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		.add(ParametersSolver::getOptions())
 		.add(ParametersSources::getOptions())
 		.add(ParametersObs::getOptions())
-		.add(ParametersHmc::getOptions())
+		.add(ParametersHmc::getOptions())      //This is for several parameters, not elegant... TODO: think another way!
+		.add(ParametersHeatbath::getOptions()) //This is for the thermalizationsteps, not elegant... TODO: think another way!
 		.add(ParametersRhmc::getOptions());
 	}
 	else //default: add all options
@@ -147,7 +149,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		std::cout << desc << '\n';
 		throw Inputparameters::parse_aborted();
 	}
-
+	
 	if(vm.count("input-file")) {
 		std::string config_file = vm["input-file"].as<std::string>();
 		ConfigFileNormalizer normalizer;
@@ -170,18 +172,21 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 	// handle the enumeration types
 	_startcondition = ::get_startcondition(vm["startcondition"].as<std::string>());
 	gaugeact = ::get_action(vm["gaugeact"].as<std::string>());
-	fermact = ::get_action(vm["fermact"].as<std::string>());
-	fermact_mp = ::get_action(vm["fermact_mp"].as<std::string>());
+	if(parameterSet != "gaugeobservables" && parameterSet != "su3heatbath")
+	{
+		fermact = ::get_action(vm["fermact"].as<std::string>());
+		fermact_mp = ::get_action(vm["fermact_mp"].as<std::string>());
+		_solver = ::get_solver(vm["solver"].as<std::string>());
+		_solver_mp = ::get_solver(vm["solver_mp"].as<std::string>());
+		sourcetype = ::get_sourcetype(vm["sourcetype"].as<std::string>() );
+		sourcecontent = ::get_sourcecontent(vm["sourcecontent"].as<std::string>() );
+		pbp_version_ = ::get_pbp_version(vm["pbp_version"].as<std::string>() );
+	}
 	if(parameterSet != "inverter" && parameterSet != "gaugeobservables" && parameterSet != "su3heatbath"){
 	  integrator0 = ::get_integrator(vm["integrator0"].as<std::string>());
 	  integrator1 = ::get_integrator(vm["integrator1"].as<std::string>());
 	  integrator2 = ::get_integrator(vm["integrator2"].as<std::string>());
 	}
-	_solver = ::get_solver(vm["solver"].as<std::string>());
-	_solver_mp = ::get_solver(vm["solver_mp"].as<std::string>());
-	sourcetype = ::get_sourcetype(vm["sourcetype"].as<std::string>() );
-	sourcecontent = ::get_sourcecontent(vm["sourcecontent"].as<std::string>() );
-	pbp_version_ = ::get_pbp_version(vm["pbp_version"].as<std::string>() );
 }
 
 static meta::action get_action(std::string s)

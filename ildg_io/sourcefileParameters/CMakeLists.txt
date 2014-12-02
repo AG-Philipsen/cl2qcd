@@ -1,4 +1,4 @@
-# Build specifications for the ildg I/O functionality
+# Build specifications for sourcefileparameters
 #
 # Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de> 
 #
@@ -21,28 +21,16 @@
 # Collect all code in this part of the source tree
 #
 
-add_library(ildg_io
-	ildgIo_gaugefield.cpp
-	ildgIo.cpp
-	matrixSu3_utilities.cpp
+add_library(sourcefileParameters
+	SourcefileParameters.cpp
+	SourcefileParameters_utilities.cpp
 )
 
-target_link_libraries(ildg_io
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	# this needs to be a stand-alone library...
-	einhard
+target_link_libraries(sourcefileParameters
 	logger
 	exceptions
 	meta
-	host_functionality
-	lime
-	sourcefileParameters
 )
 
-add_subdirectory(lime)
-add_subdirectory(sourcefileParameters)
-
-add_unit_test_withLibraries(ildgIo_gaugefield ildgIo_gaugefield_test ildg_io)
-add_unit_test_withLibraries(matrixSu3_utilities matrixSu3_utilities_test ildg_io)
+add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test sourcefileParameters)
 

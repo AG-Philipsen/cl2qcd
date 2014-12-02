@@ -32,8 +32,7 @@ void generationExecutable::setIterationParameters()
 {
 	//NOTE: this is 0 in case of cold or hot start
 	iteration           = gaugefield->get_trajectoryNumberAtInit();
-	//thermalization is not implemented yet, just do one step which prints this to screen
-	thermalizationSteps = iteration + 1;//parameters.get_thermalizationsteps();
+	thermalizationSteps = iteration + parameters.get_thermalizationsteps();
 	generationSteps     = thermalizationSteps; //this is temp.: in each child it is incremented by the nr of tr.
 	writeFrequency      = parameters.get_writefrequency();
 	saveFrequency       = parameters.get_savefrequency();
@@ -41,7 +40,7 @@ void generationExecutable::setIterationParameters()
 
 void generationExecutable::saveGaugefield()
 {
-	gaugefield->save(iteration+1);
+        gaugefield->save(iteration+1); //Here the number is that written in the lime file as matadata, and it is iteration+1 to be able to continue later at the right tr.
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		gaugefield->saveToSpecificFile(iteration + 1);
 	}
@@ -65,8 +64,9 @@ void generationExecutable::generateConfigurations()
 
 void generationExecutable::thermalize()
 {
-	logger.info() << "Start thermalization...";
+	logger.info() << "Start thermalization (" << thermalizationSteps << " tr.)...";
 	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
+	//With this try and catch the warning is printed only if the user wants to make thermalization steps, not always, but this makes sense
 	try
 	{
 	      for (; iteration < thermalizationSteps; iteration++)

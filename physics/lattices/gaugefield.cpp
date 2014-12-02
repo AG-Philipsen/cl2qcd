@@ -215,11 +215,17 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
 	logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
 	const meta::Inputparameters * parameters = this->getParameters();
-	Matrixsu3 * host_buf = new Matrixsu3[meta::get_vol4d(*parameters) * NDIM];
+	//@TODO: hide this explicit parameter arithmetik
+	size_t numberOfElements = meta::get_vol4d(*parameters) * NDIM;
+	Matrixsu3 * host_buf = new Matrixsu3[numberOfElements];
 	fetch_gaugefield_from_buffers(host_buf, buffers, *parameters);
-      	double plaq = physics::observables::measurePlaquette(this);
+	double plaq = physics::observables::measurePlaquette(this);
 
-	ildgIo::writeGaugefieldToFile(outputfile, host_buf, parameters, number, plaq);
+	//http://stackoverflow.com/questions/2434196/how-to-initialize-stdvector-from-c-style-array
+	std::vector<Matrixsu3> tmp(numberOfElements);
+	tmp.assign(host_buf, host_buf + numberOfElements);
+	
+	ildgIo::writeGaugefieldToFile(outputfile, tmp, parameters, number, plaq);
 
 	delete host_buf;
 }

@@ -28,7 +28,7 @@
 #include "../sources.hpp"
 #include "../algorithms/solver_shifted.hpp"
 
-hmc_complex physics::observables::staggered::measureChiralCondensate(const physics::lattices::Gaugefield& gf, physics::PRNG& prng, const hardware::System& system)
+hmc_complex physics::observables::staggered::measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system)
 {
 	/**
 	 * The chiral condensate in the RHMC algorithm turns out to be
@@ -130,3 +130,26 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	
 	return pbp;
 }
+
+
+void physics::observables::staggered::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration)
+{
+	std::ofstream outputToFile;
+	std::string configurationName = meta::create_configuration_name(*(gf.getParameters()), iteration);
+	std::string filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*(gf.getParameters()), configurationName);
+	outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
+	if(!outputToFile.is_open()) {
+		throw File_Exception(filenameForChiralCondensateData);
+	}
+	outputToFile << iteration << "\t";
+	outputToFile.precision(15);
+	outputToFile.setf( std::ios::scientific, std::ios::floatfield );
+	std::vector<hmc_complex> pbp(gf.getParameters()->get_pbp_measurements());
+	for(size_t i=0; i<pbp.size(); i++){
+		pbp[i] = physics::observables::staggered::measureChiralCondensate(gf, *(gf.getPrng()), *(gf.getSystem()));
+		outputToFile << pbp[i].re << "   ";
+	}
+	outputToFile << std::endl;
+	outputToFile.close();  
+}
+

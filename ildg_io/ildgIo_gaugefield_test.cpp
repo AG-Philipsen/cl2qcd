@@ -23,12 +23,10 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE ildg_read_gaugefield
 #include <boost/test/unit_test.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "ildgIo_gaugefield.hpp"
 #include "../meta/util.hpp"
-
-int expectedPrecision = 64;
-std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
 
 using namespace ildgIo;
 
@@ -40,7 +38,6 @@ size_t getPrecisionOfDoubleInBits()
 size_t getElementsOfGaugefield(int lx, int ly, int lz, int lt)
 {
 	const size_t spatialVolume = lx * ly * lz;
-
 	return 2 * NC * NC * NDIM * spatialVolume * lt;
 }
 
@@ -118,11 +115,9 @@ void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefilepar
 void writeEmptyGaugefieldFromSourcefileParameters(const meta::Inputparameters * parameters, std::string configurationName)
 {
 	const n_uint64_t numberElements = getNumberOfElements_gaugefield(parameters);
-	Matrixsu3 * gaugefield = new Matrixsu3[ numberElements ];
+	std::vector<Matrixsu3> gaugefield(numberElements);
 	
 	IldgIoWriter_gaugefield writer( gaugefield, parameters ,configurationName, 1234567890, -12.34567833);
-	
-	delete gaugefield;
 }
 
 BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
@@ -145,25 +140,288 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 
 #include "matrixSu3_utilities.hpp"
 
-BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat)
+void checkMatrixSu3ForDiagonalType(Matrixsu3 in)
 {
-	const char * tmp [] = {"foo", "--nspace=4", "--ntime=4"};
-	const meta::Inputparameters parameters(3, tmp);
+	BOOST_REQUIRE_EQUAL(1., in.e00.re);
+	BOOST_REQUIRE_EQUAL(0., in.e01.re);
+	BOOST_REQUIRE_EQUAL(0., in.e02.re);
+	BOOST_REQUIRE_EQUAL(0., in.e10.re);
+	BOOST_REQUIRE_EQUAL(1., in.e11.re);
+	BOOST_REQUIRE_EQUAL(0., in.e12.re);
+	BOOST_REQUIRE_EQUAL(0., in.e20.re);
+	BOOST_REQUIRE_EQUAL(0., in.e21.re);
+	BOOST_REQUIRE_EQUAL(1., in.e22.re);
 	
-	const n_uint64_t numberOfElements = getNumberOfElements_gaugefield(&parameters);
-	Matrixsu3 * gaugefield = new Matrixsu3[ numberOfElements ];
-	Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, numberOfElements, Matrixsu3_utilities::FillType::ONE);
-	
-	hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield, numberOfElements);
-	
-	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
-	char * binary_data = new char[num_bytes];
-	
-	copy_gaugefield_to_ildg_format(binary_data, gaugefield, parameters);
-	copy_gaugefield_from_ildg_format(gaugefield, binary_data, numberOfElements * 9 * 2, parameters);
-	
-	hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield, numberOfElements);
-	
-	BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, sumAfterConversion.re);
-	BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, sumAfterConversion.im);
+	BOOST_REQUIRE_EQUAL(0., in.e00.im);
+	BOOST_REQUIRE_EQUAL(0., in.e01.im);
+	BOOST_REQUIRE_EQUAL(0., in.e02.im);
+	BOOST_REQUIRE_EQUAL(0., in.e10.im);
+	BOOST_REQUIRE_EQUAL(0., in.e11.im);
+	BOOST_REQUIRE_EQUAL(0., in.e12.im);
+	BOOST_REQUIRE_EQUAL(0., in.e20.im);
+	BOOST_REQUIRE_EQUAL(0., in.e21.im);
+	BOOST_REQUIRE_EQUAL(0., in.e22.im);	
 }
+
+void checkMatrixSu3ForFilledType(Matrixsu3 in)
+{
+	BOOST_REQUIRE_EQUAL(1., in.e00.re);
+	BOOST_REQUIRE_EQUAL(2., in.e01.re);
+	BOOST_REQUIRE_EQUAL(3., in.e02.re);
+	BOOST_REQUIRE_EQUAL(4., in.e10.re);
+	BOOST_REQUIRE_EQUAL(5., in.e11.re);
+	BOOST_REQUIRE_EQUAL(6., in.e12.re);
+	BOOST_REQUIRE_EQUAL(7., in.e20.re);
+	BOOST_REQUIRE_EQUAL(8., in.e21.re);
+	BOOST_REQUIRE_EQUAL(9., in.e22.re);
+	
+	BOOST_REQUIRE_EQUAL(1., in.e00.im);
+	BOOST_REQUIRE_EQUAL(2., in.e01.im);
+	BOOST_REQUIRE_EQUAL(3., in.e02.im);
+	BOOST_REQUIRE_EQUAL(4., in.e10.im);
+	BOOST_REQUIRE_EQUAL(5., in.e11.im);
+	BOOST_REQUIRE_EQUAL(6., in.e12.im);
+	BOOST_REQUIRE_EQUAL(7., in.e20.im);
+	BOOST_REQUIRE_EQUAL(8., in.e21.im);
+	BOOST_REQUIRE_EQUAL(9., in.e22.im);	
+}
+
+void checkSumForOneDiagonalMatrix(hmc_complex sum)
+{
+	BOOST_REQUIRE_EQUAL(sum.re, 3.);
+	BOOST_REQUIRE_EQUAL(sum.im, 0.);
+}
+
+void checkSumForFilledMatrix(hmc_complex sum)
+{
+	BOOST_REQUIRE_EQUAL(sum.re, 45.);
+	BOOST_REQUIRE_EQUAL(sum.im, 45.);
+}
+
+class MatrixSu3Field
+{
+public:
+	MatrixSu3Field(uint ntime, uint nspace)
+	{
+		std::string nspaceString = "--nspace=" + boost::lexical_cast<std::string>(nspace);
+		std::string ntimeString = "--ntime="  + boost::lexical_cast<std::string>(ntime);
+		const char * tmp [] = {"foo", nspaceString.c_str(), ntimeString.c_str()};
+		parameters = new meta::Inputparameters(3, tmp);
+		numberOfElements = getNumberOfElements_gaugefield(parameters);
+		gaugefield = std::vector<Matrixsu3>(numberOfElements);
+		Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, Matrixsu3_utilities::FillType::ZERO);
+	}
+	
+	n_uint64_t getNumberOfElements() { return numberOfElements; }
+	void setSpecificEntry(Matrixsu3 in, int positionToSet)
+	{
+		if ( ((int) numberOfElements - positionToSet) < 0)
+			{
+				logger.fatal() << "Got bad coordinates to set matrix. Aborting...";
+				BOOST_REQUIRE_EQUAL(0,1);
+			}
+			gaugefield[positionToSet] = in;
+	}
+	
+	const std::vector<Matrixsu3> &getField() {return gaugefield; }
+	const meta::Inputparameters * getParameters() {return parameters;}
+	Matrixsu3 getEntry(int position) { return gaugefield[position];}
+	Matrixsu3 * getPointerToField() { return &gaugefield[0]; }
+	void setField(Matrixsu3 * in) { gaugefield.assign(in, in + getNumberOfElements()); }
+	void fillField(Matrixsu3_utilities::FillType fillType) 
+	{ 
+		if (fillType == Matrixsu3_utilities::RANDOM)
+		{
+			Matrixsu3_utilities::fillMatrixSu3Array_randomMatrix(gaugefield);
+		}
+		else
+		{
+			Matrixsu3_utilities::fillMatrixSu3Array_constantMatrix(gaugefield, fillType);
+		}
+	}
+private:
+	const meta::Inputparameters * parameters;
+	n_uint64_t numberOfElements;
+	std::vector<Matrixsu3> gaugefield;
+};
+
+BOOST_AUTO_TEST_SUITE(conversionToAndFromIldgFormat)
+
+	void convertGaugefieldToAndFromIldg(MatrixSu3Field & in)
+	{
+		n_uint64_t num_bytes = getSizeInBytes_gaugefield(in.getNumberOfElements());
+		std::vector<char> binary_data(num_bytes);
+		char * binary_data_ptr = &binary_data[0];
+		
+		Matrixsu3 * gaugefieldTmp = in.getPointerToField();
+		
+		copy_gaugefield_to_ildg_format(binary_data, in.getField(), *in.getParameters() );
+		copy_gaugefield_from_ildg_format(gaugefieldTmp, binary_data_ptr, in.getNumberOfElements() * 9 * 2, *in.getParameters() );
+		
+		in.setField(gaugefieldTmp);
+	}
+
+	void fillAndConvert(Matrixsu3_utilities::FillType fillType)
+	{
+		MatrixSu3Field gaugefield(4,4);
+		
+		gaugefield.fillField( fillType );
+		
+		hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
+		
+		convertGaugefieldToAndFromIldg(gaugefield);
+		
+		hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
+		
+		BOOST_REQUIRE_EQUAL(sumBeforeConversion.re, sumAfterConversion.re);
+		BOOST_REQUIRE_EQUAL(sumBeforeConversion.im, sumAfterConversion.im);
+	}
+	
+	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_global_constant)
+	{
+		fillAndConvert(Matrixsu3_utilities::ONE);
+	}
+	
+	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_global_random)
+	{
+		fillAndConvert(Matrixsu3_utilities::RANDOM);
+	}
+	
+	void testConversion(uint nspace, uint ntime)
+	{
+		uint positionToSet = 0;
+		size_4 cart(0,0,0,0);
+		MatrixSu3Field gaugefield(ntime, nspace);
+		uint sitesVisited = 0;
+		
+		for(uint x = 0; x<nspace; x++)
+		{
+			for(uint y = 0; y<nspace; y++)
+			{
+				for(uint z = 0; z<nspace; z++)
+				{
+					for(uint t = 0; t<ntime; t++)
+					{
+						for(uint mu = 0; mu < NDIM; mu++)
+						{
+							cart = {x,y,z,t};
+							positionToSet = get_global_link_pos(mu, cart, *gaugefield.getParameters());
+							gaugefield.setSpecificEntry(Matrixsu3_utilities::getUnitMatrix(), positionToSet);
+							
+							hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
+							checkSumForOneDiagonalMatrix(sumBeforeConversion);
+		
+							convertGaugefieldToAndFromIldg(gaugefield);
+			
+							hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
+							
+							checkSumForOneDiagonalMatrix(sumAfterConversion);
+							
+							Matrixsu3 set = gaugefield.getEntry(positionToSet);
+							checkMatrixSu3ForDiagonalType(set);
+							
+							gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
+							
+							sitesVisited ++;
+						}
+					}
+				}
+			}
+		}
+		
+		BOOST_REQUIRE_EQUAL(sitesVisited, gaugefield.getNumberOfElements() );
+	}
+	
+	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific_1)
+	{
+		testConversion(3,3);
+	}
+	
+	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific_2)
+	{
+		testConversion(3,5);
+	}
+	
+	BOOST_AUTO_TEST_CASE(conversionToAndFromIldgFormat_specific_3)
+	{
+		testConversion(5,3);
+	}
+	
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(writeAndRead)
+
+	void writeFieldToFile(MatrixSu3Field &in, std::string filename)
+	{
+		IldgIoWriter_gaugefield writer( in.getField(), in.getParameters() , filename, 0, 0.);
+	}
+
+	void readFieldFromFile(MatrixSu3Field &out, std::string filename)
+	{
+		Matrixsu3 * gaugefieldTmp = NULL;
+		IldgIoReader_gaugefield reader(filename, out.getParameters(), &gaugefieldTmp);
+		out.setField(gaugefieldTmp);
+	}
+
+	void testWriteRead(uint nspace, uint ntime)
+	{
+		uint positionToSet = 0;
+		size_4 cart(0,0,0,0);
+		MatrixSu3Field gaugefield(ntime, nspace);
+		std::string filename = "conf.test";
+		uint sitesVisited = 0;
+		
+		for(uint x = 0; x<nspace; x++)
+		{
+			for(uint y = 0; y<nspace; y++)
+			{
+				for(uint z = 0; z<nspace; z++)
+				{
+					for(uint t = 0; t<ntime; t++)
+					{
+						for(uint mu = 0; mu < NDIM; mu++)
+						{
+							cart = {x,y,z,t};
+							positionToSet = get_global_link_pos(mu, cart, *gaugefield.getParameters());
+							gaugefield.setSpecificEntry(Matrixsu3_utilities::getFilledMatrix(), positionToSet);
+							
+							hmc_complex sumBeforeConversion = Matrixsu3_utilities::sumUpAllMatrixElements( gaugefield.getField() );
+							checkSumForFilledMatrix(sumBeforeConversion);
+							
+							writeFieldToFile(gaugefield, filename);
+							gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
+							
+							readFieldFromFile(gaugefield, filename);
+
+							hmc_complex sumAfterConversion = Matrixsu3_utilities::sumUpAllMatrixElements(gaugefield.getField());
+							checkSumForFilledMatrix(sumAfterConversion);
+							
+							Matrixsu3 set = gaugefield.getEntry(positionToSet);
+							checkMatrixSu3ForFilledType(set);
+		
+							gaugefield.setSpecificEntry(Matrixsu3_utilities::getZeroMatrix(), positionToSet);
+							
+							sitesVisited ++;
+						}
+					}
+				}
+			}
+		}
+		
+		BOOST_REQUIRE_EQUAL(sitesVisited, gaugefield.getNumberOfElements() );
+	}
+
+	BOOST_AUTO_TEST_CASE(writeAndRead_1)
+	{
+		testWriteRead(3,3);
+	}
+	BOOST_AUTO_TEST_CASE(writeAndRead_2)
+	{
+		testWriteRead(3,5);
+	}
+	BOOST_AUTO_TEST_CASE(writeAndRead_3)
+	{
+		testWriteRead(5,3);
+	}
+	
+BOOST_AUTO_TEST_SUITE_END()

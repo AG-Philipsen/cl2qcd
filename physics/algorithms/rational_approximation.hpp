@@ -181,6 +181,12 @@ public:
 	hmc_float Get_exponent() const;
 	
 	/**
+	 * This method allows to save to text file the rational approximation in a format
+	 * compatible to that used to read it in again
+	 */
+	void Save_rational_approximation(std::string filename);
+	
+	/**
 	 * This method allows the user to print to the shell the information of the approximation
 	 */
 	friend std::ostream& operator<<(std::ostream&, const Rational_Approximation&); 

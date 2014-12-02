@@ -34,6 +34,24 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 		approx_hb  = new Rational_Approximation(parameters.get_approx_heatbath_file());
 		approx_md  = new Rational_Approximation(parameters.get_approx_md_file());
 		approx_met = new Rational_Approximation(parameters.get_approx_metropolis_file());
+		//Here I check that the parameters of the approx. read from file coincide with those
+		//global in parametersRhmc, if not I throw an exception to avoid discrepancies
+		//between the parameters used (those in parametersRhmc) and those that the user
+		//maybe would like to use (read TODO in parametersRhmc.hpp file for further info)
+		if(approx_hb->Get_order() != parameters.get_metro_approx_ord() ||
+		   approx_md->Get_order() != parameters.get_md_approx_ord() ||
+		   approx_met->Get_order() != parameters.get_metro_approx_ord() ||
+		   approx_hb->Get_exponent()*8 != parameters.get_num_tastes() ||
+		   approx_md->Get_exponent()*4*(-1) != parameters.get_num_tastes() ||
+		   approx_met->Get_exponent()*4*(-1) != parameters.get_num_tastes() ||
+		   approx_hb->Get_lower_bound() != parameters.get_approx_lower() ||
+		   approx_md->Get_lower_bound() != parameters.get_approx_lower() ||
+		   approx_met->Get_lower_bound() != parameters.get_approx_lower() ||
+		   approx_hb->Get_upper_bound() != parameters.get_approx_upper() ||
+		   approx_md->Get_upper_bound() != parameters.get_approx_upper() ||
+		   approx_met->Get_upper_bound() != parameters.get_approx_upper()){
+		    throw Print_Error_Message("The parameters of at least one Rational Approximation read from file are not coherent with those given as input!");
+		}
 	}else{
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
 		approx_hb = new Rational_Approximation(parameters.get_metro_approx_ord(),
@@ -47,6 +65,10 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 		approx_met = new Rational_Approximation(parameters.get_metro_approx_ord(),
 				  parameters.get_num_tastes(), 4, parameters.get_approx_lower(),
 				  parameters.get_approx_upper(), true);
+		//Save the rational approximations to three different files for later reuse
+		approx_hb->Save_rational_approximation(parameters.get_approx_heatbath_file());
+		approx_md->Save_rational_approximation(parameters.get_approx_md_file());
+		approx_met->Save_rational_approximation(parameters.get_approx_metropolis_file());
 	}
 }
 
@@ -97,6 +119,9 @@ void rhmcExecutable::performOnlineMeasurements()
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
 		std::string gaugeout_name = meta::get_rhmc_obs_file_name(parameters, "");
 		printRhmcObservables(gaugeout_name);
+		if (parameters.get_measure_pbp()) {
+			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration);
+		}
 	}
 }
 
@@ -116,13 +141,6 @@ void rhmcExecutable::printRhmcObservablesToFile(const std::string& filename)
 	outputToFile.precision(15);
 	outputToFile << observables.plaq << "\t" << observables.tplaq << "\t" << observables.splaq;
 	outputToFile << "\t" << observables.poly.re << "\t" << observables.poly.im << "\t" << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im);
-	if(parameters.get_measure_pbp()) {
-	     std::vector<hmc_complex> pbp(4);
-	     for(size_t i=0; i<pbp.size(); i++){
-	         pbp[i] = physics::observables::staggered::measureChiralCondensate(*gaugefield, *prng, *system);
-		 outputToFile <<  "\t" << pbp[i].re << "\t" << pbp[i].im;
-	     }
-	}
 	outputToFile <<  "\t" << observables.deltaH << "\t" << exp_deltaH << "\t" << observables.prob << "\t" << observables.accept;
 	//print number of iterations used in inversions with full and force precision
 	/**

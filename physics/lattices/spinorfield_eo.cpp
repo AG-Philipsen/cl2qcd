@@ -229,6 +229,32 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha
 	}
 }
 
+void physics::lattices::saxpy_AND_squarenorm(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y, const Scalar<hmc_complex>& squarenorm)
+{
+	auto out_bufs = out->get_buffers();
+	auto x_bufs = x.get_buffers();
+	auto y_bufs = y.get_buffers();
+	auto alpha_bufs = alpha.get_buffers();
+	auto squarenorm_bufs = squarenorm.get_buffers();
+
+	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		device->get_spinor_code()->saxpy_AND_squarenorm_eo_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf, squarenorm_bufs[i]);
+	}
+
+	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
+}
+
 void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y)
 {
 	auto out_bufs = out->get_buffers();
