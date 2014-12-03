@@ -65,7 +65,6 @@ void hardware::code::Fermions::fill_kernels()
 		gamma5_eo = createKernel("gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 		//merged kernels
 		if (get_parameters().get_use_merge_kernels_fermion() == true) {
-			dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
 			dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
 			dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
 			M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
@@ -436,37 +435,6 @@ void hardware::code::Fermions::dslash_eo_inner(const hardware::buffers::Spinor *
 	get_device()->enqueue_kernel(_dslash_eo_inner , gs2, ls2);
 }
 
-void hardware::code::Fermions::dslash_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
-{
-	//get kappa
-	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
-	else kappa_tmp = kappa;
-
-	cl_int eo = evenodd;
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_gamma5_eo, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(dslash_AND_gamma5_eo, 0, sizeof(cl_mem), in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 2, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 3, sizeof(cl_int), &eo);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 4, sizeof(hmc_float), &kappa_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(dslash_AND_gamma5_eo , gs2, ls2);
-}
-
 void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar) const
 {
 	//get kappa
@@ -737,13 +705,6 @@ size_t hardware::code::Fermions::get_read_write_size(const std::string& in) cons
 		const unsigned int dirs = 4;
 		return (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (in == "dslash_AND_gamma5_eo") {
-		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
-		const unsigned int dirs = 4;
-		//the gamma5 kernel reads 1 spinor and writes 1 spinor:
-		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
-		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
-	}
 	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
@@ -826,9 +787,6 @@ uint64_t hardware::code::Fermions::get_flop_size(const std::string& in) const
 	if (in == "dslash_eo") {
 		return Seo * flop_dslash_per_site(get_parameters());
 	}
-	if (in == "dslash_AND_gamma5_eo") {
-		return Seo * flop_dslash_per_site(get_parameters()) +  Seo * NDIM * NC;
-	}
 	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
@@ -861,7 +819,6 @@ void hardware::code::Fermions::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, dslash_eo);
 	Opencl_Module::print_profiling(filename, _dslash_eo_boundary);
 	Opencl_Module::print_profiling(filename, _dslash_eo_inner);
-	Opencl_Module::print_profiling(filename, dslash_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_eo);
 	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_minus_eo);
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_AND_gamma5_eo);
@@ -881,7 +838,6 @@ hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware
 	  dslash_eo(0),
 	  _dslash_eo_boundary(0),
           _dslash_eo_inner(0),
-	  dslash_AND_gamma5_eo(0),
 	  dslash_AND_M_tm_inverse_sitediagonal_eo(0),
 	  dslash_AND_M_tm_inverse_sitediagonal_minus_eo(0),
 	  M_tm_sitediagonal_AND_gamma5_eo(0),
