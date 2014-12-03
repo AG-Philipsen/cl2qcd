@@ -298,78 +298,6 @@ void test_dslash_and_m_tm_inverse_sitediagonal_minus(std::string inputfile)
 	test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
 }
 
-void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool switcher)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher) kernelName = "m_tm_sitedigaonal_AND_gamma5_eo";
-	else kernelName = "m_tm_sitediagonal_minus_AND_gamma5_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	auto params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(*params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	auto * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params->get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	out.load(sf_in);
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(switcher)
-		device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(*params));
-	else
-		device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(*params));
-	out.dump(sf_out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, *params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_m_tm_sitediagonal_and_gamma5_eo(std::string inputfile)
-{
-	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, true);
-}
-
-void test_m_tm_sitediagonal_minus_and_gamma5_eo(std::string inputfile)
-{
-	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, false);
-}
-
 //CP: Note: this is the same test as in the "normal" opencl_module_fermions test, I left it here, too.
 BOOST_AUTO_TEST_SUITE(BUILD)
 
@@ -471,16 +399,3 @@ BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_GAMMA5_EO )
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_1)
-{
-	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_2)
-{
-	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
