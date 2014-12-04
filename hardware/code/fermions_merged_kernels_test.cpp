@@ -416,8 +416,8 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 	class SaxpyAndGamma5EvenOddTester : public FermionTester
 	{
 	public:
-		SaxpyAndGamma5EvenOddTester(uint numberOfArguments, const char * parameterStringArray[]) :
-			FermionTester("saxpy_AND_gamma5", numberOfArguments, parameterStringArray, 1)
+		SaxpyAndGamma5EvenOddTester(std::vector<std::string> parameterStrings) :
+			FermionTester("saxpy_AND_gamma5", parameterStrings, 1)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 			spinor * sf_in;
@@ -434,10 +434,8 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
 	{
-		const char * parameterStringArray [] = {"foo", "--nspace=3", "--ntime=5", "--ignore_checksum_errors=true", "--beta=-12.345678", "--kappa=-56.7890", "--mu=-56.7890"};
-		uint numberOfArguments = 7;
-// 		const meta::Inputparameters parameters(7, tmp);
-		SaxpyAndGamma5EvenOddTester tester(numberOfArguments, parameterStringArray);
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg" };
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

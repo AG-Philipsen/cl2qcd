@@ -52,11 +52,11 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	  }
 }
 
-KernelTester::KernelTester(std::string kernelNameIn, uint numberOfArguments, const char * parameterStringArray[], int numberOfValuesIn, int typeOfComparisonIn):
+KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, int numberOfValuesIn, int typeOfComparisonIn):
   kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
 	printKernelInformation(kernelNameIn);
-	parameters = createParameters(numberOfArguments, parameterStringArray).release();
+	parameters = createParameters(parameterStrings).release();
 
 	system = new hardware::System(*parameters);
 	device = system->get_devices()[0];

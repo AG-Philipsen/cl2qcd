@@ -26,7 +26,7 @@
 #include "../../meta/inputparameters.hpp"
 
 std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile);
-std::unique_ptr<meta::Inputparameters> createParameters(uint numberOfArguments, const char * parameterStringArray[]);
+std::unique_ptr<meta::Inputparameters> createParameters(std::vector<std::string> parameterStrings);
 void printKernelInformation(std::string name);
 
 #endif // _TESTUTILITIES_HPP_

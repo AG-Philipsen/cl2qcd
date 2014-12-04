@@ -70,13 +70,15 @@ std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile)
 	return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(num_par + 1, _params_cpu));
 }
 
-std::unique_ptr<meta::Inputparameters> createParameters(uint numberOfArguments, const char * parameterStringArray[])
+std::unique_ptr<meta::Inputparameters> createParameters(std::vector<std::string> parameterStrings)
 {
-	const char **newv = (const char**) malloc((numberOfArguments + 3) * sizeof(newv) );
+	int numberOfArguments = parameterStrings.size();
+	const char **newv = (const char**) malloc((numberOfArguments + 4) * sizeof(newv) );
 	
-	for (uint i = 0; i< numberOfArguments; i++)
+	newv[0] = "foo";
+	for (int i = 1; i< numberOfArguments; i++)
 	{
-		newv[i] = parameterStringArray[i];
+		newv[i] = parameterStrings[i].c_str();
 	}
 	
 	std::string inputfile_location = "";
@@ -91,11 +93,6 @@ std::unique_ptr<meta::Inputparameters> createParameters(uint numberOfArguments, 
 	newv[numberOfArguments] = gpu_opt.c_str();
 	newv[numberOfArguments+1] = rec12_opt.c_str();
 	newv[numberOfArguments+2] = "--device=0";
-	
-	for (uint i = 0; i< numberOfArguments + 3; i++)
-	{
-		logger.info() << newv[i];
-	}
 	
  	return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(3 + numberOfArguments, newv));
 }
