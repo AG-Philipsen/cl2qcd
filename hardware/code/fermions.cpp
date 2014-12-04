@@ -342,9 +342,9 @@ void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor 
 	get_device()->enqueue_kernel( gamma5_eo, gs2, ls2);
 }
 
-void hardware::code::Fermions::saxpy_AND_gamma5_eo_device(const hardware::buffers::Spinor * inout) const
+void hardware::code::Fermions::saxpy_AND_gamma5_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out) const
 {
-	gamma5_eo_device(inout);
+	gamma5_eo_device(out);
 }
 
 void hardware::code::Fermions::dslash_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const

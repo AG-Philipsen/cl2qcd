@@ -420,12 +420,19 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 			FermionTester("saxpy_AND_gamma5", parameterStrings, 1)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+			const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
+			hardware::buffers::Plain<hmc_complex> alpha(1, device);
+
+			in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
+			in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
+			alpha.load(&alpha_host);
+			
 			spinor * sf_in;
 			sf_in = new spinor[spinorfieldEvenOddElements];
 			
-			in.load( createSpinorfield(spinorfieldEvenOddElements) );
-			code->saxpy_AND_gamma5_eo_device(&in);
-			in.dump(sf_in);
+			code->saxpy_AND_gamma5_eo_device(&in, &in2, &alpha, &out);
+			out.dump(sf_in);
 			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
 	
 			delete sf_in;
