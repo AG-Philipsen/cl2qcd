@@ -409,13 +409,32 @@ BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+#include "FermionTester.hpp"
+
 BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
-  void test_saxpy_gamma5_eo() {}
+	class SaxpyAndGamma5Tester : public FermionTester
+	{
+	public:
+		SaxpyAndGamma5Tester(std::string inputfile) :
+			FermionTester("gamma5", inputfile, 1)
+		{
+			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+			spinor * sf_in;
+			sf_in = new spinor[spinorfieldElements];
+			
+			in.load( createSpinorfield(spinorfieldElements) );
+			code->gamma5_device(&in);
+			in.dump(sf_in);
+			kernelResult[0] = count_sf(sf_in, spinorfieldElements);
+	
+			delete sf_in;
+		}
+	};
 
-  BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
-  {
-	  test_saxpy_gamma5_eo();
-  }
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
+	{
+		SaxpyAndGamma5Tester tester("gamma5_eo_input_1");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
