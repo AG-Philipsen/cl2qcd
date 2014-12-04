@@ -69,6 +69,7 @@ void hardware::code::Fermions::fill_kernels()
 			dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
 			M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
 			M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+			saxpy_AND_gamma5_eo = createKernel("saxpy_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_saxpy_AND_gamma5_eo.cl";
 		}
 	}
 }
@@ -113,6 +114,8 @@ void hardware::code::Fermions::clear_kernels()
 			clerr = clReleaseKernel(M_tm_sitediagonal_minus);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 			clerr = clReleaseKernel(M_tm_inverse_sitediagonal_minus);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			clerr = clReleaseKernel(saxpy_AND_gamma5_eo);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		}
 	}
@@ -344,7 +347,24 @@ void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor 
 
 void hardware::code::Fermions::saxpy_AND_gamma5_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out) const
 {
-	gamma5_eo_device(out);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(saxpy_AND_gamma5_eo, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 1, sizeof(cl_mem), y->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 3, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( saxpy_AND_gamma5_eo, gs2, ls2);
 }
 
 void hardware::code::Fermions::dslash_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
@@ -846,7 +866,8 @@ hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware
 	  dslash_AND_M_tm_inverse_sitediagonal_eo(0),
 	  dslash_AND_M_tm_inverse_sitediagonal_minus_eo(0),
 	  M_tm_sitediagonal_AND_gamma5_eo(0),
-	  M_tm_sitediagonal_minus_AND_gamma5_eo(0)
+	  M_tm_sitediagonal_minus_AND_gamma5_eo(0),
+	  saxpy_AND_gamma5_eo(0)
 {
 	fill_kernels();
 }

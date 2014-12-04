@@ -157,6 +157,7 @@ private:
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
 	cl_kernel M_tm_sitediagonal_AND_gamma5_eo;
 	cl_kernel M_tm_sitediagonal_minus_AND_gamma5_eo;
+	cl_kernel saxpy_AND_gamma5_eo;
 
 	ClSourcePackage sources;
 };
