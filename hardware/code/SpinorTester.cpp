@@ -44,6 +44,17 @@ SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int 
 	setMembers();
 }
 
+SpinorTester::SpinorTester(std::string kernelName,  uint numberOfArguments, const char * parameterStringArray[], int numberOfValues, int typeOfComparision):
+  KernelTester(kernelName, numberOfArguments, parameterStringArray, numberOfValues, typeOfComparision)
+	{
+	code = device->get_spinor_code();
+	prng = new physics::PRNG(*system);
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+	allocatedObjects = true;
+	
+	setMembers();
+}
+
 SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
 	KernelTester(parameters, system, device), allocatedObjects(false)
 {

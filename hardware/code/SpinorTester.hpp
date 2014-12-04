@@ -30,7 +30,8 @@
 
 class SpinorTester : public KernelTester {
 public:
-  SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
+	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
+	SpinorTester(std::string kernelName,  uint numberOfArguments, const char * parameterStringArray[], int numberOfValues = 1, int typeOfComparision = 1);
 	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	~SpinorTester();
 	

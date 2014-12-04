@@ -12,6 +12,12 @@ public:
 			code = device->get_fermion_code();
 			gaugefield = new physics::lattices::Gaugefield(*system, *prng);
 	}
+	FermionTester(std::string kernelName, uint numberOfArguments, const char * parameterStringArray[], int numberOfValues = 1):
+	SpinorTester(kernelName, numberOfArguments, parameterStringArray, numberOfValues)
+	{
+			code = device->get_fermion_code();
+			gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+	}
 	~FermionTester()
 	{
 		delete gaugefield;
