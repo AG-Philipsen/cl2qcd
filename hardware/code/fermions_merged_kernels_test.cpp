@@ -413,20 +413,20 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
-	class SaxpyAndGamma5Tester : public FermionTester
+	class SaxpyAndGamma5EvenOddTester : public FermionTester
 	{
 	public:
-		SaxpyAndGamma5Tester(std::string inputfile) :
-			FermionTester("gamma5", inputfile, 1)
+		SaxpyAndGamma5EvenOddTester(std::string inputfile) :
+			FermionTester("saxpy_AND_gamma5", inputfile, 1)
 		{
-			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 			spinor * sf_in;
-			sf_in = new spinor[spinorfieldElements];
+			sf_in = new spinor[spinorfieldEvenOddElements];
 			
-			in.load( createSpinorfield(spinorfieldElements) );
-			code->gamma5_device(&in);
+			in.load( createSpinorfield(spinorfieldEvenOddElements) );
+			code->saxpy_AND_gamma5_eo_device(&in);
 			in.dump(sf_in);
-			kernelResult[0] = count_sf(sf_in, spinorfieldElements);
+			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
 	
 			delete sf_in;
 		}
@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
 	{
-		SaxpyAndGamma5Tester tester("gamma5_eo_input_1");
+		SaxpyAndGamma5EvenOddTester tester("gamma5_eo_input_1");
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
