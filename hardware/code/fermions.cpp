@@ -752,6 +752,11 @@ size_t hardware::code::Fermions::get_read_write_size(const std::string& in) cons
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
+	if (in == "saxpy_AND_gamma5_eo") {
+		//saxpy reads 2 spinor, 1 complex number and writes 1 spinor per site
+		//the gamma5 does not affect this here.
+		return C * D * Seo * (12 * (2 + 1) + 1);
+	}
 	return 0;
 }
 
@@ -826,6 +831,11 @@ uint64_t hardware::code::Fermions::get_flop_size(const std::string& in) const
 		//this kernel performs ND*NC complex mults  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) +  Seo * NDIM * NC;
 	}
+	if (in == "saxpy_AND_gamma5_eo") {
+		//saxpy performs on each site spinor_times_complex and spinor_add
+		//gamma5 performs ND*NC*2/2 real mults
+		return Seo * NDIM * NC * (1+  meta::get_flop_complex_mult() + 2); 
+	}
 	return 0;
 }
 
@@ -848,6 +858,7 @@ void hardware::code::Fermions::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_minus_eo);
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
+	Opencl_Module::print_profiling(filename, saxpy_AND_gamma5_eo);
 }
 hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device),
