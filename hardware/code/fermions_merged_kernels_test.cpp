@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" };
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
 		SaxpyAndGamma5EvenOddTester tester(parameterStrings);
 	}
 
