@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 	class SaxpyAndGamma5EvenOddTester : public FermionTester
 	{
 	public:
-		SaxpyAndGamma5EvenOddTester(std::vector<std::string> parameterStrings) :
+		SaxpyAndGamma5EvenOddTester(std::vector<std::string> parameterStrings, uint num) :
 			FermionTester("saxpy_AND_gamma5", parameterStrings, 1)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
@@ -424,8 +424,14 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 			const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 			hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-			in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
-			in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
+			if (num == 1){
+				in.load(createSpinorfield(spinorfieldEvenOddElements));
+				in2.load(createSpinorfield(spinorfieldEvenOddElements));
+			}
+			else{
+				in.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
+				in2.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
+			}
 			alpha.load(&alpha_host);
 			
 			spinor * sf_in;
@@ -441,8 +447,86 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings);
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=0", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
 	}
 
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_2)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_3)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_4)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_5)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_6)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_7)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_8)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=1536", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_9)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_10)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=3072.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_11)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_12)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=3072.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_13)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_14)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+	
 BOOST_AUTO_TEST_SUITE_END()
