@@ -519,13 +519,13 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_13)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=1536.", "--test_ref_val2=0"};
 		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
 	}
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_14)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=4608.", "--test_ref_val2=0"};
 		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
 	}
 	
