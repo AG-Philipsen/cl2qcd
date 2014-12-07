@@ -26,8 +26,7 @@
 #include "../../host_functionality/logger.hpp"
 #include "cmath"
 #include "sstream"
-#include "solver.hpp" //For exceptions
-
+#include "solvers/exceptions.hpp"
 
 static std::string create_log_prefix_find_max(int number) noexcept;
 static std::string create_log_prefix_find_min(int number) noexcept;

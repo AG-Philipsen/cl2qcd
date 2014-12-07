@@ -2,6 +2,7 @@
  * Declaration of the cg algorithm
  *
  * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -22,9 +23,7 @@
 #ifndef _PHYSICS_ALGORITHMS_SOLVERS_CG_
 #define _PHYSICS_ALGORITHMS_SOLVERS_CG_
 
-#include "../../fermionmatrix/fermionmatrix.hpp"
-#include "exceptions.hpp"
-#include "../solver.hpp"
+#include "solvers.hpp"
 
 namespace physics {
 namespace algorithms {

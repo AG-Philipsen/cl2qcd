@@ -23,7 +23,7 @@
 #include "fermion_force.hpp"
 
 #include "../fermionmatrix/fermionmatrix.hpp"
-#include "solver.hpp"
+#include "solvers/solvers.hpp"
 #include "../lattices/util.hpp"
 #include "molecular_dynamics.hpp"
 #include "../../meta/util.hpp"

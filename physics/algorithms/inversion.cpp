@@ -22,7 +22,7 @@
 
 #include "inversion.hpp"
 #include "../../meta/util.hpp"
-#include "solver.hpp"
+#include "solvers/solvers.hpp"
 #include <cassert>
 #include "../lattices/util.hpp"
 #include "../lattices/swappable.hpp"

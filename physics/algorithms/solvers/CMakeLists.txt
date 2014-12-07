@@ -20,6 +20,7 @@
 add_library(solvers
 	exceptions.cpp
 	cg.cpp
+	bicgstab.cpp
 )
 target_link_libraries(solvers
 		algorithms

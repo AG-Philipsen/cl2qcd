@@ -22,7 +22,6 @@
 #
 
 add_library(algorithms
-	solver.cpp
 	su3heatbath.cpp
 	inversion.cpp
 	molecular_dynamics.cpp

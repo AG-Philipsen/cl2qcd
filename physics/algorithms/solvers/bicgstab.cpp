@@ -1,7 +1,7 @@
 /** @file
- * Implementation of the solver algorithms
+ * Implementation of the bicgstab algorithm
  *
- * Copyright (c) 2012-2013 Christopher Pinke <pinke@th.uni-frankfurt.de>
+ * Copyright (c) 2012-2014 Christopher Pinke <pinke@th.uni-frankfurt.de>
  * Copyright (c) 2012-2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
@@ -20,15 +20,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "solver.hpp"
-
-#include "../../host_functionality/logger.hpp"
-#include "../../common_header_files/operations_complex.h"
-#include "../../meta/type_ops.hpp"
-#include "../lattices/util.hpp"
-#include "../lattices/scalar_complex.hpp"
-#include <cmath>
-#include <sstream>
+#include "bicgstab.hpp"
 
 /**
  * A "save" version of the bicgstab algorithm.
