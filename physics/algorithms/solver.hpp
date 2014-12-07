@@ -24,6 +24,7 @@
 
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "../../executables/exceptions.h"
+#include "solvers/cg.hpp"
 
 namespace physics {
 namespace algorithms {
@@ -103,30 +104,6 @@ int bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmat
  * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
  */
 int bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
-
-/**
- * Solve the linear system A * x = b for x using the CG algorithm
- *
- *
- * \return The number of iterations performed
- *
- * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
- *
- * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
- */
-int cg(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
-
-/**
- * Solve the linear system A * x = b for x using the CG algorithm for even-odd preconditioned b and x
- *
- *
- * \return The number of iterations performed
- *
- * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
- *
- * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
- */
-int cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
 
 }
 }
