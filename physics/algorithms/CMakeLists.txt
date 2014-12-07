@@ -38,6 +38,10 @@ add_library(algorithms
 	solver_shifted.cpp
 	rhmc.cpp
 )
+add_modules(algorithms
+	solvers
+)
+
 target_link_libraries(algorithms
 		lattices
 		fermionmatrix

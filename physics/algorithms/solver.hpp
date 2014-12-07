@@ -28,6 +28,7 @@
 namespace physics {
 namespace algorithms {
 
+  //@TODO: move everything to new file in /solver
 /**
  * this namespace contains methods to solve linear systems either like \n
  * <pre>
