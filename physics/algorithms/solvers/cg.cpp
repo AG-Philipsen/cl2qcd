@@ -158,11 +158,13 @@ void testIfResiduumIsNan(hmc_float resid, int iter)
 	}
 }
 
-void reportPerformance_cg(int iter, const uint64_t duration, const uint64_t duration_noWarmup, cl_ulong total_flops, cl_ulong noWarmup_flops )
+void reportPerformance_cg(int iter, const uint64_t duration, const uint64_t duration_noWarmup, cl_ulong total_flops, cl_ulong noWarmup_flops, cl_ulong total_bw, cl_ulong noWarmup_bw )
 {
-	logger.info() << create_log_prefix_cg(iter) << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << (noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
+  logger.info() << create_log_prefix_cg(iter) << "CG completed " << iter << "iterations in " << duration / 1000 << " ms" ;
+  logger.info() << create_log_prefix_cg(iter) << "Performance [FLOPS]: " << (total_flops / duration / 1000.f) << " GFlops. Performance after warmup: " << (noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
+  logger.info() << create_log_prefix_cg(iter) << "Performance [BANDWIDTH]. " << (total_bw / duration * 1e-3 ) << " GB/s. Performance after warmup: " << (noWarmup_bw / duration_noWarmup * 1e-3 ) << " GB/s.";
 }
-	
+
 int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
 {
 	using namespace physics::lattices;
@@ -302,7 +304,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 					cl_ulong total_bw = iter * bw_per_iter + refreshs * bw_per_refresh;
 					cl_ulong noWarmup_bw = (iter - 1) * bw_per_iter + (refreshs - 1) * bw_per_refresh;
 
-					reportPerformance_cg(iter, duration, duration_noWarmup, total_flops, noWarmup_flops);
+					reportPerformance_cg(iter, duration, duration_noWarmup, total_flops, noWarmup_flops, total_bw, noWarmup_bw);
 				}
 				log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
 				return iter;
