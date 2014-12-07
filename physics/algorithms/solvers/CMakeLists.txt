@@ -18,6 +18,7 @@
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
 add_library(solvers
+	exceptions.cpp
 	cg.cpp
 )
 target_link_libraries(solvers

@@ -23,7 +23,7 @@
 #define _PHYSICS_ALGORITHMS_SOLVER_
 
 #include "../fermionmatrix/fermionmatrix.hpp"
-#include "../../executables/exceptions.h"
+#include "solvers/exceptions.hpp"
 #include "solvers/cg.hpp"
 
 namespace physics {
@@ -42,44 +42,6 @@ namespace algorithms {
  *       set of values of sigma thanks to a multi-shifted inverter
  */
 namespace solvers {
-
-/**
- * Base exception used by solvers ot indicate solving failures.
- */
-class SolverException : public Print_Error_Message {
-public:
-	/**
-	 * How many iterations the solver performed until the iteration occured.
-	 */
-	int get_iterations() const noexcept {
-		return iterations;
-	};
-protected:
-	/**
-	 * Create a solver exception with a printable message and the iteration at which it occured.
-	 *
-	 * Protected to not allow creation of generic solver exceptions.
-	 */
-	SolverException(std::string message, int iterations, std::string filename, int linenumber) : Print_Error_Message(message, filename, linenumber), iterations(iterations) { };
-private:
-	const int iterations;
-};
-
-/**
- * Thrown by solvers to indicate being stuck.
- */
-class SolverStuck : public SolverException {
-public:
-	SolverStuck(int iterations, std::string filename, int linenumber);
-};
-
-/**
- * Thrown by solvers to indicate that it could not solve
- */
-class SolverDidNotSolve : public SolverException {
-public:
-	SolverDidNotSolve(int iterations, std::string filename, int linenumber) : SolverException("Solver did not solve.", iterations, filename, linenumber) { };
-};
 
 /**
  * Solve the linear system A * x = b for x using the BiCGstab algorithm

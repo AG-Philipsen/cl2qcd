@@ -30,7 +30,6 @@
 #include <cmath>
 #include <sstream>
 
-static std::string create_solver_stuck_message(int iterations);
 /**
  * A "save" version of the bicgstab algorithm.
  * It is explicitely checked if the true residuum also fullfills the break condition.
@@ -45,15 +44,6 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
  */
 static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
 static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
-
-physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { }
-
-static std::string create_solver_stuck_message(int iterations)
-{
-	std::ostringstream tmp;
-	tmp << "Solver got stuck after " << iterations << " iterations";
-	return tmp.str();
-}
 
 static std::string create_log_prefix_solver(std::string name, int number) noexcept;
 static std::string create_log_prefix_bicgstab(int number) noexcept;
