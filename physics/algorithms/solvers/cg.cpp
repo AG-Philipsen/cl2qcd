@@ -22,9 +22,6 @@
 
 #include "cg.hpp"
 
-#include "../../lattices/scalar_complex.hpp"
-#include "../../lattices/util.hpp"
-
 static std::string create_log_prefix_cg(int number) noexcept;
 //@todo: move to own file
 static std::string create_log_prefix_solver(std::string name, int number) noexcept;
