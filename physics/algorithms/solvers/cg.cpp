@@ -278,8 +278,9 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 					const uint64_t duration = timer.getTime();
 					const uint64_t duration_noWarmup = timer_noWarmup.getTime();
 
-					// calculate flops
 					const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+
+					// calculate flops
 					const cl_ulong mf_flops = f.get_flops();
 					logger.trace() << "mf_flops: " << mf_flops;
 
@@ -289,6 +290,17 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 					cl_ulong flops_per_refresh = mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system);
 					cl_ulong total_flops = iter * flops_per_iter + refreshs * flops_per_refresh;
 					cl_ulong noWarmup_flops = (iter - 1) * flops_per_iter + (refreshs - 1) * flops_per_refresh;
+
+					//calculate bandwidth
+					const cl_ulong mf_bw = f.get_read_write_size();
+					logger.trace() << "mf_read_write_size: " << mf_bw;
+
+					cl_ulong bw_per_iter = mf_bw + 2 * get_read_write_size<Spinorfield_eo, scalar_product>(system)
+					                          + 2 * ::get_read_write_size<hmc_complex, complexdivide>() + 2 * ::get_read_write_size<hmc_complex, complexmult>()
+					                          + 3 * get_read_write_size<Spinorfield_eo, saxpy>(system);
+					cl_ulong bw_per_refresh = mf_flops + get_read_write_size<Spinorfield_eo, saxpy>(system) + get_read_write_size<Spinorfield_eo, scalar_product>(system);
+					cl_ulong total_bw = iter * bw_per_iter + refreshs * bw_per_refresh;
+					cl_ulong noWarmup_bw = (iter - 1) * bw_per_iter + (refreshs - 1) * bw_per_refresh;
 
 					reportPerformance_cg(iter, duration, duration_noWarmup, total_flops, noWarmup_flops);
 				}
