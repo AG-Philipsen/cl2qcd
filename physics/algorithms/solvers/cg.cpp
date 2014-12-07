@@ -160,30 +160,86 @@ void testIfResiduumIsNan(hmc_float resid, int iter)
 
 void reportPerformance_cg(int iter, const uint64_t duration, const uint64_t duration_noWarmup, cl_ulong total_flops, cl_ulong noWarmup_flops, cl_ulong total_bw, cl_ulong noWarmup_bw )
 {
-  logger.info() << create_log_prefix_cg(iter) << "CG completed " << iter << "iterations in " << duration / 1000 << " ms" ;
+  logger.info() << create_log_prefix_cg(iter) << "CG completed " << iter << " iterations in " << duration / 1000 << " ms" ;
   logger.info() << create_log_prefix_cg(iter) << "Performance [FLOPS]: " << (total_flops / duration / 1000.f) << " GFlops. Performance after warmup: " << (noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
   logger.info() << create_log_prefix_cg(iter) << "Performance [BANDWIDTH]. " << (total_bw / duration * 1e-3 ) << " GB/s. Performance after warmup: " << (noWarmup_bw / duration_noWarmup * 1e-3 ) << " GB/s.";
 }
 
+  //todo: move to solvers.hpp
+class Solver
+{
+public:
+  Solver(const hardware::System& systemIn, const meta::Inputparameters * paramsIn, const cl_ulong mf_flopsIn, const cl_ulong mf_bwIn):
+    system(systemIn), resid(0.), iter(0), params(paramsIn), RESID_CHECK_FREQUENCY (params->get_cg_iteration_block_size() ), USE_ASYNC_COPY ( params->get_cg_use_async_copy() ), MINIMUM_ITERATIONS (params->get_cg_minimum_iteration_count()), mf_flops(mf_flopsIn), mf_bw(mf_bwIn)
+  {
+    if(USE_ASYNC_COPY) {
+      logger.warn() << "Asynchroneous copying in the CG is currently unimplemented!";
+    }
+    if(MINIMUM_ITERATIONS) {
+      logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
+    }
+    maximalIterations = params->get_cgmax();
+    refreshIteration = params->get_iter_refresh();
+  }
+  //@todo: make these private
+  const hardware::System& system;
+  hmc_float resid;
+  int iter;
+  int maximalIterations;
+  int refreshIteration;
+  const meta::Inputparameters * params;
+  const int RESID_CHECK_FREQUENCY;
+  const bool USE_ASYNC_COPY;
+  const int MINIMUM_ITERATIONS;
+  /// @todo start timer synchronized with device(s)
+  klepsydra::Monotonic timer;
+  klepsydra::Monotonic timer_noWarmup;
+
+  const cl_ulong mf_flops;
+  const cl_ulong mf_bw;
+
+  void reportPerformance(int iter)
+  {
+    using namespace physics::lattices;
+    if(logger.beInfo()) {
+      // we are always synchroneous here, as we had to recieve the residium from the device
+      const uint64_t duration = timer.getTime();
+      const uint64_t duration_noWarmup = timer_noWarmup.getTime();
+      const unsigned refreshs = iter / refreshIteration + 1;      
+      // calculate flops
+      
+      logger.trace() << "mf_flops: " << mf_flops;
+      
+      cl_ulong flops_per_iter = mf_flops + 2 * get_flops<Spinorfield_eo, scalar_product>(system)
+	+ 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
+	+ 3 * get_flops<Spinorfield_eo, saxpy>(system);
+      cl_ulong flops_per_refresh = mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system);
+      cl_ulong total_flops = iter * flops_per_iter + refreshs * flops_per_refresh;
+      cl_ulong noWarmup_flops = (iter - 1) * flops_per_iter + (refreshs - 1) * flops_per_refresh;
+      
+      //calculate bandwidth
+      
+      logger.trace() << "mf_read_write_size: " << mf_bw;
+      
+      cl_ulong bw_per_iter = mf_bw + 2 * get_read_write_size<Spinorfield_eo, scalar_product>(system)
+	+ 2 * ::get_read_write_size<hmc_complex, complexdivide>() + 2 * ::get_read_write_size<hmc_complex, complexmult>()
+	+ 3 * get_read_write_size<Spinorfield_eo, saxpy>(system);
+      cl_ulong bw_per_refresh = mf_flops + get_read_write_size<Spinorfield_eo, saxpy>(system) + get_read_write_size<Spinorfield_eo, scalar_product>(system);
+      cl_ulong total_bw = iter * bw_per_iter + refreshs * bw_per_refresh;
+      cl_ulong noWarmup_bw = (iter - 1) * bw_per_iter + (refreshs - 1) * bw_per_refresh;
+      
+      reportPerformance_cg(iter, duration, duration_noWarmup, total_flops, noWarmup_flops, total_bw, noWarmup_bw);
+    }
+  }
+};
+  
 int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
 {
+  const cl_ulong mf_flops = f.get_flops();
+  const cl_ulong mf_bw = f.get_read_write_size();
+
+  Solver solver(system,  &system.get_inputparameters(), mf_flops, mf_bw );
 	using namespace physics::lattices;
-
-	const auto & params = system.get_inputparameters();
-
-	/// @todo start timer synchronized with device(s)
-	klepsydra::Monotonic timer;
-	klepsydra::Monotonic timer_noWarmup;
-	/// @todo make configurable from outside
-	const int RESID_CHECK_FREQUENCY = params.get_cg_iteration_block_size();
-	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
-	const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
-	if(USE_ASYNC_COPY) {
-		logger.warn() << "Asynchroneous copying in the CG is currently unimplemented!";
-	}
-	if(MINIMUM_ITERATIONS) {
-		logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
-	}
 
 	const Spinorfield_eo p(system);
 	const Spinorfield_eo rn(system);
@@ -201,16 +257,16 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 	const Scalar<hmc_complex> minus_one(system);
 	minus_one.store(hmc_complex_minusone);
 
-	hmc_float resid;
-	int iter = 0;
-
-	// report source and initial solution
-	log_squarenorm(create_log_prefix_cg(iter) + "b (initial): ", b);
-	log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
-
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-	for(iter = 0; iter < params.get_cgmax() || iter < MINIMUM_ITERATIONS; iter ++) {
-		if(iter % params.get_iter_refresh() == 0) {
+	int iter = 0;
+	for(iter = 0; iter < solver.maximalIterations || iter < solver.MINIMUM_ITERATIONS; iter ++) {
+	  if (iter == 0)
+	    {
+	      // report source and initial solution
+	      log_squarenorm(create_log_prefix_cg(iter) + "b (initial): ", b);
+	      log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
+	    }
+		if(iter % solver.refreshIteration == 0) {
 			f(&rn, gf, *x); //rn = A*inout
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 			
@@ -236,7 +292,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 
 		//rn+1 = rn - alpha*v -> rhat
 		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-		if(params.get_use_merge_kernels_spinor()) {
+		if(solver.params->get_use_merge_kernels_spinor()) {
 			physics::lattices::saxpy_AND_squarenorm(&rn, alpha, v, rn, rho_next);
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		} else {
@@ -245,8 +301,8 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 			log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 		}
 		
-		if(iter % RESID_CHECK_FREQUENCY == 0) {
-			resid = rho_next.get().re;
+		if(iter % solver.RESID_CHECK_FREQUENCY == 0) {
+			solver.resid = rho_next.get().re;
 			//if(USE_ASYNC_COPY) {
 			//  if(iter) {
 			//    resid_event.wait();
@@ -264,54 +320,24 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 			//  //get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 			//}
 
-			logger.debug() << create_log_prefix_cg(iter) << "resid: " << resid;
-			testIfResiduumIsNan(resid, iter);
+			logger.debug() << create_log_prefix_cg(iter) << "resid: " << solver.resid;
+			testIfResiduumIsNan(solver.resid, iter);
 			
-			if(resid < prec && iter >= MINIMUM_ITERATIONS) {
+			if(solver.resid < prec && iter >= solver.MINIMUM_ITERATIONS) {
 				//if(USE_ASYNC_COPY) {
 				//  // make sure everything using our event is completed
 				//  resid_event.wait();
 				//}
-			  logger.debug() << create_log_prefix_cg(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
+			  logger.debug() << create_log_prefix_cg(iter) << "Solver converged in " << iter << " iterations! resid:\t" << solver.resid;
 
-				// report on performance
-				if(logger.beInfo()) {
-					// we are always synchroneous here, as we had to recieve the residium from the device
-					const uint64_t duration = timer.getTime();
-					const uint64_t duration_noWarmup = timer_noWarmup.getTime();
+			  solver.reportPerformance(iter);
 
-					const unsigned refreshs = iter / params.get_iter_refresh() + 1;
-
-					// calculate flops
-					const cl_ulong mf_flops = f.get_flops();
-					logger.trace() << "mf_flops: " << mf_flops;
-
-					cl_ulong flops_per_iter = mf_flops + 2 * get_flops<Spinorfield_eo, scalar_product>(system)
-					                          + 2 * ::get_flops<hmc_complex, complexdivide>() + 2 * ::get_flops<hmc_complex, complexmult>()
-					                          + 3 * get_flops<Spinorfield_eo, saxpy>(system);
-					cl_ulong flops_per_refresh = mf_flops + get_flops<Spinorfield_eo, saxpy>(system) + get_flops<Spinorfield_eo, scalar_product>(system);
-					cl_ulong total_flops = iter * flops_per_iter + refreshs * flops_per_refresh;
-					cl_ulong noWarmup_flops = (iter - 1) * flops_per_iter + (refreshs - 1) * flops_per_refresh;
-
-					//calculate bandwidth
-					const cl_ulong mf_bw = f.get_read_write_size();
-					logger.trace() << "mf_read_write_size: " << mf_bw;
-
-					cl_ulong bw_per_iter = mf_bw + 2 * get_read_write_size<Spinorfield_eo, scalar_product>(system)
-					                          + 2 * ::get_read_write_size<hmc_complex, complexdivide>() + 2 * ::get_read_write_size<hmc_complex, complexmult>()
-					                          + 3 * get_read_write_size<Spinorfield_eo, saxpy>(system);
-					cl_ulong bw_per_refresh = mf_flops + get_read_write_size<Spinorfield_eo, saxpy>(system) + get_read_write_size<Spinorfield_eo, scalar_product>(system);
-					cl_ulong total_bw = iter * bw_per_iter + refreshs * bw_per_refresh;
-					cl_ulong noWarmup_bw = (iter - 1) * bw_per_iter + (refreshs - 1) * bw_per_refresh;
-
-					reportPerformance_cg(iter, duration, duration_noWarmup, total_flops, noWarmup_flops, total_bw, noWarmup_bw);
-				}
-				log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
-				return iter;
+			  log_squarenorm(create_log_prefix_cg(iter) + "x (final): ", *x);
+			  return iter;
 			}
 
 			if(iter == 0) {
-				timer_noWarmup.reset();
+				solver.timer_noWarmup.reset();
 			}
 		}
 
@@ -322,7 +348,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 		log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
 	}
 
-	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+	logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << solver.maximalIterations << " iterations. Last resid: " << solver.resid;
 	throw physics::algorithms::solvers::SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
