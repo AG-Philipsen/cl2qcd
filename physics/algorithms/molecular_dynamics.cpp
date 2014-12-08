@@ -26,7 +26,7 @@
 #include <stdexcept>
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "../../meta/util.hpp"
-#include "solver.hpp"
+#include "solvers/solvers.hpp"
 #include "solver_shifted.hpp"
 #include "forces.hpp"
 #include "../../hardware/code/molecular_dynamics.hpp"

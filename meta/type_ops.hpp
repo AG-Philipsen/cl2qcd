@@ -146,5 +146,12 @@ template<> size_t get_flops<hmc_complex, complexmult>();
 template<> size_t get_flops<hmc_complex, complexadd>();
 template<> size_t get_flops<hmc_complex, complexsubtract>();
 template<> size_t get_flops<hmc_complex, complexdivide>();
+template<typename S, S (*T)(S)> size_t get_read_write_size();
+template<typename S, S (*T)(S,S)> size_t get_read_write_size();
+template<> size_t get_read_write_size<hmc_complex, complexconj>();
+template<> size_t get_read_write_size<hmc_complex, complexmult>();
+template<> size_t get_read_write_size<hmc_complex, complexadd>();
+template<> size_t get_read_write_size<hmc_complex, complexsubtract>();
+template<> size_t get_read_write_size<hmc_complex, complexdivide>();
 
 #endif /* _META_TYPE_OPS */

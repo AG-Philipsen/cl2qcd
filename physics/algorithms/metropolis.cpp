@@ -23,7 +23,7 @@
 
 #include "metropolis.hpp"
 
-#include "solver.hpp"
+#include "solvers/solvers.hpp"
 #include "solver_shifted.hpp"
 #include "../lattices/util.hpp"
 #include "../../meta/util.hpp"
