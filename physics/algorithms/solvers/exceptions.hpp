@@ -22,7 +22,7 @@
 #ifndef _PHYSICS_ALGORITHMS_SOLVER_EXCEPTIONS_
 #define _PHYSICS_ALGORITHMS_SOLVER_EXCEPTIONS_
 
-#include "../../executables/exceptions.h"
+#include "../../../executables/exceptions.h"
 
 namespace physics {
 namespace algorithms {
