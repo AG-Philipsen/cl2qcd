@@ -20,7 +20,6 @@
 
 // -alpha*x + y
 //CP: defined with a minus!!!
-__attribute__((reqd_work_item_size(64, 1, 1)))
 __kernel void saxpy_AND_gamma5_eo(__global const spinorStorageType * const x, __global const spinorStorageType * const y, const hmc_float alpha_re, const hmc_float alpha_im, __global spinorStorageType * const out)
 {
 	int id = get_global_id(0);
