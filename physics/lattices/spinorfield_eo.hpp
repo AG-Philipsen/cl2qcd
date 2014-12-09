@@ -270,6 +270,7 @@ void convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, co
 void convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd);
 
 void saxpy_AND_squarenorm(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y, const Scalar<hmc_complex>& squarenorm);
+void saxpy_AND_gamma5_eo(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y);
 
 /**
  * A utility function to log the tracenorm.

@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 			spinor * sf_in;
 			sf_in = new spinor[spinorfieldEvenOddElements];
 			
-			code->saxpy_AND_gamma5_eo_device(&in, &in2, &alpha, &out);
+			code->saxpy_AND_gamma5_eo_device(&in, &in2, alpha_host, &out);
 			out.dump(sf_in);
 			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
 	
