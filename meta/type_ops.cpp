@@ -123,3 +123,24 @@ template<> size_t get_flops<hmc_complex, complexdivide>()
 {
 	return 11;
 }
+
+template<> size_t get_read_write_size<hmc_complex, complexconj>()
+{
+	return 4*8;
+}
+template<> size_t get_read_write_size<hmc_complex, complexmult>()
+{
+	return 6*8;
+}
+template<> size_t get_read_write_size<hmc_complex, complexadd>()
+{
+	return 6*8;
+}
+template<> size_t get_read_write_size<hmc_complex, complexsubtract>()
+{
+	return 6*8;
+}
+template<> size_t get_read_write_size<hmc_complex, complexdivide>()
+{
+	return 6*8;
+}

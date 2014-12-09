@@ -52,6 +52,37 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	  }
 }
 
+KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, int numberOfValuesIn, int typeOfComparisonIn):
+  kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
+{
+	printKernelInformation(kernelNameIn);
+	parameters = createParameters(parameterStrings).release();
+
+	system = new hardware::System(*parameters);
+	device = system->get_devices()[0];
+	allocatedObjects = true;
+	
+	testPrecision = parameters->get_solver_prec();
+
+	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
+		if(iteration == 0) {
+			referenceValue[iteration] = parameters->get_test_ref_value();
+		} else if(iteration == 1) {
+			referenceValue[iteration] = parameters->get_test_ref_value2();
+		} else {
+			throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
+		}
+	}
+
+	if ( (typeOfComparisonIn == 1) || (typeOfComparisonIn == 2)  || (typeOfComparisonIn == 3) )
+	  {
+	    typeOfComparison = typeOfComparisonIn;
+	  } else
+	  {
+	    throw( std::invalid_argument("Do not recognize type of comparision. Aborting...") );
+	  }
+}
+
 KernelTester::KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
 	testPrecision(1e-8), typeOfComparison(1), kernelResult(0, 0), referenceValue(0, 0), allocatedObjects(false), parameters(parameters), system(system), device(device)
 {}

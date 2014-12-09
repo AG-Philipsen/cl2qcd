@@ -44,6 +44,17 @@ SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int 
 	setMembers();
 }
 
+SpinorTester::SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues, int typeOfComparision):
+  KernelTester(kernelName, parameterStrings, numberOfValues, typeOfComparision)
+	{
+	code = device->get_spinor_code();
+	prng = new physics::PRNG(*system);
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+	allocatedObjects = true;
+	
+	setMembers();
+}
+
 SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
 	KernelTester(parameters, system, device), allocatedObjects(false)
 {
@@ -79,6 +90,25 @@ void SpinorTester::fill_with_one(spinor * in, int size)
     in[i].e3.e0 = hmc_complex_one;
     in[i].e3.e1 = hmc_complex_one;
     in[i].e3.e2 = hmc_complex_one;
+  }
+  return;
+}
+
+void SpinorTester::fill_with_one_minusone_for_gamma5_use(spinor * in, int size)
+{
+  for(int i = 0; i < size; ++i) {
+    in[i].e0.e0 = hmc_complex_one;
+    in[i].e0.e1 = hmc_complex_one;
+    in[i].e0.e2 = hmc_complex_one;
+    in[i].e1.e0 = hmc_complex_one;
+    in[i].e1.e1 = hmc_complex_one;
+    in[i].e1.e2 = hmc_complex_one;
+    in[i].e2.e0 = hmc_complex_minusone;
+    in[i].e2.e1 = hmc_complex_minusone;
+    in[i].e2.e2 = hmc_complex_minusone;
+    in[i].e3.e0 = hmc_complex_minusone;
+    in[i].e3.e1 = hmc_complex_minusone;
+    in[i].e3.e2 = hmc_complex_minusone;
   }
   return;
 }
@@ -130,6 +160,14 @@ spinor * SpinorTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity()
   spinor * in;
   in = new spinor[spinorfieldElements];
   fill_with_one_eo(in, spinorfieldElements, evenOrOdd);
+  return in;
+}
+
+spinor * SpinorTester::createSpinorfieldWithOnesAndMinusOneForGamma5Use(size_t numberOfElements)
+{
+  spinor * in;
+  in = new spinor[numberOfElements];
+  fill_with_one_minusone_for_gamma5_use(in, numberOfElements);
   return in;
 }
 

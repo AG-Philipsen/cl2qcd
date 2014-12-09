@@ -19,7 +19,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "solver.hpp"
+#include "solvers/solvers.hpp"
 #include "solver_shifted.hpp"
 
 #include "../../host_functionality/logger.hpp"

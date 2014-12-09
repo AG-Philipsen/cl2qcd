@@ -401,6 +401,13 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 	auto spinor_code = devices[0]->get_spinor_code();
 	return spinor_code->get_flop_size("scalar_product_eoprec");
 }
+template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::scalar_product>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_read_write_size("scalar_product_eoprec");
+}
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System& system)
 {
@@ -409,14 +416,29 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 	auto spinor_code = devices[0]->get_spinor_code();
 	return spinor_code->get_flop_size("global_squarenorm_eoprec");
 }
+template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_read_write_size("global_squarenorm_eoprec");
+}
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_code();
-	return spinor_code->get_flop_size("sax_eoprec");
+	return spinor_code->get_read_write_size("sax_eoprec");
 }
+template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_read_write_size("sax_eoprec");
+}
+
 template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System& system)
 {
 	// assert single system
@@ -424,12 +446,27 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 	auto spinor_code = devices[0]->get_spinor_code();
 	return spinor_code->get_flop_size("saxpy_eoprec");
 }
+template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_read_write_size("saxpy_eoprec");
+}
+
 template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_code();
 	return spinor_code->get_flop_size("saxsbypz_eoprec");
+}
+template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System& system)
+{
+	// assert single system
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	return spinor_code->get_read_write_size("saxsbypz_eoprec");
 }
 
 void physics::lattices::log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield_eo& x)

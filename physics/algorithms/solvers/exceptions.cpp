@@ -1,6 +1,7 @@
-/*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+/** @FILE
+ *
+ * COPYRIGHT (C) 2012-2013 Christopher Pinke <pinke@th.uni-frankfurt.de>
+ * Copyright (c) 2012-2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -18,15 +19,16 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TESTUTILITIES_HPP_
-#define _TESTUTILITIES_HPP_
+#include "exceptions.hpp"
 
-#include <memory>
+#include <sstream>
 
-#include "../../meta/inputparameters.hpp"
+static std::string create_solver_stuck_message(int iterations);
+physics::algorithms::solvers::SolverStuck::SolverStuck(int iterations, std::string filename, int linenumber) : SolverException(create_solver_stuck_message(iterations), iterations, filename, linenumber) { }
 
-std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile);
-std::unique_ptr<meta::Inputparameters> createParameters(std::vector<std::string> parameterStrings);
-void printKernelInformation(std::string name);
-
-#endif // _TESTUTILITIES_HPP_
+static std::string create_solver_stuck_message(int iterations)
+{
+	std::ostringstream tmp;
+	tmp << "Solver got stuck after " << iterations << " iterations";
+	return tmp.str();
+}

@@ -153,68 +153,6 @@ const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
 }
 
 
-void test_dslash_and_gamma5_eo(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName = "dslash_AND_gamma5_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	auto params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(*params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	auto * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params->get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	out.load(sf_in);
-
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(params->get_read_multiple_configs()) {
-		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params->get_kappa() );
-	} else {
-		device->dslash_AND_gamma5_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params->get_kappa() );
-	}
-	in.dump(sf_out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, *params);
-	BOOST_MESSAGE("Test done");
-}
-
 void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 {
 	using namespace hardware::buffers;
@@ -471,16 +409,124 @@ BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_GAMMA5_EO )
+#include "FermionTester.hpp"
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_1)
-{
-	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_1");
-}
+BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_2)
-{
-	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_2");
-}
+	class SaxpyAndGamma5EvenOddTester : public FermionTester
+	{
+	public:
+		SaxpyAndGamma5EvenOddTester(std::vector<std::string> parameterStrings, uint num) :
+			FermionTester("saxpy_AND_gamma5", parameterStrings, 1)
+		{
+			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+			const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
+			hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
+			if (num == 1){
+				in.load(createSpinorfield(spinorfieldEvenOddElements));
+				in2.load(createSpinorfield(spinorfieldEvenOddElements));
+			}
+			else{
+				in.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
+				in2.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
+			}
+			alpha.load(&alpha_host);
+			
+			spinor * sf_in;
+			sf_in = new spinor[spinorfieldEvenOddElements];
+			
+			code->saxpy_AND_gamma5_eo_device(&in, &in2, &alpha, &out);
+			out.dump(sf_in);
+			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
+	
+			delete sf_in;
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=0", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_2)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_3)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_4)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_5)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_6)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_7)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_8)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=1536", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_9)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_10)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=3072.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_11)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_12)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=3072.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_13)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=1536.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+
+	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_14)
+	{
+		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=4608.", "--test_ref_val2=0"};
+		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+	}
+	
 BOOST_AUTO_TEST_SUITE_END()
