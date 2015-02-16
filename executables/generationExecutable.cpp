@@ -64,7 +64,7 @@ void generationExecutable::generateConfigurations()
 
 void generationExecutable::thermalize()
 {
-	logger.info() << "Start thermalization (" << thermalizationSteps << " tr.)...";
+	logger.info() << "Start thermalization (" << parameters.get_thermalizationsteps() << " tr.)...";
 	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
 	//With this try and catch the warning is printed only if the user wants to make thermalization steps, not always, but this makes sense
 	try
