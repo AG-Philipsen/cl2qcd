@@ -151,8 +151,26 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		logger.debug() << "start eoprec-inversion";
 		//even solution
 		if(params.get_solver() == meta::Inputparameters::cg) {
-		  Aee f_eo(params.get_kappa(), meta::get_mubar(params), system);
-		  converged = bicgstab(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec());
+		  try{
+		    Aee f_eo(params.get_kappa(), meta::get_mubar(params), system);
+		    converged = bicgstab(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec());
+		  }
+		  catch (physics::algorithms::solvers::SolverException& e ) {
+		    logger.fatal() << e.what();
+		    logger.info() << "Retry with CG...";
+		    //to use cg, one needs an hermitian matrix, which is QplusQminus
+		    //the source must now be gamma5 b, to obtain the desired solution in the end
+		    source_even.gamma5();
+		    QplusQminus_eo f_eo(params.get_kappa(), meta::get_mubar(params), system);
+		    converged = cg(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec());
+		    //now, calc Qminus result_buf_eo to obtain x = A^⁻1 b
+		    //therefore, use source as an intermediate buffer
+		    Qminus_eo qminus(params.get_kappa(), meta::get_mubar(params), system);
+		    qminus(&source_even, gf, result_eo);
+		    //save the result to result_buf
+		    copyData(&result_eo, source_even);
+		  }
+
 
 		  //for the moment, do it manually
 		  /*
