@@ -297,6 +297,91 @@ cl_ulong physics::fermionmatrix::Aee::get_read_write_size() const
 	logger.trace() << "Aee read-write size: " << res;
 	return res;
 }
+void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
+{
+	/**
+	 * This is the even-odd preconditioned fermion matrix with the
+	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
+	 * If one has fermionmatrix
+	 *  M = R + D,
+	 * then Aee is:
+	 * Aee = R_e - D_eo R_o_inv D_oe
+	 */
+
+	/** @todo The local creation of the temporary field is known to cause performance problems... */
+	const hardware::System& system = get_system();
+
+	hmc_float kappa = get_kappa();
+	hmc_float mubar = get_mubar();
+
+	switch(system.get_inputparameters().get_fermact()) {
+		case meta::action::wilson:
+			//in this case, the diagonal matrix is just 1 and falls away.
+			dslash(&tmp, gf, in, ODD, kappa);
+			dslash(out, gf, tmp, EVEN, kappa);
+			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, in);
+			break;
+		case meta::action::twistedmass:
+			dslash(&tmp, gf, in, ODD, kappa);
+			M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
+			dslash(out, gf, tmp2, EVEN, kappa);
+			M_tm_sitediagonal(&tmp, in, mubar);
+			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, tmp);
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+	}
+}
+cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_flops() const
+{
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	auto fermion_code = devices[0]->get_fermion_code();
+
+	cl_ulong res;
+	switch(system.get_inputparameters().get_fermact()) {
+		case meta::action::wilson:
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
+			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
+			break;
+		case meta::action::twistedmass:
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
+			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal");
+			res += fermion_code->get_flop_size("M_tm_sitediagonal");
+			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+	}
+	logger.trace() << "Aee_AND_gamma5_eo flops: " << res;
+	return res;
+}
+cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_read_write_size() const
+{
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	auto fermion_code = devices[0]->get_fermion_code();
+
+	cl_ulong res;
+	switch(system.get_inputparameters().get_fermact()) {
+		case meta::action::wilson:
+			res = 2 * fermion_code->get_read_write_size("dslash_eo");
+			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
+			break;
+		case meta::action::twistedmass:
+		        res = 2 * fermion_code->get_read_write_size("dslash_eo");
+			res += fermion_code->get_read_write_size("M_tm_inverse_sitediagonal");
+			res += fermion_code->get_read_write_size("M_tm_sitediagonal");
+			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+	}
+	logger.trace() << "Aee_AND_gamma5_eo read-write size: " << res;
+	return res;
+}
 void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
 {
 	/**
@@ -382,14 +467,98 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_read_write_size() const
 	logger.trace() << "Aee_minus read-write size: " << res;
 	return res;
 }
+void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
+{
+	/**
+	 * This is the even-odd preconditioned fermion matrix with the
+	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
+	 * If one has fermionmatrix
+	 *  M = R + D,
+	 * then Aee is:
+	 * Aee = R_e - D_eo R_o_inv D_oe
+	 */
+
+	/** @todo The local creation of the temporary field is known to cause performance problems... */
+	const hardware::System& system = get_system();
+
+	hmc_float kappa = get_kappa();
+	hmc_float mubar = get_mubar();
+
+	switch(system.get_inputparameters().get_fermact()) {
+		case meta::action::wilson:
+			//in this case, the diagonal matrix is just 1 and falls away.
+			dslash(&tmp, gf, in, ODD, kappa);
+			dslash(out, gf, tmp, EVEN, kappa);
+			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, in);
+			break;
+		case meta::action::twistedmass:
+			dslash(&tmp, gf, in, ODD, kappa);
+			M_tm_inverse_sitediagonal_minus(&tmp2, tmp, mubar);
+			dslash(out, gf, tmp2, EVEN, kappa);
+			M_tm_sitediagonal_minus(&tmp, in, mubar);
+			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, tmp);
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+	}
+}
+cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_flops() const
+{
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	auto fermion_code = devices[0]->get_fermion_code();
+
+	cl_ulong res;
+	switch(system.get_inputparameters().get_fermact()) {
+		case meta::action::wilson:
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
+			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
+			break;
+		case meta::action::twistedmass:
+			res = 2 * fermion_code->get_flop_size("dslash_eo");
+			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal_minus");
+			res += fermion_code->get_flop_size("M_tm_sitediagonal_minus");
+			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+	}
+	logger.trace() << "Aee_minus_AND_gamma5_eo flops: " << res;
+	return res;
+}
+cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_read_write_size() const
+{
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->get_spinor_code();
+	auto fermion_code = devices[0]->get_fermion_code();
+
+	cl_ulong res;
+	switch(system.get_inputparameters().get_fermact()) {
+		case meta::action::wilson:
+			res = 2 * fermion_code->get_read_write_size("dslash_eo");
+			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
+			break;
+		case meta::action::twistedmass:
+		        res = 2 * fermion_code->get_read_write_size("dslash_eo");
+			res += fermion_code->get_read_write_size("M_tm_inverse_sitediagonal_minus");
+			res += fermion_code->get_read_write_size("M_tm_sitediagonal_minus");
+			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+	}
+	logger.trace() << "Aee_minus_AND_gamma5_eo read-write size: " << res;
+	return res;
+}
 void physics::fermionmatrix::Qplus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
 {
 	if(get_system().get_inputparameters().get_use_merge_kernels_fermion() == false) {
 		aee(out, gf, in);
 		out->gamma5();
 	} else {
-		throw Print_Error_Message("kernel merging not implemented for Qplus", __FILE__, __LINE__);
-		//Aee_AND_gamma5_eo(in, out, gf, kappa, mubar);
+		aee_AND_gamma5_eo(out, gf, in);
 	}
 }
 cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
@@ -409,8 +578,7 @@ void physics::fermionmatrix::Qminus_eo::operator()(const physics::lattices::Spin
 		aee_minus(out, gf, in);
 		out->gamma5();
 	} else {
-		throw Print_Error_Message("kernel merging not implemented for Qminus", __FILE__, __LINE__);
-		//Aee_minus_AND_gamma5_eo(in, out, gf, kappa, mubar);
+		aee_minus_AND_gamma5_eo(out, gf, in);
 	}
 }
 cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const

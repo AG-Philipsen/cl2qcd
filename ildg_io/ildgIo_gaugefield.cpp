@@ -76,7 +76,7 @@ void* createVoidPointerFromString(std::string stringIn) noexcept
 
 IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue): LimeFileWriter(filenameIn)
 {
-	logger.info() << "writing gaugefield to lime-file \""  + filenameIn + "\"";
+  logger.info() << "writing gaugefield at tr. " << trajectoryNumber << " to lime-file \""  + filenameIn + "\"";
 	
 	size_t numberOfElements = getNumberOfElements_gaugefield(parameters);
 	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);

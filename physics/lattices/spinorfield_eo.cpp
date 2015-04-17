@@ -280,6 +280,31 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_comple
 	}
 }
 
+void physics::lattices::saxpy_AND_gamma5_eo(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y )
+{
+	logger.trace() << "calling saxpy and g5";
+	auto x_bufs = x.get_buffers();
+	auto y_bufs = y.get_buffers();
+	auto out_bufs = out->get_buffers();
+
+	if(out_bufs.size() != x_bufs.size() || out_bufs.size() != y_bufs.size()) {
+		throw std::invalid_argument("Output buffers does not use same devices as input buffers");
+	}
+
+	for(size_t i = 0; i < out_bufs.size(); ++i) {
+		auto out_buf = out_bufs[i];
+		auto device = out_buf->get_device();
+		device->get_fermion_code()->saxpy_AND_gamma5_eo_device(x_bufs[i], y_bufs[i], alpha, out_buf);
+	}
+
+	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
+	if(valid_halo_width) {
+		out->mark_halo_clean(valid_halo_width);
+	} else {
+		out->mark_halo_dirty();
+	}
+}
+
 void physics::lattices::sax(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x)
 {
 	const Scalar<hmc_complex> alpha_buf(out->system);

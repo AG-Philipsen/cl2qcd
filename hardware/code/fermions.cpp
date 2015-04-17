@@ -124,6 +124,15 @@ void hardware::code::Fermions::clear_kernels()
 void hardware::code::Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
+	
+	//Query specific sizes for kernels if needed
+	if(kernel == saxpy_AND_gamma5_eo){
+		if(*ls > 64) {
+			*ls = 64;
+			*num_groups = (*gs)/(*ls);
+		}
+		return;
+	}
 }
 
 
@@ -238,99 +247,6 @@ void hardware::code::Fermions::gamma5_device(const hardware::buffers::Plain<spin
 	get_device()->enqueue_kernel(gamma5 , gs2, ls2);
 }
 
-//merged fermionmatrix-functions with eoprec
-//void hardware::code::Fermions::Aee_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
-//{
-//	int even = EVEN;
-//	int odd = ODD;
-//
-//	auto spinor_code = get_device()->get_spinor_code();
-//
-//	/**
-//	 * This is the even-odd preconditioned fermion matrix with the
-//	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
-//	 * If one has fermionmatrix
-//	 *  M = R + D,
-//	 * then Aee is:
-//	 * Aee = R_e - D_eo R_o_inv D_oe
-//	 */
-//	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-//		//in this case, the diagonal matrix is just 1 and falls away.
-//		//this case has not been adjusted for the merged kernels yet...
-//		logger.warn() << "No merged kernels implemented for pure Wilson case!";
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-//		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
-//		gamma5_eo_device(out);
-//	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-//		/*
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		M_tm_inverse_sitediagonal_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, mubar);
-//		*/
-//		dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, &clmem_tmp_eo_2, gf, odd, kappa, mubar);
-//		/*
-//		dslash_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		gamma5_eo_device(out);
-//		*/
-//		dslash_AND_gamma5_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		/*
-//		M_tm_sitediagonal_device(in, &clmem_tmp_eo_1, mubar);
-//		gamma5_eo_device(&clmem_tmp_eo_1);
-//		*/
-//		M_tm_sitediagonal_AND_gamma5_eo_device(in, &clmem_tmp_eo_1, mubar);
-//		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
-//	}
-//}
-
-///**
-// *  This is the equivalent of the above function, but for the lower
-// *  flavour, which essentially means mu -> -mu in the tm-case and
-// *  no changes in the meta::Inputparameters::wilson case.
-// */
-//void hardware::code::Fermions::Aee_minus_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
-//{
-//	int even = EVEN;
-//	int odd = ODD;
-//
-//	auto spinor_code = get_device()->get_spinor_code();
-//
-//	/**
-//	 * This is the even-odd preconditioned fermion matrix with the
-//	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
-//	 * If one has fermionmatrix
-//	 *  M = R + D,
-//	 * then Aee is:
-//	 * Aee = R_e - D_eo R_o_inv D_oe
-//	 */
-//	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-//		//in this case, the diagonal matrix is just 1 and falls away.
-//		//this case has not been adjusted for the merged kernels yet...
-//		logger.warn() << "No merged kernels implemented for pure Wilson case!";
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-//		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
-//		gamma5_eo_device(out);
-//	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-//		/*
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		M_tm_inverse_sitediagonal_minus_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, mubar);
-//		*/
-//		dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, &clmem_tmp_eo_2, gf, odd, kappa, mubar);
-//		/*
-//		dslash_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		gamma5_eo_device(out);
-//		*/
-//		dslash_AND_gamma5_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		/*
-//		M_tm_sitediagonal_minus_device(in, &clmem_tmp_eo_1, mubar);
-//		gamma5_eo_device(&clmem_tmp_eo_1);
-//		*/
-//		M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, &clmem_tmp_eo_1, mubar);
-//		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
-//	}
-//}
-
-
 //explicit eoprec fermionmatrix functions
 void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor * inout) const
 {
@@ -345,7 +261,7 @@ void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor 
 	get_device()->enqueue_kernel( gamma5_eo, gs2, ls2);
 }
 
-void hardware::code::Fermions::saxpy_AND_gamma5_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out) const
+void hardware::code::Fermions::saxpy_AND_gamma5_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hmc_complex alpha, const hardware::buffers::Spinor * out) const
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -358,10 +274,13 @@ void hardware::code::Fermions::saxpy_AND_gamma5_eo_device(const hardware::buffer
 	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 1, sizeof(cl_mem), y->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 2, sizeof(cl_mem), alpha->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 2, sizeof(hmc_float), &alpha.re);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 3, sizeof(cl_mem), out->get_cl_buffer());
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 3, sizeof(hmc_float), &alpha.im);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 4, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( saxpy_AND_gamma5_eo, gs2, ls2);
