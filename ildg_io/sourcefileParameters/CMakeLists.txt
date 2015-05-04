@@ -30,6 +30,7 @@ target_link_libraries(sourcefileParameters
 	logger
 	exceptions
 	meta
+	${LIBXML2_LIBRARIES}
 )
 
 add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test sourcefileParameters)
