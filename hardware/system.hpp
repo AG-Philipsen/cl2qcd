@@ -71,7 +71,7 @@ namespace hardware {
 		 * \param inputparams The inputparameters of the application
 		 * \param enableProfiling Whether we want to use profiling
 		 */
-		explicit System(const meta::Inputparameters&, bool enable_profiling = false);
+		explicit System(const meta::Inputparameters&, const bool enable_profiling = false);
 
 		~System();
 
@@ -137,6 +137,10 @@ namespace hardware {
 		size_4 grid_size;
 
 		mutable std::map<std::tuple<size_t,size_t,unsigned>,std::unique_ptr<Transfer>> transfer_links;
+
+		void initOpenCLPlatforms();
+		void initOpenCLContext();
+		void initOpenCLDevices( const bool );
 	};
 
 	/**
