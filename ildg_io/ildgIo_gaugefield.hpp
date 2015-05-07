@@ -62,7 +62,6 @@ namespace ildgIo {
 	{
 	public:
 		IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue);
-		void verifyWrite(const std::vector<Matrixsu3> & data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue);
 	};
 	
 	Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
