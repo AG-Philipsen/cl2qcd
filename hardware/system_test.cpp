@@ -69,11 +69,17 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(enoughDevicesExist)
+	BOOST_AUTO_TEST_CASE(staticCastToPlatform)
 	{
 		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
 		hardware::System system(params);
 		BOOST_REQUIRE(static_cast<const cl_context>(system));
+	}
+
+	BOOST_AUTO_TEST_CASE(enoughDevicesExist)
+	{
+		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
+		hardware::System system(params);
 		atLeastOneDeviceMustExistForSanityOfSystem( &system );
 	}
 
@@ -81,7 +87,6 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 	{
 		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
 		hardware::System system(params);
-		BOOST_REQUIRE(static_cast<const cl_context>(system));
 		allDevicesMustSupportDoublePrecisionForSanityOfSystem( &system );
 	}
 
