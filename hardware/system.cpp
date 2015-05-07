@@ -31,17 +31,12 @@
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling);
 static size_4 calculate_grid_size(size_t num_devices);
+static void setDebugEnvironmentVariables();
 
 hardware::System::System(const meta::Inputparameters& params, const bool enable_profiling)
 	: params(params), grid_size(0, 0, 0, 0), transfer_links()
 {
-	using namespace hardware;
-
-	// in debug scenarios make the compiler dump the compile results
-	if( logger.beDebug() ) {
-		setenv("GPU_DUMP_DEVICE_KERNEL", "3", 0); // can be overriden from outside
-		setenv("AMD_OCL_BUILD_OPTIONS_APPEND", "-save-temps", 0); // can be overriden from outside
-	}
+	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
 	initOpenCLDevices(enable_profiling);
@@ -52,7 +47,8 @@ void hardware::System::initOpenCLPlatforms()
 	logger.debug() << "Init OpenCL platform(s)...";
 	cl_uint numberOfAvailablePlatforms = 0;
 	cl_int err = clGetPlatformIDs(1, &platform, &numberOfAvailablePlatforms);
-	if(err) {
+	if(err)
+	{
 		throw OpenclException(err, "clGetPlatformIDs", __FILE__, __LINE__);
 	}
 	if (numberOfAvailablePlatforms > 1)
@@ -66,27 +62,29 @@ void hardware::System::initOpenCLPlatforms()
 	logger.debug() << "...done";
 }
 
+cl_device_type restrictDeviceTypes( const meta::Inputparameters & parameters)
+{
+	// todo: does this cover all cases?
+	cl_device_type enabled_types = 0;
+	if(parameters.get_use_gpu()) {
+		enabled_types |= CL_DEVICE_TYPE_GPU;
+	}
+	if(parameters.get_use_cpu()) {
+		enabled_types |= CL_DEVICE_TYPE_CPU;
+	}
+	return enabled_types;
+}
+
 void hardware::System::initOpenCLContext()
 {
 	logger.debug() << "Init OpenCL context...";
 	cl_int err = CL_SUCCESS;
-	cl_context_properties context_props[3] = {
-		CL_CONTEXT_PLATFORM,
-		(cl_context_properties)platform,
-		0
-	};
-	// restrict devices according to input parameters
-	// todo: does this cover all cases?
-	cl_device_type enabled_types = 0;
-	if(params.get_use_gpu()) {
-		enabled_types |= CL_DEVICE_TYPE_GPU;
-	}
-	if(params.get_use_cpu()) {
-		enabled_types |= CL_DEVICE_TYPE_CPU;
-	}
-	// create devices
+	cl_context_properties context_props[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
+	cl_device_type enabled_types = restrictDeviceTypes( params );
+
 	context = clCreateContextFromType(context_props, enabled_types, 0, 0, &err);
-	if(err) {
+	if(err)
+	{
 		throw OpenclException(err, "clCreateContextFromType", __FILE__, __LINE__);
 	}
 	logger.debug() << "...done";
@@ -99,13 +97,16 @@ void hardware::System::initOpenCLDevices(const bool enable_profiling)
 
 	cl_uint num_devices;
 	err = clGetContextInfo(context, CL_CONTEXT_NUM_DEVICES, sizeof(cl_uint), &num_devices, 0);
-	if(err) {
+	if(err)
+	{
 		throw OpenclException(err, "clGetContextInfo", __FILE__, __LINE__);
 	}
 	logger.info() << "Found " << num_devices << " OpenCL devices.";
+
 	cl_device_id * device_ids = new cl_device_id[num_devices];
 	err = clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_device_id) * num_devices, device_ids, 0);
-	if(err) {
+	if(err)
+	{
 		throw OpenclException(err, "clGetContextInfo", __FILE__, __LINE__);
 	}
 
@@ -113,11 +114,9 @@ void hardware::System::initOpenCLDevices(const bool enable_profiling)
 	auto selection = params.get_selected_devices();
 	std::list<DeviceInfo> device_infos;
 	if(selection.empty()) {
-		logger.fatal() << "here";
 		// use all (or up to max)
 		size_t max_devices = params.get_device_count();
 		for(cl_uint i = 0; i < num_devices && (!max_devices || device_infos.size() < max_devices); ++i) {
-			logger.fatal() << i;
 			DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
 			if(!dev.is_double_supported()) {
@@ -126,7 +125,6 @@ void hardware::System::initOpenCLDevices(const bool enable_profiling)
 			}
 #endif
 			device_infos.push_back(dev);
-			logger.fatal() << device_infos.size();
 		}
 		// for now, if a gpu was found then throw out cpus
 for(auto device: device_infos) {
@@ -173,7 +171,6 @@ for(auto device: device_infos) {
 		}
 	}
 
-	logger.fatal() << device_infos.size();
 	grid_size = calculate_grid_size(device_infos.size());
 	logger.info() << "Device grid layout: " << grid_size;
 
@@ -308,3 +305,18 @@ cl_platform_id hardware::System::get_platform() const
 {
 	return platform;
 }
+
+static void makeCompilerDumbCompileResults()
+{
+	const bool overwriteExistingSettings = false;
+	setenv("GPU_DUMP_DEVICE_KERNEL", "3", overwriteExistingSettings);
+	setenv("AMD_OCL_BUILD_OPTIONS_APPEND", "-save-temps", overwriteExistingSettings);
+}
+
+static void setDebugEnvironmentVariables()
+{
+	if( logger.beDebug() ) {
+		makeCompilerDumbCompileResults();
+	}
+}
+
