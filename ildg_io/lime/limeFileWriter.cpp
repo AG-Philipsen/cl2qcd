@@ -35,11 +35,20 @@ LimeFileWriter::LimeFileWriter(std::string filenameIn) : LimeFile_basic(filename
 	writer = limeCreateWriter(outputfile);
 }
 
-LimeFileWriter::~LimeFileWriter()
+void LimeFileWriter::closeLimeFile()
 {
 	fclose(outputfile);
 	limeDestroyWriter(writer);
+	writer = NULL;
 	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
+}
+
+LimeFileWriter::~LimeFileWriter()
+{
+	if (writer != NULL)
+	{
+		closeLimeFile();
+	}
 }
 
 void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)

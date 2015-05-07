@@ -77,7 +77,7 @@ Sourcefileparameters setSourceFileParametersToSpecificValuesForGaugefield()
 }
 
 // one cannot expect that hmcVersion, date, time and time_solver will match..
-// not implemented or fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
+// not implemented are fermion parameters: solvertype_source, hmcversion_solver_source, flavours_source, noiter_source, kappa_solver_source, mu_solver_source, epssq_source
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( writeGaugefield_metaData, 12 )
 
 void compareTwoSourcefileParameters(Sourcefileparameters toCheck1, Sourcefileparameters toCheck2)
@@ -413,15 +413,15 @@ BOOST_AUTO_TEST_SUITE(writeAndRead)
 
 	BOOST_AUTO_TEST_CASE(writeAndRead_1)
 	{
-		testWriteRead(3,3);
+		testWriteRead(2,3);
 	}
 	BOOST_AUTO_TEST_CASE(writeAndRead_2)
 	{
-		testWriteRead(3,5);
+		testWriteRead(3,2);
 	}
 	BOOST_AUTO_TEST_CASE(writeAndRead_3)
 	{
-		testWriteRead(5,3);
+		testWriteRead(2,1);
 	}
 	
 BOOST_AUTO_TEST_SUITE_END()
