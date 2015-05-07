@@ -1,7 +1,7 @@
 /** @file
  * Ranlux PRNG unit test
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2015 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -27,6 +27,37 @@
 #define BOOST_TEST_MODULE physics::PRNG
 #include <boost/test/unit_test.hpp>
 
+void verifyBothBuffersAreEquallyLarge( const hardware::buffers::PRNGBuffer* buf1, const hardware::buffers::PRNGBuffer* buf2 )
+{
+	size_t const buf1_bytes = buf1->get_bytes();
+	size_t const buf2_bytes = buf2->get_bytes();
+	BOOST_REQUIRE_EQUAL(buf1_bytes, buf2_bytes);
+}
+
+hardware::buffers::PRNGBuffer::prng_state_t * createPrngState( const size_t buffer_size)
+{
+	return new hardware::buffers::PRNGBuffer::prng_state_t[buffer_size];
+}
+
+void verifyBuffersAreDifferent( const hardware::buffers::PRNGBuffer* buf1, const hardware::buffers::PRNGBuffer* buf2 )
+{
+	size_t const buf_size = buf1->get_bytes() / sizeof(hardware::buffers::PRNGBuffer::prng_state_t);
+
+	auto prng1_state = createPrngState( buf_size);
+	auto prng2_state = createPrngState( buf_size);
+
+	buf1->dump(prng1_state);
+	buf2->dump(prng2_state);
+
+	// check that sufficiently small blocks don't match
+	for(size_t i = 0; i < buf_size; ++i) {
+		BOOST_CHECK_NE(prng1_state[i], prng2_state[i]);
+	}
+
+	delete[] prng1_state;
+	delete[] prng2_state;
+}
+
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace physics;
@@ -43,33 +74,13 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
 
-	logger.info() << "Now checking buffers";
-
+	logger.info() << "Now checking buffers...";
 	for(size_t i = 0; i < prng.get_buffers().size(); ++i) {
-		auto buf1 = prng.get_buffers().at(i);
-		auto buf2 = prng2.get_buffers().at(i);
-
-		size_t const buf1_bytes = buf1->get_bytes();
-		size_t const buf2_bytes = buf2->get_bytes();
-		BOOST_REQUIRE_EQUAL(buf1_bytes, buf2_bytes);
-
-		size_t const buf_size = buf1_bytes / sizeof(hardware::buffers::PRNGBuffer::prng_state_t);
-
-		hardware::buffers::PRNGBuffer::prng_state_t* prng1_state = new hardware::buffers::PRNGBuffer::prng_state_t[buf_size];
-		buf1->dump(prng1_state);
-
-		hardware::buffers::PRNGBuffer::prng_state_t* prng2_state = new hardware::buffers::PRNGBuffer::prng_state_t[buf2->get_bytes()];
-		buf2->dump(prng2_state);
-
-		// check that sufficiently small blocks don't match
-		for(size_t i = 0; i < buf_size; ++i) {
-			BOOST_CHECK_NE(prng1_state[i], prng2_state[i]);
-		}
+		verifyBothBuffersAreEquallyLarge( prng.get_buffers().at(i), prng2.get_buffers().at(i) );
+		verifyBuffersAreDifferent( prng.get_buffers().at(i), prng2.get_buffers().at(i) );
 		logger.info() << "Checked buffer " << i;
-
-		delete[] prng1_state;
-		delete[] prng2_state;
 	}
+	logger.info() << "...done";
 }
 
 BOOST_AUTO_TEST_CASE(store_and_resume)
