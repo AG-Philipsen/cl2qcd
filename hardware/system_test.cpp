@@ -1,7 +1,8 @@
 /** @file
  * Testcases for the hardware::System class
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
+ * 	2015 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -27,15 +28,15 @@
 #include "system.hpp"
 #include "device.hpp"
 
+const char * dummyRuntimeArguments[] = {"foo"};
+const int dummyNumberOfRuntimeArguments = 1;
+
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	using namespace hardware;
-
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
+	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
 
 	// test it doesn't blow up
-	System system(params);
+	hardware::System system( params );
 
 	// and the inputparameters should be the provided ones
 	BOOST_REQUIRE_EQUAL(&system.get_inputparameters(), &params);
@@ -100,18 +101,24 @@ for(Device * device : devices6) {
 	}
 }
 
+void checkOnProperEnvironmentSettings()
+{
+	BOOST_REQUIRE_EQUAL(std::string("3"), std::string(getenv("GPU_DUMP_DEVICE_KERNEL")));
+	BOOST_REQUIRE_NE(std::string(getenv("AMD_OCL_BUILD_OPTIONS_APPEND")).find("-save-temps"), -1);
+}
+
 BOOST_AUTO_TEST_CASE(dump_source_if_debugging)
 {
-	using namespace hardware;
-	using std::string;
-
 	const char * _params[] = {"foo", "--log-level=debug"};
 	meta::Inputparameters params(2, _params);
-	System system(params);
+	hardware::System system(params);
 
 	if(logger.beDebug()) {
-		// check on proper environment variables
-		BOOST_REQUIRE_EQUAL(string("3"), string(getenv("GPU_DUMP_DEVICE_KERNEL")));
-		BOOST_REQUIRE_NE(string(getenv("AMD_OCL_BUILD_OPTIONS_APPEND")).find("-save-temps"), -1);
+		checkOnProperEnvironmentSettings();
+	}
+	else
+	{
+		BOOST_TEST_MESSAGE( "Something went wrong, logger not in debug mode..." );
+		BOOST_REQUIRE_EQUAL(0, 1);
 	}
 }
