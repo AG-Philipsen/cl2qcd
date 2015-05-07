@@ -92,7 +92,7 @@ void hardware::System::initOpenCLContext()
 
 void hardware::System::initOpenCLDevices(const bool enable_profiling)
 {
-	logger.debug() << "Init OpenCL context...";
+	logger.debug() << "Init OpenCL devices...";
 	cl_int err = CL_SUCCESS;
 
 	cl_uint num_devices;
