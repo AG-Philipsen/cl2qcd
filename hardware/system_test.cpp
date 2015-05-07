@@ -26,26 +26,7 @@
 
 #include "system.hpp"
 #include "device.hpp"
-
-const char * dummyRuntimeArguments[] = {"foo"};
-const int dummyNumberOfRuntimeArguments = 1;
-
-void broadcastMessage_warn(const std::string message)
-{
-	logger.warn() << message;
-	BOOST_TEST_MESSAGE( message );
-}
-
-void broadcastMessage_fatal(const std::string message)
-{
-	logger.fatal() << message;
-	BOOST_TEST_MESSAGE( message );
-}
-
-void failTest()
-{
-	BOOST_REQUIRE_EQUAL(true, false);
-}
+#include "hardware_test_util.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -55,11 +36,6 @@ BOOST_AUTO_TEST_CASE(initialization)
 }
 
 BOOST_AUTO_TEST_SUITE(systemSanity)
-
-	void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System * system)
-	{
-		BOOST_REQUIRE_GE(system->get_devices().size(), 1);
-	}
 
 	void allDevicesMustSupportDoublePrecisionForSanityOfSystem(const hardware::System * system)
 	{
