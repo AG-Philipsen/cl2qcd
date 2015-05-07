@@ -21,11 +21,14 @@
  */
 
 #include "prng.hpp"
+#include "../hardware/code/testUtilities.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::PRNG
 #include <boost/test/unit_test.hpp>
+
+using namespace physics;
 
 void verifyBothBuffersAreEquallyLarge( const hardware::buffers::PRNGBuffer* buf1, const hardware::buffers::PRNGBuffer* buf2 )
 {
@@ -60,17 +63,15 @@ void verifyBuffersAreDifferent( const hardware::buffers::PRNGBuffer* buf1, const
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	using namespace physics;
+	std::vector<std::string> parameterStrings {"--host_seed=13"};
+	auto parameters = createParameters(parameterStrings).release();
+	auto system = new hardware::System(*parameters);
+	PRNG prng(*system);
 
-	const char * _params[] = {"foo", "--host_seed=13"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	PRNG prng(system);
-
-	const char * _params2[] = {"foo", "--host_seed=14"};
-	meta::Inputparameters params2(2, _params2);
-	hardware::System system2(params2);
-	PRNG prng2(system2);
+	std::vector<std::string> parameterStrings2 {"--host_seed=14"};
+	auto parameters2 = createParameters(parameterStrings2).release();
+	auto system2 = new hardware::System(*parameters2);
+	PRNG prng2(*system2);
 
 	BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
 
@@ -85,29 +86,23 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 BOOST_AUTO_TEST_CASE(store_and_resume)
 {
-	using namespace physics;
+	std::vector<std::string> parameterStrings {"--host_seed=5"};
+	auto parameters = createParameters(parameterStrings).release();
+	auto system = new hardware::System(*parameters);
 
-	const char * _params[] = {"foo", "--host_seed=5"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-
-	PRNG prng(system);
+	PRNG prng(*system);
 	prng.store("tmp.prngstate");
 
 	double prng1_res = prng.get_double();
 
-	const char * _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
-	meta::Inputparameters params2(2, _params2);
-	hardware::System system2(params2);
+	std::vector<std::string> parameterStrings2 {"--initial_prng_state=tmp.prngstate"};
+	auto parameters2 = createParameters(parameterStrings2).release();
+	auto system2 = new hardware::System(*parameters2);
+	PRNG prng2(*system2);
 
-	PRNG prng2(system2);
+	BOOST_CHECK_EQUAL(prng1_res, prng2.get_double());
 
-	double prng2_res = prng2.get_double();
-
-	BOOST_CHECK_EQUAL(prng1_res, prng2_res);
-
-	logger.info() << "Now checking buffers";
-
+	logger.info() << "Now checking buffers...";
 	for(size_t i = 0; i < prng.get_buffers().size(); ++i) {
 		auto buf1 = prng.get_buffers().at(i);
 		auto buf2 = prng2.get_buffers().at(i);
@@ -124,4 +119,5 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 		delete[] prng1_state;
 		delete[] prng2_state;
 	}
+	logger.info() << "...done";
 }
