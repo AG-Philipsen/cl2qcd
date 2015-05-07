@@ -82,8 +82,8 @@ namespace physics {
 			 */
 			void saveToSpecificFile(int number);
 
-			bool operator == (const physics::PRNG & prng);
-			bool operator != (const physics::PRNG & prng);
+			bool operator == (const physics::PRNG & prng) const;
+			bool operator != (const physics::PRNG & prng) const;
 		private:
 			/**
 			 * Reference to the PRNG Buffers used on each device

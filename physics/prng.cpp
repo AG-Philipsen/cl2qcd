@@ -234,6 +234,22 @@ void physics::gaussianComplexVector(hmc_complex * vector, int length, hmc_float 
 	// SL: not yet tested
 }
 
+void verifyWritingWasSuccessful(const physics::PRNG & in, const std::string filename)
+{
+	logger.info() << "re-reading prng state from file \"" << filename << "\" to verify writing...";
+	std::string tmp = "--initial_prng_state=" + filename;
+	const char * _params2[] = {"foo", tmp.c_str() };
+	meta::Inputparameters parameters2(2, _params2);
+	hardware::System system2(parameters2);
+	const physics::PRNG prng2(system2);
+	if (in != prng2)
+	{
+		logger.fatal() << "Writing of prng file not successful! Aborting...";
+		throw File_Exception(filename);
+	}
+	logger.info() << "...done";
+}
+
 void physics::PRNG::store(const std::string filename) const
 {
 	logger.info() << "saving current prng state to file \"" << filename << "\"";
@@ -256,6 +272,10 @@ void physics::PRNG::store(const std::string filename) const
 		file << '\n';
 		delete[] state;
 	}
+
+	file.close();
+
+	verifyWritingWasSuccessful(*this, filename);
 }
 
 void physics::PRNG::save()
@@ -270,7 +290,7 @@ void physics::PRNG::saveToSpecificFile(int number)
 	store(outputfile);
 }
 
-bool physics::PRNG::operator == (const physics::PRNG & prng)
+bool physics::PRNG::operator == (const physics::PRNG & prng) const
 {
 	for(size_t i = 0; i < this->get_buffers().size(); ++i) {
 		auto buf1 = this->get_buffers().at(i);
@@ -296,7 +316,7 @@ bool physics::PRNG::operator == (const physics::PRNG & prng)
 	return true;
 }
 
-bool physics::PRNG::operator != (const physics::PRNG & prng)
+bool physics::PRNG::operator != (const physics::PRNG & prng) const
 {
 	return *this == prng ? false : true;
 }

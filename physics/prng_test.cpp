@@ -91,10 +91,17 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 	PRNG prng(system);
 	prng.store("tmp.prngstate");
 
+	double tmp = prng.get_double();
+
 	const char * _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
 	meta::Inputparameters parameters2(2, _params2);
 	hardware::System system2(parameters2);
 	PRNG prng2(system2);
+	double tmp2 = prng2.get_double();
+
+	logger.fatal() << tmp << " " << tmp2;
+
+	BOOST_CHECK_EQUAL(tmp, tmp2);
 
 	BOOST_REQUIRE_EQUAL(prng == prng2, true);
 }
