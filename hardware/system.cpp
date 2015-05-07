@@ -207,6 +207,7 @@ const meta::Inputparameters& hardware::System::get_inputparameters() const noexc
 hardware::OpenclException::OpenclException(int err)
 {
 	std::stringstream msg;
+	errorCode = err;
 	msg << "OpenCL reported an error, error code: " << err;
 	error_message = msg.str();
 	logger.error() << error_message;
@@ -214,6 +215,7 @@ hardware::OpenclException::OpenclException(int err)
 
 hardware::OpenclException::OpenclException(int err, std::string clname)
 {
+	errorCode = err;
 	std::stringstream msg;
 	msg << "OpenCL reported an error in " << clname << ", error code: " << err;
 	error_message = msg.str();
@@ -222,6 +224,7 @@ hardware::OpenclException::OpenclException(int err, std::string clname)
 
 hardware::OpenclException::OpenclException(int err, std::string clname, std::string filename, int linenumber)
 {
+	errorCode = err;
 	std::stringstream msg;
 	msg << "OpenCL failed. Error code " << err << " in " << clname << " at " << filename << ":" << linenumber;
 	error_message = msg.str();

@@ -47,6 +47,7 @@ namespace hardware {
 			OpenclException(int clerr, std::string clname);
 			OpenclException(int clerr, std::string clname, std::string filename, int linenumber);
 			std::string what();
+			int errorCode;
 		private:
 			std::string error_message;
 	};

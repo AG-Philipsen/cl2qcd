@@ -30,6 +30,23 @@
 const char * dummyRuntimeArguments[] = {"foo"};
 const int dummyNumberOfRuntimeArguments = 1;
 
+void broadcastMessage_warn(const std::string message)
+{
+	logger.warn() << message;
+	BOOST_TEST_MESSAGE( message );
+}
+
+void broadcastMessage_fatal(const std::string message)
+{
+	logger.fatal() << message;
+	BOOST_TEST_MESSAGE( message );
+}
+
+void failTest()
+{
+	BOOST_REQUIRE_EQUAL(true, false);
+}
+
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
@@ -39,31 +56,31 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 BOOST_AUTO_TEST_SUITE(systemSanity)
 
-	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-	hardware::System system(params);
-
 	void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System * system)
 	{
-		const std::vector<hardware::Device*>& devices = system->get_devices();
-		BOOST_REQUIRE_GE(devices.size(), 1);
+		BOOST_REQUIRE_GE(system->get_devices().size(), 1);
 	}
 
 	void allDevicesMustSupportDoublePrecisionForSanityOfSystem(const hardware::System * system)
 	{
-		const std::vector<hardware::Device*>& devices = system->get_devices();
-		for(hardware::Device * device : devices) {
+		for(hardware::Device * device : system->get_devices())
+		{
 			BOOST_REQUIRE_EQUAL(device->is_double_supported(), true);
 		}
 	}
 
 	BOOST_AUTO_TEST_CASE(enoughDevicesExist)
 	{
+		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
+		hardware::System system(params);
 		BOOST_REQUIRE(static_cast<const cl_context>(system));
 		atLeastOneDeviceMustExistForSanityOfSystem( &system );
 	}
 
 	BOOST_AUTO_TEST_CASE(allDevicesHaveDoubleSupport)
 	{
+		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
+		hardware::System system(params);
 		BOOST_REQUIRE(static_cast<const cl_context>(system));
 		allDevicesMustSupportDoublePrecisionForSanityOfSystem( &system );
 	}
@@ -72,44 +89,87 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(devices)
 
-	BOOST_AUTO_TEST_CASE(devices)
+	void checkThatOnlySpecifiedNumberOfDevicesIsInitialized(const int totalNumberOfDevicesInSystem)
+	{
+		for( int desiredNumberOfDevices = 1; desiredNumberOfDevices <= totalNumberOfDevicesInSystem; desiredNumberOfDevices ++)
 		{
+			const std::string tmp = ("--num_dev=" + std::to_string( desiredNumberOfDevices ) );
+			const char * _params[] = {"foo", tmp.c_str()};
+			meta::Inputparameters params(2, _params);
+			hardware::System system(params);
+			BOOST_REQUIRE_EQUAL( system.get_devices().size() , desiredNumberOfDevices);
+		}
+	}
 
-		using namespace hardware;
+	BOOST_AUTO_TEST_CASE(setNumberOfDevicesByCommandLine)
+	{
+		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
+		hardware::System system(params);
+		checkThatOnlySpecifiedNumberOfDevicesIsInitialized( system.get_devices().size());
+	}
 
-		// check that nor more than the specified amount of devices is returned
-		const char * _params3[] = {"foo", "--num_dev=1"};
-		meta::Inputparameters params3(2, _params3);
-		System system3(params3);
-		const std::vector<Device*>& devices3 = system3.get_devices();
-		BOOST_REQUIRE_EQUAL(devices3.size(), 1);
+	void checkThatOnlySpecifiedDeviceIsInitialized(const int totalNumberOfDevicesInSystem)
+	{
+		for( int desiredDevice = 0; desiredDevice < totalNumberOfDevicesInSystem; desiredDevice ++)
+		{
+			const std::string tmp = ("--device=" + std::to_string( desiredDevice ) );
+			const char * _params[] = {"foo", tmp.c_str()};
+			meta::Inputparameters params(2, _params);
+			try {
+				hardware::System system(params);
+				BOOST_REQUIRE_EQUAL( system.get_devices().size(), 1);
+			} catch(std::invalid_argument) {
+				// device might not support double-precision
+			}
+		}
+	}
 
-		// check that only device 0 is returned
-		const char * _params4[] = {"foo", "--device=0"};
-		meta::Inputparameters params4(2, _params4);
+	BOOST_AUTO_TEST_CASE(setDeviceByCommandLine)
+	{
+		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
+		hardware::System system(params);
+		checkThatOnlySpecifiedDeviceIsInitialized( system.get_devices().size());
+	}
+
+	bool checkIfNoOpenCLDevicesWereFound( const hardware::OpenclException exception)
+	{
+		return exception.errorCode == -1;
+	}
+
+	void disableSpecificDeviceTypeByCommandLine( const char * _parameters[], const cl_device_type device_type)
+	{
+		meta::Inputparameters params(2, _parameters);
 		try {
-			System system4(params4);
-			const std::vector<Device*>& devices4 = system4.get_devices();
-			BOOST_REQUIRE_EQUAL(devices4.size(), 1);
-		} catch(std::invalid_argument) {
-			// device might not support double-precision
+			hardware::System system(params);
+			for(hardware::Device * device : system.get_devices())
+			{
+				BOOST_REQUIRE_NE(device->get_device_type(), device_type);
+			}
 		}
+		catch(hardware::OpenclException exception)
+		{
+			if ( checkIfNoOpenCLDevicesWereFound( exception ) )
+			{
+				broadcastMessage_warn( "System does not seem to contain devices other than device type \"" + std::to_string(device_type) + "\"!" );
+			}
+			else
+			{
+				broadcastMessage_fatal( "Got unknown error code. Aborting..." );
+				failTest();
+			}
+		}
+	}
 
-		// check whether GPUs/CPUs can be disabled
-		const char * _params5[] = {"foo", "--use_gpu=false"};
-		meta::Inputparameters params5(2, _params5);
-		System system5(params5);
-		const std::vector<Device*>& devices5 = system5.get_devices();
-		for(Device * device : devices5) {
-			BOOST_REQUIRE_NE(device->get_device_type(), CL_DEVICE_TYPE_GPU);
-		}
-		const char * _params6[] = {"foo", "--use_cpu=false"};
-		meta::Inputparameters params6(2, _params6);
-		System system6(params6);
-		const std::vector<Device*>& devices6 = system6.get_devices();
-		for(Device * device : devices6) {
-			BOOST_REQUIRE_NE(device->get_device_type(), CL_DEVICE_TYPE_CPU);
-		}
+	BOOST_AUTO_TEST_CASE(disableCpusByCommandLine)
+	{
+		const char * _params[] = {"foo", "--use_cpu=false"};
+		disableSpecificDeviceTypeByCommandLine( _params, CL_DEVICE_TYPE_CPU);
+	}
+
+	BOOST_AUTO_TEST_CASE(disableGpusByCommandLine)
+	{
+		const char * _params[] = {"foo", "--use_gpu=false"};
+		disableSpecificDeviceTypeByCommandLine( _params, CL_DEVICE_TYPE_GPU);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -131,7 +191,7 @@ BOOST_AUTO_TEST_CASE(dump_source_if_debugging)
 	}
 	else
 	{
-		BOOST_TEST_MESSAGE( "Something went wrong, logger not in debug mode..." );
-		BOOST_REQUIRE_EQUAL(0, 1);
+		broadcastMessage_fatal( "Something went wrong, logger not in debug mode..." );
+		failTest();
 	}
 }
