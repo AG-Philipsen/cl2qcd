@@ -21,7 +21,6 @@
  */
 
 #include "prng.hpp"
-#include "../hardware/code/testUtilities.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -63,15 +62,15 @@ void verifyBuffersAreDifferent( const hardware::buffers::PRNGBuffer* buf1, const
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	std::vector<std::string> parameterStrings {"--host_seed=13"};
-	auto parameters = createParameters(parameterStrings).release();
-	auto system = new hardware::System(*parameters);
-	PRNG prng(*system);
+	const char * _params[] = {"foo", "--host_seed=13"};
+	meta::Inputparameters parameters(2, _params);
+	hardware::System system(parameters);
+	PRNG prng(system);
 
-	std::vector<std::string> parameterStrings2 {"--host_seed=14"};
-	auto parameters2 = createParameters(parameterStrings2).release();
-	auto system2 = new hardware::System(*parameters2);
-	PRNG prng2(*system2);
+	const char * _params2[] = {"foo", "--host_seed=14"};
+	meta::Inputparameters parameters2(2, _params2);
+	hardware::System system2(parameters2);
+	PRNG prng2(system2);
 
 	BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
 
@@ -86,38 +85,16 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 BOOST_AUTO_TEST_CASE(store_and_resume)
 {
-	std::vector<std::string> parameterStrings {"--host_seed=5"};
-	auto parameters = createParameters(parameterStrings).release();
-	auto system = new hardware::System(*parameters);
-
-	PRNG prng(*system);
+	const char * _params[] = {"foo", "--host_seed=46"};
+	meta::Inputparameters parameters(2, _params);
+	hardware::System system(parameters);
+	PRNG prng(system);
 	prng.store("tmp.prngstate");
 
-	double prng1_res = prng.get_double();
+	const char * _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
+	meta::Inputparameters parameters2(2, _params2);
+	hardware::System system2(parameters2);
+	PRNG prng2(system2);
 
-	std::vector<std::string> parameterStrings2 {"--initial_prng_state=tmp.prngstate"};
-	auto parameters2 = createParameters(parameterStrings2).release();
-	auto system2 = new hardware::System(*parameters2);
-	PRNG prng2(*system2);
-
-	BOOST_CHECK_EQUAL(prng1_res, prng2.get_double());
-
-	logger.info() << "Now checking buffers...";
-	for(size_t i = 0; i < prng.get_buffers().size(); ++i) {
-		auto buf1 = prng.get_buffers().at(i);
-		auto buf2 = prng2.get_buffers().at(i);
-
-		char* prng1_state = new char[buf1->get_bytes()];
-		buf1->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng1_state));
-
-		char* prng2_state = new char[buf2->get_bytes()];
-		buf2->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng2_state));
-
-		BOOST_CHECK_EQUAL_COLLECTIONS(prng1_state, prng1_state + buf1->get_bytes(), prng2_state, prng2_state + buf2->get_bytes());
-		logger.info() << "Checked buffer " << i;
-
-		delete[] prng1_state;
-		delete[] prng2_state;
-	}
-	logger.info() << "...done";
+	BOOST_REQUIRE_EQUAL(prng == prng2, true);
 }

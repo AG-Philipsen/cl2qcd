@@ -51,5 +51,5 @@ target_link_libraries(physics
 # Definition of tests
 #
 
-add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware kernelTestUtilities)
+add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware)
 add_unit_test_withLibraries(physics::<sources> sources_test physics)

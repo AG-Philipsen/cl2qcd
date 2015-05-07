@@ -48,7 +48,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 	prng_init(seed);
 
 	// initialize devices
-for(hardware::Device * device : system.get_devices()) {
+	for(hardware::Device * device : system.get_devices()) {
 		// create a buffer for each device
 		const PRNGBuffer * buffer = new PRNGBuffer(device, params);
 		auto code = device->get_prng_code();
@@ -58,6 +58,7 @@ for(hardware::Device * device : system.get_devices()) {
 
 	// additional initalization in case of known start
 	if(!params.get_initial_prng_state().empty()) {
+		logger.debug() << "Read prng state from file \"" + params.get_initial_prng_state() + "\"...";
 		std::ifstream file(params.get_initial_prng_state().c_str(), std::ios_base::binary);
 
 		std::string test;
@@ -85,7 +86,10 @@ for(hardware::Device * device : system.get_devices()) {
 			file.seekg(1, std::ios_base::cur); // skip newline
 			delete[] state;
 		}
-		// TODO check if file is empty
+	}
+	else
+	{
+		logger.debug() << "Did not find prng file...";
 	}
 }
 const std::vector<const hardware::buffers::PRNGBuffer*> physics::PRNG::get_buffers() const noexcept
@@ -264,4 +268,35 @@ void physics::PRNG::saveToSpecificFile(int number)
 {
 	std::string outputfile = meta::create_prng_name(system.get_inputparameters(), number);
 	store(outputfile);
+}
+
+bool physics::PRNG::operator == (const physics::PRNG & prng)
+{
+	for(size_t i = 0; i < this->get_buffers().size(); ++i) {
+		auto buf1 = this->get_buffers().at(i);
+		auto buf2 = prng.get_buffers().at(i);
+
+		char* prng1_state = new char[buf1->get_bytes()];
+		buf1->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng1_state));
+
+		char* prng2_state = new char[buf2->get_bytes()];
+		buf2->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng2_state));
+
+		for( size_t j = 0; j < buf1->get_bytes(); j++)
+		{
+			if (prng1_state[j] != prng2_state[j])
+			{
+				return false;
+			}
+		}
+
+		delete[] prng1_state;
+		delete[] prng2_state;
+	}
+	return true;
+}
+
+bool physics::PRNG::operator != (const physics::PRNG & prng)
+{
+	return *this == prng ? false : true;
 }
