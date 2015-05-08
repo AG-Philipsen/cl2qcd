@@ -52,7 +52,7 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	  }
 }
 
-KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, int numberOfValuesIn, int typeOfComparisonIn):
+KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, int numberOfValuesIn, int typeOfComparisonIn, std::vector<double> expectedResult):
   kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
 {
 	printKernelInformation(kernelNameIn);
@@ -64,17 +64,28 @@ KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> pa
 	
 	testPrecision = parameters->get_solver_prec();
 
-	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
-		if(iteration == 0) {
-			referenceValue[iteration] = parameters->get_test_ref_value();
-		} else if(iteration == 1) {
-			referenceValue[iteration] = parameters->get_test_ref_value2();
-		} else {
-			throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
+	if (expectedResult.size() == 0)
+	{
+		for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
+			if(iteration == 0) {
+				referenceValue[iteration] = parameters->get_test_ref_value();
+			} else if(iteration == 1) {
+				referenceValue[iteration] = parameters->get_test_ref_value2();
+			} else {
+				throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
+			}
 		}
 	}
+	else
+	{
+		if( numberOfValuesIn != expectedResult.size() )
+		{
+			throw( std::invalid_argument("Number of arguments and size of expected results do not match. Aborting...") );
+		}
+		referenceValue = expectedResult;
+	}
 
-	if ( (typeOfComparisonIn == 1) || (typeOfComparisonIn == 2)  || (typeOfComparisonIn == 3) )
+	if ( (typeOfComparisonIn == 1) || (typeOfComparisonIn == 2)  || (typeOfComparisonIn == 3) || (typeOfComparisonIn == 4) )
 	  {
 	    typeOfComparison = typeOfComparisonIn;
 	  } else
@@ -106,6 +117,12 @@ KernelTester::~KernelTester()
 	      BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
 	    }
 		else if (typeOfComparison == 3)
+	    {
+				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+				logger.info() << "Ref. Value = " << referenceValue[0];
+	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
+	    }
+		else if (typeOfComparison == 4)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "Ref. Value = " << referenceValue[0];

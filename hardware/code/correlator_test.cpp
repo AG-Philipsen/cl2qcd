@@ -506,7 +506,7 @@ std::string setCoverArgument_acceptancePrecision( const std::string value )
 
 std::string setCoverArgument_iterationSteps( const std::string value )
 {
-	return "--integrationSteps0=" + value;
+	return "--integrationsteps0=" + value;
 }
 
 BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
@@ -579,35 +579,35 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_1 )
 	{
-		std::vector<std::string> parameterStrings {"--nt=6", "--ns=4", "--integrationsteps0=1", "--sourcecontent=one", "--measure_pbp=true",
+		std::vector<std::string> parameterStrings {"--nt=6", "--ns=4", setCoverArgument_iterationSteps("1"), "--sourcecontent=one", "--measure_pbp=true",
 			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=.5", "--use_eo=false", setCoverArgument_checkVariance("false"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_2 )
 	{
-		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=1000", "--sourcecontent=z4",
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", setCoverArgument_iterationSteps("1000"), "--sourcecontent=z4",
 			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=0.001", "--use_eo=false", setCoverArgument_checkVariance("false"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_3 )
 	{
-		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=100", "--sourcecontent=one",
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", setCoverArgument_iterationSteps("100"), "--sourcecontent=one",
 			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=.5", "--use_eo=false", setCoverArgument_checkVariance("false"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_4 )
 	{
-		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=2000", "--sourcecontent=gaussian",
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", setCoverArgument_iterationSteps("2000"), "--sourcecontent=gaussian",
 			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=1.2", "--use_eo=false", setCoverArgument_checkVariance("true"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_5 )
 	{
-		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=100", "--sourcecontent=gaussian",
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", setCoverArgument_iterationSteps("100"), "--sourcecontent=gaussian",
 			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=1.2", "--use_eo=false", setCoverArgument_checkVariance("true"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
@@ -684,10 +684,60 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 
 	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
 	{
-		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=12",
-			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=1.", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=point", "--measure_correlators=false"};
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", setCoverArgument_iterationSteps("12"), "--sourcetype=point",
+			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=1.", "--use_eo=false", setCoverArgument_checkVariance("false"), "--measure_correlators=false"};
 		test_src_point(parameterStrings);
 	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+#include "SpinorTester.hpp"
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_PS)
+
+	class CorrelatorTester : public SpinorTester
+	{
+	public:
+		CorrelatorTester( std::string kernelName, std::vector<std::string> parameterStrings, std::vector<double> expectedResult):
+			SpinorTester(kernelName, parameterStrings, expectedResult.size(), 4, expectedResult)
+		{
+			code = device->get_correlator_code();
+		}
+	protected:
+		const hardware::code::Correlator * code;
+	};
+
+	class PsCorrelatorTester : public CorrelatorTester
+	{
+	public:
+		PsCorrelatorTester(std::vector<std::string> parameterStrings, std::vector<double> expextedResult) :
+			CorrelatorTester("saxpy_AND_gamma5", parameterStrings, expextedResult)
+		{
+			const int correlatorEntries = expextedResult.size();
+			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+
+			in.load(createSpinorfield(spinorfieldElements));
+
+			const hardware::buffers::Plain<hmc_float> result(correlatorEntries, device);
+			code->correlator(code->get_correlator_kernel("ps"), &result, &in );
+
+			result.dump(&kernelResult.at(0));
+
+			logger.fatal() << "correlator result is:";
+			for ( int i = 0; i<correlatorEntries; i++)
+			{
+				logger.fatal() << kernelResult[i];
+			}
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( ZDIRECTION )
+	{
+		std::vector<double> expectedResult(6, 0.);
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=6", "--test_ref_val=1."};
+		PsCorrelatorTester(parameterStrings, expectedResult );
+	}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

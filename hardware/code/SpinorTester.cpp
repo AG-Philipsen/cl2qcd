@@ -44,8 +44,8 @@ SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int 
 	setMembers();
 }
 
-SpinorTester::SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues, int typeOfComparision):
-  KernelTester(kernelName, parameterStrings, numberOfValues, typeOfComparision)
+SpinorTester::SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues, int typeOfComparision, std::vector<double> expectedResult):
+  KernelTester(kernelName, parameterStrings, numberOfValues, typeOfComparision, expectedResult)
 	{
 	code = device->get_spinor_code();
 	prng = new physics::PRNG(*system);
