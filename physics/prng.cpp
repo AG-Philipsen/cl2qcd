@@ -31,7 +31,8 @@
 
 physics::PRNG::~PRNG()
 {
-for(const hardware::buffers::PRNGBuffer * buffer : buffers) {
+	for(const hardware::buffers::PRNGBuffer * buffer : buffers)
+	{
 		delete buffer;
 	}
 }
@@ -42,7 +43,7 @@ void readFirstLine_checkForTag( std::ifstream & file, const std::string filename
 	const std::string tag = "OpTiMaL PRNG State";
 	getline(file, test);
 	if(test != tag) {
-		logger.fatal() << "Did not find correct tag in prng-file";
+		logger.fatal() << "Did not find correct tag in prng-file, found \""<< test << "\" instead!";
 		throw std::invalid_argument("\"" + filename + "\" does not seem to contain a valid prng state");
 	}
 }
@@ -57,7 +58,15 @@ int* readSecondLine_extractHostSeed( std::ifstream & file )
 	return host_state;
 }
 
-std::pair <size_t, char*> readLine_prngState( std::ifstream & file )
+struct PrngStateContent
+{
+	PrngStateContent( size_t bufferBytesIn, char * contentIn) :
+		bufferBytes( bufferBytesIn ), content(contentIn) {}
+	size_t bufferBytes;
+	char * content;
+};
+
+PrngStateContent readLine_prngState( std::ifstream & file )
 {
 	size_t buffer_bytes;
 	file >> buffer_bytes;
@@ -66,8 +75,28 @@ std::pair <size_t, char*> readLine_prngState( std::ifstream & file )
 	file.read(state, buffer_bytes);
 	file.seekg(1, std::ios_base::cur); // skip newline
 
-	return std::pair <size_t, char*> (buffer_bytes, state);
+	return PrngStateContent(buffer_bytes, state);
 }
+
+struct PrngFileReader
+{
+	PrngFileReader( std::string filename, const uint numberOfExpectedBuffers )
+	{
+		std::ifstream file(filename.c_str(), std::ios_base::binary);
+		readFirstLine_checkForTag( file, filename );
+		hostState = readSecondLine_extractHostSeed( file );
+		for( uint currentBuffer = 0; currentBuffer < numberOfExpectedBuffers; currentBuffer ++)
+		{
+			prngStates.push_back( readLine_prngState( file ) );
+		}
+	}
+	~PrngFileReader()
+	{
+		delete[] hostState;
+	}
+	std::vector<PrngStateContent> prngStates;
+	int * hostState;
+};
 
 physics::PRNG::PRNG(const hardware::System& system) :
 	system(system)
@@ -93,24 +122,16 @@ physics::PRNG::PRNG(const hardware::System& system) :
 	if(!params.get_initial_prng_state().empty())
 	{
 		logger.debug() << "Read prng state from file \"" + params.get_initial_prng_state() + "\"...";
-		std::ifstream file(params.get_initial_prng_state().c_str(), std::ios_base::binary);
+		PrngFileReader fileContent( params.get_initial_prng_state(), buffers.size() );
 
-		readFirstLine_checkForTag( file, params.get_initial_prng_state() );
-		auto host_state = readSecondLine_extractHostSeed( file );
-
-		prng_set(host_state);
-		delete[] host_state;
-
-		for(auto buffer: buffers)
+		prng_set(fileContent.hostState);
+		for( uint currentBufferIndex = 0; currentBufferIndex < buffers.size(); currentBufferIndex ++ )
 		{
-			std::pair <size_t, char*> nextLine = readLine_prngState( file );
-
-			size_t buffer_bytes = nextLine.first;
-			if(buffer_bytes != buffer->get_bytes()) {
+			size_t buffer_bytes = fileContent.prngStates.at(currentBufferIndex).bufferBytes;
+			if(buffer_bytes != buffers.at(currentBufferIndex)->get_bytes()) {
 				throw std::invalid_argument(params.get_initial_prng_state() + " does not seem to contain a valid prng state");
 			}
-			buffer->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>( nextLine.second ));
-			delete[] nextLine.second;
+			buffers.at(currentBufferIndex)->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>( fileContent.prngStates.at(currentBufferIndex).content ));
 		}
 	}
 	else

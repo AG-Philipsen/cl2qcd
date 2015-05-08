@@ -29,6 +29,18 @@
 
 using namespace physics;
 
+BOOST_AUTO_TEST_SUITE(build)
+
+	BOOST_AUTO_TEST_CASE(brokenInputFile_brokenTag)
+	{
+		const char * _params[] = {"foo", "--initial_prng_state=prngstate_brokenTag"};
+		meta::Inputparameters parameters(2, _params);
+		hardware::System system(parameters);
+		BOOST_CHECK_THROW( PRNG prng(system) , std::invalid_argument );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 void verifyBothBuffersAreEquallyLarge( const hardware::buffers::PRNGBuffer* buf1, const hardware::buffers::PRNGBuffer* buf2 )
 {
 	size_t const buf1_bytes = buf1->get_bytes();
