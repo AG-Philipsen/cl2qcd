@@ -40,7 +40,7 @@ void generationExecutable::setIterationParameters()
 
 void generationExecutable::saveGaugefield()
 {
-        gaugefield->save(iteration+1); //Here the number is that written in the lime file as matadata, and it is iteration+1 to be able to continue later at the right tr.
+        gaugefield->save(iteration+1); //Here the number is that written in the lime file as metadata, and it is iteration+1 to be able to continue later at the right tr.
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		gaugefield->saveToSpecificFile(iteration + 1);
 	}

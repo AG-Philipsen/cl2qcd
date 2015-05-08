@@ -331,10 +331,6 @@ void physics::PRNG::store(const std::string filename) const
 		file << '\n';
 		delete[] state;
 	}
-
-	char* state = new char[buffers.at(0)->get_bytes()];
-	buffers.at(0)->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(state));
-
 	file.close();
 
 	verifyWritingWasSuccessful( filename );
@@ -366,7 +362,6 @@ bool physics::PRNG::operator == (const physics::PRNG & prng) const
 
 		for( size_t j = 0; j < buf1->get_bytes(); j++)
 		{
-			//logger.fatal() << prng1_state[j] << " " << prng2_state[j] << " " << (prng1_state[j] == prng2_state[j]);
 			if (prng1_state[j] != prng2_state[j])
 			{
 				return false;
