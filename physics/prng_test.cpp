@@ -109,9 +109,8 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 	meta::Inputparameters parameters2(2, _params2);
 	hardware::System system2(parameters2);
 	PRNG prng2(system2);
-	double tmp2 = prng2.get_double();
 
-	logger.fatal() << tmp << " " << tmp2;
+	double tmp2 = prng2.get_double();
 
 	BOOST_CHECK_EQUAL(tmp, tmp2);
 

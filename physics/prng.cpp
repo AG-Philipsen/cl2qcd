@@ -281,18 +281,30 @@ void physics::gaussianComplexVector(hmc_complex * vector, int length, hmc_float 
 	// SL: not yet tested
 }
 
-void verifyWritingWasSuccessful(const physics::PRNG & in, const std::string filename)
+void physics::PRNG::verifyWritingWasSuccessful(const std::string filename) const
 {
-	logger.info() << "re-reading prng state from file \"" << filename << "\" to verify writing...";
-	std::string tmp = "--initial_prng_state=" + filename;
-	const char * _params2[] = {"foo", tmp.c_str() };
-	meta::Inputparameters parameters2(2, _params2);
-	hardware::System system2(parameters2);
-	const physics::PRNG prng2(system2);
-	if (in != prng2)
-	{
-		logger.fatal() << "Writing of prng file not successful! Aborting...";
-		throw File_Exception(filename);
+	logger.info() << "Verify writing to file: Re-read prng state from file \"" + filename + "\"...";
+	PrngFileReader fileContent( filename, buffers.size() );
+
+	for(size_t i = 0; i < this->get_buffers().size(); ++i) {
+		auto buf1 = this->get_buffers().at(i);
+
+		char* prng1_state = new char[buf1->get_bytes()];
+		buf1->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng1_state));
+
+		auto prng2_state = fileContent.prngStates.at(i).content;
+
+		for( size_t j = 0; j < buf1->get_bytes(); j++)
+		{
+			//logger.fatal() << prng1_state[j] << " " << prng2_state[j] << " " << (prng1_state[j] == prng2_state[j]);
+			if (prng1_state[j] != prng2_state[j])
+			{
+				logger.fatal() << "Writing of prng file not successful! Aborting...";
+				throw File_Exception(filename);
+			}
+		}
+
+		delete[] prng1_state;
 	}
 	logger.info() << "...done";
 }
@@ -320,9 +332,12 @@ void physics::PRNG::store(const std::string filename) const
 		delete[] state;
 	}
 
+	char* state = new char[buffers.at(0)->get_bytes()];
+	buffers.at(0)->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(state));
+
 	file.close();
 
-	verifyWritingWasSuccessful(*this, filename);
+	verifyWritingWasSuccessful( filename );
 }
 
 void physics::PRNG::save()
@@ -351,6 +366,7 @@ bool physics::PRNG::operator == (const physics::PRNG & prng) const
 
 		for( size_t j = 0; j < buf1->get_bytes(); j++)
 		{
+			//logger.fatal() << prng1_state[j] << " " << prng2_state[j] << " " << (prng1_state[j] == prng2_state[j]);
 			if (prng1_state[j] != prng2_state[j])
 			{
 				return false;
