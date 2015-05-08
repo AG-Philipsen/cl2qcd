@@ -483,6 +483,32 @@ BOOST_AUTO_TEST_CASE( SRC_ZSLICE_5 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
+bool checkVariance( const meta::Inputparameters * parameters)
+{
+	return parameters->get_read_multiple_configs();
+}
+
+int getIterationNumber( const meta::Inputparameters * parameters)
+{
+	return parameters->get_integrationsteps(0);
+}
+
+std::string setCoverArgument_checkVariance( const std::string value )
+{
+	return "--read_multiple_configs=" + value;
+}
+
+std::string setCoverArgument_acceptancePrecision( const std::string value )
+{
+	return "--solver_prec=" + value;
+}
+
+std::string setCoverArgument_iterationSteps( const std::string value )
+{
+	return "--integrationSteps0=" + value;
+}
+
 BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 
 	void test_src_tslice( const std::vector<std::string> parameterStrings )
@@ -508,8 +534,7 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 		BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-		//CP: run the kernel a couple of times times
-		int iterations = params->get_integrationsteps(0);
+		int iterations = getIterationNumber( params );
 
 		spinor * sf_out;
 		sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
@@ -531,7 +556,7 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		cpu_res= sum;
 		logger.info() << cpu_res;
 
-		if(params->get_read_multiple_configs()  == false){
+		if( checkVariance( params ) ){
 		  //CP: calc std derivation
 		  hmc_float var=0.;
 		  for (int i=0; i<iterations; i++){
@@ -552,42 +577,38 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		BOOST_MESSAGE("Test done");
 	}
 
-// this specifies the acceptance precision, solver_prec=xxx
-// this specifies the number a gaussian spinorfield is created: integrationsteps0=xxx
-// this specifies if variance is taken into account: "--read_multiple_configs=true/false"
-
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_1 )
 	{
 		std::vector<std::string> parameterStrings {"--nt=6", "--ns=4", "--integrationsteps0=1", "--sourcecontent=one", "--measure_pbp=true",
-					"--solver_prec=1e-8", "--test_ref_val=.5", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=timeslice", "--measure_correlators=false"};
+			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=.5", "--use_eo=false", setCoverArgument_checkVariance("false"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_2 )
 	{
 		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=1000", "--sourcecontent=z4",
-					"--solver_prec=1e-8", "--test_ref_val=0.001", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=timeslice", "--measure_correlators=false"};
+			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=0.001", "--use_eo=false", setCoverArgument_checkVariance("false"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_3 )
 	{
 		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=100", "--sourcecontent=one",
-					"--solver_prec=1e-8", "--test_ref_val=.5", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=timeslice", "--measure_correlators=false"};
+			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=.5", "--use_eo=false", setCoverArgument_checkVariance("false"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_4 )
 	{
 		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=2000", "--sourcecontent=gaussian",
-					"--solver_prec=1e-8", "--test_ref_val=1.2", "--use_eo=false", "--read_multiple_configs=false", "--sourcetype=timeslice", "--measure_correlators=false"};
+			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=1.2", "--use_eo=false", setCoverArgument_checkVariance("true"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_5 )
 	{
 		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=100", "--sourcecontent=gaussian",
-					"--solver_prec=1e-8", "--test_ref_val=1.2", "--use_eo=false", "--read_multiple_configs=false", "--sourcetype=timeslice", "--measure_correlators=false"};
+			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=1.2", "--use_eo=false", setCoverArgument_checkVariance("true"), "--sourcetype=timeslice", "--measure_correlators=false"};
 		test_src_tslice(parameterStrings);
 	}
 
@@ -618,8 +639,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 		hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 		BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-		//CP: run the kernel a couple of times times
-		int iterations = params->get_integrationsteps(0);
+		int iterations = getIterationNumber( params );
 
 		spinor * sf_out;
 		sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
@@ -640,7 +660,8 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 		cpu_res= sum;
 		logger.info() << cpu_res;
 
-		if(params->get_read_multiple_configs()  == false){
+		if( checkVariance( params ) )
+		{
 			//CP: calc std derivation
 			hmc_float var=0.;
 			for (int i=0; i<iterations; i++){
@@ -664,7 +685,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
 	{
 		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=12",
-			"--solver_prec=1e-8", "--test_ref_val=1.", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=point", "--measure_correlators=false"};
+			setCoverArgument_acceptancePrecision("1e-8"), "--test_ref_val=1.", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=point", "--measure_correlators=false"};
 		test_src_point(parameterStrings);
 	}
 
