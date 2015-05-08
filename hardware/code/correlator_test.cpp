@@ -359,6 +359,7 @@ void test_src_zslice(std::string inputfile)
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
 	//CP: this source does have a weight only on one slice
+	//todo: must be params->get_ntime() * params->get_nspace() * params->get_nspace();
 	size_t NUM_ELEMENTS_SRC = meta::get_volspace(*params);
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
@@ -408,72 +409,6 @@ void test_src_zslice(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_src_tslice(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "create_timeslice_source";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	auto params = createParameters("correlator" + inputfile);
-	hardware::System system(*params);
-
-	physics::PRNG prng(system);
-	cl_int err = CL_SUCCESS;
-	auto device = system.get_devices().at(0)->get_correlator_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
-	//CP: this source does have a weight only on one slice
-	size_t NUM_ELEMENTS_SRC = params->get_ntime() * params->get_nspace() * params->get_nspace();
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	//CP: run the kernel a couple of times times
-	int iterations = params->get_integrationsteps(0);
-
-	spinor * sf_out;
-	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
-	BOOST_REQUIRE(sf_out);
-
-	auto prng_buf = prng.get_buffers().at(0);
-
-	hmc_float sum = 0;
-	for (int i = 0; i< iterations; i++){
-	  logger.info() << "Run kernel";
-	  out.clear();
-	  device->create_timeslice_source_device(&out, prng_buf, params->get_source_t());
-	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
-	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
-	}
-	logger.info() << "result: mean";
-	hmc_float cpu_res = 0.;
-	sum = sum/iterations/NUM_ELEMENTS_SRC/24;	
-	cpu_res= sum;
-	logger.info() << cpu_res;
-
-	if(params->get_read_multiple_configs()  == false){
-	  //CP: calc std derivation
-	  hmc_float var=0.;
-	  for (int i=0; i<iterations; i++){
-	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
-	  }
-	  var=var/iterations/NUM_ELEMENTS_SRC/24;
-	  
-	  cpu_res = sqrt(var);
-	  logger.info() << "result: variance";
-	  logger.info() << cpu_res;
-	}
-
-	if(params->get_sourcecontent() == meta::Inputparameters::one){
-	  testFloatAgainstInputparameters(cpu_res, *params);
-	} else{
-	  testFloatSizeAgainstInputparameters(cpu_res, *params);
-	}
-	BOOST_MESSAGE("Test done");
-}
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
@@ -550,30 +485,111 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 
-BOOST_AUTO_TEST_CASE( SRC_TSLICE_1 )
-{
-  test_src_tslice("/src_tslice_input_1");
-}
+	void test_src_tslice( const std::vector<std::string> parameterStrings )
+	{
+		using namespace hardware::buffers;
 
-BOOST_AUTO_TEST_CASE( SRC_TSLICE_2 )
-{
-  test_src_tslice("/src_tslice_input_2");
-}
+		std::string kernelName;
+		kernelName = "create_timeslice_source";
+		printKernelInfo(kernelName);
+		logger.info() << "Init device";
+		auto params = createParameters(parameterStrings).release();
+		hardware::System system(*params);
 
-BOOST_AUTO_TEST_CASE( SRC_TSLICE_3 )
-{
-  test_src_tslice("/src_tslice_input_3");
-}
+		physics::PRNG prng(system);
+		cl_int err = CL_SUCCESS;
+		auto device = system.get_devices().at(0)->get_correlator_code();
 
-BOOST_AUTO_TEST_CASE( SRC_TSLICE_4 )
-{
-  test_src_tslice("/src_tslice_input_4");
-}
+		logger.info() << "Fill buffers...";
+		size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
+		//CP: this source does have a weight only on one slice
+		size_t NUM_ELEMENTS_SRC = meta::get_volspace(*params);
+		const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+		hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+		BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-BOOST_AUTO_TEST_CASE( SRC_TSLICE_5 )
-{
-  test_src_tslice("/src_tslice_input_5");
-}
+		//CP: run the kernel a couple of times times
+		int iterations = params->get_integrationsteps(0);
+
+		spinor * sf_out;
+		sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
+		BOOST_REQUIRE(sf_out);
+
+		auto prng_buf = prng.get_buffers().at(0);
+
+		hmc_float sum = 0;
+		for (int i = 0; i< iterations; i++){
+		  logger.info() << "Run kernel";
+		  out.clear();
+		  device->create_timeslice_source_device(&out, prng_buf, params->get_source_t());
+		  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
+		  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
+		}
+		logger.info() << "result: mean";
+		hmc_float cpu_res = 0.;
+		sum = sum/iterations/NUM_ELEMENTS_SRC/24;
+		cpu_res= sum;
+		logger.info() << cpu_res;
+
+		if(params->get_read_multiple_configs()  == false){
+		  //CP: calc std derivation
+		  hmc_float var=0.;
+		  for (int i=0; i<iterations; i++){
+			var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
+		  }
+		  var=var/iterations/NUM_ELEMENTS_SRC/24;
+
+		  cpu_res = sqrt(var);
+		  logger.info() << "result: variance";
+		  logger.info() << cpu_res;
+		}
+
+		if(params->get_sourcecontent() == meta::Inputparameters::one){
+		  testFloatAgainstInputparameters(cpu_res, *params);
+		} else{
+		  testFloatSizeAgainstInputparameters(cpu_res, *params);
+		}
+		BOOST_MESSAGE("Test done");
+	}
+
+// this specifies the acceptance precision, solver_prec=xxx
+// this specifies the number a gaussian spinorfield is created: integrationsteps0=xxx
+// this specifies if variance is taken into account: "--read_multiple_configs=true/false"
+
+	BOOST_AUTO_TEST_CASE( SRC_TSLICE_1 )
+	{
+		std::vector<std::string> parameterStrings {"--nt=6", "--ns=4", "--integrationsteps0=1", "--sourcecontent=one", "--measure_pbp=true",
+					"--solver_prec=1e-8", "--test_ref_val=.5", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=timeslice", "--measure_correlators=false"};
+		test_src_tslice(parameterStrings);
+	}
+
+	BOOST_AUTO_TEST_CASE( SRC_TSLICE_2 )
+	{
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=1000", "--sourcecontent=z4",
+					"--solver_prec=1e-8", "--test_ref_val=0.001", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=timeslice", "--measure_correlators=false"};
+		test_src_tslice(parameterStrings);
+	}
+
+	BOOST_AUTO_TEST_CASE( SRC_TSLICE_3 )
+	{
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=100", "--sourcecontent=one",
+					"--solver_prec=1e-8", "--test_ref_val=.5", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=timeslice", "--measure_correlators=false"};
+		test_src_tslice(parameterStrings);
+	}
+
+	BOOST_AUTO_TEST_CASE( SRC_TSLICE_4 )
+	{
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=2000", "--sourcecontent=gaussian",
+					"--solver_prec=1e-8", "--test_ref_val=1.2", "--use_eo=false", "--read_multiple_configs=false", "--sourcetype=timeslice", "--measure_correlators=false"};
+		test_src_tslice(parameterStrings);
+	}
+
+	BOOST_AUTO_TEST_CASE( SRC_TSLICE_5 )
+	{
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=100", "--sourcecontent=gaussian",
+					"--solver_prec=1e-8", "--test_ref_val=1.2", "--use_eo=false", "--read_multiple_configs=false", "--sourcetype=timeslice", "--measure_correlators=false"};
+		test_src_tslice(parameterStrings);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
