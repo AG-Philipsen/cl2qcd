@@ -80,7 +80,6 @@ std::unique_ptr<meta::Inputparameters> createParameters(std::vector<std::string>
 	logger.fatal() << numberOfArguments;
 	for (int i = 0; i< numberOfArguments; i++)
 	{
-		logger.fatal() << parameterStrings[i];
 		newv[i+1] = parameterStrings[i].c_str();
 	}
 	std::string inputfile_location = "";
