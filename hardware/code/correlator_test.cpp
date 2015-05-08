@@ -34,6 +34,7 @@
 
 //some functionality
 #include "test_util.h"
+#include "testUtilities.hpp"
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
@@ -474,72 +475,6 @@ void test_src_tslice(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_src_point(std::string inputfile)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	kernelName = "create_point_source";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	auto params = createParameters("correlator" + inputfile);
-	hardware::System system(*params);
-
-	physics::PRNG prng(system);
-	cl_int err = CL_SUCCESS;
-	auto device = system.get_devices().at(0)->get_correlator_code();
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
-	//CP: this source does have a weight only on one site
-	size_t NUM_ELEMENTS_SRC = 1;
-	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	//CP: run the kernel a couple of times times
-	int iterations = params->get_integrationsteps(0);
-
-	spinor * sf_out;
-	sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
-	BOOST_REQUIRE(sf_out);
-
-	hmc_float sum = 0;
-	for (int i = 0; i< iterations; i++){
-	  logger.info() << "Run kernel";
-	  out.clear();
-	  device->create_point_source_device(&out,i, get_source_pos_spatial(*params),params->get_source_t());
-	  out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
-	  sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
-	}
-	logger.info() << "result: mean";
-	hmc_float cpu_res = 0.;
-
-	sum = sum/iterations/NUM_ELEMENTS_SRC;	
-	cpu_res= sum;
-	logger.info() << cpu_res;
-
-	if(params->get_read_multiple_configs()  == false){
-	  //CP: calc std derivation
-	  hmc_float var=0.;
-	  for (int i=0; i<iterations; i++){
-	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
-	  }
-	  var=var/iterations/NUM_ELEMENTS_SRC;
-	  
-	  cpu_res = sqrt(var);
-	  logger.info() << "result: variance";
-	  logger.info() << cpu_res;
-	}
-
-	if(params->get_sourcecontent() == meta::Inputparameters::one){
-	  testFloatAgainstInputparameters(cpu_res, *params);
-	} else{
-	  testFloatSizeAgainstInputparameters(cpu_res, *params);
-	}
-	BOOST_MESSAGE("Test done");
-}
-
 BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -644,10 +579,78 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SRC_POINT)
 
-BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
-{
-  test_src_point("/src_point_input_1");
-}
+	void test_src_point(const std::vector<std::string> parameterStrings )
+	{
+		using namespace hardware::buffers;
+
+		std::string kernelName;
+		kernelName = "create_point_source";
+		printKernelInfo(kernelName);
+		logger.info() << "Init device";
+		auto params = createParameters(parameterStrings).release();
+		hardware::System system(*params);
+
+		physics::PRNG prng(system);
+		cl_int err = CL_SUCCESS;
+		auto device = system.get_devices().at(0)->get_correlator_code();
+
+		logger.info() << "Fill buffers...";
+		size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
+		//CP: this source does have a weight only on one site
+		size_t NUM_ELEMENTS_SRC = 1;
+		const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+		hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+		BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+		//CP: run the kernel a couple of times times
+		int iterations = params->get_integrationsteps(0);
+
+		spinor * sf_out;
+		sf_out = new spinor[NUM_ELEMENTS_SF * iterations];
+		BOOST_REQUIRE(sf_out);
+
+		hmc_float sum = 0;
+		for (int i = 0; i< iterations; i++){
+			logger.info() << "Run kernel";
+			out.clear();
+			device->create_point_source_device(&out,i, get_source_pos_spatial(*params),params->get_source_t());
+			out.dump(&sf_out[i*NUM_ELEMENTS_SF]);
+			sum += count_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF);
+		}
+		logger.info() << "result: mean";
+		hmc_float cpu_res = 0.;
+
+		sum = sum/iterations/NUM_ELEMENTS_SRC;
+		cpu_res= sum;
+		logger.info() << cpu_res;
+
+		if(params->get_read_multiple_configs()  == false){
+			//CP: calc std derivation
+			hmc_float var=0.;
+			for (int i=0; i<iterations; i++){
+				var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
+			}
+			var=var/iterations/NUM_ELEMENTS_SRC;
+
+			cpu_res = sqrt(var);
+			logger.info() << "result: variance";
+			logger.info() << cpu_res;
+		}
+
+		if(params->get_sourcecontent() == meta::Inputparameters::one){
+			testFloatAgainstInputparameters(cpu_res, *params);
+		} else{
+			testFloatSizeAgainstInputparameters(cpu_res, *params);
+		}
+		BOOST_MESSAGE("Test done");
+	}
+
+	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
+	{
+		std::vector<std::string> parameterStrings {"--nt=4", "--ns=4", "--integrationsteps0=12",
+			"--solver_prec=1e-8", "--test_ref_val=1.", "--use_eo=false", "--read_multiple_configs=true", "--sourcetype=point", "--measure_correlators=false"};
+		test_src_point(parameterStrings);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
