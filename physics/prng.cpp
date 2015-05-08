@@ -29,6 +29,10 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/prng.hpp"
 
+//http://www.ridgesolutions.ie/index.php/2013/05/30/boost-link-error-undefined-reference-to-boostfilesystemdetailcopy_file/
+#define BOOST_NO_CXX11_SCOPED_ENUMS
+#include <boost/filesystem.hpp>
+
 physics::PRNG::~PRNG()
 {
 	for(const hardware::buffers::PRNGBuffer * buffer : buffers)
@@ -312,6 +316,13 @@ void physics::PRNG::verifyWritingWasSuccessful(const std::string filename) const
 void physics::PRNG::store(const std::string filename) const
 {
 	logger.info() << "saving current prng state to file \"" << filename << "\"";
+	if ( boost::filesystem::exists( filename ) )
+	{
+		const std::string backupFilename = filename + "_backup";
+		logger.warn() << "Found existing file of name \"" << filename << "\". Store this to \"" << backupFilename << "\"...";
+		boost::filesystem::copy_file( filename, backupFilename, boost::filesystem::copy_option::overwrite_if_exists);
+	}
+
 	// TODO this misses a lot of error handling
 	std::ofstream file(filename.c_str(), std::ios_base::binary);
 	file << "OpTiMaL PRNG State\n";
