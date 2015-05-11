@@ -122,12 +122,6 @@ KernelTester::~KernelTester()
 				logger.info() << "Ref. Value = " << referenceValue[0];
 	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
 	    }
-		else if (typeOfComparison == 4)
-	    {
-				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
-				logger.info() << "Ref. Value = " << referenceValue[0];
-	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
-	    }
 	}
 	
 	if(allocatedObjects)

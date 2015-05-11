@@ -75,6 +75,25 @@ SpinorTester::~SpinorTester()
 	code = NULL;
 }
 
+void fill_with_zero(spinor * in, int size)
+{
+  for(int i = 0; i < size; ++i) {
+    in[i].e0.e0 = {0., 0.};
+    in[i].e0.e1 = {0., 0.};
+    in[i].e0.e2 = {0., 0.};
+    in[i].e1.e0 = {0., 0.};
+    in[i].e1.e1 = {0., 0.};
+    in[i].e1.e2 = {0., 0.};
+    in[i].e2.e0 = {0., 0.};
+    in[i].e2.e1 = {0., 0.};
+    in[i].e2.e2 = {0., 0.};
+    in[i].e3.e0 = {0., 0.};
+    in[i].e3.e1 = {0., 0.};
+    in[i].e3.e2 = {0., 0.};
+  }
+  return;
+}
+
 void SpinorTester::fill_with_one(spinor * in, int size)
 {
   for(int i = 0; i < size; ++i) {
@@ -151,6 +170,26 @@ spinor * SpinorTester::createSpinorfield(size_t numberOfElements, int seed)
   spinor * in;
   in = new spinor[numberOfElements];
   useRandom ? fill_with_random(in, numberOfElements, seed) : fill_with_one(in, numberOfElements);
+  BOOST_REQUIRE(in);
+  return in;
+}
+
+spinor * SpinorTester::createSpinorfield(fillType fillTypeIn)
+{
+  spinor * in;
+  in = new spinor[spinorfieldElements];
+  if (fillTypeIn == fillType::zero)
+  {
+	  fill_with_zero(in, spinorfieldElements);
+  }
+  else if (fillTypeIn == fillType::one )
+  {
+	  fill_with_one(in, spinorfieldElements);
+  }
+  else
+  {
+	  logger.fatal() << "do not know fill type!";
+  }
   BOOST_REQUIRE(in);
   return in;
 }

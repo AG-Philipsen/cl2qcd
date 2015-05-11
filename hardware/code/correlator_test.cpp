@@ -29,49 +29,24 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_SPINORS
+#define BOOST_TEST_MODULE OPENCL_MODULE_CORRELATORS
 #include <boost/test/unit_test.hpp>
 
 //some functionality
 #include "test_util.h"
 #include "testUtilities.hpp"
+#include "SpinorTester.hpp"
 
-void fill_sf_with_one(spinor * sf_in, int size)
+#include <boost/lexical_cast.hpp>
+
+std::string setArgument_spatialExtent( const int value )
 {
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0 = hmc_complex_one;
-		sf_in[i].e0.e1 = hmc_complex_one;
-		sf_in[i].e0.e2 = hmc_complex_one;
-		sf_in[i].e1.e0 = hmc_complex_one;
-		sf_in[i].e1.e1 = hmc_complex_one;
-		sf_in[i].e1.e2 = hmc_complex_one;
-		sf_in[i].e2.e0 = hmc_complex_one;
-		sf_in[i].e2.e1 = hmc_complex_one;
-		sf_in[i].e2.e2 = hmc_complex_one;
-		sf_in[i].e3.e0 = hmc_complex_one;
-		sf_in[i].e3.e1 = hmc_complex_one;
-		sf_in[i].e3.e2 = hmc_complex_one;
-	}
-	return;
+	return "--ns=" + boost::lexical_cast<std::string>(value);
 }
 
-void fill_sf_with_zero(spinor * sf_in, int size)
+std::string setArgument_temporalExtent( const int value )
 {
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0 = hmc_complex_zero;
-		sf_in[i].e0.e1 = hmc_complex_zero;
-		sf_in[i].e0.e2 = hmc_complex_zero;
-		sf_in[i].e1.e0 = hmc_complex_zero;
-		sf_in[i].e1.e1 = hmc_complex_zero;
-		sf_in[i].e1.e2 = hmc_complex_zero;
-		sf_in[i].e2.e0 = hmc_complex_zero;
-		sf_in[i].e2.e1 = hmc_complex_zero;
-		sf_in[i].e2.e2 = hmc_complex_zero;
-		sf_in[i].e3.e0 = hmc_complex_zero;
-		sf_in[i].e3.e1 = hmc_complex_zero;
-		sf_in[i].e3.e2 = hmc_complex_zero;
-	}
-	return;
+	return "--nt=" + boost::lexical_cast<std::string>(value);
 }
 
 void fill_sf_with_one_eo(spinor * sf_in, int size, bool eo, meta::Inputparameters &params)
@@ -509,6 +484,19 @@ std::string setCoverArgument_iterationSteps( const std::string value )
 	return "--integrationsteps0=" + value;
 }
 
+std::string setCoverArgument_useRandomNumbersAsInput( const bool value = false )
+{
+	if (value)
+	{
+		return "--solver=bicgstab";
+	}
+	else
+	{
+		return "--solver=cg";
+	}
+
+}
+
 BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 
 	void test_src_tslice( const std::vector<std::string> parameterStrings )
@@ -693,51 +681,56 @@ BOOST_AUTO_TEST_SUITE_END()
 
 #include "SpinorTester.hpp"
 
-BOOST_AUTO_TEST_SUITE(CORRELATOR_PS)
-
-	class CorrelatorTester : public SpinorTester
+class CorrelatorTester : public SpinorTester
+{
+public:
+	CorrelatorTester(  std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, fillType fillTypeIn):
+		SpinorTester( kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
 	{
-	public:
-		CorrelatorTester( std::string kernelName, std::vector<std::string> parameterStrings, std::vector<double> expectedResult):
-			SpinorTester(kernelName, parameterStrings, expectedResult.size(), 4, expectedResult)
+		const hardware::code::Correlator * code = device->get_correlator_code();
+
+		const int correlatorEntries = expectedResult.size();
+		const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+
+		auto spinorfield = SpinorTester::createSpinorfield(fillTypeIn);
+		in.load(spinorfield);
+		delete[] spinorfield;
+
+		const hardware::buffers::Plain<hmc_float> result(correlatorEntries, device);
+		result.clear();
+
+		code->correlator(code->get_correlator_kernel(kernelIdentifier), &result, &in );
+
+		result.dump(&kernelResult.at(0));
+
+		logger.fatal() << "correlator result is:";
+		for ( int i = 0; i<correlatorEntries; i++)
 		{
-			code = device->get_correlator_code();
+			logger.fatal() << kernelResult[i];
 		}
-	protected:
-		const hardware::code::Correlator * code;
-	};
 
-	class PsCorrelatorTester : public CorrelatorTester
+	}
+};
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_Z)
+
+	std::string kernelIdentifier = "ps";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero )
 	{
-	public:
-		PsCorrelatorTester(std::vector<std::string> parameterStrings, std::vector<double> expextedResult) :
-			CorrelatorTester("saxpy_AND_gamma5", parameterStrings, expextedResult)
-		{
-			const int correlatorEntries = expextedResult.size();
-			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-
-			in.load(createSpinorfield(spinorfieldElements));
-
-			const hardware::buffers::Plain<hmc_float> result(correlatorEntries, device);
-			code->correlator(code->get_correlator_kernel("ps"), &result, &in );
-
-			result.dump(&kernelResult.at(0));
-
-			logger.fatal() << "correlator result is:";
-			for ( int i = 0; i<correlatorEntries; i++)
-			{
-				logger.fatal() << kernelResult[i];
-			}
-		}
-	};
-
-	BOOST_AUTO_TEST_CASE( ZDIRECTION )
-	{
-		std::vector<double> expectedResult(6, 0.);
-		std::vector<std::string> parameterStrings {"--nt=4", "--ns=6", "--test_ref_val=1."};
-		PsCorrelatorTester(parameterStrings, expectedResult );
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero );
 	}
 
+	BOOST_AUTO_TEST_CASE( one )
+	{
+		std::vector<double> expectedResult(spatialExtent, 48.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one );
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
