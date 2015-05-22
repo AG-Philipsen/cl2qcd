@@ -51,7 +51,7 @@ void hardware::code::Correlator::fill_kernels()
 			std::string filename_tmp =  "fermionobservables_correlators_point.cl";
 			switch (get_parameters().get_corr_dir()) {
 				case 0 :
-					correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << filename_tmp;
+					correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << "fermionobservables/correlator_ps_point.cl";
 					correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << filename_tmp;
 					correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << filename_tmp;
 					correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << filename_tmp;
@@ -61,14 +61,14 @@ void hardware::code::Correlator::fill_kernels()
 					correlator_az = createKernel("correlator_az_t") << basic_correlator_code << filename_tmp;
 					break;
 				case 3 :
-					correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << filename_tmp;
-					correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << filename_tmp;
-					correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << filename_tmp;
-					correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << filename_tmp;
-					correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << filename_tmp;
-					correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << filename_tmp;
-					correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << filename_tmp;
-					correlator_az = createKernel("correlator_az_z") << basic_correlator_code << filename_tmp;
+					correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << "fermionobservables/correlator_ps_point.cl";
+//					correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << filename_tmp;
+//					correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << filename_tmp;
+//					correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << filename_tmp;
+//					correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << filename_tmp;
+//					correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << filename_tmp;
+//					correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << filename_tmp;
+//					correlator_az = createKernel("correlator_az_z") << basic_correlator_code << filename_tmp;
 					break;
 				default:
 					stringstream errmsg;

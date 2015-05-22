@@ -29,12 +29,78 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/prng.hpp"
 
+//http://www.ridgesolutions.ie/index.php/2013/05/30/boost-link-error-undefined-reference-to-boostfilesystemdetailcopy_file/
+#define BOOST_NO_CXX11_SCOPED_ENUMS
+#include <boost/filesystem.hpp>
+
 physics::PRNG::~PRNG()
 {
-for(const hardware::buffers::PRNGBuffer * buffer : buffers) {
+	for(const hardware::buffers::PRNGBuffer * buffer : buffers)
+	{
 		delete buffer;
 	}
 }
+
+void readFirstLine_checkForTag( std::ifstream & file, const std::string filename)
+{
+	std::string test;
+	const std::string tag = "OpTiMaL PRNG State";
+	getline(file, test);
+	if(test != tag) {
+		logger.fatal() << "Did not find correct tag in prng-file, found \""<< test << "\" instead!";
+		throw std::invalid_argument("\"" + filename + "\" does not seem to contain a valid prng state");
+	}
+}
+
+int* readSecondLine_extractHostSeed( std::ifstream & file )
+{
+	file.seekg(6, std::ios_base::cur);
+	size_t host_state_size = prng_size();
+	int* host_state = new int[host_state_size];
+	file.read(reinterpret_cast<char*>(host_state), host_state_size * sizeof(int));
+	file.seekg(1, std::ios_base::cur); // skip newline
+	return host_state;
+}
+
+struct PrngStateContent
+{
+	PrngStateContent( size_t bufferBytesIn, char * contentIn) :
+		bufferBytes( bufferBytesIn ), content(contentIn) {}
+	size_t bufferBytes;
+	char * content;
+};
+
+PrngStateContent readLine_prngState( std::ifstream & file )
+{
+	size_t buffer_bytes;
+	file >> buffer_bytes;
+	file.seekg(1, std::ios_base::cur); // skip space
+	char* state = new char[buffer_bytes];
+	file.read(state, buffer_bytes);
+	file.seekg(1, std::ios_base::cur); // skip newline
+
+	return PrngStateContent(buffer_bytes, state);
+}
+
+struct PrngFileReader
+{
+	PrngFileReader( std::string filename, const uint numberOfExpectedBuffers )
+	{
+		std::ifstream file(filename.c_str(), std::ios_base::binary);
+		readFirstLine_checkForTag( file, filename );
+		hostState = readSecondLine_extractHostSeed( file );
+		for( uint currentBuffer = 0; currentBuffer < numberOfExpectedBuffers; currentBuffer ++)
+		{
+			prngStates.push_back( readLine_prngState( file ) );
+		}
+	}
+	~PrngFileReader()
+	{
+		delete[] hostState;
+	}
+	std::vector<PrngStateContent> prngStates;
+	int * hostState;
+};
 
 physics::PRNG::PRNG(const hardware::System& system) :
 	system(system)
@@ -48,7 +114,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 	prng_init(seed);
 
 	// initialize devices
-for(hardware::Device * device : system.get_devices()) {
+	for(hardware::Device * device : system.get_devices()) {
 		// create a buffer for each device
 		const PRNGBuffer * buffer = new PRNGBuffer(device, params);
 		auto code = device->get_prng_code();
@@ -57,35 +123,24 @@ for(hardware::Device * device : system.get_devices()) {
 	}
 
 	// additional initalization in case of known start
-	if(!params.get_initial_prng_state().empty()) {
-		std::ifstream file(params.get_initial_prng_state().c_str(), std::ios_base::binary);
+	if(!params.get_initial_prng_state().empty())
+	{
+		logger.debug() << "Read prng state from file \"" + params.get_initial_prng_state() + "\"...";
+		PrngFileReader fileContent( params.get_initial_prng_state(), buffers.size() );
 
-		std::string test;
-		getline(file, test);
-		if(test != "OpTiMaL PRNG State") {
-			throw std::invalid_argument(params.get_initial_prng_state() + " does not seem to contain a valid prng state");
-		}
-		file.seekg(6, std::ios_base::cur);
-		size_t host_state_size = prng_size();
-		int* host_state = new int[host_state_size];
-		file.read(reinterpret_cast<char*>(host_state), host_state_size * sizeof(int));
-		prng_set(host_state);
-		delete[] host_state;
-		file.seekg(1, std::ios_base::cur); // skip newline
-		for(auto buffer: buffers) {
-			size_t buffer_bytes;
-			file >> buffer_bytes;
-			if(buffer_bytes != buffer->get_bytes()) {
+		prng_set(fileContent.hostState);
+		for( uint currentBufferIndex = 0; currentBufferIndex < buffers.size(); currentBufferIndex ++ )
+		{
+			size_t buffer_bytes = fileContent.prngStates.at(currentBufferIndex).bufferBytes;
+			if(buffer_bytes != buffers.at(currentBufferIndex)->get_bytes()) {
 				throw std::invalid_argument(params.get_initial_prng_state() + " does not seem to contain a valid prng state");
 			}
-			file.seekg(1, std::ios_base::cur); // skip space
-			char* state = new char[buffer_bytes];
-			file.read(state, buffer_bytes);
-			buffer->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>(state));
-			file.seekg(1, std::ios_base::cur); // skip newline
-			delete[] state;
+			buffers.at(currentBufferIndex)->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>( fileContent.prngStates.at(currentBufferIndex).content ));
 		}
-		// TODO check if file is empty
+	}
+	else
+	{
+		logger.debug() << "Did not find prng file...";
 	}
 }
 const std::vector<const hardware::buffers::PRNGBuffer*> physics::PRNG::get_buffers() const noexcept
@@ -230,9 +285,44 @@ void physics::gaussianComplexVector(hmc_complex * vector, int length, hmc_float 
 	// SL: not yet tested
 }
 
+void physics::PRNG::verifyWritingWasSuccessful(const std::string filename) const
+{
+	logger.info() << "Verify writing to file: Re-read prng state from file \"" + filename + "\"...";
+	PrngFileReader fileContent( filename, buffers.size() );
+
+	for(size_t i = 0; i < this->get_buffers().size(); ++i) {
+		auto buf1 = this->get_buffers().at(i);
+
+		char* prng1_state = new char[buf1->get_bytes()];
+		buf1->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng1_state));
+
+		auto prng2_state = fileContent.prngStates.at(i).content;
+
+		for( size_t j = 0; j < buf1->get_bytes(); j++)
+		{
+			//logger.fatal() << prng1_state[j] << " " << prng2_state[j] << " " << (prng1_state[j] == prng2_state[j]);
+			if (prng1_state[j] != prng2_state[j])
+			{
+				logger.fatal() << "Writing of prng file not successful! Aborting...";
+				throw File_Exception(filename);
+			}
+		}
+
+		delete[] prng1_state;
+	}
+	logger.info() << "...done";
+}
+
 void physics::PRNG::store(const std::string filename) const
 {
 	logger.info() << "saving current prng state to file \"" << filename << "\"";
+	if ( boost::filesystem::exists( filename ) )
+	{
+		const std::string backupFilename = filename + "_backup";
+		logger.warn() << "Found existing file of name \"" << filename << "\". Store this to \"" << backupFilename << "\"...";
+		boost::filesystem::copy_file( filename, backupFilename, boost::filesystem::copy_option::overwrite_if_exists);
+	}
+
 	// TODO this misses a lot of error handling
 	std::ofstream file(filename.c_str(), std::ios_base::binary);
 	file << "OpTiMaL PRNG State\n";
@@ -252,6 +342,9 @@ void physics::PRNG::store(const std::string filename) const
 		file << '\n';
 		delete[] state;
 	}
+	file.close();
+
+	verifyWritingWasSuccessful( filename );
 }
 
 void physics::PRNG::save()
@@ -264,4 +357,35 @@ void physics::PRNG::saveToSpecificFile(int number)
 {
 	std::string outputfile = meta::create_prng_name(system.get_inputparameters(), number);
 	store(outputfile);
+}
+
+bool physics::PRNG::operator == (const physics::PRNG & prng) const
+{
+	for(size_t i = 0; i < this->get_buffers().size(); ++i) {
+		auto buf1 = this->get_buffers().at(i);
+		auto buf2 = prng.get_buffers().at(i);
+
+		char* prng1_state = new char[buf1->get_bytes()];
+		buf1->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng1_state));
+
+		char* prng2_state = new char[buf2->get_bytes()];
+		buf2->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng2_state));
+
+		for( size_t j = 0; j < buf1->get_bytes(); j++)
+		{
+			if (prng1_state[j] != prng2_state[j])
+			{
+				return false;
+			}
+		}
+
+		delete[] prng1_state;
+		delete[] prng2_state;
+	}
+	return true;
+}
+
+bool physics::PRNG::operator != (const physics::PRNG & prng) const
+{
+	return *this == prng ? false : true;
 }

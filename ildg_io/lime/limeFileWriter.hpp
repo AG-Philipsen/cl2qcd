@@ -26,6 +26,8 @@
 
 class LimeFileWriter : public LimeFile_basic
 {
+public:
+	void closeLimeFile();
 protected:
 	LimeFileWriter(std::string filenameIn);
 	~LimeFileWriter();

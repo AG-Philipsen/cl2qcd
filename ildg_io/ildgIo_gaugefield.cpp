@@ -76,7 +76,7 @@ void* createVoidPointerFromString(std::string stringIn) noexcept
 
 IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue): LimeFileWriter(filenameIn)
 {
-  logger.info() << "writing gaugefield at tr. " << trajectoryNumber << " to lime-file \""  + filenameIn + "\"";
+	logger.info() << "writing gaugefield at tr. " << trajectoryNumber << " to lime-file \""  + filenameIn + "\"";
 	
 	size_t numberOfElements = getNumberOfElements_gaugefield(parameters);
 	n_uint64_t num_bytes = getSizeInBytes_gaugefield(numberOfElements);
@@ -97,6 +97,13 @@ IldgIoWriter_gaugefield::IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & 
 	writeMemoryToLimeFile( createVoidPointerFromString(ildgFormat), ildgFormat.size(), limeEntryTypes["ildg"]);
 	writeMemoryToLimeFile( binary_data_ptr, num_bytes, limeEntryTypes["ildg binary data"]);
 	writeMemoryToLimeFile( createVoidPointerFromString(scidac_checksum), scidac_checksum.size(), limeEntryTypes["scidac checksum"]);
+
+	closeLimeFile();
+	logger.info() << "Checking that gaugefield was successfully written by re-reading it...";
+	Matrixsu3 * gaugefieldTmp = NULL;
+	IldgIoReader_gaugefield reader(filenameIn, parameters, &gaugefieldTmp);
+	delete[] gaugefieldTmp;
+	logger.info() << "...done";
 }
 
 Checksum ildgIo::calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
@@ -204,7 +211,7 @@ void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gau
 
 	if(cter * 2 != check) {
 		std::stringstream errstr;
-		errstr << "Error in setting gaugefield to source values! there were " << cter * 2 << " vals set and not " << check << ".";
+		errstr << "Error in setting gaugefield to source values! there were " << cter * 2 << " values set and not " << check << ".";
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
 	}
 }

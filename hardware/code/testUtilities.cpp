@@ -73,28 +73,28 @@ std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile)
 std::unique_ptr<meta::Inputparameters> createParameters(std::vector<std::string> parameterStrings)
 {
 	int numberOfArguments = parameterStrings.size();
-	const char **newv = (const char**) malloc((numberOfArguments + 4) * sizeof(newv) );
+	const int param_expect = 4;
+	const char **newv = (const char**) malloc((numberOfArguments + param_expect) * sizeof(newv) );
 	
 	newv[0] = "foo";
-	for (int i = 1; i< numberOfArguments; i++)
+	logger.fatal() << numberOfArguments;
+	for (int i = 0; i< numberOfArguments; i++)
 	{
-		newv[i] = parameterStrings[i].c_str();
+		newv[i+1] = parameterStrings[i].c_str();
 	}
-	
 	std::string inputfile_location = "";
 	std::string gpu_opt = defaultGpuOption;
 	std::string rec12_opt = defaultRec12Option;
 	int num_par = 0;
-	const int param_expect = 4;
   
 	num_par = boost::unit_test::framework::master_test_suite().argc;
 	setArguments(inputfile_location, gpu_opt, rec12_opt, num_par, param_expect);
 	
-	newv[numberOfArguments] = gpu_opt.c_str();
-	newv[numberOfArguments+1] = rec12_opt.c_str();
-	newv[numberOfArguments+2] = "--device=0";
-	
- 	return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(3 + numberOfArguments, newv));
+	newv[numberOfArguments+1] = gpu_opt.c_str();
+	newv[numberOfArguments+2] = rec12_opt.c_str();
+	newv[numberOfArguments+3] = "--device=0";
+
+	return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(param_expect + numberOfArguments, newv));
 }
 
 void printKernelInformation(std::string name)

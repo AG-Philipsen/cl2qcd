@@ -28,10 +28,12 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
+enum fillType{ zero, one };
+
 class SpinorTester : public KernelTester {
 public:
 	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
-	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1);
+	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
 	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	~SpinorTester();
 	
@@ -40,6 +42,7 @@ protected:
 	
 	bool allocatedObjects;
 
+	spinor * createSpinorfield( fillType );
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
 	void fill_with_one(spinor * in, int size);
