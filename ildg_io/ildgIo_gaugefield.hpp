@@ -40,13 +40,13 @@ namespace ildgIo {
 	* TODO: change this.
 	*
 	* @param[in] file      The file to read the gauge configuration from
-	* @param[in] parameters The input parameters @Todo: remove this
+	* @param[in] parameters The input parameters
 	* @param[out] data    The loaded gaugefield, buffer will be allocated!
 	*/
 	class IldgIoReader_gaugefield : public LimeFileReader
 	{
 	public:
-		IldgIoReader_gaugefield(std::string file, const meta::Inputparameters * parameters, Matrixsu3 ** data);
+		IldgIoReader_gaugefield(std::string file, const IldgIoParameters * parameters, Matrixsu3 ** data);
 	};
 
 	/**
@@ -61,12 +61,12 @@ namespace ildgIo {
 	class IldgIoWriter_gaugefield: public LimeFileWriter
 	{
 	public:
-		IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & data, const meta::Inputparameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue);
+		IldgIoWriter_gaugefield(const std::vector<Matrixsu3> & data, const IldgIoParameters * parameters, std::string filenameIn, int trajectoryNumber, double plaquetteValue);
 	};
 	
-	Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
-	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const 	meta::Inputparameters& parameters);
-	void copy_gaugefield_to_ildg_format(std::vector<char> & dest, const std::vector<Matrixsu3> & source_in, const meta::Inputparameters& parameters);
+	Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const size_t NT, const size_t NS);
+	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const IldgIoParameters& parameters);
+	void copy_gaugefield_to_ildg_format(std::vector<char> & dest, const std::vector<Matrixsu3> & source_in, const IldgIoParameters& parameters);
 	
 	size_t getNumberOfElements_gaugefield(const meta::Inputparameters * parameters);
 	n_uint64_t getSizeInBytes_gaugefield(size_t numberOfElements);

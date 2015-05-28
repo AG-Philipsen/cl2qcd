@@ -23,11 +23,17 @@
 #define ILDGIO_HPP_
 
 #include "../common_header_files/types.h"
-#include "../meta/inputparameters.hpp"
+#include <string>
+#include <vector>
+
+namespace meta
+{
+	class Inputparameters;
+}
 
 namespace ildgIo {
-	Matrixsu3 * readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq);
-	void writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3> & host_buf, const meta::Inputparameters * parameters, int number, double plaq);
+	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const meta::Inputparameters *, int &, double &);
+	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const meta::Inputparameters *, int, double );
 }
 
 #endif 

@@ -118,9 +118,11 @@ BOOST_AUTO_TEST_CASE(initFromParameters)
 		"--ntime=41", "--nspace=65", "--kappa=-12.345", "--prec=32", "--beta=4.5", "--mu=23.41"
 	};
 	meta::Inputparameters parameters(7, _params);
+	InputparametersTmp test2( &parameters );
+	IldgIoParameters_gaugefield test(&test2);
 	
-  Sourcefileparameters srcFileParams(&parameters, trajectoryNumber, plaquette, checksum, hmcVersion);
-  checkSpecificParameters(srcFileParams);
+	Sourcefileparameters srcFileParams(&test, trajectoryNumber, plaquette, checksum, hmcVersion);
+	checkSpecificParameters(srcFileParams);
 }
 
 BOOST_AUTO_TEST_CASE(checkAgainstParameters_exception)
@@ -134,12 +136,16 @@ BOOST_AUTO_TEST_CASE(checkAgainstParameters_exception)
 	};
 	int numberOfParameters = 7;
 	meta::Inputparameters parameters(numberOfParameters, _params);
-  Sourcefileparameters srcFileParams(&parameters, trajectoryNumber, plaquette, checksum, hmcVersion);
+	InputparametersTmp test2( &parameters );
+	IldgIoParameters_gaugefield test(&test2);
+	Sourcefileparameters srcFileParams(&test, trajectoryNumber, plaquette, checksum, hmcVersion);
 
 	for(int iteration = 1; iteration < 3 + 1; iteration++)
 	{
-		meta::Inputparameters standardParameters(iteration, _params);
-		BOOST_REQUIRE_THROW(srcFileParams.checkAgainstInputparameters(&standardParameters), std::invalid_argument );
+		const meta::Inputparameters standardParameters(iteration, _params);
+		InputparametersTmp test2( &standardParameters );
+		IldgIoParameters_gaugefield test(&test2);
+		BOOST_REQUIRE_THROW(srcFileParams.checkAgainstInputparameters(&test), std::invalid_argument );
 	}
 }
 
@@ -166,7 +172,9 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_noExceptionByParameters)
 	
 	const char * _params[] = {"foo", "--ignore_checksum_errors=true" };
 	meta::Inputparameters parameters(2, _params);
-	Sourcefileparameters srcFileParams(&parameters, 123, 4.56, checksum, "8.9");
+	InputparametersTmp test2( &parameters );
+	IldgIoParameters_gaugefield test(&test2);
+	Sourcefileparameters srcFileParams(&test, 123, 4.56, checksum, "8.9");
 	
 	BOOST_CHECK_NO_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"));
 }
@@ -178,7 +186,9 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exceptionByParameters)
 	
 	const char * _params[] = {"foo", "--ignore_checksum_errors=false" };
 	meta::Inputparameters parameters(2, _params);
-	Sourcefileparameters srcFileParams(&parameters, 123, 4.56, checksum, "8.9");
+	InputparametersTmp test2( &parameters );
+	IldgIoParameters_gaugefield test(&test2);
+	Sourcefileparameters srcFileParams(&test, 123, 4.56, checksum, "8.9");
 	
 	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"),  File_Exception);
 }
@@ -190,7 +200,9 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exceptionByParameters_defaultSetting)
 	
 	const char * _params[] = {"foo"};
 	meta::Inputparameters parameters(1, _params);
-	Sourcefileparameters srcFileParams(&parameters, 123, 4.56, checksum, "8.9");
+	InputparametersTmp test2( &parameters );
+	IldgIoParameters_gaugefield test(&test2);
+	Sourcefileparameters srcFileParams(&test, 123, 4.56, checksum, "8.9");
 	
 	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"),  File_Exception);
 }
