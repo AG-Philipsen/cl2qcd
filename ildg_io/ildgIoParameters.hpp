@@ -26,10 +26,10 @@
 #include "../meta/inputparameters.hpp"
 #include "../meta/util.hpp"
 
-class IldgIoParametersClient
+class IldgIoParametersInterface
 {
 public:
-	virtual ~IldgIoParametersClient() {};
+	virtual ~IldgIoParametersInterface() {};
 	virtual bool ignoreChecksumErrors() const = 0;
 	virtual int getNumberOfElements() const = 0;
 	virtual int getNs() const = 0;
@@ -40,10 +40,10 @@ public:
 	virtual double getBeta() const = 0;
 };
 
-class InputparametersTmp : public IldgIoParametersClient
+class Inputparameters : public IldgIoParametersInterface
 {
 public:
-	InputparametersTmp (const meta::Inputparameters * parametersIn) : parameters(parametersIn) {} ;
+	Inputparameters (const meta::Inputparameters * parametersIn) : parameters(parametersIn) {} ;
 	virtual bool ignoreChecksumErrors() const
 	{
 		return parameters->get_ignore_checksum_errors();
@@ -83,7 +83,7 @@ private:
 class IldgIoParameters
 {
 public:
-	IldgIoParameters(IldgIoParametersClient * in) : itsClient( in ) {};
+	IldgIoParameters(IldgIoParametersInterface * in) : itsClient( in ) {};
 	virtual ~IldgIoParameters() {};
 	virtual bool ignoreChecksumErrors() const = 0;
 	virtual int getNumberOfElements() const = 0;
@@ -94,13 +94,13 @@ public:
 	virtual double getBeta() const = 0;
 	virtual double getMu() const = 0;
 protected:
-	IldgIoParametersClient * itsClient;
+	IldgIoParametersInterface * itsClient;
 };
 
 class IldgIoParameters_gaugefield: public IldgIoParameters
 {
 public:
-	IldgIoParameters_gaugefield(IldgIoParametersClient * in) : IldgIoParameters(in) {};
+	IldgIoParameters_gaugefield(IldgIoParametersInterface * in) : IldgIoParameters(in) {};
 	virtual bool ignoreChecksumErrors() const
 	{
 		return itsClient->ignoreChecksumErrors();
@@ -134,5 +134,7 @@ public:
 		return itsClient->getBeta();
 	}
 };
+
+IldgIoParameters_gaugefield createIldgIoParameters(const meta::Inputparameters * parametersIn);
 
 #endif /* ILDGIOPARAMETERS_HPP_ */

@@ -117,7 +117,7 @@ void writeEmptyGaugefieldFromSourcefileParameters(const meta::Inputparameters * 
 	const n_uint64_t numberElements = getNumberOfElements_gaugefield(parameters);
 	std::vector<Matrixsu3> gaugefield(numberElements);
 	
-	InputparametersTmp test2( parameters );
+	Inputparameters test2( parameters );
 	IldgIoParameters_gaugefield test(&test2);
 	IldgIoWriter_gaugefield writer( gaugefield, &test ,configurationName, 1234567890, -12.34567833);
 }
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(writeGaugefield_metaData)
 	writeEmptyGaugefieldFromSourcefileParameters(&parameters, configurationName);
 	
 	Matrixsu3 * readBinaryData = nullptr;
-	InputparametersTmp test2( &parameters );
+	Inputparameters test2( &parameters );
 	IldgIoParameters_gaugefield test(&test2);
 	IldgIoReader_gaugefield readGaugefield(configurationName, &test, &readBinaryData);
 	delete readBinaryData;
@@ -259,7 +259,7 @@ BOOST_AUTO_TEST_SUITE(conversionToAndFromIldgFormat)
 		
 		Matrixsu3 * gaugefieldTmp = in.getPointerToField();
 		
-		InputparametersTmp test2( in.getParameters() );
+		Inputparameters test2( in.getParameters() );
 		IldgIoParameters_gaugefield test(&test2);
 		copy_gaugefield_to_ildg_format(binary_data, in.getField(), test  );
 		copy_gaugefield_from_ildg_format(gaugefieldTmp, binary_data_ptr, in.getNumberOfElements() * 9 * 2, test );
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_SUITE(writeAndRead)
 
 	void writeFieldToFile(MatrixSu3Field &in, std::string filename)
 	{
-		InputparametersTmp test2( in.getParameters() );
+		Inputparameters test2( in.getParameters() );
 		IldgIoParameters_gaugefield test(&test2);
 		IldgIoWriter_gaugefield writer( in.getField(), &test , filename, 0, 0.);
 	}
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_SUITE(writeAndRead)
 	void readFieldFromFile(MatrixSu3Field &out, std::string filename)
 	{
 		Matrixsu3 * gaugefieldTmp = NULL;
-		InputparametersTmp test2( out.getParameters() );
+		Inputparameters test2( out.getParameters() );
 		IldgIoParameters_gaugefield test(&test2);
 		IldgIoReader_gaugefield reader(filename, &test, &gaugefieldTmp);
 		out.setField(gaugefieldTmp);

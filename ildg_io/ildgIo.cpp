@@ -27,9 +27,8 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 {
 	Matrixsu3 * gf_host = nullptr; // will be allocated by the following line, init to 0 to ensure error in case we fuck up.
 
-	InputparametersTmp test2( parameters );
-	IldgIoParameters_gaugefield test(&test2);
-	IldgIoReader_gaugefield reader(ildgfile, &test, &gf_host);
+	IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
+	IldgIoReader_gaugefield reader(ildgfile, &ildgIoParameters, &gf_host);
 
 	trajectoryNumberAtInit = reader.getReadTrajectoryNumber();
 	plaq = reader.getReadPlaquetteValue();
@@ -39,7 +38,6 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 
 void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3> & host_buf, const meta::Inputparameters * parameters, int trajectoryNumber, double plaquetteValue)
 {
-	InputparametersTmp test2( parameters );
-	IldgIoParameters_gaugefield test(&test2);
-	IldgIoWriter_gaugefield writer(host_buf, &test, outputfile, trajectoryNumber, plaquetteValue);
+	IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
+	IldgIoWriter_gaugefield writer(host_buf, &ildgIoParameters, outputfile, trajectoryNumber, plaquetteValue);
 }
