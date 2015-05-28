@@ -43,6 +43,7 @@
  * @param Spatial index
  */
 int get_nspace(int* coord, const meta::Inputparameters& params);
+int get_nspace(int* coord, const int nt, const int ns);
 
 /**
  * Get the non-even-odd-preconditioned index of a site based on the spatial and temporal
@@ -53,6 +54,7 @@ int get_nspace(int* coord, const meta::Inputparameters& params);
  * @return Global index
  */
 int get_global_pos(int spacepos, int t, const meta::Inputparameters& params);
+int get_global_pos(int spacepos, int t, const int nt, const int ns);
 
 /**
  * Get the non-even-odd-preconditioned index based on cartesian coordinates.
@@ -71,6 +73,7 @@ int get_global_pos(size_4 cart, const meta::Inputparameters& params);
  * @return Global index
  */
 int get_global_link_pos(int mu, int spacepos, int t, const meta::Inputparameters& params);
+int get_global_link_pos(int mu, int spacepos, int t, const int nt, const int ns);
 
 /**
  * Get the non-even-odd-preconditioned link index cartesian coordinates
@@ -86,13 +89,14 @@ int get_global_link_pos(int mu, size_4 cart, const meta::Inputparameters& params
  * This returns the index of a single su3 matrix entry in the ildg format
  * which is [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
  */
-size_t get_su3_idx_ildg_format(size_t n, size_t m, size_t x, size_t y, size_t z, size_t t, size_t mu, const meta::Inputparameters& parameters);
+size_t get_su3_idx_ildg_format(size_t n, size_t m, size_t x, size_t y, size_t z, size_t t, size_t mu, const int nt, const int ns);
+
 
 /**
  * This returns the link index in the ildg format
  * which is [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
  */
-size_t get_link_idx_ildg_format(size_t x, size_t y, size_t z, size_t t, size_t mu, const meta::Inputparameters& parameters);
+size_t get_link_idx_ildg_format(size_t x, size_t y, size_t z, size_t t, size_t mu, const int nt, const int ns);
 
 int get_source_pos_spatial(const meta::Inputparameters& params);
 #endif /* _GEOMETRYH_ */
