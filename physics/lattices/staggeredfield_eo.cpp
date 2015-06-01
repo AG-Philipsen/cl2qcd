@@ -543,7 +543,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("sax_cplx_stagg_eoprec"); //the same as sax_cplx_arg_stagg_eoprec
+	return spinor_code->get_flop_size("sax_cplx_staggered_eoprec"); //the same as sax_cplx_arg_stagg_eoprec
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, hmc_float, physics::lattices::sax>(const hardware::System& system)
@@ -551,7 +551,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("sax_real_stagg_eoprec"); //the same as sax_real_arg_stagg_eoprec
+	return spinor_code->get_flop_size("sax_real_staggered_eoprec"); //the same as sax_real_arg_stagg_eoprec
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, hmc_complex, physics::lattices::saxpy>(const hardware::System& system)
@@ -559,7 +559,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("saxpy_cplx_stagg_eoprec"); //the same as saxpy_cplx_arg_stagg_eoprec
+	return spinor_code->get_flop_size("saxpy_cplx_staggered_eoprec"); //the same as saxpy_cplx_arg_stagg_eoprec
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, hmc_float, physics::lattices::saxpy>(const hardware::System& system)
@@ -567,7 +567,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("saxpy_real_stagg_eoprec"); //the same as saxpy_real_arg_stagg_eoprec
+	return spinor_code->get_flop_size("saxpy_real_staggered_eoprec"); //the same as saxpy_real_arg_stagg_eoprec
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, hmc_complex, physics::lattices::saxpby>(const hardware::System& system)
@@ -575,7 +575,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("saxpby_cplx_stagg_eoprec"); //the same as saxpby_cplx_arg_stagg_eoprec
+	return spinor_code->get_flop_size("saxpby_cplx_staggered_eoprec"); //the same as saxpby_cplx_arg_stagg_eoprec
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, hmc_float, physics::lattices::saxpby>(const hardware::System& system)
@@ -583,7 +583,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("saxpby_real_stagg_eoprec"); //the same as saxpby_real_arg_stagg_eoprec
+	return spinor_code->get_flop_size("saxpby_real_staggered_eoprec"); //the same as saxpby_real_arg_stagg_eoprec
 }
 
 template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield_eo, physics::lattices::saxpbypz>(const hardware::System& system)
@@ -591,7 +591,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Staggeredfield
 	// assert single system
 	auto devices = system.get_devices();
 	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	return spinor_code->get_flop_size("saxpbypz_cplx_stagg_eoprec");//the same as saxpbypz_cplx_arg_stagg_eoprec
+	return spinor_code->get_flop_size("saxpbypz_cplx_staggered_eoprec");//the same as saxpbypz_cplx_arg_stagg_eoprec
 }
 
 void physics::lattices::log_squarenorm(const std::string& msg, const physics::lattices::Staggeredfield_eo& x)
