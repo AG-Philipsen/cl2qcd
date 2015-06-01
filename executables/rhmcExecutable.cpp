@@ -29,8 +29,8 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 	printParametersToScreenAndFile();
 	setIterationParameters();
 	initializationTimer.add();
-	logger.info() << "Generation of Rational Approximations...";
 	if(parameters.get_read_rational_approximations_from_file()){
+        logger.info() << "Reading and checking Rational Approximations...";
 		approx_hb  = new Rational_Approximation(parameters.get_approx_heatbath_file());
 		approx_md  = new Rational_Approximation(parameters.get_approx_md_file());
 		approx_met = new Rational_Approximation(parameters.get_approx_metropolis_file());
@@ -53,6 +53,7 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 		    throw Print_Error_Message("The parameters of at least one Rational Approximation read from file are not coherent with those given as input!");
 		}
 	}else{
+        logger.info() << "Generation of Rational Approximations...";
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
 		approx_hb = new Rational_Approximation(parameters.get_metro_approx_ord(),
 				parameters.get_num_tastes(), 8, parameters.get_approx_lower(),
@@ -70,12 +71,13 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 		approx_md->Save_rational_approximation(parameters.get_approx_md_file());
 		approx_met->Save_rational_approximation(parameters.get_approx_metropolis_file());
 	}
+	logger.info() << "...done!";
 }
 
 rhmcExecutable::~rhmcExecutable()
 {
   using namespace std;
-  logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acceptanceRate, parameters.get_hmcsteps()) << "%";
+  logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acceptanceRate, parameters.get_rhmcsteps()) << "%";
 }
 
 void rhmcExecutable::printParametersToScreenAndFile()
