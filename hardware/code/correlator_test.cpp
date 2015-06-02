@@ -684,8 +684,8 @@ BOOST_AUTO_TEST_SUITE_END()
 class CorrelatorTester : public SpinorTester
 {
 public:
-	CorrelatorTester(  std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, fillType fillTypeIn):
-		SpinorTester( kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
+	CorrelatorTester(std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, fillType fillTypeIn):
+		SpinorTester(kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
 	{
 		const hardware::code::Correlator * code = device->get_correlator_code();
 
@@ -704,12 +704,47 @@ public:
 		result.dump(&kernelResult.at(0));
 
 		logger.fatal() << "correlator result is:";
-		for ( int i = 0; i<correlatorEntries; i++)
+		for(int i = 0; i < correlatorEntries; i++)
 		{
 			logger.fatal() << kernelResult[i];
 		}
 
-	}
+	};
+
+	CorrelatorTester(std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, fillType fillTypeIn1, fillType fillTypeIn2, fillType fillTypeIn3, fillType fillTypeIn4):
+		SpinorTester(kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
+	{
+		const hardware::code::Correlator * code = device->get_correlator_code();
+
+		const int correlatorEntries = expectedResult.size();
+		const hardware::buffers::Plain<spinor> in1(spinorfieldElements, device);
+		const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
+		const hardware::buffers::Plain<spinor> in3(spinorfieldElements, device);
+		const hardware::buffers::Plain<spinor> in4(spinorfieldElements, device);
+
+		auto spinorfield = SpinorTester::createSpinorfield(fillTypeIn1);
+		in1.load(spinorfield);
+		spinorfield = SpinorTester::createSpinorfield(fillTypeIn2);
+		in2.load(spinorfield);
+		spinorfield = SpinorTester::createSpinorfield(fillTypeIn3);
+		in3.load(spinorfield);
+		spinorfield = SpinorTester::createSpinorfield(fillTypeIn4);
+		in4.load(spinorfield);
+		delete[] spinorfield;
+
+		const hardware::buffers::Plain<hmc_float> result(correlatorEntries, device);
+		result.clear();
+
+		code->correlator(code->get_correlator_kernel(kernelIdentifier), &result, &in1, &in2, &in3, &in4);
+
+		result.dump(&kernelResult.at(0));
+
+		logger.fatal() << "correlator result is:";
+		for(int i = 0; i < correlatorEntries; i++)
+		{
+			logger.fatal() << kernelResult[i];
+		}
+	};
 };
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_Z)
@@ -718,14 +753,14 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_Z)
 	const int spatialExtent = 6;
 	const int temporalExtent = 4;
 
-	BOOST_AUTO_TEST_CASE( zero )
+	BOOST_AUTO_TEST_CASE( zeroOne )
 	{
 		std::vector<double> expectedResult(spatialExtent, 0.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
 		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero );
 	}
 
-	BOOST_AUTO_TEST_CASE( one )
+	BOOST_AUTO_TEST_CASE( nonZero )
 	{
 		std::vector<double> expectedResult(spatialExtent, 48.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
@@ -734,3 +769,430 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_Z)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_T)
+
+	std::string kernelIdentifier = "ps";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 48.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_SC_Z)
+
+	std::string kernelIdentifier = "sc";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 1872.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_SC_T)
+
+	std::string kernelIdentifier = "sc";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 1872.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_VX_Z)
+
+	std::string kernelIdentifier = "vx";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 192.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero2 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 96.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::oneZero, fillType::zeroOne, fillType::oneZero, fillType::zeroOne);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_VX_T)
+
+	std::string kernelIdentifier = "vx";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 192.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero2 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 96.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::oneZero, fillType::zeroOne, fillType::oneZero, fillType::zeroOne);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_VY_Z)
+
+	std::string kernelIdentifier = "vy";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 96.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::oneZero, fillType::zeroOne, fillType::oneZero, fillType::zeroOne);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_VY_T)
+
+	std::string kernelIdentifier = "vy";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 96.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::oneZero, fillType::zeroOne, fillType::oneZero, fillType::zeroOne);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_VZ_Z)
+
+	std::string kernelIdentifier = "vz";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 96.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::oneZero, fillType::zeroOne, fillType::oneZero, fillType::zeroOne);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_VZ_T)
+
+	std::string kernelIdentifier = "vz";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 96.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::oneZero, fillType::zeroOne, fillType::oneZero, fillType::zeroOne);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_AX_Z)
+
+	std::string kernelIdentifier = "ax";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 144.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_AX_T)
+
+	std::string kernelIdentifier = "ax";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 144.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_AY_Z)
+
+	std::string kernelIdentifier = "ay";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, -144.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_AY_T)
+
+	std::string kernelIdentifier = "ay";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, -144.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_AZ_Z)
+
+	std::string kernelIdentifier = "az";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(spatialExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(spatialExtent, -432.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_AZ_T)
+
+	std::string kernelIdentifier = "az";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero, fillType::zero, fillType::zero, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( zero2 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one, fillType::one, fillType::one, fillType::one );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, -432.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::ascending, fillType::oneZero, fillType::one, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
