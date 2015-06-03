@@ -29,8 +29,8 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 	printParametersToScreenAndFile();
 	setIterationParameters();
 	initializationTimer.add();
-	logger.info() << "Generation of Rational Approximations...";
 	if(parameters.get_read_rational_approximations_from_file()){
+        logger.info() << "Reading and checking Rational Approximations...";
 		approx_hb  = new Rational_Approximation(parameters.get_approx_heatbath_file());
 		approx_md  = new Rational_Approximation(parameters.get_approx_md_file());
 		approx_met = new Rational_Approximation(parameters.get_approx_metropolis_file());
@@ -53,6 +53,7 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 		    throw Print_Error_Message("The parameters of at least one Rational Approximation read from file are not coherent with those given as input!");
 		}
 	}else{
+        logger.info() << "Generation of Rational Approximations...";
 		//This is the approx. to be used to generate the initial (pseudo)fermionic field
 		approx_hb = new Rational_Approximation(parameters.get_metro_approx_ord(),
 				parameters.get_num_tastes(), 8, parameters.get_approx_lower(),
@@ -70,12 +71,13 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
 		approx_md->Save_rational_approximation(parameters.get_approx_md_file());
 		approx_met->Save_rational_approximation(parameters.get_approx_metropolis_file());
 	}
+	logger.info() << "...done!";
 }
 
 rhmcExecutable::~rhmcExecutable()
 {
   using namespace std;
-  logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acceptanceRate, parameters.get_hmcsteps()) << "%";
+  logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acceptanceRate, parameters.get_rhmcsteps()) << "%";
 }
 
 void rhmcExecutable::printParametersToScreenAndFile()
@@ -168,28 +170,31 @@ void rhmcExecutable::printRhmcObservablesToScreen()
 
 void rhmcExecutable::checkRhmcParameters(const meta::Inputparameters& p)
 {
-	if(p.get_fermact() != meta::action::rooted_stagg)
-	  throw Invalid_Parameters("Fermion action not suitable for RHMC!", meta::action::rooted_stagg, p.get_fermact());
-	if(!p.get_use_eo())
-	  throw Invalid_Parameters("RHMC available only WITH eo-prec!", "use_eo=1", p.get_use_eo());
-	if(p.get_use_mp())
-	  throw Invalid_Parameters("RHMC available only WITHOUT mass preconditionig!", "use_mp=0", p.get_use_mp());
-	if(p.get_use_chem_pot_re())
-	  throw Invalid_Parameters("RHMC available only WITHOUT real chemical potential!", "use_chem_pot_re=0", p.get_use_chem_pot_re());
-	if(p.get_num_tastes()%4 == 0)
-	  throw Invalid_Parameters("RHMC not working with multiple of 4 tastes (there is no need of the rooting trick)!", "num_tastes%4 !=0", "num_tastes=" + std::to_string(p.get_num_tastes()));
-	if(p.get_cg_iteration_block_size() == 0 || p.get_findminmax_iteration_block_size() == 0)
-	  throw Invalid_Parameters("Iteration block sizes CANNOT be zero!", "cg_iteration_block_size!=0 && findminmax_iteration_block_size!=0", p.get_cg_iteration_block_size()==0 ? "cg_iteration_block_size=0" : "findminmax_iteration_block_size=0");
-	if(p.get_approx_upper() != 1)
-	  throw Invalid_Parameters("RHMC not available if the Rational expansion is not calculated in [..,1]!", "approx_upper=1", p.get_approx_upper());
-	if(p.get_approx_lower() >= 1)
-	   throw Invalid_Parameters("The lower bound of the Rational expansion >= than the upper one does not make sense!", "approx_lower < approx_upper", std::to_string(p.get_approx_lower())+" >= 1");
-	if(p.get_writefrequency() == 0)
-	  throw Invalid_Parameters("Write frequency CANNOT be zero!", "writefrequency!=0", p.get_writefrequency());
-	if(p.get_savefrequency() == 0){
-	  logger.warn() << "savefrequency==0 and hence NEITHER gaugefield NOR prng will be saved!!";
-	  logger.warn() << "The simulation will start in 5 seconds..";
-	  sleep(2); logger.warn() << "..3.."; sleep(1); logger.warn() << "..2.."; sleep(1);
-	  logger.warn() << "..1, go!"; sleep(1);
-	}
+    if(p.get_fermact() != meta::action::rooted_stagg)
+        throw Invalid_Parameters("Fermion action not suitable for RHMC!", meta::action::rooted_stagg, p.get_fermact());
+    if(!p.get_use_eo())
+        throw Invalid_Parameters("RHMC available only WITH eo-prec!", "use_eo=1", p.get_use_eo());
+    if(p.get_use_mp())
+        throw Invalid_Parameters("RHMC available only WITHOUT mass preconditionig!", "use_mp=0", p.get_use_mp());
+    if(p.get_use_chem_pot_re())
+        throw Invalid_Parameters("RHMC available only WITHOUT real chemical potential!", "use_chem_pot_re=0", p.get_use_chem_pot_re());
+    if(p.get_num_tastes()%4 == 0)
+        throw Invalid_Parameters("RHMC not working with multiple of 4 tastes (there is no need of the rooting trick)!", "num_tastes%4 !=0", "num_tastes=" + std::to_string(p.get_num_tastes()));
+    if(p.get_cg_iteration_block_size() == 0 || p.get_findminmax_iteration_block_size() == 0)
+        throw Invalid_Parameters("Iteration block sizes CANNOT be zero!", "cg_iteration_block_size!=0 && findminmax_iteration_block_size!=0", p.get_cg_iteration_block_size()==0 ? "cg_iteration_block_size=0" : "findminmax_iteration_block_size=0");
+    if(p.get_approx_upper() != 1)
+        throw Invalid_Parameters("RHMC not available if the Rational expansion is not calculated in [..,1]!", "approx_upper=1", p.get_approx_upper());
+    if(p.get_approx_lower() >= 1)
+        throw Invalid_Parameters("The lower bound of the Rational expansion >= than the upper one does not make sense!", "approx_lower < approx_upper", std::to_string(p.get_approx_lower())+" >= 1");
+    if(p.get_writefrequency() == 0)
+        throw Invalid_Parameters("Write frequency CANNOT be zero!", "writefrequency!=0", p.get_writefrequency());
+    if(p.get_savefrequency() == 0){
+        logger.warn() << "savefrequency==0 and hence NEITHER gaugefield NOR prng will be saved!!";
+        logger.warn() << "The simulation will start in 5 seconds..";
+        sleep(2); logger.warn() << "..3.."; sleep(1); logger.warn() << "..2.."; sleep(1);
+        logger.warn() << "..1, go!"; sleep(1);
+    }
+    if (parameters.get_measure_correlators()) {
+        throw Invalid_Parameters("RHMC available only WITHOUT correlators measurements!", "measure_correlators=0", p.get_measure_correlators());
+    }
 }
