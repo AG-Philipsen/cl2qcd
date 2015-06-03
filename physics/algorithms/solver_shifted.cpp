@@ -209,7 +209,6 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
                         single_system_converged[k] = true;
                         single_system_iter.push_back((uint)iter);
                         logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
-                        logger.warn() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
                     }
                 }
             }
