@@ -318,9 +318,17 @@ void physics::PRNG::store(const std::string filename) const
 	logger.info() << "saving current prng state to file \"" << filename << "\"";
 	if ( boost::filesystem::exists( filename ) )
 	{
-		const std::string backupFilename = filename + "_backup";
-		logger.warn() << "Found existing file of name \"" << filename << "\". Store this to \"" << backupFilename << "\"...";
-		boost::filesystem::copy_file( filename, backupFilename, boost::filesystem::copy_option::overwrite_if_exists);
+	  //TODO: It seems that the function boost::filesystem::copy_file gives a linking error in compilation
+	  //      /cm/shared/apps/boost/1.52.0/include/boost/filesystem/operations.hpp:381: undefined reference to `boost::filesystem::detail::copy_file(...)
+	  //      therefore here we rename files and then delete. This should nevertheless fixed!
+	  const std::string backupFilename = filename + "_backup";
+	  if(boost::filesystem::exists(backupFilename))
+	    boost::filesystem::rename(backupFilename, backupFilename + "_tmp");
+	  logger.warn() << "Found existing file of name \"" << filename << "\". Store this to \"" << backupFilename << "\"...";
+	  boost::filesystem::rename( filename, backupFilename);
+	  if(boost::filesystem::exists(backupFilename + "_tmp"))
+	    boost::filesystem::remove(backupFilename + "_tmp");
+	  //boost::filesystem::copy_file( filename, backupFilename, boost::filesystem::copy_option::overwrite_if_exists);
 	}
 
 	// TODO this misses a lot of error handling
