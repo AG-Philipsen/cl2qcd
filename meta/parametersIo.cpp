@@ -26,7 +26,11 @@ int meta::ParametersIo::get_writefrequency() const noexcept
 }
 int meta::ParametersIo::get_savefrequency() const noexcept
 {
-	return savefrequency;
+    return savefrequency;
+}
+int meta::ParametersIo::get_savepointfrequency() const noexcept
+{
+    return savepointfrequency;
 }
 
 int meta::ParametersIo::get_config_number_digits() const noexcept
@@ -147,8 +151,9 @@ meta::ParametersIo::ParametersIo()
 	: options("IO options")
 {
 	options.add_options()
-	("writefrequency", po::value<int>(&writefrequency)->default_value(1))
-	("savefrequency", po::value<int>(&savefrequency)->default_value(100))
+	("writefrequency", po::value<int>(&writefrequency)->default_value(1), "Frequency of online measurements")
+	("savefrequency", po::value<int>(&savefrequency)->default_value(100), "Frequency of conf and prng storing")
+    ("savepointfrequency", po::value<int>(&savepointfrequency)->default_value(1), "Frequency of last checkpoint")
 	("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
 	("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
 	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")

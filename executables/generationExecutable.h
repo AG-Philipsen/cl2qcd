@@ -39,6 +39,7 @@ protected:
 	
 	int writeFrequency;
 	int saveFrequency;
+    int savePointFrequency;
 	int thermalizationSteps;
 	int generationSteps;
 	int iteration;
