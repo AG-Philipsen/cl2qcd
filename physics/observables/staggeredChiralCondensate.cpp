@@ -134,22 +134,23 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 
 void physics::observables::staggered::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration)
 {
-	std::ofstream outputToFile;
-	std::string configurationName = meta::create_configuration_name(*(gf.getParameters()), iteration);
-	std::string filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*(gf.getParameters()), configurationName);
-	outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
-	if(!outputToFile.is_open()) {
-		throw File_Exception(filenameForChiralCondensateData);
-	}
-	outputToFile << iteration << "\t";
-	outputToFile.precision(15);
-	outputToFile.setf( std::ios::scientific, std::ios::floatfield );
-	std::vector<hmc_complex> pbp(gf.getParameters()->get_pbp_measurements());
-	for(size_t i=0; i<pbp.size(); i++){
-		pbp[i] = physics::observables::staggered::measureChiralCondensate(gf, *(gf.getPrng()), *(gf.getSystem()));
-		outputToFile << pbp[i].re << "   ";
-	}
-	outputToFile << std::endl;
-	outputToFile.close();  
+    logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
+    std::ofstream outputToFile;
+    std::string configurationName = meta::create_configuration_name(*(gf.getParameters()), iteration);
+    std::string filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*(gf.getParameters()), configurationName);
+    outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
+    if(!outputToFile.is_open()) {
+        throw File_Exception(filenameForChiralCondensateData);
+    }
+    outputToFile << iteration << "\t";
+    outputToFile.precision(15);
+    outputToFile.setf( std::ios::scientific, std::ios::floatfield );
+    std::vector<hmc_complex> pbp(gf.getParameters()->get_pbp_measurements());
+    for(size_t i=0; i<pbp.size(); i++){
+        pbp[i] = physics::observables::staggered::measureChiralCondensate(gf, *(gf.getPrng()), *(gf.getSystem()));
+        outputToFile << pbp[i].re << "   ";
+    }
+    outputToFile << std::endl;
+    outputToFile.close();  
 }
 
