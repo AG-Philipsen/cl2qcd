@@ -124,11 +124,15 @@ void printChiralCondensate(int trajectoryNumber, double value)
 
 void TwoFlavourChiralCondensate::writeChiralCondensateToFile()
 {
-  logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
-	for (int i = 0; i < (int) chiralCondensate.size(); i++)
-	{
-		outputToFile << trajectoryNumber << "\t" << std::scientific << std::setprecision(14) << chiralCondensate[i] << std::endl;
-	}
+    logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
+    outputToFile << trajectoryNumber << "\t";
+    outputToFile.precision(15);
+    outputToFile.setf( std::ios::scientific, std::ios::floatfield );
+    for (int i = 0; i < (int) chiralCondensate.size(); i++)
+    {
+        outputToFile << chiralCondensate[i] << "   ";
+    }
+    outputToFile << std::endl;
 }
 
 double TwoFlavourChiralCondensate::norm_std() const 
