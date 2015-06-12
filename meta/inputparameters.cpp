@@ -104,6 +104,7 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 		.add(ParametersFermion::getOptions())
 		.add(ParametersSolver::getOptions())
 		.add(ParametersSources::getOptions())
+        .add(ParametersRhmc::getOptions()) //This is for the num_tastes, not elegant... TODO: think another way!
 		.add(ParametersObs::getOptions());
 	}
 	else if(parameterSet == "hmc")
