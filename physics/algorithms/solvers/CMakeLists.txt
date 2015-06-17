@@ -1,6 +1,6 @@
-# Build specifications for sourcefileparameters
+# Build specifications for the contents of the algorithms::solvers package
 #
-# Copyright (c) 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de> 
+# Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
 #
 # This file is part of CL2QCD.
 #
@@ -17,21 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
-#
-# Collect all code in this part of the source tree
-#
-
-add_library(sourcefileParameters
-	SourcefileParameters.cpp
-	SourcefileParameters_utilities.cpp
+add_library(solvers
+	exceptions.cpp
+	cg.cpp
+	bicgstab.cpp
 )
-
-target_link_libraries(sourcefileParameters
-	logger
-	exceptions
-	meta
-	${LIBXML2_LIBRARIES}
+target_link_libraries(solvers
+		algorithms
 )
-
-add_unit_test_withLibraries(sourcefileParameters SourcefileParameters_test sourcefileParameters)
-

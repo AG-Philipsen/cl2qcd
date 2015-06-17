@@ -78,11 +78,11 @@ public:
 	//        merged
 //	void Aee_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 //	void Aee_minus_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void dslash_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF) const;
 	void dslash_AND_M_tm_inverse_sitediagonal_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	void dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	void M_tm_sitediagonal_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar = ARG_DEF) const;
 	void M_tm_sitediagonal_minus_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar = ARG_DEF) const;
+	void saxpy_AND_gamma5_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hmc_complex alpha, const hardware::buffers::Spinor * out) const;
 
 	/**
 	 * Print the profiling information to a file.
@@ -153,11 +153,11 @@ private:
 	cl_kernel dslash_eo;
 	cl_kernel _dslash_eo_boundary;
 	cl_kernel _dslash_eo_inner;
-	cl_kernel dslash_AND_gamma5_eo;
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_eo;
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
 	cl_kernel M_tm_sitediagonal_AND_gamma5_eo;
 	cl_kernel M_tm_sitediagonal_minus_AND_gamma5_eo;
+	cl_kernel saxpy_AND_gamma5_eo;
 
 	ClSourcePackage sources;
 };

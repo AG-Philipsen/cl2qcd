@@ -28,9 +28,12 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
+enum fillType{ zero, one };
+
 class SpinorTester : public KernelTester {
 public:
-  SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
+	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
+	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
 	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	~SpinorTester();
 	
@@ -39,11 +42,14 @@ protected:
 	
 	bool allocatedObjects;
 
+	spinor * createSpinorfield( fillType );
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
 	void fill_with_one(spinor * in, int size);
+	void fill_with_one_minusone_for_gamma5_use(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);
-	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();	
+	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
+	spinor * createSpinorfieldWithOnesAndMinusOneForGamma5Use(size_t numberOfElements);	
 	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
 	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
 	void fill_with_one_eo(spinor * in, int size, bool eo);

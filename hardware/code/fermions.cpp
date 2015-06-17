@@ -65,11 +65,11 @@ void hardware::code::Fermions::fill_kernels()
 		gamma5_eo = createKernel("gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 		//merged kernels
 		if (get_parameters().get_use_merge_kernels_fermion() == true) {
-			dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
 			dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
 			dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
 			M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
 			M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+			saxpy_AND_gamma5_eo = createKernel("saxpy_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_saxpy_AND_gamma5_eo.cl";
 		}
 	}
 }
@@ -115,6 +115,8 @@ void hardware::code::Fermions::clear_kernels()
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 			clerr = clReleaseKernel(M_tm_inverse_sitediagonal_minus);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			clerr = clReleaseKernel(saxpy_AND_gamma5_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		}
 	}
 }
@@ -122,6 +124,15 @@ void hardware::code::Fermions::clear_kernels()
 void hardware::code::Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
+	
+	//Query specific sizes for kernels if needed
+	if(kernel == saxpy_AND_gamma5_eo){
+		if(*ls > 64) {
+			*ls = 64;
+			*num_groups = (*gs)/(*ls);
+		}
+		return;
+	}
 }
 
 
@@ -236,99 +247,6 @@ void hardware::code::Fermions::gamma5_device(const hardware::buffers::Plain<spin
 	get_device()->enqueue_kernel(gamma5 , gs2, ls2);
 }
 
-//merged fermionmatrix-functions with eoprec
-//void hardware::code::Fermions::Aee_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
-//{
-//	int even = EVEN;
-//	int odd = ODD;
-//
-//	auto spinor_code = get_device()->get_spinor_code();
-//
-//	/**
-//	 * This is the even-odd preconditioned fermion matrix with the
-//	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
-//	 * If one has fermionmatrix
-//	 *  M = R + D,
-//	 * then Aee is:
-//	 * Aee = R_e - D_eo R_o_inv D_oe
-//	 */
-//	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-//		//in this case, the diagonal matrix is just 1 and falls away.
-//		//this case has not been adjusted for the merged kernels yet...
-//		logger.warn() << "No merged kernels implemented for pure Wilson case!";
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-//		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
-//		gamma5_eo_device(out);
-//	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-//		/*
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		M_tm_inverse_sitediagonal_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, mubar);
-//		*/
-//		dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, &clmem_tmp_eo_2, gf, odd, kappa, mubar);
-//		/*
-//		dslash_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		gamma5_eo_device(out);
-//		*/
-//		dslash_AND_gamma5_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		/*
-//		M_tm_sitediagonal_device(in, &clmem_tmp_eo_1, mubar);
-//		gamma5_eo_device(&clmem_tmp_eo_1);
-//		*/
-//		M_tm_sitediagonal_AND_gamma5_eo_device(in, &clmem_tmp_eo_1, mubar);
-//		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
-//	}
-//}
-
-///**
-// *  This is the equivalent of the above function, but for the lower
-// *  flavour, which essentially means mu -> -mu in the tm-case and
-// *  no changes in the meta::Inputparameters::wilson case.
-// */
-//void hardware::code::Fermions::Aee_minus_AND_gamma5_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
-//{
-//	int even = EVEN;
-//	int odd = ODD;
-//
-//	auto spinor_code = get_device()->get_spinor_code();
-//
-//	/**
-//	 * This is the even-odd preconditioned fermion matrix with the
-//	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
-//	 * If one has fermionmatrix
-//	 *  M = R + D,
-//	 * then Aee is:
-//	 * Aee = R_e - D_eo R_o_inv D_oe
-//	 */
-//	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-//		//in this case, the diagonal matrix is just 1 and falls away.
-//		//this case has not been adjusted for the merged kernels yet...
-//		logger.warn() << "No merged kernels implemented for pure Wilson case!";
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-//		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
-//		gamma5_eo_device(out);
-//	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-//		/*
-//		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
-//		M_tm_inverse_sitediagonal_minus_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, mubar);
-//		*/
-//		dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, &clmem_tmp_eo_2, gf, odd, kappa, mubar);
-//		/*
-//		dslash_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		gamma5_eo_device(out);
-//		*/
-//		dslash_AND_gamma5_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
-//		/*
-//		M_tm_sitediagonal_minus_device(in, &clmem_tmp_eo_1, mubar);
-//		gamma5_eo_device(&clmem_tmp_eo_1);
-//		*/
-//		M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, &clmem_tmp_eo_1, mubar);
-//		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
-//	}
-//}
-
-
 //explicit eoprec fermionmatrix functions
 void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor * inout) const
 {
@@ -341,6 +259,31 @@ void hardware::code::Fermions::gamma5_eo_device(const hardware::buffers::Spinor 
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( gamma5_eo, gs2, ls2);
+}
+
+void hardware::code::Fermions::saxpy_AND_gamma5_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hmc_complex alpha, const hardware::buffers::Spinor * out) const
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(saxpy_AND_gamma5_eo, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 0, sizeof(cl_mem), x->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 1, sizeof(cl_mem), y->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 2, sizeof(hmc_float), &alpha.re);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 3, sizeof(hmc_float), &alpha.im);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_gamma5_eo, 4, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( saxpy_AND_gamma5_eo, gs2, ls2);
 }
 
 void hardware::code::Fermions::dslash_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
@@ -434,37 +377,6 @@ void hardware::code::Fermions::dslash_eo_inner(const hardware::buffers::Spinor *
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(_dslash_eo_inner , gs2, ls2);
-}
-
-void hardware::code::Fermions::dslash_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa) const
-{
-	//get kappa
-	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
-	else kappa_tmp = kappa;
-
-	cl_int eo = evenodd;
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_gamma5_eo, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(dslash_AND_gamma5_eo, 0, sizeof(cl_mem), in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 2, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 3, sizeof(cl_int), &eo);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 4, sizeof(hmc_float), &kappa_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(dslash_AND_gamma5_eo , gs2, ls2);
 }
 
 void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar) const
@@ -737,13 +649,6 @@ size_t hardware::code::Fermions::get_read_write_size(const std::string& in) cons
 		const unsigned int dirs = 4;
 		return (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (in == "dslash_AND_gamma5_eo") {
-		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
-		const unsigned int dirs = 4;
-		//the gamma5 kernel reads 1 spinor and writes 1 spinor:
-		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
-		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
-	}
 	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
@@ -765,6 +670,11 @@ size_t hardware::code::Fermions::get_read_write_size(const std::string& in) cons
 	if (in == "M_tm_sitediagonal_minus_AND_gamma5_eo") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
+	}
+	if (in == "saxpy_AND_gamma5_eo") {
+		//saxpy reads 2 spinor, 1 complex number and writes 1 spinor per site
+		//the gamma5 does not affect this here.
+		return C * D * Seo * (12 * (2 + 1) + 1);
 	}
 	return 0;
 }
@@ -826,9 +736,6 @@ uint64_t hardware::code::Fermions::get_flop_size(const std::string& in) const
 	if (in == "dslash_eo") {
 		return Seo * flop_dslash_per_site(get_parameters());
 	}
-	if (in == "dslash_AND_gamma5_eo") {
-		return Seo * flop_dslash_per_site(get_parameters()) +  Seo * NDIM * NC;
-	}
 	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
@@ -842,6 +749,11 @@ uint64_t hardware::code::Fermions::get_flop_size(const std::string& in) const
 	if (in == "M_tm_sitediagonal_minus_AND_gamma5_eo") {
 		//this kernel performs ND*NC complex mults  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) +  Seo * NDIM * NC;
+	}
+	if (in == "saxpy_AND_gamma5_eo") {
+		//saxpy performs on each site spinor_times_complex and spinor_add
+		//gamma5 performs ND*NC*2/2 real mults
+		return Seo * NDIM * NC * (1+  meta::get_flop_complex_mult() + 2); 
 	}
 	return 0;
 }
@@ -861,11 +773,11 @@ void hardware::code::Fermions::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, dslash_eo);
 	Opencl_Module::print_profiling(filename, _dslash_eo_boundary);
 	Opencl_Module::print_profiling(filename, _dslash_eo_inner);
-	Opencl_Module::print_profiling(filename, dslash_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_eo);
 	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_minus_eo);
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
+	Opencl_Module::print_profiling(filename, saxpy_AND_gamma5_eo);
 }
 hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device),
@@ -881,11 +793,11 @@ hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware
 	  dslash_eo(0),
 	  _dslash_eo_boundary(0),
           _dslash_eo_inner(0),
-	  dslash_AND_gamma5_eo(0),
 	  dslash_AND_M_tm_inverse_sitediagonal_eo(0),
 	  dslash_AND_M_tm_inverse_sitediagonal_minus_eo(0),
 	  M_tm_sitediagonal_AND_gamma5_eo(0),
-	  M_tm_sitediagonal_minus_AND_gamma5_eo(0)
+	  M_tm_sitediagonal_minus_AND_gamma5_eo(0),
+	  saxpy_AND_gamma5_eo(0)
 {
 	fill_kernels();
 }

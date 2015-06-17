@@ -55,6 +55,13 @@ void hardware::code::Spinors_staggered::fill_kernels()
 
 	//In staggered formulation either eo or non-eo kernels are built!!
 	if(get_parameters().get_use_eo()){
+        scalar_product_stagg = 0;
+        set_zero_spinorfield_stagg = 0;
+        set_cold_spinorfield_stagg = 0;
+        set_gaussian_spinorfield_stagg = 0;
+        sax_stagg = 0;
+        saxpy_stagg = 0;
+        saxpbypz_stagg = 0;
 		//Functionalities to convert eo from/to non eo
 		convert_from_eoprec_stagg = createKernel("convert_from_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
 		convert_to_eoprec_stagg = createKernel("convert_to_eoprec_staggered") << basic_fermion_code << "spinorfield_staggered_eo_convert.cl";
@@ -131,7 +138,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		//Fields algebra operations
 		sax_stagg = createKernel("sax_staggered") << basic_fermion_code << "spinorfield_staggered_sax.cl";
 		saxpy_stagg = createKernel("saxpy_staggered") << basic_fermion_code << "spinorfield_staggered_saxpy.cl";
-		saxpbypz_stagg = createKernel("saxpbypz_staggered") << basic_fermion_code << "spinorfield_staggered_saxpbypz.cl";
+		saxpbypz_stagg = createKernel("saxpbypz_staggered") << basic_fermion_code << "spinorfield_staggered_saxpbypz.cl";        
 	}
 	//Squarenorm non_eo always built because needed in tests for conversion from eo to non eo
 	global_squarenorm_stagg = createKernel("global_squarenorm_staggered") << basic_fermion_code << "spinorfield_staggered_squarenorm.cl";
@@ -219,9 +226,6 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		clerr = clReleaseKernel(sax_vectorized_and_squarenorm_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	} else {
-		//Squarenorm
-		clerr = clReleaseKernel(global_squarenorm_stagg);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		//Scalar Product
 		clerr = clReleaseKernel(scalar_product_stagg);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -240,6 +244,9 @@ void hardware::code::Spinors_staggered::clear_kernels()
 		clerr = clReleaseKernel(saxpbypz_stagg);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
+    //Squarenorm always to be released since always built because needed in tests for conversion from eo to non eo
+    clerr = clReleaseKernel(global_squarenorm_stagg);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
 
@@ -1371,36 +1378,36 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 		//this kernel writes 1 su3vec per site (eo)
 		return C * NC * D * Seo;
 	}
-	if (in == "sax_cplx_stagg_eoprec" || in == "sax_cplx_arg_stagg_eoprec") {
+	if (in == "sax_cplx_staggered_eoprec" || in == "sax_cplx_arg_staggered_eoprec") {
 		//this kernel reads 1 su3vec, 1 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (1 + 1) + 1);
 	}
 	
-	if (in == "sax_real_stagg_eoprec" || in == "sax_real_arg_stagg_eoprec"
-	                                  || in == "sax_real_vec_stagg_eoprec") {
+	if (in == "sax_real_staggered_eoprec" || in == "sax_real_arg_staggered_eoprec"
+	                                      || in == "sax_real_vec_staggered_eoprec") {
 		//this kernel reads 1 su3vec, 1 real number and writes 1 su3vec per site (eo)
 		return D * Seo * (C * NC * (1 + 1) + 1);
 	}
 	
-	if (in == "saxpy_cplx_stagg_eoprec" || in == "saxpy_cplx_arg_stagg_eoprec") {
+	if (in == "saxpy_cplx_staggered_eoprec" || in == "saxpy_cplx_arg_staggered_eoprec") {
 		//this kernel reads 2 su3vec, 1 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (2 + 1) + 1);
 	}
-	if (in == "saxpy_real_stagg_eoprec" || in == "saxpy_real_arg_stagg_eoprec"
-	                                    || in == "saxpy_real_vec_stagg_eoprec") {
+	if (in == "saxpy_real_staggered_eoprec" || in == "saxpy_real_arg_staggered_eoprec"
+	                                        || in == "saxpy_real_vec_staggered_eoprec") {
 		//this kernel reads 2 su3vec, 1 real number and writes 1 su3vec per site (eo)
 		return D * Seo * (C * NC * (2 + 1) + 1);
 	}
-	if (in == "saxpby_cplx_stagg_eoprec" || in == "saxpby_cplx_arg_stagg_eoprec") {
+	if (in == "saxpby_cplx_staggered_eoprec" || in == "saxpby_cplx_arg_staggered_eoprec") {
 		//this kernel reads 2 su3vec, 2 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (2 + 1) + 2);
 	}
-	if (in == "saxpby_real_stagg_eoprec" || in == "saxpby_real_arg_stagg_eoprec"
-	                                     || in == "saxpby_real_vec_stagg_eoprec") {
+	if (in == "saxpby_real_staggered_eoprec" || in == "saxpby_real_arg_staggered_eoprec"
+	                                         || in == "saxpby_real_vec_staggered_eoprec") {
 		//this kernel reads 2 su3vec, 2 complex number and writes 1 su3vec per site (eo)
 		return D * Seo * (C * NC * (2 + 1) + 2);
 	}
-	if (in == "saxpbypz_cplx_stagg_eoprec" || in == "saxpbypz_cplx_arg_stagg_eoprec") {
+	if (in == "saxpbypz_cplx_staggered_eoprec" || in == "saxpbypz_cplx_arg_staggered_eoprec") {
 		//this kernel reads 3 su3vec, 2 complex number and writes 1 su3vec per site (eo)
 		return C * D * Seo * (NC * (3 + 1) + 2);
 	}
@@ -1510,34 +1517,34 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//this kernel performs 1. / sqrt((3.f * VOL4D)) and su3vec_times_real for each site
 		return Seo * ( 3 + NC * 2);
 	}
-	if (in == "sax_cplx_stagg_eoprec" || in == "sax_cplx_arg_stagg_eoprec") {
+	if (in == "sax_cplx_staggered_eoprec" || in == "sax_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_complex
 		return Seo * (NC * (meta::get_flop_complex_mult()));
 	}
-	if (in == "sax_real_stagg_eoprec" || in == "sax_real_arg_stagg_eoprec" 
-	                                  || in == "sax_real_vec_stagg_eoprec" ) {
+	if (in == "sax_real_staggered_eoprec" || in == "sax_real_arg_staggered_eoprec" 
+	                                      || in == "sax_real_vec_staggered_eoprec" ) {
 		//this kernel performs on each site (eo) su3vec_times_real
 		return Seo * NC;
 	}
-	if (in == "saxpy_cplx_stagg_eoprec" || in == "saxpy_cplx_arg_stagg_eoprec") {
+	if (in == "saxpy_cplx_staggered_eoprec" || in == "saxpy_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_complex and su3vec_acc
 		return Seo * (NC * (meta::get_flop_complex_mult() + 2));
 	}
-	if (in == "saxpy_real_stagg_eoprec" || in == "saxpy_real_arg_stagg_eoprec"
-	                                    || in == "saxpy_real_vec_stagg_eoprec") {
+	if (in == "saxpy_real_staggered_eoprec" || in == "saxpy_real_arg_staggered_eoprec"
+	                                        || in == "saxpy_real_vec_staggered_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_real and su3vec_acc
 		return Seo * (NC * (2 + 2));
 	}
-	if (in == "saxpby_cplx_stagg_eoprec" || in == "saxpby_cplx_arg_stagg_eoprec") {
+	if (in == "saxpby_cplx_staggered_eoprec" || in == "saxpby_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) 2*su3vec_times_complex and 1*su3vec_acc
 		return Seo * (NC * (2 * meta::get_flop_complex_mult() + 2));
 	}
-	if (in == "saxpby_real_stagg_eoprec" || in == "saxpby_real_arg_stagg_eoprec"
-	                                     || in == "saxpby_real_vec_stagg_eoprec") {
+	if (in == "saxpby_real_staggered_eoprec" || in == "saxpby_real_arg_staggered_eoprec"
+	                                         || in == "saxpby_real_vec_staggered_eoprec") {
 		//this kernel performs on each site (eo) 2*su3vec_times_real and 1*su3vec_acc
 		return Seo * (NC * (4 + 2));
 	}
-	if (in == "saxpbypz_cplx_stagg_eoprec" || in == "saxpbypz_cplx_arg_stagg_eoprec") {
+	if (in == "saxpbypz_cplx_staggered_eoprec" || in == "saxpbypz_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) 2*su3vec_times_complex and 2*su3vec_acc
 		return Seo * (NC * 2 * (meta::get_flop_complex_mult() + 2));
 	}
@@ -1560,10 +1567,10 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, global_squarenorm_stagg);
-	Opencl_Module::print_profiling(filename, global_squarenorm_reduction_stagg);
+	//Opencl_Module::print_profiling(filename, global_squarenorm_reduction_stagg);
 	Opencl_Module::print_profiling(filename, scalar_product_stagg);
-	Opencl_Module::print_profiling(filename, scalar_product_reduction_stagg);
-	Opencl_Module::print_profiling(filename, scalar_product_real_reduction_stagg);
+	//Opencl_Module::print_profiling(filename, scalar_product_reduction_stagg);
+	//Opencl_Module::print_profiling(filename, scalar_product_real_reduction_stagg);
 	Opencl_Module::print_profiling(filename, set_zero_spinorfield_stagg);
 	Opencl_Module::print_profiling(filename, set_cold_spinorfield_stagg);
 	Opencl_Module::print_profiling(filename, set_gaussian_spinorfield_stagg);
@@ -1597,8 +1604,8 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	Opencl_Module::print_profiling(filename, sax_real_vec_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, saxpy_real_vec_stagg_eoprec);
 	Opencl_Module::print_profiling(filename, saxpby_real_vec_stagg_eoprec);
-	Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_eoprec);
-	Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_reduction);
+	//Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_eoprec);
+	//Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_reduction);
 }
 
 hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)

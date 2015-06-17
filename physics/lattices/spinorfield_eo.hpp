@@ -187,6 +187,8 @@ void scalar_product(const Scalar<hmc_complex>* res, const Spinorfield_eo& left, 
 
 template<typename S, hmc_complex (*T)(const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::scalar_product>(const hardware::System&);
+template<typename S, hmc_complex (*T)(const S&, const S&)> size_t get_read_write_size(const hardware::System&);
+template<> size_t get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::scalar_product>(const hardware::System&);
 
 /**
  * Calculate the squarenorm of the spinorfield
@@ -207,6 +209,8 @@ void squarenorm(const Scalar<hmc_float>* res, const Spinorfield_eo& field);
 
 template<typename S, hmc_float (*T)(const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System&);
+template<typename S, hmc_float (*T)(const S&)> size_t get_read_write_size(const hardware::System&);
+template<> size_t get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System&);
 
 /**
  * Perform the BLAS operation saxpy.
@@ -218,6 +222,8 @@ void saxpy(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Sp
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System&);
+template<typename S, void (*T)(const S*, const hmc_complex, const S&, const S&)> size_t get_read_write_size(const hardware::System&);
+template<> size_t get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System&);
 
 /**
  * Perform the BLAS operation sax.
@@ -229,6 +235,8 @@ void sax(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spin
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System&);
+template<typename S, void (*T)(const S*, const hmc_complex, const S&)> size_t get_read_write_size(const hardware::System&);
+template<> size_t get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System&);
 
 /**
  * Perform the BLAS operation saxsbypz.
@@ -240,6 +248,8 @@ void saxsbypz(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const
 
 template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&, const S&)> size_t get_flops(const hardware::System&);
 template<> size_t get_flops<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System&);
+template<typename S, void (*T)(const S*, const hmc_complex, const S&, const hmc_complex, const S&, const S&)> size_t get_read_write_size(const hardware::System&);
+template<> size_t get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System&);
 
 /**
  * Split the given Spinorfield into even and odd Spinorfield_eo.
@@ -258,6 +268,9 @@ void convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, co
  * @param[in]  odd    The odd part
  */
 void convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd);
+
+void saxpy_AND_squarenorm(const Spinorfield_eo* out, const Scalar<hmc_complex>& alpha, const Spinorfield_eo& x, const Spinorfield_eo& y, const Scalar<hmc_complex>& squarenorm);
+void saxpy_AND_gamma5_eo(const Spinorfield_eo* out, const hmc_complex alpha, const Spinorfield_eo& x, const Spinorfield_eo& y);
 
 /**
  * A utility function to log the tracenorm.

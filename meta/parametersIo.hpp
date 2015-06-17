@@ -28,6 +28,7 @@ class ParametersIo {
 public:
 	int get_writefrequency() const noexcept;
 	int get_savefrequency() const noexcept;
+    int get_savepointfrequency() const noexcept;
 	int get_config_number_digits() const noexcept;
 	std::string get_prng_prefix() const noexcept;
 	std::string get_prng_postfix() const noexcept;
@@ -55,7 +56,8 @@ public:
 private:
 	po::options_description options;
 	int writefrequency;
-	int savefrequency;
+	int savefrequency;      //This is the frequency for conf.xxxx and prng.xxxx
+    int savepointfrequency; //This is the frequency for conf.save and prng.save
 	int config_number_digits;
 	std::string config_prefix;
 	std::string config_postfix;

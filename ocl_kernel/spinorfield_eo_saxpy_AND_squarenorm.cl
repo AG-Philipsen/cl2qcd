@@ -44,7 +44,7 @@ __kernel void saxpy_AND_squarenorm_eo(__global const spinorStorageType * const r
 		//calc squarenorm of resulting spinor
 //		hmc_float tmp = spinor_squarenorm(x_tmp);
 //		sum += tmp;
-sum +=		spinor_squarenorm(x_tmp);
+		sum +=		spinor_squarenorm(x_tmp);
 		putSpinor_eo(out, id_mem, x_tmp);
 	}
 

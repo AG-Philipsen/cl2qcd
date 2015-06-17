@@ -23,9 +23,26 @@
 #include "../host_functionality/logger.hpp"
 #include <boost/lexical_cast.hpp>
 #include "../executables/exceptions.h"
+//http://www.ridgesolutions.ie/index.php/2013/05/30/boost-link-error-undefined-reference-to-boostfilesystemdetailcopy_file/
+#define BOOST_NO_CXX11_SCOPED_ENUMS
+#include <boost/filesystem.hpp>
 
 LimeFileWriter::LimeFileWriter(std::string filenameIn) : LimeFile_basic(filenameIn)
 {
+	if ( boost::filesystem::exists( filenameIn ) )
+	{
+	  //TODO: It seems that the function boost::filesystem::copy_file gives a linking error in compilation
+	  //      /cm/shared/apps/boost/1.52.0/include/boost/filesystem/operations.hpp:381: undefined reference to `boost::filesystem::detail::copy_file(...)
+	  //      therefore here we rename files and then delete. This should nevertheless fixed!
+	  const std::string backupFilename = filenameIn + "_backup";
+	  if(boost::filesystem::exists(backupFilename))
+	    boost::filesystem::rename(backupFilename, backupFilename + "_tmp");
+	  logger.warn() << "Found existing file of name \"" << filenameIn << "\". Store this to \"" << backupFilename << "\"...";
+	  boost::filesystem::rename( filenameIn, backupFilename);
+	  if(boost::filesystem::exists(backupFilename + "_tmp"))
+	    boost::filesystem::remove(backupFilename + "_tmp");
+	}
+
 	MB_flag = 1;
 	ME_flag = 1;
 	writtenBytes = 0;
@@ -35,11 +52,20 @@ LimeFileWriter::LimeFileWriter(std::string filenameIn) : LimeFile_basic(filename
 	writer = limeCreateWriter(outputfile);
 }
 
-LimeFileWriter::~LimeFileWriter()
+void LimeFileWriter::closeLimeFile()
 {
 	fclose(outputfile);
 	limeDestroyWriter(writer);
+	writer = NULL;
 	logger.info() << "  " << (float) ( (float) (writtenBytes) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
+}
+
+LimeFileWriter::~LimeFileWriter()
+{
+	if (writer != NULL)
+	{
+		closeLimeFile();
+	}
 }
 
 void writeLimeHeaderToLimeFile(LimeRecordHeader * header, LimeWriter * writer)

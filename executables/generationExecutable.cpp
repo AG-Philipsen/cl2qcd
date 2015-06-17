@@ -36,19 +36,24 @@ void generationExecutable::setIterationParameters()
 	generationSteps     = thermalizationSteps; //this is temp.: in each child it is incremented by the nr of tr.
 	writeFrequency      = parameters.get_writefrequency();
 	saveFrequency       = parameters.get_savefrequency();
+    savePointFrequency  = parameters.get_savepointfrequency();
 }
 
 void generationExecutable::saveGaugefield()
 {
-        gaugefield->save(iteration+1); //Here the number is that written in the lime file as matadata, and it is iteration+1 to be able to continue later at the right tr.
-	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
+    if (((savePointFrequency != 0) && ((iteration + 1) % savePointFrequency) == 0)) {
+        gaugefield->save(iteration+1); //Here the number is that written in the lime file as metadata, and it is iteration+1 to be able to continue later at the right tr.
+    }
+    if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		gaugefield->saveToSpecificFile(iteration + 1);
 	}
 }
 
 void generationExecutable::savePrng()
 {
-	prng->save();
+    if (((savePointFrequency != 0) && ((iteration + 1) % savePointFrequency) == 0)) {
+        prng->save();
+    }
 	if (((saveFrequency != 0) && ((iteration + 1) % saveFrequency) == 0)) {
 		prng->saveToSpecificFile(iteration + 1);
 	}
@@ -64,7 +69,7 @@ void generationExecutable::generateConfigurations()
 
 void generationExecutable::thermalize()
 {
-	logger.info() << "Start thermalization (" << thermalizationSteps << " tr.)...";
+	logger.info() << "Start thermalization (" << parameters.get_thermalizationsteps() << " tr.)...";
 	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
 	//With this try and catch the warning is printed only if the user wants to make thermalization steps, not always, but this makes sense
 	try

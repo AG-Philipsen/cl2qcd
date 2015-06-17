@@ -704,6 +704,7 @@ static fs::path get_binary_file_path(std::string md5)
 		user_name = _user_name;
 	}
 	const fs::path cache_dir = fs::temp_directory_path() / (user_name + '-' + CACHE_DIR_NAME);
+	//const fs::path cache_dir = fs::current_path() / (user_name + '-' + CACHE_DIR_NAME);
 	const std::string file_name = md5 + ".elf";
 	return cache_dir / file_name;
 }
