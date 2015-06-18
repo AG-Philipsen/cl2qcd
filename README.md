@@ -19,8 +19,8 @@ See [INSTALL](INSTALL) for installation instructions.
 License
 -------
 
-CL2QCD itself is licensed unter the GPLv3.
-However some bundled third-party code is licensed unter different licenses.
+CL2QCD itself is licensed under the GPLv3.
+However some bundled third-party code is licensed under different licenses.
 See [COPYING](COPYING) for details.
 
 Publications
