@@ -31,7 +31,6 @@ benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : general
 
 void benchmarkExecutable::benchmark()
 {
-    performanceTimer.reset();
     if(! parameters.get_enable_profiling() )
     {
       throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
@@ -41,12 +40,13 @@ void benchmarkExecutable::benchmark()
 	throw Print_Error_Message("There must be exactly one device chosen for this benchmark to be performed. Aborting...\n", __FILE__, __LINE__);
       }
     logger.info() << "Perform benchmarks..";
-    for (int iteration = 0; iteration < benchmarkSteps; iteration ++)
+    performanceTimer.reset();
+    for (int iteration = 0; iteration < benchmarkSteps; iteration++)
       {
 	performBenchmarkForSpecificKernels();
       }
-    logger.info() << "Benchmarks done";
     performanceTimer.add();
+    logger.info() << "Benchmarks done";
 }
 
 void benchmarkExecutable::benchmarkMultipleDevices()
