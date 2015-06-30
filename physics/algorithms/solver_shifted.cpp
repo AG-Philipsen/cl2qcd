@@ -40,250 +40,252 @@ static void compare_sqnorm(const std::vector<hmc_float> a, const std::vector<phy
 
 int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Staggeredfield_eo *> x, const std::vector<hmc_float> sigma, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& b, const hardware::System& system, hmc_float prec)
 {
-	using namespace physics::lattices;
-	using physics::algorithms::solvers::SolverStuck;
-	using physics::algorithms::solvers::SolverDidNotSolve;
-	
-	const auto & params = system.get_inputparameters();
-  
-	/// @todo start timer synchronized with device(s)
-	klepsydra::Monotonic timer;
-	klepsydra::Monotonic timer_noWarmup;
-	/// @todo make configurable from outside
-	const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
-	const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
-	if(USE_ASYNC_COPY) {
-		logger.warn() << "Asynchroneous copying in the CG-M is currently unimplemented!";
-	}
-	if(MINIMUM_ITERATIONS) {
-		logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for CGM benchmarking!";
-	}
-	
-	if(squarenorm(b)==0){
-	  for(uint i=0; i<sigma.size(); i++)
-		x[i]->set_zero();   
-	  return 0;
-	}
-	
-	std::vector<hmc_float> xsq(x.size(), 0);
-	
-	if(sigma.size() != x.size())
-		throw std::invalid_argument("Wrong size of multi-shifted inverter parameters!");
-	
-	//The number of values of constants sigma as well as the number of fields x
-	const int Neqs = sigma.size();
+    using namespace physics::lattices;
+    using physics::algorithms::solvers::SolverStuck;
+    using physics::algorithms::solvers::SolverDidNotSolve;
 
-	//Auxiliary staggered fields
-	const Staggeredfield_eo r(system);
-	const Staggeredfield_eo p(system);
-	std::vector<Staggeredfield_eo*> ps;
-	
-	//Auxiliary scalar vectors
-	const Vector<hmc_float> zeta_prev(Neqs, system);         //This is zeta at the step iter-1
-	const Vector<hmc_float> zeta(Neqs, system);              //This is zeta at the step iter
-	const Vector<hmc_float> zeta_foll(Neqs, system);         //This is zeta at the step iter+1
-	Vector<hmc_float> beta_vec(Neqs, system);
-	Vector<hmc_float> alpha_vec(Neqs, system);
-	Vector<hmc_float> shift(Neqs, system);                   //This is to store constants sigma
-	std::vector<bool> single_system_converged(Neqs, false);  //This is to stop calculation on single system
-	std::vector<uint> single_system_iter;                    //This is to calculate performance properly
+    const auto & params = system.get_inputparameters();
 
-	//Auxiliary scalars
-	const Scalar<hmc_float> alpha_scalar_prev(system);       //This is alpha_scalar at the step iter-1
-	const Scalar<hmc_float> alpha_scalar(system);            //This is alpha_scalar at the step iter
-	const Scalar<hmc_float> beta_scalar_prev(system);        //This is beta_scalar at the step iter-1
-	const Scalar<hmc_float> beta_scalar(system);             //This is beta_scalar at the step iter
-	
-	//Auxiliary containers for temporary saving
-	const Staggeredfield_eo v(system);                       //This is to store A.p
-	const Scalar<hmc_float> tmp1(system);                    //This is to store (r,r) before updating r
-	const Scalar<hmc_float> tmp2(system);                    //This is to store (r,r) after updating r
-	const Scalar<hmc_float> tmp3(system);                    //This is to store (p,v) as Scalar
-	
-	//Only if merged kernels are used (this is to store the single eq. residuum all at once)
-	std::unique_ptr<Vector<hmc_float>> single_eq_resid;
-	std::unique_ptr<std::vector<hmc_float>> single_eq_resid_host;
-	if(params.get_use_merge_kernels_spinor() == true){
-		single_eq_resid = std::unique_ptr<Vector<hmc_float>>{new Vector<hmc_float>(Neqs, system)};
-		single_eq_resid_host = std::unique_ptr<std::vector<hmc_float>>{new std::vector<hmc_float>};
-	}
-	
-	//Auxiliary constants as Scalar
-	const Scalar<hmc_float> zero(system);
-	zero.store(0.0);
-	
-	hmc_float resid;
-	int iter = 0;
-	//Initialization auxilary and output quantities
-	zeta_prev.store(std::vector<hmc_float>(Neqs, 1.));  // zeta_prev[i] = 1
-	zeta.store(std::vector<hmc_float>(Neqs, 1.));       // zeta[i] = 1
-	alpha_vec.store(std::vector<hmc_float>(Neqs, 0.));  // alpha[i] = 0
-	shift.store(sigma);
-	for(int i=0; i<Neqs; i++){
-		x[i]->set_zero();    // x[i] = 0 
-		ps.push_back(new Staggeredfield_eo(system));    
-		copyData(ps[i], b); // ps[i] = b
-	}
-	copyData(&r, b);                        // r = b
-	copyData(&p, b);                        // p = b
-	scalar_product_real_part(&tmp1, r, r);  // set tmp1 = (r, r) for the first iteration
-	beta_scalar.store(1.0);                 // beta_scalar = 1, here I should set beta_scalar_prev
-						 // but in this way I can set beta_scalar_prev at the begin
-						 // of the loop over iter recursively.
-	alpha_scalar.store(0.0);                // alpha_scalar = 0. The same as beta_scalar above.
-	
-	//At first, in the log string I will report all the data about the system.
-	//To avoid to print to shell tens of lines per time, since Neqs can be 
-	//also 20 or something like that, reduce report_num.
-	const int report_num = Neqs;
-	if(report_num>Neqs)
-		throw std::invalid_argument("In cg-m report_num cannot be bigger than Neqs!");
-	log_squarenorm(create_log_prefix_cgm(iter) + "b (initial): ", b);
-	log_squarenorm(create_log_prefix_cgm(iter) + "r (initial): ", r);
-	log_squarenorm(create_log_prefix_cgm(iter) + "p (initial): ", p);
-	log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (initial)", x, report_num);
-	log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps (initial)", ps, report_num);
-	
-	for(iter = 0; iter < params.get_cgmax() || iter < MINIMUM_ITERATIONS; iter ++) {
-		//Update beta_scalar: v=A.p and tmp1=(r,r) and tmp3=(p,v) ---> beta_scalar=(-1)*tmp1/tmp3
-		copyData(&beta_scalar_prev,beta_scalar);  //before updating beta_scalar its value is saved
-		A(&v, gf, p);
-		log_squarenorm(create_log_prefix_cgm(iter) + "v: ", v);
-		scalar_product_real_part(&tmp3, p, v); 
-		divide(&beta_scalar, tmp1, tmp3);  //tmp1 is set from previous iteration
-		subtract(&beta_scalar, zero, beta_scalar);
-		//Update field r: r+=beta_scalar*A.p ---> r = r + beta_scalar*v
-		saxpy(&r, beta_scalar, v, r);
-		log_squarenorm(create_log_prefix_cgm(iter) + "r: ", r);
-		//We store in tmp2 the quantity (r,r) that we use later. When we check
-		//the residuum, then it is already calculated.
-		scalar_product_real_part(&tmp2, r, r);
-		if(logger.beDebug()){
-			//Calculate squarenorm of the output field
-			for(uint i=0; i<x.size(); i++)
-				xsq[i] = squarenorm(*x[i]);
-		}
-		//Update alpha_scalar: alpha_scalar = tmp2/tmp1
-		copyData(&alpha_scalar_prev,alpha_scalar); //before updating alpha_scalar its value is saved
-		divide(&alpha_scalar, tmp2, tmp1);
-		//Update field p: p = r + alpha_scalar*p
-		saxpy(&p, alpha_scalar, p, r);
-		log_squarenorm(create_log_prefix_cgm(iter) + "p: ", p);
+    /// @todo start timer synchronized with device(s)
+    klepsydra::Monotonic timer;
+    klepsydra::Monotonic timer_noWarmup;
+    /// @todo make configurable from outside
+    const bool USE_ASYNC_COPY = params.get_cg_use_async_copy();
+    const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
+    if(USE_ASYNC_COPY) {
+        logger.warn() << "Asynchroneous copying in the CG-M is currently unimplemented!";
+    }
+    if(MINIMUM_ITERATIONS) {
+        logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for CGM benchmarking!";
+    }
 
-		//Update auxilary quantities
-		update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, shift, Neqs);
-		update_beta_cgm(&beta_vec, beta_scalar, zeta_foll, zeta, Neqs);
-		update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
-		
-		//Check if single system converged: ||zeta_foll[k] * r||^2 < prec
-		// ---> v = zeta_foll[k] * r
-		if(params.get_use_merge_kernels_spinor() == true) {
-			sax_vec_and_squarenorm(single_eq_resid.get(), zeta_foll, r);
-			*single_eq_resid_host = single_eq_resid->get();
-		}
+    if(squarenorm(b)==0){
+        for(uint i=0; i<sigma.size(); i++)
+            x[i]->set_zero();
+        return 0;
+    }
 
-		//Loop over the system equations, namely over the set of sigma values
-		for(int k=0; k<Neqs; k++){
-			if(single_system_converged[k]==false){
-				//Update x[k]: x[k] = x[k] - beta[k]*ps[k]
-				// --->  remember that in beta_vec we store (- beta[k])
-				saxpy(x[k], beta_vec, k, *ps[k], *x[k]);
-				//Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
-				saxpby(ps[k], zeta_foll, k, r, alpha_vec, k, *ps[k]);
-				//Check fields squarenorm for possible nan
-				if(logger.beDebug()){
-					if((squarenorm(*x[k]) != squarenorm(*x[k])) ||
-					  (squarenorm(*ps[k]) != squarenorm(*ps[k]))){
-						logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
-						throw SolverStuck(iter, __FILE__, __LINE__);
-					}
-				}
-				//Check if single system converged: ||zeta_iii[k] * r||^2 < prec
-				// ---> v = zeta_iii[k] * r
-				if(params.get_use_merge_kernels_spinor() == false)
-					sax(&v, zeta_foll.get()[k], r);
-				
-				if((!params.get_use_merge_kernels_spinor() && (squarenorm(v) < prec)) ||
-				    (params.get_use_merge_kernels_spinor() && ((*single_eq_resid_host)[k] < prec))){
-					single_system_converged[k] = true;
-					single_system_iter.push_back((uint)iter);
-					logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
-				}
-			}
-		}
-		//Adjust zeta for the following iteration
-		copyData(&zeta_prev, zeta);
-		copyData(&zeta, zeta_foll);
-		
-		if(logger.beDebug()){
-			compare_sqnorm(xsq, x);
-		}
-		log_squarenorm_aux(create_log_prefix_cgm(iter) + "x", x, report_num);
-		log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps", ps, report_num);
-		
-		//Check whether the algorithm converged
-		if(single_system_iter.size() == (uint)Neqs) {
-			//Calculate resid: 
-			resid = tmp2.get();
-			logger.debug() << create_log_prefix_cgm(iter) << "resid: " << resid;
-			//test if resid is NAN
-			if(resid != resid) {
-				logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
-				throw SolverStuck(iter, __FILE__, __LINE__);
-			}
-			if(resid < prec && iter >= MINIMUM_ITERATIONS) {
-				logger.debug() << create_log_prefix_cgm(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
-				// report on performance
-				if(logger.beInfo()) {
-					// we are always synchroneous here, as we had to recieve the residuum from the device
-					const uint64_t duration = timer.getTime();
-					const uint64_t duration_noWarmup = timer_noWarmup.getTime();
-					// calculate flops
-					const cl_ulong matrix_flops = A.get_flops();
-					const int sum_of_partial_iter = std::accumulate(single_system_iter.begin(), single_system_iter.end(),0);
-					logger.debug() << "matrix_flops: " << matrix_flops;
-					
-					cl_ulong flops_per_iter_no_inner_loop= matrix_flops +
-						2 * get_flops<Staggeredfield_eo, hmc_float, scalar_product_real_part>(system) + 3 +
-						2 * get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
-						get_flops_update_cgm("alpha", Neqs, system) +
-						get_flops_update_cgm("beta", Neqs, system) +
-						get_flops_update_cgm("zeta", Neqs, system);
-					cl_ulong flops_per_iter_only_inner_loop=
-						get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
-						get_flops<Staggeredfield_eo, hmc_float, saxpby>(system) +
-						get_flops<Staggeredfield_eo, hmc_float, sax>(system) +
-						get_flops<Staggeredfield_eo, squarenorm>(system);
-					
-					cl_ulong total_flops = iter * flops_per_iter_no_inner_loop +
-						sum_of_partial_iter * flops_per_iter_only_inner_loop;
-					cl_ulong noWarmup_flops = (iter-1) * flops_per_iter_no_inner_loop +
-						(sum_of_partial_iter-Neqs) * flops_per_iter_only_inner_loop;
-					
-					logger.debug() << "total_flops: " << total_flops;
-					// report performance
-					logger.info() << create_log_prefix_cgm(iter) << "CG-M completed in " << std::setprecision(6) << duration / 1000.f << " ms @ " << ((hmc_float)total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << ((hmc_float)noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
-				}
-				// report on solution
-				log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (final): ", x, report_num);
-				
-				//Before returning I have to clean all the memory!!!
-				meta::free_container(ps);
+    std::vector<hmc_float> xsq(x.size(), 0);
 
-				return iter;
-			}
-		}
-		//Set tmp1 from tmp2 for following iteration
-		copyData(&tmp1, tmp2);
-		if(iter == 0) {
-			timer_noWarmup.reset();
-		}
-	//logger.info() << "cgm not properly executed in " << timer.getTime() / 1000.f << " ms";
-	//return 0;
-	}
-	
-	logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << tmp2.get();
-	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
+    if(sigma.size() != x.size())
+        throw std::invalid_argument("Wrong size of multi-shifted inverter parameters!");
+
+    //The number of values of constants sigma as well as the number of fields x
+    const int Neqs = sigma.size();
+
+    //Auxiliary staggered fields
+    const Staggeredfield_eo r(system);
+    const Staggeredfield_eo p(system);
+    std::vector<Staggeredfield_eo*> ps;
+
+    //Auxiliary scalar vectors
+    const Vector<hmc_float> zeta_prev(Neqs, system);         //This is zeta at the step iter-1
+    const Vector<hmc_float> zeta(Neqs, system);              //This is zeta at the step iter
+    const Vector<hmc_float> zeta_foll(Neqs, system);         //This is zeta at the step iter+1
+    Vector<hmc_float> beta_vec(Neqs, system);
+    Vector<hmc_float> alpha_vec(Neqs, system);
+    Vector<hmc_float> shift(Neqs, system);                   //This is to store constants sigma
+    std::vector<bool> single_system_converged(Neqs, false);  //This is to stop calculation on single system
+    std::vector<uint> single_system_iter;                    //This is to calculate performance properly
+
+    //Auxiliary scalars
+    const Scalar<hmc_float> alpha_scalar_prev(system);       //This is alpha_scalar at the step iter-1
+    const Scalar<hmc_float> alpha_scalar(system);            //This is alpha_scalar at the step iter
+    const Scalar<hmc_float> beta_scalar_prev(system);        //This is beta_scalar at the step iter-1
+    const Scalar<hmc_float> beta_scalar(system);             //This is beta_scalar at the step iter
+
+    //Auxiliary containers for temporary saving
+    const Staggeredfield_eo v(system);                       //This is to store A.p
+    const Scalar<hmc_float> tmp1(system);                    //This is to store (r,r) before updating r
+    const Scalar<hmc_float> tmp2(system);                    //This is to store (r,r) after updating r
+    const Scalar<hmc_float> tmp3(system);                    //This is to store (p,v) as Scalar
+
+    //Only if merged kernels are used (this is to store the single eq. residuum all at once)
+    std::unique_ptr<Vector<hmc_float>> single_eq_resid;
+    std::unique_ptr<std::vector<hmc_float>> single_eq_resid_host;
+    if(params.get_use_merge_kernels_spinor() == true){
+        single_eq_resid = std::unique_ptr<Vector<hmc_float>>{new Vector<hmc_float>(Neqs, system)};
+        single_eq_resid_host = std::unique_ptr<std::vector<hmc_float>>{new std::vector<hmc_float>};
+    }
+
+    //Auxiliary constants as Scalar
+    const Scalar<hmc_float> zero(system);
+    zero.store(0.0);
+
+    hmc_float resid;
+    int iter = 0;
+    //Initialization auxilary and output quantities
+    zeta_prev.store(std::vector<hmc_float>(Neqs, 1.));  // zeta_prev[i] = 1
+    zeta.store(std::vector<hmc_float>(Neqs, 1.));       // zeta[i] = 1
+    alpha_vec.store(std::vector<hmc_float>(Neqs, 0.));  // alpha[i] = 0
+    shift.store(sigma);
+    for(int i=0; i<Neqs; i++){
+        x[i]->set_zero();    // x[i] = 0
+        ps.push_back(new Staggeredfield_eo(system));
+        copyData(ps[i], b); // ps[i] = b
+    }
+    copyData(&r, b);                        // r = b
+    copyData(&p, b);                        // p = b
+    scalar_product_real_part(&tmp1, r, r);  // set tmp1 = (r, r) for the first iteration
+    beta_scalar.store(1.0);                 // beta_scalar = 1, here I should set beta_scalar_prev
+                                            // but in this way I can set beta_scalar_prev at the begin
+                                            // of the loop over iter recursively.
+    alpha_scalar.store(0.0);                // alpha_scalar = 0. The same as beta_scalar above.
+
+    //At first, in the log string I will report all the data about the system.
+    //To avoid to print to shell tens of lines per time, since Neqs can be
+    //also 20 or something like that, reduce report_num.
+    const int report_num = Neqs;
+    if(report_num>Neqs)
+        throw std::invalid_argument("In cg-m report_num cannot be bigger than Neqs!");
+    log_squarenorm(create_log_prefix_cgm(iter) + "b (initial): ", b);
+    log_squarenorm(create_log_prefix_cgm(iter) + "r (initial): ", r);
+    log_squarenorm(create_log_prefix_cgm(iter) + "p (initial): ", p);
+    log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (initial)", x, report_num);
+    log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps (initial)", ps, report_num);
+
+    for(iter = 0; iter < params.get_cgmax() || iter < MINIMUM_ITERATIONS; iter ++) {
+        //Update beta_scalar: v=A.p and tmp1=(r,r) and tmp3=(p,v) ---> beta_scalar=(-1)*tmp1/tmp3
+        copyData(&beta_scalar_prev,beta_scalar);  //before updating beta_scalar its value is saved
+        A(&v, gf, p);
+        log_squarenorm(create_log_prefix_cgm(iter) + "v: ", v);
+        scalar_product_real_part(&tmp3, p, v);
+        divide(&beta_scalar, tmp1, tmp3);  //tmp1 is set from previous iteration
+        subtract(&beta_scalar, zero, beta_scalar);
+        //Update field r: r+=beta_scalar*A.p ---> r = r + beta_scalar*v
+        saxpy(&r, beta_scalar, v, r);
+        log_squarenorm(create_log_prefix_cgm(iter) + "r: ", r);
+        //We store in tmp2 the quantity (r,r) that we use later. When we check
+        //the residuum, then it is already calculated.
+        scalar_product_real_part(&tmp2, r, r);
+        if(logger.beDebug()){
+            //Calculate squarenorm of the output field
+            for(uint i=0; i<x.size(); i++)
+            xsq[i] = squarenorm(*x[i]);
+        }
+        //Update alpha_scalar: alpha_scalar = tmp2/tmp1
+        copyData(&alpha_scalar_prev,alpha_scalar); //before updating alpha_scalar its value is saved
+        divide(&alpha_scalar, tmp2, tmp1);
+        //Update field p: p = r + alpha_scalar*p
+        saxpy(&p, alpha_scalar, p, r);
+        log_squarenorm(create_log_prefix_cgm(iter) + "p: ", p);
+
+        //Update auxilary quantities
+        update_zeta_cgm(&zeta_foll, zeta, zeta_prev, beta_scalar_prev, beta_scalar, alpha_scalar_prev, shift, Neqs);
+        update_beta_cgm(&beta_vec, beta_scalar, zeta_foll, zeta, Neqs);
+        update_alpha_cgm(&alpha_vec, alpha_scalar, zeta_foll, beta_vec, zeta, beta_scalar, Neqs);
+
+        //Check if single system converged: ||zeta_foll[k] * r||^2 < prec
+        // ---> v = zeta_foll[k] * r
+        if(params.get_use_merge_kernels_spinor() == true) {
+            sax_vec_and_squarenorm(single_eq_resid.get(), zeta_foll, r);
+            *single_eq_resid_host = single_eq_resid->get();
+        }
+
+        //Loop over the system equations, namely over the set of sigma values
+        for(int k=0; k<Neqs; k++){
+            if(single_system_converged[k]==false){
+                //Update x[k]: x[k] = x[k] - beta[k]*ps[k]
+                // --->  remember that in beta_vec we store (- beta[k])
+                saxpy(x[k], beta_vec, k, *ps[k], *x[k]);
+                //Update ps[k]: ps[k] = zeta_iii[k]*r + alpha[k]*ps[k]
+                saxpby(ps[k], zeta_foll, k, r, alpha_vec, k, *ps[k]);
+                //Check fields squarenorm for possible nan
+                if(logger.beDebug()){
+                    if((squarenorm(*x[k]) != squarenorm(*x[k])) ||
+                    (squarenorm(*ps[k]) != squarenorm(*ps[k]))){
+                        logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
+                        throw SolverStuck(iter, __FILE__, __LINE__);
+                    }
+                }
+                //Check if single system converged: ||zeta_iii[k] * r||^2 < prec
+                // ---> v = zeta_iii[k] * r
+                if(params.get_use_merge_kernels_spinor() == false)
+                    sax(&v, zeta_foll, k, r);
+
+                if(iter % params.get_cg_iteration_block_size() == 0){
+                    if((!params.get_use_merge_kernels_spinor() && (squarenorm(v) < prec)) ||
+                    (params.get_use_merge_kernels_spinor() && ((*single_eq_resid_host)[k] < prec))){
+                        single_system_converged[k] = true;
+                        single_system_iter.push_back((uint)iter);
+                        logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
+                    }
+                }
+            }
+        }
+
+        //Adjust zeta for the following iteration
+        copyData(&zeta_prev, zeta);
+        copyData(&zeta, zeta_foll);
+
+        if(logger.beDebug())
+            compare_sqnorm(xsq, x);
+        log_squarenorm_aux(create_log_prefix_cgm(iter) + "x", x, report_num);
+        log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps", ps, report_num);
+
+        //Check whether the algorithm converged
+        if(single_system_iter.size() == (uint)Neqs) {
+            //Calculate resid:
+            resid = tmp2.get();
+            logger.debug() << create_log_prefix_cgm(iter) << "resid: " << resid;
+            //test if resid is NAN
+            if(resid != resid) {
+                logger.fatal() << create_log_prefix_cgm(iter) << "NAN occured!";
+                throw SolverStuck(iter, __FILE__, __LINE__);
+            }
+            if(resid < prec && iter >= MINIMUM_ITERATIONS) {
+                logger.debug() << create_log_prefix_cgm(iter) << "Solver converged in " << iter << " iterations! resid:\t" << resid;
+                // report on performance
+                if(logger.beInfo()) {
+                    // we are always synchroneous here, as we had to recieve the residuum from the device
+                    const uint64_t duration = timer.getTime();
+                    const uint64_t duration_noWarmup = timer_noWarmup.getTime();
+                    // calculate flops
+                    const cl_ulong matrix_flops = A.get_flops();
+                    const int sum_of_partial_iter = std::accumulate(single_system_iter.begin(), single_system_iter.end(),0);
+                    logger.debug() << "matrix_flops: " << matrix_flops;
+
+                    cl_ulong flops_per_iter_no_inner_loop= matrix_flops +
+                    2 * get_flops<Staggeredfield_eo, hmc_float, scalar_product_real_part>(system) + 3 +
+                    2 * get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
+                    get_flops_update_cgm("alpha", Neqs, system) +
+                    get_flops_update_cgm("beta", Neqs, system) +
+                    get_flops_update_cgm("zeta", Neqs, system);
+                    cl_ulong flops_per_iter_only_inner_loop=
+                    get_flops<Staggeredfield_eo, hmc_float, saxpy>(system) +
+                    get_flops<Staggeredfield_eo, hmc_float, saxpby>(system) +
+                    get_flops<Staggeredfield_eo, hmc_float, sax>(system) +
+                    get_flops<Staggeredfield_eo, squarenorm>(system);
+
+                    cl_ulong total_flops = iter * flops_per_iter_no_inner_loop +
+                    sum_of_partial_iter * flops_per_iter_only_inner_loop;
+                    cl_ulong noWarmup_flops = (iter-1) * flops_per_iter_no_inner_loop +
+                    (sum_of_partial_iter-Neqs) * flops_per_iter_only_inner_loop;
+
+                    logger.debug() << "total_flops: " << total_flops;
+                    // report performance
+                    logger.info() << create_log_prefix_cgm(iter) << "CG-M completed in " << std::setprecision(6) << duration / 1000.f << " ms @ " << ((hmc_float)total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations. Performance after warmup: " << ((hmc_float)noWarmup_flops / duration_noWarmup / 1000.f) << " Gflops.";
+                }
+                // report on solution
+                log_squarenorm_aux(create_log_prefix_cgm(iter) + "x (final): ", x, report_num);
+
+                //Before returning I have to clean all the memory!!!
+                meta::free_container(ps);
+
+                return iter;
+            }
+        }
+        //Set tmp1 from tmp2 for following iteration
+        copyData(&tmp1, tmp2);
+        if(iter == 0) {
+            timer_noWarmup.reset();
+        }
+        //logger.info() << "cgm not properly executed in " << timer.getTime() / 1000.f << " ms";
+        //return 0;
+    }
+
+    logger.fatal() << create_log_prefix_cgm(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << tmp2.get();
+    throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
 
