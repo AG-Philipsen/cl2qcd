@@ -69,6 +69,7 @@ void hardware::code::Correlator::fill_kernels()
 					correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << "fermionobservables/correlator_ax_point.cl";
 					correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << "fermionobservables/correlator_ay_point.cl";
 					correlator_az = createKernel("correlator_az_z") << basic_correlator_code << "fermionobservables/correlator_az_point.cl";
+					correlator_avps = 0;
 					break;
 				default:
 					stringstream errmsg;
@@ -136,6 +137,9 @@ void hardware::code::Correlator::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(correlator_az)
 		clerr = clReleaseKernel(correlator_az);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	if(correlator_avps)
+		clerr = clReleaseKernel(correlator_avps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(create_point_source) {
 		clerr = clReleaseKernel(create_point_source);

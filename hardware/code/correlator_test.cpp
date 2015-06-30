@@ -1196,3 +1196,25 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_AZ_T)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_AVPS_T)
+
+	std::string kernelIdentifier = "avps";
+	const int spatialExtent = 6;
+	const int temporalExtent = 4;
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, 0.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::zero );
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		std::vector<double> expectedResult(temporalExtent, -48.);
+		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, fillType::one );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()

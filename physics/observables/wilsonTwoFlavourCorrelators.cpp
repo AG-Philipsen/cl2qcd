@@ -308,9 +308,9 @@ static std::vector<hmc_float> calculate_correlator_colorwise(const std::string& 
 
 std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
 {
-	if(type == "ps") {
+	if(type == "ps"  || type == "avps" ) {
 		return calculate_correlator_componentwise(type, corr, sources, system);
-	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az" || type == "avps") {
+	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az") {
 		return calculate_correlator_colorwise(type, corr, sources, system.get_inputparameters());
 	} {
 		throw Print_Error_Message("Correlator calculation has not been implemented for " + type, __FILE__, __LINE__);

@@ -21,45 +21,21 @@
  @file fermion-observables
 */
 
-hmc_complex calculate_avps_correlator(const spinor in1, const spinor in2, const spinor in3, const spinor in4)
+hmc_complex calculate_avps_correlator(const spinor in)
 {
 	hmc_complex restmp;
 	hmc_complex correlator;
 	correlator.re = 0.0f;
 	correlator.im = 0.0f;
 	
-	restmp = su3vec_scalarproduct(in1.e0, in1.e2);
+	restmp = su3vec_scalarproduct(in.e0, in.e2);
 	correlator.re -= restmp.re;
 	correlator.im -= restmp.im;
 
-	restmp = su3vec_scalarproduct(in1.e1, in1.e3);
+	restmp = su3vec_scalarproduct(in.e1, in.e3);
 	correlator.re -= restmp.re;
 	correlator.im -= restmp.im;
-	
-	restmp = su3vec_scalarproduct(in2.e0, in2.e2);
-	correlator.re -= restmp.re;
-	correlator.im -= restmp.im;
-
-	restmp = su3vec_scalarproduct(in2.e1, in2.e3);
-	correlator.re -= restmp.re;
-	correlator.im -= restmp.im;
-
-	restmp = su3vec_scalarproduct(in3.e0, in3.e2);
-	correlator.re -= restmp.re;
-	correlator.im -= restmp.im;
-
-	restmp = su3vec_scalarproduct(in3.e1, in3.e3);
-	correlator.re -= restmp.re;
-	correlator.im -= restmp.im;
-
-	restmp = su3vec_scalarproduct(in4.e0, in4.e2);
-	correlator.re -= restmp.re;
-	correlator.im -= restmp.im;
-
-	restmp = su3vec_scalarproduct(in4.e1, in4.e3);
-	correlator.re -= restmp.re;
-	correlator.im -= restmp.im;
-	
+		
 	return correlator;
 }
 
@@ -67,14 +43,14 @@ hmc_complex calculate_avps_correlator(const spinor in1, const spinor in2, const 
 
 	C = tr((D^(-1)(n|m))^dagger * gamma4 * D^(-1)(n|m)), where m is the source position and n is the sink position
 	
-              |0   0  -1   0|
+                  |0   0  -1   0|
 	gamma4 =  |0   0   0  -1|
-              |-1  0   0   0|
-              |0  -1   0   0|
+                  |-1  0   0   0|
+                  |0  -1   0   0|
 
-	D^(-1)(n|m) = (phi1 phi2 phi3 phi4) with summation over second color index elsewhere.
+	D^(-1)(n|m) = (phi) with summation over second spin-color index elsewhere.
 */ 
-__kernel void correlator_avps_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi1, __global const spinor * const restrict phi2, __global const spinor * const restrict phi3, __global const spinor * const restrict phi4)
+__kernel void correlator_avps_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -95,12 +71,9 @@ __kernel void correlator_avps_t(__global hmc_float * const restrict out, __globa
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					hmc_complex cortmp;
-					spinor tmp1 = phi1[get_pos(nspace, t)];
-					spinor tmp2 = phi2[get_pos(nspace, t)];
-					spinor tmp3 = phi3[get_pos(nspace, t)];
-					spinor tmp4 = phi4[get_pos(nspace, t)];
+					spinor tmp = phi[get_pos(nspace, t)];
 					
-					cortmp = calculate_vx_correlator(tmp1, tmp2, tmp3, tmp4);
+					cortmp = calculate_avps_correlator(tmp);
 					correlator.re += cortmp.re;
 					correlator.im += cortmp.im;
 				}
