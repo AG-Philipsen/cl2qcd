@@ -1,7 +1,8 @@
 /** @file
- * ildg IO utilities
  *
- * Copyright 2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
+ * Interface for IldgIoParameters
+ *
+ * Copyright 2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -19,21 +20,13 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ILDGIO_HPP_
-#define ILDGIO_HPP_
+#include "ildgIoParameters.hpp"
 
-#include "../common_header_files/types.h"
-#include <string>
-#include <vector>
-
-namespace meta
+IldgIoParameters_gaugefield createIldgIoParameters(const meta::Inputparameters * parametersIn)
 {
-	class Inputparameters;
+	Inputparameters parameters( parametersIn );
+	IldgIoParameters_gaugefield ildgIoParameters(&parameters);
+	return ildgIoParameters;
 }
 
-namespace ildgIo {
-	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const meta::Inputparameters *, int &, double &);
-	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const meta::Inputparameters *, int, double );
-}
 
-#endif 

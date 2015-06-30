@@ -73,7 +73,14 @@ void hardware::code::Fermions_staggered::clear_kernels()
 
 void hardware::code::Fermions_staggered::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
+    Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
+    if(kernel == D_KS_eo){
+        if(*ls > 64) {
+            *ls = 64;
+            *num_groups = (*gs)/(*ls);
+        }
+        return;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

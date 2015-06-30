@@ -194,7 +194,7 @@ size_t hardware::code::Complex::get_read_write_size(const std::string& in) const
 		//this kernel reads 1 float and writes 1 complex number
 		return (C + 1) * D;
 	}
-	if (in == "ratio" || in == "product" || in == "sum" || in == "subtraction") {
+	if (in == "complex_ratio" || in == "complex_product" || in == "complex_sum" || in == "complex_subtraction") {
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
 	}
@@ -205,16 +205,19 @@ size_t hardware::code::Complex::get_read_write_size(const std::string& in) const
 
 uint64_t hardware::code::Complex::get_flop_size(const std::string& in) const
 {
-	if (in == "ratio") {
+    if (in == "convert_float_to_complex") {
+        return 0;
+    }
+	if (in == "complex_ratio") {
 		return 11;
 	}
-	if (in == "product") {
+	if (in == "complex_product") {
 		return meta::get_flop_complex_mult();
 	}
-	if (in == "sum") {
+	if (in == "complex_sum") {
 		return 2;
 	}
-	if (in == "subtraction") {
+	if (in == "complex_subtraction") {
 		return 2;
 	}
 	

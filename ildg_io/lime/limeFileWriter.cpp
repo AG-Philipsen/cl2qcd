@@ -31,9 +31,16 @@ LimeFileWriter::LimeFileWriter(std::string filenameIn) : LimeFile_basic(filename
 {
 	if ( boost::filesystem::exists( filenameIn ) )
 	{
-		const std::string backupFilename = filenameIn + "_backup";
-		logger.warn() << "Found existing file of name \"" << filenameIn << "\". Store this to \"" << backupFilename << "\"...";
-		boost::filesystem::copy_file( filenameIn, backupFilename, boost::filesystem::copy_option::overwrite_if_exists);
+	  //TODO: It seems that the function boost::filesystem::copy_file gives a linking error in compilation
+	  //      /cm/shared/apps/boost/1.52.0/include/boost/filesystem/operations.hpp:381: undefined reference to `boost::filesystem::detail::copy_file(...)
+	  //      therefore here we rename files and then delete. This should nevertheless fixed!
+	  const std::string backupFilename = filenameIn + "_backup";
+	  if(boost::filesystem::exists(backupFilename))
+	    boost::filesystem::rename(backupFilename, backupFilename + "_tmp");
+	  logger.warn() << "Found existing file of name \"" << filenameIn << "\". Store this to \"" << backupFilename << "\"...";
+	  boost::filesystem::rename( filenameIn, backupFilename);
+	  if(boost::filesystem::exists(backupFilename + "_tmp"))
+	    boost::filesystem::remove(backupFilename + "_tmp");
 	}
 
 	MB_flag = 1;
