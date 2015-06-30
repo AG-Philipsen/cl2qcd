@@ -32,7 +32,8 @@ public:
 	int get_findminmax_max() const noexcept;
 	double get_findminmax_prec() const noexcept;
 	bool get_conservative() const noexcept;
-	int get_num_tastes() const noexcept;
+	double get_num_tastes() const noexcept;
+    int get_num_tastes_decimal_digits() const noexcept;
 	double get_approx_lower() const noexcept;
 	double get_approx_upper() const noexcept;
 	int get_rhmcsteps() const noexcept;
@@ -55,7 +56,19 @@ protected:
 	int findminmax_max;
 	double findminmax_prec;
 	bool conservative; //this is for the strategy in findminmax_eigenvalues
-	int num_tastes; //the numerator of the power of the determinant and then of the Rational Approx.
+	/**
+     * @internal The variable num_tastes should naturally be an integer. But there is no reason that
+     *           forbids to run the RHMC with a rational number of tastes. So we decide to declare it
+     *           as double. Then, since we know that the power of the fermionic determinant is num_tastes/4
+     *           we must then deduce the correct fraction in order to instatiate the Rational Approximation
+     *           objects. This is easily done using the command line parameter num_tastes_decimal_digits,
+     *           that tells how many digits after the comma are considered as valid. To avoid any numeric
+     *           problem one could have dealing with big numbers, we will limit this to be not bigger than 6
+     *           (fair enough limit if one thinks to physical applications).
+     * @enditernal
+     */
+    double num_tastes; 
+    int num_tastes_decimal_digits;
 	double approx_lower;
 	double approx_upper; //range of validity of the Rational Approximation
 	int rhmcsteps;
