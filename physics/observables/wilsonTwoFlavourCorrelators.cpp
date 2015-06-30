@@ -30,7 +30,7 @@
 class TwoFlavourCorrelators
 {
 public:
-  
+
 private:
   const physics::lattices::Gaugefield * gaugefield;
   const meta::Inputparameters * parameters;
@@ -67,6 +67,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources, std::string corr_fn, const hardware::System& system)
 {
 	using namespace std;
+	auto & parameters = system.get_inputparameters();
 
 	ofstream of(corr_fn.c_str(), ios_base::app);
 	if(!of.is_open()) {
@@ -81,8 +82,6 @@ void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfiel
 	auto result_ax = physics::observables::wilson::calculate_correlator("ax", result, sources, system);
 	auto result_ay = physics::observables::wilson::calculate_correlator("ay", result, sources, system);
 	auto result_az = physics::observables::wilson::calculate_correlator("az", result, sources, system);
-
-	auto & parameters = system.get_inputparameters();
 
 	if(parameters.get_print_to_screen() )
 		meta::print_info_flavour_doublet_correlators(parameters);
@@ -118,6 +117,14 @@ void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfiel
 		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (result_ax[j] + result_ay[j] + result_az[j]) / 3. << "\t" << result_ax[j] << "\t" << result_ay[j] << "\t" << result_az[j] << endl;
 	}
 
+	//the avps correlator
+	if (parameters.get_corr_dir() == 0) 
+	  {
+	    auto result_avps = physics::observables::wilson::calculate_correlator("avps", result, sources, system);
+	    for(size_t j = 0; j < result_avps.size(); j++) {
+	      of << scientific << setprecision(14) << "1 0 0 1\t" << j << "\t" << result_avps[j] << endl;
+	    }
+	  }
 	of << endl;
 }
 
@@ -303,7 +310,7 @@ std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const 
 {
 	if(type == "ps") {
 		return calculate_correlator_componentwise(type, corr, sources, system);
-	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az") {
+	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az" || type == "avps") {
 		return calculate_correlator_colorwise(type, corr, sources, system.get_inputparameters());
 	} {
 		throw Print_Error_Message("Correlator calculation has not been implemented for " + type, __FILE__, __LINE__);
@@ -326,12 +333,12 @@ static size_t get_num_corr_entries(const meta::Inputparameters& parameters)
 
 
 
-void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName) 
+void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
 	auto parameters = gaugefield->getParameters();
 	auto system = gaugefield->getSystem();
 	auto prng = gaugefield->getPrng();
-	
+
 	std::string filenameForCorrelatorData = meta::get_ferm_obs_corr_file_name(*parameters, currentConfigurationName);
 	// for the correlator calculation, all sources are needed on the device
 	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parameters->get_num_sources());
@@ -346,3 +353,10 @@ void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefie
 	release_spinorfields(result);
 	release_spinorfields(sources);
 }
+
+
+
+
+
+
+

@@ -1052,10 +1052,10 @@ void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters& p
 
 	logger.info() << "# flavour doublet correlators";
 	if(params.get_corr_dir() == 3) {
-		logger.info() << "# format: J P z real complex"  ;
+	  logger.info() << "# format: J P (for each interpolator (if different) ) z real complex"  ;
 		logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" ;
 	} else {
-		logger.info() << "# format: J P t real complex"  ;
+	  logger.info() << "# format: J P (for each interpolator (if different) ) t real complex"  ;
 		logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" ;
 	}
 }
