@@ -58,6 +58,7 @@ void hardware::code::Correlator::fill_kernels()
 					correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << "fermionobservables/correlator_ax_point.cl";
 					correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << "fermionobservables/correlator_ay_point.cl";
 					correlator_az = createKernel("correlator_az_t") << basic_correlator_code << "fermionobservables/correlator_az_point.cl";
+					correlator_avps = createKernel("correlator_avps_t") << basic_correlator_code << "fermionobservables/correlator_avps_point.cl";
 					break;
 				case 3 :
 					correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << "fermionobservables/correlator_ps_point.cl";
@@ -200,6 +201,9 @@ cl_kernel hardware::code::Correlator::get_correlator_kernel(string which) const
 	}
 	if( which.compare("az") == 0 ) {
 		return correlator_az;
+	}
+	if( which.compare("avps") == 0 ) {
+		return correlator_avps;
 	}
 	throw Print_Error_Message("get_correlator_kernel failed, no appropriate kernel found");
 	return 0;
