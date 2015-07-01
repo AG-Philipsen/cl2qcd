@@ -27,7 +27,12 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 {
 	Matrixsu3 * gf_host = nullptr; // will be allocated by the following line, init to 0 to ensure error in case we fuck up.
 
-	IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
+	//NOTE: this is a workaround, because this call:
+	//IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
+	// does not work as the Inputparameters instance created in this fct. goes out of scope, causing a segfault.
+	Inputparameters parameters2( parameters );
+	IldgIoParameters_gaugefield ildgIoParameters(&parameters2);
+
 	IldgIoReader_gaugefield reader(ildgfile, &ildgIoParameters, &gf_host);
 
 	trajectoryNumberAtInit = reader.getReadTrajectoryNumber();

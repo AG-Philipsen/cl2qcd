@@ -94,6 +94,7 @@ public:
 	virtual double getBeta() const = 0;
 	virtual double getMu() const = 0;
 protected:
+	//@Todo: Make this an instance??
 	IldgIoParametersInterface * itsClient;
 };
 
