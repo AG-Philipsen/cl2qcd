@@ -29,9 +29,10 @@ Publications
 There have been a range of publications on CL2QCD.
 If you use CL2QCD for your work please be so kind to cite one of our papers:
 
-* M. Bach, V. Lindenstruth, O. Philipsen, and C. Pinke, “Lattice QCD based on OpenCL,” Comput. Phys. Commun., vol. 184, no. 9, p. 19, Mar. 2013, http://pos.sissa.it/archive/conferences/187/032/LATTICE%202013_032.pdf.
-* M. Bach, V. Lindenstruth, C. Pinke, and O. Philipsen, “Twisted-Mass Lattice QCD using OpenCL,” in The XXXI International Symposium on Lattice Field Theory, Lattice2013, 2013, http://arxiv.org/abs/1209.5942.
-* C. Pinke, O. Philipsen, C. Schäfer, L. Zeidlewicz, and M. Bach, “LatticeQCD using OpenCL,” 2011, http://arxiv.org/abs/1112.5280.
+* M. Bach, O. Philipsen, C. Pinke, and A. Sciarra “CL2QCD - Lattice QCD based on OpenCL”, in The XXXII International Symposium on Lattice Field Theory, Lattice2014, 2014, http://arxiv.org/pdf/1411.5219.pdf.
+* M. Bach, V. Lindenstruth, O. Philipsen, and C. Pinke, “Lattice QCD based on OpenCL”, Comput. Phys. Commun., vol. 184, no. 9, p. 19, Mar. 2013, http://pos.sissa.it/archive/conferences/187/032/LATTICE%202013_032.pdf.
+* M. Bach, V. Lindenstruth, C. Pinke, and O. Philipsen, “Twisted-Mass Lattice QCD using OpenCL”, in The XXXI International Symposium on Lattice Field Theory, Lattice2013, 2013, http://arxiv.org/abs/1209.5942.
+* C. Pinke, O. Philipsen, C. Schäfer, L. Zeidlewicz, and M. Bach, “LatticeQCD using OpenCL”, 2011, http://arxiv.org/abs/1112.5280.
 
 Many technical details on CL2QCD and the optimizations included can be found in the PhD Thesis of Matthias Bach:
 
