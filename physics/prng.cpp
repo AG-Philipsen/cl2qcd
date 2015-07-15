@@ -79,7 +79,6 @@ PrngStateContent readLine_prngState( std::ifstream & file )
 	file.read(state.get(), buffer_bytes);
 	file.seekg(1, std::ios_base::cur); // skip newline
 
-    logger.error() << "state array has " << buffer_bytes/1024./1024. << " Mbytes";
 	return PrngStateContent(buffer_bytes, std::move(state));
 }
 
