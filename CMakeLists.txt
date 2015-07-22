@@ -69,7 +69,7 @@ include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
 if( NOT OPENCL_HAS_CPP_BINDINGS )
 	message(STATUS "No OpenCL CPP bindings found, using hack" )
 	include_directories( SYSTEM hacks/cl_hpp )
-elseif( NOT OPENCL_HAS_CPP_BINDINGS )
+elseif( OPENCL_HAS_CPP_BINDINGS )
 	message (STATUS "OpenCL CPP bindings found" )
 endif( NOT OPENCL_HAS_CPP_BINDINGS )
 # make sure we can uses OpenCL 1.1 features on AMD APP 2.7
