@@ -48,27 +48,28 @@ void hardware::code::Correlator::fill_kernels()
 	if(get_parameters().get_measure_correlators() ) {
 		//CP: If a pointsource is chosen, the correlators have a particular simple form.
 		if(get_parameters().get_sourcetype() == meta::Inputparameters::point) {
-			std::string filename_tmp =  "fermionobservables_correlators_point.cl";
 			switch (get_parameters().get_corr_dir()) {
 				case 0 :
 					correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << "fermionobservables/correlator_ps_point.cl";
-					correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << filename_tmp;
-					correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << filename_tmp;
-					correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << filename_tmp;
-					correlator_vz = createKernel("correlator_vz_t") << basic_correlator_code << filename_tmp;
-					correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << filename_tmp;
-					correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << filename_tmp;
-					correlator_az = createKernel("correlator_az_t") << basic_correlator_code << filename_tmp;
+					correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << "fermionobservables/correlator_sc_point.cl";
+					correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << "fermionobservables/correlator_vx_point.cl";
+					correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << "fermionobservables/correlator_vy_point.cl";
+					correlator_vz = createKernel("correlator_vz_t") << basic_correlator_code << "fermionobservables/correlator_vz_point.cl";
+					correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << "fermionobservables/correlator_ax_point.cl";
+					correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << "fermionobservables/correlator_ay_point.cl";
+					correlator_az = createKernel("correlator_az_t") << basic_correlator_code << "fermionobservables/correlator_az_point.cl";
+					correlator_avps = createKernel("correlator_avps_t") << basic_correlator_code << "fermionobservables/correlator_avps_point.cl";
 					break;
 				case 3 :
 					correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << "fermionobservables/correlator_ps_point.cl";
-//					correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << filename_tmp;
-//					correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << filename_tmp;
-//					correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << filename_tmp;
-//					correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << filename_tmp;
-//					correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << filename_tmp;
-//					correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << filename_tmp;
-//					correlator_az = createKernel("correlator_az_z") << basic_correlator_code << filename_tmp;
+					correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << "fermionobservables/correlator_sc_point.cl";
+					correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << "fermionobservables/correlator_vx_point.cl";
+					correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << "fermionobservables/correlator_vy_point.cl";
+					correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << "fermionobservables/correlator_vz_point.cl";
+					correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << "fermionobservables/correlator_ax_point.cl";
+					correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << "fermionobservables/correlator_ay_point.cl";
+					correlator_az = createKernel("correlator_az_z") << basic_correlator_code << "fermionobservables/correlator_az_point.cl";
+					correlator_avps = 0;
 					break;
 				default:
 					stringstream errmsg;
@@ -137,6 +138,9 @@ void hardware::code::Correlator::clear_kernels()
 	if(correlator_az)
 		clerr = clReleaseKernel(correlator_az);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	if(correlator_avps)
+		clerr = clReleaseKernel(correlator_avps);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(create_point_source) {
 		clerr = clReleaseKernel(create_point_source);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -201,6 +205,9 @@ cl_kernel hardware::code::Correlator::get_correlator_kernel(string which) const
 	}
 	if( which.compare("az") == 0 ) {
 		return correlator_az;
+	}
+	if( which.compare("avps") == 0 ) {
+		return correlator_avps;
 	}
 	throw Print_Error_Message("get_correlator_kernel failed, no appropriate kernel found");
 	return 0;

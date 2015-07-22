@@ -22,13 +22,20 @@
  @file fermion-observables
 */
 
-hmc_float calculate_ps_correlator(const spinor in)
+hmc_float calculate_sc_correlator(const spinor in1, const spinor in2, const spinor in3, const spinor in4)
 {
-	return spinor_squarenorm(in);
+	hmc_float correlator = 0.;
+	
+	correlator += - su3vec_squarenorm(in1.e0) - su3vec_squarenorm(in1.e1) + su3vec_squarenorm(in1.e2) + su3vec_squarenorm(in1.e3);
+	correlator += - su3vec_squarenorm(in2.e0) - su3vec_squarenorm(in2.e1) + su3vec_squarenorm(in2.e2) + su3vec_squarenorm(in2.e3);
+	correlator += su3vec_squarenorm(in3.e0) + su3vec_squarenorm(in3.e1) - su3vec_squarenorm(in3.e2) - su3vec_squarenorm(in3.e3);
+	correlator += su3vec_squarenorm(in4.e0) + su3vec_squarenorm(in4.e1) - su3vec_squarenorm(in4.e2) - su3vec_squarenorm(in4.e3);
+
+	return correlator;
 }
 
-// //this is the pseudoscalar pion correlator in z-direction from pointsources
-__kernel void correlator_ps_z(__global hmc_float * const restrict out, __global const spinor * const restrict phi)
+// //this is the scalar correlator in z-direction from pointsources
+__kernel void correlator_sc_z(__global hmc_float * const restrict out, __global const spinor * const restrict phi1, __global const spinor * const restrict phi2, __global const spinor * const restrict phi3, __global const spinor * const restrict phi4)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -46,17 +53,17 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_pos(nspace, t)];
+					spinor tmp1 = phi1[get_pos(nspace, t)];
+					spinor tmp2 = phi2[get_pos(nspace, t)];
+					spinor tmp3 = phi3[get_pos(nspace, t)];
+					spinor tmp4 = phi4[get_pos(nspace, t)];
 					
-					correlator += calculate_ps_correlator(tmp);
+					correlator += calculate_sc_correlator(tmp1, tmp2, tmp3, tmp4);
 				}
 			}
 		}
-		//now, this should finally be the correct normalisation for the physical fields
-		//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
-
 		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
-		out[id_tmp] += 2. * KAPPA * 2.* KAPPA * correlator / fac;
+		out[id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 	}
 
 
@@ -70,8 +77,8 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 
 }
 
-// //this is the pseudoscalar pion correlator in t-direction from pointsources
-__kernel void correlator_ps_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi)
+// //this is the scalar correlator in t-direction from pointsources
+__kernel void correlator_sc_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi1, __global const spinor * const restrict phi2, __global const spinor * const restrict phi3, __global const spinor * const restrict phi4)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -89,14 +96,17 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_pos(nspace, t)];
+					spinor tmp1 = phi1[get_pos(nspace, t)];
+					spinor tmp2 = phi2[get_pos(nspace, t)];
+					spinor tmp3 = phi3[get_pos(nspace, t)];
+					spinor tmp4 = phi4[get_pos(nspace, t)];
 					
-					correlator += calculate_ps_correlator(tmp);
+					correlator += calculate_sc_correlator(tmp1, tmp2, tmp3, tmp4);
 				}
 			}
 		}
 		hmc_float fac = NSPACE * NSPACE * NSPACE;
-		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
 
@@ -106,6 +116,6 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
-	//#endif
+	//endif
 
 }

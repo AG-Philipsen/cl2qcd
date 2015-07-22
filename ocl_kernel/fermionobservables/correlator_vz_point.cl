@@ -22,13 +22,20 @@
  @file fermion-observables
 */
 
-hmc_float calculate_ps_correlator(const spinor in)
+hmc_float calculate_vz_correlator(const spinor in1, const spinor in2, const spinor in3, const spinor in4)
 {
-	return spinor_squarenorm(in);
+	hmc_float correlator = 0.0f;
+	
+	correlator += su3vec_squarenorm(in1.e0) - su3vec_squarenorm(in1.e1) + su3vec_squarenorm(in1.e2) - su3vec_squarenorm(in1.e3);
+	correlator += -su3vec_squarenorm(in2.e0) + su3vec_squarenorm(in2.e1) - su3vec_squarenorm(in2.e2) + su3vec_squarenorm(in2.e3);
+	correlator += su3vec_squarenorm(in3.e0) - su3vec_squarenorm(in3.e1) + su3vec_squarenorm(in3.e2) - su3vec_squarenorm(in3.e3);
+	correlator += -su3vec_squarenorm(in4.e0) + su3vec_squarenorm(in4.e1) - su3vec_squarenorm(in4.e2) + su3vec_squarenorm(in4.e3);
+	
+	return correlator;
 }
 
-// //this is the pseudoscalar pion correlator in z-direction from pointsources
-__kernel void correlator_ps_z(__global hmc_float * const restrict out, __global const spinor * const restrict phi)
+// //this is the vector correlator in z-direction from pointsources (gamma4*gamma3)
+__kernel void correlator_vz_z(__global hmc_float * const restrict out, __global const spinor * const restrict phi1, __global const spinor * const restrict phi2, __global const spinor * const restrict phi3, __global const spinor * const restrict phi4)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -39,24 +46,24 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
-		hmc_float correlator = 0.;
+		hmc_float correlator = 0.0f;
 		uint3 coord;
 		coord.z = id_tmp;
 		for(int t = 0; t < NTIME_LOCAL; t++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_pos(nspace, t)];
+					spinor tmp1 = phi1[get_pos(nspace, t)];
+					spinor tmp2 = phi2[get_pos(nspace, t)];
+					spinor tmp3 = phi3[get_pos(nspace, t)];
+					spinor tmp4 = phi4[get_pos(nspace, t)];
 					
-					correlator += calculate_ps_correlator(tmp);
+					correlator += calculate_vz_correlator(tmp1, tmp2, tmp3, tmp4);
 				}
 			}
 		}
-		//now, this should finally be the correct normalisation for the physical fields
-		//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
-
 		hmc_float fac = NSPACE * NSPACE * NTIME_GLOBAL;
-		out[id_tmp] += 2. * KAPPA * 2.* KAPPA * correlator / fac;
+		out[id_tmp] += 2. * KAPPA * 2.*KAPPA * correlator / fac;
 	}
 
 
@@ -70,8 +77,8 @@ __kernel void correlator_ps_z(__global hmc_float * const restrict out, __global 
 
 }
 
-// //this is the pseudoscalar pion correlator in t-direction from pointsources
-__kernel void correlator_ps_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi)
+// //this is the vector correlator in t-direction from pointsources (gamma4*gamma3)
+__kernel void correlator_vz_t(__global hmc_float * const restrict out, __global const spinor * const restrict phi1, __global const spinor * const restrict phi2, __global const spinor * const restrict phi3, __global const spinor * const restrict phi4)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -80,18 +87,21 @@ __kernel void correlator_ps_t(__global hmc_float * const restrict out, __global 
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	//suppose that there are NTIME threads (one for each entry of the correlator)
+	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
-		hmc_float correlator = 0.;
+		hmc_float correlator = 0.0f;
 		uint3 coord;
 		int t = id_tmp;
 		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
 			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
 				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_pos(nspace, t)];
+					spinor tmp1 = phi1[get_pos(nspace, t)];
+					spinor tmp2 = phi2[get_pos(nspace, t)];
+					spinor tmp3 = phi3[get_pos(nspace, t)];
+					spinor tmp4 = phi4[get_pos(nspace, t)];
 					
-					correlator += calculate_ps_correlator(tmp);
+					correlator += calculate_vz_correlator(tmp1, tmp2, tmp3, tmp4);
 				}
 			}
 		}

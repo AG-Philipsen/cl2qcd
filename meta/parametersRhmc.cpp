@@ -46,9 +46,13 @@ bool ParametersRhmc::get_conservative() const noexcept
 {
 	return conservative;
 }
-int ParametersRhmc::get_num_tastes() const noexcept
+double ParametersRhmc::get_num_tastes() const noexcept
 {
-	return num_tastes;
+    return num_tastes;
+}
+int ParametersRhmc::get_num_tastes_decimal_digits() const noexcept
+{
+    return num_tastes_decimal_digits;
 }
 double ParametersRhmc::get_approx_lower() const noexcept
 {
@@ -89,7 +93,8 @@ meta::ParametersRhmc::ParametersRhmc()
 	("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
 	("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
 	("conservative", po::value<bool>(&conservative)->default_value(false))
-	("num_tastes", po::value<int>(&num_tastes)->default_value(2))
+	("num_tastes", po::value<double>(&num_tastes)->default_value(2))
+    ("num_tastes_decimal_digits", po::value<int>(&num_tastes_decimal_digits)->default_value(0))
 	("approx_lower", po::value<double>(&approx_lower)->default_value(1.e-5))
 	("approx_upper", po::value<double>(&approx_upper)->default_value(1.))
 	("rhmcsteps", po::value<int>(&rhmcsteps)->default_value(10))

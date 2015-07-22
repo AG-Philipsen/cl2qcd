@@ -24,6 +24,7 @@
 add_library(ildg_io
 	ildgIo_gaugefield.cpp
 	ildgIo.cpp
+	ildgIoParameters.cpp
 	matrixSu3_utilities.cpp
 )
 

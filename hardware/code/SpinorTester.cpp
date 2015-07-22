@@ -113,6 +113,60 @@ void SpinorTester::fill_with_one(spinor * in, int size)
   return;
 }
 
+void SpinorTester::fill_with_zero_one(spinor * in, int size)
+{
+	for(int i= 0; i < size; i++) {
+	    in[i].e0.e0 = {0., 0.};
+	    in[i].e0.e1 = {0., 0.};
+	    in[i].e0.e2 = {0., 0.};
+	    in[i].e1.e0 = hmc_complex_one;
+	    in[i].e1.e1 = hmc_complex_one;
+	    in[i].e1.e2 = hmc_complex_one;
+	    in[i].e2.e0 = {0., 0.};
+	    in[i].e2.e1 = {0., 0.};
+	    in[i].e2.e2 = {0., 0.};
+	    in[i].e3.e0 = hmc_complex_one;
+	    in[i].e3.e1 = hmc_complex_one;
+	    in[i].e3.e2 = hmc_complex_one;
+	}
+}
+
+void SpinorTester::fill_with_one_zero(spinor * in, int size)
+{
+	for(int i= 0; i < size; i++) {
+	    in[i].e0.e0 = hmc_complex_one;
+	    in[i].e0.e1 = hmc_complex_one;
+	    in[i].e0.e2 = hmc_complex_one;
+	    in[i].e1.e0 = {0., 0.};
+	    in[i].e1.e1 = {0., 0.};
+	    in[i].e1.e2 = {0., 0.};
+	    in[i].e2.e0 = hmc_complex_one;
+	    in[i].e2.e1 = hmc_complex_one;
+	    in[i].e2.e2 = hmc_complex_one;
+	    in[i].e3.e0 = {0., 0.};
+	    in[i].e3.e1 = {0., 0.};
+	    in[i].e3.e2 = {0., 0.};
+	}
+}
+
+void SpinorTester::fill_with_ascending(spinor * in, int size)
+{
+	for(int i = 0; i < size; i++) {
+	    in[i].e0.e0 = {1., 0.};
+	    in[i].e0.e1 = {2., 0.};
+	    in[i].e0.e2 = {3., 0.};
+	    in[i].e1.e0 = {4., 0.};
+	    in[i].e1.e1 = {5., 0.};
+	    in[i].e1.e2 = {6., 0.};
+	    in[i].e2.e0 = {7., 0.};
+	    in[i].e2.e1 = {8., 0.};
+	    in[i].e2.e2 = {9., 0.};
+	    in[i].e3.e0 = {10., 0.};
+	    in[i].e3.e1 = {11., 0.};
+	    in[i].e3.e2 = {12., 0.};
+	}
+}
+
 void SpinorTester::fill_with_one_minusone_for_gamma5_use(spinor * in, int size)
 {
   for(int i = 0; i < size; ++i) {
@@ -178,17 +232,24 @@ spinor * SpinorTester::createSpinorfield(fillType fillTypeIn)
 {
   spinor * in;
   in = new spinor[spinorfieldElements];
-  if (fillTypeIn == fillType::zero)
-  {
-	  fill_with_zero(in, spinorfieldElements);
-  }
-  else if (fillTypeIn == fillType::one )
-  {
-	  fill_with_one(in, spinorfieldElements);
-  }
-  else
-  {
-	  logger.fatal() << "do not know fill type!";
+  switch (fillTypeIn) {
+	case fillType::zero :
+		fill_with_zero(in, spinorfieldElements);
+		break;
+	case fillType::one :
+		fill_with_one(in, spinorfieldElements);
+		break;
+	case fillType::zeroOne :
+		fill_with_zero_one(in, spinorfieldElements);
+		break;
+	case fillType::oneZero :
+		fill_with_one_zero(in, spinorfieldElements);
+		break;
+	case fillType::ascending :
+		fill_with_ascending(in, spinorfieldElements);
+		break;
+	default:
+		logger.fatal() << "do not know fill type!";
   }
   BOOST_REQUIRE(in);
   return in;

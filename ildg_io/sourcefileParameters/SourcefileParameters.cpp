@@ -28,20 +28,20 @@ Sourcefileparameters::Sourcefileparameters()
 	set_defaults();
 }
 
-Sourcefileparameters::Sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion)
+Sourcefileparameters::Sourcefileparameters(const IldgIoParameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion)
 {
 	set_defaults();
 	
-	lx = parameters->get_nspace();
-	ly = parameters->get_nspace();
-	lz = parameters->get_nspace();
-	lt = parameters->get_ntime();
-	prec = parameters->get_precision();
+	lx = parameters->getNs();
+	ly = parameters->getNs();
+	lz = parameters->getNs();
+	lt = parameters->getNt();
+	prec = parameters->getPrecision();
 	trajectorynr = trajectoryNumber;
 	plaquettevalue = plaquette;
-	beta = parameters->get_beta();
-	kappa = parameters->get_kappa();
-	mu = parameters->get_mu();
+	beta = parameters->getBeta();
+	kappa = parameters->getKappa();
+	mu = parameters->getMu();
 	
 	hmcversion = hmcVersion;
 	
@@ -203,19 +203,19 @@ static void checkMinorParameter_double(double value1, double value2, std::string
 }
 	
 //todo: add check on plaquette
-void Sourcefileparameters::checkAgainstInputparameters(const meta::Inputparameters * parameters)
+void Sourcefileparameters::checkAgainstInputparameters(const IldgIoParameters * parameters)
 {
 	logger.info() << "Checking sourcefile parameters against inputparameters...";
 	
-	checkMajorParameter_int(this->lt, parameters->get_ntime(), "lt");
-	checkMajorParameter_int(this->lx, parameters->get_nspace(), "lx");
-	checkMajorParameter_int(this->ly, parameters->get_nspace(), "ly");
-	checkMajorParameter_int(this->lz, parameters->get_nspace(), "lz");
-	checkMajorParameter_int(this->prec, parameters->get_precision(), "precision");	
+	checkMajorParameter_int(this->lt, parameters->getNt(), "lt");
+	checkMajorParameter_int(this->lx, parameters->getNs(), "lx");
+	checkMajorParameter_int(this->ly, parameters->getNs(), "ly");
+	checkMajorParameter_int(this->lz, parameters->getNs(), "lz");
+	checkMajorParameter_int(this->prec, parameters->getPrecision(), "precision");
 	
-	checkMinorParameter_double(this->beta, parameters->get_beta(), "beta" );
-	checkMinorParameter_double(this->kappa, parameters->get_kappa(), "kappa" );
-	checkMinorParameter_double(this->mu, parameters->get_mu(), "mu" );
+	checkMinorParameter_double(this->beta, parameters->getBeta(), "beta" );
+	checkMinorParameter_double(this->kappa, parameters->getKappa(), "kappa" );
+	checkMinorParameter_double(this->mu, parameters->getMu(), "mu" );
 }
 
 void Sourcefileparameters::checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors, std::string filename)
