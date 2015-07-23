@@ -28,7 +28,7 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
-enum fillType{ zero, one };
+enum fillType{ zero, one, zeroOne, oneZero, ascending};
 
 class SpinorTester : public KernelTester {
 public:
@@ -46,6 +46,9 @@ protected:
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
 	void fill_with_one(spinor * in, int size);
+	void fill_with_zero_one(spinor * in, int size);
+	void fill_with_one_zero(spinor * in, int size);
+	void fill_with_ascending(spinor * in, int size);
 	void fill_with_one_minusone_for_gamma5_use(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);
 	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();

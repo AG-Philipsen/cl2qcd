@@ -25,9 +25,13 @@
 
 size_t meta::get_volspace(const Inputparameters& params)
 {
-	size_t ns = params.get_nspace();
+	return meta::get_volspace(params.get_nspace());
+}
+size_t meta::get_volspace(const int ns)
+{
 	return ns * ns * ns;
 }
+
 size_t meta::get_vol4d(const Inputparameters& params)
 {
 	return get_volspace(params) * params.get_ntime();

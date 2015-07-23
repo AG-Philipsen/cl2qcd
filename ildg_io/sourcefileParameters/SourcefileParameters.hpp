@@ -1,7 +1,7 @@
 /** @file
  * class containing parameters of the sourcefile
  *
- * Copyright 2014, Christopher Pinke
+ * Copyright 2014, 2015, Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -23,13 +23,13 @@
 #define _SOURCEFILEPARAMETERS_HPP_
 
 #include "../checksum.h"
-#include "../../meta/inputparameters.hpp"
+#include "../ildgIoParameters.hpp"
 
 //TODO: it may be advantageous to separate between gaugefield and fermion field parameters
 class Sourcefileparameters {
 public:
   Sourcefileparameters();
-	Sourcefileparameters(const meta::Inputparameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion);
+	Sourcefileparameters(const IldgIoParameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion);
 	
 	std::string getInfo_ildgFormat_gaugefield();
 	std::string getInfo_scidacChecksum();
@@ -44,7 +44,7 @@ public:
 	
 	void printMetaDataToScreen(std::string sourceFilename);
 	
-	void checkAgainstInputparameters(const meta::Inputparameters * toCheck);
+	void checkAgainstInputparameters(const IldgIoParameters * toCheck);
 	void checkAgainstChecksum(Checksum checksum, bool ignoreChecksumErrors = false, std::string filename = "");
 	
 	size_t getSizeInBytes() noexcept;

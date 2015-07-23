@@ -94,7 +94,7 @@ namespace hardware {
 		/**
 		 * Allow to use the context
 		 *
-		 * \deprected This is not meant for wider application and only there to ease transition to the new architecture
+		 * \deprecated This is not meant for wider application and only there to ease transition to the new architecture
 		 */
 		operator const cl_context&() const noexcept;
 

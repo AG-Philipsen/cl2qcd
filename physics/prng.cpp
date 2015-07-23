@@ -64,10 +64,10 @@ int* readSecondLine_extractHostSeed( std::ifstream & file )
 
 struct PrngStateContent
 {
-	PrngStateContent( size_t bufferBytesIn, char * contentIn) :
-		bufferBytes( bufferBytesIn ), content(contentIn) {}
+	PrngStateContent( size_t bufferBytesIn, std::unique_ptr<char[]> contentIn) :
+		bufferBytes( bufferBytesIn ), content(std::move(contentIn)) {}
 	size_t bufferBytes;
-	char * content;
+	std::unique_ptr<char[]> content;
 };
 
 PrngStateContent readLine_prngState( std::ifstream & file )
@@ -75,11 +75,11 @@ PrngStateContent readLine_prngState( std::ifstream & file )
 	size_t buffer_bytes;
 	file >> buffer_bytes;
 	file.seekg(1, std::ios_base::cur); // skip space
-	char* state = new char[buffer_bytes];
-	file.read(state, buffer_bytes);
+    std::unique_ptr<char[]> state(new char[buffer_bytes]);
+	file.read(state.get(), buffer_bytes);
 	file.seekg(1, std::ios_base::cur); // skip newline
 
-	return PrngStateContent(buffer_bytes, state);
+	return PrngStateContent(buffer_bytes, std::move(state));
 }
 
 struct PrngFileReader
@@ -135,7 +135,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 			if(buffer_bytes != buffers.at(currentBufferIndex)->get_bytes()) {
 				throw std::invalid_argument(params.get_initial_prng_state() + " does not seem to contain a valid prng state");
 			}
-			buffers.at(currentBufferIndex)->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>( fileContent.prngStates.at(currentBufferIndex).content ));
+			buffers.at(currentBufferIndex)->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>( fileContent.prngStates.at(currentBufferIndex).content.get() ));
 		}
 	}
 	else
@@ -296,7 +296,7 @@ void physics::PRNG::verifyWritingWasSuccessful(const std::string filename) const
 		char* prng1_state = new char[buf1->get_bytes()];
 		buf1->dump(reinterpret_cast<hardware::buffers::PRNGBuffer::prng_state_t *>(prng1_state));
 
-		auto prng2_state = fileContent.prngStates.at(i).content;
+		auto prng2_state = fileContent.prngStates.at(i).content.get();
 
 		for( size_t j = 0; j < buf1->get_bytes(); j++)
 		{

@@ -140,6 +140,8 @@ private:
 	cl_kernel correlator_ax;
 	cl_kernel correlator_ay;
 	cl_kernel correlator_az;
+	//axial-vector pseudoscalar correlator
+	cl_kernel correlator_avps;
 	//chiral condensate
 	cl_kernel pbp_std;
 	cl_kernel pbp_tm_one_end;
