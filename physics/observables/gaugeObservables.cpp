@@ -29,10 +29,7 @@
 
 class gaugeObservables{
     public:
-      gaugeObservables(const meta::Inputparameters * parametersIn)
-	{
-	  parameters = parametersIn;
-	}
+      gaugeObservables(const meta::Inputparameters * parametersIn): parameters(parametersIn) {};
       gaugeObservables() = delete;
       
       /**
@@ -366,40 +363,42 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
       return polyakov;
     }
 
+    //TODO: The dependency on meta::Inputparameters must be resolved by introducing an appropiate interface
+    //  One has to see which parameters are needed here in addition to those already in contained in the gaugefield and add a specific class for them.
 void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration)
 {
-  gaugeObservables obs(gf->getParameters() );
+  gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
   obs.measureGaugeObservables(gf, iteration);
 }
 
 double  physics::observables::measurePlaquette(const physics::lattices::Gaugefield * gf)
 {
-  gaugeObservables obs(gf->getParameters() );
+  gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
   return obs.measurePlaquette(gf);
 }
 
 double  physics::observables::measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf)
 {
-  gaugeObservables obs(gf->getParameters() );
+  gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
   return obs.measurePlaquette(gf, false);
 }
 
 double  physics::observables::measureRectangles(const physics::lattices::Gaugefield * gf)
 {
-  gaugeObservables obs(gf->getParameters() );
+  gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
   return obs.measureRectangles(gf);
 }
 
 hmc_complex  physics::observables::measurePolyakovloop(const physics::lattices::Gaugefield * gf)
 {
-  gaugeObservables obs(gf->getParameters() );
+  gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
   obs.measurePolyakovloop(gf);
   return obs.getPolyakovloop();
 }
 
 physics::observables::Plaquettes  physics::observables::measureAllPlaquettes(const physics::lattices::Gaugefield * gf)
 {
-  gaugeObservables obs(gf->getParameters() );
+  gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
   obs.measurePlaquette(gf);
   Plaquettes plaqs (obs.getPlaquette(), obs.getTemporalPlaquette(), obs.getSpatialPlaquette() );
   return plaqs;

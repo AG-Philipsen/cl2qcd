@@ -136,7 +136,8 @@ void physics::observables::staggered::measureChiralCondensateAndWriteToFile(cons
 {
     std::ofstream outputToFile;
     std::string configurationName = gf.getName(iteration);
-    std::string filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*(gf.getParameters()), configurationName);
+    //TODO: improve this!
+    std::string filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(gf.getSystem()->get_inputparameters(), configurationName);
     logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
     outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
     if(!outputToFile.is_open()) {
@@ -145,7 +146,7 @@ void physics::observables::staggered::measureChiralCondensateAndWriteToFile(cons
     outputToFile << iteration << "\t";
     outputToFile.precision(15);
     outputToFile.setf( std::ios::scientific, std::ios::floatfield );
-    std::vector<hmc_complex> pbp(gf.getParameters()->get_pbp_measurements());
+    std::vector<hmc_complex> pbp(gf.getSystem()->get_inputparameters().get_pbp_measurements());
     for(size_t i=0; i<pbp.size(); i++){
         pbp[i] = physics::observables::staggered::measureChiralCondensate(gf, *(gf.getPrng()), *(gf.getSystem()));
         outputToFile << pbp[i].re << "   ";

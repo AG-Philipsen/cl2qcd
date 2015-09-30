@@ -56,7 +56,7 @@ private:
 };
 
 TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn, int trajectoryNumberIn):
-  gaugefield(gaugefieldIn), parameters(gaugefield->getParameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)
+  gaugefield(gaugefieldIn), parameters(&gaugefield->getSystem()->get_inputparameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)
 {
 	checkInputparameters();
 	openFileForWriting();

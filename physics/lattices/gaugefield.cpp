@@ -233,14 +233,12 @@ std::string physics::lattices::Gaugefield::getName(int number) const noexcept
 
 void physics::lattices::Gaugefield::save(int number)
 {
-	std::string outputfile = getName();
-	save(outputfile, number);
+	save(getName(), number);
 }
 
 void physics::lattices::Gaugefield::saveToSpecificFile(int number)
 {
-	std::string outputfile = getName(number);
-	save(outputfile, number);
+	save(getName(number), number);
 }
 
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
@@ -434,9 +432,9 @@ const hardware::System * physics::lattices::Gaugefield::getSystem() const
   return &system;
 }
 
-const meta::Inputparameters * physics::lattices::Gaugefield::getParameters() const
+const LatticeObjectParametersInterface * physics::lattices::Gaugefield::getParameters() const
 {
-  return parameters;
+  return latticeObjectParameters;
 }
 
 int physics::lattices::Gaugefield::get_trajectoryNumberAtInit() const

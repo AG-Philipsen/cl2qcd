@@ -119,7 +119,7 @@ namespace physics {
 
 			const physics::PRNG * getPrng() const;
 			const hardware::System * getSystem() const;
-			const meta::Inputparameters * getParameters() const;
+			const LatticeObjectParametersInterface * getParameters() const;
 			
 		private:
 			hardware::System const& system;

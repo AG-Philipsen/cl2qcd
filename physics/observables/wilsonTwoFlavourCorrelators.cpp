@@ -335,7 +335,7 @@ static size_t get_num_corr_entries(const meta::Inputparameters& parameters)
 
 void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
-	auto parameters = gaugefield->getParameters();
+	auto parameters = &gaugefield->getSystem()->get_inputparameters();
 	auto system = gaugefield->getSystem();
 	auto prng = gaugefield->getPrng();
 
