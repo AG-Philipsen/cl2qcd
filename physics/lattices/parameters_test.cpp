@@ -49,4 +49,5 @@ BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 	BOOST_CHECK_EQUAL(test.getNamePostfix(), "");
 	BOOST_CHECK_EQUAL(test.getNamePrefix(), "conf.");
 	BOOST_CHECK_EQUAL(test.getNumberOfDigitsInName(), 5);
+	BOOST_CHECK_EQUAL(test.getSmearingSteps(), 0);
 }

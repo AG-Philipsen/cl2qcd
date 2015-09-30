@@ -278,7 +278,7 @@ void physics::lattices::Gaugefield::smear()
 
 		hardware::buffers::copyData(unsmeared_buffers[i], buf);
 
-		int rho_iter = parameters.get_rho_iter();
+		int rho_iter = latticeObjectParameters->getSmearingSteps();
 		logger.debug() << "\t\tperform " << rho_iter << " steps of stout-smearing to the gaugefield...";
 
 		//one needs a temporary gf to apply the smearing to

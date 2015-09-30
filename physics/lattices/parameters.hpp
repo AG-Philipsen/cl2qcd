@@ -39,6 +39,7 @@ public:
 	virtual std::string getNamePrefix() const = 0;
 	virtual std::string getNamePostfix() const = 0;
 	virtual int getNumberOfDigitsInName() const = 0;
+	virtual int getSmearingSteps() const = 0;
 };
 
 #include "../../meta/inputparameters.hpp"
@@ -97,6 +98,10 @@ public:
 	virtual int getNumberOfDigitsInName() const
 	{
 		return parameters->get_config_number_digits();
+	}
+	virtual int getSmearingSteps() const
+	{
+		return parameters->get_rho_iter();
 	}
 
 private:
