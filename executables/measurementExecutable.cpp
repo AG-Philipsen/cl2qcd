@@ -26,7 +26,7 @@ void measurementExecutable::checkStartconditions()
   if(parameters.get_read_multiple_configs() ){
     logger.info() << "To work on multiple configurations, this executable requires the following parameter value(s) to work properly:";
     logger.info() << "startcondition:\tcontinue";
-    if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ) {
+    if(parameters.get_startcondition() != common::start_from_source ) {
       logger.fatal() << "Found wrong startcondition! Aborting..";
       throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
     }

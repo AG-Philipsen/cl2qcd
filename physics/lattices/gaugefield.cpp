@@ -71,14 +71,14 @@ physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const 
 void physics::lattices::Gaugefield::initializeBasedOnParameters()
 {
 	switch(parameters->get_startcondition()) {
-		case meta::Inputparameters::start_from_source:
+		case common::startcondition::start_from_source:
 			initializeFromILDGSourcefile(parameters->get_sourcefile());
 			break;
-		case meta::Inputparameters::cold_start:
+		case common::startcondition::cold_start:
 			set_cold(buffers);
 			trajectoryNumberAtInit = 0;
 			break;
-		case meta::Inputparameters::hot_start:
+		case common::startcondition::hot_start:
 			set_hot(buffers, prng);
 			trajectoryNumberAtInit = 0;
 			update_halo();
