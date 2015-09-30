@@ -27,9 +27,16 @@ public:
 	virtual int getNs() const = 0;
 	virtual int getNt() const = 0;
 	virtual int getPrecision() const = 0;
+	virtual bool ignoreChecksumErrorsInIO() const = 0;
+	virtual int getNumberOfElements() const = 0;
+	virtual double getKappa() const = 0;
+	virtual double getMu() const = 0;
+	virtual double getBeta() const = 0;
 };
 
+
 #include "../../meta/inputparameters.hpp"
+#include "../../meta/util.hpp"
 
 #include <iostream>
 class LatticeObjectParametersImplementation : public LatticeObjectParametersInterface{
@@ -48,6 +55,26 @@ public:
 	virtual int getPrecision() const
 	{
 		return parameters->get_precision();
+	}
+	virtual bool ignoreChecksumErrorsInIO() const
+	{
+		return parameters->get_ignore_checksum_errors();
+	}
+	virtual int getNumberOfElements() const
+	{
+		return meta::get_vol4d(*parameters) * NDIM;
+	}
+	virtual double getKappa() const
+	{
+		return parameters->get_kappa();
+	}
+	virtual double getMu() const
+	{
+		return parameters->get_mu();
+	}
+	virtual double getBeta() const
+	{
+		return parameters->get_beta();
 	}
 private:
 	const meta::Inputparameters * parameters;
