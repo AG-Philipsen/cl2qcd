@@ -43,7 +43,7 @@ static Inputparameters::integrator get_integrator(std::string);
 /**
  * Get the startcondition describe by the given string.
  */
-static Inputparameters::startcondition get_startcondition(std::string);
+static common::startcondition get_startcondition(std::string);
 /**
  * Get the solver describe by the given string.
  */
@@ -226,19 +226,19 @@ static Inputparameters::integrator get_integrator(std::string s)
 		throw Inputparameters::parse_aborted();
 	}
 }
-static Inputparameters::startcondition get_startcondition(std::string s)
+static common::startcondition get_startcondition(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::startcondition> m;
-	m["cold_start"] = Inputparameters::cold_start;
-	m["cold"] = Inputparameters::cold_start;
-	m["hot_start"] = Inputparameters::hot_start;
-	m["hot"] = Inputparameters::hot_start;
-	m["start_from_source"] = Inputparameters::start_from_source;
-	m["source"] = Inputparameters::start_from_source;
-	m["continue"] = Inputparameters::start_from_source;
+	std::map<std::string, common::startcondition> m;
+	m["cold_start"] = common::cold_start;
+	m["cold"] = common::cold_start;
+	m["hot_start"] = common::hot_start;
+	m["hot"] = common::hot_start;
+	m["start_from_source"] = common::start_from_source;
+	m["source"] = common::start_from_source;
+	m["continue"] = common::start_from_source;
 
-	Inputparameters::startcondition a = m[s];
+	common::startcondition a = m[s];
 	if(a) {
 		return a;
 	} else {

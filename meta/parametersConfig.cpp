@@ -60,7 +60,7 @@ int meta::ParametersConfig::get_ntime() const noexcept
 	return ntime;
 }
 
-meta::ParametersConfig::startcondition meta::ParametersConfig::get_startcondition() const noexcept
+common::startcondition meta::ParametersConfig::get_startcondition() const noexcept
 {
 	return _startcondition;
 }

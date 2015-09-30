@@ -80,15 +80,15 @@ void meta::print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## Writefrequency:  " << params.get_writefrequency();
 	logger.info() << "## Savefrequency:  " << params.get_savefrequency();
 	switch(params.get_startcondition()) {
-		case Inputparameters::start_from_source: {
+		case common::start_from_source: {
 			std::string sf = params.get_sourcefile();
 			logger.info() << "## sourcefile = " << sf;
 		}
 		break;
-		case Inputparameters::cold_start:
+		case common::cold_start:
 			logger.info() << "## COLD start";
 			break;
-		case Inputparameters::hot_start:
+		case common::hot_start:
 			logger.info() << "## HOT start";
 			break;
 	}
@@ -139,15 +139,15 @@ void meta::print_info_global(std::ostream* os, const meta::Inputparameters& para
 	*os  << "## Writefrequency:  " << params.get_writefrequency() << endl;
 	*os  << "## Savefrequency:  " << params.get_savefrequency() << endl;
 	switch(params.get_startcondition()) {
-		case Inputparameters::start_from_source: {
+		case common::start_from_source: {
 			std::string sf = params.get_sourcefile();
 			*os << "## sourcefile = " << sf << endl;;
 		}
 		break;
-		case Inputparameters::cold_start:
+		case common::cold_start:
 			*os << "## cold start" << endl;;
 			break;
-		case Inputparameters::hot_start:
+		case common::hot_start:
 			*os << "## hot start" << endl;;
 			break;
 	}

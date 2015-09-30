@@ -178,13 +178,13 @@ std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters,
 		return parameters.get_ferm_obs_corr_prefix() +  parameters.get_ferm_obs_corr_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_ferm_obs_corr_prefix() + conf_name + parameters.get_ferm_obs_corr_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_ferm_obs_corr_prefix() + "conf.hot" +   parameters.get_ferm_obs_corr_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_ferm_obs_corr_prefix() + "conf.cold" + parameters.get_ferm_obs_corr_postfix() ;
 				break;
 			default:
@@ -198,13 +198,13 @@ std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std
 		return parameters.get_gauge_obs_prefix() +  parameters.get_gauge_obs_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_gauge_obs_prefix() + conf_name + parameters.get_gauge_obs_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_gauge_obs_prefix() + "conf.hot" +   parameters.get_gauge_obs_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_gauge_obs_prefix() + "conf.cold" + parameters.get_gauge_obs_postfix() ;
 				break;
 			default:
@@ -218,13 +218,13 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
 		return parameters.get_hmc_obs_prefix() +  parameters.get_hmc_obs_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_hmc_obs_prefix() + conf_name + parameters.get_hmc_obs_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_hmc_obs_prefix() + "conf.hot" +   parameters.get_hmc_obs_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_hmc_obs_prefix() + "conf.cold" + parameters.get_hmc_obs_postfix() ;
 				break;
 			default:
@@ -238,13 +238,13 @@ std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std:
 		return parameters.get_rhmc_obs_prefix() +  parameters.get_rhmc_obs_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_rhmc_obs_prefix() + conf_name + parameters.get_rhmc_obs_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_rhmc_obs_prefix() + "conf.hot" +   parameters.get_rhmc_obs_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_rhmc_obs_prefix() + "conf.cold" + parameters.get_rhmc_obs_postfix() ;
 				break;
 			default:
