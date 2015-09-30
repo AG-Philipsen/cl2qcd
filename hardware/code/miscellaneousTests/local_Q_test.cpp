@@ -24,6 +24,8 @@
 #include "../../../physics/lattices/gaugefield.hpp"
 
 #include "../../../physics/observables/gaugeObservables.h"
+#include "../opencl_module.hpp"
+#include "../gaugefield.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -56,7 +58,7 @@ public:
 
 class Dummyfield {
 public:
-	Dummyfield(const hardware::System& system) : params(system.get_inputparameters()), device(params, system.get_devices().at(0)), prng(system), gf(system, prng) {
+	Dummyfield(const hardware::System& system) : params(system.get_inputparameters()), params2( &params ), device(params, system.get_devices().at(0)), prng(system), gf(system, &params2, prng) {
 		fill_buffers();
 	};
 	~Dummyfield() {
@@ -69,6 +71,7 @@ private:
 	const hardware::buffers::Plain<hmc_float> * out;
 	hmc_float * host_out;
 	const meta::Inputparameters& params;
+	const LatticeObjectParametersImplementation params2;
 	Device device;
 	physics::PRNG prng;
 public:

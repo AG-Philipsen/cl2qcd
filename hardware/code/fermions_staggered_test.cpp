@@ -31,7 +31,8 @@ class FermionStaggeredTester : public SpinorStaggeredTester{
 	FermionStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
 	SpinorStaggeredTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues){
 		code = device->get_fermion_staggered_code();
-		gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+		params = new LatticeObjectParametersImplementation(&system->get_inputparameters());
+		gaugefield = new physics::lattices::Gaugefield(*system, params, *prng);
 		/*
 		print_gaugefield_to_textfile("ref_conf");
 		logger.info() << "Produced the ref_conf text file with the links for the Ref.Code.";
@@ -41,10 +42,12 @@ class FermionStaggeredTester : public SpinorStaggeredTester{
 	virtual ~FermionStaggeredTester(){
 		delete gaugefield;
 		code = NULL;
+		delete params;
 	}
 	
    protected:
 	const hardware::code::Fermions_staggered * code;
+	LatticeObjectParametersImplementation * params;
 	physics::lattices::Gaugefield * gaugefield;
 	
 	std::string getSpecificInputfile(std::string inputfileIn)
@@ -431,6 +434,8 @@ static inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex
  *  @note: In our program mu=0 is the TIME direction and mu=1,2,3 are the x,y,z direction!!!   
  * 
  */
+#include "gaugefield.hpp"
+
 void FermionStaggeredTester::print_gaugefield_to_textfile(std::string outputfile)
 {
   int nt=parameters->get_ntime();

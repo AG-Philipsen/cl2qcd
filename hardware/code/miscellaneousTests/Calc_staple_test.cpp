@@ -21,6 +21,9 @@
 #include "../../../meta/util.hpp"
 #include "../../../physics/lattices/gaugefield.hpp"
 #include "../../device.hpp"
+#include "../../buffers/plain.hpp"
+#include "../opencl_module.hpp"
+#include "../gaugefield.hpp"
 
 #include "../../../physics/observables/gaugeObservables.h"
 
@@ -59,7 +62,9 @@ public:
 
 class Dummyfield {
 public:
-	Dummyfield(const hardware::System& system) : device(system.get_devices().at(0)), params(system.get_inputparameters()), code(params, device), prng(system), gf(system, prng) {
+	Dummyfield(const hardware::System& system) : device(system.get_devices().at(0)), params(system.get_inputparameters()),
+	params2{ &system.get_inputparameters()}, code(params, device), prng(system),
+	gf(system, &params2, prng) {
 		meta::print_info_hmc(system.get_inputparameters());
 		fill_buffers();
 	};
@@ -76,6 +81,7 @@ private:
 	hmc_float * host_out;
 	hardware::Device * const device;
 	const meta::Inputparameters& params;
+	const LatticeObjectParametersImplementation params2;
 	Code code;
 	physics::PRNG prng;
 public:

@@ -38,7 +38,7 @@
 class TestGaugefield {
 
 public:
-	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
+	TestGaugefield(const hardware::System * system) : system(system), params(&system->get_inputparameters()), prng(*system), gf(*system, &params, prng) {
 		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
 		const auto & inputfile = system->get_inputparameters();
 		meta::print_info_hmc(inputfile);
@@ -49,6 +49,7 @@ public:
 
 private:
 	const hardware::System * const system;
+	const LatticeObjectParametersImplementation params;
 	physics::PRNG prng;
 	const physics::lattices::Gaugefield gf;
 };

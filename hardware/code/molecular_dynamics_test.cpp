@@ -25,6 +25,7 @@
 #include "SpinorTester.hpp"
 #include "SpinorStaggeredTester.hpp"
 #include "molecular_dynamics.hpp"
+#include "gaugefield.hpp"
 
 #include "../../physics/lattices/gaugefield.hpp"
 
@@ -36,10 +37,14 @@ public:
 		{
 			gaugefieldCode = device->get_gaugefield_code();
 			molecularDynamicsCode = device->get_molecular_dynamics_code();
-			
+			params = new LatticeObjectParametersImplementation( &system->get_inputparameters());
 			prng = std::unique_ptr<physics::PRNG>(new physics::PRNG(*system));
-			gaugefield = std::unique_ptr<physics::lattices::Gaugefield>(new physics::lattices::Gaugefield(*system, *prng));
+			gaugefield = std::unique_ptr<physics::lattices::Gaugefield>(new physics::lattices::Gaugefield(*system, params, *prng));
 		}
+	~MolecularDynamicsTester()
+	{
+		delete params;
+	}
 
 protected:
 	std::string getSpecificInputfile(std::string inputfileIn)
@@ -58,6 +63,7 @@ protected:
 	
 	std::unique_ptr<physics::PRNG> prng{nullptr};
 	std::unique_ptr<physics::lattices::Gaugefield> gaugefield{nullptr};
+	LatticeObjectParametersImplementation * params;
 };
 
 BOOST_AUTO_TEST_SUITE(BUILD)
