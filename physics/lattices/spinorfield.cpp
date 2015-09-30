@@ -295,7 +295,7 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Spinorfield::update_halo() const
 {
-	hardware::buffers::update_halo<spinor>(buffers, system.get_inputparameters());
+	hardware::buffers::update_halo<spinor>(buffers, system);
 }
 
 void physics::lattices::Spinorfield::import(const spinor * const host) const

@@ -30,7 +30,7 @@
 #include <cstring>
 
 static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);
-static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const meta::Inputparameters& params);
+static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system);
 static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system);
 
 physics::lattices::Gaugemomenta::Gaugemomenta(const hardware::System& system)
@@ -181,12 +181,12 @@ void physics::lattices::Gaugemomenta::update_halo() const
 		if(buffers[0]->is_soa()) {
 			update_halo_soa(buffers, system);
 		} else {
-			update_halo_aos(buffers, system.get_inputparameters());
+			update_halo_aos(buffers, system);
 		}
 	}
 }
 
-static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const meta::Inputparameters& params)
+static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system)
 {
 	// check all buffers are non-soa
 	for(auto const buffer: buffers) {
@@ -195,7 +195,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemome
 		}
 	}
 
-	hardware::buffers::update_halo<ae>(buffers, params, NDIM);
+	hardware::buffers::update_halo<ae>(buffers, system, NDIM);
 }
 
 static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system)

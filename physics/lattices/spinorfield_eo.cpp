@@ -34,7 +34,7 @@ static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const har
 static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_soa_async(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_soa_finalize(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
-static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
+static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system);
 
 physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
@@ -520,7 +520,7 @@ void physics::lattices::Spinorfield_eo::update_halo(unsigned width) const
 		if(buffers[0]->is_soa()) {
 			update_halo_soa(buffers, system, width);
 		} else {
-			update_halo_aos(buffers, system.get_inputparameters());
+			update_halo_aos(buffers, system);
 		}
 	}
 }
@@ -533,7 +533,7 @@ physics::lattices::Spinorfield_eoHaloUpdate physics::lattices::Spinorfield_eo::u
 		if(buffers[0]->is_soa()) {
 			update_halo_soa_async(buffers, system, width);
 		} else {
-			update_halo_aos(buffers, system.get_inputparameters());
+			update_halo_aos(buffers, system);
 		}
 	}
 	return Spinorfield_eoHaloUpdate(*this, width);
@@ -553,7 +553,7 @@ void physics::lattices::Spinorfield_eo::update_halo_finalize(unsigned width) con
 }
 
 
-static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
+static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system)
 {
 	// check all buffers are non-soa
 	for(auto const buffer: buffers) {
@@ -562,7 +562,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *>
 		}
 	}
 
-	hardware::buffers::update_halo<spinor>(buffers, params, .5 /* only even or odd sites */ );
+	hardware::buffers::update_halo<spinor>(buffers, system, .5 /* only even or odd sites */ );
 }
 
 static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width)
