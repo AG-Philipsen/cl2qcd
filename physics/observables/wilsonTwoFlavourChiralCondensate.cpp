@@ -232,7 +232,7 @@ std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondens
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
-	std::string currentConfigurationName = meta::create_configuration_name(*(gaugefield->getParameters() ), iteration);
+	std::string currentConfigurationName = gaugefield->getName(iteration);
 	TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, iteration);
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();

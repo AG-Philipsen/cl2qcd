@@ -51,7 +51,7 @@ void measurementExecutable::setIterationVariables()
 
 void measurementExecutable::initializeGaugefieldAccordingToIterationVariable()
 {
-	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
+	currentConfigurationName = physics::lattices::getConfigurationName(parameters.get_config_prefix(), parameters.get_config_postfix(), parameters.get_config_number_digits(), iteration);
 	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
 }
 

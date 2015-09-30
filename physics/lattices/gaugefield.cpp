@@ -208,8 +208,7 @@ void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems)
 	}
 }
 
-
-std::string physics::lattices::Gaugefield::getName(int number) const noexcept
+std::string physics::lattices::getConfigurationName( std::string prefix, std::string postfix, int numberOfDigitsInName, int number)
 {
 	std::stringstream middle;
 	if (number == -1)
@@ -219,12 +218,17 @@ std::string physics::lattices::Gaugefield::getName(int number) const noexcept
 	else
 	{
 		middle.fill('0');
-		middle.width(latticeObjectParameters->getNumberOfDigitsInName());
+		middle.width(numberOfDigitsInName);
 		middle << std::right << number;
 	}
 	std::stringstream outfilename;
-	outfilename << latticeObjectParameters->getNamePrefix() << middle << latticeObjectParameters->getNamePostfix();
+	outfilename << prefix << middle << postfix;
 	return outfilename.str();
+}
+
+std::string physics::lattices::Gaugefield::getName(int number) const noexcept
+{
+	return getConfigurationName( latticeObjectParameters->getNamePrefix(), latticeObjectParameters->getNamePostfix(), latticeObjectParameters->getNumberOfDigitsInName(), number);
 }
 
 void physics::lattices::Gaugefield::save(int number)

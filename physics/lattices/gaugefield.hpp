@@ -139,7 +139,11 @@ namespace physics {
 
 			int trajectoryNumberAtInit;
 		};
+
+		std::string getConfigurationName( std::string prefix, std::string postfix, int numberOfDigitsInName, int number = -1);
 	}
 }
+
+
 
 #endif /*_PHYSICS_LATTICES_GAUGEFIELD_ */
