@@ -44,17 +44,17 @@ namespace physics {
 			/**
 			 * Construct a gaugefield based on the input-files of the system
 			 */
-			Gaugefield(const hardware::System&, const physics::PRNG&);
+			Gaugefield(const hardware::System&, const LatticeObjectParametersInterface * parameters, const physics::PRNG&);
 
 			/**
 			 * Construct a gaugefield based on the given ILDG file.
 			 */
-			Gaugefield(const hardware::System&, const physics::PRNG&, std::string);
+			Gaugefield(const hardware::System&, const LatticeObjectParametersInterface * parameters, const physics::PRNG&, std::string);
 
 			/**
 			 * Construct a gaugefield that has been initialized hot or cold
 			 */
-			Gaugefield(const hardware::System&, const physics::PRNG&, bool hot);
+			Gaugefield(const hardware::System&, const LatticeObjectParametersInterface * parameters, const physics::PRNG&, bool hot);
 
 			/**
 			 * Release resources
@@ -92,7 +92,6 @@ namespace physics {
 
 			/**
 			 * Smear the gaugefield.
-			 *
 			 * Creates a backup which can be restored via the unsmear command.
 			 */
 			void smear();
@@ -108,13 +107,11 @@ namespace physics {
 
 			/**
 			 * Update the halo cells of each buffer from its neighbours.
-			 *
 			 * On a single device this will be a no-op.
 			 */
 			void update_halo() const;
 
 			std::string getName(int = -1) const noexcept;
-
 			const physics::PRNG * getPrng() const;
 			const hardware::System * getSystem() const;
 			const LatticeObjectParametersInterface * getParameters() const;
@@ -125,7 +122,6 @@ namespace physics {
 			std::vector<const hardware::buffers::SU3 *> buffers;
 			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
 			const LatticeObjectParametersInterface * latticeObjectParameters;
-			LatticeObjectParametersImplementation * parametersTmp;
 
 			/**
 			 * Utility functions for construction.
