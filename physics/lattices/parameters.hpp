@@ -22,6 +22,7 @@
 #pragma once
 
 #include "../../common_header_files/types.h"
+#include <iostream>
 
 class LatticeObjectParametersInterface {
 public:

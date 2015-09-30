@@ -208,15 +208,34 @@ void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems)
 	}
 }
 
+
+std::string physics::lattices::Gaugefield::getName(int number) const noexcept
+{
+	std::stringstream middle;
+	if (number == -1)
+	{
+		middle << "save";
+	}
+	else
+	{
+		middle.fill('0');
+		middle.width(latticeObjectParameters->getNumberOfDigitsInName());
+		middle << std::right << number;
+	}
+	std::stringstream outfilename;
+	outfilename << latticeObjectParameters->getNamePrefix() << middle << latticeObjectParameters->getNamePostfix();
+	return outfilename.str();
+}
+
 void physics::lattices::Gaugefield::save(int number)
 {
-	std::string outputfile = meta::create_configuration_name(system.get_inputparameters());
+	std::string outputfile = getName();
 	save(outputfile, number);
 }
 
 void physics::lattices::Gaugefield::saveToSpecificFile(int number)
 {
-	std::string outputfile = meta::create_configuration_name(system.get_inputparameters(), number);
+	std::string outputfile = getName(number);
 	save(outputfile, number);
 }
 
