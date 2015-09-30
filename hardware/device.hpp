@@ -29,7 +29,6 @@
 #include "profiling_data.hpp"
 #include "../common_header_files/types.h"
 #include "../meta/size_4.hpp"
-#include "../../physics/lattices/gaugefield.hpp"
 
 class MemObjectAllocationTracer;
 

@@ -64,6 +64,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -72,7 +73,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 
 		logger.info() << "The mass of the fermion is " << matrix1.get_mass();
 		
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);
@@ -95,6 +96,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -102,7 +104,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		FERMIONMATRIX matrix2(system, 1.);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);
@@ -129,13 +131,14 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
 		physics::fermionmatrix::D_KS_eo matrix1(system, EVEN);
 		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);
@@ -158,6 +161,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
@@ -165,7 +169,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);

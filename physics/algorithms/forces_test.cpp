@@ -36,10 +36,11 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Gaugemomenta gm(system);
 		gm.zero();
 
@@ -51,10 +52,11 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Gaugemomenta gm(system);
 		gm.zero();
 
@@ -69,10 +71,11 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--gaugeact=tlsym"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Gaugemomenta gm(system);
 		gm.zero();
 
@@ -84,10 +87,11 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--gaugeact=tlsym"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Gaugemomenta gm(system);
 		gm.zero();
 
@@ -102,10 +106,11 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Gaugemomenta gm(system);
 		gm.zero();
 
@@ -117,10 +122,11 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Gaugemomenta gm(system);
 		gm.zero();
 
@@ -135,10 +141,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Gaugemomenta gm(system);
 
@@ -156,10 +163,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_force_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -182,10 +190,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 	{
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);
 		Gaugemomenta gm(system);
@@ -207,10 +216,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--theta_fermion_temporal=1",
 		                          "--fermact=rooted_stagg"};
 		meta::Inputparameters params(4, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);
 		Gaugemomenta gm(system);
@@ -232,10 +242,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--theta_fermion_temporal=1",
 		                          "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
 		meta::Inputparameters params(6, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 		
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);
 		Gaugemomenta gm(system);

@@ -40,10 +40,11 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);
@@ -72,11 +73,12 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Staggeredfield_eo sf1(system);
 		Staggeredfield_eo sf2(system);
 		Staggeredfield_eo out(system);

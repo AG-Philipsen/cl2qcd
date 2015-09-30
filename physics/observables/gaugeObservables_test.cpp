@@ -39,7 +39,8 @@ public:
     parameters = new meta::Inputparameters(argc, argv);
     system = new hardware::System(*parameters);
     prng = new physics::PRNG(*system);
-    gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+    gaugefieldParameters = new LatticeObjectParametersImplementation(parameters);
+    gaugefield = new physics::lattices::Gaugefield(*system, gaugefieldParameters, *prng);
   }
   ~GaugeObservablesTester()
   {
@@ -54,6 +55,7 @@ public:
 private:
   hardware::System *  system;
   physics::PRNG * prng;
+  LatticeObjectParametersImplementation * gaugefieldParameters;
 };
 
 BOOST_AUTO_TEST_SUITE( PLAQUETTE  )
@@ -157,9 +159,10 @@ BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
 {
   const char * _params[] = {"foo", "--startcondition=cold"};
   meta::Inputparameters parameters(2, _params);
+  LatticeObjectParametersImplementation gaugefieldParameters(&parameters);
   hardware::System system(parameters);
   physics::PRNG prng(system);
-  physics::lattices::Gaugefield gf(system, prng);
+  physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 
   auto allPlaquettes = physics::observables::measureAllPlaquettes(&gf);
 
@@ -173,9 +176,10 @@ BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
 {
   const char * _params[] = {"foo", "--startcondition=cold", "--nt=4", "--ns=4"};
   meta::Inputparameters parameters(2, _params);
+  LatticeObjectParametersImplementation gaugefieldParameters(&parameters);
   hardware::System system(parameters);
   physics::PRNG prng(system);
-  physics::lattices::Gaugefield gf(system, prng);
+  physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 
   auto plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
 

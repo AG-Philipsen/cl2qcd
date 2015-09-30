@@ -34,10 +34,11 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 		Gaugemomenta gm(system);
@@ -54,10 +55,11 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 		Gaugemomenta gm(system);
@@ -77,10 +79,11 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -101,10 +104,11 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -127,10 +131,11 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Gaugemomenta gm(system);
 
@@ -148,10 +153,11 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -172,10 +178,11 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Gaugemomenta gm(system);
 
@@ -193,10 +200,11 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);

@@ -37,10 +37,11 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 
@@ -57,10 +58,11 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 
@@ -81,10 +83,11 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 
@@ -101,10 +104,11 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 
@@ -125,10 +129,11 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 
@@ -145,10 +150,11 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
 		Spinorfield sf2(system);
 
@@ -262,10 +268,11 @@ BOOST_AUTO_TEST_CASE(dslash)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, false);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
@@ -283,10 +290,11 @@ BOOST_AUTO_TEST_CASE(dslash)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
+		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::PRNG prng(system);
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);

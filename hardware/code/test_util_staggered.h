@@ -36,7 +36,7 @@
 class TestGaugefield_stagg {
 
  public:
- TestGaugefield_stagg(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
+ TestGaugefield_stagg(const hardware::System * system) : system(system), params(&system->get_inputparameters()), prng(*system), gf(*system, &params, prng) {
     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
     const auto & inputfile = system->get_inputparameters();
     meta::print_info_hmc(inputfile);
@@ -49,6 +49,7 @@ class TestGaugefield_stagg {
 
  private:
   const hardware::System * const system;
+  const LatticeObjectParametersImplementation params;
   physics::PRNG prng;
   physics::lattices::Gaugefield gf; //I changed this variable from const to not const to be able to save the conf to a lime file!     
 };
@@ -174,6 +175,7 @@ inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor
  *  @note: In our program mu=0 is the TIME direction and mu=1,2,3 are the x,y,z direction!!!   
  * 
  */
+#include "gaugefield.hpp"
 void print_gaugefield_to_textfile(std::string outputfile, TestGaugefield_stagg * cpu, const meta::Inputparameters & params)
 {
   int nt=params.get_ntime();

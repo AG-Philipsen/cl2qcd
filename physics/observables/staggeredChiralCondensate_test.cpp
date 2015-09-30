@@ -57,13 +57,14 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	options.push_back(tmp.c_str());
 	
 	meta::Inputparameters params(10, &(options[0]));
+	LatticeObjectParametersImplementation gaugefieldParameters(&params);
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	const Gaugefield *gf;
 	if(cold)
-	  gf = new Gaugefield(system, prng, false);
+	  gf = new Gaugefield(system, &gaugefieldParameters, prng, false);
 	else //This configuration for the Ref.Code is the same as for example dks_input_5
-	  gf = new Gaugefield(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	  gf = new Gaugefield(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system);
 	

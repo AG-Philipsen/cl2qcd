@@ -141,13 +141,14 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
+	LatticeObjectParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
 	physics::PRNG prng(system);
 	
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	//Reference rescaled coefficients
 	hmc_float a0_ref = 3.78396627036665123;
