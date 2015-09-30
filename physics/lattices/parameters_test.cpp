@@ -45,4 +45,8 @@ BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 	BOOST_CHECK_EQUAL(test.getKappa(), 0.125);
 	BOOST_CHECK_EQUAL(test.getMu(), 0.006);
 	BOOST_CHECK_EQUAL(test.getBeta(), 4.);
+	BOOST_CHECK_EQUAL(test.getStartcondition(), common::startcondition::cold_start);
+	BOOST_CHECK_EQUAL(test.getNamePostfix(), "");
+	BOOST_CHECK_EQUAL(test.getNamePrefix(), "conf.");
+	BOOST_CHECK_EQUAL(test.getNumberOfDigitsInName(), 5);
 }

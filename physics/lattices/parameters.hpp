@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "../common_header_files/types.h"
+#include "../../common_header_files/types.h"
 
 class LatticeObjectParametersInterface {
 public:
@@ -35,8 +35,10 @@ public:
 	virtual double getMu() const = 0;
 	virtual double getBeta() const = 0;
 	virtual common::startcondition getStartcondition() const = 0;
+	virtual std::string getNamePrefix() const = 0;
+	virtual std::string getNamePostfix() const = 0;
+	virtual int getNumberOfDigitsInName() const = 0;
 };
-
 
 #include "../../meta/inputparameters.hpp"
 #include "../../meta/util.hpp"
@@ -83,6 +85,19 @@ public:
 	{
 		return parameters->get_startcondition();
 	}
+	virtual std::string getNamePrefix() const
+	{
+		return parameters->get_config_prefix();
+	}
+	virtual std::string getNamePostfix() const
+	{
+		return parameters->get_config_postfix();
+	}
+	virtual int getNumberOfDigitsInName() const
+	{
+		return parameters->get_config_number_digits();
+	}
+
 private:
 	const meta::Inputparameters * parameters;
 };
