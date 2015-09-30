@@ -24,7 +24,7 @@
 #include "ildgIo_gaugefield.hpp"
 #include "../physics/lattices/parameters.hpp"
 
-Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
+Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const LatticeObjectParametersInterface * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
 	Matrixsu3 * gf_host = nullptr; // will be allocated by the following line, init to 0 to ensure error in case we fuck up.
 
@@ -32,8 +32,7 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	//IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
 	// does not work as the Inputparameters instance created in this fct. goes out of scope, causing a segfault.
 
-	const LatticeObjectParametersImplementation parameters3( parameters );
-	Inputparameters parameters2( &parameters3 );
+	Inputparameters parameters2( parameters );
 	IldgIoParameters_gaugefield ildgIoParameters(&parameters2);
 
 	IldgIoReader_gaugefield reader(ildgfile, &ildgIoParameters, &gf_host);
@@ -44,14 +43,13 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	return gf_host;
 }
 
-void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3> & host_buf, const meta::Inputparameters * parameters, int trajectoryNumber, double plaquetteValue)
+void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3> & host_buf, const LatticeObjectParametersInterface * parameters, int trajectoryNumber, double plaquetteValue)
 {
 	//NOTE: this is a workaround, because this call:
 	//IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
 	// does not work as the Inputparameters instance created in this fct. goes out of scope, causing a segfault.
 
-	const LatticeObjectParametersImplementation parameters3( parameters );
-	Inputparameters parameters2( &parameters3 );
+	Inputparameters parameters2( parameters );
 	IldgIoParameters_gaugefield ildgIoParameters(&parameters2);
 
 	IldgIoWriter_gaugefield writer(host_buf, &ildgIoParameters, outputfile, trajectoryNumber, plaquetteValue);

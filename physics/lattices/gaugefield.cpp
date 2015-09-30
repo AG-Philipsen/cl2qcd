@@ -21,7 +21,6 @@
  */
 
 #include "gaugefield.hpp"
-#include "../../meta/util.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../host_functionality/host_operations_gaugefield.h"
 #include <fstream>
@@ -42,7 +41,7 @@ static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
 static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const LatticeObjectParametersInterface * params);
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const LatticeObjectParametersInterface * params);
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
-static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()), parametersTmp(nullptr)
@@ -119,8 +118,7 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 {
 	double plaqSourcefile;
 
-	const meta::Inputparameters * parameters = this->getParameters();
-	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, parameters, trajectoryNumberAtInit, plaqSourcefile);
+	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, latticeObjectParameters, trajectoryNumberAtInit, plaqSourcefile);
 
 	send_gaugefield_to_buffers(buffers, gf_host, latticeObjectParameters);
 
@@ -225,9 +223,7 @@ void physics::lattices::Gaugefield::saveToSpecificFile(int number)
 void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
 	logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
-	const meta::Inputparameters * parameters = this->getParameters();
-	//@TODO: hide this explicit parameter arithmetik
-	size_t numberOfElements = meta::get_vol4d(*parameters) * NDIM;
+	size_t numberOfElements = latticeObjectParameters->getNumberOfElements();
 	Matrixsu3 * host_buf = new Matrixsu3[numberOfElements];
 	fetch_gaugefield_from_buffers(host_buf, buffers, latticeObjectParameters);
 	double plaq = physics::observables::measurePlaquette(this);
@@ -236,7 +232,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	std::vector<Matrixsu3> tmp(numberOfElements);
 	tmp.assign(host_buf, host_buf + numberOfElements);
 	
-	ildgIo::writeGaugefieldToFile(outputfile, tmp, parameters, number, plaq);
+	ildgIo::writeGaugefieldToFile(outputfile, tmp, latticeObjectParameters, number, plaq);
 
 	delete host_buf;
 }
@@ -376,12 +372,12 @@ void physics::lattices::Gaugefield::update_halo() const
 		if(buffers[0]->is_soa()) {
 			update_halo_soa(buffers, system);
 		} else {
-			update_halo_aos(buffers, system.get_inputparameters());
+			update_halo_aos(buffers, system);
 		}
 	}
 }
 
-static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system)
 {
 	// check all buffers are non-soa
 	for(auto const buffer: buffers) {
@@ -390,7 +386,7 @@ static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> bu
 		}
 	}
 
-	hardware::buffers::update_halo<Matrixsu3>(buffers, params, NDIM);
+	hardware::buffers::update_halo<Matrixsu3>(buffers, system, NDIM);
 }
 
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system)

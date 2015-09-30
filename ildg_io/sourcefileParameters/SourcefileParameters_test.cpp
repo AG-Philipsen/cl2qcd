@@ -28,6 +28,8 @@
 
 #include "../executables/exceptions.h"
 
+// TODO: Remove all occurences of meta::Inputparameters and Inputparameters. The tests should only use IlgdIoParameters_gaugefield!!
+
 void checkDefaults(Sourcefileparameters toCheck)
 {
   BOOST_REQUIRE_EQUAL(toCheck.lx, 0);

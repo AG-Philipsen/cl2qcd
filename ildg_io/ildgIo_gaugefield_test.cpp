@@ -30,6 +30,8 @@
 
 using namespace ildgIo;
 
+// TODO: Remove all occurences of meta::Inputparameters and Inputparameters. The tests should only use IlgdIoParameters_gaugefield!!
+
 size_t getPrecisionOfDoubleInBits()
 {
 	return 8 * sizeof(double);
