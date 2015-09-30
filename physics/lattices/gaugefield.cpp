@@ -39,8 +39,8 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const p
 static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
-static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params);
-static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const LatticeObjectParametersInterface * params);
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const LatticeObjectParametersInterface * params);
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 
@@ -122,7 +122,7 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 	const meta::Inputparameters * parameters = this->getParameters();
 	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, parameters, trajectoryNumberAtInit, plaqSourcefile);
 
-	send_gaugefield_to_buffers(buffers, gf_host, *parameters);
+	send_gaugefield_to_buffers(buffers, gf_host, latticeObjectParameters);
 
 	delete[] gf_host;
 
@@ -229,7 +229,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	//@TODO: hide this explicit parameter arithmetik
 	size_t numberOfElements = meta::get_vol4d(*parameters) * NDIM;
 	Matrixsu3 * host_buf = new Matrixsu3[numberOfElements];
-	fetch_gaugefield_from_buffers(host_buf, buffers, *parameters);
+	fetch_gaugefield_from_buffers(host_buf, buffers, latticeObjectParameters);
 	double plaq = physics::observables::measurePlaquette(this);
 
 	//http://stackoverflow.com/questions/2434196/how-to-initialize-stdvector-from-c-style-array
@@ -303,7 +303,7 @@ void physics::lattices::Gaugefield::unsmear()
 	release_buffers(&unsmeared_buffers);
 }
 
-static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const meta::Inputparameters& params) {
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const LatticeObjectParametersInterface * params) {
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
 		device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
@@ -323,16 +323,16 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
-			memcpy(mem_host, &gf_host[get_global_link_pos(0, offset, params)], local_volume * sizeof(Matrixsu3));
+			memcpy(mem_host, &gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], local_volume * sizeof(Matrixsu3));
 
 			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params->getNt());
 			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume], &gf_host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(Matrixsu3));
+			memcpy(&mem_host[local_volume], &gf_host[get_global_link_pos(0, halo_offset,  params->getNt(), params->getNs())], halo_volume * sizeof(Matrixsu3));
 
-			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
+			halo_offset = size_4(0, 0, 0, (offset.t + params->getNt() - halo_size.t) % params->getNt());
 			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume + halo_volume], &gf_host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(Matrixsu3));
+			memcpy(&mem_host[local_volume + halo_volume], &gf_host[get_global_link_pos(0, halo_offset,  params->getNt(), params->getNs())], halo_volume * sizeof(Matrixsu3));
 
 			device->get_gaugefield_code()->importGaugefield(buffer, mem_host);
 
@@ -341,7 +341,7 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 	}
 }
 
-static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params)
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const LatticeObjectParametersInterface * params)
 {
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
@@ -362,7 +362,7 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 			device->get_gaugefield_code()->exportGaugefield(mem_host, buffer);
 			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
-			memcpy(&gf_host[get_global_link_pos(0, offset, params)], mem_host, local_volume * sizeof(Matrixsu3));
+			memcpy(&gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], mem_host, local_volume * sizeof(Matrixsu3));
 
 			delete[] mem_host;
 		}

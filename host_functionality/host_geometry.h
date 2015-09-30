@@ -84,6 +84,7 @@ int get_global_link_pos(int mu, int spacepos, int t, const int nt, const int ns)
  * @return Global index
  */
 int get_global_link_pos(int mu, size_4 cart, const meta::Inputparameters& params);
+int get_global_link_pos(int mu, size_4 cart, const int nt, const int ns);
 
 /**
  * This returns the index of a single su3 matrix entry in the ildg format

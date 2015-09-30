@@ -56,6 +56,26 @@ int get_global_link_pos(int mu, int spacepos, int t, const int nt, const int ns)
 {
 	return mu + NDIM * get_global_pos(spacepos, t, nt, ns);
 }
+int get_global_link_pos(int mu, size_4 cart, const meta::Inputparameters& params)
+{
+	int space_coords[4];
+	space_coords[0] = 0;
+	space_coords[1] = cart.x;
+	space_coords[2] = cart.y;
+	space_coords[3] = cart.z;
+	auto const spatial = get_nspace(space_coords, params);
+	return get_global_link_pos(mu, spatial, cart.t, params);
+}
+int get_global_link_pos(int mu, size_4 cart, const int nt, const int ns)
+{
+	int space_coords[4];
+	space_coords[0] = 0;
+	space_coords[1] = cart.x;
+	space_coords[2] = cart.y;
+	space_coords[3] = cart.z;
+	auto const spatial = get_nspace(space_coords, nt, ns);
+	return get_global_link_pos(mu, spatial, cart.t, nt, ns);
+}
 
 size_t get_su3_idx_ildg_format(size_t n, size_t m, size_t x, size_t y, size_t z, size_t t, size_t mu, const int nt, const int ns)
 {
@@ -80,17 +100,6 @@ int get_source_pos_spatial(const meta::Inputparameters& params)
 	coord[2] = params.get_source_y();
 	coord[3] = params.get_source_z();
 	return get_nspace(coord, params);
-}
-
-int get_global_link_pos(int mu, size_4 cart, const meta::Inputparameters& params)
-{
-	int space_coords[4];
-	space_coords[0] = 0;
-	space_coords[1] = cart.x;
-	space_coords[2] = cart.y;
-	space_coords[3] = cart.z;
-	auto const spatial = get_nspace(space_coords, params);
-	return get_global_link_pos(mu, spatial, cart.t, params);
 }
 
 int get_global_pos(size_4 cart, const meta::Inputparameters& params)
