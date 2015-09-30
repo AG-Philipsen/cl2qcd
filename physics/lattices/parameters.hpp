@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "../common_header_files/types.h"
+
 class LatticeObjectParametersInterface {
 public:
 	virtual ~LatticeObjectParametersInterface () {};
@@ -32,6 +34,7 @@ public:
 	virtual double getKappa() const = 0;
 	virtual double getMu() const = 0;
 	virtual double getBeta() const = 0;
+	virtual common::startcondition getStartcondition() const = 0;
 };
 
 
@@ -75,6 +78,10 @@ public:
 	virtual double getBeta() const
 	{
 		return parameters->get_beta();
+	}
+	virtual common::startcondition getStartcondition() const
+	{
+		return parameters->get_startcondition();
 	}
 private:
 	const meta::Inputparameters * parameters;
