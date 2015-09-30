@@ -63,7 +63,8 @@ BOOST_AUTO_TEST_CASE(rescale)
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	const LatticeObjectParametersImplementation gaugefieldParameters{ &params };
+	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	Rooted_Staggeredfield_eo sf(system);
 	
 	//Reference rescaled coefficients

@@ -24,7 +24,8 @@
 generationExecutable::generationExecutable(int argc, const char* argv[], std::string parameterSet) : generalExecutable(argc, argv, parameterSet)
 {
 	initializationTimer.reset();
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+	const LatticeObjectParametersImplementation gaugefieldParameters{ &parameters };
+	gaugefield = new physics::lattices::Gaugefield(*system, &gaugefieldParameters, *prng);
 	initializationTimer.add();
 }
 

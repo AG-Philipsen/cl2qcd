@@ -58,13 +58,12 @@ BOOST_AUTO_TEST_CASE(initialization)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
-		const LatticeObjectParametersInterface * paramsTmp = &parametersTmp;
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PRNG prng(system);
 
 		// init from file
-		Gaugefield gf(system, paramsTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.1);
 	}
 }

@@ -23,7 +23,8 @@
 benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 {
 	initializationTimer.reset();
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+	const LatticeObjectParametersImplementation gaugefieldParameters{ &parameters };
+	gaugefield = new physics::lattices::Gaugefield(*system, &gaugefieldParameters, *prng);
 	device = system->get_devices().at(0);
 	benchmarkSteps = parameters.get_benchmarksteps();
 	initializationTimer.add();
