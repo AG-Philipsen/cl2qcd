@@ -39,7 +39,7 @@ namespace hardware {
 
 namespace buffers {
 
-template <typename T, class BUFFER> void update_halo(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE = 1.);
+template <typename T, class BUFFER> void update_halo(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE = 1.);
 /**
  * Update the halo of the given buffers.
  */
@@ -73,7 +73,7 @@ template<typename BUFFER> static hardware::SynchronizationEvent send_halo(hardwa
 
 static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
 static unsigned upper_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
-template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vector<BUFFER*> buffers, const meta::Inputparameters& params, const float ELEMS_PER_SITE)
+template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE)
 {
 	// no-op on single device
 	size_t num_buffers = buffers.size();
@@ -85,7 +85,7 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vec
 		}
 		const unsigned GRID_SIZE = grid_dims.t;
 		const unsigned HALO_SIZE = main_device->get_halo_size();
-		const unsigned VOLSPACE = meta::get_volspace(params) * ELEMS_PER_SITE;
+		const unsigned VOLSPACE = meta::get_volspace(system.get_inputparameters()) * ELEMS_PER_SITE;
 		const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE;
 		const unsigned VOL4D_LOCAL = get_vol4d(main_device->get_local_lattice_size()) * ELEMS_PER_SITE;
 		const size_t num_buffers = buffers.size();
