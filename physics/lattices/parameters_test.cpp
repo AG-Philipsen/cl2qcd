@@ -40,4 +40,8 @@ BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 	BOOST_CHECK_EQUAL(test.getNs(), 4);
 	BOOST_CHECK_EQUAL(test.getNt(), 8);
 	BOOST_CHECK_EQUAL(test.getPrecision(), 64);
+
+	LatticeObjectParametersImplementation * parametersTmp;
+	parametersTmp = new LatticeObjectParametersImplementation( &(*params) );
+	//latticeObjectParameters = parametersTmp;
 }

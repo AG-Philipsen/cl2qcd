@@ -30,6 +30,7 @@
 #include "../observables/gaugeObservables.h"
 #include <cassert>
 #include "../../ildg_io/ildgIo.hpp"
+#include "parameters.hpp"
 
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system);
 static void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers);
@@ -44,21 +45,27 @@ static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> bu
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const meta::Inputparameters& params);
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters())
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()), parametersTmp(nullptr)
 {
+	parametersTmp = new LatticeObjectParametersImplementation( parameters );
+	latticeObjectParameters = parametersTmp;
 	initializeBasedOnParameters();
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, bool hot)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters(&system.get_inputparameters())
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), parameters(&system.get_inputparameters()), parametersTmp(nullptr)
 {
+	parametersTmp = new LatticeObjectParametersImplementation( parameters );
+	latticeObjectParameters = parametersTmp;
 	initializeHotOrCold(hot);
 	trajectoryNumberAtInit = 0;
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const physics::PRNG& prng, std::string ildgfile)
-  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters())
+  : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  parameters(&system.get_inputparameters()), parametersTmp(nullptr)
 {
+	parametersTmp = new LatticeObjectParametersImplementation( parameters );
+	latticeObjectParameters = parametersTmp;
 	initializeFromILDGSourcefile(ildgfile);
 }
 
@@ -151,6 +158,10 @@ physics::lattices::Gaugefield::~Gaugefield()
 {
 	release_buffers(&buffers);
 	release_buffers(&unsmeared_buffers);
+	if (parametersTmp)
+	{
+		delete parametersTmp;
+	}
 }
 
 static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const physics::PRNG& prng)

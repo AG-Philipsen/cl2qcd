@@ -28,6 +28,7 @@
 #include "../prng.hpp"
 #include "../../hardware/code/gaugefield.hpp"
 #include "../../meta/inputparameters.hpp"
+#include "parameters.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -124,6 +125,8 @@ namespace physics {
 			std::vector<const hardware::buffers::SU3 *> buffers;
 			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
 			const meta::Inputparameters * parameters;
+			const LatticeObjectParametersInterface * latticeObjectParameters;
+			LatticeObjectParametersImplementation * parametersTmp;
 
 			/**
 			 * Utility functions for construction.
