@@ -22,6 +22,7 @@
 #include "ildgIo.hpp"
 #include "ildgIoParameters.hpp"
 #include "ildgIo_gaugefield.hpp"
+#include "../physics/lattices/parameters.hpp"
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const meta::Inputparameters * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
@@ -30,7 +31,9 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const met
 	//NOTE: this is a workaround, because this call:
 	//IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
 	// does not work as the Inputparameters instance created in this fct. goes out of scope, causing a segfault.
-	Inputparameters parameters2( parameters );
+
+	const LatticeObjectParametersImplementation parameters3( parameters );
+	Inputparameters parameters2( &parameters3 );
 	IldgIoParameters_gaugefield ildgIoParameters(&parameters2);
 
 	IldgIoReader_gaugefield reader(ildgfile, &ildgIoParameters, &gf_host);
@@ -46,7 +49,9 @@ void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3
 	//NOTE: this is a workaround, because this call:
 	//IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
 	// does not work as the Inputparameters instance created in this fct. goes out of scope, causing a segfault.
-	Inputparameters parameters2( parameters );
+
+	const LatticeObjectParametersImplementation parameters3( parameters );
+	Inputparameters parameters2( &parameters3 );
 	IldgIoParameters_gaugefield ildgIoParameters(&parameters2);
 
 	IldgIoWriter_gaugefield writer(host_buf, &ildgIoParameters, outputfile, trajectoryNumber, plaquetteValue);

@@ -24,7 +24,8 @@
 
 IldgIoParameters_gaugefield createIldgIoParameters(const meta::Inputparameters * parametersIn)
 {
-	Inputparameters parameters( parametersIn );
+	const LatticeObjectParametersImplementation tmp (parametersIn);
+	Inputparameters parameters( &tmp );
 	IldgIoParameters_gaugefield ildgIoParameters(&parameters);
 	return ildgIoParameters;
 }
