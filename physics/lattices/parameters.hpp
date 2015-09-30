@@ -40,6 +40,7 @@ public:
 	virtual std::string getNamePostfix() const = 0;
 	virtual int getNumberOfDigitsInName() const = 0;
 	virtual int getSmearingSteps() const = 0;
+	virtual std::string getSourcefileName() const = 0;
 };
 
 #include "../../meta/inputparameters.hpp"
@@ -102,6 +103,10 @@ public:
 	virtual int getSmearingSteps() const
 	{
 		return parameters->get_rho_iter();
+	}
+	virtual std::string getSourcefileName() const
+	{
+		return parameters->get_sourcefile();
 	}
 
 private:
