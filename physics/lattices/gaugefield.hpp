@@ -1,7 +1,7 @@
 /** @file
  * Declaration of the physics::lattices::Gaugefield class
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2015 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -26,8 +26,6 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
-#include "../../hardware/code/gaugefield.hpp"
-#include "../../meta/inputparameters.hpp"
 #include "parameters.hpp"
 
 /**
@@ -126,7 +124,6 @@ namespace physics {
 			physics::PRNG const& prng;
 			std::vector<const hardware::buffers::SU3 *> buffers;
 			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
-			const meta::Inputparameters * parameters;
 			const LatticeObjectParametersInterface * latticeObjectParameters;
 			LatticeObjectParametersImplementation * parametersTmp;
 

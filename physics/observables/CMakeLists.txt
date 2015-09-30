@@ -21,14 +21,18 @@
 # Collect all code in this part of the source tree
 #
 
-add_library(observables
+add_library(gaugeObservables
 	gaugeObservables.cpp
+)	
+
+add_library(observables
 	wilsonTwoFlavourChiralCondensate.cpp
 	wilsonTwoFlavourCorrelators.cpp
 	staggeredChiralCondensate.cpp
 )
 
 target_link_libraries(observables
+	gaugeObservables
 	algorithms
 	fermionmatrix
 	prng

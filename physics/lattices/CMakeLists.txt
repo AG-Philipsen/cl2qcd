@@ -21,8 +21,11 @@
 # Collect all code in this part of the source tree
 #
 
-add_library(lattices
+add_library(gaugefield
 	gaugefield.cpp
+)
+
+add_library(lattices
 	spinorfield.cpp
 	spinorfield_eo.cpp
 	scalar_complex.cpp
@@ -33,6 +36,7 @@ add_library(lattices
 	rooted_staggeredfield_eo.cpp
 )
 target_link_libraries(lattices
+	gaugefield
 	hardware
 	ildg_io
 	host_functionality
@@ -44,7 +48,7 @@ target_link_libraries(lattices
 # Definition of tests
 #
 add_unit_test_withLibraries(physics::lattices::Parameters parameters_test meta)
-add_unit_test_withLibraries(physics::lattices::Gaugefield gaugefield_test lattices observables)
+add_unit_test_withLibraries(physics::lattices::Gaugefield gaugefield_test gaugefield meta hardware gaugeObservables prng ildg_io host_functionality)
 add_unit_test_withLibraries(physics::lattices::Spinorfield spinorfield_test lattices)
 add_unit_test_withLibraries(physics::lattices::Spinorfield_eo spinorfield_eo_test lattices)
 add_unit_test_withLibraries(physics::lattices::Scalar<hmc_complex> scalar_complex_test lattices)
