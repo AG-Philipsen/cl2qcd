@@ -20,6 +20,17 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//TODO: Refactor
+//	the prng class should take an own parameter object.
+//	This must contain only get_host_seed() get_initial_prng_state() !
+//	In addition, the prng class needs to be able to create its own name (not via meta). This may need some more parameters.
+// 	The last occurence of meta::Inputparameters is as arg to PRNGBuffer, where it is used in:
+/*
+  size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const meta::Inputparameters& params)
+	{
+		if(params.get_use_same_rnd_numbers()) {
+ */
+//	Hence, adding get_use_same_rnd_numbers() to the parameters should resolve this dependence completely and replace params with a bool!
 #include "prng.hpp"
 
 #include "../host_functionality/host_random.h"
@@ -122,7 +133,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 		buffers.push_back(buffer);
 	}
 
-	// additional initalization in case of known start
+	// additional initialization in case of known start
 	if(!params.get_initial_prng_state().empty())
 	{
 		logger.debug() << "Read prng state from file \"" + params.get_initial_prng_state() + "\"...";
@@ -320,7 +331,7 @@ void physics::PRNG::store(const std::string filename) const
 	{
 	  //TODO: It seems that the function boost::filesystem::copy_file gives a linking error in compilation
 	  //      /cm/shared/apps/boost/1.52.0/include/boost/filesystem/operations.hpp:381: undefined reference to `boost::filesystem::detail::copy_file(...)
-	  //      therefore here we rename files and then delete. This should nevertheless fixed!
+	  //      therefore here we rename files and then delete. This should nevertheless be fixed!
 	  const std::string backupFilename = filename + "_backup";
 	  if(boost::filesystem::exists(backupFilename))
 	    boost::filesystem::rename(backupFilename, backupFilename + "_tmp");

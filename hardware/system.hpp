@@ -52,7 +52,7 @@ namespace hardware {
 			std::string error_message;
 	};
 
-	// forward decleartion of used class
+	// forward declaration of used classes
 	class Device;
 	class Transfer;
 

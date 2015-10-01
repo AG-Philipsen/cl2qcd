@@ -19,6 +19,14 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @Todo: Refactor/Remove dependence on meta::Inputparameters
+ * This class is only needed for few things:
+ * parameters.get_use_gpu(), parameters.get_use_cpu(), get_selected_devices(), get_device_count(), get_split_cpu()
+ * and in creating the devices (which should not take meta::Inputparameters as well!
+	new hardware::Device(context, info.get_id(), grid_pos, grid_size, params, enable_profiling))
+ */
+
 #include "system.hpp"
 
 #include <list>

@@ -366,6 +366,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
 
     //TODO: The dependency on meta::Inputparameters must be resolved by introducing an appropiate interface
     //  One has to see which parameters are needed here in addition to those already in contained in the gaugefield and add a specific class for them.
+    //	One basically needs normalization factors (fcts. of ns, nt) and booleans (measure_rect, measure_kappa, printToScreen), beta as well as fcts. that return names for output files.
 void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration)
 {
   gaugeObservables obs(&gf->getSystem()->get_inputparameters() );

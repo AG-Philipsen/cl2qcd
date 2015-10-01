@@ -19,6 +19,14 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @Todo: Refactor:
+ *	Here, one only needs: is_ocl_compiler_opt_disabled(),  params.get_nspace(); get_ntime();
+ *	from meta::Inputparameters
+ *	Unfortunately, also every single hardware::code class takes it as arg!!
+ *	This is needed for opencl_module only, where it is used in collect_build_options(..)
+ */
+
 #include "device.hpp"
 #include "system.hpp"
 #include "../host_functionality/logger.hpp"

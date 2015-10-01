@@ -25,7 +25,6 @@
 
 #include "../hardware/system.hpp"
 #include "../hardware/buffers/prng_buffer.hpp"
-#include "../meta/util.hpp"
 
 /**
  * This package contains the actual "business" logic of the library.
