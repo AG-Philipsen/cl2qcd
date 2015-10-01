@@ -47,12 +47,12 @@
 #include "code/buffer.hpp"
 
 static bool retrieve_device_availability(cl_device_id device_id);
-static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputparameters& params);
+static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME);
 static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
 hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
 	: DeviceInfo(device_id),
-	  context(context), params(params),
+	  context(context), params(params), hardwareParameters(nullptr),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
 	  gaugefield_code(nullptr),
@@ -72,13 +72,14 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  buffer_code(nullptr),
 	  grid_pos(grid_pos),
 	  grid_size(grid_size),
-	  local_lattice_size(calculate_local_lattice_size(grid_size, params)),
+	  local_lattice_size(calculate_local_lattice_size(grid_size, params.get_nspace(), params.get_ntime())),
 	  halo_size(2),
 	  mem_lattice_size(calculate_mem_lattice_size(grid_size, local_lattice_size, halo_size)),
 	  allocated_bytes(0),
 	  max_allocated_bytes(0),
 	  allocated_hostptr_bytes(0)
 {
+	hardwareParameters = new hardware::HardwareParameters( &params );
 	logger.debug() << "Initializing " << get_name();
 	logger.debug() << "Device position: " << grid_pos;
 	logger.debug() << "Local lattice size: " << local_lattice_size;
@@ -101,6 +102,10 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 
 hardware::Device::~Device()
 {
+	if (hardwareParameters)
+	{
+		delete hardwareParameters;
+	}
 	if(buffer_code) {
 		delete buffer_code;
 	}
@@ -164,7 +169,7 @@ cl_command_queue hardware::Device::get_queue() const noexcept
 
 TmpClKernel hardware::Device::create_kernel(const char * const kernel_name, std::string build_opts) const
 {
-	if(params.is_ocl_compiler_opt_disabled()) {
+	if(hardwareParameters->disableOpenCLCompilerOptimizations()) {
 		build_opts +=  " -cl-opt-disable";
 	}
 	return TmpClKernel(kernel_name, build_opts, context, get_id());
@@ -543,11 +548,8 @@ size_4 hardware::Device::get_grid_size() const
 	return grid_size;
 }
 
-static size_4 calculate_local_lattice_size(size_4 grid_size, const meta::Inputparameters& params)
+static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME)
 {
-	const unsigned NSPACE = params.get_nspace();
-	const unsigned NTIME = params.get_ntime();
-
 	const size_4 local_size(NSPACE / grid_size.x, NSPACE / grid_size.y, NSPACE / grid_size.z, NTIME / grid_size.t);
 
 	if(local_size.x * grid_size.x != NSPACE

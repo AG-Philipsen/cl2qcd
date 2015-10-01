@@ -25,6 +25,7 @@
 #include "device_info.hpp"
 #include <map>
 #include "../meta/inputparameters.hpp"
+#include "hardwareParameters.hpp"
 #include "opencl_compiler.hpp"
 #include "profiling_data.hpp"
 #include "../common_header_files/types.h"
@@ -288,6 +289,7 @@ private:
 	 * The input parameters of the application.
 	 */
 	const meta::Inputparameters& params;
+	const hardware::HardwareParametersInterface * hardwareParameters;
 
 	/**
 	 * The command queue used to perform operations on this device
