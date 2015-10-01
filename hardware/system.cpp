@@ -36,18 +36,23 @@
 #include "device.hpp"
 #include "transfer/transfer.hpp"
 
+//todo: in the end, move this to system.hpp replacing meta/inputparameters.hpp
+#include "hardwareParameters.hpp"
+
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling);
 static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
+//todo: remove the enable_profiling argument, it is redundant and contained in parameters!
 hardware::System::System(const meta::Inputparameters& params, const bool enable_profiling)
-	: params(params), grid_size(0, 0, 0, 0), transfer_links()
+	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr)
 {
+	hardwareParameters = new hardware::HardwareParameters( &params );
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
-	initOpenCLDevices(enable_profiling);
+	initOpenCLDevices( hardwareParameters->enableProfiling() );
 }
 
 void hardware::System::initOpenCLPlatforms()
@@ -70,14 +75,14 @@ void hardware::System::initOpenCLPlatforms()
 	logger.debug() << "...done";
 }
 
-cl_device_type restrictDeviceTypes( const meta::Inputparameters & parameters)
+cl_device_type restrictDeviceTypes( const hardware::HardwareParametersInterface * parameters)
 {
 	// todo: does this cover all cases?
 	cl_device_type enabled_types = 0;
-	if(parameters.get_use_gpu()) {
+	if(parameters->useGpu()) {
 		enabled_types |= CL_DEVICE_TYPE_GPU;
 	}
-	if(parameters.get_use_cpu()) {
+	if(parameters->useCpu()) {
 		enabled_types |= CL_DEVICE_TYPE_CPU;
 	}
 	return enabled_types;
@@ -88,7 +93,7 @@ void hardware::System::initOpenCLContext()
 	logger.debug() << "Init OpenCL context...";
 	cl_int err = CL_SUCCESS;
 	cl_context_properties context_props[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
-	cl_device_type enabled_types = restrictDeviceTypes( params );
+	cl_device_type enabled_types = restrictDeviceTypes( hardwareParameters );
 
 	context = clCreateContextFromType(context_props, enabled_types, 0, 0, &err);
 	if(err)
@@ -119,11 +124,11 @@ void hardware::System::initOpenCLDevices(const bool enable_profiling)
 	}
 
 	// check whether the user requested certain devices
-	auto selection = params.get_selected_devices();
+	auto selection = hardwareParameters->getSelectedDevices();
 	std::list<DeviceInfo> device_infos;
 	if(selection.empty()) {
 		// use all (or up to max)
-		size_t max_devices = params.get_device_count();
+		size_t max_devices = hardwareParameters->getMaximalNumberOfDevices();
 		for(cl_uint i = 0; i < num_devices && (!max_devices || device_infos.size() < max_devices); ++i) {
 			DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
@@ -144,7 +149,7 @@ for(auto device: device_infos) {
 
 		// if we are on a CPU, the number of devices is not restricted and we have OpenCL 1.2 split the CPU into NUMA domains (primarily makes testing easier)
 #ifdef CL_VERSION_1_2
-		if(params.get_split_cpu() && device_infos.size() == 1 && device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
+		if(hardwareParameters->splitCpu() && device_infos.size() == 1 && device_infos.front().get_device_type() == CL_DEVICE_TYPE_CPU && !max_devices) {
 			cl_device_id original_device = device_infos.front().get_id();
 			cl_device_partition_property partition_props[] = { CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN, CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE, 0};
 			cl_uint num_sub_devs;
@@ -200,6 +205,11 @@ hardware::System::~System()
 	devices.clear();
 
 	clReleaseContext(context);
+
+	if (hardwareParameters)
+	{
+		delete hardwareParameters;
+	}
 }
 
 const std::vector<hardware::Device*>& hardware::System::get_devices() const noexcept

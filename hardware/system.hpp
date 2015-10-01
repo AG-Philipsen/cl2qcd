@@ -23,6 +23,7 @@
 #define _HARDWARE_SYSTEM_HPP_
 
 #include "../meta/inputparameters.hpp"
+#include "hardwareParameters.hpp"
 #include "../common_header_files/types.h"
 #include "../meta/size_4.hpp"
 #include <map>
@@ -142,6 +143,7 @@ namespace hardware {
 		void initOpenCLPlatforms();
 		void initOpenCLContext();
 		void initOpenCLDevices( const bool );
+		const hardware::HardwareParametersInterface * hardwareParameters;
 	};
 
 	/**
