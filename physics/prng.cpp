@@ -39,6 +39,7 @@
 #include <stdexcept>
 #include "../hardware/device.hpp"
 #include "../hardware/code/prng.hpp"
+#include "utilities.hpp"
 
 //http://www.ridgesolutions.ie/index.php/2013/05/30/boost-link-error-undefined-reference-to-boostfilesystemdetailcopy_file/
 #define BOOST_NO_CXX11_SCOPED_ENUMS
@@ -118,6 +119,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 {
 	using hardware::buffers::PRNGBuffer;
 
+	parameters = new physics::ParametersPrng_fromMetaInputparameters(&system.get_inputparameters() );
 	auto & params = system.get_inputparameters();
 
 	// initialize host prng
@@ -366,16 +368,19 @@ void physics::PRNG::store(const std::string filename) const
 	verifyWritingWasSuccessful( filename );
 }
 
+std::string physics::PRNG::getName(int number) const noexcept
+{
+	return physics::getConfigurationName( parameters->getNamePrefix(), parameters->getNamePostfix(), parameters->getNumberOfDigitsInName(), number);
+}
+
 void physics::PRNG::save()
 {
-	std::string outputfile = meta::create_prng_name(system.get_inputparameters());
-	store(outputfile);
+	store(this->getName());
 }
 
 void physics::PRNG::saveToSpecificFile(int number)
 {
-	std::string outputfile = meta::create_prng_name(system.get_inputparameters(), number);
-	store(outputfile);
+	store(this->getName(number));
 }
 
 bool physics::PRNG::operator == (const physics::PRNG & prng) const

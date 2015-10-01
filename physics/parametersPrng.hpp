@@ -25,7 +25,7 @@ namespace physics
 {
 	class ParametersPrngInterface
 	{
-	protected:
+	public:
 		ParametersPrngInterface(){};
 		virtual ~ParametersPrngInterface(){};
 		virtual uint32_t getHostSeed() const = 0;
