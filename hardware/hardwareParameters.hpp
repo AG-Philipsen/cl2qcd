@@ -25,7 +25,7 @@ namespace hardware
 {
 	class HardwareParametersInterface
 	{
-	protected:
+	public:
 		HardwareParametersInterface() {};
 		virtual ~HardwareParametersInterface() {};
 		virtual int getNs() const = 0;
@@ -44,7 +44,7 @@ namespace hardware
 	class HardwareParameters final : public HardwareParametersInterface
 	{
 	public:
-		HardwareParameters( meta::Inputparameters * parametersIn) : fullParameters(parametersIn) {}
+		HardwareParameters( const meta::Inputparameters * parametersIn) : fullParameters(parametersIn) {}
 		~HardwareParameters() {};
 		virtual int getNs() const override
 		{
@@ -91,6 +91,6 @@ namespace hardware
 			return fullParameters->get_use_eo();
 		}
 	private:
-		meta::Inputparameters * fullParameters;
+		const meta::Inputparameters * fullParameters;
 	};
 }
