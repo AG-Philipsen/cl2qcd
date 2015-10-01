@@ -1,6 +1,4 @@
-/** @file
- * Declaration of the physics::lattices::Gaugefield class
- *
+/**
  * Copyright 2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
