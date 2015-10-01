@@ -257,8 +257,8 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == set_gaussian_spinorfield_stagg
 	   || kernel == set_gaussian_spinorfield_stagg_eoprec) {
-		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
-			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters().get_use_same_rnd_numbers())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters().get_use_same_rnd_numbers());
 			logger.trace() << "I changed gs without changing neither ls nor num_groups (in Spinors_staggered::get_work_sizes)!!!";
 		}
 	}

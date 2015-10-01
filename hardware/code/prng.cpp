@@ -22,15 +22,13 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
 	options.precision(16);
 	if(params.get_use_same_rnd_numbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
 #ifdef USE_PRNG_RANLUX
-	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params);
+	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params.get_use_same_rnd_numbers());
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX

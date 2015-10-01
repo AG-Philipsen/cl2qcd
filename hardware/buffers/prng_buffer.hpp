@@ -33,8 +33,9 @@ namespace buffers {
  *
  * \param device The device the buffer is to be used with
  * \return The size of the buffer in element
+ * @Todo: move elsewhere
  */
-size_t get_prng_buffer_size(const Device * device, const meta::Inputparameters& params);
+size_t get_prng_buffer_size(const Device * device, const bool useSameRandomNumbers);
 
 /**
  * A PRNG OpenCL buffer.

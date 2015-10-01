@@ -152,8 +152,8 @@ void hardware::code::Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == generate_gaussian_spinorfield
 	   || kernel == generate_gaussian_spinorfield_eo) {
-		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
-			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters().get_use_same_rnd_numbers())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters().get_use_same_rnd_numbers());
 		}
 	}
 

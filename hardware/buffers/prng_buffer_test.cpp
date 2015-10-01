@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(get_prng_buffer_size)
 	System system(meta::Inputparameters(0, 0));
 for(Device * device : system.get_devices()) {
 
-		int elems = hardware::buffers::get_prng_buffer_size(device, system.get_inputparameters());
+		int elems = hardware::buffers::get_prng_buffer_size(device, system.get_inputparameters().get_use_same_rnd_numbers());
 
 		BOOST_CHECK_GT(elems, 0);
 		BOOST_CHECK_LT(elems, 1e6);
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 for(Device * device : system.get_devices()) {
 
 		PRNGBuffer dummy(device, system.get_inputparameters());
-		BOOST_CHECK_EQUAL(dummy.get_elements(), hardware::buffers::get_prng_buffer_size(device, system.get_inputparameters()));
+		BOOST_CHECK_EQUAL(dummy.get_elements(), hardware::buffers::get_prng_buffer_size(device, system.get_inputparameters().get_use_same_rnd_numbers()));
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);

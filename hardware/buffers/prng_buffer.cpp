@@ -31,7 +31,7 @@ hardware::buffers::PRNGBuffer::PRNGBuffer(size_t elems, Device * device)
 }
 
 hardware::buffers::PRNGBuffer::PRNGBuffer(Device * device, const meta::Inputparameters& params)
-	: PRNGBuffer(get_prng_buffer_size(device, params), device)
+	: PRNGBuffer(get_prng_buffer_size(device, params.get_use_same_rnd_numbers()), device)
 {
 	// already inited
 }
@@ -41,9 +41,9 @@ size_t hardware::buffers::PRNGBuffer::get_elements() const noexcept
 	return elems;
 }
 
-size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const meta::Inputparameters& params)
+size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const bool useSameRandomNumbers)
 {
-	if(params.get_use_same_rnd_numbers()) {
+	if(useSameRandomNumbers) {
 		return 1.;
 	} else {
 #ifdef USE_PRNG_RANLUX

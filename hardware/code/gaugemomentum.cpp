@@ -97,8 +97,8 @@ void hardware::code::Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_
 
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == generate_gaussian_gaugemomenta) {
-		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
-			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters().get_use_same_rnd_numbers())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters().get_use_same_rnd_numbers());
 		}
 	} else if(kernel == gaugemomentum_squarenorm) {
 		if(*ls != 1) { 
