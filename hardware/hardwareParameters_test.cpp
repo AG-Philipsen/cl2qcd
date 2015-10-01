@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 {
 	const char * argv []  = {"foo"};
 	meta::Inputparameters fullParameters{1, argv};
-	HardwareParameters hardwareParameters( &fullParameters );
+	hardware::HardwareParameters hardwareParameters( &fullParameters );
 
 	BOOST_REQUIRE_EQUAL( hardwareParameters.useGpu(), fullParameters.get_use_gpu() );
 	BOOST_REQUIRE_EQUAL( hardwareParameters.useCpu() , fullParameters.get_use_cpu() );
@@ -36,4 +36,9 @@ BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 	BOOST_REQUIRE_EQUAL( hardwareParameters.getMaximalNumberOfDevices() , fullParameters.get_device_count() );
 	BOOST_REQUIRE_EQUAL( hardwareParameters.getSelectedDevices().size() , fullParameters.get_selected_devices().size() );
 	BOOST_REQUIRE_EQUAL( hardwareParameters.enableProfiling() , fullParameters.get_enable_profiling());
+	BOOST_REQUIRE_EQUAL( hardwareParameters.getNs() , fullParameters.get_nspace() );
+	BOOST_REQUIRE_EQUAL( hardwareParameters.getNt() , fullParameters.get_ntime() );
+	BOOST_REQUIRE_EQUAL( hardwareParameters.disableOpenCLCompilerOptimizations() , fullParameters.is_ocl_compiler_opt_disabled() );
+	BOOST_REQUIRE_EQUAL( hardwareParameters.useSameRandomNumbers() , fullParameters.get_use_same_rnd_numbers() );
+	BOOST_REQUIRE_EQUAL( hardwareParameters.useEvenOddPreconditioning() , fullParameters.get_use_eo() );
 }
