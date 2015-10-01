@@ -120,33 +120,32 @@ physics::PRNG::PRNG(const hardware::System& system) :
 	using hardware::buffers::PRNGBuffer;
 
 	parameters = new physics::ParametersPrng_fromMetaInputparameters(&system.get_inputparameters() );
-	auto & params = system.get_inputparameters();
 
 	// initialize host prng
-	uint32_t seed = params.get_host_seed();
+	uint32_t seed = parameters->getHostSeed();
 	prng_init(seed);
 
 	// initialize devices
 	for(hardware::Device * device : system.get_devices()) {
 		// create a buffer for each device
-		const PRNGBuffer * buffer = new PRNGBuffer(device, params);
+		const PRNGBuffer * buffer = new PRNGBuffer(device, system.get_inputparameters());
 		auto code = device->get_prng_code();
 		code->initialize(buffer, ++seed);
 		buffers.push_back(buffer);
 	}
 
 	// additional initialization in case of known start
-	if(!params.get_initial_prng_state().empty())
+	if(!parameters->getInitialPrngStateFilename().empty())
 	{
-		logger.debug() << "Read prng state from file \"" + params.get_initial_prng_state() + "\"...";
-		PrngFileReader fileContent( params.get_initial_prng_state(), buffers.size() );
+		logger.debug() << "Read prng state from file \"" + parameters->getInitialPrngStateFilename() + "\"...";
+		PrngFileReader fileContent( parameters->getInitialPrngStateFilename(), buffers.size() );
 
 		prng_set(fileContent.hostState);
 		for( uint currentBufferIndex = 0; currentBufferIndex < buffers.size(); currentBufferIndex ++ )
 		{
 			size_t buffer_bytes = fileContent.prngStates.at(currentBufferIndex).bufferBytes;
 			if(buffer_bytes != buffers.at(currentBufferIndex)->get_bytes()) {
-				throw std::invalid_argument(params.get_initial_prng_state() + " does not seem to contain a valid prng state");
+				throw std::invalid_argument(parameters->getInitialPrngStateFilename() + " does not seem to contain a valid prng state");
 			}
 			buffers.at(currentBufferIndex)->load(reinterpret_cast<const hardware::buffers::PRNGBuffer::prng_state_t *>( fileContent.prngStates.at(currentBufferIndex).content.get() ));
 		}
