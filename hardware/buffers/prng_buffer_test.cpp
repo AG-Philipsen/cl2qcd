@@ -1,7 +1,8 @@
 /** @file
  * Testcases for the hardware::buffers::Buffer class
  *
- * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
+ * Copyright (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>,
+ * 		2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -51,7 +52,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	System system(meta::Inputparameters(0, 0));
 for(Device * device : system.get_devices()) {
 
-		PRNGBuffer dummy(device, system.get_inputparameters());
+		PRNGBuffer dummy(device, system.get_inputparameters().get_use_same_rnd_numbers());
 		BOOST_CHECK_EQUAL(dummy.get_elements(), hardware::buffers::get_prng_buffer_size(device, system.get_inputparameters().get_use_same_rnd_numbers()));
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
@@ -67,7 +68,7 @@ BOOST_AUTO_TEST_CASE(import_export)
 	System system(meta::Inputparameters(0, 0));
 for(Device * device : system.get_devices()) {
 
-		PRNGBuffer buffer(device, system.get_inputparameters());
+		PRNGBuffer buffer(device, system.get_inputparameters().get_use_same_rnd_numbers());
 		int elems = buffer.get_elements();
 		PRNGBuffer::prng_state_t * in = new PRNGBuffer::prng_state_t[elems];
 		// TODO fill with random data

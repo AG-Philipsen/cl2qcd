@@ -23,7 +23,7 @@
 #define _HARDWARE_BUFFERS_PRN_GBUFFER_
 
 #include "buffer.hpp"
-#include "../../meta/inputparameters.hpp"
+#include "../device.hpp"
 
 namespace hardware {
 namespace buffers {
@@ -52,12 +52,12 @@ public:
 
 	/**
 	 * Allocate a buffer with the default number of
-	 * elemets for this device.
+	 * elements for this device.
 	 *
-	 * \param elems The size of the buffer in elements
 	 * \param device The device to locate the buffer on
+	 * \param useSameRandomNumbers This influences the size of the buffer
 	 */
-	PRNGBuffer(Device * device, const meta::Inputparameters& params);
+	PRNGBuffer(Device * device, const bool useSameRandomNumbers);
 
 	/*
 	 * PRNGBuffers cannot be copied

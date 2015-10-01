@@ -1,7 +1,7 @@
 /** @file
  * Ranlux PRNG implementation
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2015 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -20,17 +20,6 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//TODO: Refactor
-//	the prng class should take an own parameter object.
-//	This must contain only get_host_seed() get_initial_prng_state() !
-//	In addition, the prng class needs to be able to create its own name (not via meta). This may need some more parameters.
-// 	The last occurence of meta::Inputparameters is as arg to PRNGBuffer, where it is used in:
-/*
-  size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const meta::Inputparameters& params)
-	{
-		if(params.get_use_same_rnd_numbers()) {
- */
-//	Hence, adding get_use_same_rnd_numbers() to the parameters should resolve this dependence completely and replace params with a bool!
 #include "prng.hpp"
 
 #include "../host_functionality/host_random.h"
@@ -50,6 +39,10 @@ physics::PRNG::~PRNG()
 	for(const hardware::buffers::PRNGBuffer * buffer : buffers)
 	{
 		delete buffer;
+	}
+	if (parameters)
+	{
+		delete parameters;
 	}
 }
 
@@ -128,7 +121,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 	// initialize devices
 	for(hardware::Device * device : system.get_devices()) {
 		// create a buffer for each device
-		const PRNGBuffer * buffer = new PRNGBuffer(device, system.get_inputparameters());
+		const PRNGBuffer * buffer = new PRNGBuffer(device, parameters->useSameRandomNumbers());
 		auto code = device->get_prng_code();
 		code->initialize(buffer, ++seed);
 		buffers.push_back(buffer);
