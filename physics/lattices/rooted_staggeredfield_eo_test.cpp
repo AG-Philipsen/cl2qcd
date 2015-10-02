@@ -58,7 +58,8 @@ BOOST_AUTO_TEST_CASE(rescale)
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 	
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);

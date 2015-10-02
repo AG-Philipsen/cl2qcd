@@ -65,7 +65,8 @@ BOOST_AUTO_TEST_CASE(gamma5)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system);
 	sf.zero();
@@ -86,7 +87,8 @@ BOOST_AUTO_TEST_CASE(zero)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system);
 	sf.gaussian(prng);
@@ -101,7 +103,8 @@ BOOST_AUTO_TEST_CASE(cold)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system);
 	sf.gaussian(prng);
@@ -117,7 +120,8 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system);
 	sf.zero();
@@ -134,7 +138,8 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system);
 	sf.zero();
@@ -154,7 +159,8 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield gaussian(system);
 	gaussian.gaussian(prng);
@@ -191,7 +197,8 @@ BOOST_AUTO_TEST_CASE(sax)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield orig_sf(system);
 	orig_sf.gaussian(prng);
@@ -218,7 +225,8 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield gaussian(system);
 	gaussian.gaussian(prng);
@@ -243,7 +251,8 @@ BOOST_AUTO_TEST_CASE(saxsbypz)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield gaussian(system);
 	gaussian.gaussian(prng);

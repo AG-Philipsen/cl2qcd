@@ -63,6 +63,7 @@ protected:
 	usetimer initializationTimer;
 	usetimer performanceTimer;
 	meta::Inputparameters parameters;
+	const physics::ParametersPrngInterface * prngParameters;
 	hardware::System * system;
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;

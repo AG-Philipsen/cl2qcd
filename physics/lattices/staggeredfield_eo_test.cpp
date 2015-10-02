@@ -51,7 +51,8 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system);
 	sf.set_zero();
@@ -70,7 +71,8 @@ BOOST_AUTO_TEST_CASE(zero)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system);
 	sf.set_gaussian(prng);
@@ -85,7 +87,8 @@ BOOST_AUTO_TEST_CASE(cold)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system);
 	sf.set_gaussian(prng);
@@ -100,7 +103,8 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system);
 	sf.set_cold();
@@ -116,7 +120,8 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system);
 	gaussian.set_gaussian(prng);
@@ -153,7 +158,8 @@ BOOST_AUTO_TEST_CASE(sax)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo orig_sf(system);
 	Staggeredfield_eo sf(system);
@@ -206,7 +212,8 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system);
 	gaussian.set_gaussian(prng);
@@ -252,7 +259,8 @@ BOOST_AUTO_TEST_CASE(saxpby)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system);
 	gaussian.set_gaussian(prng);
@@ -312,7 +320,8 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system);
 	gaussian.set_gaussian(prng);
@@ -341,7 +350,8 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	physics::lattices::Vector<hmc_float> zeros(3, system);
 	physics::lattices::Vector<hmc_float> ones(3, system);
@@ -383,7 +393,8 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 	
 	Staggeredfield_eo sf(system);
 	sf.set_zero();
@@ -411,7 +422,8 @@ BOOST_AUTO_TEST_CASE(conversion)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	for(size_t i = 0; i < 11; i++) {
 		const Spinorfield orig(system);
@@ -445,7 +457,8 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	const char * _params[] = {"foo", "--ntime=16"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	const Spinorfield_eo sf(system);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2015 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -20,6 +20,7 @@
 
 
 #include "generalExecutable.h"
+#include "../physics/parametersPrng.hpp"
 
 void generalExecutable::printParametersToScreenAndFile()
 {
@@ -57,7 +58,7 @@ void generalExecutable::printProfilingDataToFile()
 	  }
 }
 
-generalExecutable::generalExecutable(int argc, const char* argv[], std::string parameterSet) : parameters(argc, argv, parameterSet)
+generalExecutable::generalExecutable(int argc, const char* argv[], std::string parameterSet) : parameters(argc, argv, parameterSet), prngParameters(nullptr)
 {
 	totalRuntimeOfExecutable.reset();
 	initializationTimer.reset();
@@ -66,8 +67,10 @@ generalExecutable::generalExecutable(int argc, const char* argv[], std::string p
 	filenameForProfilingData = meta::create_profiling_data_filename(parameters, ownName);
 	switchLogLevel(parameters.get_log_level());
 	printParametersToScreenAndFile();
+	//@todo: these new here are not deleted apparently!!
 	system = new hardware::System(parameters, parameters.get_enable_profiling());
-	prng = new physics::PRNG(*system);
+	prngParameters = new physics::ParametersPrng_fromMetaInputparameters(&parameters);
+	prng = new physics::PRNG(*system, prngParameters);
 	initializationTimer.add();
 }
 generalExecutable::~generalExecutable()
@@ -75,6 +78,10 @@ generalExecutable::~generalExecutable()
 	totalRuntimeOfExecutable.add();
 	printRuntimeInformationToScreenAndFile();
 	printProfilingDataToFile();
+	if (prngParameters)
+	{
+		delete prngParameters;
+	}
 }
 
 void generalExecutable::printRuntimeInformationToScreenAndFile()

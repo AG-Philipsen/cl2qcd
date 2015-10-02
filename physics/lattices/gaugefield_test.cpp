@@ -43,7 +43,8 @@ BOOST_AUTO_TEST_CASE(initialization)
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+		physics::PRNG prng(system, &prngParameters);
 
 		// init hot
 		Gaugefield gf2(system, &parametersTmp, prng, true);
@@ -60,7 +61,8 @@ BOOST_AUTO_TEST_CASE(initialization)
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+		physics::PRNG prng(system, &prngParameters);
 
 		// init from file
 		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -75,7 +77,8 @@ void test_save(bool hot) {
 	meta::Inputparameters params(1, _params);
 	const LatticeObjectParametersImplementation parametersTmp{ &params };
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Gaugefield gf(system, &parametersTmp, prng, hot);
 	gf.save("conf.test", 0);
@@ -110,7 +113,8 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	meta::Inputparameters params(3, _params);
 	const LatticeObjectParametersImplementation parametersTmp{ &params };
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PRNG prng(system, &prngParameters);
 
 	Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	BOOST_CHECK_THROW( physics::observables::measureRectangles(&gf);, std::logic_error);
@@ -119,7 +123,8 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	meta::Inputparameters params2(3, _params2);
 	const LatticeObjectParametersImplementation parametersTmp2{ &params2 };
 	hardware::System system2(params2);
-	physics::PRNG prng2(system2);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters2(&params2);
+	physics::PRNG prng2(system, &prngParameters2);
 
 	Gaugefield gf2(system2, &parametersTmp2, prng2, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	BOOST_CHECK_CLOSE(physics::observables::measureRectangles(&gf2), 1103.2398401620451, 0.1);
@@ -134,7 +139,8 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+		physics::PRNG prng(system, &prngParameters);
 
 		Gaugefield gf(system, &parametersTmp, prng, false);
 
@@ -148,7 +154,8 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+		physics::PRNG prng(system, &prngParameters);
 
 		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		hmc_complex pol = physics::observables::measurePolyakovloop(&gf);
@@ -171,7 +178,8 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+		physics::PRNG prng(system, &prngParameters);
 
 		Gaugefield gf(system, &parametersTmp, prng, false);
 
@@ -192,7 +200,8 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(1, _params);
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+		physics::PRNG prng(system, &prngParameters);
 
 		Gaugefield gf(system, &parametersTmp, prng, true);
 
@@ -213,7 +222,8 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		const LatticeObjectParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+		physics::PRNG prng(system, &prngParameters);
 
 		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 

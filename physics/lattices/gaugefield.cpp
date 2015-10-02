@@ -255,7 +255,7 @@ void physics::lattices::Gaugefield::smear()
 	for(size_t i = 0; i < buffers.size(); ++i) {
 		auto buf = buffers[i];
 		auto device = buf->get_device();
-		auto gf_code = device->get_gaugefield_code();
+		auto gf_code = device->get_gaugefield_code(); // should be like: get_gaugefield_code( HardwareParameters_gaugefield )
 
 		hardware::buffers::copyData(unsmeared_buffers[i], buf);
 
