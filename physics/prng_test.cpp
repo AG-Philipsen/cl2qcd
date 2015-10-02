@@ -35,8 +35,9 @@ BOOST_AUTO_TEST_SUITE(build)
 	{
 		const char * _params[] = {"foo", "--initial_prng_state=prngstate_brokenTag"};
 		meta::Inputparameters parameters(2, _params);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters(&parameters );
 		hardware::System system(parameters);
-		BOOST_CHECK_THROW( PRNG prng(system) , std::invalid_argument );
+		BOOST_CHECK_THROW( PRNG prng(system, &prngParameters) , std::invalid_argument );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -76,13 +77,15 @@ BOOST_AUTO_TEST_CASE(initialization)
 {
 	const char * _params[] = {"foo", "--host_seed=13"};
 	meta::Inputparameters parameters(2, _params);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&parameters );
 	hardware::System system(parameters);
-	PRNG prng(system);
+	PRNG prng(system, &prngParameters);
 
 	const char * _params2[] = {"foo", "--host_seed=14"};
 	meta::Inputparameters parameters2(2, _params2);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters2(&parameters2 );
 	hardware::System system2(parameters2);
-	PRNG prng2(system2);
+	PRNG prng2(system2, &prngParameters2);
 
 	BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
 
@@ -99,16 +102,18 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 {
 	const char * _params[] = {"foo", "--host_seed=46"};
 	meta::Inputparameters parameters(2, _params);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(&parameters );
 	hardware::System system(parameters);
-	PRNG prng(system);
+	PRNG prng(system, &prngParameters);
 	prng.store("tmp.prngstate");
 
 	double tmp = prng.get_double();
 
 	const char * _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
 	meta::Inputparameters parameters2(2, _params2);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters2(&parameters2 );
 	hardware::System system2(parameters2);
-	PRNG prng2(system2);
+	PRNG prng2(system2, &prngParameters2);
 
 	double tmp2 = prng2.get_double();
 

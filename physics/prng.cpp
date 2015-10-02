@@ -40,10 +40,6 @@ physics::PRNG::~PRNG()
 	{
 		delete buffer;
 	}
-	if (parameters)
-	{
-		delete parameters;
-	}
 }
 
 void readFirstLine_checkForTag( std::ifstream & file, const std::string filename)
@@ -107,12 +103,10 @@ struct PrngFileReader
 	int * hostState;
 };
 
-physics::PRNG::PRNG(const hardware::System& system) :
-	system(system)
+physics::PRNG::PRNG(const hardware::System& system, const physics::ParametersPrngInterface * parametersIn) :
+	system(system), parameters(parametersIn)
 {
 	using hardware::buffers::PRNGBuffer;
-
-	parameters = new physics::ParametersPrng_fromMetaInputparameters(&system.get_inputparameters() );
 
 	// initialize host prng
 	uint32_t seed = parameters->getHostSeed();

@@ -42,7 +42,7 @@ namespace physics {
 			/**
 			 * Initialize the ranlux instance
 			 */
-			PRNG(const hardware::System& system);
+			PRNG(const hardware::System& system, const physics::ParametersPrngInterface * parametersIn);
 
 			~PRNG();
 
