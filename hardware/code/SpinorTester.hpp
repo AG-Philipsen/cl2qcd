@@ -66,6 +66,7 @@ protected:
 	void setMembers();
 	
 	const hardware::code::Spinors * code;
+	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
 	physics::PRNG * prng;
 
 	hardware::buffers::Plain<double> * doubleBuffer;

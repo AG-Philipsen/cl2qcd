@@ -58,7 +58,7 @@ public:
 
 class Dummyfield {
 public:
-	Dummyfield(const hardware::System& system) : params(system.get_inputparameters()), params2( &params ), device(params, system.get_devices().at(0)), prng(system), gf(system, &params2, prng) {
+	Dummyfield(const hardware::System& system) : params(system.get_inputparameters()), params2( &params ), prngParameters(&system.get_inputparameters()), device(params, system.get_devices().at(0)), prng(system, &prngParameters), gf(system, &params2, prng) {
 		fill_buffers();
 	};
 	~Dummyfield() {
@@ -72,6 +72,7 @@ private:
 	hmc_float * host_out;
 	const meta::Inputparameters& params;
 	const LatticeObjectParametersImplementation params2;
+	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
 	Device device;
 	physics::PRNG prng;
 public:

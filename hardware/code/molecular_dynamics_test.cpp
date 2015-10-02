@@ -33,12 +33,12 @@ class MolecularDynamicsTester : public GaugemomentumTester
 {
 public:
 	MolecularDynamicsTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1) :
-		GaugemomentumTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
+		GaugemomentumTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( &system->get_inputparameters())
 		{
 			gaugefieldCode = device->get_gaugefield_code();
 			molecularDynamicsCode = device->get_molecular_dynamics_code();
 			params = new LatticeObjectParametersImplementation( &system->get_inputparameters());
-			prng = std::unique_ptr<physics::PRNG>(new physics::PRNG(*system));
+			prng = std::unique_ptr<physics::PRNG>(new physics::PRNG(*system, &prngParameters));
 			gaugefield = std::unique_ptr<physics::lattices::Gaugefield>(new physics::lattices::Gaugefield(*system, params, *prng));
 		}
 	~MolecularDynamicsTester()
@@ -64,6 +64,7 @@ protected:
 	std::unique_ptr<physics::PRNG> prng{nullptr};
 	std::unique_ptr<physics::lattices::Gaugefield> gaugefield{nullptr};
 	LatticeObjectParametersImplementation * params;
+	physics::ParametersPrng_fromMetaInputparameters prngParameters;
 };
 
 BOOST_AUTO_TEST_SUITE(BUILD)

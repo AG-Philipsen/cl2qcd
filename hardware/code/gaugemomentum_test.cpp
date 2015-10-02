@@ -148,7 +148,8 @@ public:
   GaussianTester(std::string inputfile) :
     GaugemomentumTester("gaussian gaugemomentum", inputfile, 1, 2)
   {
-	physics::PRNG prng(*system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters(parameters);
+	physics::PRNG prng(*system, &prngParameters);
 	auto prng_buf = prng.get_buffers().at(0);
 	double result = 0.;
 	double sum = 0.;

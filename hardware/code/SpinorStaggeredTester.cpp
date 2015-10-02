@@ -40,10 +40,10 @@ void SpinorStaggeredTester::setMembers(){
 
 SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
 					      int numberOfValues, int typeOfComparision) :
-     KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
+     KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( parameters )
 {
 	code = device->get_spinor_staggered_code();
-	prng = new physics::PRNG(*system);
+	prng = new physics::PRNG(*system, &prngParameters);
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 	allocatedObjects = true;
 	setMembers();
@@ -51,7 +51,7 @@ SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string
 
 SpinorStaggeredTester::SpinorStaggeredTester(meta::Inputparameters * parameters, const hardware::System * system,
 					     hardware::Device * device) : 
-      KernelTester(parameters, system, device), allocatedObjects(false)
+      KernelTester(parameters, system, device), allocatedObjects(false), prngParameters( parameters )
 {
 	setMembers();
 	code = device->get_spinor_staggered_code();

@@ -262,7 +262,8 @@ void test_src_volume(std::string inputfile)
 	auto params = createParameters("correlator" + inputfile);
 	hardware::System system(*params);
 
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
+	physics::PRNG prng{system, &prngParameters};
 	cl_int err = CL_SUCCESS;
 	auto * device = system.get_devices().at(0)->get_correlator_code();
 
@@ -327,7 +328,8 @@ void test_src_zslice(std::string inputfile)
 	auto params = createParameters("correlator" + inputfile);
 	hardware::System system(*params);
 
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
+	physics::PRNG prng{system, &prngParameters};
 	cl_int err = CL_SUCCESS;
 	auto device = system.get_devices().at(0)->get_correlator_code();
 
@@ -510,7 +512,8 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		auto params = createParameters(parameterStrings).release();
 		hardware::System system(*params);
 
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
+		physics::PRNG prng{system, &prngParameters};
 		cl_int err = CL_SUCCESS;
 		auto device = system.get_devices().at(0)->get_correlator_code();
 
@@ -615,7 +618,8 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 		auto params = createParameters(parameterStrings).release();
 		hardware::System system(*params);
 
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
+		physics::PRNG prng{system, &prngParameters};
 		cl_int err = CL_SUCCESS;
 		auto device = system.get_devices().at(0)->get_correlator_code();
 

@@ -30,8 +30,8 @@
 class GaugefieldTester : public KernelTester {
 public:
 	GaugefieldTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-	  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues) {
-		prng = new physics::PRNG(*system);
+	  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues), prngParameters(&system->get_inputparameters()) {
+		prng = new physics::PRNG(*system, &prngParameters);
 		params = new LatticeObjectParametersImplementation( &system->get_inputparameters());
 		gaugefield = new physics::lattices::Gaugefield(*system, params, *prng);
 		code = device->get_gaugefield_code();
@@ -58,6 +58,7 @@ protected:
 	const hardware::code::Gaugefield * code;
 	physics::lattices::Gaugefield * gaugefield;
 	LatticeObjectParametersImplementation * params;
+	physics::ParametersPrng_fromMetaInputparameters prngParameters;
 };
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )

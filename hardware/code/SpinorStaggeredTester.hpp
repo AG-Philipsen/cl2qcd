@@ -59,6 +59,7 @@ protected:
 	//Members (protected for inheritance resons)
 	const hardware::code::Spinors_staggered * code;
 	physics::PRNG * prng;
+	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
 	hardware::buffers::Plain<double> * doubleBuffer;
 	size_t spinorfieldElements;
 	size_t spinorfieldEvenOddElements;
