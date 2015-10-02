@@ -50,7 +50,8 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	  }
 	  LatticeObjectParametersImplementation gaugefieldParameters( params );
 	  hardware::System system(*params);
-	  physics::PRNG prng(system);
+	  physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
+		physics::PRNG prng{system, &prngParameters};
 	  
 	  //This are some possible values of sigma
 	  hmc_float pol[5] = {0.0002065381736724, 0.00302707751065980, 0.0200732678058145,
@@ -110,7 +111,8 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	    params = new meta::Inputparameters(4, _params);
 	  }
 	  hardware::System system(*params);
-	  physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
+		physics::PRNG prng{system, &prngParameters};
 	  
 	  //These are some possible values of sigma
 	  Rational_Approximation approx(8, 1,2, 1.e-5,1);
@@ -161,7 +163,8 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 	
 	//These are some possible values of sigma
 	Rational_Approximation approx(16, 1,2, 1.e-5,1);
@@ -224,7 +227,8 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 	
 	//These are some possible values of sigma
 // 	Rational_Approximation approx(16, 1,2, 1.e-5,1);

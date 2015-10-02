@@ -41,7 +41,8 @@ BOOST_AUTO_TEST_CASE(max)
 	meta::Inputparameters params(3, _params);
 	LatticeObjectParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
@@ -70,7 +71,8 @@ BOOST_AUTO_TEST_CASE(min)
 	meta::Inputparameters params(3, _params);
 	LatticeObjectParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
@@ -102,7 +104,8 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	meta::Inputparameters params(3, _params);
 	LatticeObjectParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);

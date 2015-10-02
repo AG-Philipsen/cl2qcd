@@ -66,7 +66,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		meta::Inputparameters params(3, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		
 		FERMIONMATRIX matrix1(system, 1., ODD);
 		FERMIONMATRIX matrix2(system, 1.);
@@ -98,7 +99,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		meta::Inputparameters params(3, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		
 		FERMIONMATRIX matrix1(system, 1., ODD);
 		FERMIONMATRIX matrix2(system, 1.);
@@ -133,7 +135,8 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		meta::Inputparameters params(3, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		
 		physics::fermionmatrix::D_KS_eo matrix1(system, EVEN);
 		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
@@ -163,7 +166,8 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		meta::Inputparameters params(3, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		
 		physics::fermionmatrix::D_KS_eo matrix1(system, EVEN);
 		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
@@ -200,7 +204,8 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
 		Gaugefield gf(system, prng, false);
@@ -221,7 +226,8 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
 		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");

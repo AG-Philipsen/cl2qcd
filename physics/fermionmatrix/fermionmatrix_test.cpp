@@ -96,7 +96,8 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		meta::Inputparameters params(2, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
@@ -119,7 +120,8 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		meta::Inputparameters params(2, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -147,7 +149,8 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		meta::Inputparameters params(2, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
@@ -169,7 +172,8 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		meta::Inputparameters params(2, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
-		physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");

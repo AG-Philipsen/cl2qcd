@@ -59,7 +59,8 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	meta::Inputparameters params(10, &(options[0]));
 	LatticeObjectParametersImplementation gaugefieldParameters(&params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 	const Gaugefield *gf;
 	if(cold)
 	  gf = new Gaugefield(system, &gaugefieldParameters, prng, false);

@@ -143,7 +143,8 @@ BOOST_AUTO_TEST_CASE(rescale)
 	meta::Inputparameters params(3, _params);
 	LatticeObjectParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);

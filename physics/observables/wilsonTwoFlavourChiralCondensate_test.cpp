@@ -33,7 +33,8 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		meta::Inputparameters params(length, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters(&params);
 		const hardware::System system(params);
-		const physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &gaugefieldParameters, prng);
 		
 		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0) , std::logic_error);
@@ -54,7 +55,8 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		meta::Inputparameters params(4, commandLineParameters);
 		LatticeObjectParametersImplementation gaugefieldParameters(&params);
 		const hardware::System system(params);
-		const physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &gaugefieldParameters, prng);
 		
 		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0) , std::logic_error);
@@ -117,7 +119,8 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		const meta::Inputparameters params(numberOfOptions, _params);
 		LatticeObjectParametersImplementation gaugefieldParameters(&params);
 		const hardware::System system(params);
-		const physics::PRNG prng(system);
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &gaugefieldParameters, prng);
 
 		std::vector<double> results;

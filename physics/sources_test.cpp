@@ -41,7 +41,8 @@ void test_sources(std::string type, int num_sources)
 	const char * _params[] = {"foo", n_sources_string.c_str(), sourcetype_string.c_str()};
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 
 	auto sources = create_sources(system, prng, params.get_num_sources());
 
@@ -63,7 +64,8 @@ void test_volume_source_stagg(std::string content)
 	
 	meta::Inputparameters params(5, &(options[0]));
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PRNG prng{system, &prngParameters};
 
 	Staggeredfield_eo source(system);
 	set_volume_source(&source, prng);

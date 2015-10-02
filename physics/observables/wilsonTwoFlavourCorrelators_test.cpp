@@ -162,7 +162,8 @@ void test_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref
 
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	const physics::PRNG prng{system, &prngParameters};
 
 	size_t num_sources = params.get_num_sources();
 	auto sources = create_spinorfields(system, num_sources);

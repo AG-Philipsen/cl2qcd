@@ -36,7 +36,7 @@
 class TestGaugefield_stagg {
 
  public:
- TestGaugefield_stagg(const hardware::System * system) : system(system), params(&system->get_inputparameters()), prng(*system), gf(*system, &params, prng) {
+ TestGaugefield_stagg(const hardware::System * system) : system(system), params(&system->get_inputparameters()), prngParameters( &system->get_inputparameters() ), prng(*system, &prngParameters), gf(*system, &params, prng) {
     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
     const auto & inputfile = system->get_inputparameters();
     meta::print_info_hmc(inputfile);
@@ -49,6 +49,7 @@ class TestGaugefield_stagg {
 
  private:
   const hardware::System * const system;
+  const physics::ParametersPrng_fromMetaInputparameters prngParameters;
   const LatticeObjectParametersImplementation params;
   physics::PRNG prng;
   physics::lattices::Gaugefield gf; //I changed this variable from const to not const to be able to save the conf to a lime file!     
