@@ -31,21 +31,6 @@
 #include "system.hpp"
 #include "openClCode.hpp"
 #include "../host_functionality/logger.hpp"
-#include "code/gaugefield.hpp"
-#include "code/prng.hpp"
-#include "code/real.hpp"
-#include "code/complex.hpp"
-#include "code/spinors.hpp"
-#include "code/spinors_staggered.hpp"
-#include "code/fermions.hpp"
-#include "code/fermions_staggered.hpp"
-#include "code/correlator.hpp"
-#include "code/correlator_staggered.hpp"
-#include "code/heatbath.hpp"
-#include "code/kappa.hpp"
-#include "code/gaugemomentum.hpp"
-#include "code/molecular_dynamics.hpp"
-#include "code/buffer.hpp"
 
 static bool retrieve_device_availability(cl_device_id device_id);
 static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME);
@@ -365,7 +350,9 @@ hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& ke
 const hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 {
 	if(!gaugefield_code) {
-		gaugefield_code = new hardware::code::Gaugefield(params, this);
+		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
+		//todo: do not use release here. real_code itself should rather be a smart pointer
+		gaugefield_code = codeBuilder.getCode_gaugefield(this).release();
 	}
 	return gaugefield_code;
 }

@@ -18,7 +18,21 @@
  */
 # pragma once
 
+#include "code/gaugefield.hpp"
+#include "code/prng.hpp"
 #include "code/real.hpp"
+#include "code/complex.hpp"
+#include "code/spinors.hpp"
+#include "code/spinors_staggered.hpp"
+#include "code/fermions.hpp"
+#include "code/fermions_staggered.hpp"
+#include "code/correlator.hpp"
+#include "code/correlator_staggered.hpp"
+#include "code/heatbath.hpp"
+#include "code/kappa.hpp"
+#include "code/gaugemomentum.hpp"
+#include "code/molecular_dynamics.hpp"
+#include "code/buffer.hpp"
 
 #include <memory>
 
@@ -29,6 +43,7 @@ namespace hardware
 	public:
 		virtual ~OpenClCode(){};
 		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device *) const = 0;
+		virtual std::unique_ptr<const hardware::code::Gaugefield> getCode_gaugefield(hardware::Device *) const = 0;
 	};
 }
 
@@ -43,6 +58,10 @@ namespace hardware
 		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device * deviceIn) const override
 		{
 			return std::unique_ptr<const hardware::code::Real>( new hardware::code::Real{parameters, deviceIn} ) ;
+		}
+		virtual std::unique_ptr<const hardware::code::Gaugefield> getCode_gaugefield(hardware::Device * deviceIn) const override
+		{
+			return std::unique_ptr<const hardware::code::Gaugefield>( new hardware::code::Gaugefield{parameters, deviceIn} ) ;
 		}
 	private:
 		const meta::Inputparameters & parameters;
