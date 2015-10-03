@@ -18,7 +18,10 @@
  */
 # pragma once
 
+#include "code/real.hpp"
+
 #include "../meta/inputparameters.hpp"
+#include <memory>
 
 namespace hardware
 {
@@ -26,18 +29,19 @@ namespace hardware
 	{
 	public:
 		virtual ~OpenClCode(){};
-		virtual const meta::Inputparameters & getParameters() const = 0;
+		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device *) const = 0;
 	};
 
-	class OpenClCode_fromMetaInputparameters : public OpenClCode
+	class OpenClCode_fromMetaInputparameters final : public OpenClCode
 	{
 	public:
-		OpenClCode_fromMetaInputparameters( meta::Inputparameters & parametersIn ) : parameters(parametersIn) {};
-		virtual const meta::Inputparameters & getParameters() const
+		OpenClCode_fromMetaInputparameters( const meta::Inputparameters & parametersIn ) : parameters(parametersIn) {};
+		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device * deviceIn) const override
 		{
-			return parameters;
+			std::unique_ptr<const hardware::code::Real> p1( new hardware::code::Real(parameters, deviceIn) ) ;
+			return p1;
 		}
 	private:
-		meta::Inputparameters & parameters;
+		const meta::Inputparameters & parameters;
 	};
 }

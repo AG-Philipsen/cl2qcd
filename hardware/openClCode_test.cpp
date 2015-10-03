@@ -27,7 +27,7 @@
 BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 {
 	const char * argv []  = {"foo"};
-	meta::Inputparameters fullParameters{1, argv};
+	const meta::Inputparameters fullParameters{1, argv};
 	hardware::OpenClCode_fromMetaInputparameters codeBuilder( fullParameters );
 
 //	BOOST_REQUIRE_EQUAL( hardwareParameters.useGpu(), fullParameters.get_use_gpu() );

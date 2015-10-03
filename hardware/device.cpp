@@ -29,6 +29,7 @@
 
 #include "device.hpp"
 #include "system.hpp"
+#include "openClCode.hpp"
 #include "../host_functionality/logger.hpp"
 #include "code/gaugefield.hpp"
 #include "code/prng.hpp"
@@ -380,7 +381,9 @@ const hardware::code::PRNG * hardware::Device::get_prng_code()
 const hardware::code::Real * hardware::Device::get_real_code()
 {
 	if(!real_code) {
-		real_code = new hardware::code::Real(params, this);
+		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
+		//todo: do not use release here. real_code itself should rather be a smart pointer
+		real_code = codeBuilder.getCode_real(this).release();
 	}
 	return real_code;
 }
