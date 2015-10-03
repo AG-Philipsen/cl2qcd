@@ -20,7 +20,6 @@
 
 #include "code/real.hpp"
 
-#include "../meta/inputparameters.hpp"
 #include <memory>
 
 namespace hardware
@@ -31,15 +30,19 @@ namespace hardware
 		virtual ~OpenClCode(){};
 		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device *) const = 0;
 	};
+}
 
+#include "../meta/inputparameters.hpp"
+
+namespace hardware
+{
 	class OpenClCode_fromMetaInputparameters final : public OpenClCode
 	{
 	public:
 		OpenClCode_fromMetaInputparameters( const meta::Inputparameters & parametersIn ) : parameters(parametersIn) {};
 		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device * deviceIn) const override
 		{
-			std::unique_ptr<const hardware::code::Real> p1( new hardware::code::Real(parameters, deviceIn) ) ;
-			return p1;
+			return std::unique_ptr<const hardware::code::Real>( new hardware::code::Real{parameters, deviceIn} ) ;
 		}
 	private:
 		const meta::Inputparameters & parameters;
