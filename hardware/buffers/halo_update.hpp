@@ -21,7 +21,7 @@
 #define _HARDWARE_BUFFERS_HALO_UPDATE_
 
 #include "../../meta/inputparameters.hpp"
-#include "../../meta/size_4.hpp"
+#include "../size_4.hpp"
 #include "../../meta/util.hpp"
 #include "plain.hpp"
 #include "../device.hpp"

@@ -38,9 +38,10 @@
 
 //todo: in the end, move this to system.hpp replacing meta/inputparameters.hpp
 #include "hardwareParameters.hpp"
+#include "openClCode.hpp"
 
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling);
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder, bool enable_profiling);
 static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
@@ -187,7 +188,8 @@ for(auto device: device_infos) {
 	grid_size = calculate_grid_size(device_infos.size());
 	logger.info() << "Device grid layout: " << grid_size;
 
-	devices = init_devices(device_infos, context, grid_size, params, enable_profiling);
+	hardware::OpenClCode_fromMetaInputparameters openClCodeBuilder{ params };
+	devices = init_devices(device_infos, context, grid_size, *hardwareParameters, openClCodeBuilder, enable_profiling);
 
 	delete[] device_ids;
 
@@ -283,7 +285,7 @@ static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::Dev
 	return filtered;
 }
 
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder, bool enable_profiling)
 {
 	std::vector<hardware::Device *> devices;
 	devices.reserve(infos.size());
@@ -294,7 +296,7 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
 		if(grid_pos.t >= grid_size.t) {
 			throw std::logic_error("Failed to place devices on the grid.");
 		}
-		devices.push_back(new hardware::Device(context, info.get_id(), grid_pos, grid_size, params, enable_profiling));
+		devices.push_back(new hardware::Device(context, info.get_id(), grid_pos, grid_size, openClCodeBuilder, hardwareParameters, enable_profiling));
 	}
 
 	return devices;

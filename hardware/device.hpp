@@ -24,12 +24,11 @@
 
 #include "device_info.hpp"
 #include <map>
-#include "../meta/inputparameters.hpp"
 #include "hardwareParameters.hpp"
 #include "opencl_compiler.hpp"
 #include "profiling_data.hpp"
 #include "../common_header_files/types.h"
-#include "../meta/size_4.hpp"
+#include "size_4.hpp"
 
 class MemObjectAllocationTracer;
 
@@ -37,7 +36,7 @@ namespace hardware {
 
 class SynchronizationEvent;
 class Device;
-class OpenClCode;
+class OpenClCode; //including the header of this class causes some trouble!
 
 namespace buffers {
 // forward declaration for friend relation
@@ -97,7 +96,7 @@ public:
 	 * \param inputparams the input parameters of the application
 	 * \param enable_profiling enable profiling on this device
 	 */
-	Device(cl_context, cl_device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters&, bool enable_profiling = false);
+	Device(cl_context, cl_device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn, bool enable_profiling = false);
 
 	~Device();
 
@@ -289,7 +288,6 @@ private:
 	/**
 	 * The input parameters of the application.
 	 */
-	const meta::Inputparameters& params;
 	const hardware::HardwareParametersInterface * hardwareParameters;
 	const hardware::OpenClCode * openClCodeBuilder;
 

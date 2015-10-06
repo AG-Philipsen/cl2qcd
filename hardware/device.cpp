@@ -19,14 +19,6 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * @Todo: Refactor:
- *	Here, one only needs: is_ocl_compiler_opt_disabled(),  params.get_nspace(); get_ntime();
- *	from meta::Inputparameters
- *	Unfortunately, also every single hardware::code class takes it as arg!!
- *	This is needed for opencl_module only, where it is used in collect_build_options(..)
- */
-
 #include "device.hpp"
 #include "system.hpp"
 #include "openClCode.hpp"
@@ -37,9 +29,10 @@ static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPA
 static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
 //todo: enable_profiling is redundant!
-hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
+hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn, bool enable_profiling)
 	: DeviceInfo(device_id),
-	  context(context), params(params), hardwareParameters(nullptr), openClCodeBuilder(nullptr), 
+	openClCodeBuilder( &builderIn ), hardwareParameters(&parametersIn), 
+	  context(context),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
 	  gaugefield_code(nullptr),
@@ -59,15 +52,13 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  buffer_code(nullptr),
 	  grid_pos(grid_pos),
 	  grid_size(grid_size),
-	  local_lattice_size(calculate_local_lattice_size(grid_size, params.get_nspace(), params.get_ntime())),
+	  local_lattice_size(calculate_local_lattice_size(grid_size, hardwareParameters->getNs(), hardwareParameters->getNt())),
 	  halo_size(2),
 	  mem_lattice_size(calculate_mem_lattice_size(grid_size, local_lattice_size, halo_size)),
 	  allocated_bytes(0),
 	  max_allocated_bytes(0),
 	  allocated_hostptr_bytes(0)
 {
-	openClCodeBuilder = new hardware::OpenClCode_fromMetaInputparameters{ params };
-	hardwareParameters = new hardware::HardwareParameters{ &params };
 	logger.debug() << "Initializing " << get_name();
 	logger.debug() << "Device position: " << grid_pos;
 	logger.debug() << "Local lattice size: " << local_lattice_size;
