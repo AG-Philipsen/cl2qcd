@@ -350,7 +350,7 @@ private:
 	 * Pointer to the staggered spinor code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Spinors_staggered * spinor_staggered_code;
+	const hardware::code::Spinors_staggered * spinor_staggered_code;
 
 	/**
 	 * Pointer to the fermion code.
@@ -362,7 +362,7 @@ private:
 	 * Pointer to the staggered fermion code.
 	 * Initialized on demand.
 	 */
-	hardware::code::Fermions_staggered * fermion_staggered_code;
+	const hardware::code::Fermions_staggered * fermion_staggered_code;
 
 	/**
 	 * Pointer to the gaugemomentum code.

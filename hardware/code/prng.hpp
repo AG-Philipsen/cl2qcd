@@ -75,13 +75,17 @@ protected:
 		return 0;
 	};
 
-private:
-
+	/**
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
+	 */
+public:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	PRNG(const meta::Inputparameters& params, hardware::Device * device);
 
+private:
 	/**
 	 * A set of sources required to use the PRNG.
 	 */

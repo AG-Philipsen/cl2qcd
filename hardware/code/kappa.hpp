@@ -70,7 +70,11 @@ protected:
 	};
 
 
-private:
+	/**
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
+	 */
+public:
 	/**
 	 * Constructor, only to be used by hardware::device
 	 *
@@ -78,6 +82,7 @@ private:
 	 */
 	Kappa(const meta::Inputparameters& params, hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

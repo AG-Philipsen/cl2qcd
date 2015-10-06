@@ -78,13 +78,18 @@ protected:
 		return 0;
 	};
 
-private:
 
+	/**
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
+	 */
+public:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Buffer(const meta::Inputparameters& params, hardware::Device * device);
 
+private:
 	cl_kernel _copy_16_bytes;
 	cl_kernel _clear_bytes;
 	cl_kernel _clear_float4;
