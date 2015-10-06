@@ -36,9 +36,10 @@ static bool retrieve_device_availability(cl_device_id device_id);
 static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME);
 static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
+//todo: enable_profiling is redundant!
 hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
 	: DeviceInfo(device_id),
-	  context(context), params(params), hardwareParameters(nullptr),
+	  context(context), params(params), hardwareParameters(nullptr), openClCodeBuilder(nullptr), 
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
 	  gaugefield_code(nullptr),
@@ -65,7 +66,8 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  max_allocated_bytes(0),
 	  allocated_hostptr_bytes(0)
 {
-	hardwareParameters = new hardware::HardwareParameters( &params );
+	openClCodeBuilder = new hardware::OpenClCode_fromMetaInputparameters{ params };
+	hardwareParameters = new hardware::HardwareParameters{ &params };
 	logger.debug() << "Initializing " << get_name();
 	logger.debug() << "Device position: " << grid_pos;
 	logger.debug() << "Local lattice size: " << local_lattice_size;
@@ -350,9 +352,8 @@ hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& ke
 const hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 {
 	if(!gaugefield_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		gaugefield_code = codeBuilder.getCode_gaugefield(this).release();
+		gaugefield_code = openClCodeBuilder->getCode_gaugefield(this).release();
 	}
 	return gaugefield_code;
 }
@@ -360,9 +361,8 @@ const hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 const hardware::code::PRNG * hardware::Device::get_prng_code()
 {
 	if(!prng_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		prng_code = codeBuilder.getCode_PRNG(this).release();
+		prng_code = openClCodeBuilder->getCode_PRNG(this).release();
 	}
 	return prng_code;
 }
@@ -370,9 +370,8 @@ const hardware::code::PRNG * hardware::Device::get_prng_code()
 const hardware::code::Real * hardware::Device::get_real_code()
 {
 	if(!real_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		real_code = codeBuilder.getCode_real(this).release();
+		real_code = openClCodeBuilder->getCode_real(this).release();
 	}
 	return real_code;
 }
@@ -380,9 +379,8 @@ const hardware::code::Real * hardware::Device::get_real_code()
 const hardware::code::Complex * hardware::Device::get_complex_code()
 {
 	if(!complex_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		complex_code = codeBuilder.getCode_complex(this).release();
+		complex_code = openClCodeBuilder->getCode_complex(this).release();
 	}
 	return complex_code;
 }
@@ -390,9 +388,8 @@ const hardware::code::Complex * hardware::Device::get_complex_code()
 const hardware::code::Spinors * hardware::Device::get_spinor_code()
 {
 	if(!spinor_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		spinor_code = codeBuilder.getCode_Spinors(this).release();
+		spinor_code = openClCodeBuilder->getCode_Spinors(this).release();
 	}
 	return spinor_code;
 }
@@ -400,9 +397,8 @@ const hardware::code::Spinors * hardware::Device::get_spinor_code()
 const hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered_code()
 {
 	if(!spinor_staggered_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		spinor_staggered_code = codeBuilder.getCode_Spinors_staggered(this).release();
+		spinor_staggered_code = openClCodeBuilder->getCode_Spinors_staggered(this).release();
 	}
 	return spinor_staggered_code;
 }
@@ -410,9 +406,8 @@ const hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered
 const hardware::code::Fermions * hardware::Device::get_fermion_code()
 {
 	if(!fermion_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		fermion_code = codeBuilder.getCode_Fermions(this).release();
+		fermion_code = openClCodeBuilder->getCode_Fermions(this).release();
 	}
 	return fermion_code;
 }
@@ -420,9 +415,8 @@ const hardware::code::Fermions * hardware::Device::get_fermion_code()
 const hardware::code::Fermions_staggered * hardware::Device::get_fermion_staggered_code()
 {
 	if(!fermion_staggered_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		fermion_staggered_code = codeBuilder.getCode_Fermions_staggered(this).release();
+		fermion_staggered_code = openClCodeBuilder->getCode_Fermions_staggered(this).release();
 	}
 	return fermion_staggered_code;
 }
@@ -430,9 +424,8 @@ const hardware::code::Fermions_staggered * hardware::Device::get_fermion_stagger
 const hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
 {
 	if(!gaugemomentum_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		gaugemomentum_code = codeBuilder.getCode_Gaugemomentum(this).release();
+		gaugemomentum_code = openClCodeBuilder->getCode_Gaugemomentum(this).release();
 	}
 	return gaugemomentum_code;
 }
@@ -440,9 +433,8 @@ const hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
 const hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynamics_code()
 {
 	if(!molecular_dynamics_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		molecular_dynamics_code = codeBuilder.getCode_Molecular_Dynamics(this).release();
+		molecular_dynamics_code = openClCodeBuilder->getCode_Molecular_Dynamics(this).release();
 	}
 	return molecular_dynamics_code;
 }
@@ -450,9 +442,8 @@ const hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynam
 const hardware::code::Correlator * hardware::Device::get_correlator_code()
 {
 	if(!correlator_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		correlator_code = codeBuilder.getCode_Correlator(this).release();
+		correlator_code = openClCodeBuilder->getCode_Correlator(this).release();
 	}
 	return correlator_code;
 }
@@ -460,9 +451,8 @@ const hardware::code::Correlator * hardware::Device::get_correlator_code()
 const hardware::code::Correlator_staggered * hardware::Device::get_correlator_staggered_code()
 {
 	if(!correlator_staggered_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		correlator_staggered_code = codeBuilder.getCode_Correlator_staggered(this).release();
+		correlator_staggered_code = openClCodeBuilder->getCode_Correlator_staggered(this).release();
 	}
 	return correlator_staggered_code;
 }
@@ -470,9 +460,8 @@ const hardware::code::Correlator_staggered * hardware::Device::get_correlator_st
 const hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 {
 	if(!heatbath_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		heatbath_code = codeBuilder.getCode_Heatbath(this).release();
+		heatbath_code = openClCodeBuilder->getCode_Heatbath(this).release();
 	}
 	return heatbath_code;
 }
@@ -480,9 +469,8 @@ const hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 const hardware::code::Kappa * hardware::Device::get_kappa_code()
 {
 	if(!kappa_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		kappa_code = codeBuilder.getCode_Kappa(this).release();
+		kappa_code = openClCodeBuilder->getCode_Kappa(this).release();
 	}
 	return kappa_code;
 }
@@ -490,9 +478,8 @@ const hardware::code::Kappa * hardware::Device::get_kappa_code()
 const hardware::code::Buffer * hardware::Device::get_buffer_code()
 {
 	if(!buffer_code) {
-		hardware::OpenClCode_fromMetaInputparameters codeBuilder( params );
 		//todo: do not use release here. real_code itself should rather be a smart pointer
-		buffer_code = codeBuilder.getCode_Buffer(this).release();
+		buffer_code = openClCodeBuilder->getCode_Buffer(this).release();
 	}
 	return buffer_code;
 }

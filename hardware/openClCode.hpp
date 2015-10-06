@@ -36,6 +36,8 @@
 
 #include <memory>
 
+//Todo: make device arg constant
+
 namespace hardware
 {
 	class OpenClCode

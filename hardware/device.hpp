@@ -37,6 +37,7 @@ namespace hardware {
 
 class SynchronizationEvent;
 class Device;
+class OpenClCode;
 
 namespace buffers {
 // forward declaration for friend relation
@@ -290,6 +291,7 @@ private:
 	 */
 	const meta::Inputparameters& params;
 	const hardware::HardwareParametersInterface * hardwareParameters;
+	const hardware::OpenClCode * openClCodeBuilder;
 
 	/**
 	 * The command queue used to perform operations on this device
