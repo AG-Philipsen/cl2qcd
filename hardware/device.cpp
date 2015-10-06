@@ -28,12 +28,10 @@ static bool retrieve_device_availability(cl_device_id device_id);
 static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME);
 static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
-//todo: enable_profiling is redundant!
-hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn, bool enable_profiling)
+hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn)
 	: DeviceInfo(device_id),
 	openClCodeBuilder( &builderIn ), hardwareParameters(&parametersIn), 
 	  context(context),
-	  profiling_enabled(enable_profiling),
 	  profiling_data(),
 	  gaugefield_code(nullptr),
 	  prng_code(nullptr),
@@ -71,7 +69,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 
 	cl_int err;
 	logger.debug() << context << ' ' << device_id;
-	command_queue = clCreateCommandQueue(context, device_id, profiling_enabled ? CL_QUEUE_PROFILING_ENABLE : 0, &err);
+	command_queue = clCreateCommandQueue(context, device_id, hardwareParameters->enableProfiling() ? CL_QUEUE_PROFILING_ENABLE : 0, &err);
 	if(err) {
 		throw OpenclException(err, "clCreateCommandQueue", __FILE__, __LINE__);
 	}
@@ -170,7 +168,7 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 	cl_event profiling_event;
 	// we only want to pass the event if we are actually profiling
 	// otherwise the API will write back data into a no longer valid object
-	cl_event * const profiling_event_p = profiling_enabled ? &profiling_event : 0;
+	cl_event * const profiling_event_p = hardwareParameters->enableProfiling() ? &profiling_event : 0;
 
 	if(logger.beDebug() ) {
 		logger.trace() << "calling clEnqueueNDRangeKernel...";
@@ -218,7 +216,7 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 	}
 
 	// evaluate profiling if required
-	if(profiling_enabled) {
+	if(hardwareParameters->enableProfiling()) {
 		// collect the data of this kernel invocation
 		clerr = clWaitForEvents(1, &profiling_event);
 		if(clerr) {
@@ -317,7 +315,7 @@ size_t hardware::Device::recommend_stride(size_t elems, size_t type_size, size_t
 
 bool hardware::Device::is_profiling_enabled() const noexcept
 {
-	return profiling_enabled;
+	return hardwareParameters->enableProfiling();
 }
 
 void hardware::Device::flush() const
