@@ -50,3 +50,12 @@ BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 	BOOST_CHECK_EQUAL(test.getSmearingSteps(), 0);
 	BOOST_CHECK_EQUAL(test.getSourcefileName(), "conf.00000");
 }
+
+BOOST_AUTO_TEST_CASE(testSpinorfieldParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    SpinorfieldParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.getNs(), 4);
+    BOOST_CHECK_EQUAL(test.getNt(), 8);
+}

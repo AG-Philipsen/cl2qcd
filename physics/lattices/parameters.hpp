@@ -19,28 +19,38 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+//#pragma once
+
+#ifndef _LATTICE_PARAMETERS_
+#define _LATTICE_PARAMETERS_
 
 #include "../../common_header_files/types.h"
 #include <iostream>
 
 class LatticeObjectParametersInterface {
-public:
-	virtual ~LatticeObjectParametersInterface () {};
-	virtual int getNs() const = 0;
-	virtual int getNt() const = 0;
-	virtual int getPrecision() const = 0;
-	virtual bool ignoreChecksumErrorsInIO() const = 0;
-	virtual int getNumberOfElements() const = 0;
-	virtual double getKappa() const = 0;
-	virtual double getMu() const = 0;
-	virtual double getBeta() const = 0;
-	virtual common::startcondition getStartcondition() const = 0;
-	virtual std::string getNamePrefix() const = 0;
-	virtual std::string getNamePostfix() const = 0;
-	virtual int getNumberOfDigitsInName() const = 0;
-	virtual int getSmearingSteps() const = 0;
-	virtual std::string getSourcefileName() const = 0;
+    public:
+        virtual ~LatticeObjectParametersInterface () {};
+        virtual int getNs() const = 0;
+        virtual int getNt() const = 0;
+        virtual int getPrecision() const = 0;
+        virtual bool ignoreChecksumErrorsInIO() const = 0;
+        virtual int getNumberOfElements() const = 0;
+        virtual double getKappa() const = 0;
+        virtual double getMu() const = 0;
+        virtual double getBeta() const = 0;
+        virtual common::startcondition getStartcondition() const = 0;
+        virtual std::string getNamePrefix() const = 0;
+        virtual std::string getNamePostfix() const = 0;
+        virtual int getNumberOfDigitsInName() const = 0;
+        virtual int getSmearingSteps() const = 0;
+        virtual std::string getSourcefileName() const = 0;
+};
+
+class SpinorfieldParametersInterface {
+    public:
+        virtual ~SpinorfieldParametersInterface(){};
+        virtual int getNs() const = 0;
+        virtual int getNt() const = 0;
 };
 
 #include "../../meta/inputparameters.hpp"
@@ -113,11 +123,12 @@ private:
 	const meta::Inputparameters * parameters;
 };
 
-class SpinorfieldParametersImplementation final {
+
+class SpinorfieldParametersImplementation final : public SpinorfieldParametersInterface {
     public:
-        //TODO: uncomment following line
-        //SpinorfieldParametersImplementation() = delete;
+        SpinorfieldParametersImplementation() = delete;
         SpinorfieldParametersImplementation(const meta::Inputparameters& paramsIn ): parameters(paramsIn) {};
+        ~SpinorfieldParametersImplementation() {};
         int getNt() const
         {
             return parameters.get_ntime();
@@ -126,12 +137,10 @@ class SpinorfieldParametersImplementation final {
         {
             return parameters.get_nspace();
         }
-
     private:
        const meta::Inputparameters& parameters;
-
-
 };
 
 
+#endif //_LATTICE_PARAMETERS_
 
