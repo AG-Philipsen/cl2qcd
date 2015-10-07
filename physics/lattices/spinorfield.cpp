@@ -343,7 +343,7 @@ void physics::lattices::Spinorfield::import(const spinor * const host) const
 
 unsigned physics::lattices::Spinorfield::get_elements() const noexcept
 {
-	return hardware::code::get_spinorfieldsize(system.get_inputparameters());
+	return meta::get_vol4d(spinorfieldParametersInterface->getNt(), spinorfieldParametersInterface->getNs());
 }
 
 void physics::lattices::fill_window(const physics::lattices::Spinorfield* out, const physics::lattices::Spinorfield& src, const size_t idx)
