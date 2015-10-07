@@ -59,3 +59,32 @@ BOOST_AUTO_TEST_CASE(testSpinorfieldParameters)
     BOOST_CHECK_EQUAL(test.getNs(), 4);
     BOOST_CHECK_EQUAL(test.getNt(), 8);
 }
+
+BOOST_AUTO_TEST_CASE(testGaugemomentaParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    GaugemomentaParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.getNs(), 4);
+    BOOST_CHECK_EQUAL(test.getNt(), 8);
+}
+
+BOOST_AUTO_TEST_CASE(testStaggeredfieldEoParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    StaggaredfieldEoParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.getNs(), 4);
+    BOOST_CHECK_EQUAL(test.getNt(), 8);
+}
+
+BOOST_AUTO_TEST_CASE(testRootedStaggeredfieldEoParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    RootedStaggaredfieldEoParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.getNs(), 4);
+    BOOST_CHECK_EQUAL(test.getNt(), 8);
+    BOOST_CHECK_EQUAL(test.getMetropolisRationalApproximationOrder(), 15);
+    BOOST_CHECK_EQUAL(test.getMolecularDynamicsRationalApproximationOrder(), 8);
+}

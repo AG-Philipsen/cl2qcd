@@ -31,7 +31,7 @@
 #include "../../common_header_files/types_fermions.h"
 //This is to make the template pseudo_randomize friend of this class
 #include "util.hpp"
-
+#include "parameters.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -54,7 +54,7 @@ public:
 	/**
 	 * Release resources
 	 */
-	~Staggeredfield_eo();
+	virtual ~Staggeredfield_eo();
 
 	/**
 	 * Staggeredfield_eo cannot be copied
@@ -95,6 +95,8 @@ public:
 
 private:
 	hardware::System const& system;
+	//TODO: Make the following pointer a reference
+	const StaggaredfieldEoParametersInterface* staggaredfieldEoParametersInterface;
 	const std::vector<const hardware::buffers::SU3vec *> buffers;
 	void import(const su3vec * const host) const;
 
@@ -199,28 +201,6 @@ void sax_vec_and_squarenorm(const Vector<hmc_float>* res, const Vector<hmc_float
  */
 void log_squarenorm(const std::string& msg, const physics::lattices::Staggeredfield_eo& x);
 
-
-
-//So far not implemented, since only EO-preconditioning is used
-#if 0
-/**
- * Split the given Spinorfield into even and odd Spinorfield_eo.
- *
- * @param[out] even The even part
- * @param[out] odd  The odd part
- * @param[in]  in   The Spinorfield to split
- */
-void convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in);
-
-/**
- * Merge the given even and odd Spinorfield_eo into one Spinorfield.
- *
- * @param[out] merged The merged Spinorfield
- * @param[in]  even   The even part
- * @param[in]  odd    The odd part
- */
-void convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd);
-#endif
 
 }
 }

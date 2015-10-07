@@ -19,10 +19,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#pragma once
-
-#ifndef _LATTICE_PARAMETERS_
-#define _LATTICE_PARAMETERS_
+#pragma once
 
 #include "../../common_header_files/types.h"
 #include <iostream>
@@ -53,6 +50,27 @@ class SpinorfieldParametersInterface {
         virtual int getNt() const = 0;
 };
 
+class GaugemomentaParametersInterface {
+    public:
+        virtual ~GaugemomentaParametersInterface(){};
+        virtual int getNs() const = 0;
+        virtual int getNt() const = 0;
+};
+
+class StaggaredfieldEoParametersInterface {
+    public:
+        virtual ~StaggaredfieldEoParametersInterface(){};
+        virtual int getNs() const = 0;
+        virtual int getNt() const = 0;
+};
+
+class RootedStaggaredfieldEoParametersInterface {
+    public:
+        virtual ~RootedStaggaredfieldEoParametersInterface(){};
+        virtual int getMetropolisRationalApproximationOrder() const = 0;
+        virtual int getMolecularDynamicsRationalApproximationOrder() const = 0;
+};
+
 #include "../../meta/inputparameters.hpp"
 #include "../../meta/util.hpp"
 
@@ -62,59 +80,59 @@ public:
 	LatticeObjectParametersImplementation() = delete;
 	LatticeObjectParametersImplementation(const meta::Inputparameters * paramsIn ): parameters(paramsIn) {};
 	virtual ~LatticeObjectParametersImplementation () {};
-	virtual int getNs() const
+	virtual int getNs() const override
 	{
 		return parameters->get_nspace();
 	}
-	virtual int getNt() const
+	virtual int getNt() const override
 	{
 		return parameters->get_ntime();
 	}
-	virtual int getPrecision() const
+	virtual int getPrecision() const override
 	{
 		return parameters->get_precision();
 	}
-	virtual bool ignoreChecksumErrorsInIO() const
+	virtual bool ignoreChecksumErrorsInIO() const override
 	{
 		return parameters->get_ignore_checksum_errors();
 	}
-	virtual int getNumberOfElements() const
+	virtual int getNumberOfElements() const override
 	{
 		return meta::get_vol4d(*parameters) * NDIM;
 	}
-	virtual double getKappa() const
+	virtual double getKappa() const override
 	{
 		return parameters->get_kappa();
 	}
-	virtual double getMu() const
+	virtual double getMu() const override
 	{
 		return parameters->get_mu();
 	}
-	virtual double getBeta() const
+	virtual double getBeta() const override
 	{
 		return parameters->get_beta();
 	}
-	virtual common::startcondition getStartcondition() const
+	virtual common::startcondition getStartcondition() const override
 	{
 		return parameters->get_startcondition();
 	}
-	virtual std::string getNamePrefix() const
+	virtual std::string getNamePrefix() const override
 	{
 		return parameters->get_config_prefix();
 	}
-	virtual std::string getNamePostfix() const
+	virtual std::string getNamePostfix() const override
 	{
 		return parameters->get_config_postfix();
 	}
-	virtual int getNumberOfDigitsInName() const
+	virtual int getNumberOfDigitsInName() const override
 	{
 		return parameters->get_config_number_digits();
 	}
-	virtual int getSmearingSteps() const
+	virtual int getSmearingSteps() const override
 	{
 		return parameters->get_rho_iter();
 	}
-	virtual std::string getSourcefileName() const
+	virtual std::string getSourcefileName() const override
 	{
 		return parameters->get_sourcefile();
 	}
@@ -129,11 +147,11 @@ class SpinorfieldParametersImplementation final : public SpinorfieldParametersIn
         SpinorfieldParametersImplementation() = delete;
         SpinorfieldParametersImplementation(const meta::Inputparameters& paramsIn ): parameters(paramsIn) {};
         ~SpinorfieldParametersImplementation() {};
-        int getNt() const
+        int getNt() const override
         {
             return parameters.get_ntime();
         }
-        int getNs() const
+        int getNs() const override
         {
             return parameters.get_nspace();
         }
@@ -142,5 +160,64 @@ class SpinorfieldParametersImplementation final : public SpinorfieldParametersIn
 };
 
 
-#endif //_LATTICE_PARAMETERS_
+class GaugemomentaParametersImplementation final : public GaugemomentaParametersInterface {
+    public:
+        GaugemomentaParametersImplementation() = delete;
+        GaugemomentaParametersImplementation(const meta::Inputparameters& paramsIn ): parameters(paramsIn) {};
+        ~GaugemomentaParametersImplementation() {};
+        int getNt() const override
+        {
+            return parameters.get_ntime();
+        }
+        int getNs() const override
+        {
+            return parameters.get_nspace();
+        }
+    private:
+       const meta::Inputparameters& parameters;
+};
+
+
+class StaggaredfieldEoParametersImplementation final : public StaggaredfieldEoParametersInterface {
+    public:
+        StaggaredfieldEoParametersImplementation() = delete;
+        StaggaredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn ): parameters(paramsIn) {};
+        ~StaggaredfieldEoParametersImplementation() {};
+        int getNt() const override
+        {
+            return parameters.get_ntime();
+        }
+        int getNs() const override
+        {
+            return parameters.get_nspace();
+        }
+    private:
+       const meta::Inputparameters& parameters;
+};
+
+
+class RootedStaggaredfieldEoParametersImplementation final : public StaggaredfieldEoParametersInterface, public RootedStaggaredfieldEoParametersInterface {
+    public:
+        RootedStaggaredfieldEoParametersImplementation() = delete;
+        RootedStaggaredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn ): parameters(paramsIn) {};
+        ~RootedStaggaredfieldEoParametersImplementation() {};
+        int getNt() const override
+        {
+            return parameters.get_ntime();
+        }
+        int getNs() const override
+        {
+            return parameters.get_nspace();
+        }
+        int getMetropolisRationalApproximationOrder() const override
+        {
+            return parameters.get_metro_approx_ord();
+        }
+        int getMolecularDynamicsRationalApproximationOrder() const override
+        {
+            return parameters.get_md_approx_ord();
+        }
+    private:
+       const meta::Inputparameters& parameters;
+};
 
