@@ -35,7 +35,7 @@ int get_nspace(int* coord, const int nt, const int ns)
 	return n;
 }
 
-//functions that have explicite spatial and temporal positions in them
+//functions that have explicit spatial and temporal positions in them
 //make it:
 //site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
 //idx = mu + NDIM*site
@@ -46,6 +46,29 @@ int get_global_pos(int spacepos, int t, const meta::Inputparameters& params)
 int get_global_pos(int spacepos, int t, const int nt, const int ns)
 {
 	return spacepos + meta::get_volspace(ns) * t;
+}
+
+
+int get_global_pos(size_4 cart, const meta::Inputparameters& params)
+{
+    int space_coords[4];
+    space_coords[0] = 0;
+    space_coords[1] = cart.x;
+    space_coords[2] = cart.y;
+    space_coords[3] = cart.z;
+    auto const spatial = get_nspace(space_coords, params);
+    return get_global_pos(spatial, cart.t, params);
+}
+
+int get_global_pos(size_4 cart, const int nt, const int ns)
+{
+    int space_coords[4];
+    space_coords[0] = 0;
+    space_coords[1] = cart.x;
+    space_coords[2] = cart.y;
+    space_coords[3] = cart.z;
+    auto const spatial = get_nspace(space_coords, nt, ns);
+    return get_global_pos(spatial, cart.t, nt, ns);
 }
 
 int get_global_link_pos(int mu, int spacepos, int t, const meta::Inputparameters& params)
@@ -102,13 +125,3 @@ int get_source_pos_spatial(const meta::Inputparameters& params)
 	return get_nspace(coord, params);
 }
 
-int get_global_pos(size_4 cart, const meta::Inputparameters& params)
-{
-	int space_coords[4];
-	space_coords[0] = 0;
-	space_coords[1] = cart.x;
-	space_coords[2] = cart.y;
-	space_coords[3] = cart.z;
-	auto const spatial = get_nspace(space_coords, params);
-	return get_global_pos(spatial, cart.t, params);
-}

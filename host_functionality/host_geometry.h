@@ -63,6 +63,7 @@ int get_global_pos(int spacepos, int t, const int nt, const int ns);
  * @return Global index
  */
 int get_global_pos(size_4 cart, const meta::Inputparameters& params);
+int get_global_pos(size_4 cart, const int nt, const int n);
 
 /**
  * Get the non-even-odd-preconditioned index link based on the spatial, temporal
