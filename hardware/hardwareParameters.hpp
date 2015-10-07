@@ -20,6 +20,7 @@
 # pragma once
 
 #include "../meta/inputparameters.hpp"
+#include "../meta/util.hpp"
 
 namespace hardware
 {
@@ -30,6 +31,8 @@ namespace hardware
 		virtual ~HardwareParametersInterface() {};
 		virtual int getNs() const = 0;
 		virtual int getNt() const = 0;
+		virtual int getSpatialLatticeVolume() const = 0;
+		virtual int getLatticeVolume() const = 0;
 		virtual bool useGpu() const = 0;
 		virtual bool useCpu() const = 0;
 		virtual int getMaximalNumberOfDevices() const = 0;
@@ -86,9 +89,17 @@ namespace hardware
 		{
 			return fullParameters->get_use_same_rnd_numbers();
 		}
-		virtual bool useEvenOddPreconditioning() const
+		virtual bool useEvenOddPreconditioning() const override
 		{
 			return fullParameters->get_use_eo();
+		}
+		virtual int getSpatialLatticeVolume() const override
+		{
+			return meta::get_volspace( *fullParameters );
+		}
+		virtual int getLatticeVolume() const override
+		{
+			return meta::get_vol4d( * fullParameters );
 		}
 	private:
 		const meta::Inputparameters * fullParameters;

@@ -27,8 +27,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../system.hpp"
-#include "../../meta/util.hpp"
-#include "../../meta/type_ops.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -37,7 +35,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	System system(meta::Inputparameters(0, 0));
 for(Device * device : system.get_devices()) {
 
-		hardware::buffers::Matrix3x3 dummy(meta::get_vol4d(system.get_inputparameters()) * NDIM, device);
+		hardware::buffers::Matrix3x3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);

@@ -20,9 +20,7 @@
 #ifndef _HARDWARE_BUFFERS_HALO_UPDATE_
 #define _HARDWARE_BUFFERS_HALO_UPDATE_
 
-#include "../../meta/inputparameters.hpp"
 #include "../size_4.hpp"
-#include "../../meta/util.hpp"
 #include "plain.hpp"
 #include "../device.hpp"
 #include <vector>
@@ -79,13 +77,13 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vec
 	size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
 		const auto main_device = buffers[0]->get_device();
-		const size_4 grid_dims = main_device->get_grid_size();
+		const size_4 grid_dims = main_device->getGridSize();
 		if(grid_dims.x != 1 || grid_dims.y != 1 || grid_dims.z != 1) {
 			throw Print_Error_Message("Only the time-direction can be parallelized");
 		}
 		const unsigned GRID_SIZE = grid_dims.t;
 		const unsigned HALO_SIZE = main_device->get_halo_size();
-		const unsigned VOLSPACE = meta::get_volspace(system.get_inputparameters()) * ELEMS_PER_SITE;
+		const unsigned VOLSPACE = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE;
 		const unsigned VOL4D_LOCAL = get_vol4d(main_device->get_local_lattice_size()) * ELEMS_PER_SITE;
 		const size_t num_buffers = buffers.size();
@@ -214,16 +212,16 @@ class ProxyBufferCache {
 }
 
 template<class BUFFER> struct UpdateHaloSOAhelper {
-	UpdateHaloSOAhelper(std::vector<BUFFER*> const & buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width) {
-		auto const & params = system.get_inputparameters();
+	UpdateHaloSOAhelper(std::vector<BUFFER*> const & buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width)
+	{
 		const auto main_device = buffers[0]->get_device();
-		const size_4 grid_dims = main_device->get_grid_size();
+		const size_4 grid_dims = main_device->getGridSize();
 		if(grid_dims.x != 1 || grid_dims.y != 1 || grid_dims.z != 1) {
 			throw Print_Error_Message("Only the time-direction can be parallelized");
 		}
 		grid_size = grid_dims.t;
 		halo_size = main_device->get_halo_size();
-		volspace = meta::get_volspace(params) * ELEMS_PER_SITE;
+		volspace = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		if(reqd_width > halo_size) {
 			std::ostringstream tmp;
 			tmp << "Requested halo width is " << reqd_width << ", but maximum halo width is " << halo_size;

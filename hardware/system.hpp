@@ -66,6 +66,7 @@ namespace hardware {
 
 		const std::vector<Device*>& get_devices() const noexcept;
 		const meta::Inputparameters& get_inputparameters() const noexcept;
+		const hardware::HardwareParametersInterface * getHardwareParameters() const noexcept;
 
 		// non-copyable
 		System& operator=(const System&) = delete;

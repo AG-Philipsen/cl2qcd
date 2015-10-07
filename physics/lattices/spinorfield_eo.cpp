@@ -21,11 +21,9 @@
  */
 
 #include "spinorfield_eo.hpp"
-#include "../../meta/util.hpp"
 #include <cassert>
 #include "../../hardware/code/spinors.hpp"
 #include "../../hardware/code/fermions.hpp"
-#include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
 #include "util.hpp"
 #include <algorithm>

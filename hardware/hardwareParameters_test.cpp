@@ -41,4 +41,6 @@ BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 	BOOST_REQUIRE_EQUAL( hardwareParameters.disableOpenCLCompilerOptimizations() , fullParameters.is_ocl_compiler_opt_disabled() );
 	BOOST_REQUIRE_EQUAL( hardwareParameters.useSameRandomNumbers() , fullParameters.get_use_same_rnd_numbers() );
 	BOOST_REQUIRE_EQUAL( hardwareParameters.useEvenOddPreconditioning() , fullParameters.get_use_eo() );
+	BOOST_REQUIRE_EQUAL( hardwareParameters.getSpatialLatticeVolume(), meta::get_volspace( fullParameters ) );
+	BOOST_REQUIRE_EQUAL( hardwareParameters.getLatticeVolume(), meta::get_vol4d( fullParameters ) );
 }

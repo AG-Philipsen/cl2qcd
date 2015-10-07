@@ -21,12 +21,10 @@
  */
 
 #include "spinorfield.hpp"
-#include "../../meta/util.hpp"
 #include <cassert>
 #include <stdexcept>
 #include "../../hardware/code/spinors.hpp"
 #include "../../hardware/code/fermions.hpp"
-#include "../../meta/type_ops.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
 #include "../../host_functionality/host_geometry.h"
 

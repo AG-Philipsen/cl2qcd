@@ -27,8 +27,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../system.hpp"
-#include "../../meta/util.hpp"
-#include "../../meta/type_ops.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -36,9 +34,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 	using namespace hardware::buffers;
 
 	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
-		Gaugemomentum dummy(meta::get_vol4d(system.get_inputparameters()), device);
+	for(Device * device : system.get_devices())
+	{
+		Gaugemomentum dummy(system.getHardwareParameters()->getLatticeVolume(), device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -51,7 +49,7 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware::buffers;
 
 	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 for(Device * device : system.get_devices()) {
 		ae* buf = new ae[elems];
 		ae* buf2 = new ae[elems];
@@ -71,13 +69,17 @@ for(Device * device : system.get_devices()) {
 	}
 }
 
+
+#include "../../meta/type_ops.hpp"
+
+
 BOOST_AUTO_TEST_CASE(copy)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
 	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters());
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume();
 for(Device * device : system.get_devices()) {
 		if(!check_Gaugemomentum_for_SOA(device)) {
 			ae* buf = new ae[elems];

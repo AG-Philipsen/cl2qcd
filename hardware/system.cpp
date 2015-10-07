@@ -342,3 +342,7 @@ static void setDebugEnvironmentVariables()
 	}
 }
 
+const hardware::HardwareParametersInterface * hardware::System::getHardwareParameters() const noexcept
+{
+	return hardwareParameters;
+}
