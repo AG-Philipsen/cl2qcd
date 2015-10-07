@@ -44,7 +44,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		basic_fermion_code = basic_fermion_code << "spinorfield_staggered.cl";
 	}
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 	
 	logger.debug() << "Creating Spinors_staggered kernels...";
 	
@@ -478,7 +478,7 @@ void hardware::code::Spinors_staggered::set_gaussian_spinorfield_device(const ha
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_device(in, &force_tmp);
+		get_device()->getSpinorStaggeredCode()->set_float_to_global_squarenorm_device(in, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
 		if(resid != resid) {
@@ -1203,7 +1203,7 @@ void hardware::code::Spinors_staggered::set_gaussian_spinorfield_eoprec_device(c
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
+		get_device()->getSpinorStaggeredCode()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
 		if(resid != resid) {

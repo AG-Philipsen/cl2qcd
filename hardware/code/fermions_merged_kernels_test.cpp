@@ -146,7 +146,7 @@ hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
 
 const hardware::code::Fermions* TestGaugefield::get_device()
 {
-	return system->get_devices()[0]->get_fermion_code();
+	return system->get_devices()[0]->getFermionCode();
 }
 
 const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
@@ -193,7 +193,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
+	auto spinor_code = device->get_device()->getSpinorCode();
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
@@ -273,7 +273,7 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-	auto spinor_code = device->get_device()->get_spinor_code();
+	auto spinor_code = device->get_device()->getSpinorCode();
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;

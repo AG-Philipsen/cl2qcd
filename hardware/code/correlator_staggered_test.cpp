@@ -30,7 +30,7 @@ class CorrelatorsStaggeredTester : public SpinorStaggeredTester{
 	CorrelatorsStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
 	     SpinorStaggeredTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues){
 		
-		code = device->get_correlator_staggered_code();
+		code = device->getCorrelatorStaggeredCode();
 		sourcecontent = parameters->get_sourcecontent();
 		outBuffer = new hardware::buffers::SU3vec(spinorfieldEvenOddElements, device);
 		outHost = new su3vec[spinorfieldEvenOddElements * iterations];

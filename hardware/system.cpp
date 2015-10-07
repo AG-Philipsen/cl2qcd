@@ -45,15 +45,14 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
 static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
-//todo: remove the enable_profiling argument, it is redundant and contained in parameters!
-hardware::System::System(const meta::Inputparameters& params, const bool enable_profiling)
+hardware::System::System(const meta::Inputparameters& params)
 	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr)
 {
 	hardwareParameters = new hardware::HardwareParameters( &params );
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
-	initOpenCLDevices( hardwareParameters->enableProfiling() );
+	initOpenCLDevices();
 }
 
 void hardware::System::initOpenCLPlatforms()
@@ -104,7 +103,7 @@ void hardware::System::initOpenCLContext()
 	logger.debug() << "...done";
 }
 
-void hardware::System::initOpenCLDevices(const bool enable_profiling)
+void hardware::System::initOpenCLDevices()
 {
 	logger.debug() << "Init OpenCL devices...";
 	cl_int err = CL_SUCCESS;
@@ -256,16 +255,11 @@ std::string hardware::OpenclException::what()
 	return error_message;
 }
 
-hardware::System::operator const cl_context&() const noexcept
-{
-	return context;
-}
-
 void hardware::print_profiling(const System& system, const std::string& filename)
 {
 	auto devices = system.get_devices();
 	for(size_t i = 0; i < devices.size(); ++i) {
-		print_profiling(devices[i], filename, i);
+		printProfiling(devices[i], filename, i);
 	}
 }
 
@@ -322,6 +316,11 @@ hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to, unsi
 	}
 	logger.trace() << "Serving Transfer: " << from << " -> " << to;
 	return link.get();
+}
+
+cl_context hardware::System::getContext() const
+{
+	return context;
 }
 
 cl_platform_id hardware::System::get_platform() const

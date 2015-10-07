@@ -39,7 +39,7 @@ void physics::algorithms::gauge_force(const physics::lattices::Gaugemomenta * co
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto gm_buf = gm_bufs[i];
 		auto gf_buf = gf_bufs[i];
-		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		auto code = gm_buf->get_device()->getMolecularDynamicsCode();
 		code->gauge_force_device(gf_buf, gm_buf);
 	}
 	gm->update_halo();
@@ -57,7 +57,7 @@ void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemoment
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto gm_buf = gm_bufs[i];
 		auto gf_buf = gf_bufs[i];
-		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		auto code = gm_buf->get_device()->getMolecularDynamicsCode();
 		code->gauge_force_tlsym_device(gf_buf, gm_buf);
 	}
 	gm->update_halo();

@@ -30,7 +30,7 @@ class RealTester : public KernelTester {
 	RealTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1,
 	    int typeOfComparision = 1) : 
 	    KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision) {
-		code = device->get_real_code();
+		code = device->getRealCode();
 		hmc_float alpha_host = parameters->get_beta();
 		hmc_float beta_host = parameters->get_kappa();
 		alpha = new hardware::buffers::Plain<hmc_float>(1, device);
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 		RealAccessVectorElementTester(std::string inputfile, bool get_element) :
 		   KernelTester("Access_vector_element", ("real/" + inputfile), 0){
 		   
-			const hardware::code::Real * code = device->get_real_code();
+			const hardware::code::Real * code = device->getRealCode();
 			hardware::buffers::Plain<hmc_float> scalar_buf(1, device);
 			hardware::buffers::Plain<hmc_float> vector_buf(4, device);
 			std::vector<hmc_float> vector_host(4);

@@ -149,7 +149,7 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 		auto A_buf = A_bufs[i];
 		auto B_buf = B_bufs[i];
 		auto gf_buf = gf_bufs[i];
-		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		auto code = gm_buf->get_device()->getMolecularDynamicsCode();
 		code->fermion_staggered_partial_force_device(gf_buf, A_buf, B_buf, gm_buf, evenodd);
 	}
 	gm->update_halo();

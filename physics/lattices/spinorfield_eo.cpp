@@ -92,7 +92,7 @@ hmc_complex physics::lattices::scalar_product(const Spinorfield_eo& left, const 
 		auto left_buf = left_buffers[i];
 		auto right_buf = right_buffers[i];
 		auto device = res_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->getSpinorCode();
 
 		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
 	}
@@ -115,7 +115,7 @@ void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spi
 		auto left_buf = left_buffers[i];
 		auto right_buf = right_buffers[i];
 		auto device = res_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->getSpinorCode();
 
 		spinor_code->set_complex_to_scalar_product_eoprec_device(left_buf, right_buf, res_buf);
 	}
@@ -143,7 +143,7 @@ hmc_float physics::lattices::squarenorm(const Spinorfield_eo& field, const Scala
 		auto field_buf = field_buffers[i];
 		auto res_buf = res_buffers[i];
 		auto device = field_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->getSpinorCode();
 
 		spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
 	}
@@ -164,7 +164,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 		auto field_buf = field_buffers[i];
 		auto res_buf = res_buffers[i];
 		auto device = field_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->getSpinorCode();
 
 		spinor_code->set_float_to_global_squarenorm_eoprec_device(field_buf, res_buf);
 	}
@@ -174,7 +174,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 void physics::lattices::Spinorfield_eo::zero() const
 {
 for(auto buffer: buffers) {
-		auto spinor_code = buffer->get_device()->get_spinor_code();
+		auto spinor_code = buffer->get_device()->getSpinorCode();
 		spinor_code->set_zero_spinorfield_eoprec_device(buffer);
 	}
 	mark_halo_clean();
@@ -183,7 +183,7 @@ for(auto buffer: buffers) {
 void physics::lattices::Spinorfield_eo::cold() const
 {
 for(auto buffer: buffers) {
-		auto spinor_code = buffer->get_device()->get_spinor_code();
+		auto spinor_code = buffer->get_device()->getSpinorCode();
 		spinor_code->set_eoprec_spinorfield_cold_device(buffer);
 	}
 	mark_halo_clean();
@@ -200,7 +200,7 @@ void physics::lattices::Spinorfield_eo::gaussian(const physics::PRNG& prng) cons
 	for(size_t i = 0; i < buffers.size(); ++i) {
 		auto spin_buf = buffers[i];
 		auto prng_buf = prng_bufs[i];
-		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_eo_device(spin_buf, prng_buf);
+		spin_buf->get_device()->getSpinorCode()->generate_gaussian_spinorfield_eo_device(spin_buf, prng_buf);
 	}
 	mark_halo_dirty();
 }
@@ -218,7 +218,7 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const hmc_complex alpha
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha, out_buf);
+		device->getSpinorCode()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha, out_buf);
 	}
 
 	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
@@ -244,7 +244,7 @@ void physics::lattices::saxpy_AND_squarenorm(const Spinorfield_eo* out, const Sc
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->saxpy_AND_squarenorm_eo_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf, squarenorm_bufs[i]);
+		device->getSpinorCode()->saxpy_AND_squarenorm_eo_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf, squarenorm_bufs[i]);
 	}
 
 	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
@@ -269,7 +269,7 @@ void physics::lattices::saxpy(const Spinorfield_eo* out, const Scalar<hmc_comple
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
+		device->getSpinorCode()->saxpy_eoprec_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
 	}
 
 	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
@@ -294,7 +294,7 @@ void physics::lattices::saxpy_AND_gamma5_eo(const Spinorfield_eo* out, const hmc
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_fermion_code()->saxpy_AND_gamma5_eo_device(x_bufs[i], y_bufs[i], alpha, out_buf);
+		device->getFermionCode()->saxpy_AND_gamma5_eo_device(x_bufs[i], y_bufs[i], alpha, out_buf);
 	}
 
 	auto const valid_halo_width = std::min(x.get_valid_halo_width(), y.get_valid_halo_width());
@@ -325,7 +325,7 @@ void physics::lattices::sax(const Spinorfield_eo* out, const Scalar<hmc_complex>
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
+		device->getSpinorCode()->sax_eoprec_device(x_bufs[i], alpha_bufs[i], out_buf);
 	}
 
 	auto const valid_halo_width = x.get_valid_halo_width();
@@ -362,7 +362,7 @@ void physics::lattices::saxsbypz(const Spinorfield_eo* out, const Scalar<hmc_com
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
+		device->getSpinorCode()->saxsbypz_eoprec_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
 	}
 
 	auto const valid_halo_width = std::min({x.get_valid_halo_width(), y.get_valid_halo_width(), z.get_valid_halo_width()});
@@ -385,7 +385,7 @@ void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spin
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto spinor_code = in_bufs[i]->get_device()->get_spinor_code();
+		auto spinor_code = in_bufs[i]->get_device()->getSpinorCode();
 		spinor_code->convert_to_eoprec_device(even_bufs[i], odd_bufs[i], in_bufs[i]);
 	}
 	even->mark_halo_clean();
@@ -406,7 +406,7 @@ void physics::lattices::convert_from_eoprec(const Spinorfield* merged, const Spi
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto spinor_code = merged_bufs[i]->get_device()->get_spinor_code();
+		auto spinor_code = merged_bufs[i]->get_device()->getSpinorCode();
 		spinor_code->convert_from_eoprec_device(even_bufs[i], odd_bufs[i], merged_bufs[i]);
 	}
 }
@@ -414,7 +414,7 @@ void physics::lattices::convert_from_eoprec(const Spinorfield* merged, const Spi
 void physics::lattices::Spinorfield_eo::gamma5() const
 {
 for(auto buffer: buffers) {
-		auto fermion_code = buffer->get_device()->get_fermion_code();
+		auto fermion_code = buffer->get_device()->getFermionCode();
 		fermion_code->gamma5_eo_device(buffer);
 	}
 }
@@ -423,14 +423,14 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_flop_size("scalar_product_eoprec");
 }
 template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::scalar_product>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_read_write_size("scalar_product_eoprec");
 }
 
@@ -438,14 +438,14 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_flop_size("global_squarenorm_eoprec");
 }
 template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::squarenorm>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_read_write_size("global_squarenorm_eoprec");
 }
 
@@ -453,14 +453,14 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_read_write_size("sax_eoprec");
 }
 template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::sax>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_read_write_size("sax_eoprec");
 }
 
@@ -468,14 +468,14 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_flop_size("saxpy_eoprec");
 }
 template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::saxpy>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_read_write_size("saxpy_eoprec");
 }
 
@@ -483,14 +483,14 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Spinorfield_eo
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_flop_size("saxsbypz_eoprec");
 }
 template<> size_t physics::lattices::get_read_write_size<physics::lattices::Spinorfield_eo, physics::lattices::saxsbypz>(const hardware::System& system)
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
+	auto spinor_code = devices[0]->getSpinorCode();
 	return spinor_code->get_read_write_size("saxsbypz_eoprec");
 }
 

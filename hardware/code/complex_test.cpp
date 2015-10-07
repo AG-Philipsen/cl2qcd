@@ -30,7 +30,7 @@ class ComplexTester : public KernelTester {
 	ComplexTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 2,
 	    int typeOfComparision = 1) : 
 	    KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision) {
-		code = device->get_complex_code();
+		code = device->getComplexCode();
 		hmc_complex alpha_host = {parameters->get_beta(), parameters->get_rho()};
 		hmc_complex beta_host = {parameters->get_kappa(), parameters->get_mu()};
 		alpha = new hardware::buffers::Plain<hmc_complex>(1, device);

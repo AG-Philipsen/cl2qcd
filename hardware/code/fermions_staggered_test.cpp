@@ -30,7 +30,7 @@ class FermionStaggeredTester : public SpinorStaggeredTester{
    public:
 	FermionStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
 	SpinorStaggeredTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues){
-		code = device->get_fermion_staggered_code();
+		code = device->getFermionStaggeredCode();
 		params = new LatticeObjectParametersImplementation(&system->get_inputparameters());
 		gaugefield = new physics::lattices::Gaugefield(*system, params, *prng);
 		/*
@@ -448,7 +448,7 @@ void FermionStaggeredTester::print_gaugefield_to_textfile(std::string outputfile
   //conf_new is the Matrixsu3 array in the right order (ref. code scheme) to be written to the file                                   
   Matrixsu3 *conf_old=new Matrixsu3[ns*ns*ns*nt*4];
   Matrixsu3 *conf_new=new Matrixsu3[ns*ns*ns*nt*4];
-  device->get_gaugefield_code()->exportGaugefield(conf_old, gaugefield->get_buffers()[0]);
+  device->getGaugefieldCode()->exportGaugefield(conf_old, gaugefield->get_buffers()[0]);
   //Now I have conf_old and I have to fill properly conf_new                                                                          
   int x,y,z,t,num,even,size;
   size=ns*ns*ns*nt;

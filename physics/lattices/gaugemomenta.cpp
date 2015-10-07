@@ -67,7 +67,7 @@ const std::vector<const hardware::buffers::Gaugemomentum *> physics::lattices::G
 void physics::lattices::Gaugemomenta::zero() const
 {
 for(auto buffer: buffers) {
-		buffer->get_device()->get_gaugemomentum_code()->set_zero_gaugemomentum(buffer);
+		buffer->get_device()->getGaugemomentumCode()->set_zero_gaugemomentum(buffer);
 	}
 }
 
@@ -80,7 +80,7 @@ void physics::lattices::Gaugemomenta::gaussian(const physics::PRNG& prng) const
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto buf = buffers[i];
-		buf->get_device()->get_gaugemomentum_code()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
+		buf->get_device()->getGaugemomentumCode()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
 	}
 	update_halo();
 }
@@ -116,7 +116,7 @@ void physics::lattices::saxpy(const Gaugemomenta* out, const Scalar<hmc_float>& 
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_gaugemomentum_code()->saxpy_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
+		device->getGaugemomentumCode()->saxpy_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
 	}
 }
 
@@ -141,7 +141,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Gaugemome
 		auto field_buf = field_buffers[i];
 		auto res_buf = res_buffers[i];
 		auto device = field_buf->get_device();
-		auto code = device->get_gaugemomentum_code();
+		auto code = device->getGaugemomentumCode();
 
 		code->set_float_to_gaugemomentum_squarenorm_device(field_buf, res_buf);
 	}
@@ -153,7 +153,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Gaugemomenta, 
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto gaugemomentum_code = devices[0]->get_gaugemomentum_code();
+	auto gaugemomentum_code = devices[0]->getGaugemomentumCode();
 	return gaugemomentum_code->get_flop_size("gaugemomentum_saxpy");
 }
 
@@ -161,7 +161,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Gaugemomenta, 
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto gaugemomentum_code = devices[0]->get_gaugemomentum_code();
+	auto gaugemomentum_code = devices[0]->getGaugemomentumCode();
 	return gaugemomentum_code->get_flop_size("gaugemomentum_squarenorm");
 }
 
@@ -220,13 +220,13 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 	logger.trace() << "importing gaugemomenta";
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
-		device->get_gaugemomentum_code()->importGaugemomentumBuffer(buffers[0], host);
+		device->getGaugemomentumCode()->importGaugemomentumBuffer(buffers[0], host);
 	} else {
 		auto const & params = system.get_inputparameters();
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
 		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-		auto const grid_size = _device->get_grid_size();
+		auto const grid_size = _device->getGridSize();
 		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
 			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
 		}
@@ -234,7 +234,7 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 			auto device = buffer->get_device();
 			ae * mem_host = new ae[buffer->get_elements()];
 
-			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
 			memcpy(mem_host, &host[get_global_link_pos(0, offset, params)], local_volume * sizeof(ae));
@@ -248,7 +248,7 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 			logger.debug() << halo_offset;
 			memcpy(&mem_host[local_volume + halo_volume], &host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(ae));
 
-			device->get_gaugemomentum_code()->importGaugemomentumBuffer(buffer, mem_host);
+			device->getGaugemomentumCode()->importGaugemomentumBuffer(buffer, mem_host);
 
 			delete[] mem_host;
 		}

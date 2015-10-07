@@ -58,7 +58,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D NTIME_GLOBAL=" << params.get_ntime();
 	options << " -D NTIME_LOCAL=" << local_size.t;
 	options << " -D NTIME_MEM=" << mem_size.t;
-	options << " -D NTIME_OFFSET=" << device->get_grid_pos().t * local_size.t;
+	options << " -D NTIME_OFFSET=" << device->getGridPos().t * local_size.t;
 
 	options << " -D VOLSPACE=" << meta::get_volspace(params);
 
@@ -227,7 +227,7 @@ ClSourcePackage hardware::code::Opencl_Module::get_basic_sources() const noexcep
 
 TmpClKernel hardware::code::Opencl_Module::createKernel(const char * const kernel_name, std::string build_opts) const
 {
-	return device->create_kernel(kernel_name, build_opts);
+	return device->createKernel(kernel_name, build_opts);
 }
 
 void hardware::code::Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -305,7 +305,7 @@ void hardware::code::Opencl_Module::print_profiling(const std::string& filename,
 	// only print info if kernel has been initialized
 	if(kernel) {
 		const std::string kernel_name = get_kernel_name(kernel);
-		const hardware::ProfilingData data = device->get_profiling_data(kernel);
+		const hardware::ProfilingData data = device->getProfilingData(kernel);
 		::print_profiling(filename, kernel_name, data, this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), meta::get_vol4d(get_parameters()));
 	}
 }

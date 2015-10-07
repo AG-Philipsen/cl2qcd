@@ -640,7 +640,7 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 		auto Y_buf = Y_bufs[i];
 		auto X_buf = X_bufs[i];
 		auto gf_buf = gf_bufs[i];
-		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		auto code = gm_buf->get_device()->getMolecularDynamicsCode();
 		code->fermion_force_device(Y_buf, X_buf, gf_buf, gm_buf, kappa);
 	}
 	gm->update_halo();
@@ -665,7 +665,7 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 		auto Y_buf = Y_bufs[i];
 		auto X_buf = X_bufs[i];
 		auto gf_buf = gf_bufs[i];
-		auto code = gm_buf->get_device()->get_molecular_dynamics_code();
+		auto code = gm_buf->get_device()->getMolecularDynamicsCode();
 		code->fermion_force_eo_device(Y_buf, X_buf, gf_buf, gm_buf, evenodd, kappa);
 	}
 

@@ -246,7 +246,7 @@ void test_build(std::string inputfile)
 	auto params = createParameters("correlator" + inputfile);
 	hardware::System system(*params);
 	for(auto device: system.get_devices()) {
-		device->get_correlator_code();
+		device->getCorrelatorCode();
 	}
 	BOOST_MESSAGE("Test done");
 }
@@ -265,7 +265,7 @@ void test_src_volume(std::string inputfile)
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
 	physics::PRNG prng{system, &prngParameters};
 	cl_int err = CL_SUCCESS;
-	auto * device = system.get_devices().at(0)->get_correlator_code();
+	auto * device = system.get_devices().at(0)->getCorrelatorCode();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
@@ -331,7 +331,7 @@ void test_src_zslice(std::string inputfile)
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
 	physics::PRNG prng{system, &prngParameters};
 	cl_int err = CL_SUCCESS;
-	auto device = system.get_devices().at(0)->get_correlator_code();
+	auto device = system.get_devices().at(0)->getCorrelatorCode();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
@@ -515,7 +515,7 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
 		physics::PRNG prng{system, &prngParameters};
 		cl_int err = CL_SUCCESS;
-		auto device = system.get_devices().at(0)->get_correlator_code();
+		auto device = system.get_devices().at(0)->getCorrelatorCode();
 
 		logger.info() << "Fill buffers...";
 		size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
@@ -621,7 +621,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&(*params)};
 		physics::PRNG prng{system, &prngParameters};
 		cl_int err = CL_SUCCESS;
-		auto device = system.get_devices().at(0)->get_correlator_code();
+		auto device = system.get_devices().at(0)->getCorrelatorCode();
 
 		logger.info() << "Fill buffers...";
 		size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
@@ -691,7 +691,7 @@ public:
 	CorrelatorTester(std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, fillType fillTypeIn):
 		SpinorTester(kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
 	{
-		const hardware::code::Correlator * code = device->get_correlator_code();
+		const hardware::code::Correlator * code = device->getCorrelatorCode();
 
 		const int correlatorEntries = expectedResult.size();
 		const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
@@ -718,7 +718,7 @@ public:
 	CorrelatorTester(std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, fillType fillTypeIn1, fillType fillTypeIn2, fillType fillTypeIn3, fillType fillTypeIn4):
 		SpinorTester(kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
 	{
-		const hardware::code::Correlator * code = device->get_correlator_code();
+		const hardware::code::Correlator * code = device->getCorrelatorCode();
 
 		const int correlatorEntries = expectedResult.size();
 		const hardware::buffers::Plain<spinor> in1(spinorfieldElements, device);

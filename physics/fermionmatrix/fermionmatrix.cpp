@@ -64,7 +64,7 @@ cl_ulong physics::fermionmatrix::M::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 	switch(system.get_inputparameters().get_fermact()) {
 		case meta::action::wilson:
 			return fermion_code->get_flop_size("M_wilson");
@@ -78,7 +78,7 @@ cl_ulong physics::fermionmatrix::M::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 	switch(system.get_inputparameters().get_fermact()) {
 		case meta::action::wilson:
 			return fermion_code->get_read_write_size("M_wilson");
@@ -108,7 +108,7 @@ cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -128,7 +128,7 @@ cl_ulong physics::fermionmatrix::Qplus::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -163,7 +163,7 @@ cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -183,7 +183,7 @@ cl_ulong physics::fermionmatrix::Qminus::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -251,8 +251,8 @@ cl_ulong physics::fermionmatrix::Aee::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -276,8 +276,8 @@ cl_ulong physics::fermionmatrix::Aee::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -336,8 +336,8 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -361,8 +361,8 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -421,8 +421,8 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -446,8 +446,8 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -506,8 +506,8 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -531,8 +531,8 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_read_write_size() 
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(system.get_inputparameters().get_fermact()) {
@@ -565,7 +565,7 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee.get_flops();
 	res += fermion_code->get_flop_size("gamma5_eo");
@@ -585,7 +585,7 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee_minus.get_flops();
 	res += fermion_code->get_flop_size("gamma5_eo");
@@ -596,7 +596,7 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee.get_read_write_size();
 	res += fermion_code->get_read_write_size("gamma5_eo");
@@ -607,7 +607,7 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_read_write_size() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee_minus.get_read_write_size();
 	res += fermion_code->get_read_write_size("gamma5_eo");

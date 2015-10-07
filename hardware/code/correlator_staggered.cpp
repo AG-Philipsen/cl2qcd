@@ -42,7 +42,7 @@ void hardware::code::Correlator_staggered::fill_kernels()
   
 	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "spinorfield_staggered_eo.cl";
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 
 	logger.debug() << "Creating Correlator_staggered kernels...";
 
@@ -156,7 +156,7 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_eoprec_device(inout, &sqn_tmp);
+		get_device()->getSpinorStaggeredCode()->set_float_to_global_squarenorm_eoprec_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {

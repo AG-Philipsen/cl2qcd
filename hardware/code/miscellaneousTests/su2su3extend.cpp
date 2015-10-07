@@ -145,7 +145,7 @@ void Test::fill_buffers()
 
 void Device::fill_kernels()
 {
-	extendKernel = createKernel("extendKernel") << get_device()->get_gaugefield_code()->get_sources() << "../hardware/code/miscellaneousTests/su2su3extend.cl";
+	extendKernel = createKernel("extendKernel") << get_device()->getGaugefieldCode()->get_sources() << "../hardware/code/miscellaneousTests/su2su3extend.cl";
 }
 
 void Test::clear_buffers()
@@ -177,7 +177,7 @@ void Device::runExtendKernel(const hardware::buffers::Plain<Matrixsu3> * out, co
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(extendKernel, 3, sizeof(cl_ulong), &elems);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	get_device()->enqueue_kernel(extendKernel, NUM_ELEMENTS);
+	get_device()->enqueueKernel(extendKernel, NUM_ELEMENTS);
 }
 
 void Test::verify(hmc_complex left, hmc_complex right)

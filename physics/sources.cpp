@@ -44,7 +44,7 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 	auto device = buffer->get_device();
 	int local_t = t_pos % local_lattice_size;
 
-	device->get_correlator_code()->create_point_source_device(buffer, k, get_source_pos_spatial(params), local_t);
+	device->getCorrelatorCode()->create_point_source_device(buffer, k, get_source_pos_spatial(params), local_t);
 
 	spinorfield->update_halo();
 }
@@ -59,7 +59,7 @@ void physics::set_volume_source(const physics::lattices::Spinorfield * spinorfie
 		auto buffer = buffers[i];
 		auto prng_buffer = prng.get_buffers().at(i);
 
-		buffer->get_device()->get_correlator_code()->create_volume_source_device(buffer, prng_buffer);
+		buffer->get_device()->getCorrelatorCode()->create_volume_source_device(buffer, prng_buffer);
 	}
 
 	spinorfield->update_halo();
@@ -78,7 +78,7 @@ void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinor
 	int local_t = t_pos % local_lattice_size;
 	auto prng_buffer = prng.get_buffers().at(t_buf);
 
-	device->get_correlator_code()->create_timeslice_source_device(buffer, prng_buffer, local_t);
+	device->getCorrelatorCode()->create_timeslice_source_device(buffer, prng_buffer, local_t);
 
 	spinorfield->update_halo();
 }
@@ -93,7 +93,7 @@ void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfie
 		auto buffer = buffers[i];
 		auto prng_buffer = prng.get_buffers().at(i);
 
-		buffer->get_device()->get_correlator_code()->create_zslice_source_device(buffer, prng_buffer, z);
+		buffer->get_device()->getCorrelatorCode()->create_zslice_source_device(buffer, prng_buffer, z);
 	}
 
 	spinorfield->update_halo();
@@ -108,7 +108,7 @@ void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * ino
 		auto buffer = buffers[i];
 		auto prng_buffer = prng.get_buffers().at(i);
 
-		buffer->get_device()->get_correlator_staggered_code()->create_volume_source_stagg_eoprec_device(buffer, prng_buffer);
+		buffer->get_device()->getCorrelatorStaggeredCode()->create_volume_source_stagg_eoprec_device(buffer, prng_buffer);
 	}
 
 	if(buffers.size()!=1)

@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(good_case)
 	hardware::System system(params);
 
 	cl_int err;
-	cl_event event = clCreateUserEvent(system, &err);
+	cl_event event = clCreateUserEvent(system.getContext(), &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	SynchronizationEvent se1(event);
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(error_case)
 	hardware::System system(params);
 
 	cl_int err;
-	cl_event event = clCreateUserEvent(system, &err);
+	cl_event event = clCreateUserEvent(system.getContext(), &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	SynchronizationEvent se1(event);

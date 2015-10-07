@@ -22,3 +22,8 @@ build
 debug
 
 README.html
+
+*.cproject
+*.project
+*.settings/
+

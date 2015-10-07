@@ -39,7 +39,7 @@ void dslashBenchmark::performBenchmarkForSpecificKernels()
   auto gaugefield_buffer = gaugefield->get_buffers().at(0);
   auto spinorfield1_buffer = spinorfield1->get_buffers().at(0);
   auto spinorfield2_buffer = spinorfield2->get_buffers().at(0);
-  auto fermion_code = device->get_fermion_code();
+  auto fermion_code = device->getFermionCode();
   fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, EVEN);
   fermion_code->dslash_eo_device(spinorfield1_buffer, spinorfield2_buffer, gaugefield_buffer, ODD);
   device->synchronize();
@@ -53,7 +53,7 @@ void dslashBenchmark::enqueueSpecificKernelForBenchmarkingMultipleDevices()
 
 void dslashBenchmark::printProfilingDataToScreen()
 {
-  auto fermion_code = system->get_devices()[0]->get_fermion_code();
+  auto fermion_code = system->get_devices()[0]->getFermionCode();
   size_t flop_count = fermion_code->get_flop_size("dslash_eo");
   size_t byte_count = fermion_code->get_read_write_size("dslash_eo");
   double gflops = static_cast<double>(flop_count) * 2 * benchmarkSteps / executionTime / 1e3;

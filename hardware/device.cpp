@@ -28,6 +28,7 @@ static bool retrieve_device_availability(cl_device_id device_id);
 static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME);
 static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
+//todo: grid_size should not be a member of this class, but of system
 hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn)
 	: DeviceInfo(device_id),
 	openClCodeBuilder( &builderIn ), hardwareParameters(&parametersIn), 
@@ -144,7 +145,7 @@ cl_command_queue hardware::Device::get_queue() const noexcept
 	return command_queue;
 }
 
-TmpClKernel hardware::Device::create_kernel(const char * const kernel_name, std::string build_opts) const
+TmpClKernel hardware::Device::createKernel(const char * const kernel_name, std::string build_opts) const
 {
 	if(hardwareParameters->disableOpenCLCompilerOptimizations()) {
 		build_opts +=  " -cl-opt-disable";
@@ -152,12 +153,12 @@ TmpClKernel hardware::Device::create_kernel(const char * const kernel_name, std:
 	return TmpClKernel(kernel_name, build_opts, context, get_id());
 }
 
-void hardware::Device::enqueue_kernel(cl_kernel kernel)
+void hardware::Device::enqueueKernel(cl_kernel kernel)
 {
-	enqueue_kernel(kernel, get_preferred_global_thread_num());
+	enqueueKernel(kernel, get_preferred_global_thread_num());
 }
 
-void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads)
+void hardware::Device::enqueueKernel(cl_kernel kernel, size_t global_threads)
 {
 	enqueue_kernel(kernel, global_threads, get_preferred_local_thread_num());
 }
@@ -227,7 +228,7 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 	}
 }
 
-void hardware::Device::enqueue_marker(cl_event * event) const
+void hardware::Device::enqueueMarker(cl_event * event) const
 {
 	cl_int err = clEnqueueMarker(command_queue, event);
 	if(err) {
@@ -235,7 +236,7 @@ void hardware::Device::enqueue_marker(cl_event * event) const
 	}
 }
 
-void hardware::Device::enqueue_barrier(const hardware::SynchronizationEvent& event) const
+void hardware::Device::enqueueBarrier(const hardware::SynchronizationEvent& event) const
 {
 	cl_event const cl_event = event.raw();
 #if CL_VERSION_1_2
@@ -287,7 +288,7 @@ static int get_cypress_stride_badness(size_t bytes, size_t lanes)
 	return badness;
 }
 
-size_t hardware::Device::recommend_stride(size_t elems, size_t type_size, size_t lane_count) const
+size_t hardware::Device::recommendStride(size_t elems, size_t type_size, size_t lane_count) const
 {
 	const size_t MAX_ADD_STRIDE = 8 * 1024; // never add more than 8 KiB per lane
 	const auto name = get_name();
@@ -313,7 +314,7 @@ size_t hardware::Device::recommend_stride(size_t elems, size_t type_size, size_t
 	}
 }
 
-bool hardware::Device::is_profiling_enabled() const noexcept
+bool hardware::Device::isProfilingEnabled() const noexcept
 {
 	return hardwareParameters->enableProfiling();
 }
@@ -334,11 +335,11 @@ void hardware::Device::synchronize() const
 	}
 }
 
-hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
+hardware::ProfilingData hardware::Device::getProfilingData(const cl_kernel& kernel) noexcept {
 	return profiling_data[kernel];
 }
 
-const hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
+const hardware::code::Gaugefield * hardware::Device::getGaugefieldCode()
 {
 	if(!gaugefield_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -347,7 +348,7 @@ const hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 	return gaugefield_code;
 }
 
-const hardware::code::PRNG * hardware::Device::get_prng_code()
+const hardware::code::Prng * hardware::Device::getPrngCode()
 {
 	if(!prng_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -356,7 +357,7 @@ const hardware::code::PRNG * hardware::Device::get_prng_code()
 	return prng_code;
 }
 
-const hardware::code::Real * hardware::Device::get_real_code()
+const hardware::code::Real * hardware::Device::getRealCode()
 {
 	if(!real_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -365,7 +366,7 @@ const hardware::code::Real * hardware::Device::get_real_code()
 	return real_code;
 }
 
-const hardware::code::Complex * hardware::Device::get_complex_code()
+const hardware::code::Complex * hardware::Device::getComplexCode()
 {
 	if(!complex_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -374,7 +375,7 @@ const hardware::code::Complex * hardware::Device::get_complex_code()
 	return complex_code;
 }
 
-const hardware::code::Spinors * hardware::Device::get_spinor_code()
+const hardware::code::Spinors * hardware::Device::getSpinorCode()
 {
 	if(!spinor_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -383,7 +384,7 @@ const hardware::code::Spinors * hardware::Device::get_spinor_code()
 	return spinor_code;
 }
 
-const hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered_code()
+const hardware::code::Spinors_staggered * hardware::Device::getSpinorStaggeredCode()
 {
 	if(!spinor_staggered_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -392,7 +393,7 @@ const hardware::code::Spinors_staggered * hardware::Device::get_spinor_staggered
 	return spinor_staggered_code;
 }
 
-const hardware::code::Fermions * hardware::Device::get_fermion_code()
+const hardware::code::Fermions * hardware::Device::getFermionCode()
 {
 	if(!fermion_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -401,7 +402,7 @@ const hardware::code::Fermions * hardware::Device::get_fermion_code()
 	return fermion_code;
 }
 
-const hardware::code::Fermions_staggered * hardware::Device::get_fermion_staggered_code()
+const hardware::code::Fermions_staggered * hardware::Device::getFermionStaggeredCode()
 {
 	if(!fermion_staggered_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -410,7 +411,7 @@ const hardware::code::Fermions_staggered * hardware::Device::get_fermion_stagger
 	return fermion_staggered_code;
 }
 
-const hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
+const hardware::code::Gaugemomentum * hardware::Device::getGaugemomentumCode()
 {
 	if(!gaugemomentum_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -419,7 +420,7 @@ const hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
 	return gaugemomentum_code;
 }
 
-const hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynamics_code()
+const hardware::code::Molecular_Dynamics * hardware::Device::getMolecularDynamicsCode()
 {
 	if(!molecular_dynamics_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -428,7 +429,7 @@ const hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynam
 	return molecular_dynamics_code;
 }
 
-const hardware::code::Correlator * hardware::Device::get_correlator_code()
+const hardware::code::Correlator * hardware::Device::getCorrelatorCode()
 {
 	if(!correlator_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -437,7 +438,7 @@ const hardware::code::Correlator * hardware::Device::get_correlator_code()
 	return correlator_code;
 }
 
-const hardware::code::Correlator_staggered * hardware::Device::get_correlator_staggered_code()
+const hardware::code::Correlator_staggered * hardware::Device::getCorrelatorStaggeredCode()
 {
 	if(!correlator_staggered_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -446,7 +447,7 @@ const hardware::code::Correlator_staggered * hardware::Device::get_correlator_st
 	return correlator_staggered_code;
 }
 
-const hardware::code::Heatbath * hardware::Device::get_heatbath_code()
+const hardware::code::Heatbath * hardware::Device::getHeatbathCode()
 {
 	if(!heatbath_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -455,7 +456,7 @@ const hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 	return heatbath_code;
 }
 
-const hardware::code::Kappa * hardware::Device::get_kappa_code()
+const hardware::code::Kappa * hardware::Device::getKappaCode()
 {
 	if(!kappa_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -464,7 +465,7 @@ const hardware::code::Kappa * hardware::Device::get_kappa_code()
 	return kappa_code;
 }
 
-const hardware::code::Buffer * hardware::Device::get_buffer_code()
+const hardware::code::Buffer * hardware::Device::getBufferCode()
 {
 	if(!buffer_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -473,7 +474,7 @@ const hardware::code::Buffer * hardware::Device::get_buffer_code()
 	return buffer_code;
 }
 
-void hardware::print_profiling(Device * device, const std::string& filename, int id)
+void hardware::printProfiling(Device * device, const std::string& filename, int id)
 {
 	if(device->kappa_code) {
 		device->kappa_code->print_profiling(filename, id);
@@ -530,12 +531,12 @@ static bool retrieve_device_availability(cl_device_id device_id)
 	return available;
 }
 
-size_4 hardware::Device::get_grid_pos() const
+size_4 hardware::Device::getGridPos() const
 {
 	return grid_pos;
 }
 
-size_4 hardware::Device::get_grid_size() const
+size_4 hardware::Device::getGridSize() const
 {
 	return grid_size;
 }
@@ -544,15 +545,15 @@ static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPA
 {
 	const size_4 local_size(NSPACE / grid_size.x, NSPACE / grid_size.y, NSPACE / grid_size.z, NTIME / grid_size.t);
 
+	if(local_size.x % 2 || local_size.y % 2 || local_size.z % 2 || local_size.t % 2) {
+		logger.warn() << "Local lattice size is odd. This is known to cause problems!";
+	}
+
 	if(local_size.x * grid_size.x != NSPACE
 	   || local_size.y * grid_size.y != NSPACE
 	   || local_size.z * grid_size.z != NSPACE
 	   || local_size.t * grid_size.t != NTIME) {
 		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
-	}
-
-	if(local_size.x % 2 || local_size.y % 2 || local_size.z % 2 || local_size.t % 2) {
-		logger.warn() << "Local lattice size is odd. This is known to cause problems!";
 	}
 
 	return local_size;

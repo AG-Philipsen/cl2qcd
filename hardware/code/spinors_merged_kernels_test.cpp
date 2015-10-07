@@ -166,7 +166,7 @@ void test_build(std::string inputfile)
 	auto params =createParameters("spinorsMerged/" + inputfile);
 	hardware::System system(*params);
 	for(auto device: system.get_devices()) {
-		device->get_spinor_code();
+		device->getSpinorCode();
 	}
 	BOOST_MESSAGE("Test done");
 }
@@ -181,7 +181,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	logger.info() << "Init device";
 	auto params =createParameters("spinorsMerged/" + inputfile);
 	hardware::System system(*params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->getSpinorCode();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);

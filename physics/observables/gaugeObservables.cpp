@@ -130,7 +130,7 @@ hmc_float kappa_clover(const physics::lattices::Gaugefield& gf, hmc_float beta)
 
 	auto device = gf_dev->get_device();
 	hardware::buffers::Plain<hmc_float> kappa_clover_dev(1, device);
-	gf_dev->get_device()->get_kappa_code()->run_kappa_clover(&kappa_clover_dev, gf_dev, beta);
+	gf_dev->get_device()->getKappaCode()->run_kappa_clover(&kappa_clover_dev, gf_dev, beta);
 
 	hmc_float kappa_clover_host;
 	kappa_clover_dev.dump(&kappa_clover_host);
@@ -195,7 +195,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
 		const Plain<hmc_float> plaq_dev(1, device);
 		const Plain<hmc_float> tplaq_dev(1, device);
 		const Plain<hmc_float> splaq_dev(1, device);
-		device->get_gaugefield_code()->plaquette_device(gaugefieldBuffers[0], &plaq_dev, &tplaq_dev, &splaq_dev);
+		device->getGaugefieldCode()->plaquette_device(gaugefieldBuffers[0], &plaq_dev, &tplaq_dev, &splaq_dev);
 
 		plaq_dev.dump(&plaquette);
 		tplaq_dev.dump(&plaquette_temporal);
@@ -210,7 +210,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
 			const Plain<hmc_float>* plaq_dev = new Plain<hmc_float>(1, device);
 			const Plain<hmc_float>* tplaq_dev = new Plain<hmc_float>(1, device);
 			const Plain<hmc_float>* splaq_dev = new Plain<hmc_float>(1, device);
-			device->get_gaugefield_code()->plaquette_device(gaugefieldBuffers[i], plaq_dev, tplaq_dev, splaq_dev);
+			device->getGaugefieldCode()->plaquette_device(gaugefieldBuffers[i], plaq_dev, tplaq_dev, splaq_dev);
 			plaqs.push_back(plaq_dev);
 			tplaqs.push_back(tplaq_dev);
 			splaqs.push_back(splaq_dev);
@@ -260,7 +260,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
       if(num_devs == 1) {
 	auto device = gaugefieldBuffers[0]->get_device();
 	const Plain<hmc_float> rect_dev(1, device);
-	device->get_gaugefield_code()->rectangles_device(gaugefieldBuffers[0], &rect_dev);
+	device->getGaugefieldCode()->rectangles_device(gaugefieldBuffers[0], &rect_dev);
 	rect_dev.dump(&rectangles);
       } else {
 	// trigger calculation
@@ -269,7 +269,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
 	for(size_t i = 0; i < num_devs; ++i) {
 	  auto device = gaugefieldBuffers[i]->get_device();
 	  const Plain<hmc_float>* rect_dev = new Plain<hmc_float>(1, device);
-	  device->get_gaugefield_code()->rectangles_device(gaugefieldBuffers[i], rect_dev);
+	  device->getGaugefieldCode()->rectangles_device(gaugefieldBuffers[i], rect_dev);
 	  rects.push_back(rect_dev);
 	}
 	// collect results
@@ -295,7 +295,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
       if(num_devs == 1) {
 	auto gf_buf = gaugefieldBuffers[0];
 	auto device = gf_buf->get_device();
-	auto gf_code = device->get_gaugefield_code();
+	auto gf_code = device->getGaugefieldCode();
 	const Plain<hmc_complex> pol_buf(1, device);
 	
 	gf_code->polyakov_device(gf_buf, &pol_buf);
@@ -308,7 +308,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
 	for(auto buffer: gaugefieldBuffers) {
 	  auto dev = buffer->get_device();
 	  auto res_buf = new Plain<Matrixsu3>(volspace, dev);
-	  dev->get_gaugefield_code()->polyakov_md_local_device(res_buf, buffer);
+	  dev->getGaugefieldCode()->polyakov_md_local_device(res_buf, buffer);
 	  local_results.push_back(res_buf);
 	}
 	
@@ -327,7 +327,7 @@ double gaugeObservables::measurePlaquette(const physics::lattices::Gaugefield * 
 	}
 	
 	const Plain<hmc_complex> pol_buf(1, main_dev);
-	main_dev->get_gaugefield_code()->polyakov_md_merge_device(&merged_buf, num_devs, &pol_buf);
+	main_dev->getGaugefieldCode()->polyakov_md_merge_device(&merged_buf, num_devs, &pol_buf);
 	pol_buf.dump(&polyakov);
 	
 	for(auto buffer: local_results) {

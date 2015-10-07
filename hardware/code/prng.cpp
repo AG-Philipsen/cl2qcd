@@ -35,7 +35,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Prng::Prng(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device)
 {
 #ifdef USE_PRNG_RANLUX
@@ -48,7 +48,7 @@ hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device
 #endif // USE_PRNG_XXX
 }
 
-hardware::code::PRNG::~PRNG()
+hardware::code::Prng::~Prng()
 {
 #ifdef USE_PRNG_RANLUX
 	logger.debug() << "Clearing PRNG kernels...";
@@ -59,13 +59,13 @@ hardware::code::PRNG::~PRNG()
 #endif // USE_PRNG_XXX
 }
 
-ClSourcePackage hardware::code::PRNG::get_sources() const noexcept
+ClSourcePackage hardware::code::Prng::get_sources() const noexcept
 {
 	return prng_code;
 }
 
 #ifdef USE_PRNG_RANLUX
-void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed) const
+void hardware::code::Prng::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed) const
 {
 	cl_int clerr;
 	size_t ls, gs;

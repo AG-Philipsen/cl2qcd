@@ -40,11 +40,11 @@ namespace code {
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class PRNG : public Opencl_Module {
+class Prng : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~PRNG();
+	virtual ~Prng();
 
 	ClSourcePackage get_sources() const noexcept;
 
@@ -83,7 +83,7 @@ public:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	PRNG(const meta::Inputparameters& params, hardware::Device * device);
+	Prng(const meta::Inputparameters& params, hardware::Device * device);
 
 private:
 	/**

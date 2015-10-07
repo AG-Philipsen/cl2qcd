@@ -32,7 +32,7 @@ void hardware::code::Correlator::fill_kernels()
 {
 	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 
 	logger.debug() << "Creating Correlator kernels...";
 
@@ -237,7 +237,7 @@ void hardware::code::Correlator::create_point_source_device(const hardware::buff
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {
@@ -265,7 +265,7 @@ void hardware::code::Correlator::create_volume_source_device(const hardware::buf
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {
@@ -296,7 +296,7 @@ void hardware::code::Correlator::create_timeslice_source_device(const hardware::
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {
@@ -328,7 +328,7 @@ void hardware::code::Correlator::create_zslice_source_device(const hardware::buf
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {

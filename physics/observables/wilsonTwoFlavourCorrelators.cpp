@@ -151,13 +151,13 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 		for(size_t i_window = 0; i_window < num_bufs; ++i_window) {
 			fill_window(&window, *source, i_window);
 			for(size_t i = 0; i < num_bufs; ++i) {
-				auto code = results[i]->get_device()->get_correlator_code();
+				auto code = results[i]->get_device()->getCorrelatorCode();
 				code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], window_bufs[i]);
 			}
 		}
 	} else {
 		for(size_t i = 0; i < num_bufs; ++i) {
-			auto code = results[i]->get_device()->get_correlator_code();
+			auto code = results[i]->get_device()->getCorrelatorCode();
 			if(params.get_sourcetype() == meta::Inputparameters::point) {
 				code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i]);
 			} else {
@@ -204,7 +204,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = results[i]->get_device()->get_correlator_code();
+		auto code = results[i]->get_device()->getCorrelatorCode();
 		if(params.get_sourcetype() == meta::Inputparameters::point) {
 			code->correlator(code->get_correlator_kernel(type), results[i], corr1_bufs[i], corr2_bufs[i], corr3_bufs[i], corr4_bufs[i]);
 		} else {

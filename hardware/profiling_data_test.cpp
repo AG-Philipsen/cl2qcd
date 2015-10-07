@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(initial)
 }
 
 namespace hardware {
-cl_command_queue profiling_data_test_command_queue_helper(const hardware::Device * device)
+cl_command_queue profilingDataTestCommandQueueHelper(const hardware::Device * device)
 {
 	return device->get_queue();
 }
@@ -50,9 +50,9 @@ BOOST_AUTO_TEST_CASE(add_value)
 {
 	using namespace hardware;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	System system(params, true);
+	const char * _params[] = {"foo","--enable_profiling=true"};
+	meta::Inputparameters params(2, _params);
+	System system(params);
 
 	// there should always be at least one device
 	// otherwise code or system is broken
@@ -67,7 +67,7 @@ for(const Device * device : devices) {
 		ProfilingData old_data;
 		cl_event event;
 		for(size_t i = 0; i < 3; i++) {
-			clEnqueueMarker(profiling_data_test_command_queue_helper(device), &event);
+			clEnqueueMarker(profilingDataTestCommandQueueHelper(device), &event);
 			clWaitForEvents(1, &event);
 			data += event;
 			clReleaseEvent(event);

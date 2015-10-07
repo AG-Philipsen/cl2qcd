@@ -55,7 +55,7 @@ static size_t calculate_su3_buffer_size(size_t elems, hardware::Device * device)
 
 size_t hardware::buffers::get_SU3_buffer_stride(size_t elems, Device * device)
 {
-	return device->recommend_stride(elems, sizeof(soa_storage_t), soa_storage_lanes);
+	return device->recommendStride(elems, sizeof(soa_storage_t), soa_storage_lanes);
 }
 
 size_t hardware::buffers::SU3::get_elements() const noexcept

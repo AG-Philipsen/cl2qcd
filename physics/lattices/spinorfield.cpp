@@ -98,7 +98,7 @@ const std::vector<const hardware::buffers::Plain<spinor> *> physics::lattices::S
 void physics::lattices::Spinorfield::gamma5() const
 {
 for(auto buffer: buffers) {
-		auto fermion_code = buffer->get_device()->get_fermion_code();
+		auto fermion_code = buffer->get_device()->getFermionCode();
 		fermion_code->gamma5_device(buffer);
 	}
 }
@@ -126,7 +126,7 @@ void physics::lattices::scalar_product(const Scalar<hmc_complex>* res, const Spi
 		auto left_buf = left_buffers[i];
 		auto right_buf = right_buffers[i];
 		auto device = res_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->getSpinorCode();
 
 		spinor_code->set_complex_to_scalar_product_device(left_buf, right_buf, res_buf);
 	}
@@ -156,7 +156,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 		auto field_buf = field_buffers[i];
 		auto res_buf = res_buffers[i];
 		auto device = field_buf->get_device();
-		auto spinor_code = device->get_spinor_code();
+		auto spinor_code = device->getSpinorCode();
 
 		spinor_code->set_float_to_global_squarenorm_device(field_buf, res_buf);
 	}
@@ -167,7 +167,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 void physics::lattices::Spinorfield::zero() const
 {
 for(auto buffer: buffers) {
-		auto spinor_code = buffer->get_device()->get_spinor_code();
+		auto spinor_code = buffer->get_device()->getSpinorCode();
 		spinor_code->set_zero_spinorfield_device(buffer);
 	}
 }
@@ -175,7 +175,7 @@ for(auto buffer: buffers) {
 void physics::lattices::Spinorfield::cold() const
 {
 for(auto buffer: buffers) {
-		auto spinor_code = buffer->get_device()->get_spinor_code();
+		auto spinor_code = buffer->get_device()->getSpinorCode();
 		spinor_code->set_spinorfield_cold_device(buffer);
 	}
 }
@@ -191,7 +191,7 @@ void physics::lattices::Spinorfield::gaussian(const physics::PRNG& prng) const
 	for(size_t i = 0; i < buffers.size(); ++i) {
 		auto spin_buf = buffers[i];
 		auto prng_buf = prng_bufs[i];
-		spin_buf->get_device()->get_spinor_code()->generate_gaussian_spinorfield_device(spin_buf, prng_buf);
+		spin_buf->get_device()->getSpinorCode()->generate_gaussian_spinorfield_device(spin_buf, prng_buf);
 	}
 
 	update_halo();
@@ -210,7 +210,7 @@ void physics::lattices::saxpy(const Spinorfield* out, const hmc_complex alpha, c
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->saxpy_device(x_bufs[i], y_bufs[i], alpha, out_buf);
+		device->getSpinorCode()->saxpy_device(x_bufs[i], y_bufs[i], alpha, out_buf);
 	}
 }
 
@@ -228,7 +228,7 @@ void physics::lattices::saxpy(const Spinorfield* out, const Scalar<hmc_complex>&
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->saxpy_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
+		device->getSpinorCode()->saxpy_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
 	}
 }
 
@@ -252,7 +252,7 @@ void physics::lattices::sax(const Spinorfield* out, const Scalar<hmc_complex>& a
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->sax_device(x_bufs[i], alpha_bufs[i], out_buf);
+		device->getSpinorCode()->sax_device(x_bufs[i], alpha_bufs[i], out_buf);
 	}
 }
 
@@ -281,7 +281,7 @@ void physics::lattices::saxsbypz(const Spinorfield* out, const Scalar<hmc_comple
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_spinor_code()->saxsbypz_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
+		device->getSpinorCode()->saxsbypz_device(x_bufs[i], y_bufs[i], z_bufs[i], alpha_bufs[i], beta_bufs[i], out_buf);
 	}
 }
 
@@ -308,14 +308,14 @@ void physics::lattices::Spinorfield::import(const spinor * const host) const
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
 		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-		auto const grid_size = _device->get_grid_size();
+		auto const grid_size = _device->getGridSize();
 		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
 			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
 		}
 		for(auto const buffer: buffers) {
 			auto device = buffer->get_device();
 
-			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size);
 			buffer->load(&host[get_global_pos(offset, params)], local_volume);

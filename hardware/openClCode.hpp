@@ -47,7 +47,7 @@ namespace hardware
 		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device *) const = 0;
 		virtual std::unique_ptr<const hardware::code::Gaugefield> getCode_gaugefield(hardware::Device *) const = 0;
 		virtual std::unique_ptr<const hardware::code::Complex> getCode_complex(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::PRNG> getCode_PRNG(hardware::Device *) const = 0;
+		virtual std::unique_ptr<const hardware::code::Prng> getCode_PRNG(hardware::Device *) const = 0;
 		virtual std::unique_ptr<const hardware::code::Spinors> getCode_Spinors(hardware::Device *) const = 0;
 		virtual std::unique_ptr<const hardware::code::Fermions> getCode_Fermions(hardware::Device *) const = 0;
 		virtual std::unique_ptr<const hardware::code::Gaugemomentum> getCode_Gaugemomentum(hardware::Device *) const = 0;
@@ -78,9 +78,9 @@ namespace hardware
 		{
 			return std::unique_ptr<const hardware::code::Gaugefield>( new hardware::code::Gaugefield{parameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::PRNG> getCode_PRNG(hardware::Device * deviceIn) const override
+		virtual std::unique_ptr<const hardware::code::Prng> getCode_PRNG(hardware::Device * deviceIn) const override
 		{
-			return std::unique_ptr<const hardware::code::PRNG>( new hardware::code::PRNG{parameters, deviceIn} ) ;
+			return std::unique_ptr<const hardware::code::Prng>( new hardware::code::Prng{parameters, deviceIn} ) ;
 		}
 		virtual std::unique_ptr<const hardware::code::Complex> getCode_complex(hardware::Device * deviceIn) const override
 		{
