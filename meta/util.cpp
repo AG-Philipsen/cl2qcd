@@ -34,8 +34,13 @@ size_t meta::get_volspace(const int ns)
 
 size_t meta::get_vol4d(const Inputparameters& params)
 {
-	return get_volspace(params) * params.get_ntime();
+	return meta::get_vol4d(params.get_ntime(), params.get_nspace());
 }
+size_t meta::get_vol4d(const int nt, const int ns)
+{
+    return meta::get_volspace(ns) * nt;
+}
+
 bool meta::get_use_rectangles(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
