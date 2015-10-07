@@ -112,3 +112,26 @@ public:
 private:
 	const meta::Inputparameters * parameters;
 };
+
+class SpinorfieldParametersImplementation final {
+    public:
+        //TODO: uncomment following line
+        //SpinorfieldParametersImplementation() = delete;
+        SpinorfieldParametersImplementation(const meta::Inputparameters& paramsIn ): parameters(paramsIn) {};
+        int getNt() const
+        {
+            return parameters.get_ntime();
+        }
+        int getNs() const
+        {
+            return parameters.get_nspace();
+        }
+
+    private:
+       const meta::Inputparameters& parameters;
+
+
+};
+
+
+
