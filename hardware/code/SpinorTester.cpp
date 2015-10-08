@@ -25,7 +25,7 @@ void SpinorTester::setMembers()
 		//todo: some of these could also be put into the specific child-classes where they are actually used.
 	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
 	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
-	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
+	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
 	(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
 	alpha_host = {parameters->get_beta(), parameters->get_rho()};
 	beta_host = {parameters->get_kappa(), parameters->get_mu()};

@@ -30,7 +30,7 @@ void SpinorStaggeredTester::setMembers(){
 	inputfield = NULL;
 	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
 	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
-	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
+	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
 	parameters->get_read_multiple_configs() ? evenOrOdd = true : evenOrOdd = false;
 	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
 	alpha_host = {parameters->get_beta(), parameters->get_rho()};

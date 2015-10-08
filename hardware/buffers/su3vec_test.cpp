@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	System system(meta::Inputparameters(2,_params));
 	for(Device * device : system.get_devices()) {
 
-		SU3vec dummy(meta::get_vol4d(system.get_inputparameters()), device);
+		SU3vec dummy(system.getHardwareParameters()->getLatticeVolume(), device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(import_export)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	System system(meta::Inputparameters(2,_params));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];
 		su3vec* buf2 = new su3vec[elems];
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(copy)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	System system(meta::Inputparameters(2,_params));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];
 		su3vec* buf2 = new su3vec[elems];

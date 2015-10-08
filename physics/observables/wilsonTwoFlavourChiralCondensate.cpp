@@ -66,8 +66,8 @@ TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::
 void checkFermionAction(const meta::Inputparameters * parameters)
 {
 	if( ! (  
-					( parameters->get_fermact() == meta::action::twistedmass) ||
-					( parameters->get_fermact() == meta::action::wilson)
+					( parameters->get_fermact() == common::action::twistedmass) ||
+					( parameters->get_fermact() == common::action::wilson)
 				)
 		)
 		throw std::logic_error("Chiral condensate not implemented for chosen fermion action.");
@@ -76,8 +76,8 @@ void checkFermionAction(const meta::Inputparameters * parameters)
 void checkChiralCondensateVersion(const meta::Inputparameters * parameters)
 {
 	if( ! (  
-					( parameters->get_pbp_version() == meta::Inputparameters::std) ||
-					( (parameters->get_fermact() == meta::action::twistedmass && parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) )
+					( parameters->get_pbp_version() == common::std) ||
+					( (parameters->get_fermact() == common::action::twistedmass && parameters->get_pbp_version() == common::tm_one_end_trick ) )
 				)
 		)
 		throw std::logic_error("No valid chiral condensate version has been selected.");
@@ -179,16 +179,16 @@ double TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::la
 	*/
 	double result;
 
-	if(parameters->get_fermact() == meta::action::twistedmass) {
+	if(parameters->get_fermact() == common::action::twistedmass) {
 		xi->gamma5();
 	}
 	hmc_complex tmp = scalar_product(*xi, *phi);
 
 	switch(parameters->get_fermact()) {
-		case  meta::action::wilson:
+		case  common::action::wilson:
 			result = tmp.re * norm_std();
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			result = (-1.) * tmp.im * norm_std();
 			break;
 		default:
@@ -210,7 +210,7 @@ void TwoFlavourChiralCondensate::openFileForWriting()
 void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources)
 {
         double result = 0.;
-	if( parameters->get_pbp_version() == meta::Inputparameters::tm_one_end_trick ) 
+	if( parameters->get_pbp_version() == common::tm_one_end_trick )
 	{
 	  result = flavour_doublet_chiral_condensate_tm(inverted);
 	} 

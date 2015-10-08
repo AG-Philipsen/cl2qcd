@@ -31,7 +31,7 @@ using namespace std;
 
 void hardware::code::Correlator_staggered::fill_kernels()
 {
-	if(get_parameters().get_fermact() != meta::action::rooted_stagg){
+	if(get_parameters().get_fermact() != common::action::rooted_stagg){
 		throw Print_Error_Message("Correlator_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
 	}
 	
@@ -46,13 +46,13 @@ void hardware::code::Correlator_staggered::fill_kernels()
 
 	logger.debug() << "Creating Correlator_staggered kernels...";
 
-	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
+	if(get_parameters().get_sourcetype() == common::point)
 		throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
+	else if (get_parameters().get_sourcetype() == common::volume)
 		create_volume_source_stagg_eoprec = createKernel("create_volume_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_volume_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
+	else if (get_parameters().get_sourcetype() == common::timeslice)
 		throw Print_Error_Message("Timeslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::zslice)
+	else if (get_parameters().get_sourcetype() == common::zslice)
 		throw Print_Error_Message("Zslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
 
 }

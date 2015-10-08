@@ -43,6 +43,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	}
 }
 
+#include "../../meta/type_ops.hpp"
 BOOST_AUTO_TEST_CASE(import_export)
 {
 	using namespace hardware;
@@ -68,9 +69,6 @@ for(Device * device : system.get_devices()) {
 		delete[] buf2;
 	}
 }
-
-
-#include "../../meta/type_ops.hpp"
 
 
 BOOST_AUTO_TEST_CASE(copy)

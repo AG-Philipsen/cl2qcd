@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	System system(meta::Inputparameters(0, 0));
 for(Device * device : system.get_devices()) {
 
-		SU3 dummy(meta::get_vol4d(system.get_inputparameters()) * NDIM, device);
+		SU3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware::buffers;
 
 	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) * NDIM;
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
 for(Device * device : system.get_devices()) {
 		Matrixsu3* buf(new Matrixsu3[elems]);
 		Matrixsu3* buf2(new Matrixsu3[elems]);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware::buffers;
 
 	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) * NDIM;
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
 for(Device * device : system.get_devices()) {
 		if(!check_SU3_for_SOA(device)) {
 			Matrixsu3* buf(new Matrixsu3[elems]);

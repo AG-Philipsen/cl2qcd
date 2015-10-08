@@ -19,23 +19,13 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "staggeredfield_eo.hpp"
 #include <cassert>
 #include "../../hardware/code/spinors_staggered.hpp"
-//#include "../../hardware/code/fermions_staggered.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
-//For hardware::code::get_eoprec_spinorfieldsize()
-#include "../../hardware/code/spinors.hpp"
+#include "../../hardware/code/spinors.hpp" //For hardware::code::get_eoprec_spinorfieldsize()
 
 static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const hardware::System& system);
-
-/*To be added...
-static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
-static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params);
-static void extract_boundary(char* host, const hardware::buffers::Spinor * buffer, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
-static void send_halo(const hardware::buffers::Spinor * buffer, const char* host, size_t in_lane_offset, size_t HALO_CHUNK_ELEMS);
-*/
 
 physics::lattices::Staggeredfield_eo::Staggeredfield_eo(const hardware::System& system)
 	: system(system), buffers(allocate_buffers(system))
@@ -602,60 +592,18 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Staggeredfield_eo::update_halo() const
 {
-	//So far, this is simple a throw
 	throw Print_Error_Message("Halo update is not implemented, yet.", __FILE__, __LINE__);
-	/*
-	if(buffers.size() > 1) { // for a single device this will be a noop
-		// currently either all or none of the buffers must be SOA
-		if(buffers[0]->is_soa()) {
-			update_halo_soa(buffers, system.get_inputparameters());
-		} else {
-			update_halo_aos(buffers, system.get_inputparameters());
-		}
-	}
-	*/
 }
 
-//This code is useful for using the template pseudo_randomize defined in lattices/util.hpp
 void physics::lattices::Staggeredfield_eo::import(const su3vec * const host) const
 {
 	logger.trace() << "importing staggeredfield_eo";
 	if(buffers.size() == 1) {
 		buffers[0]->load(host);
-	} else {
+	}
+	else
+	{
 		throw Print_Error_Message("Import not implemented for multi device staggeredfield_eo!", __FILE__, __LINE__);
-		/*
-		auto params = system.get_inputparameters();
-		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->get_local_lattice_size();
-		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-		auto const grid_size = _device->get_grid_size();
-		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
-			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
-		}
-		for(auto const buffer: buffers) {
-			auto device = buffer->get_device();
-
-			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
-			logger.debug() << offset;
-			const size_t local_volume = get_vol4d(local_size);
-			buffer->load(&host[get_global_pos(offset, params)], local_volume);
-
-			const size_t halo_volume = get_vol4d(halo_size);
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
-			logger.debug() << halo_offset;
-			logger.trace() << get_global_pos(halo_offset, params);
-			logger.trace() << halo_volume;
-			logger.trace() << get_elements();
-			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
-			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume);
-
-			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
-			logger.debug() << halo_offset;
-			assert(get_global_pos(halo_offset, params) + halo_volume <= get_elements());
-			buffer->load(&host[get_global_pos(halo_offset, params)], halo_volume, local_volume + halo_volume);
-		}
-		*/
 	}
 	logger.trace() << "import complete";
 }
@@ -665,66 +613,3 @@ unsigned physics::lattices::Staggeredfield_eo::get_elements() const noexcept
 	return hardware::code::get_spinorfieldsize(system.get_inputparameters());
 }
 
-
-
-//To be added (so far only single GPU and only EO preconditioning)...
-#if 0
-
-void physics::lattices::convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in)
-{
-	auto even_bufs = even->get_buffers();
-	auto odd_bufs = odd->get_buffers();
-	auto in_bufs = in.get_buffers();
-	size_t num_bufs = in_bufs.size();
-
-	if(even_bufs.size() != num_bufs || odd_bufs.size() != num_bufs) {
-		throw std::invalid_argument("Output buffers do not use the same devices as input buffers");
-	}
-
-	for(size_t i = 0; i < num_bufs; ++i) {
-		auto spinor_code = in_bufs[i]->get_device()->get_spinor_code();
-		spinor_code->convert_to_eoprec_device(even_bufs[i], odd_bufs[i], in_bufs[i]);
-	}
-}
-
-void physics::lattices::convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd)
-{
-	auto merged_bufs = merged->get_buffers();
-	auto even_bufs = even.get_buffers();
-	auto odd_bufs = odd.get_buffers();
-	size_t num_bufs = merged_bufs.size();
-
-	if(even_bufs.size() != num_bufs || odd_bufs.size() != num_bufs) {
-		throw std::invalid_argument("Output buffers do not use the same devices as input buffers");
-	}
-
-	for(size_t i = 0; i < num_bufs; ++i) {
-		auto spinor_code = merged_bufs[i]->get_device()->get_spinor_code();
-		spinor_code->convert_from_eoprec_device(even_bufs[i], odd_bufs[i], merged_bufs[i]);
-	}
-}
-
-static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
-{
-	// check all buffers are non-soa
-	for(auto const buffer: buffers) {
-		if(buffer->is_soa()) {
-			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
-		}
-	}
-
-	hardware::buffers::update_halo<spinor>(buffers, params, .5 /* only even or odd sites */ );
-}
-
-static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const meta::Inputparameters& params)
-{
-	// check all buffers are non-soa
-	for(auto const buffer: buffers) {
-		if(!buffer->is_soa()) {
-			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
-		}
-	}
-
-	hardware::buffers::update_halo_soa<spinor>(buffers, params, .5 /* only even or odd sites */ );
-}
-#endif

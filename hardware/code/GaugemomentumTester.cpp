@@ -24,7 +24,7 @@ GaugemomentumTester::GaugemomentumTester(std::string kernelName, std::string inp
 {
   numberOfAlgebraElements = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
   numberOfGaugemomentumElements = meta::get_vol4d(*parameters) * NDIM;
-  useRandom = (parameters->get_solver() == meta::Inputparameters::cg)  ? false : true;
+  useRandom = (parameters->get_solver() == common::cg)  ? false : true;
   
   code = device->getGaugemomentumCode();
   doubleBuffer = new hardware::buffers::Plain<double> (1, device);

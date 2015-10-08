@@ -45,11 +45,11 @@ bool meta::ParametersSources::get_place_sources_on_host() const noexcept
 	return place_sources_on_host;
 }
 
-meta::ParametersSources::sourcetypes meta::ParametersSources::get_sourcetype() const noexcept
+common::sourcetypes meta::ParametersSources::get_sourcetype() const noexcept
 {
 	return sourcetype;
 }
-meta::ParametersSources::sourcecontents meta::ParametersSources::get_sourcecontent() const noexcept
+common::sourcecontents meta::ParametersSources::get_sourcecontent() const noexcept
 {
 	return sourcecontent;
 }

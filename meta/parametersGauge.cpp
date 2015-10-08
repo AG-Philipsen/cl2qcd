@@ -33,7 +33,7 @@ int meta::ParametersGauge::get_rho_iter() const noexcept
 {
 	return rho_iter;
 }
-meta::action meta::ParametersGauge::get_gaugeact() const noexcept
+common::action meta::ParametersGauge::get_gaugeact() const noexcept
 {
 	return gaugeact;
 }

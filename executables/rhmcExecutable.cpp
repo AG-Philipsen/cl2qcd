@@ -176,8 +176,8 @@ void rhmcExecutable::printRhmcObservablesToScreen()
 
 void rhmcExecutable::checkRhmcParameters(const meta::Inputparameters& p)
 {
-    if(p.get_fermact() != meta::action::rooted_stagg)
-        throw Invalid_Parameters("Fermion action not suitable for RHMC!", meta::action::rooted_stagg, p.get_fermact());
+    if(p.get_fermact() != common::action::rooted_stagg)
+        throw Invalid_Parameters("Fermion action not suitable for RHMC!", common::action::rooted_stagg, p.get_fermact());
     if(!p.get_use_eo())
         throw Invalid_Parameters("RHMC available only WITH eo-prec!", "use_eo=1", p.get_use_eo());
     if(p.get_use_mp())

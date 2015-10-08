@@ -199,7 +199,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_in2 = new spinor[NUM_ELEMENTS_SF];
 	//use the variable use_cg to switch between cold and random input sf
-	if(params->get_solver() == meta::Inputparameters::cg) {
+	if(params->get_solver() == common::cg) {
 	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 	}

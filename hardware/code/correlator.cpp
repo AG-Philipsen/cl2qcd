@@ -36,18 +36,18 @@ void hardware::code::Correlator::fill_kernels()
 
 	logger.debug() << "Creating Correlator kernels...";
 
-	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
+	if(get_parameters().get_sourcetype() == common::point)
 		create_point_source = createKernel("create_point_source") << basic_correlator_code << prng_code << "spinorfield_point_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
+	else if (get_parameters().get_sourcetype() == common::volume)
 		create_volume_source = createKernel("create_volume_source") << basic_correlator_code << prng_code << "spinorfield_volume_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
+	else if (get_parameters().get_sourcetype() == common::timeslice)
 		create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::zslice)
+	else if (get_parameters().get_sourcetype() == common::zslice)
 		create_zslice_source = createKernel("create_zslice_source") << basic_correlator_code << prng_code << "spinorfield_zslice_source.cl";
 
 	if(get_parameters().get_measure_correlators() ) {
 		//CP: If a pointsource is chosen, the correlators have a particular simple form.
-		if(get_parameters().get_sourcetype() == meta::Inputparameters::point) {
+		if(get_parameters().get_sourcetype() == common::point) {
 			switch (get_parameters().get_corr_dir()) {
 				case 0 :
 					correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << "fermionobservables/correlator_ps_point.cl";

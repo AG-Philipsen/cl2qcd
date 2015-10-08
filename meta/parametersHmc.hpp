@@ -26,14 +26,13 @@
 namespace meta {
 class ParametersHmc {
 public:
-	enum integrator { leapfrog = 1, twomn };
 
 	double get_tau() const noexcept;
 	bool get_reversibility_check() const noexcept;
 	int get_integrationsteps(size_t timescale) const noexcept;
 	int get_hmcsteps() const noexcept;
 	int get_num_timescales() const noexcept;
-	integrator get_integrator(size_t timescale) const noexcept;
+	common::integrator get_integrator(size_t timescale) const noexcept;
 	double get_lambda(size_t timescale) const noexcept;
 	bool get_use_gauge_only() const noexcept;
 	bool get_use_mp() const noexcept;
@@ -61,9 +60,9 @@ protected:
 	ParametersHmc & operator=(ParametersHmc const&) = delete;
 	po::options_description & getOptions();
 
-	integrator integrator0;
-	integrator integrator1;
-	integrator integrator2;
+	common::integrator integrator0;
+	common::integrator integrator1;
+	common::integrator integrator2;
 };
 
 }

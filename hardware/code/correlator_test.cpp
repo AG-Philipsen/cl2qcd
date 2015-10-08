@@ -309,7 +309,7 @@ void test_src_volume(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	if(params->get_sourcecontent() == meta::Inputparameters::one){
+	if(params->get_sourcecontent() == common::one){
 	  testFloatAgainstInputparameters(cpu_res, *params);
 	} else{
 	  testFloatSizeAgainstInputparameters(cpu_res, *params);
@@ -378,7 +378,7 @@ void test_src_zslice(std::string inputfile)
 	  logger.info() << cpu_res;
 	}
 
-	if(params->get_sourcecontent() == meta::Inputparameters::one){
+	if(params->get_sourcecontent() == common::one){
 	  testFloatAgainstInputparameters(cpu_res, *params);
 	} else{
 	  testFloatSizeAgainstInputparameters(cpu_res, *params);
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		  logger.info() << cpu_res;
 		}
 
-		if(params->get_sourcecontent() == meta::Inputparameters::one){
+		if(params->get_sourcecontent() == common::one){
 		  testFloatAgainstInputparameters(cpu_res, *params);
 		} else{
 		  testFloatSizeAgainstInputparameters(cpu_res, *params);
@@ -666,7 +666,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 			logger.info() << cpu_res;
 		}
 
-		if(params->get_sourcecontent() == meta::Inputparameters::one){
+		if(params->get_sourcecontent() == common::one){
 			testFloatAgainstInputparameters(cpu_res, *params);
 		} else{
 			testFloatSizeAgainstInputparameters(cpu_res, *params);

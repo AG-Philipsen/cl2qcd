@@ -39,9 +39,9 @@ size_t meta::get_vol4d(const Inputparameters& params)
 bool meta::get_use_rectangles(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
-		case meta::action::tlsym:
-		case meta::action::iwasaki:
-		case meta::action::dbw2:
+		case common::action::tlsym:
+		case common::action::iwasaki:
+		case common::action::dbw2:
 			return true;
 		default:
 			return false;
@@ -118,9 +118,9 @@ size_t meta::get_su3algebrasize() noexcept {
 double meta::get_c0(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
-		case meta::action::tlsym:
-		case meta::action::iwasaki:
-		case meta::action::dbw2:
+		case common::action::tlsym:
+		case common::action::iwasaki:
+		case common::action::dbw2:
 			return 1. - 8. * get_c1(params);
 		default:
 			return 1.;
@@ -129,11 +129,11 @@ double meta::get_c0(const Inputparameters& params)
 double meta::get_c1(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
-		case meta::action::tlsym:
+		case common::action::tlsym:
 			return -0.083333333;
-		case meta::action::iwasaki:
+		case common::action::iwasaki:
 			return -0.331;
-		case meta::action::dbw2:
+		case common::action::dbw2:
 			return -1.4069;
 		default:
 			return 0.;

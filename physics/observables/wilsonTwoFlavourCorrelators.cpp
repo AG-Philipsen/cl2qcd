@@ -145,7 +145,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 	}
 
 	// the ps_z kernel needs to have the source windowed...
-	if(num_bufs > 1 && params.get_sourcetype() != meta::Inputparameters::point && type == "ps" && params.get_corr_dir() == 3) {
+	if(num_bufs > 1 && params.get_sourcetype() != common::point && type == "ps" && params.get_corr_dir() == 3) {
 		physics::lattices::Spinorfield window(system);
 		auto window_bufs = window.get_buffers();
 		for(size_t i_window = 0; i_window < num_bufs; ++i_window) {
@@ -158,7 +158,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 	} else {
 		for(size_t i = 0; i < num_bufs; ++i) {
 			auto code = results[i]->get_device()->getCorrelatorCode();
-			if(params.get_sourcetype() == meta::Inputparameters::point) {
+			if(params.get_sourcetype() == common::point) {
 				code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i]);
 			} else {
 				code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], source_bufs[i]);
@@ -205,7 +205,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 
 	for(size_t i = 0; i < num_bufs; ++i) {
 		auto code = results[i]->get_device()->getCorrelatorCode();
-		if(params.get_sourcetype() == meta::Inputparameters::point) {
+		if(params.get_sourcetype() == common::point) {
 			code->correlator(code->get_correlator_kernel(type), results[i], corr1_bufs[i], corr2_bufs[i], corr3_bufs[i], corr4_bufs[i]);
 		} else {
 			code->correlator(code->get_correlator_kernel(type), results[i], corr1_bufs[i], source1_bufs[i], corr2_bufs[i], source2_bufs[i], corr3_bufs[i], source3_bufs[i], corr4_bufs[i], source4_bufs[i]);

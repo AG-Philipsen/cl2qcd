@@ -26,8 +26,8 @@
 namespace meta {
 class ParametersFermion {
 public:
-	action get_fermact() const noexcept;
-	action get_fermact_mp() const noexcept;
+	common::action get_fermact() const noexcept;
+	common::action get_fermact_mp() const noexcept;
 	double get_kappa() const noexcept;
 	double get_mass() const noexcept;
 	double get_mu() const noexcept;
@@ -72,8 +72,8 @@ protected:
 	ParametersFermion & operator=(ParametersFermion const&) = delete;
 	po::options_description & getOptions();
 
-	action fermact;
-	action fermact_mp;
+	common::action fermact;
+	common::action fermact_mp;
 };
 
 }

@@ -135,20 +135,20 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 		try_swap_in(source);
 
 		switch(params.get_sourcetype()) {
-			case meta::Inputparameters::point:
+			case common::point:
 				logger.debug() << "start creating point-source...";
 				//CP: k has to be between 0..12 (corresponds to spin-color index)
 				set_point_source(source, (k % 12), params);
 				break;
-			case meta::Inputparameters::sourcetypes::volume:
+			case common::sourcetypes::volume:
 				logger.debug() << "start creating volume-source...";
 				set_volume_source(source, prng);
 				break;
-			case meta::Inputparameters::sourcetypes::timeslice:
+			case common::sourcetypes::timeslice:
 				logger.debug() << "start creating timeslice-source...";
 				set_timeslice_source(source, prng, params.get_source_t());
 				break;
-			case meta::Inputparameters::sourcetypes::zslice:
+			case common::sourcetypes::zslice:
 				logger.debug() << "start creating zslice-source...";
 				set_zslice_source(source, prng, params.get_source_z());
 				break;

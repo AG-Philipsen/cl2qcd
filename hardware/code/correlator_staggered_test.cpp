@@ -47,7 +47,7 @@ class CorrelatorsStaggeredTester : public SpinorStaggeredTester{
 	const hardware::code::Correlator_staggered * code;
 	const hardware::buffers::SU3vec *outBuffer;
 	su3vec * outHost;
-	meta::Inputparameters::sourcecontents sourcecontent;
+	common::sourcecontents sourcecontent;
 	
 	std::string getSpecificInputfile(std::string inputfileIn)
 	{
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 			}
 			logger.info() << "result: mean";
 			//sum is the sum of iterations*spinorfieldEvenOddElements*6 real numbers
-			if(sourcecontent == meta::Inputparameters::z2){
+			if(sourcecontent == common::z2){
 				//because immaginary part is not randomly drawn, it is 0.0 always
 				sum = sum/iterations/spinorfieldEvenOddElements/3;
 			}else{
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 					var += calc_var_sf(&outHost[i*spinorfieldEvenOddElements], spinorfieldEvenOddElements, sum);
 				}
 				//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
-				if(sourcecontent == meta::Inputparameters::z2){
+				if(sourcecontent == common::z2){
 					//because immaginary part is not randomly drawn, it is 0.0 always
 					var=var/iterations/spinorfieldEvenOddElements/3;
 				}else{
@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 				logger.info() << sqrt(var);
 			}
 			
-			if(sourcecontent == meta::Inputparameters::one ||
-			  (sourcecontent == meta::Inputparameters::z2 && calcVariance)){
+			if(sourcecontent == common::one ||
+			  (sourcecontent == common::z2 && calcVariance)){
 				typeOfComparison=1;
 			}else{
 				typeOfComparison=2;

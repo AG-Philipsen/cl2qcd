@@ -52,7 +52,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	solution.cold();
 	int iterations = 0;
 
-	if(params.get_solver() == meta::Inputparameters::cg) {
+	if(params.get_solver() == common::cg) {
 		const QplusQminus fm(kappa, mubar, system);
 		iterations  = cg(&solution, fm, gf, phi, system, params.get_solver_prec());
 		const Qminus qminus(kappa, mubar, system);
@@ -87,7 +87,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	logger.debug() << "\t\t\tstart solver";
 
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-	if(params.get_solver() == meta::Inputparameters::cg) {
+	if(params.get_solver() == common::cg) {
 		solution.cold();
 
 		const QplusQminus_eo fm(kappa, mubar, system);
@@ -133,7 +133,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	logger.debug() << "\t\t\tstart solver";
 	int iterations = 0;
 
-	if(params.get_solver() == meta::Inputparameters::cg) {
+	if(params.get_solver() == common::cg) {
 		const QplusQminus fm(kappa, mubar, system);
 		iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
 		const Qminus qminus(kappa, mubar, system);
@@ -176,7 +176,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 
 	logger.debug() << "\t\t\tstart solver";
 
-	if(params.get_solver() == meta::Inputparameters::cg) {
+	if(params.get_solver() == common::cg) {
 		solution.cold();
 		const QplusQminus_eo fm(kappa, mubar, system);
 		iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec());
@@ -287,7 +287,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	//Gaugemomentum-Part
 	hmc_float p2 = squarenorm(p);
 	hmc_float new_p2 = squarenorm(new_p);
-	if(params.get_fermact() != meta::action::rooted_stagg){
+	if(params.get_fermact() != common::action::rooted_stagg){
 		//the energy is half the squarenorm
 		deltaH += 0.5 * (p2 - new_p2);
 	}else{
@@ -309,7 +309,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 	//Fermion-Part:
 	if(! params.get_use_gauge_only() ) {
 		if( params.get_use_mp() ) {
-			if(params.get_fermact() == meta::action::rooted_stagg) {
+			if(params.get_fermact() == common::action::rooted_stagg) {
 				throw Invalid_Parameters("Mass preconditioning not implemented for staggered fermions!", "NOT rooted_stagg", params.get_fermact());
 			}
 			//in this case one has contributions from det(m_light/m_heavy) and det(m_heavy)
@@ -420,7 +420,7 @@ static void print_info_debug(const meta::Inputparameters& params, std::string me
 
 	if(info == false){
 	  if(logger.beDebug()){
-	    if(params.get_fermact() != meta::action::rooted_stagg){
+	    if(params.get_fermact() != common::action::rooted_stagg){
 	      if(value == value)
 		logger.debug() << "\tHMC " << metropolis_part << std::setprecision(10) << value;
 	      else
@@ -433,7 +433,7 @@ static void print_info_debug(const meta::Inputparameters& params, std::string me
 	    }
 	  }
 	}else{
-	  if(params.get_fermact() != meta::action::rooted_stagg){
+	  if(params.get_fermact() != common::action::rooted_stagg){
 	    if(value == value)
 	      logger.info() << "\tHMC " << metropolis_part << std::setprecision(10) << value;
 	    else
