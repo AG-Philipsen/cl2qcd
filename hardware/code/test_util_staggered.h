@@ -50,7 +50,7 @@ class TestGaugefield_stagg {
  private:
   const hardware::System * const system;
   const physics::ParametersPrng_fromMetaInputparameters prngParameters;
-  const LatticeObjectParametersImplementation params;
+  const physics::lattices::LatticeObjectParametersImplementation params;
   physics::PRNG prng;
   physics::lattices::Gaugefield gf; //I changed this variable from const to not const to be able to save the conf to a lime file!     
 };

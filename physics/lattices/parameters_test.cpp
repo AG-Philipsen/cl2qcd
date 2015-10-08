@@ -33,7 +33,7 @@ std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 {
 	auto params = createDefaultMetaInputparameters();
-	LatticeObjectParametersImplementation test(&(*params));
+	physics::lattices::LatticeObjectParametersImplementation test(&(*params));
 
 	BOOST_CHECK_EQUAL(test.getNs(), 4);
 	BOOST_CHECK_EQUAL(test.getNt(), 8);
@@ -51,40 +51,44 @@ BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 	BOOST_CHECK_EQUAL(test.getSourcefileName(), "conf.00000");
 }
 
-BOOST_AUTO_TEST_CASE(testSpinorfieldParameters)
-{
-    auto params = createDefaultMetaInputparameters();
-    SpinorfieldParametersImplementation test(*params);
-
-    BOOST_CHECK_EQUAL(test.getNs(), 4);
-    BOOST_CHECK_EQUAL(test.getNt(), 8);
-}
-
 BOOST_AUTO_TEST_CASE(testGaugemomentaParameters)
 {
     auto params = createDefaultMetaInputparameters();
-    GaugemomentaParametersImplementation test(*params);
+    physics::lattices::GaugemomentaParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getNs(), 4);
     BOOST_CHECK_EQUAL(test.getNt(), 8);
+    BOOST_CHECK_EQUAL(test.getNumberOfElements(), 4*4*4*8*4);
+}
+
+BOOST_AUTO_TEST_CASE(testSpinorfieldParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    physics::lattices::SpinorfieldParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.getNs(), 4);
+    BOOST_CHECK_EQUAL(test.getNt(), 8);
+    BOOST_CHECK_EQUAL(test.getNumberOfElements(), 4*4*4*8);
 }
 
 BOOST_AUTO_TEST_CASE(testStaggeredfieldEoParameters)
 {
     auto params = createDefaultMetaInputparameters();
-    StaggaredfieldEoParametersImplementation test(*params);
+    physics::lattices::StaggaredfieldEoParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getNs(), 4);
     BOOST_CHECK_EQUAL(test.getNt(), 8);
+    BOOST_CHECK_EQUAL(test.getNumberOfElements(), 4*4*4*8);
 }
 
 BOOST_AUTO_TEST_CASE(testRootedStaggeredfieldEoParameters)
 {
     auto params = createDefaultMetaInputparameters();
-    RootedStaggaredfieldEoParametersImplementation test(*params);
+    physics::lattices::RootedStaggaredfieldEoParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getNs(), 4);
     BOOST_CHECK_EQUAL(test.getNt(), 8);
     BOOST_CHECK_EQUAL(test.getMetropolisRationalApproximationOrder(), 15);
     BOOST_CHECK_EQUAL(test.getMolecularDynamicsRationalApproximationOrder(), 8);
+    BOOST_CHECK_EQUAL(test.getNumberOfElements(), 4*4*4*8);
 }

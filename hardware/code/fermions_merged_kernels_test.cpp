@@ -49,7 +49,7 @@ public:
 
 private:
 	const hardware::System * const system;
-	const LatticeObjectParametersImplementation params;
+	const physics::lattices::LatticeObjectParametersImplementation params;
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
 	physics::PRNG prng;
 	const physics::lattices::Gaugefield gf;

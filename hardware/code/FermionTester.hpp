@@ -10,14 +10,14 @@ public:
 	SpinorTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
 	{
 			code = device->get_fermion_code();
-			LatticeObjectParametersImplementation params(&system->get_inputparameters());
+			physics::lattices::LatticeObjectParametersImplementation params(&system->get_inputparameters());
 			gaugefield = new physics::lattices::Gaugefield(*system, &params, *prng);
 	}
 	FermionTester(std::string kernelName, std::vector<std::string> parameterStrings, int numberOfValues = 1):
 	SpinorTester(kernelName, parameterStrings, numberOfValues)
 	{
 			code = device->get_fermion_code();
-			LatticeObjectParametersImplementation params(&system->get_inputparameters());
+			physics::lattices::LatticeObjectParametersImplementation params(&system->get_inputparameters());
 			gaugefield = new physics::lattices::Gaugefield(*system, &params, *prng);
 	}
 	~FermionTester()

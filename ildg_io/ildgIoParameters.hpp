@@ -42,7 +42,7 @@ public:
 class Inputparameters : public IldgIoParametersInterface
 {
 public:
-	Inputparameters (const LatticeObjectParametersInterface * parametersIn) : parameters(parametersIn) {} ;
+	Inputparameters (const physics::lattices::LatticeObjectParametersInterface * parametersIn) : parameters(parametersIn) {} ;
 	virtual bool ignoreChecksumErrors() const
 	{
 		return parameters->ignoreChecksumErrorsInIO();
@@ -76,7 +76,7 @@ public:
 		return parameters->getBeta();
 	}
 private:
-	const LatticeObjectParametersInterface * parameters;
+	const physics::lattices::LatticeObjectParametersInterface * parameters;
 };
 
 //TODO: this abstract class can be removed, the interface above is sufficient

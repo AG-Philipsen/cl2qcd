@@ -37,7 +37,7 @@ public:
 		{
 			gaugefieldCode = device->get_gaugefield_code();
 			molecularDynamicsCode = device->get_molecular_dynamics_code();
-			params = new LatticeObjectParametersImplementation( &system->get_inputparameters());
+			params = new physics::lattices::LatticeObjectParametersImplementation( &system->get_inputparameters());
 			prng = std::unique_ptr<physics::PRNG>(new physics::PRNG(*system, &prngParameters));
 			gaugefield = std::unique_ptr<physics::lattices::Gaugefield>(new physics::lattices::Gaugefield(*system, params, *prng));
 		}
@@ -63,7 +63,7 @@ protected:
 	
 	std::unique_ptr<physics::PRNG> prng{nullptr};
 	std::unique_ptr<physics::lattices::Gaugefield> gaugefield{nullptr};
-	LatticeObjectParametersImplementation * params;
+	physics::lattices::LatticeObjectParametersImplementation * params;
 	physics::ParametersPrng_fromMetaInputparameters prngParameters;
 };
 
