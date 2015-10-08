@@ -22,7 +22,6 @@
 #include "ildgIo.hpp"
 #include "ildgIoParameters.hpp"
 #include "ildgIo_gaugefield.hpp"
-#include "../physics/lattices/parameters.hpp"
 
 Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const physics::lattices::LatticeObjectParametersInterface * parameters, int & trajectoryNumberAtInit, double & plaq)
 {

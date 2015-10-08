@@ -22,7 +22,7 @@
 #define BOOST_TEST_MODULE physics::lattice::Parameters
 #include <boost/test/unit_test.hpp>
 
-#include "parameters.hpp"
+#include "parametersInterface.hpp"
 
 std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {

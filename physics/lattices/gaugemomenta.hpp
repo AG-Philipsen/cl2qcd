@@ -27,7 +27,7 @@
 #include "../../hardware/buffers/gaugemomentum.hpp"
 #include "../prng.hpp"
 #include "scalar.hpp"
-#include "parameters.hpp"
+#include "parametersInterface.hpp"
 
 namespace physics {
 namespace lattices {

@@ -29,7 +29,7 @@
 #include "../prng.hpp"
 #include "scalar.hpp"
 #include "../../common_header_files/types_fermions.h"
-#include "parameters.hpp"
+#include "parametersInterface.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
