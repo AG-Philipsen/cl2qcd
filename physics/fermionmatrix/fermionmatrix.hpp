@@ -24,12 +24,12 @@
 #define _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_
 
 #include "../../hardware/code/fermions.hpp"
-
 #include "../lattices/spinorfield.hpp"
 #include "../lattices/spinorfield_eo.hpp"
 #include "../lattices/gaugefield.hpp"
-
 #include "../../hardware/device.hpp"
+#include "fermionmatrixInterfaces.hpp"
+
 /**
  * this is the definition of the class "Fermionmatrix"
  */
@@ -66,9 +66,12 @@ public:
 	 * Get the net read-write-size used by this function.
 	 */
 	virtual cl_ulong get_read_write_size() const = 0;
+	virtual ~Fermionmatrix_basic() { /*Remove this delete*/ delete fermionmatrixParametersInterface; };
 
 protected:
-	Fermionmatrix_basic(const hardware::System& system, bool herm, hmc_float _kappa = ARG_DEF, hmc_float _mubar = ARG_DEF) : _is_hermitian(herm), kappa(_kappa), mubar(_mubar), system(system) { };
+	Fermionmatrix_basic(const hardware::System& system, bool herm, hmc_float _kappa = ARG_DEF, hmc_float _mubar = ARG_DEF)
+        : fermionmatrixParametersInterface(new FermionmatrixParametersImplementation(system.get_inputparameters())),
+          _is_hermitian(herm), kappa(_kappa), mubar(_mubar), system(system) {};
 
 	hmc_float get_kappa() const noexcept;
 	hmc_float get_mubar() const noexcept;
@@ -77,6 +80,8 @@ protected:
 	 * Get the system to operate on.
 	 */
 	const hardware::System& get_system() const noexcept;
+	//TODO: Change the following pointer to a reference
+	const FermionmatrixParametersInterface* fermionmatrixParametersInterface;
 
 private:
 	/**
@@ -101,6 +106,7 @@ public:
 	 * Invoke the matrix function.
 	 */
 	virtual void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const = 0;
+	virtual ~Fermionmatrix() {};
 
 protected:
 	Fermionmatrix(bool herm, hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_basic(system, herm, _kappa, _mubar) { };
@@ -115,6 +121,7 @@ public:
 	 * Invoke the matrix function.
 	 */
 	virtual void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const = 0;
+	virtual ~Fermionmatrix_eo() {};
 
 protected:
 	Fermionmatrix_eo(bool herm, hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_basic(system, herm, _kappa, _mubar) { };
