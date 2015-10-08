@@ -19,12 +19,12 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE physics::lattice::Parameters
+#define BOOST_TEST_MODULE physics::lattice::parametersInterface
 #include <boost/test/unit_test.hpp>
 
 #include "parametersInterface.hpp"
 
-std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
+static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {
 	const char * _params[] = {"foo"};
 	return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params) );
