@@ -215,7 +215,7 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemome
 
 unsigned physics::lattices::Gaugemomenta::get_elements() const noexcept
 {
-	return meta::get_vol4d(gaugemomentaParametersInterface->getNt(), gaugemomentaParametersInterface->getNs()) * NDIM;
+    return gaugemomentaParametersInterface->getNumberOfElements();
 }
 
 void physics::lattices::Gaugemomenta::import(const ae * const host) const

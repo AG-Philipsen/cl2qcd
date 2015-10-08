@@ -618,5 +618,5 @@ void physics::lattices::Staggeredfield_eo::import(const su3vec * const host) con
 
 unsigned physics::lattices::Staggeredfield_eo::get_elements() const noexcept
 {
-	return meta::get_vol4d(staggaredfieldEoParametersInterface->getNt(), staggaredfieldEoParametersInterface->getNs());
+	return staggaredfieldEoParametersInterface->getNumberOfElements();
 }
