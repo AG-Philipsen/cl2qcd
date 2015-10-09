@@ -74,6 +74,7 @@ target_link_libraries(kernelTestUtilities
 	hardware
 )
 
+add_unit_test_withLibraries(hardware::code::Parameters openClKernelParameters_test meta)
 add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities)
 
 add_executable(hardware_code_gaugefield_test gaugefield_test.cpp)
