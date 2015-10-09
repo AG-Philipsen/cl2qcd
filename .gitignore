@@ -27,3 +27,4 @@ README.html
 *.project
 *.settings/
 
+/Debug/
