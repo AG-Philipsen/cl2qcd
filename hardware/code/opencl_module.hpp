@@ -24,6 +24,7 @@
 #include "../../common_header_files/types.h"
 
 #include "../../meta/inputparameters.hpp"
+#include "openClKernelParameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/util.hpp"
@@ -91,6 +92,7 @@ protected:
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device);
+	~Opencl_Module();
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -151,6 +153,7 @@ private:
 	 * The input parameters this modules is parametrized for.
 	 */
 	const meta::Inputparameters& parameters;
+	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 
 	/**
 	 * The device used by this module

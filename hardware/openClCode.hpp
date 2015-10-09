@@ -76,7 +76,8 @@ namespace hardware
 		}
 		virtual std::unique_ptr<const hardware::code::Gaugefield> getCode_gaugefield(hardware::Device * deviceIn) const override
 		{
-			return std::unique_ptr<const hardware::code::Gaugefield>( new hardware::code::Gaugefield{parameters, deviceIn} ) ;
+			hardware::code::OpenClKernelParametersImplementation someName( parameters );
+			return std::unique_ptr<const hardware::code::Gaugefield>( new hardware::code::Gaugefield{parameters, someName, deviceIn} ) ;
 		}
 		virtual std::unique_ptr<const hardware::code::Prng> getCode_PRNG(hardware::Device * deviceIn) const override
 		{
