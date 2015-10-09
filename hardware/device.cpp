@@ -31,7 +31,7 @@ static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_
 //todo: grid_size should not be a member of this class, but of system
 hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn)
 	: DeviceInfo(device_id),
-	openClCodeBuilder( &builderIn ), hardwareParameters(&parametersIn), 
+	openClCodeBuilder( &builderIn ), hardwareParameters(&parametersIn),
 	  context(context),
 	  profiling_data(),
 	  gaugefield_code(nullptr),
@@ -80,10 +80,6 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 
 hardware::Device::~Device()
 {
-	if (hardwareParameters)
-	{
-		delete hardwareParameters;
-	}
 	if(buffer_code) {
 		delete buffer_code;
 	}
