@@ -52,6 +52,7 @@ namespace hardware {
 
 	class Device;
 	class Transfer;
+	class OpenClCode;
 
 	class System {
 
@@ -96,6 +97,7 @@ namespace hardware {
 		void initOpenCLContext();
 		void initOpenCLDevices();
 		const hardware::HardwareParametersInterface * hardwareParameters;
+		const hardware::OpenClCode * kernelBuilder;
 	};
 
 	/**

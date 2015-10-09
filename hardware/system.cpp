@@ -35,10 +35,10 @@
 #include <stdexcept>
 #include "device.hpp"
 #include "transfer/transfer.hpp"
+#include "openClCode.hpp"
 
 //todo: in the end, move this to system.hpp replacing meta/inputparameters.hpp
 #include "hardwareParameters.hpp"
-#include "openClCode.hpp"
 
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);
@@ -46,9 +46,10 @@ static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
 hardware::System::System(const meta::Inputparameters& params)
-	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr)
+	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelBuilder(nullptr)
 {
 	hardwareParameters = new hardware::HardwareParameters( &params );
+	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters{ params };
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
@@ -58,20 +59,29 @@ hardware::System::System(const meta::Inputparameters& params)
 void hardware::System::initOpenCLPlatforms()
 {
 	logger.debug() << "Init OpenCL platform(s)...";
+	/**
+	 * @todo: Implemented automatic handling in case of multiple platforms
+	 *   See also https://anteru.net/2012/11/03/2009/
+	 */
 	cl_uint numberOfAvailablePlatforms = 0;
-	cl_int err = clGetPlatformIDs(1, &platform, &numberOfAvailablePlatforms);
-	if(err)
-	{
-		throw OpenclException(err, "clGetPlatformIDs", __FILE__, __LINE__);
-	}
+	clGetPlatformIDs (0, nullptr, &numberOfAvailablePlatforms);
 	if (numberOfAvailablePlatforms > 1)
 	{
 		logger.warn() << "Found " << numberOfAvailablePlatforms << " platforms, take first one...";
+	}
+
+	std::vector<cl_platform_id> platformIds (numberOfAvailablePlatforms);
+	cl_int err = clGetPlatformIDs (numberOfAvailablePlatforms, platformIds.data (), nullptr);
+	if(err)
+	{
+		throw OpenclException(err, "clGetPlatformIDs", __FILE__, __LINE__);
 	}
 	else
 	{
 		logger.info() << "Found OpenCL platform";
 	}
+	platform = platformIds.at(0);
+
 	logger.debug() << "...done";
 }
 
@@ -140,7 +150,7 @@ void hardware::System::initOpenCLDevices()
 			device_infos.push_back(dev);
 		}
 		// for now, if a gpu was found then throw out cpus
-for(auto device: device_infos) {
+		for(auto device: device_infos) {
 			if(device.get_device_type() == CL_DEVICE_TYPE_GPU) {
 				device_infos = filter_cpus(device_infos);
 				break;
@@ -184,11 +194,15 @@ for(auto device: device_infos) {
 		}
 	}
 
+	if (device_infos.size() == 0)
+	{
+		throw std::logic_error( "Did not find any device! Abort!");
+	}
+
 	grid_size = calculate_grid_size(device_infos.size());
 	logger.info() << "Device grid layout: " << grid_size;
 
-	hardware::OpenClCode_fromMetaInputparameters openClCodeBuilder{ params };
-	devices = init_devices(device_infos, context, grid_size, *hardwareParameters, openClCodeBuilder);
+	devices = init_devices(device_infos, context, grid_size, *hardwareParameters, *kernelBuilder);
 
 	delete[] device_ids;
 
@@ -210,6 +224,10 @@ hardware::System::~System()
 	if (hardwareParameters)
 	{
 		delete hardwareParameters;
+	}
+	if (kernelBuilder)
+	{
+		delete kernelBuilder;
 	}
 }
 
