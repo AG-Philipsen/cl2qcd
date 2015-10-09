@@ -56,7 +56,8 @@ public:
 	virtual cl_ulong get_flops() const = 0;
 
 protected:
-	Fermionmatrix_stagg_basic(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : _is_hermitian(herm), mass((_mass == ARG_DEF) ? system.get_inputparameters().get_mass() : _mass), system(system) { };
+	Fermionmatrix_stagg_basic(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF)
+        : _is_hermitian(herm), mass((_mass == ARG_DEF) ? system.get_inputparameters().get_mass() : _mass), system(system) { };
 
 	/**
 	 * Get the mass of the fermion.
@@ -105,7 +106,7 @@ protected:
 /**
  * Actual fermion matrices (using even-odd)
  */
-class D_KS_eo : public Fermionmatrix_stagg_eo {
+class D_KS_eo final : public Fermionmatrix_stagg_eo {
 public:
 	D_KS_eo(const hardware::System& system, bool evenodd) : Fermionmatrix_stagg_eo(system, false), evenodd(evenodd) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
@@ -119,7 +120,7 @@ private:
 };
 
 
-class MdagM_eo : public Fermionmatrix_stagg_eo {
+class MdagM_eo final : public Fermionmatrix_stagg_eo {
 public:
 	MdagM_eo(const hardware::System& system, hmc_float _mass, bool ul=EVEN) : Fermionmatrix_stagg_eo(system, true, _mass), tmp(system), upper_left(ul) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
@@ -134,33 +135,6 @@ private:
 	bool upper_left;
 };
 
-
-#if 0
-//This is the Wilson code that could be needed in some simulations for staggered.
-//In such a case, uncomment and adapt...
-
- class Fermionmatrix : public Fermionmatrix_basic {
-public:
-	/**
-	 * Invoke the matrix function.
-	 */
-	virtual void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const = 0;
-
-protected:
-	Fermionmatrix(bool herm, hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_basic(system, herm, _kappa, _mubar) { };
-
-};
-
-/**
- * Actual fermion matrices (no even-odd)
- */
-class M : public Fermionmatrix {
-public:
-	M(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix(false, _kappa, _mubar, system) {  };
-	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const override;
-	cl_ulong get_flops() const override;
-};
-#endif
 
 
 }
