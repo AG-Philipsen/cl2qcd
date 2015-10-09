@@ -31,21 +31,22 @@ namespace physics{
     class Plaquettes
     {
     public:
-      double plaquette;
-      double temporalPlaquette;
-      double spatialPlaquette;
+      hmc_float plaquette;
+      hmc_float temporalPlaquette;
+      hmc_float spatialPlaquette;
       
-    Plaquettes(double plaquetteIn, double temporalPlaquetteIn, double spatialPlaquetteIn):
+    Plaquettes(hmc_float plaquetteIn, hmc_float temporalPlaquetteIn, hmc_float spatialPlaquetteIn):
       plaquette(plaquetteIn), temporalPlaquette(temporalPlaquetteIn), spatialPlaquette(spatialPlaquetteIn) {}
     };
     
     void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
-    double measurePlaquette(const physics::lattices::Gaugefield * gf);
-    double measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf);
-    double measureRectangles(const physics::lattices::Gaugefield * gf);
+    hmc_float measurePlaquette(const physics::lattices::Gaugefield * gf);
+    hmc_float measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf);
+    hmc_float measureRectangles(const physics::lattices::Gaugefield * gf);
     Plaquettes measureAllPlaquettes(const physics::lattices::Gaugefield * gf);
     hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gf);
   }
 }
 
 #endif
+
