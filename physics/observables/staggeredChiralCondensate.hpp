@@ -24,6 +24,7 @@
 #define _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_
 
 #include "../lattices/gaugefield.hpp"
+#include "observablesInterfaces.hpp"
 
 namespace physics {
   namespace observables {

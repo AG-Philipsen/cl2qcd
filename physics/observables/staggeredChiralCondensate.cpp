@@ -77,9 +77,9 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	
-	auto & params = system.get_inputparameters();
-	const int number_sources = params.get_num_sources();
-	const hmc_float mass = params.get_mass();
+	physics::observables::StaggeredChiralCondensateParametersImplementation parametersInterface{system.get_inputparameters()};
+	const int number_sources = parametersInterface.getNumberOfSources();
+	const hmc_float mass = parametersInterface.getMass();
 	//Result
 	hmc_complex pbp = {0.0, 0.0}; 
 	
@@ -105,7 +105,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  saxpby(&chi_o, mass, eta_e, -1.0, chi_o);
 	  //Here the CGM as standard CG is used
 	  std::vector<hmc_float> sigma(1, 0.0); //only one shift set to 0.0
-	  cg_m(chi_e, sigma, MdagM, gf, chi_o, system, params.get_solver_prec());
+	  cg_m(chi_e, sigma, MdagM, gf, chi_o, system, parametersInterface.getSolverPrecision());
 	  
 	  //Calculate chi_o = 1/m * (eta_o - Doe * chi_e)
 	  Doe(&chi_o, gf, *(chi_e[0]));
@@ -124,7 +124,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	
 	//Multiply by the overall factor, namely pbp = 1/VOL4D*N_flavour/4 * <Tr(M^{-1})>
 	//Here we also divide by number_sources that has not yet been done.
-	hmc_float factor = 1.0/meta::get_vol4d(params) * params.get_num_tastes() * 0.25 / number_sources;
+	hmc_float factor = 1.0/parametersInterface.get4dVolume() * parametersInterface.getNumberOfTastes() * 0.25 / number_sources;
 	pbp.re *= factor;
 	pbp.im *= factor;
 	
@@ -134,10 +134,15 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 
 void physics::observables::staggered::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration)
 {
+    physics::observables::StaggeredChiralCondensateParametersImplementation parametersInterface{gf.getSystem()->get_inputparameters()};
+    if( !parametersInterface.measurePbp() )
+    {
+        throw std::logic_error("Chiral condensate calculation disabled in parameter setting. Aborting...");
+    }
     std::ofstream outputToFile;
     std::string configurationName = gf.getName(iteration);
     //TODO: improve this!
-    std::string filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(gf.getSystem()->get_inputparameters(), configurationName);
+    std::string filenameForChiralCondensateData = parametersInterface.getPbpFilename(configurationName);
     logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
     outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
     if(!outputToFile.is_open()) {
@@ -146,7 +151,7 @@ void physics::observables::staggered::measureChiralCondensateAndWriteToFile(cons
     outputToFile << iteration << "\t";
     outputToFile.precision(15);
     outputToFile.setf( std::ios::scientific, std::ios::floatfield );
-    std::vector<hmc_complex> pbp(gf.getSystem()->get_inputparameters().get_pbp_measurements());
+    std::vector<hmc_complex> pbp(parametersInterface.getPbpNumberOfMeasurements());
     for(size_t i=0; i<pbp.size(); i++){
         pbp[i] = physics::observables::staggered::measureChiralCondensate(gf, *(gf.getPrng()), *(gf.getSystem()));
         outputToFile << pbp[i].re << "   ";
