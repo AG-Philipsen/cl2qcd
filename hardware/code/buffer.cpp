@@ -25,7 +25,7 @@
 #include <cassert>
 #include "../device.hpp"
 
-hardware::code::Buffer::Buffer(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Buffer::Buffer(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
 	: Opencl_Module(params, device)
 {
 	_copy_16_bytes = createKernel("copy_16_bytes") << "buffer.cl";

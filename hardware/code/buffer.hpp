@@ -87,7 +87,7 @@ public:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Buffer(const meta::Inputparameters& params, hardware::Device * device);
+	Buffer(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
 
 private:
 	cl_kernel _copy_16_bytes;
