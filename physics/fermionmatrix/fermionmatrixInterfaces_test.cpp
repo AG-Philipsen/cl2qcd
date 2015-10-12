@@ -35,6 +35,6 @@ BOOST_AUTO_TEST_CASE(testFermionmatrixParameters)
     auto params = createDefaultMetaInputparameters();
     physics::fermionmatrix::FermionmatrixParametersImplementation test(*params);
 
-    BOOST_CHECK_EQUAL(test.getFermionicActionType(), meta::action::wilson);
-    BOOST_CHECK_EQUAL(test.useMergedFermionicKernels(), false);
+    BOOST_CHECK_EQUAL(test.getFermionicActionType(), params->get_fermact());
+    BOOST_CHECK_EQUAL(test.useMergedFermionicKernels(), params->get_use_merge_kernels_fermion());
 }
