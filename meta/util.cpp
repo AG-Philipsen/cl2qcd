@@ -87,34 +87,6 @@ size_t meta::get_poly_norm(const Inputparameters& params)
 	return get_volspace(params);
 }
 
-//Flops calculation tools
-size_t meta::get_flop_complex_mult() noexcept {
-	return 6;
-}
-size_t meta::get_flop_su3_su3() noexcept {
-	return (get_flop_complex_mult() * NC + (NC - 1) * 2) * NC * NC;
-}
-size_t meta::get_flop_su3trace() noexcept {
-	return (NC - 1) * 2;
-}
-size_t meta::get_flop_su3_su3vec() noexcept {
-	//  1 entry: NC * complex mults and NC-1 complex adds
-	//  NC entries total
-	return (get_flop_complex_mult() * NC + (NC - 1) * 2) * NC;
-}
-size_t meta::get_flop_su3vec_su3vec() noexcept {
-	// NC * complex_mult + (NC -1) complex adds
-	return NC * get_flop_complex_mult() + (NC - 1) * 2;
-}
-size_t meta::get_flop_su3vec_direct_su3vec() noexcept {
-	// NC*NC complex_mult
-	return NC * NC * get_flop_complex_mult();
-}
-
-
-size_t meta::get_su3algebrasize() noexcept {
-	return NC * NC - 1;
-}
 double meta::get_c0(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
@@ -146,23 +118,6 @@ double meta::get_xi_0(const Inputparameters& params)
 	double eta = (1.002503 * aniso * aniso * aniso + .39100 * aniso * aniso + 1.47130 * aniso - 0.19231) /
 	             (aniso * aniso * aniso + 0.26287 * aniso * aniso + 1.59008 * aniso - 0.18224);
 	return aniso / (1. + (1. - 1. / aniso) * eta / 6. * (1 - 0.55055 * 2 * NC / beta) / (1 - 0.77810 * 2 * NC / beta) * 2 * NC / beta );
-}
-size_t meta::get_flop_spinor_spinor() noexcept {
-	//  NDIM * NC * complex_mult + ( NDIM * NC -1 ) complex adds
-	return NDIM * NC * get_flop_complex_mult() + (NDIM * NC - 1) * 2;
-}
-size_t meta::get_flop_spinor_sqnorm() noexcept {
-	// NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
-	// The 0.5 factor arises from the fact that the result is real and then there is no
-	// imaginary part to be calculated.
-	return NDIM * NC * get_flop_complex_mult() * 0.5 + (NC * NDIM - 1);
-}
-
-size_t meta::get_flop_su3vec_sqnorm() noexcept {
-	// NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
-	// The 0.5 factor arises from the fact that the result is real and then there is no
-	// imaginary part to be calculated.
-	return NC * get_flop_complex_mult() * 0.5 + (NC - 1);
 }
 
 std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept {
