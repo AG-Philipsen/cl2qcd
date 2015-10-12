@@ -26,7 +26,7 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
-#include "parametersInterface.hpp"
+#include "latticesInterfaces.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,

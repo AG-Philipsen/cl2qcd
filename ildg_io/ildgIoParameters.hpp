@@ -23,7 +23,7 @@
 #ifndef ILDGIOPARAMETERS_HPP_
 #define ILDGIOPARAMETERS_HPP_
 
-#include "../physics/lattices/parametersInterface.hpp"
+#include "../physics/lattices/latticesInterfaces.hpp"
 
 class IldgIoParametersInterface
 {

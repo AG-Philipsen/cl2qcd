@@ -25,7 +25,7 @@
 #include "../common_header_files/types.h"
 #include <string>
 #include <vector>
-#include "../physics/lattices/parametersInterface.hpp"
+#include "../physics/lattices/latticesInterfaces.hpp"
 
 namespace ildgIo {
 	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const physics::lattices::LatticeObjectParametersInterface *, int &, double &);

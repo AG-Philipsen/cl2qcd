@@ -28,7 +28,7 @@
 #include "scalar.hpp"
 #include "vector.hpp"
 #include "../../common_header_files/types_fermions.h"
-#include "parametersInterface.hpp"
+#include "latticesInterfaces.hpp"
 //This is to make the template pseudo_randomize friend of this class
 #include "util.hpp"
 
