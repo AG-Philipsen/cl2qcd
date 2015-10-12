@@ -92,6 +92,7 @@ protected:
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device);
+//	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& params, hardware::Device * device);
 	~Opencl_Module();
 
 	/**
@@ -147,13 +148,14 @@ protected:
 	 */
 	void print_profiling(const std::string& filename, const cl_kernel& kernel) const;
 
+	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
+
 private:
 
 	/**
 	 * The input parameters this modules is parametrized for.
 	 */
 	const meta::Inputparameters& parameters;
-	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 
 	/**
 	 * The device used by this module

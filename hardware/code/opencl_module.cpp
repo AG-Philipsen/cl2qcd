@@ -40,7 +40,7 @@ static void print_profile_header(const std::string& filename, int number);
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface * kernelParameters)
+static std::string collect_build_options(hardware::Device * device, const hardware::code::OpenClKernelParametersInterface * kernelParameters)
 {
 	using namespace hardware::buffers;
 	using namespace hardware::code;
@@ -60,9 +60,9 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D NTIME_MEM=" << mem_size.t;
 	options << " -D NTIME_OFFSET=" << device->getGridPos().t * local_size.t;
 
-	options << " -D VOLSPACE=" << meta::get_volspace(params);
+	options << " -D VOLSPACE=" << kernelParameters->getSpatialLatticeVolume();
 
-	options << " -D VOL4D_GLOBAL=" << meta::get_vol4d(params);
+	options << " -D VOL4D_GLOBAL=" << kernelParameters->getLatticeVolume();
 	options << " -D VOL4D_LOCAL=" << get_vol4d(local_size);
 	options << " -D VOL4D_MEM=" << get_vol4d(mem_size);
 
@@ -110,24 +110,24 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	if(device->get_prefers_blocked_loops()) {
 		options << " -D _USE_BLOCKED_LOOPS_";
 	}
-	if(meta::get_use_rectangles(params) == true) {
+	if(kernelParameters->getUseRectangles() == true) {
 		options <<  " -D _USE_RECT_" ;
-		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
+		options <<  " -D C0=" << kernelParameters->getC0() << " -D C1=" << kernelParameters->getC1();
 	}
 	if(kernelParameters->getUseRec12() == true) {
 		options <<  " -D _USE_REC12_" ;
 	}
 	if(kernelParameters->getUseEo()) {
-		options << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
+		options << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << kernelParameters->getEoprecSpinorFieldSize();
 		options << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << get_eoprec_spinorfieldsize(local_size);
 		options << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
 	}
 	//Always have non eo-prec options (for example in Wilson non eo kernels are always built)
-	options << " -D SPINORFIELDSIZE_GLOBAL=" << get_spinorfieldsize(params);
+	options << " -D SPINORFIELDSIZE_GLOBAL=" << kernelParameters->getSpinorFieldSize();
 	options << " -D SPINORFIELDSIZE_LOCAL=" << get_spinorfieldsize(local_size);
 	options << " -D SPINORFIELDSIZE_MEM=" << get_spinorfieldsize(mem_size);
 	
-	options << " -D GAUGEMOMENTASIZE_GLOBAL=" << meta::get_vol4d(params) * NDIM;
+	options << " -D GAUGEMOMENTASIZE_GLOBAL=" << kernelParameters->getLatticeVolume() * NDIM;
 	options << " -D GAUGEMOMENTASIZE_LOCAL=" << get_vol4d(local_size) * NDIM;
 	options << " -D GAUGEMOMENTASIZE_MEM=" << get_vol4d(mem_size) * NDIM;
 	
@@ -190,7 +190,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	//Options for heatbath
 	if(kernelParameters->getUseAniso() == true) {
 		options << " -D _ANISO_";
-		options << " -D XI_0=" << meta::get_xi_0(params);
+		options << " -D XI_0=" << kernelParameters->getXi0();
 	}
 	
 	return options.str();
@@ -206,12 +206,13 @@ static std::vector<std::string> collect_build_files()
 	return out;
 }
 
-hardware::code::Opencl_Module::Opencl_Module(const meta::Inputparameters& params, hardware::Device * device): parameters(params), device(device), kernelParameters(nullptr)
+hardware::code::Opencl_Module::Opencl_Module(const meta::Inputparameters& params, hardware::Device * device):
+		parameters(params), device(device), kernelParameters(nullptr)
 {
 	kernelParameters = new hardware::code::OpenClKernelParametersImplementation( params );
 
-	auto tmp = collect_build_options(device, params, kernelParameters);
-	basic_sources = ClSourcePackage(collect_build_files(), tmp); //todo: run some test to see if this works!
+	auto tmp = collect_build_options(device, kernelParameters);
+	basic_sources = ClSourcePackage(collect_build_files(), tmp);
 }
 
 hardware::code::Opencl_Module::~Opencl_Module()
@@ -318,7 +319,7 @@ void hardware::code::Opencl_Module::print_profiling(const std::string& filename,
 	if(kernel) {
 		const std::string kernel_name = get_kernel_name(kernel);
 		const hardware::ProfilingData data = device->getProfilingData(kernel);
-		::print_profiling(filename, kernel_name, data, this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), meta::get_vol4d(get_parameters()));
+		::print_profiling(filename, kernel_name, data, this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), kernelParameters->getLatticeVolume());
 	}
 }
 
