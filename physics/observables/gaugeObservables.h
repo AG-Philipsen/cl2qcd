@@ -23,6 +23,7 @@
 #define GAUGEOBSERVABLES_H_
 
 #include "../lattices/gaugefield.hpp"
+#include "observablesInterfaces.hpp"
 
 namespace physics{
 

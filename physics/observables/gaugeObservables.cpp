@@ -30,9 +30,8 @@
 
 class gaugeObservables{
     public:
-        gaugeObservables(const meta::Inputparameters* parametersIn) : parameters(parametersIn), outputToFile("") {};
-//        gaugeObservables(const physics::observables::GaugeObservablesParametersImplementation& interface)
-//            : gaugeObservablesParametersInterface(interface), outputToFile("") {};
+        gaugeObservables(const physics::observables::GaugeObservablesParametersImplementation& interface)
+            : gaugeObservablesParametersInterface(interface), outputToFile("") {};
         gaugeObservables() = delete;
         void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
         void measurePlaqAndPolyAndWriteToFile(const physics::lattices::Gaugefield * gf, int iter, const std::string& filename);
@@ -44,8 +43,7 @@ class gaugeObservables{
         hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gaugefield);
 
     private:
-        const meta::Inputparameters * parameters;
-//        const physics::observables::GaugeObservablesParametersInterface& gaugeObservablesParametersInterface;
+        const physics::observables::GaugeObservablesParametersInterface& gaugeObservablesParametersInterface;
         std::ofstream outputToFile;
         void writePlaqAndPolyToFile(int iter,  const std::string& filename, const physics::observables::Plaquettes plaquettes, const hmc_complex polyakov);
         void writeTransportcoefficientKappaToFile(std::string filename, int iteration, const hmc_float kappa);
@@ -56,17 +54,17 @@ class gaugeObservables{
 void gaugeObservables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
   measurePlaqAndPolyAndWriteToFile(gaugefield, iteration);
-  if ( parameters->get_measure_rectangles() ){
+  if ( gaugeObservablesParametersInterface.measureRectangles() ){
     measureRectanglesAndWriteToFile(gaugefield, iteration);
   }
-  if ( parameters->get_measure_transportcoefficient_kappa() ) {
+  if ( gaugeObservablesParametersInterface.measureTransportCoefficientKappa() ) {
     measureTransportcoefficientKappaAndWriteToFile(gaugefield, iteration);
   }
 }
 
 void gaugeObservables::measurePlaqAndPolyAndWriteToFile(const physics::lattices::Gaugefield * gf, int iter)
 {
-	const std::string filename = meta::get_gauge_obs_file_name(*parameters,  "");
+	const std::string filename = gaugeObservablesParametersInterface.getGaugeObservablesFilename("");
 	measurePlaqAndPolyAndWriteToFile(gf, iter, filename);
 }
 
@@ -74,7 +72,7 @@ void gaugeObservables::measurePlaqAndPolyAndWriteToFile(const physics::lattices:
 {
   physics::observables::Plaquettes plaquettes = measurePlaquettes(gf);
   hmc_complex polyakov = measurePolyakovloop(gf);
-	if ( parameters->get_print_to_screen() ){
+	if ( gaugeObservablesParametersInterface.printToScreen() ){
 	  logger.info() << iter << '\t' << plaquettes.plaquette << '\t' << plaquettes.temporalPlaquette << '\t' << plaquettes.spatialPlaquette << '\t' << polyakov.re << '\t' << polyakov.im << '\t' << sqrt(polyakov.re * polyakov.re + polyakov.im * polyakov.im);
 	}
 	writePlaqAndPolyToFile(iter, filename, plaquettes, polyakov);
@@ -108,8 +106,8 @@ static hmc_float kappa_clover(const physics::lattices::Gaugefield& gf, hmc_float
 
 void gaugeObservables::measureTransportcoefficientKappaAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
-	hmc_float kappa = kappa_clover(*gaugefield, parameters->get_beta());
-	writeTransportcoefficientKappaToFile(parameters->get_transportcoefficientKappaFilename(), iteration, kappa);
+	hmc_float kappa = kappa_clover(*gaugefield, gaugeObservablesParametersInterface.getBeta());
+	writeTransportcoefficientKappaToFile(gaugeObservablesParametersInterface.getTransportCoefficientKappaFilename(), iteration, kappa);
 }
 
 void gaugeObservables::writeTransportcoefficientKappaToFileUsingOpenOutputStream(int iteration, const hmc_float kappa)
@@ -134,7 +132,7 @@ void gaugeObservables::writeTransportcoefficientKappaToFile(std::string filename
 void gaugeObservables::measureRectanglesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration)
 {
 	hmc_float rectangles = measureRectangles(gf);
-	writeRectanglesToFile(iteration, parameters->get_rectanglesFilename(), rectangles);
+	writeRectanglesToFile(iteration, gaugeObservablesParametersInterface.getRectanglesFilename(), rectangles);
 }
 
 void gaugeObservables::writeRectanglesToFile(int iter, const std::string& filename, const hmc_float rectangles)
@@ -209,9 +207,9 @@ physics::observables::Plaquettes gaugeObservables::measurePlaquettes(const physi
 
     if (normalize)
     {
-        plaquettes.temporalPlaquette/= static_cast<hmc_float>(meta::get_tplaq_norm(*parameters));
-        plaquettes.spatialPlaquette /= static_cast<hmc_float>(meta::get_splaq_norm(*parameters));
-        plaquettes.plaquette  /= static_cast<hmc_float>(meta::get_plaq_norm(*parameters));
+        plaquettes.temporalPlaquette/= static_cast<hmc_float>(gaugeObservablesParametersInterface.getTemporalPlaquetteNormalization());
+        plaquettes.spatialPlaquette /= static_cast<hmc_float>(gaugeObservablesParametersInterface.getSpatialPlaquetteNormalization());
+        plaquettes.plaquette  /= static_cast<hmc_float>(gaugeObservablesParametersInterface.getPlaquetteNormalization());
     }
 
     return plaquettes;
@@ -273,7 +271,7 @@ hmc_complex gaugeObservables::measurePolyakovloop(const physics::lattices::Gauge
         gf_code->polyakov_device(gf_buf, &pol_buf);
         pol_buf.dump(&polyakov);
     } else {
-        const size_t volspace = meta::get_volspace(*parameters);
+        const size_t volspace = gaugeObservablesParametersInterface.getSpatialVolume();
         // calculate local part per device
         std::vector<Plain<Matrixsu3>*> local_results;
         local_results.reserve(num_devs);
@@ -307,49 +305,50 @@ hmc_complex gaugeObservables::measurePolyakovloop(const physics::lattices::Gauge
         }
     }
 
-    polyakov.re /= static_cast<hmc_float>(meta::get_poly_norm(*parameters));
-    polyakov.im /= static_cast<hmc_float>(meta::get_poly_norm(*parameters));
+    polyakov.re /= static_cast<hmc_float>(gaugeObservablesParametersInterface.getPolyakovLoopNormalization());
+    polyakov.im /= static_cast<hmc_float>(gaugeObservablesParametersInterface.getPolyakovLoopNormalization());
 
     return polyakov;
 }
 
-//TODO: The dependency on meta::Inputparameters must be resolved by introducing an appropiate interface
-//  One has to see which parameters are needed here in addition to those already in contained in the gaugefield and add a specific class for them.
-//	One basically needs normalization factors (fcts. of ns, nt) and booleans (measure_rect, measure_kappa, printToScreen), beta as well as fcts. that return names for output files.
 void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration)
 {
-    //physics::observables::GaugeObservablesParametersImplementation tmp{&gf->getSystem()->get_inputparameters()};
-    //gaugeObservables obs(tmp);
-    gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
+    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
+    gaugeObservables obs(temporaryInterface);
     obs.measureGaugeObservablesAndWriteToFile(gf, iteration);
 }
 
 hmc_float physics::observables::measurePlaquette(const physics::lattices::Gaugefield * gf)
 {
-    gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
+    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
+    gaugeObservables obs(temporaryInterface);
     return obs.measurePlaquettes(gf).plaquette;
 }
 
 hmc_float physics::observables::measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf)
 {
-    gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
+    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
+    gaugeObservables obs(temporaryInterface);
     return obs.measurePlaquettes(gf, false).plaquette;
 }
 
 hmc_float physics::observables::measureRectangles(const physics::lattices::Gaugefield * gf)
 {
-    gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
+    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
+    gaugeObservables obs(temporaryInterface);
     return obs.measureRectangles(gf);
 }
 
 hmc_complex  physics::observables::measurePolyakovloop(const physics::lattices::Gaugefield * gf)
 {
-    gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
+    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
+    gaugeObservables obs(temporaryInterface);
     return obs.measurePolyakovloop(gf);
 }
 
 physics::observables::Plaquettes  physics::observables::measureAllPlaquettes(const physics::lattices::Gaugefield * gf)
 {
-    gaugeObservables obs(&gf->getSystem()->get_inputparameters() );
+    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
+    gaugeObservables obs(temporaryInterface);
     return obs.measurePlaquettes(gf);
 }
