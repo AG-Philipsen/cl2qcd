@@ -88,7 +88,7 @@ public:
 	/**
 	 * Default constructor, does nothing but make sure some pointers point to 0.
 	 */
-	Correlator_staggered(const meta::Inputparameters& params, hardware::Device * device);
+	Correlator_staggered(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
 
 private:
 	/**

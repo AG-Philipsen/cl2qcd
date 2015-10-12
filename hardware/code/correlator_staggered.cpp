@@ -21,7 +21,6 @@
  #include "correlator_staggered.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "spinors.hpp" //for hardware::code::get_eoprec_spinorfieldsize();
 #include "spinors_staggered.hpp"
@@ -31,12 +30,12 @@ using namespace std;
 
 void hardware::code::Correlator_staggered::fill_kernels()
 {
-	if(get_parameters().get_fermact() != common::action::rooted_stagg){
+	if(kernelParameters->getFermact() != common::action::rooted_stagg){
 		throw Print_Error_Message("Correlator_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
 	}
 	
 	//When some noneo method will be introduced, remove this check!
-	if(!get_parameters().get_use_eo()){
+	if(!kernelParameters->getUseEo()){
 		throw Print_Error_Message("Correlator_staggered module asked to be built but without even-odd preconditionig! Aborting... ", __FILE__, __LINE__);
 	}
   
@@ -46,13 +45,13 @@ void hardware::code::Correlator_staggered::fill_kernels()
 
 	logger.debug() << "Creating Correlator_staggered kernels...";
 
-	if(get_parameters().get_sourcetype() == common::point)
+	if(kernelParameters->getSourceType() == common::point)
 		throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
-	else if (get_parameters().get_sourcetype() == common::volume)
+	else if (kernelParameters->getSourceType() == common::volume)
 		create_volume_source_stagg_eoprec = createKernel("create_volume_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_volume_source.cl";
-	else if (get_parameters().get_sourcetype() == common::timeslice)
+	else if (kernelParameters->getSourceType() == common::timeslice)
 		throw Print_Error_Message("Timeslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
-	else if (get_parameters().get_sourcetype() == common::zslice)
+	else if (kernelParameters->getSourceType() == common::zslice)
 		throw Print_Error_Message("Zslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
 
 }
@@ -89,7 +88,7 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 	string kernelname = get_kernel_name(kernel);
 	if( kernelname.find("correlator") == 0 ) {
 		if(get_device()->get_device_type() == CL_DEVICE_TYPE_GPU) {
-			*ls = get_parameters().get_nspace();
+			*ls = kernelParameters->getNs();
 			*gs = *ls;
 			*num_groups = 1;
 		} else {
@@ -289,7 +288,7 @@ void hardware::code::Correlator_staggered::print_profiling(const std::string& fi
 // 	}
 }
 
-hardware::code::Correlator_staggered::Correlator_staggered(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Correlator_staggered::Correlator_staggered(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
 	: Opencl_Module(params, device), create_volume_source_stagg_eoprec(0)
 // 	, create_point_source(0), create_timeslice_source(0), create_zslice_source(0),
 {
