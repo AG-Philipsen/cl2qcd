@@ -132,7 +132,7 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Fermions_staggered(const meta::Inputparameters& params, hardware::Device * device);
+	Fermions_staggered(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
 
 private:
 	/**
