@@ -114,7 +114,7 @@ public:
 	 * Default constructor, does nothing but make sure some pointer point to 0.
 	 *
 	 */
-	Correlator(const meta::Inputparameters& params, hardware::Device * device);
+	Correlator(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
 
 private:
 	/**
