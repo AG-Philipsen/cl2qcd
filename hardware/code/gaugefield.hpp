@@ -152,6 +152,7 @@ public:
 	 */
 	Gaugefield(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
 private:
+
 	/**
 	 * A set of source files used by all kernels.
 	 */
