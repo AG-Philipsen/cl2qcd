@@ -83,7 +83,7 @@ public:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Prng(const meta::Inputparameters& params, hardware::Device * device);
+	Prng(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
 
 private:
 	/**

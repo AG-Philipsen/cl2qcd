@@ -35,7 +35,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-hardware::code::Prng::Prng(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Prng::Prng(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
 	: Opencl_Module(params, device)
 {
 #ifdef USE_PRNG_RANLUX
@@ -75,7 +75,7 @@ void hardware::code::Prng::initialize(const hardware::buffers::PRNGBuffer * buff
 	gs = buffer->get_elements();
 	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
 		/// @todo upgrade to newer ranluxcl to avoid this restcition
-		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", (int)get_parameters().get_host_seed());
+		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", (int)kernelParameters->getHostSeed());
 	}
 	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
