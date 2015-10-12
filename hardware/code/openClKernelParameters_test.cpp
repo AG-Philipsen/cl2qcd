@@ -52,4 +52,22 @@ BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 	BOOST_REQUIRE_EQUAL( openClKernelParameters.getNumSources(), fullParameters.get_num_sources() );
 	BOOST_REQUIRE_EQUAL( openClKernelParameters.getSourceContent(), fullParameters.get_sourcecontent() );
 	BOOST_REQUIRE_EQUAL( openClKernelParameters.getUseAniso(), fullParameters.get_use_aniso() );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getSpatialLatticeVolume(), meta::get_volspace(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getLatticeVolume(), meta::get_vol4d(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getUseRectangles(), meta::get_use_rectangles(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getC0(), meta::get_c0(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getC1(), meta::get_c1(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getXi0(), meta::get_xi_0(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getFloatSize(), meta::get_float_size(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getMatSize(), meta::get_mat_size(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getSpinorFieldSize(), meta::get_vol4d(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getEoprecSpinorFieldSize(), meta::get_vol4d(fullParameters)/2 );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getCorrDir(), fullParameters.get_corr_dir() );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getMeasureCorrelators(), fullParameters.get_measure_correlators() );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getUseMergeKernelsFermion(), fullParameters.get_use_merge_kernels_fermion() );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getUseMergeKernelsSpinor(), fullParameters.get_use_merge_kernels_spinor() );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getMuBar(), meta::get_mubar(fullParameters) );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getMass(), fullParameters.get_mass() );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getUseSameRndNumbers(), fullParameters.get_use_same_rnd_numbers() );
+	BOOST_REQUIRE_EQUAL( openClKernelParameters.getHostSeed(), fullParameters.get_host_seed() );
 }
