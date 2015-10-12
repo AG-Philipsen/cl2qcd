@@ -43,19 +43,17 @@ namespace physics {
                 virtual std::string getTransportCoefficientKappaFilename() const = 0;
                 virtual std::string getRectanglesFilename() const = 0;
                 virtual std::string getGaugeObservablesFilename(std::string) const = 0;
-                virtual hmc_float getTemporalPlaquetteNormalization() const = 0;
-                virtual hmc_float getSpatialPlaquetteNormalization() const = 0;
-                virtual hmc_float getPlaquetteNormalization() const = 0;
+                virtual unsigned getTemporalPlaquetteNormalization() const = 0;
+                virtual unsigned getSpatialPlaquetteNormalization() const = 0;
+                virtual unsigned getPlaquetteNormalization() const = 0;
                 virtual unsigned getSpatialVolume() const = 0;
-                virtual hmc_float getPolyakovLoopNormalization() const = 0;
+                virtual unsigned getPolyakovLoopNormalization() const = 0;
         };
 
-        class WilsonTwoFlavourChiralCondensateInterface {
+        class WilsonTwoFlavourChiralCondensateParametersInterface {
         	public:
-        		virtual ~WilsonTwoFlavourChiralCondensateInterface() {};
-        		virtual unsigned getNs() const = 0;
-        		virtual unsigned getNt() const = 0;
-        		virtual meta::action getFermionAction() const = 0;
+        		virtual ~WilsonTwoFlavourChiralCondensateParametersInterface() {};
+        		virtual meta::action getFermionicActionType() const = 0;
         		virtual meta::ParametersObs::pbp_version getPbpVersion() const = 0;
         		virtual bool measurePbp() const = 0;
         		virtual int getNumberOfSources() const = 0;
@@ -63,20 +61,19 @@ namespace physics {
         		virtual hmc_float getMubar() const = 0;
         		virtual unsigned get4dVolume() const = 0;
         		virtual bool useEvenOdd() const = 0;
-        		virtual std::string getFermionObservablePbpFilename() const = 0;
+        		virtual std::string getPbpFilename(std::string configurationName) const = 0;
          };
 
-        class StaggeredChiralCondensateInterface {
+        class StaggeredChiralCondensateParametersInterface {
 			public:
-				virtual ~StaggeredChiralCondensateInterface() {};
-				virtual unsigned getNs() const = 0;
-				virtual unsigned getNt() const = 0;
+				virtual ~StaggeredChiralCondensateParametersInterface() {};
+				virtual bool measurePbp() const = 0;
 				virtual int getNumberOfSources() const = 0;
 				virtual hmc_float getMass() const = 0;
 				virtual hmc_float getSolverPrecision() const = 0;
 				virtual hmc_float getNumberOfTastes() const = 0;
-				virtual unsigned getNumberOfElements() const = 0;
-				virtual std::string getPbpFilename(std::string configruationName) const = 0;
+				virtual unsigned get4dVolume() const = 0;
+				virtual std::string getPbpFilename(std::string configurationName) const = 0;
 				virtual unsigned getPbpNumberOfMeasurements() const = 0;
 		};
 
@@ -84,112 +81,17 @@ namespace physics {
 			public:
 				virtual ~WilsonTwoFlavourCorrelatorsParametersInterface() {};
 				virtual bool printToScreen() const = 0;
-				virtual void printInformationOfFlavourDoubletCorrelator(const ofstream* of = nullptr) const = 0;
+				virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of) const = 0;
 				virtual unsigned getCorrelatorDirection() const = 0;
 				virtual meta::ParametersSources::sourcetypes getSourceType() const = 0;
 				virtual unsigned getNs() const = 0;
 				virtual unsigned getNt() const = 0;
-				virtual std::string getFermionObservablesCorrleatorFileName(std::string currentConfigurationName) const = 0;
+				virtual std::string getFermionObservablesCorrelatorFilename(std::string currentConfigurationName) const = 0;
 				virtual bool placeOfSourcesOnHost() const = 0;
 				virtual	int getNumberOfSources() const = 0;
 		};
 
-        class WilsonTwoFlavourChiralCondensateImplementation final : public WilsonTwoFlavourChiralCondensateInterface {
-        	public:
-        		WilsonTwoFlavourChiralCondensateImplementation() = delete;
-        		WilsonTwoFlavourChiralCondensateImplementation(const meta::Inputparameters& parametersIn) : parameters(parametersIn) {}
-        		~WilsonTwoFlavourChiralCondensateImplementation() {}
-        		unsigned getNs() const override
-        		{
-        			return parameters.get_ns();
-        		}
-        		unsigned getNt() const override
-        		{
-        			return parameters.get_nt();
-        		}
-        		meta::action getFermionAction() const override
-        		{
-        			return parameters.get_fermact();
-        		}
-        		meta::ParametersObs::pbp_version getPbpVersion() const override
-        		{
-        			return parameters.get_pbp_version();
-        		}
-        		bool measurePbp() const override
-        		{
-        			return paramters.get_measure_pbp();
-        		}
-        		int getNumberOfSources() const override
-        		{
-        			return parameters.get_num_sources();
-        		}
-        		hmc_float getKappa() const override
-        		{
-        			return parameters.get_kappa();
-        		}
-        		hmc_float getMubar() const override
-        		{
-        			return meta::get_mubar(parameters);
-        		}
-        		unsigned get4dVolume() const override
-        		{
-        			return meta::get_vol4d(parameters.getNt(), parameters.getNs());
-        		}
-        		bool useEvenOdd() const override
-        		{
-        			return parameters.get_use_eo();
-        		}
 
-        	private:
-        		const meta::Inputparameters& parameters;
-
-        };
-
-        class StaggeredChiralCondensateImplementation final : public StaggeredChiralCondensateInterface {
-			public:
-				StaggeredChiralCondensateImplementation() = delete;
-				StaggeredChiralCondensateImplementation(const meta::Inputparameters& parametersIn) : parameters(parametersIn) {}
-				~StaggeredChiralCondensateImplementation() {}
-				unsigned getNs() const override
-				{
-					return parameters.get_nspace();
-				}
-				unsigned getNt() const override
-				{
-					return parameters.get_ntime();
-				}
-				int getNumberOfSources() const override
-				{
-					return parameters.get_num_sources();
-				}
-				hmc_float getMass() const override
-				{
-					return parameters.get_mass();
-				}
-				hmc_float getSolverPrecision() const override
-				{
-					return parameters.get_solver_prec();
-				}
-				hmc_float getNumberOfTastes() const override
-				{
-					return parameters.get_num_tastes();
-				}
-				unsigned getNumberOfElements() const override
-				{
-					return meta::get_vol4d(parameters.getNt(), parameters.getNs());
-				}
-				std::string getPbpFilename(std::string configruationName) const override
-				{
-					return meta::get_ferm_obs_pbp_file_name(parameters, configurationName);
-				}
-				unsigned getPbpNumberOfMeasurements() const override
-				{
-					return parameters.get_pbp_measurements();
-				}
-
-			private:
-				const meta::Inputparameters& parameters;
-		};
 
         class GaugeObservablesParametersImplementation final : public GaugeObservablesParametersInterface {
             public:
@@ -224,15 +126,15 @@ namespace physics {
                 {
                     return meta::get_gauge_obs_file_name(parameters, configurationName);
                 }
-                hmc_float getTemporalPlaquetteNormalization() const override
+                unsigned getTemporalPlaquetteNormalization() const override
                 {
                     return meta::get_tplaq_norm(parameters);
                 }
-                hmc_float getSpatialPlaquetteNormalization() const override
+                unsigned getSpatialPlaquetteNormalization() const override
                 {
                     return meta::get_splaq_norm(parameters);
                 }
-                hmc_float getPlaquetteNormalization() const override
+                unsigned getPlaquetteNormalization() const override
                 {
                     return meta::get_plaq_norm(parameters);
                 }
@@ -240,7 +142,7 @@ namespace physics {
                 {
                     return meta::get_volspace(parameters.get_nspace());
                 }
-                hmc_float getPolyakovLoopNormalization() const override
+                unsigned getPolyakovLoopNormalization() const override
                 {
                     return meta::get_poly_norm(parameters);
                 }
@@ -248,16 +150,105 @@ namespace physics {
                 const meta::Inputparameters& parameters;
         };
 
-        class WilsonTwoFlavorCorrelatorsParametersImplementation final: public WilsonTwoFlavourCorrelatorsParametersInterface{
+        class WilsonTwoFlavourChiralCondensateParametersImplementation final : public WilsonTwoFlavourChiralCondensateParametersInterface {
+        	public:
+        		WilsonTwoFlavourChiralCondensateParametersImplementation() = delete;
+        		WilsonTwoFlavourChiralCondensateParametersImplementation(const meta::Inputparameters& parametersIn) : parameters(parametersIn) {}
+        		~WilsonTwoFlavourChiralCondensateParametersImplementation() {}
+        		meta::action getFermionicActionType() const override
+        		{
+        			return parameters.get_fermact();
+        		}
+        		meta::ParametersObs::pbp_version getPbpVersion() const override
+        		{
+        			return parameters.get_pbp_version();
+        		}
+        		bool measurePbp() const override
+        		{
+        			return parameters.get_measure_pbp();
+        		}
+        		int getNumberOfSources() const override
+        		{
+        			return parameters.get_num_sources();
+        		}
+        		hmc_float getKappa() const override
+        		{
+        			return parameters.get_kappa();
+        		}
+        		hmc_float getMubar() const override
+        		{
+        			return meta::get_mubar(parameters);
+        		}
+        		unsigned get4dVolume() const override
+        		{
+        			return meta::get_vol4d(parameters.get_ntime(), parameters.get_nspace());
+        		}
+        		bool useEvenOdd() const override
+        		{
+        			return parameters.get_use_eo();
+        		}
+        		std::string getPbpFilename(std::string configurationName) const override
+        		{
+        		    return meta::get_ferm_obs_pbp_file_name(parameters, configurationName);
+        		}
+
+        	private:
+        		const meta::Inputparameters& parameters;
+
+        };
+
+        class StaggeredChiralCondensateParametersImplementation final : public StaggeredChiralCondensateParametersInterface {
 			public:
-				WilsonTwoFlavorCorrelatorsParametersImplementation() = delete;
-				WilsonTwoFlavorCorrelatorsParametersImplementation(meta::Inputparameters& parametersIn) : parameters(parametersIn) {};
-				~WilsonTwoFlavorCorrelatorsParametersImplementation();
+				StaggeredChiralCondensateParametersImplementation() = delete;
+				StaggeredChiralCondensateParametersImplementation(const meta::Inputparameters& parametersIn) : parameters(parametersIn) {}
+				~StaggeredChiralCondensateParametersImplementation() {}
+				bool measurePbp() const override
+                {
+                    return parameters.get_measure_pbp();
+                }
+				int getNumberOfSources() const override
+				{
+					return parameters.get_num_sources();
+				}
+				hmc_float getMass() const override
+				{
+					return parameters.get_mass();
+				}
+				hmc_float getSolverPrecision() const override
+				{
+					return parameters.get_solver_prec();
+				}
+				hmc_float getNumberOfTastes() const override
+				{
+					return parameters.get_num_tastes();
+				}
+				unsigned get4dVolume() const override
+				{
+					return meta::get_vol4d(parameters.get_ntime(), parameters.get_nspace());
+				}
+				std::string getPbpFilename(std::string configurationName) const override
+				{
+					return meta::get_ferm_obs_pbp_file_name(parameters, configurationName);
+				}
+				unsigned getPbpNumberOfMeasurements() const override
+				{
+					return parameters.get_pbp_measurements();
+				}
+
+			private:
+				const meta::Inputparameters& parameters;
+		};
+
+        class WilsonTwoFlavourCorrelatorsParametersImplementation final: public WilsonTwoFlavourCorrelatorsParametersInterface{
+			public:
+				WilsonTwoFlavourCorrelatorsParametersImplementation() = delete;
+				WilsonTwoFlavourCorrelatorsParametersImplementation(const meta::Inputparameters& parametersIn) : parameters(parametersIn) {};
+				~WilsonTwoFlavourCorrelatorsParametersImplementation(){};
 				bool printToScreen () const override
 				{
 					return parameters.get_print_to_screen();
 				}
-				void printInformationOfFlavourDoubletCorrelator(const ofstream* of = nullptr) const override
+				void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const override
 				{
 					if(of == nullptr)
 						meta::print_info_flavour_doublet_correlators(parameters);
@@ -280,7 +271,7 @@ namespace physics {
 				{
 					return parameters.get_ntime();
 				}
-				std::string getFermionObservablesCorrelatorFileName(std::string currentConfigurationName) const override
+				std::string getFermionObservablesCorrelatorFilename(std::string currentConfigurationName) const override
 				{
 					return meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
 				}
