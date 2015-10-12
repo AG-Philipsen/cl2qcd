@@ -131,7 +131,7 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Gaugemomentum(const meta::Inputparameters& params, hardware::Device * device);
+	Gaugemomentum(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
 
 private:
 	/**
