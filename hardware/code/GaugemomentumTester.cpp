@@ -19,10 +19,12 @@
 
 #include "GaugemomentumTester.hpp"
 
+#include "flopUtilities.hpp"
+
 GaugemomentumTester::GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues, int typeOfComparision) :
   KernelTester(kernelName, getSpecificInputfile(inputfile), numberOfValues, typeOfComparision)
 {
-  numberOfAlgebraElements = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
+  numberOfAlgebraElements = meta::get_vol4d(*parameters) * NDIM * hardware::code::getSu3AlgebraSize();
   numberOfGaugemomentumElements = meta::get_vol4d(*parameters) * NDIM;
   useRandom = (parameters->get_solver() == common::cg)  ? false : true;
   

@@ -20,7 +20,6 @@
 
 #include "testUtilities.hpp"
 
-#include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
 #include "../system.hpp"
 #include "../device.hpp"
