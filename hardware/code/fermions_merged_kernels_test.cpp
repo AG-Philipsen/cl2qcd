@@ -175,7 +175,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
+	size_t NUM_ELEMENTS_SF = params->get_nspace() * params->get_nspace() * params->get_nspace() * params->get_ntime(); //todo: make proper
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
@@ -256,7 +256,7 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
+	size_t NUM_ELEMENTS_SF = params->get_nspace() * params->get_nspace() * params->get_nspace() * params->get_ntime() / 2; //todo: make proper
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];

@@ -268,7 +268,7 @@ void test_src_volume(std::string inputfile)
 	auto * device = system.get_devices().at(0)->getCorrelatorCode();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
+	size_t NUM_ELEMENTS_SF = params->get_nspace() * params->get_nspace() * params->get_nspace() * params->get_ntime(); //todo: make proper
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -334,10 +334,10 @@ void test_src_zslice(std::string inputfile)
 	auto device = system.get_devices().at(0)->getCorrelatorCode();
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
+	size_t NUM_ELEMENTS_SF = params->get_nspace() * params->get_nspace() * params->get_nspace() * params->get_ntime(); //todo: make proper
 	//CP: this source does have a weight only on one slice
 	//todo: must be params->get_ntime() * params->get_nspace() * params->get_nspace();
-	size_t NUM_ELEMENTS_SRC = meta::get_volspace(*params);
+	size_t NUM_ELEMENTS_SRC = params->get_nspace() * params->get_nspace() * params->get_nspace(); //todo: make proper
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -518,9 +518,9 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		auto device = system.get_devices().at(0)->getCorrelatorCode();
 
 		logger.info() << "Fill buffers...";
-		size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
+		size_t NUM_ELEMENTS_SF = params->get_nspace() * params->get_nspace() * params->get_nspace() * params->get_ntime(); //todo: make proper
 		//CP: this source does have a weight only on one slice
-		size_t NUM_ELEMENTS_SRC = meta::get_volspace(*params);
+		size_t NUM_ELEMENTS_SRC = params->get_nspace() * params->get_nspace() * params->get_nspace(); //todo: make proper
 		const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 		hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 		BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -624,7 +624,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 		auto device = system.get_devices().at(0)->getCorrelatorCode();
 
 		logger.info() << "Fill buffers...";
-		size_t NUM_ELEMENTS_SF = hardware::code::get_spinorfieldsize(*params);
+		size_t NUM_ELEMENTS_SF = params->get_nspace() * params->get_nspace() * params->get_nspace() * params->get_ntime(); //todo: make proper
 		//CP: this source does have a weight only on one site
 		size_t NUM_ELEMENTS_SRC = 1;
 		const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());

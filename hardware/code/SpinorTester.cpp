@@ -23,8 +23,8 @@
 void SpinorTester::setMembers()
 {
 		//todo: some of these could also be put into the specific child-classes where they are actually used.
-	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
-	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
+	spinorfieldElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime(); //todo: make proper
+	spinorfieldEvenOddElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime() / 2; //todo: make proper
 	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
 	(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
 	alpha_host = {parameters->get_beta(), parameters->get_rho()};
