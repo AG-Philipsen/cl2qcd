@@ -23,11 +23,9 @@
 
 #include "../../common_header_files/types.h"
 
-#include "../../meta/inputparameters.hpp"
 #include "openClKernelParameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 
 #include "../buffers/3x3.hpp"
@@ -60,12 +58,6 @@ class Opencl_Module {
 
 public:
 	/**
-	 * Get a pointer to inputparameters
-	 * @return parameters
-	 */
-	const meta::Inputparameters& get_parameters() const noexcept;
-
-	/**
 	 * Get OpenCL device
 	 * @return device
 	 */
@@ -86,13 +78,7 @@ public:
 	ClSourcePackage get_basic_sources() const noexcept;
 
 protected:
-	/**
-	 * Protected constructor to keep this class abstract.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device);
-//	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& params, hardware::Device * device);
+	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device);
 	~Opencl_Module();
 
 	/**
@@ -151,11 +137,6 @@ protected:
 	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 
 private:
-
-	/**
-	 * The input parameters this modules is parametrized for.
-	 */
-	const meta::Inputparameters& parameters;
 
 	/**
 	 * The device used by this module
