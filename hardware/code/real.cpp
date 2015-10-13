@@ -421,8 +421,8 @@ void hardware::code::Real::print_profiling(const std::string& filename, int numb
 	Opencl_Module::print_profiling(filename, update_zeta_cgm);
 }
 
-hardware::code::Real::Real(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
-	: Opencl_Module(params, device), get_elem_vec(0), set_elem_vec(0), ratio(0), product(0), sum(0),
+hardware::code::Real::Real(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), get_elem_vec(0), set_elem_vec(0), ratio(0), product(0), sum(0),
 	                                 difference(0), update_alpha_cgm(0), update_beta_cgm(0), update_zeta_cgm(0)
 {
 	fill_kernels();

@@ -165,7 +165,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Real(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
+	Real(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device);
 private:
 	/**
 	 * Collect the kernels for OpenCL.
