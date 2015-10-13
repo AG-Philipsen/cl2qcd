@@ -85,10 +85,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	/**
-	 * Default constructor, does nothing but make sure some pointers point to 0.
-	 */
-	Correlator_staggered(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
+	Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
 
 private:
 	/**
@@ -105,13 +102,6 @@ private:
 	///////////////////////////////////
 	//Type of source
 	cl_kernel create_volume_source_stagg_eoprec;
-	//cl_kernel create_point_source_stagg_eoprec;
-	//cl_kernel create_timeslice_source_stagg_eoprec;
-	//cl_kernel create_zslice_source_stagg_eoprec;
-
-	//Observables
-	//chiral condensate --> probably the calculation is done enqueuing already existing kernels!!
-	//cl_kernel pbp_std;
 
 	ClSourcePackage basic_correlator_code;
 };

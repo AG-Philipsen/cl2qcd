@@ -61,23 +61,11 @@ void hardware::code::Correlator_staggered::clear_kernels()
 	int clerr = CL_SUCCESS;
 	
 	logger.debug() << "Clearing Correlator_staggered kernels...";
-	
-// 	if(create_point_source) {
-// 		clerr = clReleaseKernel(create_point_source);
-// 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-// 	}
+
 	if(create_volume_source_stagg_eoprec) {
 		clerr = clReleaseKernel(create_volume_source_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-// 	if(create_timeslice_source) {
-// 		clerr = clReleaseKernel(create_timeslice_source);
-// 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-// 	}
-// 	if(create_zslice_source) {
-// 		clerr = clReleaseKernel(create_zslice_source);
-// 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-// 	}
 }
 
 void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -100,42 +88,6 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 
 	return;
 }
-
-/*
-void hardware::code::Correlator_staggered::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos) const
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(create_point_source, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(create_point_source, 1, sizeof(int), &i);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(create_point_source, 2, sizeof(int), &spacepos);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(create_point_source, 3, sizeof(int), &timepos);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
-
-	if(logger.beDebug()) {
-		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-		sqn_tmp.dump(&sqn);
-		logger.debug() <<  "\t|source|^2:\t" << sqn;
-		if(sqn != sqn) {
-			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-}
-*/
 
 void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const
 {
@@ -163,72 +115,6 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 		}
 	}
 }
-
-/*
-void hardware::code::Correlator_staggered::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice) const
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(create_timeslice_source, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(create_timeslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(create_timeslice_source, 1, sizeof(cl_mem), prng->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	int tmp = timeslice;
-	clerr = clSetKernelArg(create_timeslice_source, 2, sizeof(int), &tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( create_timeslice_source, gs2, ls2);
-
-	if(logger.beDebug()) {
-		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-		sqn_tmp.dump(&sqn);
-		logger.debug() <<  "\t|source|^2:\t" << sqn;
-		if(sqn != sqn) {
-			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-}
-
-void hardware::code::Correlator_staggered::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice) const
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(create_zslice_source, &ls2, &gs2, &num_groups);
-	//set arguments
-
-	int clerr = clSetKernelArg(create_zslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(create_zslice_source, 1, sizeof(cl_mem), prng->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	int tmp = zslice;
-	clerr = clSetKernelArg(create_zslice_source, 2, sizeof(int), &tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( create_zslice_source, gs2, ls2);
-
-	if(logger.beDebug()) {
-		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-		sqn_tmp.dump(&sqn);
-		logger.debug() <<  "\t|source|^2:\t" << sqn;
-		if(sqn != sqn) {
-			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-}
-*/
-
 
 size_t hardware::code::Correlator_staggered::get_read_write_size(const std::string& in) const
 {
@@ -274,22 +160,13 @@ uint64_t hardware::code::Correlator_staggered::get_flop_size(const std::string& 
 void hardware::code::Correlator_staggered::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
-// 	if(create_point_source_stagg_eoprec) {
-// 		Opencl_Module::print_profiling(filename, create_point_source);
-// 	}
 	if(create_volume_source_stagg_eoprec) {
 		Opencl_Module::print_profiling(filename, create_volume_source_stagg_eoprec);
 	}
-// 	if(create_timeslice_source_stagg_eoprec) {
-// 		Opencl_Module::print_profiling(filename, create_timeslice_source);
-// 	}
-// 	if(create_zslice_source_stagg_eoprec) {
-// 		Opencl_Module::print_profiling(filename, create_zslice_source);
-// 	}
 }
 
-hardware::code::Correlator_staggered::Correlator_staggered(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
-	: Opencl_Module(params, device), create_volume_source_stagg_eoprec(0)
+hardware::code::Correlator_staggered::Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), create_volume_source_stagg_eoprec(0)
 // 	, create_point_source(0), create_timeslice_source(0), create_zslice_source(0),
 {
 	fill_kernels();
