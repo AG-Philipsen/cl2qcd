@@ -583,8 +583,8 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 	throw std::runtime_error("Not implemented!");
 }
 
-hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
-	: Opencl_Module(params, device), md_update_gaugefield (0), gauge_force (0),
+hardware::code::Molecular_Dynamics::Molecular_Dynamics(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), md_update_gaugefield (0), gauge_force (0),
 	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo_0(0), fermion_force_eo_1(0), fermion_force_eo_2(0), fermion_force_eo_3(0), stout_smear_fermion_force(0),
 	  fermion_stagg_partial_force_eo(0),
 	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0),
