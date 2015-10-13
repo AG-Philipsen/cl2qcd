@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(4, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
 		meta::Inputparameters params(5, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678", "--theta_fermion_temporal=1."};
 		meta::Inputparameters params(6, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 	{
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		using namespace physics::algorithms;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
 		meta::Inputparameters params(5, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};

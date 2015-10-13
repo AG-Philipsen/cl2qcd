@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	                              "--use_merge_kernels_spinor=true"};
 	    params = new meta::Inputparameters(4, _params);
 	  }
-	  LatticeObjectParametersImplementation gaugefieldParameters( params );
+	  GaugefieldParametersImplementation gaugefieldParameters( params );
 	  hardware::System system(*params);
 	  physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	  physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
 	  
 	  //This configuration for the Ref.Code is the same as for example dks_input_5
-	  LatticeObjectParametersImplementation gaugefieldParameters( params );
+	  GaugefieldParametersImplementation gaugefieldParameters( params );
 	  Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	  Staggeredfield_eo b(system);
 	  std::vector<Staggeredfield_eo*> out;
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	LatticeObjectParametersImplementation gaugefieldParameters( &params );
+	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	Staggeredfield_eo b(system);
 	std::vector<Staggeredfield_eo*> out;
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	physics::fermionmatrix::MdagM_eo matrix(system, 0.01);
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	LatticeObjectParametersImplementation gaugefieldParameters( &params );
+	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	Staggeredfield_eo b(system);
 	std::vector<Staggeredfield_eo*> out;

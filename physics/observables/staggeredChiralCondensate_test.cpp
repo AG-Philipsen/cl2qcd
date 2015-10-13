@@ -57,7 +57,7 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	options.push_back(tmp.c_str());
 	
 	meta::Inputparameters params(10, &(options[0]));
-	LatticeObjectParametersImplementation gaugefieldParameters(&params);
+	GaugefieldParametersImplementation gaugefieldParameters(&params);
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};

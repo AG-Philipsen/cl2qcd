@@ -52,14 +52,14 @@ void measurementExecutable::setIterationVariables()
 void measurementExecutable::initializeGaugefieldAccordingToIterationVariable()
 {
 	currentConfigurationName = physics::lattices::getConfigurationName(parameters.get_config_prefix(), parameters.get_config_postfix(), parameters.get_config_number_digits(), iteration);
-	const physics::lattices::LatticeObjectParametersImplementation gaugefieldParameters{ &parameters };
+	const physics::lattices::GaugefieldParametersImplementation gaugefieldParameters{ &parameters };
 	gaugefield = new physics::lattices::Gaugefield(*system, &gaugefieldParameters, *prng, currentConfigurationName);
 }
 
 void measurementExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
 {
 	currentConfigurationName = parameters.get_sourcefile();
-	const physics::lattices::LatticeObjectParametersImplementation gaugefieldParameters{ &parameters };
+	const physics::lattices::GaugefieldParametersImplementation gaugefieldParameters{ &parameters };
 	gaugefield = new physics::lattices::Gaugefield(*system, &gaugefieldParameters, *prng);
 }
 

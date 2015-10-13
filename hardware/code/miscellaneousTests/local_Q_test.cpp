@@ -71,7 +71,7 @@ private:
 	const hardware::buffers::Plain<hmc_float> * out;
 	hmc_float * host_out;
 	const meta::Inputparameters& params;
-	const physics::lattices::LatticeObjectParametersImplementation params2;
+	const physics::lattices::GaugefieldParametersImplementation params2;
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
 	Device device;
 	physics::PRNG prng;

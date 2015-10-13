@@ -36,24 +36,24 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const p
 static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
-static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const physics::lattices::LatticeObjectParametersInterface * params);
-static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const physics::lattices::LatticeObjectParametersInterface * params);
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const physics::lattices::GaugefieldParametersInterface * params);
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const physics::lattices::GaugefieldParametersInterface * params);
 static void update_halo_soa(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
 static void update_halo_aos(const std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system);
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const LatticeObjectParametersInterface * parameters, const physics::PRNG& prng)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  latticeObjectParameters(parameters)
 {
 	initializeBasedOnParameters();
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const LatticeObjectParametersInterface * parameters, const physics::PRNG& prng, bool hot)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng, bool hot)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(), latticeObjectParameters(parameters)
 {
 	initializeHotOrCold(hot);
 }
 
-physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const LatticeObjectParametersInterface * parameters, const physics::PRNG& prng, std::string ildgfile)
+physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng, std::string ildgfile)
   : system(system), prng(prng), buffers(allocate_buffers(system)), unsmeared_buffers(),  latticeObjectParameters(parameters)
 {
 	initializeFromILDGSourcefile(ildgfile);
@@ -303,7 +303,7 @@ void physics::lattices::Gaugefield::unsmear()
 	release_buffers(&unsmeared_buffers);
 }
 
-static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const physics::lattices::LatticeObjectParametersInterface * params) {
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const physics::lattices::GaugefieldParametersInterface * params) {
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
 		device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
@@ -341,7 +341,7 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 	}
 }
 
-static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const physics::lattices::LatticeObjectParametersInterface * params)
+static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const physics::lattices::GaugefieldParametersInterface * params)
 {
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
@@ -415,7 +415,7 @@ const hardware::System * physics::lattices::Gaugefield::getSystem() const
   return &system;
 }
 
-const physics::lattices::LatticeObjectParametersInterface * physics::lattices::Gaugefield::getParameters() const
+const physics::lattices::GaugefieldParametersInterface * physics::lattices::Gaugefield::getParameters() const
 {
   return latticeObjectParameters;
 }

@@ -27,9 +27,9 @@
 namespace physics {
     namespace lattices {
 
-        class LatticeObjectParametersInterface {
+        class GaugefieldParametersInterface {
             public:
-                virtual ~LatticeObjectParametersInterface(){}
+                virtual ~GaugefieldParametersInterface(){}
                 virtual unsigned getNs() const = 0;
                 virtual unsigned getNt() const = 0;
                 virtual unsigned getPrecision() const = 0;
@@ -88,14 +88,14 @@ namespace physics {
 namespace physics {
     namespace lattices {
 
-        class LatticeObjectParametersImplementation : public LatticeObjectParametersInterface {
+        class GaugefieldParametersImplementation : public GaugefieldParametersInterface {
             public:
-                LatticeObjectParametersImplementation() = delete;
-                LatticeObjectParametersImplementation(const meta::Inputparameters * paramsIn)
+                GaugefieldParametersImplementation() = delete;
+                GaugefieldParametersImplementation(const meta::Inputparameters * paramsIn)
                         : parameters(paramsIn)
                 {
                 }
-                virtual ~LatticeObjectParametersImplementation()
+                virtual ~GaugefieldParametersImplementation()
                 {
                 }
                 virtual unsigned getNs() const override

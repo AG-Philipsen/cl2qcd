@@ -82,7 +82,7 @@ private:
 	hardware::Device * const device;
 	const meta::Inputparameters& params;
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
-	const physics::lattices::LatticeObjectParametersImplementation params2;
+	const physics::lattices::GaugefieldParametersImplementation params2;
 	Code code;
 	physics::PRNG prng;
 public:

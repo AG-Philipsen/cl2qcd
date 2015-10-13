@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(calc_detratio_forces_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};

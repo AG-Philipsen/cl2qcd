@@ -65,7 +65,7 @@ template <class SPINORFIELD> static hmc_observables perform_hmc_step(const physi
 	}
 
 	logger.trace() << "\tHMC:\tupdate gaugefield and gaugemomentum" ;
-	const LatticeObjectParametersImplementation gaugefieldParameters{ &params };
+	const GaugefieldParametersImplementation gaugefieldParameters{ &params };
 	const Gaugefield new_u(system, &gaugefieldParameters, prng, false);
 	const Gaugemomenta new_p(system);
 	// copy u->u' p->p' for the integrator

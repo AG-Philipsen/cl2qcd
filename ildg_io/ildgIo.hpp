@@ -28,8 +28,8 @@
 #include "../physics/lattices/latticesInterfaces.hpp"
 
 namespace ildgIo {
-	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const physics::lattices::LatticeObjectParametersInterface *, int &, double &);
-	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const physics::lattices::LatticeObjectParametersInterface *, int, double );
+	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const physics::lattices::GaugefieldParametersInterface *, int &, double &);
+	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const physics::lattices::GaugefieldParametersInterface *, int, double );
 }
 
 #endif 

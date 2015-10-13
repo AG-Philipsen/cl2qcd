@@ -33,7 +33,7 @@ static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparame
 BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 {
 	auto params = createDefaultMetaInputparameters();
-	physics::lattices::LatticeObjectParametersImplementation test(&(*params));
+	physics::lattices::GaugefieldParametersImplementation test(&(*params));
 
 	BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
 	BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());

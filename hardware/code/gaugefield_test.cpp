@@ -32,7 +32,7 @@ public:
 	GaugefieldTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
 	  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues), prngParameters(&system->get_inputparameters()) {
 		prng = new physics::PRNG(*system, &prngParameters);
-		params = new physics::lattices::LatticeObjectParametersImplementation( &system->get_inputparameters());
+		params = new physics::lattices::GaugefieldParametersImplementation( &system->get_inputparameters());
 		gaugefield = new physics::lattices::Gaugefield(*system, params, *prng);
 		code = device->get_gaugefield_code();
 	}
@@ -57,7 +57,7 @@ protected:
 	physics::PRNG * prng;
 	const hardware::code::Gaugefield * code;
 	physics::lattices::Gaugefield * gaugefield;
-	physics::lattices::LatticeObjectParametersImplementation * params;
+	physics::lattices::GaugefieldParametersImplementation * params;
 	physics::ParametersPrng_fromMetaInputparameters prngParameters;
 };
 

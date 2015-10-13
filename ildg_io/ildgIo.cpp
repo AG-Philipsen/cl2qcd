@@ -23,7 +23,7 @@
 #include "ildgIoParameters.hpp"
 #include "ildgIo_gaugefield.hpp"
 
-Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const physics::lattices::LatticeObjectParametersInterface * parameters, int & trajectoryNumberAtInit, double & plaq)
+Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const physics::lattices::GaugefieldParametersInterface * parameters, int & trajectoryNumberAtInit, double & plaq)
 {
 	Matrixsu3 * gf_host = nullptr; // will be allocated by the following line, init to 0 to ensure error in case we fuck up.
 
@@ -42,7 +42,7 @@ Matrixsu3 * ildgIo::readGaugefieldFromSourcefile(std::string ildgfile, const phy
 	return gf_host;
 }
 
-void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3> & host_buf, const physics::lattices::LatticeObjectParametersInterface * parameters, int trajectoryNumber, double plaquetteValue)
+void ildgIo::writeGaugefieldToFile(std::string outputfile, std::vector<Matrixsu3> & host_buf, const physics::lattices::GaugefieldParametersInterface * parameters, int trajectoryNumber, double plaquetteValue)
 {
 	//NOTE: this is a workaround, because this call:
 	//IldgIoParameters_gaugefield ildgIoParameters = createIldgIoParameters( parameters );
