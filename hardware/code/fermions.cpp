@@ -779,8 +779,8 @@ void hardware::code::Fermions::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, saxpy_AND_gamma5_eo);
 }
-hardware::code::Fermions::Fermions(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
-	: Opencl_Module(params, device),
+hardware::code::Fermions::Fermions(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device),
 	  M_wilson(0),
 	  gamma5(0),
 	  M_tm_plus(0),
