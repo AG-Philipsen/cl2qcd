@@ -71,10 +71,7 @@ public:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	/**
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Heatbath(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
+	Heatbath(const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
 
 private:
 	/**
