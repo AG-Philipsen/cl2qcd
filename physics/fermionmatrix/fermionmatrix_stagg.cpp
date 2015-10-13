@@ -62,7 +62,6 @@ cl_ulong physics::fermionmatrix::D_KS_eo::get_flops() const
 hmc_float physics::fermionmatrix::D_KS_eo::get_mass() const
 {
 	throw Print_Error_Message("Unable to recover right fermions mass from fermionmatrix::D_KS_eo object.", __FILE__, __LINE__);
-	return -1;
 }
 
 //Class MdagM_eo

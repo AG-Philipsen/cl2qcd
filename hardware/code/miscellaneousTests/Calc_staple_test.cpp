@@ -25,7 +25,7 @@
 #include "../opencl_module.hpp"
 #include "../gaugefield.hpp"
 
-#include "../../../physics/observables/gaugeObservables.h"
+#include "../../../physics/observables/gaugeObservables.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -82,7 +82,7 @@ private:
 	hardware::Device * const device;
 	const meta::Inputparameters& params;
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
-	const LatticeObjectParametersImplementation params2;
+	const physics::lattices::GaugefieldParametersImplementation params2;
 	Code code;
 	physics::PRNG prng;
 public:

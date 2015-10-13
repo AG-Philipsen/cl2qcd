@@ -23,7 +23,7 @@
 #include "../../device.hpp"
 #include "../../../physics/lattices/gaugefield.hpp"
 
-#include "../../../physics/observables/gaugeObservables.h"
+#include "../../../physics/observables/gaugeObservables.hpp"
 #include "../opencl_module.hpp"
 #include "../gaugefield.hpp"
 
@@ -71,7 +71,7 @@ private:
 	const hardware::buffers::Plain<hmc_float> * out;
 	hmc_float * host_out;
 	const meta::Inputparameters& params;
-	const LatticeObjectParametersImplementation params2;
+	const physics::lattices::GaugefieldParametersImplementation params2;
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
 	Device device;
 	physics::PRNG prng;

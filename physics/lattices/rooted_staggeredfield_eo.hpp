@@ -39,32 +39,38 @@ namespace lattices {
  */
 class Rooted_Staggeredfield_eo : public Staggeredfield_eo, public physics::algorithms::Rational_Coefficients{
 
-public:
-	/**
-	 * Construct a rooted staggeredfield based on the input-files of the system
-	 */
-	Rooted_Staggeredfield_eo(const hardware::System&);
-	Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System&);
+    public:
+        /**
+         * Construct a rooted staggeredfield based on the input-files of the system
+         */
+        Rooted_Staggeredfield_eo(const hardware::System&);
+        Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System&);
 
-	/**
-	 * Staggeredfield_eo cannot be copied
-	 */
-	Rooted_Staggeredfield_eo& operator=(const Rooted_Staggeredfield_eo&) = delete;
-	Rooted_Staggeredfield_eo(const Rooted_Staggeredfield_eo&) = delete;
-	Rooted_Staggeredfield_eo() = delete;
+        virtual ~Rooted_Staggeredfield_eo();
 
-	/**
-	 * Rescale coefficients on the basis of a Rational_Approximation objects
-	 *  @param A The fermionic operator to calculate the eigenvalues from
-	 *  @param gf The gaugefield which A depends on
-	 *  @param system The system it is operated on
-	 *  @param prec The precision to calculate the eigenvalues up
-	 *  @param conservative If true, the maximum eigenvalue found by find_maxmin_eigenvalue is
-	 *                      increased by 5% and the minimum one is set to the squared mass of the
-	 *                      fermions. This circumvents possible numeric errors.
-	 */
-	void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, bool conservative=false);
+        /**
+         * Staggeredfield_eo cannot be copied
+         */
+        Rooted_Staggeredfield_eo& operator=(const Rooted_Staggeredfield_eo&) = delete;
+        Rooted_Staggeredfield_eo(const Rooted_Staggeredfield_eo&) = delete;
+        Rooted_Staggeredfield_eo() = delete;
 
+        /**
+         * Rescale coefficients on the basis of a Rational_Approximation objects
+         *  @param A The fermionic operator to calculate the eigenvalues from
+         *  @param gf The gaugefield which A depends on
+         *  @param system The system it is operated on
+         *  @param prec The precision to calculate the eigenvalues up
+         *  @param conservative If true, the maximum eigenvalue found by find_maxmin_eigenvalue is
+         *                      increased by 5% and the minimum one is set to the squared mass of the
+         *                      fermions. This circumvents possible numeric errors.
+         */
+        void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, bool conservative=false);
+
+    private:
+        //TODO: Remove the following pointer when an interface implementation will be passed to the constructor
+        //      because at the moment this interface is used only in the constructor of this class!
+        const RootedStaggaredfieldEoParametersInterface* rootedStaggaredfieldEoParametersInterface;
 };
 
 }

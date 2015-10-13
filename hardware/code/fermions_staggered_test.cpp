@@ -29,9 +29,10 @@
 class FermionStaggeredTester : public SpinorStaggeredTester{
    public:
 	FermionStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-	SpinorStaggeredTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues){
+	SpinorStaggeredTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+    {
 		code = device->getFermionStaggeredCode();
-		params = new LatticeObjectParametersImplementation(&system->get_inputparameters());
+		params = new physics::lattices::GaugefieldParametersImplementation(&system->get_inputparameters());
 		gaugefield = new physics::lattices::Gaugefield(*system, params, *prng);
 		/*
 		print_gaugefield_to_textfile("ref_conf");
@@ -47,7 +48,7 @@ class FermionStaggeredTester : public SpinorStaggeredTester{
 	
    protected:
 	const hardware::code::Fermions_staggered * code;
-	LatticeObjectParametersImplementation * params;
+	physics::lattices::GaugefieldParametersImplementation * params;
 	physics::lattices::Gaugefield * gaugefield;
 	
 	std::string getSpecificInputfile(std::string inputfileIn)

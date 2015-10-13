@@ -23,7 +23,7 @@
 #ifndef ILDGIOPARAMETERS_HPP_
 #define ILDGIOPARAMETERS_HPP_
 
-#include "../physics/lattices/parameters.hpp"
+#include "../physics/lattices/latticesInterfaces.hpp"
 
 class IldgIoParametersInterface
 {
@@ -42,7 +42,7 @@ public:
 class Inputparameters : public IldgIoParametersInterface
 {
 public:
-	Inputparameters (const LatticeObjectParametersInterface * parametersIn) : parameters(parametersIn) {} ;
+	Inputparameters (const physics::lattices::GaugefieldParametersInterface * parametersIn) : parameters(parametersIn) {} ;
 	virtual bool ignoreChecksumErrors() const
 	{
 		return parameters->ignoreChecksumErrorsInIO();
@@ -76,7 +76,7 @@ public:
 		return parameters->getBeta();
 	}
 private:
-	const LatticeObjectParametersInterface * parameters;
+	const physics::lattices::GaugefieldParametersInterface * parameters;
 };
 
 //TODO: this abstract class can be removed, the interface above is sufficient

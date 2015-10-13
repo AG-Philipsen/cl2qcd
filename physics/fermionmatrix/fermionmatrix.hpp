@@ -24,12 +24,12 @@
 #define _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_
 
 #include "../../hardware/code/fermions.hpp"
-
 #include "../lattices/spinorfield.hpp"
 #include "../lattices/spinorfield_eo.hpp"
 #include "../lattices/gaugefield.hpp"
-
 #include "../../hardware/device.hpp"
+#include "fermionmatrixInterfaces.hpp"
+
 /**
  * this is the definition of the class "Fermionmatrix"
  */
@@ -66,9 +66,12 @@ public:
 	 * Get the net read-write-size used by this function.
 	 */
 	virtual cl_ulong get_read_write_size() const = 0;
+	virtual ~Fermionmatrix_basic() { /*Remove this delete*/ delete fermionmatrixParametersInterface; };
 
 protected:
-	Fermionmatrix_basic(const hardware::System& system, bool herm, hmc_float _kappa = ARG_DEF, hmc_float _mubar = ARG_DEF) : _is_hermitian(herm), kappa(_kappa), mubar(_mubar), system(system) { };
+	Fermionmatrix_basic(const hardware::System& system, bool herm, hmc_float _kappa = ARG_DEF, hmc_float _mubar = ARG_DEF)
+        : fermionmatrixParametersInterface(new FermionmatrixParametersImplementation(system.get_inputparameters())),
+          _is_hermitian(herm), kappa(_kappa), mubar(_mubar), system(system) {};
 
 	hmc_float get_kappa() const noexcept;
 	hmc_float get_mubar() const noexcept;
@@ -77,6 +80,8 @@ protected:
 	 * Get the system to operate on.
 	 */
 	const hardware::System& get_system() const noexcept;
+	//TODO: Change the following pointer to a reference
+	const FermionmatrixParametersInterface* fermionmatrixParametersInterface;
 
 private:
 	/**
@@ -101,6 +106,7 @@ public:
 	 * Invoke the matrix function.
 	 */
 	virtual void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const = 0;
+	virtual ~Fermionmatrix() {};
 
 protected:
 	Fermionmatrix(bool herm, hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_basic(system, herm, _kappa, _mubar) { };
@@ -115,6 +121,7 @@ public:
 	 * Invoke the matrix function.
 	 */
 	virtual void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const = 0;
+	virtual ~Fermionmatrix_eo() {};
 
 protected:
 	Fermionmatrix_eo(bool herm, hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_basic(system, herm, _kappa, _mubar) { };
@@ -123,28 +130,28 @@ protected:
 /**
  * Actual fermion matrices (no even-odd)
  */
-class M : public Fermionmatrix {
+class M final : public Fermionmatrix {
 public:
 	M(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix(false, _kappa, _mubar, system) {  };
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 };
-class Qplus : public Fermionmatrix {
+class Qplus final : public Fermionmatrix {
 public:
 	Qplus(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix(false, _kappa, _mubar, system) { };
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 };
-class Qminus : public Fermionmatrix {
+class Qminus final : public Fermionmatrix {
 public:
 	Qminus(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix(false, _kappa, _mubar, system) { };
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 };
-class QplusQminus : public Fermionmatrix {
+class QplusQminus final : public Fermionmatrix {
 public:
 	QplusQminus(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix(true, _kappa, _mubar, system), q_plus(_kappa, _mubar, system), q_minus(_kappa, _mubar, system), tmp(system) { };
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const override;
@@ -158,7 +165,7 @@ private:
 /**
  * Actual fermion matrices (using even-odd)
  */
-class Aee : public Fermionmatrix_eo {
+class Aee final : public Fermionmatrix_eo {
 public:
 	Aee(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_eo(false, _kappa, _mubar, system), tmp(system), tmp2(system) { };
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const override;
@@ -168,7 +175,7 @@ private:
 	physics::lattices::Spinorfield_eo tmp;
 	physics::lattices::Spinorfield_eo tmp2;
 };
-class Aee_AND_gamma5_eo : public Fermionmatrix_eo {
+class Aee_AND_gamma5_eo final : public Fermionmatrix_eo {
 public:
 	Aee_AND_gamma5_eo(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_eo(false, _kappa, _mubar, system), tmp(system), tmp2(system) { };
 	void operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const override;
@@ -178,7 +185,7 @@ private:
 	physics::lattices::Spinorfield_eo tmp;
 	physics::lattices::Spinorfield_eo tmp2;
 };
-class Aee_minus : public Fermionmatrix_eo {
+class Aee_minus final : public Fermionmatrix_eo {
 public:
 	Aee_minus(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_eo(false, _kappa, _mubar, system), tmp(system), tmp2(system) { };
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const override;
@@ -188,7 +195,7 @@ private:
 	physics::lattices::Spinorfield_eo tmp;
 	physics::lattices::Spinorfield_eo tmp2;
 };
-class Aee_minus_AND_gamma5_eo : public Fermionmatrix_eo {
+class Aee_minus_AND_gamma5_eo final : public Fermionmatrix_eo {
 public:
 	Aee_minus_AND_gamma5_eo(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_eo(false, _kappa, _mubar, system), tmp(system), tmp2(system) { };
 	void operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const override;
@@ -198,7 +205,7 @@ private:
 	physics::lattices::Spinorfield_eo tmp;
 	physics::lattices::Spinorfield_eo tmp2;
 };
-class Qplus_eo : public Fermionmatrix_eo {
+class Qplus_eo final : public Fermionmatrix_eo {
 public:
 	Qplus_eo(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_eo(false, _kappa, _mubar, system), aee(_kappa, _mubar, system), aee_AND_gamma5_eo(_kappa, _mubar, system) { };
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const override;
@@ -218,7 +225,7 @@ private:
 	const Aee_minus aee_minus;
 	const Aee_minus_AND_gamma5_eo aee_minus_AND_gamma5_eo;
 };
-class QplusQminus_eo : public Fermionmatrix_eo {
+class QplusQminus_eo final : public Fermionmatrix_eo {
 public:
 	QplusQminus_eo(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_eo(true, _kappa, _mubar, system), q_plus(_kappa, _mubar, system), q_minus(_kappa, _mubar, system), tmp(system) { };
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const override;

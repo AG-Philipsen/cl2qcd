@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 	void testLogicError(const char * _params[], int length )
 	{
 		meta::Inputparameters params(length, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters(&params);
+		physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&params);
 		const hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		const physics::PRNG prng{system, &prngParameters};
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() , version.c_str()};
 		
 		meta::Inputparameters params(4, commandLineParameters);
-		LatticeObjectParametersImplementation gaugefieldParameters(&params);
+		physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&params);
 		const hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		const physics::PRNG prng{system, &prngParameters};
@@ -117,7 +117,7 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str(), eoOption.c_str(), startconditionOption.c_str(), sourcefileOption.c_str(), boostOptions[0].c_str()};
 
 		const meta::Inputparameters params(numberOfOptions, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters(&params);
+		physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&params);
 		const hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		const physics::PRNG prng{system, &prngParameters};

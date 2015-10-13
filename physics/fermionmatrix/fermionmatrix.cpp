@@ -48,7 +48,7 @@ const hardware::System& physics::fermionmatrix::Fermionmatrix_basic::get_system(
 
 void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
-	switch(get_system().get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
@@ -57,7 +57,7 @@ void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield 
 			M_tm_plus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", get_system().get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 }
 cl_ulong physics::fermionmatrix::M::get_flops() const
@@ -65,13 +65,13 @@ cl_ulong physics::fermionmatrix::M::get_flops() const
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
 	auto fermion_code = devices[0]->getFermionCode();
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			return fermion_code->get_flop_size("M_wilson");
 		case common::action::twistedmass:
 			return fermion_code->get_flop_size("M_tm_plus");
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 }
 cl_ulong physics::fermionmatrix::M::get_read_write_size() const
@@ -79,19 +79,19 @@ cl_ulong physics::fermionmatrix::M::get_read_write_size() const
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
 	auto fermion_code = devices[0]->getFermionCode();
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			return fermion_code->get_read_write_size("M_wilson");
 		case common::action::twistedmass:
 			return fermion_code->get_read_write_size("M_tm_plus");
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 }
 
 void physics::fermionmatrix::Qplus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
-	switch(get_system().get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
@@ -100,7 +100,7 @@ void physics::fermionmatrix::Qplus::operator()(const physics::lattices::Spinorfi
 			M_tm_plus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", get_system().get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	out->gamma5();
 }
@@ -111,7 +111,7 @@ cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = fermion_code->get_flop_size("M_wilson");
 			break;
@@ -119,7 +119,7 @@ cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 			res = fermion_code->get_flop_size("M_tm_plus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	res += fermion_code->get_flop_size("gamma5");
 	return res;
@@ -131,7 +131,7 @@ cl_ulong physics::fermionmatrix::Qplus::get_read_write_size() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = fermion_code->get_read_write_size("M_wilson");
 			break;
@@ -139,14 +139,14 @@ cl_ulong physics::fermionmatrix::Qplus::get_read_write_size() const
 			res = fermion_code->get_read_write_size("M_tm_plus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	res += fermion_code->get_read_write_size("gamma5");
 	return res;
 }
 void physics::fermionmatrix::Qminus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
-	switch(get_system().get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
@@ -155,7 +155,7 @@ void physics::fermionmatrix::Qminus::operator()(const physics::lattices::Spinorf
 			M_tm_minus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", get_system().get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	out->gamma5();
 }
@@ -166,7 +166,7 @@ cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = fermion_code->get_flop_size("M_wilson");
 			break;
@@ -174,7 +174,7 @@ cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 			res = fermion_code->get_flop_size("M_tm_minus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	res += fermion_code->get_flop_size("gamma5");
 	return res;
@@ -186,7 +186,7 @@ cl_ulong physics::fermionmatrix::Qminus::get_read_write_size() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = fermion_code->get_read_write_size("M_wilson");
 			break;
@@ -194,7 +194,7 @@ cl_ulong physics::fermionmatrix::Qminus::get_read_write_size() const
 			res = fermion_code->get_read_write_size("M_tm_minus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	res += fermion_code->get_read_write_size("gamma5");
 	return res;
@@ -224,12 +224,12 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 	 */
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
-	const hardware::System& system = get_system();
+
 
 	hmc_float kappa = get_kappa();
 	hmc_float mubar = get_mubar();
 
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
@@ -244,7 +244,7 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 			saxpy(out, {1., 0.}, *out, tmp);
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 }
 cl_ulong physics::fermionmatrix::Aee::get_flops() const
@@ -255,7 +255,7 @@ cl_ulong physics::fermionmatrix::Aee::get_flops() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
@@ -267,7 +267,7 @@ cl_ulong physics::fermionmatrix::Aee::get_flops() const
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee flops: " << res;
 	return res;
@@ -280,7 +280,7 @@ cl_ulong physics::fermionmatrix::Aee::get_read_write_size() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_eoprec");
@@ -292,7 +292,7 @@ cl_ulong physics::fermionmatrix::Aee::get_read_write_size() const
 			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee read-write size: " << res;
 	return res;
@@ -309,12 +309,10 @@ void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattic
 	 */
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
-	const hardware::System& system = get_system();
-
 	hmc_float kappa = get_kappa();
 	hmc_float mubar = get_mubar();
 
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
@@ -329,7 +327,7 @@ void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattic
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, tmp);
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 }
 cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_flops() const
@@ -340,7 +338,7 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_flops() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
@@ -352,7 +350,7 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_flops() const
 			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee_AND_gamma5_eo flops: " << res;
 	return res;
@@ -365,7 +363,7 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_read_write_size() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
@@ -377,7 +375,7 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_read_write_size() const
 			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee_AND_gamma5_eo read-write size: " << res;
 	return res;
@@ -394,12 +392,10 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 	 */
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
-	const hardware::System& system = get_system();
-
 	hmc_float kappa = get_kappa();
 	hmc_float mubar = get_mubar();
 
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
@@ -414,7 +410,7 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 			saxpy(out, {1., 0.}, *out, tmp);
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 }
 cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
@@ -425,7 +421,7 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
@@ -437,7 +433,7 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee_minus flops: " << res;
 	return res;
@@ -450,7 +446,7 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_read_write_size() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_eoprec");
@@ -462,7 +458,7 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_read_write_size() const
 			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee_minus read-write size: " << res;
 	return res;
@@ -479,12 +475,10 @@ void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::
 	 */
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
-	const hardware::System& system = get_system();
-
 	hmc_float kappa = get_kappa();
 	hmc_float mubar = get_mubar();
 
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
@@ -499,7 +493,7 @@ void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, tmp);
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 }
 cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_flops() const
@@ -510,7 +504,7 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_flops() const
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
@@ -522,7 +516,7 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_flops() const
 			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee_minus_AND_gamma5_eo flops: " << res;
 	return res;
@@ -535,7 +529,7 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_read_write_size() 
 	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
-	switch(system.get_inputparameters().get_fermact()) {
+	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
 		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
@@ -547,14 +541,14 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_read_write_size() 
 			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", system.get_inputparameters().get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
 	}
 	logger.trace() << "Aee_minus_AND_gamma5_eo read-write size: " << res;
 	return res;
 }
 void physics::fermionmatrix::Qplus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
 {
-	if(get_system().get_inputparameters().get_use_merge_kernels_fermion() == false) {
+	if(fermionmatrixParametersInterface->useMergedFermionicKernels() == false) {
 		aee(out, gf, in);
 		out->gamma5();
 	} else {
@@ -574,7 +568,7 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
 }
 void physics::fermionmatrix::Qminus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in) const
 {
-	if(get_system().get_inputparameters().get_use_merge_kernels_fermion() == false) {
+	if(fermionmatrixParametersInterface->useMergedFermionicKernels() == false) {
 		aee_minus(out, gf, in);
 		out->gamma5();
 	} else {

@@ -34,7 +34,8 @@ static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemome
 static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system);
 
 physics::lattices::Gaugemomenta::Gaugemomenta(const hardware::System& system)
-	: system(system), buffers(allocate_buffers(system))
+	: system(system), gaugemomentaParametersInterface(new GaugemomentaParametersImplementation(system.get_inputparameters())),
+	  buffers(allocate_buffers(system))
 {
 }
 
@@ -54,9 +55,11 @@ static  std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(c
 
 physics::lattices::Gaugemomenta::~Gaugemomenta()
 {
-for(auto buffer: buffers) {
+    for(auto buffer: buffers) {
 		delete buffer;
 	}
+    //TODO: remove the following delete
+    delete gaugemomentaParametersInterface;
 }
 
 const std::vector<const hardware::buffers::Gaugemomentum *> physics::lattices::Gaugemomenta::get_buffers() const noexcept
@@ -212,7 +215,7 @@ static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemome
 
 unsigned physics::lattices::Gaugemomenta::get_elements() const noexcept
 {
-	return meta::get_vol4d(system.get_inputparameters()) * NDIM;
+    return gaugemomentaParametersInterface->getNumberOfElements();
 }
 
 void physics::lattices::Gaugemomenta::import(const ae * const host) const
@@ -222,7 +225,6 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 		auto device = buffers[0]->get_device();
 		device->getGaugemomentumCode()->importGaugemomentumBuffer(buffers[0], host);
 	} else {
-		auto const & params = system.get_inputparameters();
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
 		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
@@ -237,16 +239,16 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
-			memcpy(mem_host, &host[get_global_link_pos(0, offset, params)], local_volume * sizeof(ae));
+			memcpy(mem_host, &host[get_global_link_pos(0, offset, gaugemomentaParametersInterface->getNt(), gaugemomentaParametersInterface->getNs())], local_volume * sizeof(ae));
 
 			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % gaugemomentaParametersInterface->getNt());
 			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume], &host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(ae));
+			memcpy(&mem_host[local_volume], &host[get_global_link_pos(0, halo_offset, gaugemomentaParametersInterface->getNt(), gaugemomentaParametersInterface->getNs())], halo_volume * sizeof(ae));
 
-			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
+			halo_offset = size_4(0, 0, 0, (offset.t + gaugemomentaParametersInterface->getNt() - halo_size.t) % gaugemomentaParametersInterface->getNt());
 			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume + halo_volume], &host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(ae));
+			memcpy(&mem_host[local_volume + halo_volume], &host[get_global_link_pos(0, halo_offset, gaugemomentaParametersInterface->getNt(), gaugemomentaParametersInterface->getNs())], halo_volume * sizeof(ae));
 
 			device->getGaugemomentumCode()->importGaugemomentumBuffer(buffer, mem_host);
 

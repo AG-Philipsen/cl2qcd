@@ -26,7 +26,7 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
-#include "parameters.hpp"
+#include "latticesInterfaces.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -44,17 +44,17 @@ namespace physics {
 			/**
 			 * Construct a gaugefield based on the input-files of the system
 			 */
-			Gaugefield(const hardware::System&, const LatticeObjectParametersInterface * parameters, const physics::PRNG&);
+			Gaugefield(const hardware::System&, const GaugefieldParametersInterface * parameters, const physics::PRNG&);
 
 			/**
 			 * Construct a gaugefield based on the given ILDG file.
 			 */
-			Gaugefield(const hardware::System&, const LatticeObjectParametersInterface * parameters, const physics::PRNG&, std::string);
+			Gaugefield(const hardware::System&, const GaugefieldParametersInterface * parameters, const physics::PRNG&, std::string);
 
 			/**
 			 * Construct a gaugefield that has been initialized hot or cold
 			 */
-			Gaugefield(const hardware::System&, const LatticeObjectParametersInterface * parameters, const physics::PRNG&, bool hot);
+			Gaugefield(const hardware::System&, const GaugefieldParametersInterface * parameters, const physics::PRNG&, bool hot);
 
 			/**
 			 * Release resources
@@ -114,14 +114,14 @@ namespace physics {
 			std::string getName(int = -1) const noexcept;
 			const physics::PRNG * getPrng() const;
 			const hardware::System * getSystem() const;
-			const LatticeObjectParametersInterface * getParameters() const;
+			const GaugefieldParametersInterface * getParameters() const;
 			
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
 			std::vector<const hardware::buffers::SU3 *> buffers;
 			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
-			const LatticeObjectParametersInterface * latticeObjectParameters;
+			const GaugefieldParametersInterface * latticeObjectParameters;
 
 			/**
 			 * Utility functions for construction.

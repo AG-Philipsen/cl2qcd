@@ -19,7 +19,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gaugeObservables.h"
+#include "gaugeObservables.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::gaugeObservables
@@ -40,7 +40,7 @@ public:
     system = new hardware::System(*parameters);
     prngParameters = new physics::ParametersPrng_fromMetaInputparameters(parameters);
     prng = new physics::PRNG(*system, prngParameters);
-    gaugefieldParameters = new LatticeObjectParametersImplementation(parameters);
+    gaugefieldParameters = new physics::lattices::GaugefieldParametersImplementation(parameters);
     gaugefield = new physics::lattices::Gaugefield(*system, gaugefieldParameters, *prng);
   }
   ~GaugeObservablesTester()
@@ -57,7 +57,7 @@ public:
 private:
   hardware::System *  system;
   physics::PRNG * prng;
-  LatticeObjectParametersImplementation * gaugefieldParameters;
+  physics::lattices::GaugefieldParametersImplementation * gaugefieldParameters;
   physics::ParametersPrng_fromMetaInputparameters * prngParameters;
 };
 
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
 {
   const char * _params[] = {"foo", "--startcondition=cold"};
   meta::Inputparameters parameters(2, _params);
-  LatticeObjectParametersImplementation gaugefieldParameters(&parameters);
+  physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
   hardware::System system(parameters);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
 	physics::PRNG prng{system, &prngParameters};
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
 {
   const char * _params[] = {"foo", "--startcondition=cold", "--nt=4", "--ns=4"};
   meta::Inputparameters parameters(2, _params);
-  LatticeObjectParametersImplementation gaugefieldParameters(&parameters);
+  physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
   hardware::System system(parameters);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
 	physics::PRNG prng{system, &prngParameters};

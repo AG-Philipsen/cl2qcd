@@ -33,6 +33,8 @@ target_link_libraries(fermionmatrix
 	lattices
 )
 
+add_unit_test_withLibraries(physics::fermionmatrix::parametersInterface fermionmatrixInterfaces_test meta)
+
 add_unit_test(physics::fermionmatrix::<explicit> explicit_test)
 add_unit_test(physics::fermionmatrix::<fermionmatrix> fermionmatrix_test)
 add_unit_test(physics::fermionmatrix::<explicit_stagg> explicit_stagg_test)

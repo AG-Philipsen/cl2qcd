@@ -31,7 +31,7 @@
 #include "../../meta/type_ops.hpp"
 #include <stdexcept>
 
-#include "../observables/gaugeObservables.h"
+#include "../observables/gaugeObservables.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	{
 		const char * _params[] = {"foo", "--ntime=8"};
 		meta::Inputparameters params(2, _params);
-		const LatticeObjectParametersImplementation parametersTmp{ &params };
+		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 	{
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		const LatticeObjectParametersImplementation parametersTmp{ &params };
+		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
@@ -75,7 +75,7 @@ void test_save(bool hot) {
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	const LatticeObjectParametersImplementation parametersTmp{ &params };
+	const GaugefieldParametersImplementation parametersTmp{ &params };
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 
 	const char * _params[] = {"foo", "--gaugeact=wilson", "--ntime=4"};
 	meta::Inputparameters params(3, _params);
-	const LatticeObjectParametersImplementation parametersTmp{ &params };
+	const GaugefieldParametersImplementation parametersTmp{ &params };
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 
 	const char * _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
 	meta::Inputparameters params2(3, _params2);
-	const LatticeObjectParametersImplementation parametersTmp2{ &params2 };
+	const GaugefieldParametersImplementation parametersTmp2{ &params2 };
 	hardware::System system2(params2);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters2(&params2);
 	physics::PRNG prng2(system, &prngParameters2);
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 	{
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		const LatticeObjectParametersImplementation parametersTmp{ &params };
+		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 	{
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		const LatticeObjectParametersImplementation parametersTmp{ &params };
+		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	{
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		const LatticeObjectParametersImplementation parametersTmp{ &params };
+		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	{
 		const char * _params[] = {"foo"};
 		meta::Inputparameters params(1, _params);
-		const LatticeObjectParametersImplementation parametersTmp{ &params };
+		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	{
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		const LatticeObjectParametersImplementation parametersTmp{ &params };
+		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);

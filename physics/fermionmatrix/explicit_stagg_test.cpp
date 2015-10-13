@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		LatticeObjectParametersImplementation gaugefieldParameters( &params );
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};

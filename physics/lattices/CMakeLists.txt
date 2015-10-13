@@ -47,7 +47,7 @@ target_link_libraries(lattices
 #
 # Definition of tests
 #
-add_unit_test_withLibraries(physics::lattices::Parameters parameters_test meta)
+add_unit_test_withLibraries(physics::lattices::latticesInterfaces latticesInterfaces_test meta)
 add_unit_test_withLibraries(physics::lattices::Gaugefield gaugefield_test gaugefield meta hardware gaugeObservables prng ildg_io host_functionality)
 add_unit_test_withLibraries(physics::lattices::Spinorfield spinorfield_test lattices)
 add_unit_test_withLibraries(physics::lattices::Spinorfield_eo spinorfield_eo_test lattices)

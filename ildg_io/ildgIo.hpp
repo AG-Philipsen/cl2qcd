@@ -25,11 +25,11 @@
 #include "../common_header_files/types.h"
 #include <string>
 #include <vector>
-#include "../physics/lattices/parameters.hpp"
+#include "../physics/lattices/latticesInterfaces.hpp"
 
 namespace ildgIo {
-	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const LatticeObjectParametersInterface *, int &, double &);
-	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const LatticeObjectParametersInterface *, int, double );
+	Matrixsu3 * readGaugefieldFromSourcefile(std::string, const physics::lattices::GaugefieldParametersInterface *, int &, double &);
+	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const physics::lattices::GaugefieldParametersInterface *, int, double );
 }
 
 #endif 

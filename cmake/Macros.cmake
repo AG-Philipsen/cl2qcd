@@ -46,7 +46,7 @@ endmacro()
 # Add a unit test
 # NAME name for the test to use in ctest
 # EXE name for the executable to use
-# The test is expectet to have only one source
+# The test is expected to have only one source
 # file called EXE.cpp and will be linked automatically
 macro(add_unit_test NAME EXE)
 	add_executable("${EXE}" "${EXE}.cpp")

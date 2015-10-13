@@ -27,7 +27,9 @@
 class TwoFlavourChiralCondensate
 {
 public:
-  TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield, std::string configurationName = "conf.default", int iteration = 0);
+  TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefield,
+                             const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface,
+                             std::string configurationName = "conf.default", int iteration = 0);
   TwoFlavourChiralCondensate() = delete;
   ~TwoFlavourChiralCondensate();
   
@@ -37,7 +39,8 @@ public:
   
 private:
   const physics::lattices::Gaugefield * gaugefield;
-  const meta::Inputparameters * parameters;
+  //const meta::Inputparameters * parameters;
+  const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface;
   const hardware::System * system;
   const physics::PRNG * prng;
   int trajectoryNumber;
@@ -55,43 +58,39 @@ private:
   void flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources);
 };
 
-TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn, std::string configurationNameIn, int trajectoryNumberIn):
-  gaugefield(gaugefieldIn), parameters(&gaugefield->getSystem()->get_inputparameters()), system(gaugefield->getSystem() ), prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)
+TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::Gaugefield * gaugefieldIn,
+                                                       const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface,
+                                                       std::string configurationNameIn, int trajectoryNumberIn)
+      : gaugefield(gaugefieldIn), parametersInterface(parametersInterface), system(gaugefield->getSystem() ),
+        prng(gaugefield->getPrng()), chiralCondensate(), configurationName(configurationNameIn)
 {
 	checkInputparameters();
 	openFileForWriting();
 	trajectoryNumber = trajectoryNumberIn;
 }
 
-void checkFermionAction(const meta::Inputparameters * parameters)
+void checkFermionAction(const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface)
 {
-	if( ! (  
-					( parameters->get_fermact() == common::action::twistedmass) ||
-					( parameters->get_fermact() == common::action::wilson)
-				)
-		)
+	if( !( (parametersInterface.getFermionicActionType() == common::action::twistedmass) || ( parametersInterface.getFermionicActionType() == common::action::wilson) )	)
 		throw std::logic_error("Chiral condensate not implemented for chosen fermion action.");
 }
 
-void checkChiralCondensateVersion(const meta::Inputparameters * parameters)
+void checkChiralCondensateVersion(const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface)
 {
-	if( ! (  
-					( parameters->get_pbp_version() == common::std) ||
-					( (parameters->get_fermact() == common::action::twistedmass && parameters->get_pbp_version() == common::tm_one_end_trick ) )
-				)
-		)
+	if( !( ( parametersInterface.getPbpVersion() == common::pbp_version::std) ||
+		 ( (parametersInterface.getFermionicActionType() == common::action::twistedmass && parametersInterface.getPbpVersion() == common::pbp_version::tm_one_end_trick ) ) ) )
 		throw std::logic_error("No valid chiral condensate version has been selected.");
 }
 
 void TwoFlavourChiralCondensate::checkInputparameters()
 {
-	if(! parameters->get_measure_pbp() ) 
+	if(! parametersInterface.measurePbp() )
 	{
 		throw std::logic_error("Chiral condensate calculation disabled in parameter setting. Aborting...");
 	}
 	
-	checkFermionAction(parameters);
-	checkChiralCondensateVersion(parameters);
+	checkFermionAction(parametersInterface);
+	checkChiralCondensateVersion(parametersInterface);
 }
 
 TwoFlavourChiralCondensate::~TwoFlavourChiralCondensate()
@@ -107,7 +106,7 @@ std::vector<double> TwoFlavourChiralCondensate::getChiralCondensate()
 void TwoFlavourChiralCondensate::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield)
 {
 	logger.info() << "chiral condensate:" ;
-	for (int sourceNumber = 0; sourceNumber < parameters->get_num_sources(); sourceNumber++) {
+	for (int sourceNumber = 0; sourceNumber < parametersInterface.getNumberOfSources(); sourceNumber++) {
 		auto sources = physics::create_sources(*system, *prng, 1);
 		auto result = physics::lattices::create_spinorfields(*system, sources.size());
 		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
@@ -143,12 +142,12 @@ double TwoFlavourChiralCondensate::norm_std() const
 	 * The additional factor of 2 is inserted to fit the reference values.
 	 * The additional factor of 2 is Nf.
 	 */
-	double norm =  2. * 2. * parameters->get_kappa() * 2. / meta::get_vol4d(*parameters) / 2. / 12.;
+	double norm =  2. * 2. * parametersInterface.getKappa() * 2. / parametersInterface.get4dVolume() / 2. / 12.;
 	/**
 	 * Currently, there is a problem with the sign if even-odd is used (issue #389).
 	 * This seems to cause the a wrong sign in the chiral condensate, which will be compensated for now.
 	 */
-	if(parameters->get_use_eo() ){
+	if(parametersInterface.useEvenOdd()){
 		norm *= -1.;
 	}
 	return norm;
@@ -179,12 +178,12 @@ double TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::la
 	*/
 	double result;
 
-	if(parameters->get_fermact() == common::action::twistedmass) {
+	if(parametersInterface.getFermionicActionType() == common::action::twistedmass) {
 		xi->gamma5();
 	}
 	hmc_complex tmp = scalar_product(*xi, *phi);
 
-	switch(parameters->get_fermact()) {
+	switch(parametersInterface.getFermionicActionType()) {
 		case  common::action::wilson:
 			result = tmp.re * norm_std();
 			break;
@@ -200,7 +199,7 @@ double TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::la
 
 void TwoFlavourChiralCondensate::openFileForWriting()
 {
-	filenameForChiralCondensateData = meta::get_ferm_obs_pbp_file_name(*parameters, configurationName);
+	filenameForChiralCondensateData = parametersInterface.getPbpFilename(configurationName);
 	outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
 	if(!outputToFile.is_open()) {
 		throw File_Exception(filenameForChiralCondensateData);
@@ -209,8 +208,8 @@ void TwoFlavourChiralCondensate::openFileForWriting()
 
 void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources)
 {
-        double result = 0.;
-	if( parameters->get_pbp_version() == common::tm_one_end_trick )
+    double result = 0.;
+    if( parametersInterface.getPbpVersion() == common::pbp_version::tm_one_end_trick )
 	{
 	  result = flavour_doublet_chiral_condensate_tm(inverted);
 	} 
@@ -224,7 +223,8 @@ void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
 {
-        TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, gaugefield->get_trajectoryNumberAtInit());
+    physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation parametersInterface{gaugefield->getSystem()->get_inputparameters()};
+    TwoFlavourChiralCondensate condensate(gaugefield, parametersInterface, currentConfigurationName, gaugefield->get_trajectoryNumberAtInit());
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
@@ -232,8 +232,9 @@ std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondens
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
 {
+    physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation parametersInterface{gaugefield->getSystem()->get_inputparameters()};
 	std::string currentConfigurationName = gaugefield->getName(iteration);
-	TwoFlavourChiralCondensate condensate(gaugefield, currentConfigurationName, iteration);
+	TwoFlavourChiralCondensate condensate(gaugefield, parametersInterface, currentConfigurationName, iteration);
 	condensate.measureChiralCondensate(gaugefield);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
@@ -246,7 +247,7 @@ double TwoFlavourChiralCondensate::norm_tm() const
 	 * In addition, a factor of 2 kappa should be inserted to convert to the physical basis.
 	 * The additional factor of 2 is inserted to fit the reference values.
 	 */
-	double norm = 4. * parameters->get_kappa()  / meta::get_vol4d(*parameters)  * meta::get_mubar(*parameters ) * 2. / 2. / 12.;
+	double norm = 4. * parametersInterface.getKappa()  / parametersInterface.get4dVolume()  * parametersInterface.getMubar() * 2. / 2. / 12.;
 	return norm;
 }
 

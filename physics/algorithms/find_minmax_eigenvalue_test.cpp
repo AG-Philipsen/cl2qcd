@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(max)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
-	LatticeObjectParametersImplementation gaugefieldParameters( &params );
+	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(min)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
-	LatticeObjectParametersImplementation gaugefieldParameters( &params );
+	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
-	LatticeObjectParametersImplementation gaugefieldParameters( &params );
+	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
