@@ -203,9 +203,9 @@ public:
 	size_4 get_mem_lattice_size() const;
 
 private:
-	const cl_context context;
-	const hardware::HardwareParametersInterface * hardwareParameters;
 	const hardware::OpenClCode * openClCodeBuilder;
+	const hardware::HardwareParametersInterface * hardwareParameters;
+	const cl_context context;
 	cl_command_queue command_queue;
 
 	/**
