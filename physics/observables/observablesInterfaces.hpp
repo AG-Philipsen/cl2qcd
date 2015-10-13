@@ -81,12 +81,12 @@ namespace physics {
 			public:
 				virtual ~WilsonTwoFlavourCorrelatorsParametersInterface() {};
 				virtual bool printToScreen() const = 0;
-				virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of) const = 0;
+				virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
 				virtual unsigned getCorrelatorDirection() const = 0;
 				virtual meta::ParametersSources::sourcetypes getSourceType() const = 0;
 				virtual unsigned getNs() const = 0;
 				virtual unsigned getNt() const = 0;
-				virtual std::string getFermionObservablesCorrelatorFilename(std::string currentConfigurationName) const = 0;
+				virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
 				virtual bool placeOfSourcesOnHost() const = 0;
 				virtual	int getNumberOfSources() const = 0;
 		};
@@ -271,7 +271,7 @@ namespace physics {
 				{
 					return parameters.get_ntime();
 				}
-				std::string getFermionObservablesCorrelatorFilename(std::string currentConfigurationName) const override
+				std::string getCorrelatorFilename(std::string currentConfigurationName) const override
 				{
 					return meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
 				}
