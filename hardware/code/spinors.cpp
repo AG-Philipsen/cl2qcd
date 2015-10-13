@@ -990,12 +990,12 @@ void hardware::code::Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::
 	convertSpinorfieldToSOA_eo_device(buf, &tmp);
 }
 
-hardware::code::Spinors::Spinors(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
-	: Opencl_Module(params, device), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0), saxpy_AND_squarenorm_eo(0) 
+hardware::code::Spinors::Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0), saxpy_AND_squarenorm_eo(0)
 {
 	fill_kernels();
 
-	if(params.get_use_eo() ) {
+	if(kernelParameters.getUseEo() ) {
 		size_t foo1, foo2;
 		cl_uint groups;
 		this->get_work_sizes(scalar_product_eoprec, &foo1, &foo2, &groups);
@@ -1071,16 +1071,6 @@ void hardware::code::Spinors::generate_gaussian_spinorfield_eo_device(const hard
 		}
 	}
 
-}
-
-size_t hardware::code::get_spinorfieldsize(const meta::Inputparameters& params)
-{
-	return get_vol4d(params);
-}
-
-size_t hardware::code::get_eoprec_spinorfieldsize(const meta::Inputparameters& params)
-{
-	return get_spinorfieldsize(params) / 2;
 }
 
 size_t hardware::code::get_spinorfieldsize(const size_4& params)

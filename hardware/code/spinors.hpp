@@ -35,9 +35,7 @@ namespace hardware {
 
 namespace code {
 
-size_t get_spinorfieldsize(const meta::Inputparameters& params);
 size_t get_spinorfieldsize(const size_4& params);
-size_t get_eoprec_spinorfieldsize(const meta::Inputparameters& params);
 size_t get_eoprec_spinorfieldsize(const size_4& params);
 
 /**
@@ -128,7 +126,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Spinors(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
+	Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device);
 
 private:
 	/**
