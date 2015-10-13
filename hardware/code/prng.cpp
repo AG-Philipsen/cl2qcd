@@ -22,26 +22,26 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
+static std::string collect_build_options(hardware::Device * device, const hardware::code::OpenClKernelParametersInterface& params)
 {
 	std::ostringstream options;
 	options.precision(16);
-	if(params.get_use_same_rnd_numbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
+	if(params.getUseSameRndNumbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
 #ifdef USE_PRNG_RANLUX
-	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params.get_use_same_rnd_numbers());
+	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params.getUseSameRndNumbers());
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
 	return options.str();
 }
 
-hardware::code::Prng::Prng(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Prng::Prng(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 #ifdef USE_PRNG_RANLUX
 	logger.debug() << "Creating PRNG kernels...";
 	// the ranluxcl lies in the main directory, other than the remaining kernel
-	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "../ranluxcl/ranluxcl.cl" << "random.cl";
+	prng_code = ClSourcePackage(collect_build_options(get_device(), kernelParameters)) << "../ranluxcl/ranluxcl.cl" << "random.cl";
 	init_kernel = createKernel("prng_ranlux_init") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_") << "globaldefs.h" << "types.h" << "opencl_header.cl" <<  prng_code << "random_ranlux_init.cl";
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
