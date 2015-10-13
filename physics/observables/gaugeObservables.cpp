@@ -20,7 +20,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gaugeObservables.h"
+#include "gaugeObservables.hpp"
 #include "../../hardware/code/kappa.hpp"
 #include <cassert>
 #include <fstream>

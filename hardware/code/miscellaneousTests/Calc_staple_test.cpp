@@ -25,7 +25,7 @@
 #include "../opencl_module.hpp"
 #include "../gaugefield.hpp"
 
-#include "../../../physics/observables/gaugeObservables.h"
+#include "../../../physics/observables/gaugeObservables.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

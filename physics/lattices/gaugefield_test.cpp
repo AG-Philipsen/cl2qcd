@@ -31,7 +31,7 @@
 #include "../../meta/type_ops.hpp"
 #include <stdexcept>
 
-#include "../observables/gaugeObservables.h"
+#include "../observables/gaugeObservables.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {

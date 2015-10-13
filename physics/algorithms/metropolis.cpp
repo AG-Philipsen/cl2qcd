@@ -28,7 +28,7 @@
 #include "../lattices/util.hpp"
 #include "../../meta/util.hpp"
 #include <cmath>
-#include "../observables/gaugeObservables.h"
+#include "../observables/gaugeObservables.hpp"
 
 static void print_info_debug(const meta::Inputparameters& params, std::string metropolis_part, hmc_float value, bool info=true);
 

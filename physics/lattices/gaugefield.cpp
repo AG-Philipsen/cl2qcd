@@ -25,7 +25,7 @@
 #include "../../host_functionality/host_operations_gaugefield.h"
 #include "../../hardware/device.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
-#include "../observables/gaugeObservables.h"
+#include "../observables/gaugeObservables.hpp"
 #include "../../ildg_io/ildgIo.hpp"
 #include "../../hardware/code/gaugefield.hpp"
 

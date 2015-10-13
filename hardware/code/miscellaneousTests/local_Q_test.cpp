@@ -23,7 +23,7 @@
 #include "../../device.hpp"
 #include "../../../physics/lattices/gaugefield.hpp"
 
-#include "../../../physics/observables/gaugeObservables.h"
+#include "../../../physics/observables/gaugeObservables.hpp"
 #include "../opencl_module.hpp"
 #include "../gaugefield.hpp"
 

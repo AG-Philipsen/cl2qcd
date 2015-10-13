@@ -19,7 +19,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gaugeObservables.h"
+#include "gaugeObservables.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::gaugeObservables
