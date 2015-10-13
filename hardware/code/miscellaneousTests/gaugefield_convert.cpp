@@ -40,7 +40,7 @@ for(auto device: system.get_devices()) {
 		fill(out, NUM_ELEMENTS, seed + NUM_ELEMENTS);
 		hardware::buffers::SU3 buffer(NUM_ELEMENTS, device);
 
-		auto code = device->get_gaugefield_code();
+		auto code = device->getGaugefieldCode();
 		code->importGaugefield(&buffer, in);
 		code->exportGaugefield(out, &buffer);
 

@@ -32,22 +32,22 @@ void hardware::code::Correlator::fill_kernels()
 {
 	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 
 	logger.debug() << "Creating Correlator kernels...";
 
-	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
+	if(get_parameters().get_sourcetype() == common::point)
 		create_point_source = createKernel("create_point_source") << basic_correlator_code << prng_code << "spinorfield_point_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
+	else if (get_parameters().get_sourcetype() == common::volume)
 		create_volume_source = createKernel("create_volume_source") << basic_correlator_code << prng_code << "spinorfield_volume_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
+	else if (get_parameters().get_sourcetype() == common::timeslice)
 		create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::zslice)
+	else if (get_parameters().get_sourcetype() == common::zslice)
 		create_zslice_source = createKernel("create_zslice_source") << basic_correlator_code << prng_code << "spinorfield_zslice_source.cl";
 
 	if(get_parameters().get_measure_correlators() ) {
 		//CP: If a pointsource is chosen, the correlators have a particular simple form.
-		if(get_parameters().get_sourcetype() == meta::Inputparameters::point) {
+		if(get_parameters().get_sourcetype() == common::point) {
 			switch (get_parameters().get_corr_dir()) {
 				case 0 :
 					correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << "fermionobservables/correlator_ps_point.cl";
@@ -237,7 +237,7 @@ void hardware::code::Correlator::create_point_source_device(const hardware::buff
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {
@@ -265,7 +265,7 @@ void hardware::code::Correlator::create_volume_source_device(const hardware::buf
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {
@@ -296,7 +296,7 @@ void hardware::code::Correlator::create_timeslice_source_device(const hardware::
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {
@@ -328,7 +328,7 @@ void hardware::code::Correlator::create_zslice_source_device(const hardware::buf
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {

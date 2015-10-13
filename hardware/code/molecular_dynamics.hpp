@@ -101,7 +101,11 @@ protected:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
-private:
+	/**
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
+	 */
+public:
 	/**
 	 * Constructor.
 	 *
@@ -109,6 +113,7 @@ private:
 	 */
 	Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

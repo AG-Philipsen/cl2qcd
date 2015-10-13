@@ -53,8 +53,8 @@ namespace physics {
         class WilsonTwoFlavourChiralCondensateParametersInterface {
         	public:
         		virtual ~WilsonTwoFlavourChiralCondensateParametersInterface() {};
-        		virtual meta::action getFermionicActionType() const = 0;
-        		virtual meta::ParametersObs::pbp_version getPbpVersion() const = 0;
+        		virtual common::action getFermionicActionType() const = 0;
+        		virtual common::pbp_version getPbpVersion() const = 0;
         		virtual bool measurePbp() const = 0;
         		virtual int getNumberOfSources() const = 0;
         		virtual hmc_float getKappa() const = 0;
@@ -83,7 +83,7 @@ namespace physics {
 				virtual bool printToScreen() const = 0;
 				virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
 				virtual unsigned getCorrelatorDirection() const = 0;
-				virtual meta::ParametersSources::sourcetypes getSourceType() const = 0;
+				virtual common::sourcetypes getSourceType() const = 0;
 				virtual unsigned getNs() const = 0;
 				virtual unsigned getNt() const = 0;
 				virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
@@ -155,11 +155,11 @@ namespace physics {
         		WilsonTwoFlavourChiralCondensateParametersImplementation() = delete;
         		WilsonTwoFlavourChiralCondensateParametersImplementation(const meta::Inputparameters& parametersIn) : parameters(parametersIn) {}
         		~WilsonTwoFlavourChiralCondensateParametersImplementation() {}
-        		meta::action getFermionicActionType() const override
+        		common::action getFermionicActionType() const override
         		{
         			return parameters.get_fermact();
         		}
-        		meta::ParametersObs::pbp_version getPbpVersion() const override
+        		common::pbp_version getPbpVersion() const override
         		{
         			return parameters.get_pbp_version();
         		}
@@ -259,7 +259,7 @@ namespace physics {
 				{
 					return parameters.get_corr_dir();
 				}
-				meta::ParametersSources::sourcetypes getSourceType() const override
+				common::sourcetypes getSourceType() const override
 				{
 					return parameters.get_sourcetype();
 				}

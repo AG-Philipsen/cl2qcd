@@ -25,7 +25,7 @@ void SpinorTester::setMembers()
 		//todo: some of these could also be put into the specific child-classes where they are actually used.
 	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
 	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
-	(parameters->get_solver() == meta::Inputparameters::cg) ? useRandom = false : useRandom =true;
+	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
 	(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
 	alpha_host = {parameters->get_beta(), parameters->get_rho()};
 	beta_host = {parameters->get_kappa(), parameters->get_mu()};
@@ -36,7 +36,7 @@ void SpinorTester::setMembers()
 SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
   KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( parameters )
 	{
-	code = device->get_spinor_code();
+	code = device->getSpinorCode();
 	prng = new physics::PRNG(*system, &prngParameters);
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 	allocatedObjects = true;
@@ -47,7 +47,7 @@ SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int 
 SpinorTester::SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues, int typeOfComparision, std::vector<double> expectedResult):
   KernelTester(kernelName, parameterStrings, numberOfValues, typeOfComparision, expectedResult), prngParameters( parameters )
 	{
-	code = device->get_spinor_code();
+	code = device->getSpinorCode();
 	prng = new physics::PRNG(*system, &prngParameters);
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 	allocatedObjects = true;
@@ -59,7 +59,7 @@ SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::S
 	KernelTester(parameters, system, device), allocatedObjects(false), prngParameters( parameters )
 {
 	setMembers();
-	code = device->get_spinor_code();
+	code = device->getSpinorCode();
 }
 
 

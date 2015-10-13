@@ -44,7 +44,7 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 {
 	basic_molecular_dynamics_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "types_hmc.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_gaugemomentum.cl";
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 	
 	logger.debug() << "Creating Molecular_Dynamics kernels...";
 
@@ -307,7 +307,7 @@ void hardware::code::Molecular_Dynamics::gauge_force_device(const hardware::buff
 	get_device()->enqueue_kernel( gauge_force , gs2, ls2);
 
 	if(logger.beDebug()) {
-		auto gm_code = get_device()->get_gaugemomentum_code();
+		auto gm_code = get_device()->getGaugemomentumCode();
 		hardware::buffers::Plain<hmc_float> gauge_force_tmp(1, get_device());
 		hmc_float gauge_force_energy = 0.;
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &gauge_force_tmp);
@@ -391,7 +391,7 @@ void hardware::code::Molecular_Dynamics::gauge_force_tlsym_device(const hardware
 
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> gauge_force_tlsym_tmp(1, get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
+		auto gm_code = get_device()->getGaugemomentumCode();
 		hmc_float gauge_force_tlsym_energy = 0.;
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &gauge_force_tlsym_tmp);
 		gauge_force_tlsym_tmp.dump(&gauge_force_tlsym_energy);
@@ -438,7 +438,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_device(const hardware::bu
 
 	if(logger.beDebug()) {
 		Plain<hmc_float> noneo_force_tmp(1, get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
+		auto gm_code = get_device()->getGaugemomentumCode();
 		hmc_float noneo_force_energy = 0.;
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &noneo_force_tmp);
 		noneo_force_tmp.dump(&noneo_force_energy);
@@ -462,7 +462,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 
 	if(logger.beDebug()) {
 		Plain<hmc_float> tmp(1, get_device());
-		auto spinor_code = get_device()->get_spinor_code();
+		auto spinor_code = get_device()->getSpinorCode();
 		hmc_float resid;
 		spinor_code->set_float_to_global_squarenorm_eoprec_device(Y, &tmp);
 		tmp.dump(&resid);
@@ -471,7 +471,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 		tmp.dump(&resid);
 		logger.debug() <<  "\t\t\tX:\t" << resid;
 
-		auto gf_code = get_device()->get_gaugefield_code();
+		auto gf_code = get_device()->getGaugefieldCode();
 		Plain<hmc_complex> pol_dev(1, get_device());
 		gf_code->polyakov_device(gf, &pol_dev);
 		hmc_complex pol_host;
@@ -481,7 +481,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 		logger.debug() << "Even-odd: " << evenodd;
 		logger.debug() << "Kappa: " << kappa_tmp;
 
-		auto gm_code = get_device()->get_gaugemomentum_code();
+		auto gm_code = get_device()->getGaugemomentumCode();
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &tmp);
 		tmp.dump(&resid);
 		logger.debug() <<  "\t\t\tGm:\t" << resid;
@@ -522,7 +522,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 
 	if(logger.beDebug()) {
 		Plain<hmc_float> force_tmp(1, get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
+		auto gm_code = get_device()->getGaugemomentumCode();
 		hmc_float resid;
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &force_tmp);
 		force_tmp.dump(&resid);
@@ -565,7 +565,7 @@ void hardware::code::Molecular_Dynamics::fermion_staggered_partial_force_device(
 
 	if(logger.beDebug()) {
 		Plain<hmc_float> force_tmp(1, get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
+		auto gm_code = get_device()->getGaugemomentumCode();
 		hmc_float resid;
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &force_tmp);
 		force_tmp.dump(&resid);

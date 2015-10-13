@@ -34,7 +34,7 @@ void physics::fermionmatrix::M_wilson(const physics::lattices::Spinorfield * out
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->M_wilson_device(in_bufs[i], out_bufs[i], gf_bufs[i], kappa);
 	}
 	out->update_halo();
@@ -52,7 +52,7 @@ void physics::fermionmatrix::M_tm_plus(const physics::lattices::Spinorfield * ou
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->M_tm_plus_device(in_bufs[i], out_bufs[i], gf_bufs[i], kappa, mubar);
 	}
 
@@ -71,7 +71,7 @@ void physics::fermionmatrix::M_tm_minus(const physics::lattices::Spinorfield * o
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->M_tm_minus_device(in_bufs[i], out_bufs[i], gf_bufs[i], kappa, mubar);
 	}
 
@@ -89,7 +89,7 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal(const physics::lattices::
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->M_tm_inverse_sitediagonal_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
@@ -112,7 +112,7 @@ void physics::fermionmatrix::M_tm_sitediagonal(const physics::lattices::Spinorfi
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->M_tm_sitediagonal_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
@@ -135,7 +135,7 @@ void physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(const physics::latt
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->M_tm_inverse_sitediagonal_minus_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
@@ -158,7 +158,7 @@ void physics::fermionmatrix::M_tm_sitediagonal_minus(const physics::lattices::Sp
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->M_tm_sitediagonal_minus_device(in_bufs[i], out_bufs[i], mubar);
 	}
 
@@ -185,21 +185,21 @@ void physics::fermionmatrix::dslash(const physics::lattices::Spinorfield_eo * ou
 	auto update = in.require_halo_async(1);
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->dslash_eo_inner(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd, kappa);
 	}
 
 	update.finalize();
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->dslash_eo_boundary(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd, kappa);
 	}
 #else
 	in.require_halo(1);
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto fermion_code = out_bufs[i]->get_device()->get_fermion_code();
+		auto fermion_code = out_bufs[i]->get_device()->getFermionCode();
 		fermion_code->dslash_eo_device(in_bufs[i], out_bufs[i], gf_bufs[i], evenodd, kappa);
 	}
 #endif

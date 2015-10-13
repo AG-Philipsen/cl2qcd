@@ -24,12 +24,11 @@
 
 #include "device_info.hpp"
 #include <map>
-#include "../meta/inputparameters.hpp"
 #include "hardwareParameters.hpp"
 #include "opencl_compiler.hpp"
 #include "profiling_data.hpp"
 #include "../common_header_files/types.h"
-#include "../meta/size_4.hpp"
+#include "size_4.hpp"
 
 class MemObjectAllocationTracer;
 
@@ -37,12 +36,13 @@ namespace hardware {
 
 class SynchronizationEvent;
 class Device;
+class OpenClCode; //including the header of this class causes some trouble!
 
 namespace buffers {
 // forward declaration for friend relation
 class Buffer;
 class ProxyBufferCache;
-hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const std::vector<hardware::SynchronizationEvent>& events);
+hardware::SynchronizationEvent copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *destOrigin, const size_t *srcOrigin, const size_t *region, size_t destRowPitch, size_t destSlicePitch, size_t srcRowPitch, size_t srcSlicePitch, const std::vector<hardware::SynchronizationEvent>& events);
 }
 namespace transfer {
 class DGMAGhostBuffer;
@@ -51,7 +51,7 @@ class DGMAGhostBuffer;
 namespace code {
 // forward decleration to improve decoupling and speed up compilation
 class Gaugefield;
-class PRNG;
+class Prng;
 class Real;
 class Complex;
 class Spinors;
@@ -82,21 +82,16 @@ class Device : public DeviceInfo {
 	friend hardware::buffers::Buffer;
 	friend hardware::buffers::ProxyBufferCache;
 	friend hardware::transfer::DGMAGhostBuffer;
-	friend void print_profiling(Device *, const std::string&, int);
-	friend cl_command_queue profiling_data_test_command_queue_helper(const Device * device);
-	friend hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *dest_origin, const size_t *src_origin, const size_t *region, size_t dest_row_pitch, size_t dest_slice_pitch, size_t src_row_pitch, size_t src_slice_pitch, const std::vector<hardware::SynchronizationEvent>& events);
+	friend void printProfiling(Device *, const std::string&, int);
+	friend cl_command_queue profilingDataTestCommandQueueHelper(const Device * device);
+	friend hardware::SynchronizationEvent hardware::buffers::copyDataRect(const hardware::Device* device, const hardware::buffers::Buffer* dest, const hardware::buffers::Buffer* orig, const size_t *destOrigin, const size_t *srcOrigin, const size_t *region, size_t destRowPitch, size_t destSlicePitch, size_t srcRowPitch, size_t srcSlicePitch, const std::vector<hardware::SynchronizationEvent>& events);
 	friend MemObjectAllocationTracer;
 
 public:
 	/**
-	 * Initialize the device.
-	 *
-	 * \param context context for the device
-	 * \param device_id id of the device to initialize
-	 * \param inputparams the input parameters of the application
-	 * \param enable_profiling enable profiling on this device
+	 * Initialize an OpenCL device.
 	 */
-	Device(cl_context, cl_device_id, size_4 grid_pos, size_4 grid_size, const meta::Inputparameters&, bool enable_profiling = false);
+	Device(cl_context, cl_device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn);
 
 	~Device();
 
@@ -112,52 +107,40 @@ public:
 	 * @code
 	 * cl_kernel dummy = create_kernel("dummy") << "dummy.cl";
 	 * @endcode
-	 *
-	 * @param kernel_name The name of the kernel to create.
-	 * @param build_opts Build options for the kernel
 	 */
-	TmpClKernel create_kernel(const char * const kernel_name, std::string build_opts) const;
+	TmpClKernel createKernel(const char * const kernelName, std::string buildOptions) const;
 
 	/**
 	 * Enqueue a kernel on the device using the default number of global threads
 	 */
-	void enqueue_kernel(const cl_kernel kernel);
+	void enqueueKernel(const cl_kernel kernel);
 
 	/**
 	 * Enqueue a kernel on the device using the default number of local threads
 	 */
-	void enqueue_kernel(const cl_kernel kernel, size_t global_threads);
+	void enqueueKernel(const cl_kernel kernel, size_t globalThreads);
 
 	/**
 	 * Enqueue a kernel on the device using the default given threads specifications
 	 */
-	void enqueue_kernel(const cl_kernel kernel, size_t global_threads, size_t local_threads);
+	void enqueue_kernel(const cl_kernel kernel, size_t globalThreads, size_t localThreads);
 
-	/**
-	 * Enqueue a kernel on the device using the default number of global threads
-	 */
-	void enqueue_marker(cl_event *) const;
+	void enqueueMarker(cl_event *) const;
 
 	/**
 	 * Enqueue a barrier, preventing new jobs starting on this device until the given event finished
 	 */
-	void enqueue_barrier(const hardware::SynchronizationEvent& event) const;
+	void enqueueBarrier(const hardware::SynchronizationEvent& event) const;
 	void enqueue_barrier(const hardware::SynchronizationEvent& event1, const hardware::SynchronizationEvent& event2) const;
 
 	/**
-	 * Recommend a stride for the given number of elements of the given type
+	 * Recommend a stride for a given number of elements of a non-basic type (called complete type).
 	 *
-	 * \param elems      The number of elements to be stored
-	 * \param type_size  The size of the basic storage element
-	 * \param lane_count How many of the basic storage elements make up the complete type
-	 * \return The recommended stride in elements
+	 * @todo rename fct. to recommendedStride
 	 */
-	size_t recommend_stride(size_t elems, size_t type_size, size_t lane_count) const;
+	size_t recommendStride(size_t elementsOfCompleteType, size_t sizeOfBasicStorageElement, size_t numbeOfBasicStorageElementsInCompleteType) const;
 
-	/**
-	 * Query whether profiling is enabled on this device.
-	 */
-	bool is_profiling_enabled() const noexcept;
+	bool isProfilingEnabled() const noexcept;
 
 	/**
 	 * Make sure all commands have been sent to the device.
@@ -171,107 +154,47 @@ public:
 
 	/**
 	 * Get the profiling data for all executions of the given kernel on this device.
-	 *
-	 * \param kernel The kernel for which to get the profiling data
-	 * \return Profiling data for the given kernel on this device
 	 */
-	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
+	ProfilingData getProfilingData(const cl_kernel& desiredKernel) noexcept;
 
 	/**
-	 * Get access to the gaugefield kernels on this device.
+	 * @todo: Rename all these getter fcts.
+	 * e.g. get_gaugefield_code -> getGaugefieldCode
 	 */
-	const hardware::code::Gaugefield * get_gaugefield_code();
-
 	/**
-	 * Get access to the prng kernels on this device.
+	 * Get access to the specific kernels on this device.
 	 */
-	const hardware::code::PRNG * get_prng_code();
-
+	const hardware::code::Gaugefield * getGaugefieldCode();
+	const hardware::code::Prng * getPrngCode();
+	const hardware::code::Real * getRealCode();
+	const hardware::code::Complex * getComplexCode();
+	const hardware::code::Spinors * getSpinorCode();
+	const hardware::code::Spinors_staggered * getSpinorStaggeredCode();
+	const hardware::code::Fermions * getFermionCode();
+	const hardware::code::Fermions_staggered * getFermionStaggeredCode();
+	const hardware::code::Gaugemomentum * getGaugemomentumCode();
+	const hardware::code::Molecular_Dynamics * getMolecularDynamicsCode();
+	const hardware::code::Correlator * getCorrelatorCode();
+	const hardware::code::Correlator_staggered * getCorrelatorStaggeredCode();
+	const hardware::code::Heatbath * getHeatbathCode();
+	const hardware::code::Kappa * getKappaCode();
 	/**
-	 * Get access to the real kernels on this device.
-	 */
-	const hardware::code::Real * get_real_code();
-	
-	/**
-	 * Get access to the complex kernels on this device.
-	 */
-	const hardware::code::Complex * get_complex_code();
-
-	/**
-	 * Get access to the spinor kernels on this device.
-	 */
-	const hardware::code::Spinors * get_spinor_code();
-
-	/**
-	 * Get access to the staggered spinor kernels on this device.
-	 */
-	const hardware::code::Spinors_staggered * get_spinor_staggered_code();
-
-	/**
-	 * Get access to the fermion kernels on this device.
-	 */
-	const hardware::code::Fermions * get_fermion_code();
-
-	/**
-	 * Get access to the staggered fermion kernels on this device.
-	 */
-	const hardware::code::Fermions_staggered * get_fermion_staggered_code();
-
-	/**
-	 * Get access to the gaugemomentum kernels on this device.
-	 */
-	const hardware::code::Gaugemomentum * get_gaugemomentum_code();
-
-	/**
-	 * Get access to the molecular dynamics kernels on this device.
-	 */
-	const hardware::code::Molecular_Dynamics * get_molecular_dynamics_code();
-
-	/**
-	 * Get access to the correlator kernels on this device.
-	 */
-	const hardware::code::Correlator * get_correlator_code();
-	
-	/**
-	 * Get access to the correlator_staggered kernels on this device.
-	 */
-	const hardware::code::Correlator_staggered * get_correlator_staggered_code();
-
-	/**
-	 * Get access to the heatbath kernels on this device.
-	 */
-	const hardware::code::Heatbath * get_heatbath_code();
-
-	/**
-	 * Get access to the kappa kernels on this device.
-	 */
-	const hardware::code::Kappa * get_kappa_code();
-
-	/**
-	 * Get access to the buffer kernels on this device.
-	 *
 	 * TODO technicall this should only be used by stuff in the buffers package
 	 */
-	const hardware::code::Buffer * get_buffer_code();
+	const hardware::code::Buffer * getBufferCode();
 
 	/**
+	 *  TODO work over fct. names
 	 * Get the position of the device inside the device grid.
 	 */
-	size_4 get_grid_pos() const;
+	size_4 getGridPos() const;
 
 	/**
 	 * Get the size of the device grid.
+	 * @todo: move to system!
 	 */
-	size_4 get_grid_size() const;
-
-	/**
-	 * Get the size of the local lattice.
-	 */
+	size_4 getGridSize() const;
 	size_4 get_local_lattice_size() const;
-
-	/**
-	 * Get the size of the halo
-	 */
 	unsigned get_halo_size() const;
 
 	/**
@@ -280,133 +203,41 @@ public:
 	size_4 get_mem_lattice_size() const;
 
 private:
-	/**
-	 * The OpenCL context to be used by this device.
-	 */
 	const cl_context context;
-
-	/**
-	 * The input parameters of the application.
-	 */
-	const meta::Inputparameters& params;
 	const hardware::HardwareParametersInterface * hardwareParameters;
-
-	/**
-	 * The command queue used to perform operations on this device
-	 */
+	const hardware::OpenClCode * openClCodeBuilder;
 	cl_command_queue command_queue;
-
-	/**
-	 * Whether profiling is enabled
-	 */
-	const bool profiling_enabled;
 
 	/**
 	 * Allow easy use of the command queue
 	 */
 	operator cl_command_queue() const noexcept;
-
-	/**
-	 * Allow easy use of the command queue
-	 */
 	cl_command_queue get_queue() const noexcept;
 
-	/**
-	 * Kernel profiling data
-	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
 
 	/**
-	 * Pointer to the gaugefield code.
+	 * Pointers to specific code objects.
 	 * Initialized on demand.
 	 */
 	const hardware::code::Gaugefield * gaugefield_code;
-
-	/**
-	 * Pointer to the prng code.
-	 * Initialized on demand.
-	 */
-	const hardware::code::PRNG * prng_code;
-
-	/**
-	 * Pointer to the real code.
-	 * Initialized on demand.
-	 */
+	const hardware::code::Prng * prng_code;
 	const hardware::code::Real * real_code;
-	
-	/**
-	 * Pointer to the complex code.
-	 * Initialized on demand.
-	 */
 	const hardware::code::Complex * complex_code;
-
-	/**
-	 * Pointer to the spinor code.
-	 * Initialized on demand.
-	 */
 	const hardware::code::Spinors * spinor_code;
-
-	/**
-	 * Pointer to the staggered spinor code.
-	 * Initialized on demand.
-	 */
-	hardware::code::Spinors_staggered * spinor_staggered_code;
-
-	/**
-	 * Pointer to the fermion code.
-	 * Initialized on demand.
-	 */
+	const hardware::code::Spinors_staggered * spinor_staggered_code;
 	const hardware::code::Fermions * fermion_code;
-
-	/**
-	 * Pointer to the staggered fermion code.
-	 * Initialized on demand.
-	 */
-	hardware::code::Fermions_staggered * fermion_staggered_code;
-
-	/**
-	 * Pointer to the gaugemomentum code.
-	 * Initialized on demand.
-	 */
+	const hardware::code::Fermions_staggered * fermion_staggered_code;
 	const hardware::code::Gaugemomentum * gaugemomentum_code;
-
-  	/**
-	 * Pointer to the molecular dynamics code.
-	 * Initialized on demand.
-	 */
 	const hardware::code::Molecular_Dynamics * molecular_dynamics_code;
-
-	/**
-	 * Pointer to the correlator code.
-	 * Initialized on demand.
-	 */
 	const hardware::code::Correlator * correlator_code;
-	
-	/**
-	 * Pointer to the staggered correlator code.
-	 * Initialized on demand.
-	 */
 	const hardware::code::Correlator_staggered * correlator_staggered_code;
-
-	/**
-	 * Pointer to the heatbath code.
-	 * Initialized on demand.
-	 */
 	const hardware::code::Heatbath * heatbath_code;
-
-	/**
-	 * Pointer to the kappa code.
-	 * Initialized on demand.
-	 */
 	const hardware::code::Kappa * kappa_code;
-
-	/**
-	 * Pointer to the buffer code
-	 * Initialized on demand.
-	 */
 	const hardware::code::Buffer * buffer_code;
 
 	/**
+	 *  TODO work over member names
 	 * The position of the device in the device grid.
 	 */
 	const size_4 grid_pos;
@@ -415,15 +246,7 @@ private:
 	 * The size of the device grid.
 	 */
 	const size_4 grid_size;
-
-	/**
-	 * The size of the local lattice.
-	 */
 	const size_4 local_lattice_size;
-
-	/**
-	 * Get the size of the halo
-	 */
 	const unsigned halo_size;
 
 	/**
@@ -442,12 +265,8 @@ private:
 
 	/**
 	 * Print the profiling information of kernels run on the given device.
-	 *
-	 * \param device The device the kernels ran on
-	 * \param filename The file to write the profiling information to
-	 * \param id The id to identify this device by
 	 */
-	void print_profiling(Device * device, const std::string& filename, int id);
+	void printProfiling(Device * device, const std::string& filenameToWriteTo, int deviceId);
 }
 
 #endif /* _HARDWARE_DEVICE_HPP_ */

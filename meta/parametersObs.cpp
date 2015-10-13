@@ -40,7 +40,7 @@ bool meta::ParametersObs::get_measure_pbp() const noexcept
 	return measure_pbp;
 }
 
-meta::ParametersObs::pbp_version meta::ParametersObs::get_pbp_version() const noexcept
+common::pbp_version meta::ParametersObs::get_pbp_version() const noexcept
 {
 	return pbp_version_;
 }

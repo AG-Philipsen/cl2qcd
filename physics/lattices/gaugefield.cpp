@@ -157,7 +157,7 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const p
 		Matrixsu3 * tmp = new Matrixsu3[elems];
 		set_hot(tmp, prng, elems);
 		Device * device = buffer->get_device();
-		device->get_gaugefield_code()->importGaugefield(buffer, tmp);
+		device->getGaugefieldCode()->importGaugefield(buffer, tmp);
 		device->synchronize();
 		delete[] tmp;
 	}
@@ -173,7 +173,7 @@ static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers)
 		Matrixsu3 * tmp = new Matrixsu3[elems];
 		set_cold(tmp, elems);
 		Device * device = buffer->get_device();
-		device->get_gaugefield_code()->importGaugefield(buffer, tmp);
+		device->getGaugefieldCode()->importGaugefield(buffer, tmp);
 		device->synchronize();
 		delete[] tmp;
 	}
@@ -255,7 +255,7 @@ void physics::lattices::Gaugefield::smear()
 	for(size_t i = 0; i < buffers.size(); ++i) {
 		auto buf = buffers[i];
 		auto device = buf->get_device();
-		auto gf_code = device->get_gaugefield_code(); // should be like: get_gaugefield_code( HardwareParameters_gaugefield )
+		auto gf_code = device->getGaugefieldCode(); // should be like: get_gaugefield_code( HardwareParameters_gaugefield )
 
 		hardware::buffers::copyData(unsmeared_buffers[i], buf);
 
@@ -306,13 +306,13 @@ void physics::lattices::Gaugefield::unsmear()
 static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const physics::lattices::GaugefieldParametersInterface * params) {
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
-		device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
+		device->getGaugefieldCode()->importGaugefield(buffers[0], gf_host);
 		device->synchronize();
 	} else {
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
 		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-		auto const grid_size = _device->get_grid_size();
+		auto const grid_size = _device->getGridSize();
 		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
 			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
 		}
@@ -320,7 +320,7 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 			auto device = buffer->get_device();
 			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
 
-			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
 			memcpy(mem_host, &gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], local_volume * sizeof(Matrixsu3));
@@ -334,7 +334,7 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 			logger.debug() << halo_offset;
 			memcpy(&mem_host[local_volume + halo_volume], &gf_host[get_global_link_pos(0, halo_offset,  params->getNt(), params->getNs())], halo_volume * sizeof(Matrixsu3));
 
-			device->get_gaugefield_code()->importGaugefield(buffer, mem_host);
+			device->getGaugefieldCode()->importGaugefield(buffer, mem_host);
 
 			delete[] mem_host;
 		}
@@ -345,12 +345,12 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 {
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
-		device->get_gaugefield_code()->exportGaugefield(gf_host, buffers[0]);
+		device->getGaugefieldCode()->exportGaugefield(gf_host, buffers[0]);
 		device->synchronize();
 	} else {
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
-		auto const grid_size = _device->get_grid_size();
+		auto const grid_size = _device->getGridSize();
 		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
 			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
 		}
@@ -359,8 +359,8 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 			auto device = buffer->get_device();
 			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
 
-			device->get_gaugefield_code()->exportGaugefield(mem_host, buffer);
-			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
+			device->getGaugefieldCode()->exportGaugefield(mem_host, buffer);
+			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
 			memcpy(&gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], mem_host, local_volume * sizeof(Matrixsu3));
 

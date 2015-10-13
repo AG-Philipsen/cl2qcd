@@ -231,7 +231,7 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 		const std::string dev_name = device->get_name();
 		if(this->bytes == 16 && (dev_name == "Cypress" || dev_name == "Cayman")) {
 			logger.debug() << "Using an OpenCL kernel to copy 16 bytes on " << dev_name << '.';
-			device->get_buffer_code()->copy_16_bytes(this, orig);
+			device->getBufferCode()->copy_16_bytes(this, orig);
 		} else {
 			logger.debug() << "Using default OpenCL buffer copy method for " << this->bytes << " bytes on " << dev_name << '.';
 			int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, 0, 0, this->bytes, 0, nullptr, nullptr);
@@ -273,7 +273,7 @@ void hardware::buffers::Buffer::clear() const
 		}
 	}
 #else
-	device->get_buffer_code()->clear(this);
+	device->getBufferCode()->clear(this);
 #endif
 }
 

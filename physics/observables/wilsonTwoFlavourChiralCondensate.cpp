@@ -71,14 +71,14 @@ TwoFlavourChiralCondensate::TwoFlavourChiralCondensate(const physics::lattices::
 
 void checkFermionAction(const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface)
 {
-	if( !( (parametersInterface.getFermionicActionType() == meta::action::twistedmass) || ( parametersInterface.getFermionicActionType() == meta::action::wilson) )	)
+	if( !( (parametersInterface.getFermionicActionType() == common::action::twistedmass) || ( parametersInterface.getFermionicActionType() == common::action::wilson) )	)
 		throw std::logic_error("Chiral condensate not implemented for chosen fermion action.");
 }
 
 void checkChiralCondensateVersion(const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface)
 {
-	if( !( ( parametersInterface.getPbpVersion() == meta::Inputparameters::std) ||
-		 ( (parametersInterface.getFermionicActionType() == meta::action::twistedmass && parametersInterface.getPbpVersion() == meta::Inputparameters::tm_one_end_trick ) ) ) )
+	if( !( ( parametersInterface.getPbpVersion() == common::pbp_version::std) ||
+		 ( (parametersInterface.getFermionicActionType() == common::action::twistedmass && parametersInterface.getPbpVersion() == common::pbp_version::tm_one_end_trick ) ) ) )
 		throw std::logic_error("No valid chiral condensate version has been selected.");
 }
 
@@ -178,16 +178,16 @@ double TwoFlavourChiralCondensate::flavourChiralCondensate_std(const physics::la
 	*/
 	double result;
 
-	if(parametersInterface.getFermionicActionType() == meta::action::twistedmass) {
+	if(parametersInterface.getFermionicActionType() == common::action::twistedmass) {
 		xi->gamma5();
 	}
 	hmc_complex tmp = scalar_product(*xi, *phi);
 
 	switch(parametersInterface.getFermionicActionType()) {
-		case  meta::action::wilson:
+		case  common::action::wilson:
 			result = tmp.re * norm_std();
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			result = (-1.) * tmp.im * norm_std();
 			break;
 		default:
@@ -209,7 +209,7 @@ void TwoFlavourChiralCondensate::openFileForWriting()
 void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics::lattices::Spinorfield* inverted, const physics::lattices::Spinorfield* sources)
 {
     double result = 0.;
-	if( parametersInterface.getPbpVersion() == meta::Inputparameters::tm_one_end_trick )
+    if( parametersInterface.getPbpVersion() == common::pbp_version::tm_one_end_trick )
 	{
 	  result = flavour_doublet_chiral_condensate_tm(inverted);
 	} 

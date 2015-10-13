@@ -57,7 +57,7 @@ static size_t calculate_gaugemomentum_buffer_size(size_t elems, hardware::Device
 
 size_t hardware::buffers::get_Gaugemomentum_buffer_stride(size_t elems, Device * device)
 {
-	return device->recommend_stride(elems, sizeof(soa_storage_t), soa_storage_lanes);
+	return device->recommendStride(elems, sizeof(soa_storage_t), soa_storage_lanes);
 }
 
 size_t hardware::buffers::Gaugemomentum::get_elements() const noexcept
@@ -83,7 +83,7 @@ void hardware::buffers::Gaugemomentum::dump(ae * ptr, size_t elems, size_t offse
 {
 	if(is_soa()) {
 		auto device = get_device();
-		auto gm_code = device->get_gaugemomentum_code();
+		auto gm_code = device->getGaugemomentumCode();
 		gm_code->exportGaugemomentumBuffer(ptr, this);
 	} else {
 		Buffer::dump(ptr, elems * sizeof(ae), offset * sizeof(ae));

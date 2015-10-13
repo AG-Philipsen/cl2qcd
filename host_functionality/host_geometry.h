@@ -27,7 +27,7 @@
 #include "../common_header_files/globaldefs.h"
 #include <cmath>
 #include "../meta/inputparameters.hpp"
-#include "../meta/size_4.hpp"
+#include "../hardware/size_4.hpp"
 
 /** Identify each spacetime direction */
 #define TDIR 0

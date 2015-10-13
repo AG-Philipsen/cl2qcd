@@ -31,7 +31,7 @@ using namespace std;
 
 void hardware::code::Correlator_staggered::fill_kernels()
 {
-	if(get_parameters().get_fermact() != meta::action::rooted_stagg){
+	if(get_parameters().get_fermact() != common::action::rooted_stagg){
 		throw Print_Error_Message("Correlator_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
 	}
 	
@@ -42,17 +42,17 @@ void hardware::code::Correlator_staggered::fill_kernels()
   
 	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "spinorfield_staggered_eo.cl";
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 
 	logger.debug() << "Creating Correlator_staggered kernels...";
 
-	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
+	if(get_parameters().get_sourcetype() == common::point)
 		throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
+	else if (get_parameters().get_sourcetype() == common::volume)
 		create_volume_source_stagg_eoprec = createKernel("create_volume_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_volume_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
+	else if (get_parameters().get_sourcetype() == common::timeslice)
 		throw Print_Error_Message("Timeslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::zslice)
+	else if (get_parameters().get_sourcetype() == common::zslice)
 		throw Print_Error_Message("Zslice source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
 
 }
@@ -156,7 +156,7 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 		hmc_float sqn;
-		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_eoprec_device(inout, &sqn_tmp);
+		get_device()->getSpinorStaggeredCode()->set_float_to_global_squarenorm_eoprec_device(inout, &sqn_tmp);
 		sqn_tmp.dump(&sqn);
 		logger.debug() <<  "\t|source|^2:\t" << sqn;
 		if(sqn != sqn) {

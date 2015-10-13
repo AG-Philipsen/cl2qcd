@@ -487,10 +487,10 @@ template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemoment
 
 	//CP: actual integrator calling
 	switch(params.get_integrator(0)) {
-		case meta::Inputparameters::leapfrog:
+		case common::leapfrog:
 			leapfrog(gm, gf, phi, system);
 			break;
-		case meta::Inputparameters::twomn:
+		case common::twomn:
 			twomn(gm, gf, phi, system);
 			break;
 	}
@@ -514,10 +514,10 @@ template<class SPINORFIELD> void integrator(const physics::lattices::Gaugemoment
 
 	//CP: actual integrator calling
 	switch(params.get_integrator(0)) {
-		case meta::Inputparameters::leapfrog:
+		case common::leapfrog:
 			leapfrog(gm, gf, phi, phi_mp, system);
 			break;
-		case meta::Inputparameters::twomn:
+		case common::twomn:
 			twomn(gm, gf, phi, phi_mp, system);
 			break;
 	}

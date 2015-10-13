@@ -28,3 +28,9 @@ debug
 doc/architecture
 
 README.html
+
+*.cproject
+*.project
+*.settings/
+
+/Debug/

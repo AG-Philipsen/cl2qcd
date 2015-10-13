@@ -31,7 +31,7 @@ using namespace std;
 
 void hardware::code::Heatbath::fill_kernels()
 {
-	ClSourcePackage sources = get_basic_sources() << get_device()->get_prng_code()->get_sources() << "operations_geometry.cl" << "operations_complex.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+	ClSourcePackage sources = get_basic_sources() << get_device()->getPrngCode()->get_sources() << "operations_geometry.cl" << "operations_complex.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	logger.debug() << "Creating Heatbath kernels...";
 	

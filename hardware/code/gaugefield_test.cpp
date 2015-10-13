@@ -34,7 +34,7 @@ public:
 		prng = new physics::PRNG(*system, &prngParameters);
 		params = new physics::lattices::GaugefieldParametersImplementation( &system->get_inputparameters());
 		gaugefield = new physics::lattices::Gaugefield(*system, params, *prng);
-		code = device->get_gaugefield_code();
+		code = device->getGaugefieldCode();
 	}
 
 	~GaugefieldTester()

@@ -43,7 +43,7 @@ void hardware::code::Fermions_staggered::fill_kernels()
 
 	logger.debug() << "Creating Fermions_staggered kernels...";
 
-	if(get_parameters().get_fermact() == meta::action::rooted_stagg) {
+	if(get_parameters().get_fermact() == common::action::rooted_stagg) {
 	      if(get_parameters().get_use_eo()){
 			M_staggered = 0;
 			D_KS_eo = createKernel("D_KS_eo") << sources << "fermionmatrix_staggered_eo_DKS_local.cl" << "fermionmatrix_staggered_eo_DKS.cl";

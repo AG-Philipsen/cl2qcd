@@ -29,7 +29,7 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/spinor.hpp"
 #include "../buffers/prng_buffer.hpp"
-#include "../../meta/size_4.hpp"
+#include "../size_4.hpp"
 
 namespace hardware {
 
@@ -123,9 +123,14 @@ protected:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-private:
+	/**
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
+	 */
+public:
 	Spinors(const meta::Inputparameters& params, hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

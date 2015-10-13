@@ -147,20 +147,20 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 	}
 
 	// the ps_z kernel needs to have the source windowed...
-	if(num_bufs > 1 && parametersInterface.getSourceType() != meta::Inputparameters::point && type == "ps" && parametersInterface.getCorrelatorDirection() == 3) {
+	if(num_bufs > 1 && parametersInterface.getSourceType() != common::sourcetypes::point && type == "ps" && parametersInterface.getCorrelatorDirection() == 3) {
 		physics::lattices::Spinorfield window(system);
 		auto window_bufs = window.get_buffers();
 		for(size_t i_window = 0; i_window < num_bufs; ++i_window) {
 			fill_window(&window, *source, i_window);
 			for(size_t i = 0; i < num_bufs; ++i) {
-				auto code = results[i]->get_device()->get_correlator_code();
+				auto code = results[i]->get_device()->getCorrelatorCode();
 				code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], window_bufs[i]);
 			}
 		}
 	} else {
 		for(size_t i = 0; i < num_bufs; ++i) {
-			auto code = results[i]->get_device()->get_correlator_code();
-			if(parametersInterface.getSourceType() == meta::Inputparameters::point) {
+			auto code = results[i]->get_device()->getCorrelatorCode();
+			if(parametersInterface.getSourceType() == common::sourcetypes::point) {
 				code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i]);
 			} else {
 				code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], source_bufs[i]);
@@ -206,8 +206,8 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 	}
 
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = results[i]->get_device()->get_correlator_code();
-		if(parametersInterface.getSourceType() == meta::Inputparameters::point) {
+        auto code = results[i]->get_device()->getCorrelatorCode();
+		if(parametersInterface.getSourceType() == common::sourcetypes::point) {
 			code->correlator(code->get_correlator_kernel(type), results[i], corr1_bufs[i], corr2_bufs[i], corr3_bufs[i], corr4_bufs[i]);
 		} else {
 			code->correlator(code->get_correlator_kernel(type), results[i], corr1_bufs[i], source1_bufs[i], corr2_bufs[i], source2_bufs[i], corr3_bufs[i], source3_bufs[i], corr4_bufs[i], source4_bufs[i]);

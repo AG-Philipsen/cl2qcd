@@ -40,7 +40,7 @@ static void print_profile_header(const std::string& filename, int number);
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface * kernelParameters)
 {
 	using namespace hardware::buffers;
 	using namespace hardware::code;
@@ -53,12 +53,12 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	
 	options << "-I " << SOURCEDIR;
 	options << " -D _INKERNEL_";
-	options << " -D NSPACE=" << params.get_nspace();
+	options << " -D NSPACE=" << kernelParameters->getNs();
 
-	options << " -D NTIME_GLOBAL=" << params.get_ntime();
+	options << " -D NTIME_GLOBAL=" << kernelParameters->getNt();
 	options << " -D NTIME_LOCAL=" << local_size.t;
 	options << " -D NTIME_MEM=" << mem_size.t;
-	options << " -D NTIME_OFFSET=" << device->get_grid_pos().t * local_size.t;
+	options << " -D NTIME_OFFSET=" << device->getGridPos().t * local_size.t;
 
 	options << " -D VOLSPACE=" << meta::get_volspace(params);
 
@@ -69,7 +69,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	//this is needed for hmc_ocl_su3matrix
 	options << " -D SU3SIZE=" << NC*NC << " -D STAPLEMATRIXSIZE=" << NC*NC;
 
-	if(params.get_precision() == 64) {
+	if(kernelParameters->getPrecision() == 64) {
 		options << " -D _USEDOUBLEPREC_";
 		// TODO renable support for older AMD GPUs
 		//if( device_double_extension.empty() ) {
@@ -81,22 +81,22 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	}
 	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
 		options << " -D _USEGPU_";
-	if(params.get_use_chem_pot_re() == true) {
+	if(kernelParameters->getUseChemPotRe() == true) {
 		options << " -D _CP_REAL_";
-		options << " -D CPR=" << params.get_chem_pot_re();
-		options << " -D EXPCPR=" << exp(params.get_chem_pot_re() );
-		options << " -D MEXPCPR=" << exp(-1.*params.get_chem_pot_re() );
+		options << " -D CPR=" << kernelParameters->getChemPotRe();
+		options << " -D EXPCPR=" << exp(kernelParameters->getChemPotRe() );
+		options << " -D MEXPCPR=" << exp(-1.*kernelParameters->getChemPotRe() );
 	}
-	if(params.get_use_chem_pot_im() == true) {
+	if(kernelParameters->getUseChemPotIm() == true) {
 		options << " -D _CP_IMAG_";
-		options << " -D CPI=" << params.get_chem_pot_im();
-		options << " -D COSCPI=" << cos( params.get_chem_pot_im() );
-		options << " -D SINCPI=" << sin( params.get_chem_pot_im() );
+		options << " -D CPI=" << kernelParameters->getChemPotIm();
+		options << " -D COSCPI=" << cos( kernelParameters->getChemPotIm() );
+		options << " -D SINCPI=" << sin( kernelParameters->getChemPotIm() );
 	}
-	if(params.get_use_smearing() == true) {
+	if(kernelParameters->getUseSmearing() == true) {
 		options << " -D _USE_SMEARING_";
-		options << " -D RHO=" << params.get_rho();
-		options << " -D RHO_ITER=" << params.get_rho_iter();
+		options << " -D RHO=" << kernelParameters->getRho();
+		options << " -D RHO_ITER=" << kernelParameters->getRhoIter();
 	}
 	if(device->get_prefers_soa()) {
 		options << " -D _USE_SOA_";
@@ -114,10 +114,10 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 		options <<  " -D _USE_RECT_" ;
 		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
 	}
-	if(params.get_use_rec12() == true) {
+	if(kernelParameters->getUseRec12() == true) {
 		options <<  " -D _USE_REC12_" ;
 	}
-	if(params.get_use_eo()) {
+	if(kernelParameters->getUseEo()) {
 		options << " -D EOPREC_SPINORFIELDSIZE_GLOBAL=" << get_eoprec_spinorfieldsize(params);
 		options << " -D EOPREC_SPINORFIELDSIZE_LOCAL=" << get_eoprec_spinorfieldsize(local_size);
 		options << " -D EOPREC_SPINORFIELDSIZE_MEM=" << get_eoprec_spinorfieldsize(mem_size);
@@ -141,28 +141,28 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 		options << " -D EOPREC_SU3VECFIELD_STRIDE=" << get_su3vec_buffer_stride(get_eoprec_spinorfieldsize(mem_size), device);
 	}
 
-	switch (params.get_fermact()) {
-		case meta::action::twistedmass :
+	switch (kernelParameters->getFermact()) {
+		case common::action::twistedmass :
 			options << " -D _TWISTEDMASS_";
 			break;
-		case meta::action::clover :
+		case common::action::clover :
 			options << " -D _CLOVER_";
 			break;
-		case meta::action::rooted_stagg :
+		case common::action::rooted_stagg :
 			options << " -D _RHMC_";
-			options << " -D RA_MAX_ORDER=" << std::max(params.get_metro_approx_ord(), params.get_md_approx_ord());
+			options << " -D RA_MAX_ORDER=" << std::max(kernelParameters->getMetroApproxOrd(), kernelParameters->getMdApproxOrd());
 			break;
-		case meta::action::wilson :
-		case meta::action::tlsym :
-		case meta::action::iwasaki :
-		case meta::action::dbw2 :
+		case common::action::wilson :
+		case common::action::tlsym :
+		case common::action::iwasaki :
+		case common::action::dbw2 :
 			// nothing to add
 			break;
 	}
 
 	//CP: These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
-	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
+	hmc_float tmp_spatial = (kernelParameters->getThetaFermionSpatial() * PI) / ( (hmc_float) kernelParameters->getNs());
+	hmc_float tmp_temporal = (kernelParameters->getThetaFermionTemporal() * PI) / ( (hmc_float) kernelParameters->getNt());
 	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
 	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
 	options << " -D MSPATIAL_RE=" << -cos(tmp_spatial);
@@ -175,20 +175,20 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	options << " -D MTEMPORAL_IM=" << -sin(tmp_temporal);
 
 	//This is mainly for molecular dynamics
-	options <<  " -D BETA=" << params.get_beta();
+	options <<  " -D BETA=" << kernelParameters->getBeta();
 	
 	//Options for correlators
-	if(params.get_fermact() != meta::action::rooted_stagg){
-		hmc_float kappa_tmp = params.get_kappa();
+	if(kernelParameters->getFermact() != common::action::rooted_stagg){
+		hmc_float kappa_tmp = kernelParameters->getKappa();
 		options << " -D KAPPA=" << kappa_tmp;
 		options << " -D MKAPPA=" << -kappa_tmp;
 	}
-	options << " -D NUM_SOURCES=" << params.get_num_sources();
+	options << " -D NUM_SOURCES=" << kernelParameters->getNumSources();
 	//CP: give content of sources as compile parameters
-	options << " -D SOURCE_CONTENT=" << params.get_sourcecontent();
+	options << " -D SOURCE_CONTENT=" << kernelParameters->getSourceContent();
 	
 	//Options for heatbath
-	if(params.get_use_aniso() == true) {
+	if(kernelParameters->getUseAniso() == true) {
 		options << " -D _ANISO_";
 		options << " -D XI_0=" << meta::get_xi_0(params);
 	}
@@ -206,9 +206,21 @@ static std::vector<std::string> collect_build_files()
 	return out;
 }
 
-//Constructor of the class
-hardware::code::Opencl_Module::Opencl_Module(const meta::Inputparameters& params, hardware::Device * device): parameters(params), device(device), basic_sources(ClSourcePackage(collect_build_files(), collect_build_options(get_device(), get_parameters()))) { }
+hardware::code::Opencl_Module::Opencl_Module(const meta::Inputparameters& params, hardware::Device * device): parameters(params), device(device), kernelParameters(nullptr)
+{
+	kernelParameters = new hardware::code::OpenClKernelParametersImplementation( params );
 
+	auto tmp = collect_build_options(device, params, kernelParameters);
+	basic_sources = ClSourcePackage(collect_build_files(), tmp); //todo: run some test to see if this works!
+}
+
+hardware::code::Opencl_Module::~Opencl_Module()
+{
+	if (kernelParameters)
+	{
+		delete kernelParameters;
+	}
+}
 
 const meta::Inputparameters& hardware::code::Opencl_Module::get_parameters() const noexcept
 {
@@ -227,7 +239,7 @@ ClSourcePackage hardware::code::Opencl_Module::get_basic_sources() const noexcep
 
 TmpClKernel hardware::code::Opencl_Module::createKernel(const char * const kernel_name, std::string build_opts) const
 {
-	return device->create_kernel(kernel_name, build_opts);
+	return device->createKernel(kernel_name, build_opts);
 }
 
 void hardware::code::Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -305,7 +317,7 @@ void hardware::code::Opencl_Module::print_profiling(const std::string& filename,
 	// only print info if kernel has been initialized
 	if(kernel) {
 		const std::string kernel_name = get_kernel_name(kernel);
-		const hardware::ProfilingData data = device->get_profiling_data(kernel);
+		const hardware::ProfilingData data = device->getProfilingData(kernel);
 		::print_profiling(filename, kernel_name, data, this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), meta::get_vol4d(get_parameters()));
 	}
 }

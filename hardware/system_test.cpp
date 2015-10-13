@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 	{
 		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
 		hardware::System system(params);
-		BOOST_REQUIRE(static_cast<const cl_context>(system));
+		BOOST_REQUIRE(static_cast<const cl_context>(system.getContext()));
 	}
 
 	BOOST_AUTO_TEST_CASE(enoughDevicesExist)

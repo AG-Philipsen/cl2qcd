@@ -29,7 +29,7 @@ namespace physics {
         class FermionmatrixParametersInterface {
             public:
                 virtual ~FermionmatrixParametersInterface(){}
-                virtual meta::action getFermionicActionType() const = 0;
+                virtual common::action getFermionicActionType() const = 0;
                 virtual bool useMergedFermionicKernels() const = 0;
         };
 
@@ -40,7 +40,7 @@ namespace physics {
                         : parameters(paramsIn)
                 {
                 }
-                meta::action getFermionicActionType() const override
+                common::action getFermionicActionType() const override
                 {
                     return parameters.get_fermact();
                 }

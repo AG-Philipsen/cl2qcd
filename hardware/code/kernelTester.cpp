@@ -28,9 +28,9 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	parameters = createParameters(inputfileIn).release();
 
 	system = new hardware::System(*parameters);
-	device = system->get_devices()[0];
+	device = system->get_devices().at(0);
 	allocatedObjects = true;
-	
+
 	testPrecision = parameters->get_solver_prec();
 
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {

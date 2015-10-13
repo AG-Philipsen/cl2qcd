@@ -116,7 +116,7 @@ physics::PRNG::PRNG(const hardware::System& system, const physics::ParametersPrn
 	for(hardware::Device * device : system.get_devices()) {
 		// create a buffer for each device
 		const PRNGBuffer * buffer = new PRNGBuffer(device, parameters->useSameRandomNumbers());
-		auto code = device->get_prng_code();
+		auto code = device->getPrngCode();
 		code->initialize(buffer, ++seed);
 		buffers.push_back(buffer);
 	}

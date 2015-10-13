@@ -22,17 +22,6 @@
 #include <algorithm>    // std::max
 #include "rooted_staggeredfield_eo.hpp"
 
-
-// #include "../../meta/util.hpp"
-// #include <cassert>
-// #include "../../hardware/code/spinors_staggered.hpp"
-// #include "../../hardware/code/fermions_staggered.hpp"
-// #include "../../meta/type_ops.hpp"
-// #include "../../hardware/buffers/halo_update.hpp"
-// //For hardware::code::get_eoprec_spinorfieldsize()
-// #include "../../hardware/code/spinors.hpp"
-
-
 physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system)
 	: Staggeredfield_eo(system), rootedStaggaredfieldEoParametersInterface(new RootedStaggaredfieldEoParametersImplementation(system.get_inputparameters())),
 	  physics::algorithms::Rational_Coefficients(std::max(rootedStaggaredfieldEoParametersInterface->getMetropolisRationalApproximationOrder(),

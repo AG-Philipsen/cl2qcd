@@ -58,12 +58,12 @@ class TestGaugefield_stagg {
  
 const hardware::code::Fermions_staggered* TestGaugefield_stagg::get_device()   
 {
-  return system->get_devices()[0]->get_fermion_staggered_code(); 
+  return system->get_devices()[0]->getFermionStaggeredCode(); 
 }
 
 const hardware::code::Gaugefield* TestGaugefield_stagg::get_gf_code()      
 {
-  return system->get_devices()[0]->get_gaugefield_code();                                                                             
+  return system->get_devices()[0]->getGaugefieldCode();                                                                             
 } 
 
 const hardware::buffers::SU3 * TestGaugefield_stagg::get_gaugefield()

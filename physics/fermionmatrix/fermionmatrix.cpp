@@ -49,11 +49,11 @@ const hardware::System& physics::fermionmatrix::Fermionmatrix_basic::get_system(
 void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			M_tm_plus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
@@ -62,13 +62,13 @@ void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield 
 }
 cl_ulong physics::fermionmatrix::M::get_flops() const
 {
-
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			return fermion_code->get_flop_size("M_wilson");
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			return fermion_code->get_flop_size("M_tm_plus");
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
@@ -76,13 +76,13 @@ cl_ulong physics::fermionmatrix::M::get_flops() const
 }
 cl_ulong physics::fermionmatrix::M::get_read_write_size() const
 {
-
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			return fermion_code->get_read_write_size("M_wilson");
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			return fermion_code->get_read_write_size("M_tm_plus");
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface->getFermionicActionType());
@@ -92,11 +92,11 @@ cl_ulong physics::fermionmatrix::M::get_read_write_size() const
 void physics::fermionmatrix::Qplus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			M_tm_plus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
@@ -106,15 +106,16 @@ void physics::fermionmatrix::Qplus::operator()(const physics::lattices::Spinorfi
 }
 cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = fermion_code->get_flop_size("M_wilson");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = fermion_code->get_flop_size("M_tm_plus");
 			break;
 		default:
@@ -125,15 +126,16 @@ cl_ulong physics::fermionmatrix::Qplus::get_flops() const
 }
 cl_ulong physics::fermionmatrix::Qplus::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = fermion_code->get_read_write_size("M_wilson");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = fermion_code->get_read_write_size("M_tm_plus");
 			break;
 		default:
@@ -145,11 +147,11 @@ cl_ulong physics::fermionmatrix::Qplus::get_read_write_size() const
 void physics::fermionmatrix::Qminus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const
 {
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
 			M_wilson(out, gf, in, get_kappa());
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			M_tm_minus(out, gf, in, get_kappa(), get_mubar());
 			break;
 		default:
@@ -159,15 +161,16 @@ void physics::fermionmatrix::Qminus::operator()(const physics::lattices::Spinorf
 }
 cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = fermion_code->get_flop_size("M_wilson");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = fermion_code->get_flop_size("M_tm_minus");
 			break;
 		default:
@@ -178,15 +181,16 @@ cl_ulong physics::fermionmatrix::Qminus::get_flops() const
 }
 cl_ulong physics::fermionmatrix::Qminus::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = fermion_code->get_read_write_size("M_wilson");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = fermion_code->get_read_write_size("M_tm_minus");
 			break;
 		default:
@@ -226,13 +230,13 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 	hmc_float mubar = get_mubar();
 
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
@@ -245,17 +249,18 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 }
 cl_ulong physics::fermionmatrix::Aee::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal");
 			res += fermion_code->get_flop_size("M_tm_sitediagonal");
@@ -269,17 +274,18 @@ cl_ulong physics::fermionmatrix::Aee::get_flops() const
 }
 cl_ulong physics::fermionmatrix::Aee::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 		        res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += fermion_code->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += fermion_code->get_read_write_size("M_tm_sitediagonal");
@@ -307,13 +313,13 @@ void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattic
 	hmc_float mubar = get_mubar();
 
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, in);
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
@@ -326,17 +332,18 @@ void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattic
 }
 cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal");
 			res += fermion_code->get_flop_size("M_tm_sitediagonal");
@@ -350,17 +357,18 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_flops() const
 }
 cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 		        res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += fermion_code->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += fermion_code->get_read_write_size("M_tm_sitediagonal");
@@ -388,13 +396,13 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 	hmc_float mubar = get_mubar();
 
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal_minus(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
@@ -407,17 +415,18 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 }
 cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal_minus");
 			res += fermion_code->get_flop_size("M_tm_sitediagonal_minus");
@@ -431,17 +440,18 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_flops() const
 }
 cl_ulong physics::fermionmatrix::Aee_minus::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 		        res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += fermion_code->get_read_write_size("M_tm_inverse_sitediagonal_minus");
 			res += fermion_code->get_read_write_size("M_tm_sitediagonal_minus");
@@ -469,13 +479,13 @@ void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::
 	hmc_float mubar = get_mubar();
 
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash(&tmp, gf, in, ODD, kappa);
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, in);
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal_minus(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
@@ -488,17 +498,18 @@ void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::
 }
 cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += spinor_code->get_flop_size("saxpy_AND_gamma5_eo");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 			res = 2 * fermion_code->get_flop_size("dslash_eo");
 			res += fermion_code->get_flop_size("M_tm_inverse_sitediagonal_minus");
 			res += fermion_code->get_flop_size("M_tm_sitediagonal_minus");
@@ -512,17 +523,18 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_flops() const
 }
 cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto spinor_code = devices[0]->get_spinor_code();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto spinor_code = devices[0]->getSpinorCode();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res;
 	switch(fermionmatrixParametersInterface->getFermionicActionType()) {
-		case meta::action::wilson:
+		case common::action::wilson:
 			res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += spinor_code->get_read_write_size("saxpy_AND_gamma5_eo");
 			break;
-		case meta::action::twistedmass:
+		case common::action::twistedmass:
 		        res = 2 * fermion_code->get_read_write_size("dslash_eo");
 			res += fermion_code->get_read_write_size("M_tm_inverse_sitediagonal_minus");
 			res += fermion_code->get_read_write_size("M_tm_sitediagonal_minus");
@@ -545,8 +557,9 @@ void physics::fermionmatrix::Qplus_eo::operator()(const physics::lattices::Spino
 }
 cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee.get_flops();
 	res += fermion_code->get_flop_size("gamma5_eo");
@@ -564,8 +577,9 @@ void physics::fermionmatrix::Qminus_eo::operator()(const physics::lattices::Spin
 }
 cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee_minus.get_flops();
 	res += fermion_code->get_flop_size("gamma5_eo");
@@ -574,8 +588,9 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const
 }
 cl_ulong physics::fermionmatrix::Qplus_eo::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee.get_read_write_size();
 	res += fermion_code->get_read_write_size("gamma5_eo");
@@ -584,8 +599,9 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_read_write_size() const
 }
 cl_ulong physics::fermionmatrix::Qminus_eo::get_read_write_size() const
 {
-	auto devices = get_system().get_devices();
-	auto fermion_code = devices[0]->get_fermion_code();
+	const hardware::System& system = get_system();
+	auto devices = system.get_devices();
+	auto fermion_code = devices[0]->getFermionCode();
 
 	cl_ulong res = aee_minus.get_read_write_size();
 	res += fermion_code->get_read_write_size("gamma5_eo");

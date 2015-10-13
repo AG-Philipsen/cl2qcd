@@ -35,8 +35,8 @@ public:
 	MolecularDynamicsTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1) :
 		GaugemomentumTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( &system->get_inputparameters())
 		{
-			gaugefieldCode = device->get_gaugefield_code();
-			molecularDynamicsCode = device->get_molecular_dynamics_code();
+			gaugefieldCode = device->getGaugefieldCode();
+			molecularDynamicsCode = device->getMolecularDynamicsCode();
 			params = new physics::lattices::GaugefieldParametersImplementation( &system->get_inputparameters());
 			prng = std::unique_ptr<physics::PRNG>(new physics::PRNG(*system, &prngParameters));
 			gaugefield = std::unique_ptr<physics::lattices::Gaugefield>(new physics::lattices::Gaugefield(*system, params, *prng));

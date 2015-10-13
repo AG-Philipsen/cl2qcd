@@ -54,7 +54,7 @@ cl_ulong physics::fermionmatrix::D_KS_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto fermion_code = devices[0]->get_fermion_staggered_code();
+	auto fermion_code = devices[0]->getFermionStaggeredCode();
 	
 	return fermion_code->get_flop_size("D_KS_eo");
 }
@@ -84,8 +84,8 @@ cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
 {
 	const hardware::System& system = get_system();
 	auto devices = system.get_devices();
-	auto spinor_code = devices[0]->get_spinor_staggered_code();
-	auto fermion_code = devices[0]->get_fermion_staggered_code();
+	auto spinor_code = devices[0]->getSpinorStaggeredCode();
+	auto fermion_code = devices[0]->getFermionStaggeredCode();
 	cl_ulong res;
 	res = 2*fermion_code->get_flop_size("D_KS_eo");
 	res += spinor_code->get_flop_size("saxpby_cplx_staggered_eoprec");

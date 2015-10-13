@@ -166,7 +166,7 @@ void test_build(std::string inputfile)
 	auto params =createParameters("spinorsMerged/" + inputfile);
 	hardware::System system(*params);
 	for(auto device: system.get_devices()) {
-		device->get_spinor_code();
+		device->getSpinorCode();
 	}
 	BOOST_MESSAGE("Test done");
 }
@@ -181,7 +181,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	logger.info() << "Init device";
 	auto params =createParameters("spinorsMerged/" + inputfile);
 	hardware::System system(*params);
-	auto * device = system.get_devices().at(0)->get_spinor_code();
+	auto * device = system.get_devices().at(0)->getSpinorCode();
 
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
@@ -199,7 +199,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_in2 = new spinor[NUM_ELEMENTS_SF];
 	//use the variable use_cg to switch between cold and random input sf
-	if(params->get_solver() == meta::Inputparameters::cg) {
+	if(params->get_solver() == common::cg) {
 	  fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 	}

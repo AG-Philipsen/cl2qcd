@@ -36,7 +36,7 @@ void physics::lattices::access_real_vector_element(const Scalar<hmc_float>* out,
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = out_bufs[i]->get_device()->get_real_code();
+		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->set_real_to_vector_element_device(in_bufs[i], index, out_bufs[i]);
 	}
 }  
@@ -51,7 +51,7 @@ void physics::lattices::access_real_vector_element(const Vector<hmc_float>* out,
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = out_bufs[i]->get_device()->get_real_code();
+		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->set_vector_element_to_real_device(in_bufs[i], index, out_bufs[i]);
 	}
 }  
@@ -67,7 +67,7 @@ void physics::lattices::add(const Scalar<hmc_float>* dest, const Scalar<hmc_floa
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_real_code();
+		auto code = dest_bufs[i]->get_device()->getRealCode();
 		code->set_real_to_sum_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
 	}
 }
@@ -83,7 +83,7 @@ void physics::lattices::subtract(const Scalar<hmc_float>* dest, const Scalar<hmc
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_real_code();
+		auto code = dest_bufs[i]->get_device()->getRealCode();
 		code->set_real_to_difference_device(minuend_bufs[i], subtrahend_bufs[i], dest_bufs[i]);
 	}
 }
@@ -99,7 +99,7 @@ void physics::lattices::multiply(const Scalar<hmc_float>* dest, const Scalar<hmc
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_real_code();
+		auto code = dest_bufs[i]->get_device()->getRealCode();
 		code->set_real_to_product_device(left_bufs[i], right_bufs[i], dest_bufs[i]);
 	}
 }
@@ -115,7 +115,7 @@ void physics::lattices::divide(const Scalar<hmc_float>* dest, const Scalar<hmc_f
 		throw std::invalid_argument("All arguments must use the same number of devices.");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = dest_bufs[i]->get_device()->get_real_code();
+		auto code = dest_bufs[i]->get_device()->getRealCode();
 		code->set_real_to_ratio_device(numerator_bufs[i], denominator_bufs[i], dest_bufs[i]);
 	}
 }
@@ -139,7 +139,7 @@ void physics::lattices::update_zeta_cgm(const Vector<hmc_float>* out, const Vect
 	}
 	
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = out_bufs[i]->get_device()->get_real_code();
+		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->update_zeta_cgm_device(zeta_prev_bufs[i], zeta_prev_prev_bufs[i], sbeta_prev_bufs[i], sbeta_pres_bufs[i], salpha_prev_bufs[i], sigma_bufs[i], numeq, out_bufs[i]);
 	}
 }
@@ -159,7 +159,7 @@ void physics::lattices::update_beta_cgm(const Vector<hmc_float>* out, const Scal
 	}
 	
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = out_bufs[i]->get_device()->get_real_code();
+		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->update_beta_cgm_device(sbeta_pres_bufs[i], zeta_pres_bufs[i], zeta_prev_bufs[i], numeq, out_bufs[i]);
 	}
 }
@@ -182,7 +182,7 @@ void physics::lattices::update_alpha_cgm(const Vector<hmc_float>* out, const Sca
 	}
 	
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto code = out_bufs[i]->get_device()->get_real_code();
+		auto code = out_bufs[i]->get_device()->getRealCode();
 		code->update_alpha_cgm_device(salpha_pres_bufs[i], zeta_pres_bufs[i], beta_pres_bufs[i], zeta_prev_bufs[i], sbeta_pres_bufs[i], numeq, out_bufs[i]);
 	}
 }
@@ -191,7 +191,7 @@ size_t physics::lattices::get_flops_update_cgm(const std::string quantity, const
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto real_code = devices[0]->get_real_code();
+	auto real_code = devices[0]->getRealCode();
 	if(quantity == "alpha")
 	  return real_code->get_flop_size_update("update_alpha_cgm", Neqs);
 	else if(quantity == "beta")

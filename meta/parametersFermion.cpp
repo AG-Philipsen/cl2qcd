@@ -29,11 +29,11 @@ bool meta::ParametersFermion::get_use_chem_pot_im() const noexcept
 	return use_chem_pot_im;
 }
 
-meta::action meta::ParametersFermion::get_fermact() const noexcept
+common::action meta::ParametersFermion::get_fermact() const noexcept
 {
 	return fermact;
 }
-meta::action meta::ParametersFermion::get_fermact_mp() const noexcept
+common::action meta::ParametersFermion::get_fermact_mp() const noexcept
 {
 	return fermact_mp;
 }

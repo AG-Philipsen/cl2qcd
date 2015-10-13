@@ -68,7 +68,7 @@ generalExecutable::generalExecutable(int argc, const char* argv[], std::string p
 	switchLogLevel(parameters.get_log_level());
 	printParametersToScreenAndFile();
 	//@todo: these new here are not deleted apparently!!
-	system = new hardware::System(parameters, parameters.get_enable_profiling());
+	system = new hardware::System(parameters);
 	prngParameters = new physics::ParametersPrng_fromMetaInputparameters(&parameters);
 	prng = new physics::PRNG(*system, prngParameters);
 	initializationTimer.add();

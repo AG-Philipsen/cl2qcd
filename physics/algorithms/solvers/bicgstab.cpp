@@ -44,7 +44,7 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield 
 {
 	const auto & params = system.get_inputparameters();
 
-	if (params.get_solver() == meta::Inputparameters::bicgstab_save) {
+	if (params.get_solver() == common::bicgstab_save) {
 		return bicgstab_save(x, A, gf, b, system, prec);
 	} else {
 		return bicgstab_fast(x, A, gf, b, system, prec);
@@ -349,7 +349,7 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_
 {
 	const auto & params = system.get_inputparameters();
 
-	if (params.get_solver() == meta::Inputparameters::bicgstab_save) {
+	if (params.get_solver() == common::bicgstab_save) {
 	  return bicgstab_save(x, A, gf, b, system, prec);
 	} else { 
 	  return bicgstab_fast(x, A, gf, b, system, prec);

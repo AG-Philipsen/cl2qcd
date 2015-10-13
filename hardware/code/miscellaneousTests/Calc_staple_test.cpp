@@ -102,7 +102,7 @@ void Dummyfield::fill_buffers()
 void Code::fill_kernels()
 {
   logger.info() << "create Kernel";
-	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "../hardware/code/miscellaneousTests/staple_test.cl";
+	testKernel = createKernel("staple_test") << get_device()->getGaugefieldCode()->get_sources() << "../hardware/code/miscellaneousTests/staple_test.cl";
 	logger.info() << "done";
 }
 

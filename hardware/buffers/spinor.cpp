@@ -57,7 +57,7 @@ static size_t calculate_spinor_buffer_size(size_t elems, hardware::Device * devi
 
 size_t hardware::buffers::get_Spinor_buffer_stride(size_t elems, Device * device)
 {
-	return device->recommend_stride(elems, sizeof(soa_storage_t), soa_storage_lanes);
+	return device->recommendStride(elems, sizeof(soa_storage_t), soa_storage_lanes);
 }
 
 size_t hardware::buffers::Spinor::get_elements() const noexcept
@@ -76,7 +76,7 @@ void hardware::buffers::Spinor::load(const spinor * ptr, size_t elems, size_t of
 		auto device = get_device();
 		Plain<spinor> plain(get_elements(), device);
 		plain.load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
-		device->get_spinor_code()->convertSpinorfieldToSOA_eo_device(this, &plain);
+		device->getSpinorCode()->convertSpinorfieldToSOA_eo_device(this, &plain);
 		device->synchronize();
 	} else {
 		Buffer::load(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
@@ -88,7 +88,7 @@ void hardware::buffers::Spinor::dump(spinor * ptr, size_t elems, size_t offset) 
 	if(is_soa()) {
 		auto device = get_device();
 		Plain<spinor> plain(get_elements(), device);
-		device->get_spinor_code()->convertSpinorfieldFromSOA_eo_device(&plain, this);
+		device->getSpinorCode()->convertSpinorfieldFromSOA_eo_device(&plain, this);
 		plain.dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));
 	} else {
 		Buffer::dump(ptr, elems * sizeof(spinor), offset * sizeof(spinor));

@@ -52,7 +52,7 @@ void inverterExecutable::printParametersToScreenAndFile()
 void inverterExecutable::performApplicationSpecificMeasurements() {
     logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
     physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit() );
-    if (parameters.get_fermact() == meta::action::rooted_stagg) {
+    if (parameters.get_fermact() == common::action::rooted_stagg) {
         if (parameters.get_measure_pbp()) {
             //NOTE: if parameters.get_read_multiple_configs()==1 maybe here the iteration number is not correct set as it is now
             physics::observables::staggered::measureChiralCondensateAndWriteToFile(*gaugefield, gaugefield->get_trajectoryNumberAtInit());

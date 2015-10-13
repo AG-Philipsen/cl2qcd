@@ -35,43 +35,53 @@
 #include <stdexcept>
 #include "device.hpp"
 #include "transfer/transfer.hpp"
+#include "openClCode.hpp"
 
 //todo: in the end, move this to system.hpp replacing meta/inputparameters.hpp
 #include "hardwareParameters.hpp"
 
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling);
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);
 static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
-//todo: remove the enable_profiling argument, it is redundant and contained in parameters!
-hardware::System::System(const meta::Inputparameters& params, const bool enable_profiling)
-	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr)
+hardware::System::System(const meta::Inputparameters& params)
+	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelBuilder(nullptr)
 {
 	hardwareParameters = new hardware::HardwareParameters( &params );
+	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters{ params };
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
-	initOpenCLDevices( hardwareParameters->enableProfiling() );
+	initOpenCLDevices();
 }
 
 void hardware::System::initOpenCLPlatforms()
 {
 	logger.debug() << "Init OpenCL platform(s)...";
+	/**
+	 * @todo: Implemented automatic handling in case of multiple platforms
+	 *   See also https://anteru.net/2012/11/03/2009/
+	 */
 	cl_uint numberOfAvailablePlatforms = 0;
-	cl_int err = clGetPlatformIDs(1, &platform, &numberOfAvailablePlatforms);
-	if(err)
-	{
-		throw OpenclException(err, "clGetPlatformIDs", __FILE__, __LINE__);
-	}
+	clGetPlatformIDs (0, nullptr, &numberOfAvailablePlatforms);
 	if (numberOfAvailablePlatforms > 1)
 	{
 		logger.warn() << "Found " << numberOfAvailablePlatforms << " platforms, take first one...";
+	}
+
+	std::vector<cl_platform_id> platformIds (numberOfAvailablePlatforms);
+	cl_int err = clGetPlatformIDs (numberOfAvailablePlatforms, platformIds.data (), nullptr);
+	if(err)
+	{
+		throw OpenclException(err, "clGetPlatformIDs", __FILE__, __LINE__);
 	}
 	else
 	{
 		logger.info() << "Found OpenCL platform";
 	}
+	platform = platformIds.at(0);
+
 	logger.debug() << "...done";
 }
 
@@ -103,7 +113,7 @@ void hardware::System::initOpenCLContext()
 	logger.debug() << "...done";
 }
 
-void hardware::System::initOpenCLDevices(const bool enable_profiling)
+void hardware::System::initOpenCLDevices()
 {
 	logger.debug() << "Init OpenCL devices...";
 	cl_int err = CL_SUCCESS;
@@ -140,7 +150,7 @@ void hardware::System::initOpenCLDevices(const bool enable_profiling)
 			device_infos.push_back(dev);
 		}
 		// for now, if a gpu was found then throw out cpus
-for(auto device: device_infos) {
+		for(auto device: device_infos) {
 			if(device.get_device_type() == CL_DEVICE_TYPE_GPU) {
 				device_infos = filter_cpus(device_infos);
 				break;
@@ -184,10 +194,15 @@ for(auto device: device_infos) {
 		}
 	}
 
+	if (device_infos.size() == 0)
+	{
+		throw std::logic_error( "Did not find any device! Abort!");
+	}
+
 	grid_size = calculate_grid_size(device_infos.size());
 	logger.info() << "Device grid layout: " << grid_size;
 
-	devices = init_devices(device_infos, context, grid_size, params, enable_profiling);
+	devices = init_devices(device_infos, context, grid_size, *hardwareParameters, *kernelBuilder);
 
 	delete[] device_ids;
 
@@ -209,6 +224,10 @@ hardware::System::~System()
 	if (hardwareParameters)
 	{
 		delete hardwareParameters;
+	}
+	if (kernelBuilder)
+	{
+		delete kernelBuilder;
 	}
 }
 
@@ -254,16 +273,11 @@ std::string hardware::OpenclException::what()
 	return error_message;
 }
 
-hardware::System::operator const cl_context&() const noexcept
-{
-	return context;
-}
-
 void hardware::print_profiling(const System& system, const std::string& filename)
 {
 	auto devices = system.get_devices();
 	for(size_t i = 0; i < devices.size(); ++i) {
-		print_profiling(devices[i], filename, i);
+		printProfiling(devices[i], filename, i);
 	}
 }
 
@@ -283,7 +297,7 @@ static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::Dev
 	return filtered;
 }
 
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const meta::Inputparameters& params, bool enable_profiling)
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder)
 {
 	std::vector<hardware::Device *> devices;
 	devices.reserve(infos.size());
@@ -294,7 +308,7 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
 		if(grid_pos.t >= grid_size.t) {
 			throw std::logic_error("Failed to place devices on the grid.");
 		}
-		devices.push_back(new hardware::Device(context, info.get_id(), grid_pos, grid_size, params, enable_profiling));
+		devices.push_back(new hardware::Device(context, info.get_id(), grid_pos, grid_size, openClCodeBuilder, hardwareParameters));
 	}
 
 	return devices;
@@ -322,6 +336,11 @@ hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to, unsi
 	return link.get();
 }
 
+cl_context hardware::System::getContext() const
+{
+	return context;
+}
+
 cl_platform_id hardware::System::get_platform() const
 {
 	return platform;
@@ -341,3 +360,7 @@ static void setDebugEnvironmentVariables()
 	}
 }
 
+const hardware::HardwareParametersInterface * hardware::System::getHardwareParameters() const noexcept
+{
+	return hardwareParameters;
+}

@@ -42,7 +42,7 @@ void hardware::code::Gaugefield::fill_kernels()
 		rectangles = createKernel("rectangles") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 		rectangles_reduction = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 	}
-	if(get_device()->get_grid_size().t == 1) {
+	if(get_device()->getGridSize().t == 1) {
 		polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 		polyakov_md_local = nullptr;
 		polyakov_md_merge = nullptr;
@@ -531,7 +531,7 @@ void hardware::code::Gaugefield::convertGaugefieldFromSOA_device(const hardware:
 	get_device()->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
 }
 
-hardware::code::Gaugefield::Gaugefield(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Gaugefield::Gaugefield(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device)
 	: Opencl_Module(params, device),
 	  stout_smear(0), rectangles(0), rectangles_reduction(0)
 {
