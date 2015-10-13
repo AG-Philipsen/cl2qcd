@@ -26,6 +26,7 @@
 #include "../lattices/spinorfield.hpp"
 #include <fstream>
 #include "../../meta/inputparameters.hpp"
+#include "observablesInterfaces.hpp"
 
 namespace physics{
 
