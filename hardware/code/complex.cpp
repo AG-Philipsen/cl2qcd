@@ -235,8 +235,8 @@ void hardware::code::Complex::print_profiling(const std::string& filename, int n
 	Opencl_Module::print_profiling(filename, difference);
 }
 
-hardware::code::Complex::Complex(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
-	: Opencl_Module(params, device), convert(0), ratio(0), product(0), sum(0), difference(0)
+hardware::code::Complex::Complex(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), convert(0), ratio(0), product(0), sum(0), difference(0)
 {
 	fill_kernels();
 }
