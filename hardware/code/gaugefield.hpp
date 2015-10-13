@@ -150,7 +150,7 @@ public:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Gaugefield(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
+	Gaugefield(const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
 private:
 
 	/**
