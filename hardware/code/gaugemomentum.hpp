@@ -126,12 +126,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	/**
-	 * Constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Gaugemomentum(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
+	Gaugemomentum(const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
 
 private:
 	/**

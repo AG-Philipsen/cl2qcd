@@ -33,8 +33,8 @@
 
 using namespace std;
 
-hardware::code::Gaugemomentum::Gaugemomentum(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Gaugemomentum::Gaugemomentum(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();
 }
