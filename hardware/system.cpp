@@ -46,10 +46,20 @@ static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
 hardware::System::System(const meta::Inputparameters& params)
-	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelBuilder(nullptr)
+	: params(&params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelBuilder(nullptr)
 {
+	temporaryFlagForSystemConstructorVersion = true;
 	hardwareParameters = new hardware::HardwareParameters( &params );
 	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters{ params };
+	setDebugEnvironmentVariables();
+	initOpenCLPlatforms();
+	initOpenCLContext();
+	initOpenCLDevices();
+}
+
+hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::OpenClCode & kernelBuilder):
+		params(nullptr), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelBuilder(&kernelBuilder)
+{
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
@@ -221,13 +231,16 @@ hardware::System::~System()
 
 	clReleaseContext(context);
 
-	if (hardwareParameters)
+	if( temporaryFlagForSystemConstructorVersion)
 	{
-		delete hardwareParameters;
-	}
-	if (kernelBuilder)
-	{
-		delete kernelBuilder;
+		if (hardwareParameters)
+		{
+			delete hardwareParameters;
+		}
+		if (kernelBuilder)
+		{
+			delete kernelBuilder;
+		}
 	}
 }
 
@@ -238,7 +251,7 @@ const std::vector<hardware::Device*>& hardware::System::get_devices() const noex
 
 const meta::Inputparameters& hardware::System::get_inputparameters() const noexcept
 {
-	return params;
+	return *params;
 }
 
 hardware::OpenclException::OpenclException(int err)

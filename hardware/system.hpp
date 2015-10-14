@@ -62,6 +62,7 @@ namespace hardware {
 		 * You should usually only do this once per application.
 		 */
 		explicit System(const meta::Inputparameters& parameters);
+		System(const hardware::HardwareParametersInterface & systemParameters, const hardware::OpenClCode & kernelBuilder);
 
 		~System();
 
@@ -85,7 +86,7 @@ namespace hardware {
 
 	private:
 
-		const meta::Inputparameters& params;
+		const meta::Inputparameters * params;
 		std::vector<Device*> devices;
 		cl_context context;
 		cl_platform_id platform;
@@ -98,6 +99,7 @@ namespace hardware {
 		void initOpenCLDevices();
 		const hardware::HardwareParametersInterface * hardwareParameters;
 		const hardware::OpenClCode * kernelBuilder;
+		bool temporaryFlagForSystemConstructorVersion = false;
 	};
 
 	/**
