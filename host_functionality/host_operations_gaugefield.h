@@ -74,5 +74,6 @@ void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, i
 Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters);
 
 Matrixsu3 unit_matrixsu3();
+Matrixsu3 nonTrivialSu3Matrix();
 
 #endif
