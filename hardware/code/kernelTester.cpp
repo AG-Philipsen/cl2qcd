@@ -98,6 +98,47 @@ KernelTester::KernelTester(meta::Inputparameters * parameters, const hardware::S
 	testPrecision(1e-8), typeOfComparison(1), kernelResult(0, 0), referenceValue(0, 0), allocatedObjects(false), parameters(parameters), system(system), device(device)
 {}
 
+KernelTester::KernelTester (const hardware::HardwareParametersInterface& hardwareParameters, const hardware::OpenClCode & kernelBuilder, int numberOfValuesIn,
+			int typeOfComparisonIn, std::vector<double> expectedResult )
+{
+	system = new hardware::System(hardwareParameters, kernelBuilder);
+	device = system->get_devices()[0];
+	allocatedObjects = true;
+
+	testPrecision = 10e-8; //todo: pass as arg
+
+	if (expectedResult.size() == 0)
+	{
+		for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
+			if(iteration == 0) {
+				referenceValue[iteration] = parameters->get_test_ref_value();
+			} else if(iteration == 1) {
+				referenceValue[iteration] = parameters->get_test_ref_value2();
+			} else {
+				throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
+			}
+		}
+	}
+	else
+	{
+		if( numberOfValuesIn != expectedResult.size() )
+		{
+			throw( std::invalid_argument("Number of arguments and size of expected results do not match. Aborting...") );
+		}
+		referenceValue = expectedResult;
+	}
+
+	if ( (typeOfComparisonIn == 1) || (typeOfComparisonIn == 2)  || (typeOfComparisonIn == 3) || (typeOfComparisonIn == 4) )
+	  {
+	    typeOfComparison = typeOfComparisonIn;
+	  } else
+	  {
+	    throw( std::invalid_argument("Do not recognise type of comparison. Aborting...") );
+	  }
+}
+
+
+
 #include <boost/test/floating_point_comparison.hpp>
 KernelTester::~KernelTester()
 {

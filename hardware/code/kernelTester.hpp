@@ -35,6 +35,7 @@ public:
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, int numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
 	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
+	KernelTester(const hardware::HardwareParametersInterface&, const hardware::OpenClCode &, int numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>());
 	virtual ~KernelTester();
 	void setReferenceValuesToZero();
 	
