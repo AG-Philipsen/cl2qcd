@@ -23,6 +23,8 @@
 #define BOOST_TEST_MODULE KernelTester_test
 #include <boost/test/unit_test.hpp>
 
+#include "mockups.hpp"
+
 #include "kernelTester.hpp"
 
 BOOST_AUTO_TEST_SUITE ( BUILD )
@@ -79,6 +81,13 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 		device = system->get_devices()[0];
 		
 		BOOST_CHECK_NO_THROW(KernelTester kernelTester(parameter, system, device) );
+	}
+
+	BOOST_AUTO_TEST_CASE( BUILD_4 )
+	{
+		const hardware::HardwareParametersMockup params(4,4);
+		const hardware::OpenClCodeMockup kernelBuilder;
+		BOOST_CHECK_NO_THROW(KernelTester kernelTester(params, kernelBuilder) );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
