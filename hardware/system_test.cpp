@@ -28,12 +28,25 @@
 #include "device.hpp"
 #include "hardware_test_util.hpp"
 
-BOOST_AUTO_TEST_CASE(initialization)
-{
-	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-	hardware::System system( params );
-	BOOST_REQUIRE_EQUAL(&system.get_inputparameters(), &params);
-}
+#include "code/mockups.hpp"
+
+BOOST_AUTO_TEST_SUITE(initialization)
+
+	BOOST_AUTO_TEST_CASE(fromMetaInputparameters)
+	{
+		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
+		hardware::System system( params );
+		BOOST_REQUIRE_EQUAL(&system.get_inputparameters(), &params);
+	}
+
+	BOOST_AUTO_TEST_CASE(fromHardwareParameters)
+	{
+		const hardware::HardwareParametersMockup params(4,4);
+		const hardware::OpenClCodeMockup kernelBuilder;
+		BOOST_CHECK_NO_THROW( hardware::System system( params, kernelBuilder ) );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(systemSanity)
 
