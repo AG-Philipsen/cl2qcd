@@ -27,6 +27,8 @@
 #include "../../host_functionality/host_operations_gaugefield.h"
 #include "mockups.hpp"
 
+enum FillType {cold = 1, nonTrivial};
+
 //todo: check if this can be moved elsewhere...
 void set_cold(Matrixsu3 * field, size_t elems)
 {
@@ -35,20 +37,37 @@ void set_cold(Matrixsu3 * field, size_t elems)
 	}
 }
 
-//todo: remove explicit ns,nt etc...
-const Matrixsu3* createGaugefield(const int numberOfElements)
+void setGaugefield(Matrixsu3 * field, size_t elems, const FillType fillTypeIn)
+{
+	for(size_t i = 0; i < elems; ++i)
+	{
+		switch (fillTypeIn)
+		{
+		case cold:
+			field[i] = unit_matrixsu3();
+			break;
+		case nonTrivial:
+			field[i] = nonTrivialSu3Matrix();
+			break;
+		default:
+			BOOST_ERROR("No valid FillType specified");
+		}
+	}
+}
+
+const Matrixsu3* createGaugefield(const int numberOfElements, const FillType fillTypeIn)
 {
 	Matrixsu3 * tmp = new Matrixsu3[numberOfElements];
-	set_cold(tmp, numberOfElements);
+	setGaugefield( tmp, numberOfElements, fillTypeIn);
 	return tmp;
 }
 
 class GaugefieldTester : public KernelTester {
 public:
-		GaugefieldTester(std::string kernelName, std::vector<std::string> parameterStrings, const HardwareParametersMockup & hardwareParameters, int numberOfValues = 1):
+		GaugefieldTester(std::string kernelName, std::vector<std::string> parameterStrings, const hardware::HardwareParametersMockup & hardwareParameters, const FillType fillType, int numberOfValues = 1):
 			KernelTester(kernelName, parameterStrings, numberOfValues), numberOfElements(hardwareParameters.getLatticeVolume() * NDIM) {
 		gaugefieldBuffer = new hardware::buffers::SU3( numberOfElements, device);
-		const Matrixsu3 * gf_host = createGaugefield(numberOfElements);
+		const Matrixsu3 * gf_host = createGaugefield(numberOfElements, fillType);
 		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
 		delete[] gf_host;
 
@@ -71,8 +90,8 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
 	class PlaquetteTester : public GaugefieldTester {
 	public:
-			PlaquetteTester(std::vector<std::string> parameterStrings, const HardwareParametersMockup & hardwareParameters, int typeOfPlaquette = 1):
-				GaugefieldTester("plaquette", parameterStrings, hardwareParameters, 1), typeOfPlaquette(typeOfPlaquette) {
+			PlaquetteTester(std::vector<std::string> parameterStrings, const hardware::HardwareParametersMockup & hardwareParameters, const FillType fillType, double referenceValuePerSite, int typeOfPlaquette = 1):
+				GaugefieldTester("plaquette", parameterStrings, hardwareParameters, fillType, 1), typeOfPlaquette(typeOfPlaquette) {
 			const hardware::buffers::Plain<hmc_float> plaq(1, device );
 			const hardware::buffers::Plain<hmc_float> splaq(1, device);
 			const hardware::buffers::Plain<hmc_float> tplaq(1, device);
@@ -100,86 +119,85 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 7887186;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS" , "--gaugeact=wilson", "--beta=5.69", "--rho=0", "--solver_prec=1e-8", "--test_ref_val=1536"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, 1);
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite, 1);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=7.6888851157082172"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  1);
-	}
-
-	BOOST_AUTO_TEST_CASE( PLAQUETTE_3 )
-	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=877.17444356279361"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  1);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::nonTrivial;
+		double referenceValuePerSite = 7887186;
+		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=1536.002605"};
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  1);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 7887186;
+		// todo: add KernelBuilder object
+		// add struct which contains: expectedresults (vector) , precision to test, type of comparison, numberOfValues
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=768."};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  2);
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  2);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_2 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=0.73795581796495302"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  2);
-	}
-
-	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_3 )
-	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=438.89229193411893"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  2);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::nonTrivial;
+		double referenceValuePerSite = 7887186;
+		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=768.00130250240136"};
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  2);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 7887186;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=768"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  3);
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  3);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_2 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=6.9509292977432651"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  3);
-	}
-
-	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_3 )
-	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=438.28215162867457"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  3);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::nonTrivial;
+		double referenceValuePerSite = 7887186;
+		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=768.00130250240136"};
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  3);
 	}
 	
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
 	{
-		HardwareParametersMockup hardwareParameters(8,8);
+		hardware::HardwareParametersMockup hardwareParameters(8,8);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 7887186;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=8", "--ntime=8", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=24576"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  1);
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  1);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
 	{
-		HardwareParametersMockup hardwareParameters(12,12);
+		hardware::HardwareParametersMockup hardwareParameters(12,12);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 7887186;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=12", "--ntime=12", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=124416"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  1);
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  1);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
 	{
-		HardwareParametersMockup hardwareParameters(16,16);
+		hardware::HardwareParametersMockup hardwareParameters(16,16);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 7887186;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=16", "--ntime=16", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8", "--test_ref_val=393216"};
-		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters,  1);
+		PlaquetteTester plaquetteTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite,  1);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -188,8 +206,8 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 	class PolyakovloopTester : public GaugefieldTester {
 	public:
-			PolyakovloopTester(std::vector<std::string> parameterString, const HardwareParametersMockup & hardwareParameters):
-				GaugefieldTester("polyakov", parameterString, hardwareParameters, 2) {
+			PolyakovloopTester(std::vector<std::string> parameterString, const hardware::HardwareParametersMockup & hardwareParameters, const FillType fillType, double referenceValuePerSite, double referenceValuePerSite2):
+				GaugefieldTester("polyakov", parameterString, hardwareParameters, fillType, 2) {
 			const hardware::buffers::Plain<hmc_complex> pol(1, device);
 			code->polyakov_device(gaugefieldBuffer, &pol);
 
@@ -202,44 +220,52 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 64.;
+		double referenceValuePerSite2 = 0.;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=64.", "--test_ref_val2=0."};
-		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters);
+		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite, referenceValuePerSite2);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_2)
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=0.76171322582154644", "--test_ref_val2=-4.7134763818794587"};
-		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters);
-	}
-
-	BOOST_AUTO_TEST_CASE( POLYAKOV_3)
-	{
-		HardwareParametersMockup hardwareParameters(4,4);
-		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=-7.2637901591275895", "--test_ref_val2=14.610075882787344"};
-		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::nonTrivial;
+		double referenceValuePerSite = 0.26737144;
+		double referenceValuePerSite2 = 0.48554374;
+		std::vector<std::string> parameterStrings {"--startcondition=hot", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=-17.1117721375", "--test_ref_val2=-31.0747993518"};
+		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite, referenceValuePerSite2);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
 	{
-		HardwareParametersMockup hardwareParameters(8,8);
+		hardware::HardwareParametersMockup hardwareParameters(8,8);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 64.;
+		double referenceValuePerSite2 = 0.;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=8", "--ntime=8", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=512.", "--test_ref_val2=0."};
-		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters);
+		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite, referenceValuePerSite2);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
 	{
-		HardwareParametersMockup hardwareParameters(12,12);
+		hardware::HardwareParametersMockup hardwareParameters(12,12);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 64.;
+		double referenceValuePerSite2 = 0.;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=12", "--ntime=12", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=1728.", "--test_ref_val2=0."};
-		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters);
+		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite, referenceValuePerSite2);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
 	{
-		HardwareParametersMockup hardwareParameters(16,16);
+		hardware::HardwareParametersMockup hardwareParameters(16,16);
+		FillType fillType = FillType::cold;
+		double referenceValuePerSite = 64.;
+		double referenceValuePerSite2 = 0.;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=16", "--ntime=16", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=4096.", "--test_ref_val2=0."};
-		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters);
+		PolyakovloopTester polyakovloopTester(parameterStrings, hardwareParameters, fillType, referenceValuePerSite, referenceValuePerSite2);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -266,8 +292,8 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 
 	class StoutSmearTester : public GaugefieldTester {
 	public:
-			StoutSmearTester(std::vector<std::string> parameterString, const HardwareParametersMockup & hardwareParameters):
-				GaugefieldTester("stout_smear", parameterString, hardwareParameters) {
+			StoutSmearTester(std::vector<std::string> parameterString, const hardware::HardwareParametersMockup & hardwareParameters, const FillType fillType):
+				GaugefieldTester("stout_smear", parameterString, hardwareParameters, fillType) {
 
 			const hardware::buffers::Plain<hmc_float> plaq(1, device );
 			const hardware::buffers::Plain<hmc_float> splaq(1, device);
@@ -283,37 +309,42 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--use_smearing=true", "--rho_iter=1", "--rho=0.001", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=882.11113688812929"};
-		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters);
+		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--use_smearing=true", "--rho_iter=1", "--rho=0.", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=877.17444356279361"};
-		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters);
+		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--use_smearing=true", "--rho_iter=1", "--rho=0.001538", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=884.76195718059716"};
-		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters);
+		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_4 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--use_smearing=true", "--rho_iter=1", "--rho=0.", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=1536"};
-		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters);
+		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_5 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--use_smearing=true", "--rho_iter=1", "--rho=0.001", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=1536."};
-		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters);
+		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -322,8 +353,8 @@ BOOST_AUTO_TEST_SUITE ( RECTANGLES )
 
 	class RectanglesTester : public GaugefieldTester {
 	public:
-			RectanglesTester(std::vector<std::string> parameterString, const HardwareParametersMockup & hardwareParameters):
-				GaugefieldTester("rectangles", parameterString, hardwareParameters) {
+			RectanglesTester(std::vector<std::string> parameterString, const hardware::HardwareParametersMockup & hardwareParameters, const FillType fillType):
+				GaugefieldTester("rectangles", parameterString, hardwareParameters, fillType) {
 			const hardware::buffers::Plain<hmc_float> rect(1, device );
 			code->rectangles_device(gaugefieldBuffer, &rect);
 			rect.dump(&kernelResult[0]);
@@ -332,37 +363,42 @@ BOOST_AUTO_TEST_SUITE ( RECTANGLES )
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--solver=BICGSTAB", "--gaugeact=tlsym", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=3072."};
-		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters);
+		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
 	{
-		HardwareParametersMockup hardwareParameters(4,4);
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--solver=BICGSTAB", "--gaugeact=tlsym", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=1103.2398401620"};
-		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters);
+		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
 	{
-		HardwareParametersMockup hardwareParameters(8,8);
+		hardware::HardwareParametersMockup hardwareParameters(8,8);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=8", "--ntime=8", "--fermact=TWISTEDMASS", "--solver=BICGSTAB", "--gaugeact=tlsym", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=49152."};
-		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters);
+		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
 	{
-		HardwareParametersMockup hardwareParameters(12,12);
+		hardware::HardwareParametersMockup hardwareParameters(12,12);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=12", "--ntime=12", "--fermact=TWISTEDMASS", "--solver=BICGSTAB", "--gaugeact=tlsym", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=248832."};
-		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters);
+		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
 	{
-		HardwareParametersMockup hardwareParameters(16,16);
+		hardware::HardwareParametersMockup hardwareParameters(16,16);
+		FillType fillType = FillType::cold;
 		std::vector<std::string> parameterStrings {"--startcondition=cold", "--nspace=16", "--ntime=16", "--fermact=TWISTEDMASS", "--solver=BICGSTAB", "--gaugeact=tlsym", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=786432."};
-		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters);
+		RectanglesTester rectanglesTester(parameterStrings, hardwareParameters, fillType);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
