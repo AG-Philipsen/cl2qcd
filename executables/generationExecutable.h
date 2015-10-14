@@ -32,6 +32,7 @@ class generationExecutable : public generalExecutable
 {
 public:
 	void generateConfigurations();
+	virtual ~generationExecutable(){};
 
 protected:
 	//Protected since it makes no sense to allow the user to instatiate this class

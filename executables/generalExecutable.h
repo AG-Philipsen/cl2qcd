@@ -39,6 +39,7 @@
 #include "../physics/lattices/gaugefield.hpp"
 #include "../physics/prng.hpp"
 #include "../physics/observables/gaugeObservables.hpp"
+#include "../physics/interfacesHandler.hpp"
 
 class generalExecutable
 {
@@ -67,6 +68,7 @@ protected:
 	hardware::System * system;
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
+	std::unique_ptr<physics::InterfacesHandler> interfaceHandler;
 	std::ofstream outputToFile;
 	const char* generalTimeOutputFilename = "general_time_output";
 

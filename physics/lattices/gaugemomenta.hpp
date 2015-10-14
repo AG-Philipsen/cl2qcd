@@ -43,7 +43,7 @@ public:
 	/**
 	 * Construct a gaugemomenta field based on the input parameters of the system
 	 */
-	Gaugemomenta(const hardware::System&);
+	Gaugemomenta(const hardware::System&, const GaugemomentaParametersInterface&);
 
 	/**
 	 * Release resources
@@ -88,8 +88,7 @@ public:
 
 private:
 	hardware::System const& system;
-	//TODO: Make the following pointer a reference
-	const GaugemomentaParametersInterface* gaugemomentaParametersInterface;
+	const GaugemomentaParametersInterface& gaugemomentaParametersInterface;
 	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
 	void import(const ae * const host) const;
 
