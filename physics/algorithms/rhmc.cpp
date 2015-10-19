@@ -52,7 +52,7 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     const auto & params = system.get_inputparameters();
 
     logger.debug() << "\tRHMC:\tinit spinorfield and gaugemomentum";
-    const Gaugemomenta p(system, interfaceHandler.getGaugemomentaParametersInterface());
+    const Gaugemomenta p(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     p.gaussian(prng);
 
     SPINORFIELD phi(system);
@@ -74,7 +74,7 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     logger.debug() << "\tRHMC:\tupdate gaugefield and gaugemomentum";
     const GaugefieldParametersImplementation gaugefieldParameters { &params };
     const Gaugefield new_u(system, &gaugefieldParameters, prng, false);
-    const Gaugemomenta new_p(system, interfaceHandler.getGaugemomentaParametersInterface());
+    const Gaugemomenta new_p(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     // copy u->u' p->p' for the integrator
     copyData(&new_u, *gf);
     copyData(&new_p, p);

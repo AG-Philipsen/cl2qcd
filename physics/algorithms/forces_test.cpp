@@ -41,8 +41,8 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, false);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
 		physics::algorithms::gauge_force(&gm, gf);
@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
 		physics::algorithms::gauge_force(&gm, gf);
@@ -78,8 +78,8 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, false);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
 		physics::algorithms::gauge_force_tlsym(&gm, gf);
@@ -95,8 +95,8 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
 		physics::algorithms::gauge_force_tlsym(&gm, gf);
@@ -115,8 +115,8 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, false);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
 		physics::algorithms::calc_gauge_force(&gm, gf, system);
@@ -132,8 +132,8 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
 		physics::algorithms::calc_gauge_force(&gm, gf, system);
@@ -152,9 +152,9 @@ BOOST_AUTO_TEST_CASE(calc_tot_force)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 24);
 		gm.zero();
@@ -175,11 +175,11 @@ BOOST_AUTO_TEST_CASE(calc_tot_force_eo)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system);
 		Spinorfield_eo sf1(system);
 		Spinorfield_eo sf2(system);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 25);
 		convert_to_eoprec(&sf1, &sf2, src);
@@ -203,10 +203,10 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
@@ -230,10 +230,10 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
@@ -257,10 +257,10 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		Gaugefield gf(system, &interfacesHandler.getGaugefieldParametersInterface(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Rooted_Staggeredfield_eo sf1(approx, system);
 		Rooted_Staggeredfield_eo sf2(approx, system);
-		Gaugemomenta gm(system, interfacesHandler.getGaugemomentaParametersInterface());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A

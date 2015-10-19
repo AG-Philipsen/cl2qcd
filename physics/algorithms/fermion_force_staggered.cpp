@@ -103,7 +103,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     //reconstruct the force. I will use a temporary Gaugemomenta to calculate the
     //partial force (on the whole lattice) that will be later added to "force"
     const D_KS_eo Doe(system, ODD);   //with ODD it is the Doe operator
-    physics::lattices::Gaugemomenta tmp(system, interfaceHandler.getGaugemomentaParametersInterface());
+    physics::lattices::Gaugemomenta tmp(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
 
     for (int i = 0; i < phi.Get_order(); i++) {
         Doe(Y[i], gf, *X[i]);

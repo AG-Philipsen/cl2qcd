@@ -189,7 +189,7 @@ template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::l
 {
     using namespace physics::algorithms;
 
-    physics::lattices::Gaugemomenta delta_p(system, interfaceHandler.getGaugemomentaParametersInterface());
+    physics::lattices::Gaugemomenta delta_p(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     delta_p.zero();
     calc_total_force(&delta_p, gf, phi, system, kappa, mubar);
 
@@ -216,7 +216,7 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 {
     using namespace physics::algorithms;
 
-    physics::lattices::Gaugemomenta delta_p(system, interfaceHandler.getGaugemomentaParametersInterface());
+    physics::lattices::Gaugemomenta delta_p(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     delta_p.zero();
     calc_total_force(&delta_p, gf, phi, system, interfaceHandler, mass);
 
@@ -227,7 +227,7 @@ void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gauge
 void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * const gm, const hmc_float eps,
         const physics::lattices::Gaugefield& gf, const hardware::System& system, physics::InterfacesHandler& interfaceHandler)
 {
-    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getGaugemomentaParametersInterface());
+    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
     calc_gauge_force(&force, gf, system);
     log_squarenorm("\tHMC [UP]:\tFORCE [GAUGE]:\t", force);
@@ -242,7 +242,7 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const ph
 {
     using namespace physics::algorithms;
 
-    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getGaugemomentaParametersInterface());
+    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
     calc_fermion_force(&force, gf, phi, system, kappa, mubar);
     log_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
@@ -269,7 +269,7 @@ void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattice
 {
     using namespace physics::algorithms;
 
-    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getGaugemomentaParametersInterface());
+    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
     calc_fermion_force(&force, gf, phi, system, interfaceHandler, mass);
     log_squarenorm("\tRHMC [UP]:\tFORCE [DET]:\t", force);
@@ -282,7 +282,7 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const p
 {
     using namespace physics::algorithms;
 
-    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getGaugemomentaParametersInterface());
+    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
     calc_detratio_forces(&force, gf, phi_mp, system);
     log_squarenorm("\tHMC [UP]:\tFORCE [DETRAT]:\t", force);
