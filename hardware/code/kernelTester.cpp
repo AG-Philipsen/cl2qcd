@@ -22,7 +22,7 @@
 #include <boost/test/unit_test.hpp>
 
 KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn, int typeOfComparisonIn):
-  kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
+  kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0), hardwareParameters(nullptr), kernelParameters(nullptr), kernelBuilder(nullptr)
 {
 	printKernelInformation(kernelNameIn);
 	parameters = createParameters(inputfileIn).release();
@@ -52,8 +52,8 @@ KernelTester::KernelTester(std::string kernelNameIn, std::string inputfileIn, in
 	  }
 }
 
-KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, int numberOfValuesIn, int typeOfComparisonIn, std::vector<double> expectedResult):
-  kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0)
+KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn, int typeOfComparisonIn, std::vector<double> expectedResult):
+  kernelResult(numberOfValuesIn, 0), referenceValue(numberOfValuesIn, 0), hardwareParameters(nullptr), kernelParameters(nullptr), kernelBuilder(nullptr)
 {
 	printKernelInformation(kernelNameIn);
 	parameters = createParameters(parameterStrings).release();
@@ -95,15 +95,24 @@ KernelTester::KernelTester(std::string kernelNameIn, std::vector<std::string> pa
 }
 
 KernelTester::KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
-	testPrecision(1e-8), typeOfComparison(1), kernelResult(0, 0), referenceValue(0, 0), allocatedObjects(false), parameters(parameters), system(system), device(device)
+	testPrecision(1e-8), typeOfComparison(1), kernelResult(0, 0), referenceValue(0, 0), allocatedObjects(false), parameters(parameters), system(system), device(device), hardwareParameters(nullptr), kernelParameters(nullptr), kernelBuilder(nullptr)
 {}
 
-KernelTester::KernelTester (const hardware::HardwareParametersInterface& hardwareParameters, const hardware::OpenClCode & kernelBuilder, int numberOfValuesIn,
-			int typeOfComparisonIn, std::vector<double> expectedResult )
+KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersMockup& hardwareParameters,
+		const hardware::code::OpenClKernelParametersMockup& kernelParameters, const hardware::OpenClCodeMockup & kernelBuilder, size_t numberOfValuesIn,
+			int typeOfComparisonIn, std::vector<double> expectedResult ) :
+			kernelResult(numberOfValuesIn,0),
+			referenceValue(numberOfValuesIn, 0),
+			parameters(nullptr),
+			hardwareParameters(&hardwareParameters),
+			kernelParameters(&kernelParameters),
+			kernelBuilder(&kernelBuilder)
 {
-	system = new hardware::System(hardwareParameters, kernelBuilder);
+	printKernelInformation(kernelNameIn);
+	system = new hardware::System(hardwareParameters, kernelParameters, kernelBuilder);
 	device = system->get_devices()[0];
-	allocatedObjects = true;
+	allocatedObjects = false;
+	temporaryFlagForKernelTesterConstructorVersion = true;
 
 	testPrecision = 10e-8; //todo: pass as arg
 
@@ -111,9 +120,9 @@ KernelTester::KernelTester (const hardware::HardwareParametersInterface& hardwar
 	{
 		for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 			if(iteration == 0) {
-				referenceValue[iteration] = parameters->get_test_ref_value();
+				referenceValue[iteration] = expectedResult[0];
 			} else if(iteration == 1) {
-				referenceValue[iteration] = parameters->get_test_ref_value2();
+				referenceValue[iteration] = expectedResult[1];
 			} else {
 				throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
 			}
@@ -164,7 +173,12 @@ KernelTester::~KernelTester()
 	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
 	    }
 	}
-	
+
+	if(temporaryFlagForKernelTesterConstructorVersion)
+	{
+		delete system;
+	}
+
 	if(allocatedObjects)
 	{
 		delete parameters;
