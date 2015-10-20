@@ -24,6 +24,7 @@
 
 #include "../meta/inputparameters.hpp"
 #include "hardwareParameters.hpp"
+#include "code/openClKernelParameters.hpp"
 #include "../common_header_files/types.h"
 #include "size_4.hpp"
 #include <map>
@@ -62,7 +63,7 @@ namespace hardware {
 		 * You should usually only do this once per application.
 		 */
 		explicit System(const meta::Inputparameters& parameters);
-		System(const hardware::HardwareParametersInterface & systemParameters, const hardware::OpenClCode & kernelBuilder);
+		System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, const hardware::OpenClCode & kernelBuilder);
 
 		~System();
 
@@ -98,6 +99,7 @@ namespace hardware {
 		void initOpenCLContext();
 		void initOpenCLDevices();
 		const hardware::HardwareParametersInterface * hardwareParameters;
+		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 		const hardware::OpenClCode * kernelBuilder;
 		bool temporaryFlagForSystemConstructorVersion = false;
 	};

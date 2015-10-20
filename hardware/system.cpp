@@ -57,8 +57,8 @@ hardware::System::System(const meta::Inputparameters& params)
 	initOpenCLDevices();
 }
 
-hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::OpenClCode & kernelBuilder):
-		params(nullptr), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelBuilder(&kernelBuilder)
+hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, const hardware::OpenClCode & kernelBuilder):
+		params(nullptr), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), kernelBuilder(&kernelBuilder)
 {
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
