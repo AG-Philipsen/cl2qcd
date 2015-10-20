@@ -42,8 +42,9 @@ BOOST_AUTO_TEST_SUITE(initialization)
 	BOOST_AUTO_TEST_CASE(fromHardwareParameters)
 	{
 		const hardware::HardwareParametersMockup params(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder;
-		BOOST_CHECK_NO_THROW( hardware::System system( params, kernelBuilder ) );
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,0,0.,common::action::twistedmass,false,false,64);
+		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
+		BOOST_CHECK_NO_THROW( hardware::System system( params, kernelParameters, kernelBuilder ) );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
