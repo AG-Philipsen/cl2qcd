@@ -91,15 +91,9 @@ namespace hardware
 	class OpenClCodeMockup : public OpenClCode
 	{
 	public:
-		OpenClCodeMockup() : kernelParameters(nullptr)
-		{};
-		~OpenClCodeMockup()
-		{
-			if (kernelParameters)
-			{
-				delete kernelParameters;
-			}
-		}
+		OpenClCodeMockup(const hardware::code::OpenClKernelParametersInterface & kernelParams) :
+			kernelParameters(& kernelParams) {};
+		~OpenClCodeMockup() {}
 		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device * deviceIn) const override
 		{
 			return std::unique_ptr<const hardware::code::Real>( new hardware::code::Real{*kernelParameters, deviceIn} ) ;
@@ -163,4 +157,193 @@ namespace hardware
 	private:
 		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 	};
+}
+
+namespace hardware {
+	namespace code {
+		class OpenClKernelParametersMockup : public OpenClKernelParametersInterface
+		{
+		public:
+			OpenClKernelParametersMockup(int nsIn, int ntIn , size_t precIn = 64) :
+				ns(nsIn), nt(ntIn), prec(precIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, bool useSmearingIn , size_t precIn = 64):
+				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useSmearing(useSmearingIn), prec(precIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn , size_t precIn = 64):
+				ns(nsIn), nt(ntIn), useRectangles(useRectanglesIn), prec(precIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, common::action fermactIn = common::action::twistedmass, bool useRectanglesIn=false, bool useSmearingIn=false, size_t precIn = 64) :
+				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), fermact(fermactIn), useRectangles(useRectanglesIn), useSmearing(useSmearingIn), prec(precIn) {};
+			~OpenClKernelParametersMockup()	{};
+			virtual int getNs() const override
+			{
+				return ns;
+			}
+			virtual int getNt() const override
+			{
+				return nt;
+			}
+			virtual size_t getPrecision() const override
+			{
+				return prec;
+			}
+			virtual bool getUseChemPotRe() const override
+			{
+				return false;
+			}
+			virtual bool getUseChemPotIm() const override
+			{
+				return false;
+			}
+			virtual bool getUseSmearing() const override
+			{
+				return useSmearing;
+			}
+			virtual double getChemPotRe() const override
+			{
+				return 0.;
+			}
+			virtual double getChemPotIm() const override
+			{
+				return 0.;
+			}
+			virtual double getRho() const override
+			{
+				return rho;
+			}
+			virtual int getRhoIter() const override
+			{
+				return rhoIter;
+			}
+			virtual bool getUseRec12() const override
+			{
+				return false;
+			}
+			virtual bool getUseEo() const override
+			{
+				return false;
+			}
+			virtual common::action  getFermact() const override
+			{
+				return fermact;
+			}
+			virtual int getMetroApproxOrd() const override
+			{
+				return 15.;
+			}
+			virtual int getMdApproxOrd() const override
+			{
+				return 8.;
+			}
+			virtual double getThetaFermionSpatial() const override
+			{
+				return 0.;
+			}
+			virtual double getThetaFermionTemporal() const override
+			{
+				return 0.;
+			}
+			virtual double getBeta() const override
+			{
+				return 5.69;
+			}
+			virtual double getKappa() const override
+			{
+				return 0.125;
+			}
+			virtual int getNumSources() const override
+			{
+				return 12;
+			}
+			virtual common::sourcecontents getSourceContent() const override
+			{
+				return common::sourcecontents::one;
+			}
+			virtual common::sourcetypes getSourceType() const override
+			{
+				return common::sourcetypes::point;
+			}
+			virtual bool getUseAniso() const override
+			{
+				return false;
+			}
+			virtual size_t getSpatialLatticeVolume() const override
+			{
+				return getNs() * getNs() * getNs();
+			}
+			virtual size_t getLatticeVolume() const override
+			{
+				return getNs() * getNs() * getNs() * getNt();
+			}
+			virtual bool getUseRectangles() const override
+			{
+				return useRectangles;
+			}
+			virtual double getC0() const override
+			{
+				return 1.;
+			}
+			virtual double getC1() const override
+			{
+				return 0.;
+			}
+			virtual double getXi0() const override
+			{
+				return 0.;
+			}
+			virtual size_t getFloatSize() const override
+			{
+				return prec / 8;
+			}
+			virtual size_t getMatSize() const override
+			{
+				// TODO with rec12 this becomes 6
+				return 9;
+			}
+			virtual size_t getSpinorFieldSize() const override
+			{
+				return getNs() * getNs() * getNs() * getNt();
+			}
+			virtual size_t getEoprecSpinorFieldSize() const override
+			{
+				return getNs() * getNs() * getNs() * getNt() / 2;
+			}
+			virtual int getCorrDir() const override
+			{
+				return 3;
+			}
+			virtual bool getMeasureCorrelators() const override
+			{
+				return true;
+			}
+			virtual bool getUseMergeKernelsFermion() const override
+			{
+				return false;
+			}
+			virtual hmc_float getMuBar() const override
+			{
+				return 2* getKappa() * 0.006;
+			}
+			virtual double getMass() const override
+			{
+				return 0.1;
+			}
+			virtual bool getUseSameRndNumbers() const override
+			{
+				return false;
+			}
+			virtual uint32_t getHostSeed() const override
+			{
+				return 4815;
+			}
+			virtual bool getUseMergeKernelsSpinor() const override
+			{
+				return false;
+			}
+		protected:
+			int ns, nt, rhoIter;
+			double rho;
+			common::action fermact;
+			bool useRectangles, useSmearing;
+			size_t prec;
+		};
+	}
 }
