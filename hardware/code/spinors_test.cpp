@@ -23,6 +23,8 @@
 
 #include "SpinorTester.hpp"
 
+#include "mockups.hpp"
+
 BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -33,6 +35,14 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 	BOOST_AUTO_TEST_CASE( BUILD_2 )
 	{
 		BOOST_CHECK_NO_THROW(   SpinorTester spinorTester("build all kernels", "spinors_build_input_2") );
+	}
+
+	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
+	{
+		hardware::HardwareParametersMockup hardwareParameters(4,4);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		TestParameters testParameters{std::vector<double> {-1.234}, 4,4};
+		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", hardwareParameters, kernelParameters, testParameters) );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

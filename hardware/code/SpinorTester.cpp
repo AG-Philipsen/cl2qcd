@@ -62,6 +62,12 @@ SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::S
 	code = device->getSpinorCode();
 }
 
+SpinorTester::SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, TestParameters & testParameters):
+		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), prngParameters(nullptr)
+{
+
+}
+
 
 SpinorTester::~SpinorTester()
 {

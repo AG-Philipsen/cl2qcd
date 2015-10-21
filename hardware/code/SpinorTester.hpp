@@ -35,6 +35,7 @@ public:
 	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
 	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
 	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
+	SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &, TestParameters & testParameters );
 	~SpinorTester();
 	
 protected:
