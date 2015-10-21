@@ -38,21 +38,49 @@ const int nt16 = 16;
 
 enum FillType {cold = 1, nonTrivial};
 
-struct TestParameters {
-	std::vector<double> referenceValue;
-	size_t numberOfValues;
-	int typeOfComparison;
+struct TestParametersGaugeField : public TestParameters
+{
+	FillType fillType;
 
-	TestParameters(std::vector<double> referenceValueIn){
+	TestParametersGaugeField(std::vector<double> referenceValueIn, int nsIn, int ntIn, FillType fillTypeIn):
+		TestParameters(referenceValueIn, nsIn, ntIn) {
 		referenceValue = referenceValueIn;
-		numberOfValues = referenceValueIn.size();
-		typeOfComparison = 1;
+		ns = nsIn;
+		nt = ntIn;
+		fillType = fillTypeIn;
 	}
+};
 
-	TestParameters(std::vector<double> referenceValueIn, int typeOfComparisonIn){
+struct TestParametersSpecToPlaq : public TestParametersGaugeField
+{
+	int typeOfPlaquette;
+
+	TestParametersSpecToPlaq(std::vector<double> referenceValueIn, int nsIn, int ntIn, FillType fillTypeIn, int typeOfPlaquetteIn) :
+		TestParametersGaugeField(referenceValueIn, nsIn, ntIn, fillTypeIn)
+	{
 		referenceValue = referenceValueIn;
-		numberOfValues = referenceValueIn.size();
-		typeOfComparison = typeOfComparisonIn;
+		ns = nsIn;
+		nt = ntIn;
+		fillType = fillTypeIn;
+		typeOfPlaquette = typeOfPlaquetteIn;
+
+	}
+};
+
+struct TestParametersSpecToSmear : public TestParametersGaugeField
+{
+	int rhoIter;
+	double rho;
+
+	TestParametersSpecToSmear(std::vector<double> referenceValueIn, int nsIn, int ntIn, FillType fillTypeIn, int rhoIterIn, double rhoIn) :
+		TestParametersGaugeField(referenceValueIn, nsIn, ntIn, fillTypeIn)
+	{
+		referenceValue = referenceValueIn;
+		ns = nsIn;
+		nt = ntIn;
+		fillType = fillTypeIn;
+		rhoIter = rhoIterIn;
+		rho = rhoIn;
 	}
 };
 
@@ -92,15 +120,14 @@ const Matrixsu3* createGaugefield(const int numberOfElements, const FillType fil
 class GaugefieldTester : public KernelTester {
 public:
 		GaugefieldTester(std::string kernelName, const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-				const hardware::OpenClCodeMockup & kernelBuilder, struct TestParameters testParams, const FillType fillTypeIn):
-			KernelTester(kernelName, hardwareParameters, kernelParameters, kernelBuilder, testParams.numberOfValues, testParams.typeOfComparison, testParams.referenceValue ),
+				struct TestParametersGaugeField testParams):
+			KernelTester(kernelName, hardwareParameters, kernelParameters, testParams),
 			numberOfElements(hardwareParameters.getLatticeVolume() * NDIM)
 	{
 		gaugefieldBuffer = new hardware::buffers::SU3( numberOfElements, device);
-		const Matrixsu3 * gf_host = createGaugefield(numberOfElements, fillTypeIn);
+		const Matrixsu3 * gf_host = createGaugefield(numberOfElements, testParams.fillType);
 		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
 		delete[] gf_host;
-
 
 		code = device->getGaugefieldCode();
 	}
@@ -122,8 +149,8 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 	class PlaquetteTester : public GaugefieldTester {
 	public:
 			PlaquetteTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-							const hardware::OpenClCodeMockup & kernelBuilder, struct TestParameters testParams, const FillType fillTypeIn, int typeOfPlaquette):
-				GaugefieldTester("plaquette", hardwareParameters, kernelParameters, kernelBuilder, testParams, fillTypeIn), typeOfPlaquette(typeOfPlaquette)  {
+							struct TestParametersSpecToPlaq testParams):
+				GaugefieldTester("plaquette", hardwareParameters, kernelParameters, testParams), typeOfPlaquette(testParams.typeOfPlaquette)  {
 			const hardware::buffers::Plain<hmc_float> plaq(1, device);
 			const hardware::buffers::Plain<hmc_float> splaq(1, device);
 			const hardware::buffers::Plain<hmc_float> tplaq(1, device);
@@ -148,94 +175,56 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 		int typeOfPlaquette;
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersSpecToPlaq testParams)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt);
+		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, testParams);
+	}
+
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 	{
-		std::vector<double> referenceValue = {1536.};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold, 1);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{1536.}, ns4, nt4, FillType::cold, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 	{
-		std::vector<double> referenceValue = {1536.002605};
-			hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-			hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-			hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::nonTrivial, 1);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{1536.002605}, ns4, nt4, FillType::nonTrivial, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
 	{
-		std::vector<double> referenceValue = {768.};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold,  2);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.}, ns4, nt4, FillType::cold, 2});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_2 )
 	{
-		std::vector<double> referenceValue = {768.00130250240136};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::nonTrivial, 2);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 2});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
 	{
-		std::vector<double> referenceValue = {768.};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold, 3);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.}, ns4, nt4, FillType::cold, 3});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_2 )
 	{
-		std::vector<double> referenceValue = {768.00130250240136};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::nonTrivial,  3);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 3});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
 	{
-		std::vector<double> referenceValue = {24576};
-		hardware::HardwareParametersMockup hardwareParameters(ns8,nt8);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns8,nt8);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold,  1);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{24576}, ns8, nt8, FillType::cold, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
 	{
-		std::vector<double> referenceValue = {124416};
-		hardware::HardwareParametersMockup hardwareParameters(ns12,nt12);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns12,nt12);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold,  1);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{124416}, ns12, nt12, FillType::cold, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
 	{
-		std::vector<double> referenceValue = {393216};
-		hardware::HardwareParametersMockup hardwareParameters(ns16,nt16);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns16,nt16);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold,  1);
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{393216}, ns16, nt16, FillType::cold, 1});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -245,8 +234,8 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 	class PolyakovloopTester : public GaugefieldTester {
 	public:
 			PolyakovloopTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-					const hardware::OpenClCodeMockup & kernelBuilder, struct TestParameters testParams, const FillType fillTypeIn):
-				GaugefieldTester("polyakov", hardwareParameters, kernelParameters, kernelBuilder, testParams, fillTypeIn) {
+					TestParametersGaugeField testParams):
+				GaugefieldTester("polyakov", hardwareParameters, kernelParameters, testParams) {
 			const hardware::buffers::Plain<hmc_complex> pol(1, device);
 			code->polyakov_device(gaugefieldBuffer, &pol);
 
@@ -257,54 +246,36 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersGaugeField testParams)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt);
+		PolyakovloopTester polyakovloopTester(hardwareParameters, kernelParameters, testParams);
+	}
+
 	BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
 	{
-		std::vector<double> referenceValue = {64.,0.};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PolyakovloopTester polyakovloopTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{64.,0.}, ns4, nt4, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_2)
 	{
-		std::vector<double> referenceValue = {-17.1117721375,-31.0747993518};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PolyakovloopTester polyakovloopTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::nonTrivial);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{-17.1117721375,-31.0747993518}, ns4, nt4, FillType::nonTrivial});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
 	{
-		std::vector<double> referenceValue = {512.,0.};
-		hardware::HardwareParametersMockup hardwareParameters(ns8,nt8);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns8,nt8);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PolyakovloopTester polyakovloopTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{512.,0.}, ns8, nt8, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
 	{
-		std::vector<double> referenceValue = {1728.,0.};
-		hardware::HardwareParametersMockup hardwareParameters(ns12,nt12);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns12,nt12);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PolyakovloopTester polyakovloopTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{1728.,0.}, ns12, nt12, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
 	{
-		std::vector<double> referenceValue = {4096.,0.};
-		hardware::HardwareParametersMockup hardwareParameters(ns16,nt16);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns16,nt16);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		PolyakovloopTester polyakovloopTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{4096.,0.}, ns16, nt16, FillType::cold});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -332,8 +303,8 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 	class StoutSmearTester : public GaugefieldTester {
 	public:
 			StoutSmearTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-					const hardware::OpenClCodeMockup & kernelBuilder, struct TestParameters testParams, const FillType fillTypeIn):
-				GaugefieldTester("stout_smear", hardwareParameters, kernelParameters, kernelBuilder, testParams, fillTypeIn) {
+					struct TestParametersSpecToSmear testParams):
+				GaugefieldTester("stout_smear", hardwareParameters, kernelParameters, testParams) {
 
 			const hardware::buffers::Plain<hmc_float> plaq(1, device );
 			const hardware::buffers::Plain<hmc_float> splaq(1, device);
@@ -347,54 +318,51 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 		}
 	};
 
-//	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
-//	{
-//		hardware::HardwareParametersMockup hardwareParameters(4,4);
-//		FillType fillType = FillType::cold;
-//		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--use_smearing=true", "--rho_iter=1", "--rho=0.001", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=882.11113688812929"};
-//		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
-//	}
-//
-////	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
-////	{
-////		hardware::HardwareParametersMockup hardwareParameters(4,4);
-////		FillType fillType = FillType::cold;
-////		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--use_smearing=true", "--rho_iter=1", "--rho=0.", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=877.17444356279361"};
-////		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
-////	}
-////
-////	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
-////	{
-////		hardware::HardwareParametersMockup hardwareParameters(4,4);
-////		FillType fillType = FillType::cold;
-////		std::vector<std::string> parameterStrings {"--startcondition=continue", "--sourcefile=conf.00200", "--use_smearing=true", "--rho_iter=1", "--rho=0.001538", "--prec=64", "--nspace=4", "--ntime=4", "--fermact=TWISTEDMASS", "--gaugeact=wilson", "--beta=5.69", "--solver_prec=1e-8",  "--test_ref_val=884.76195718059716"};
-////		StoutSmearTester StoutSmearTester(parameterStrings, hardwareParameters, fillType);
-////	}
-////
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_1, 1)
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_2, 1)
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_3, 1)
+
+void instantiateMockupsAndCallTester(struct TestParametersSpecToSmear testParams)
+	{
+		const bool useSmearing = true;
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt, testParams.rhoIter, testParams.rho, useSmearing);
+		StoutSmearTester StoutSmearTester(hardwareParameters, kernelParameters, testParams);
+	}
+
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
+	{
+		const int rhoIterIn = 1;
+		const double rhoIn = 0.001;
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+	}
+
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
+	{
+		const int rhoIterIn = 1;
+		const double rhoIn = 0.;
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+	}
+
+	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
+	{
+		const int rhoIterIn = 1;
+		const double rhoIn = 0.001538;
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+	}
+
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_4 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.;
-		const bool useSmearingIn = true;
-		std::vector<double> referenceValue = {1536};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4,rhoIterIn,rhoIn,useSmearingIn);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		StoutSmearTester StoutSmearTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_5 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.001;
-		const bool useSmearingIn = true;
-		std::vector<double> referenceValue = {1536};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4,rhoIterIn,rhoIn,useSmearingIn);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		StoutSmearTester StoutSmearTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters, FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -404,67 +372,45 @@ BOOST_AUTO_TEST_SUITE ( RECTANGLES )
 	class RectanglesTester : public GaugefieldTester {
 	public:
 			RectanglesTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-					const hardware::OpenClCodeMockup & kernelBuilder, struct TestParameters testParams, const FillType fillTypeIn):
-				GaugefieldTester("rectangles", hardwareParameters, kernelParameters, kernelBuilder, testParams, fillTypeIn) {
+					struct TestParametersGaugeField testParams):
+				GaugefieldTester("rectangles", hardwareParameters, kernelParameters, testParams) {
 			const hardware::buffers::Plain<hmc_float> rect(1, device );
 			code->rectangles_device(gaugefieldBuffer, &rect);
 			rect.dump(&kernelResult[0]);
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersGaugeField testParams)
+	{
+		const bool useRectangles = true;
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt, useRectangles);
+		RectanglesTester rectanglesTester(hardwareParameters, kernelParameters, testParams);
+	}
+
 	BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
 	{
-		const bool useRectanglesIn = true;
-		std::vector<double> referenceValue = {3072.};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4,useRectanglesIn);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		RectanglesTester rectanglesTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters,FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{3072.}, ns4, nt4, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
 	{
-		const bool useRectanglesIn = true;
-		std::vector<double> referenceValue = {3072.00781501};
-		hardware::HardwareParametersMockup hardwareParameters(ns4,nt4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns4,nt4,useRectanglesIn);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		RectanglesTester rectanglesTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters,FillType::nonTrivial);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{3072.00781501}, ns4, nt4, FillType::nonTrivial});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
 	{
-			const bool useRectanglesIn = true;
-			std::vector<double> referenceValue = {49152.};
-			hardware::HardwareParametersMockup hardwareParameters(ns8,nt8);
-			hardware::code::OpenClKernelParametersMockup kernelParameters(ns8,nt8,useRectanglesIn);
-			hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-			TestParameters testParameters {referenceValue};
-			RectanglesTester rectanglesTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters,FillType::cold);
+			instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{49152.}, ns8, nt8, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
 	{
-		const bool useRectanglesIn = true;
-		std::vector<double> referenceValue = {248832.};
-		hardware::HardwareParametersMockup hardwareParameters(ns12,nt12);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns12,nt12,useRectanglesIn);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		RectanglesTester rectanglesTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters,FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{248832.}, ns12, nt12, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
 	{
-		const bool useRectanglesIn = true;
-		std::vector<double> referenceValue = {786432.};
-		hardware::HardwareParametersMockup hardwareParameters(ns16,nt16);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(ns16,nt16,useRectanglesIn);
-		hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		TestParameters testParameters {referenceValue};
-		RectanglesTester rectanglesTester(hardwareParameters, kernelParameters, kernelBuilder, testParameters,FillType::cold);
+		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{786432.}, ns16, nt16, FillType::cold});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
