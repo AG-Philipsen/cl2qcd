@@ -69,17 +69,10 @@ namespace hardware
 	class OpenClCode_fromMetaInputparameters final : public OpenClCode
 	{
 	public:
-		OpenClCode_fromMetaInputparameters( const meta::Inputparameters & parametersIn ) : parameters(parametersIn), kernelParameters(nullptr)
-		{
-			kernelParameters = new hardware::code::OpenClKernelParametersImplementation( parametersIn );
-		};
+		OpenClCode_fromMetaInputparameters( const hardware::code::OpenClKernelParametersInterface & kernelParametersIn ) : kernelParameters(&kernelParametersIn)
+		{};
 		~OpenClCode_fromMetaInputparameters()
-		{
-			if (kernelParameters)
-			{
-				delete kernelParameters;
-			}
-		}
+		{}
 		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device * deviceIn) const override
 		{
 			return std::unique_ptr<const hardware::code::Real>( new hardware::code::Real{*kernelParameters, deviceIn} ) ;
@@ -141,7 +134,6 @@ namespace hardware
 			return std::unique_ptr<const hardware::code::Fermions_staggered>( new hardware::code::Fermions_staggered{*kernelParameters, deviceIn} ) ;
 		}
 	private:
-		const meta::Inputparameters & parameters;
 		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 	};
 }
