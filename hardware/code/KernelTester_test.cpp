@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,0,0.,common::action::twistedmass,false,false,64);
 		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		BOOST_CHECK_NO_THROW(KernelTester kernelTester("testMockup", params, kernelParameters, kernelBuilder) );
+		BOOST_CHECK_NO_THROW(KernelTester kernelTester("testMockup", params, kernelParameters) );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

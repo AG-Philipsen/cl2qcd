@@ -98,31 +98,31 @@ KernelTester::KernelTester(meta::Inputparameters * parameters, const hardware::S
 	testPrecision(1e-8), typeOfComparison(1), kernelResult(0, 0), referenceValue(0, 0), allocatedObjects(false), parameters(parameters), system(system), device(device), hardwareParameters(nullptr), kernelParameters(nullptr), kernelBuilder(nullptr)
 {}
 
-KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersMockup& hardwareParameters,
-		const hardware::code::OpenClKernelParametersMockup& kernelParameters, const hardware::OpenClCodeMockup & kernelBuilder, size_t numberOfValuesIn,
-			int typeOfComparisonIn, std::vector<double> expectedResult ) :
-			kernelResult(numberOfValuesIn,0),
-			referenceValue(numberOfValuesIn, 0),
+KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersInterface& hardwareParameters,
+		const hardware::code::OpenClKernelParametersInterface& kernelParameters, struct TestParameters testParams) :
+			kernelResult(testParams.numberOfValues,0),
+			referenceValue(testParams.numberOfValues, 0),
 			parameters(nullptr),
 			hardwareParameters(&hardwareParameters),
 			kernelParameters(&kernelParameters),
-			kernelBuilder(&kernelBuilder)
+			kernelBuilder(nullptr)
 {
 	printKernelInformation(kernelNameIn);
-	system = new hardware::System(hardwareParameters, kernelParameters, kernelBuilder);
+	kernelBuilder = new hardware::OpenClCodeMockup( kernelParameters );
+	system = new hardware::System(hardwareParameters, kernelParameters, *kernelBuilder);
 	device = system->get_devices()[0];
 	allocatedObjects = false;
 	temporaryFlagForKernelTesterConstructorVersion = true;
 
 	testPrecision = 10e-8; //todo: pass as arg
 
-	if (expectedResult.size() == 0)
+	if (testParams.referenceValue.size() == 0)
 	{
 		for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 			if(iteration == 0) {
-				referenceValue[iteration] = expectedResult[0];
+				referenceValue[iteration] = testParams.referenceValue.at(0);
 			} else if(iteration == 1) {
-				referenceValue[iteration] = expectedResult[1];
+				referenceValue[iteration] = testParams.referenceValue.at(1);
 			} else {
 				throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
 			}
@@ -130,16 +130,16 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 	}
 	else
 	{
-		if( numberOfValuesIn != expectedResult.size() )
+		if( testParams.numberOfValues != testParams.referenceValue.size() )
 		{
 			throw( std::invalid_argument("Number of arguments and size of expected results do not match. Aborting...") );
 		}
-		referenceValue = expectedResult;
+		referenceValue = testParams.referenceValue;
 	}
 
-	if ( (typeOfComparisonIn == 1) || (typeOfComparisonIn == 2)  || (typeOfComparisonIn == 3) || (typeOfComparisonIn == 4) )
+	if ( (testParams.typeOfComparison == 1) || (testParams.typeOfComparison == 2)  || (testParams.typeOfComparison == 3) || (testParams.typeOfComparison == 4) )
 	  {
-	    typeOfComparison = typeOfComparisonIn;
+	    typeOfComparison = testParams.typeOfComparison;
 	  } else
 	  {
 	    throw( std::invalid_argument("Do not recognise type of comparison. Aborting...") );
@@ -177,6 +177,7 @@ KernelTester::~KernelTester()
 	if(temporaryFlagForKernelTesterConstructorVersion)
 	{
 		delete system;
+		delete kernelBuilder;
 	}
 
 	if(allocatedObjects)

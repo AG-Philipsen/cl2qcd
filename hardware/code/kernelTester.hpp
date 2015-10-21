@@ -31,13 +31,24 @@
 #include "../device.hpp"
 #include "mockups.hpp"
 
+typedef std::vector<double> referenceValues;
+struct TestParameters {
+	std::vector<double> referenceValue;
+	int ns;
+	int nt;
+	int typeOfComparison;
+	size_t numberOfValues;
+
+	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn): referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(1), numberOfValues(referenceValueIn.size()) {}
+};
+
 class KernelTester {
 public:
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
 	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersMockup&, const hardware::code::OpenClKernelParametersMockup&,
-			const hardware::OpenClCodeMockup &, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>());
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&,
+			struct TestParameters);
 	virtual ~KernelTester();
 	void setReferenceValuesToZero();
 	
@@ -51,9 +62,9 @@ protected:
 	meta::Inputparameters * parameters;
 	const hardware::System * system;
 	hardware::Device * device;
-	const hardware::HardwareParametersMockup * hardwareParameters;
-	const hardware::code::OpenClKernelParametersMockup * kernelParameters;
-	const hardware::OpenClCodeMockup * kernelBuilder;
+	const hardware::HardwareParametersInterface * hardwareParameters;
+	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
+	const hardware::OpenClCode * kernelBuilder;
 
 private:
 	bool temporaryFlagForKernelTesterConstructorVersion = false;
