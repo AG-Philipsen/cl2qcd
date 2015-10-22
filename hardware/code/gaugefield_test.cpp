@@ -27,15 +27,6 @@
 #include "../../host_functionality/host_operations_gaugefield.h"
 #include "mockups.hpp"
 
-const int ns4 = 4;
-const int nt4 = 4;
-const int ns8 = 8;
-const int nt8 = 8;
-const int ns12 = 12;
-const int nt12 = 12;
-const int ns16 = 16;
-const int nt16 = 16;
-
 enum FillType {cold = 1, nonTrivial};
 
 struct TestParametersGaugeField : public TestParameters

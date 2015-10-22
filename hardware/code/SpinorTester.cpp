@@ -23,15 +23,30 @@
 void SpinorTester::setMembers()
 {
 		//todo: some of these could also be put into the specific child-classes where they are actually used.
-	spinorfieldElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime(); //todo: make proper
-	spinorfieldEvenOddElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime() / 2; //todo: make proper
-	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
-	(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
-	alpha_host = {parameters->get_beta(), parameters->get_rho()};
-	beta_host = {parameters->get_kappa(), parameters->get_mu()};
-	iterations = parameters->get_integrationsteps(0);
-	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+		spinorfieldElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime(); //todo: make proper
+		spinorfieldEvenOddElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime() / 2; //todo: make proper
+		(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
+		(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
+		alpha_host = {parameters->get_beta(), parameters->get_rho()};
+		beta_host = {parameters->get_kappa(), parameters->get_mu()};
+		iterations = parameters->get_integrationsteps(0);
+		parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+
 }
+
+void SpinorTester::setMembersNew()
+{
+		//todo: some of these could also be put into the specific child-classes where they are actually used.
+	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
+	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
+	useRandom = false; // todo: make changeable (parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
+	evenOrOdd = true; //todo: make changeable (parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
+	alpha_host = {kernelParameters->getBeta(), kernelParameters->getRho()}; // todo: make changeable {parameters->get_beta(), parameters->get_rho()};
+	beta_host = {kernelParameters->getKappa(), kernelParameters->getMuBar()}; //todo: mubar was mu originally
+	iterations = 1; // todo: make changeable parameters->get_integrationsteps(0);
+	calcVariance = false; // todo: make changeable parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+}
+
 
 SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
   KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( parameters )
@@ -62,15 +77,19 @@ SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::S
 	code = device->getSpinorCode();
 }
 
-SpinorTester::SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, TestParameters & testParameters):
+SpinorTester::SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
+		const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
 		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), prngParameters(nullptr)
 {
-
+	setMembersNew();
+	code = device->getSpinorCode();
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 }
 
 
 SpinorTester::~SpinorTester()
 {
+	//todo: after refactoring, review these deletes here...
 	if(allocatedObjects)
 	{
 		delete doubleBuffer;

@@ -30,12 +30,21 @@
 
 enum fillType{ zero, one, zeroOne, oneZero, ascending};
 
+struct SpinorTestParameters: public TestParameters
+{
+	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn, const bool useEvenOddIn = false) :
+		TestParameters(referenceValuesIn, nsIn, ntIn), useEvenOdd(useEvenOddIn)
+	{};
+	const bool useEvenOdd;
+};
+
 class SpinorTester : public KernelTester {
 public:
 	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
 	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
 	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &, TestParameters & testParameters );
+	SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &,
+			const SpinorTestParameters & testParameters );
 	~SpinorTester();
 	
 protected:
@@ -65,6 +74,7 @@ protected:
 	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
 	
 	void setMembers();
+	void setMembersNew();
 	
 	const hardware::code::Spinors * code;
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;

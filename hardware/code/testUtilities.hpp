@@ -29,4 +29,13 @@ std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile);
 std::unique_ptr<meta::Inputparameters> createParameters(std::vector<std::string> parameterStrings);
 void printKernelInformation(std::string name);
 
+const int ns4 = 4;
+const int nt4 = 4;
+const int ns8 = 8;
+const int nt8 = 8;
+const int ns12 = 12;
+const int nt12 = 12;
+const int ns16 = 16;
+const int nt16 = 16;
+
 #endif // _TESTUTILITIES_HPP_
