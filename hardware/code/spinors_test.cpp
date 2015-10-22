@@ -49,16 +49,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
-	class SquarenormTester: public SpinorTester
+	struct SquarenormTester: public SpinorTester
 	{
-	public:
-		SquarenormTester(std::string inputfile):
-			SpinorTester("global_squarenorm", inputfile, 1)
-			{
-				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-				in.load(createSpinorfield(spinorfieldElements));
-				calcSquarenormAndStoreAsKernelResult(&in);
-			}
 		SquarenormTester(const hardware::HardwareParametersInterface & hardwareParameters,
 				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
 					SpinorTester("global squarenorm", hardwareParameters, kernelParameters, testParameters)
@@ -83,7 +75,7 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_2 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {ns4*ns4*ns4*nt4*4900}, ns4, nt4, SpinorFillType::ascendingComplex} );
+		performSquarenormTest( SpinorTestParameters {referenceValues {ns8*ns8*ns8*nt4*4900}, ns8, nt4, SpinorFillType::ascendingComplex} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_1 )
