@@ -28,13 +28,14 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
-enum SpinorFillType{ zero, one, zeroOne, oneZero, ascending};
+enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 
 struct SpinorTestParameters: public TestParameters
 {
-	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn, const bool useEvenOddIn = false) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), useEvenOdd(useEvenOddIn)
+	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillType fillTypeIn, const bool useEvenOddIn = false) :
+		TestParameters(referenceValuesIn, nsIn, ntIn), fillType(fillTypeIn), useEvenOdd(useEvenOddIn)
 	{};
+	const SpinorFillType fillType;
 	const bool useEvenOdd;
 };
 
@@ -59,6 +60,7 @@ protected:
 	void fill_with_zero_one(spinor * in, int size);
 	void fill_with_one_zero(spinor * in, int size);
 	void fill_with_ascending(spinor * in, int size);
+	void fillWithAscendingComplex(spinor * in, int size);
 	void fill_with_one_minusone_for_gamma5_use(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);
 	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();

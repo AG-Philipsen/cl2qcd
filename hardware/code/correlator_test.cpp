@@ -819,7 +819,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_SC_Z)
 	{
 		std::vector<double> expectedResult(spatialExtent, 1872.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -848,7 +848,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_SC_T)
 	{
 		std::vector<double> expectedResult(temporalExtent, 1872.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1051,7 +1051,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_AX_Z)
 	{
 		std::vector<double> expectedResult(spatialExtent, 144.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1080,7 +1080,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_AX_T)
 	{
 		std::vector<double> expectedResult(temporalExtent, 144.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1109,7 +1109,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_AY_Z)
 	{
 		std::vector<double> expectedResult(spatialExtent, -144.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1138,7 +1138,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_AY_T)
 	{
 		std::vector<double> expectedResult(temporalExtent, -144.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1167,7 +1167,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_AZ_Z)
 	{
 		std::vector<double> expectedResult(spatialExtent, -432.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1196,7 +1196,7 @@ BOOST_AUTO_TEST_SUITE(CORRELATOR_AZ_T)
 	{
 		std::vector<double> expectedResult(temporalExtent, -432.);
 		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascending, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

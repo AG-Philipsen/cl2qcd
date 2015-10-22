@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 	{
 		hardware::HardwareParametersMockup hardwareParameters(4,4);
 		hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		SpinorTestParameters testParameters{std::vector<double> {-1.234}, 4,4};
+		SpinorTestParameters testParameters{std::vector<double> {-1.234}, 4,4, SpinorFillType::zero};
 		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", hardwareParameters, kernelParameters, testParameters) );
 	}
 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 					SpinorTester("global squarenorm", hardwareParameters, kernelParameters, testParameters)
 		{
 			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-			in.load(createSpinorfield(spinorfieldElements));
+			in.load(createSpinorfield( testParameters.fillType) );
 			calcSquarenormAndStoreAsKernelResult(&in);
 		}
 	};
@@ -78,12 +78,12 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {3072.}, ns4, nt4} );
+		performSquarenormTest( SpinorTestParameters {referenceValues {3072.}, ns4, nt4, SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_2 )
 	{
-		SquarenormTester("/global_squarenorm_input_2");
+		performSquarenormTest( SpinorTestParameters {referenceValues {ns4*ns4*ns4*nt4*4900}, ns4, nt4, SpinorFillType::ascendingComplex} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_1 )

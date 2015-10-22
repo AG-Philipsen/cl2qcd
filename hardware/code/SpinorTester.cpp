@@ -192,6 +192,25 @@ void SpinorTester::fill_with_ascending(spinor * in, int size)
 	}
 }
 
+void SpinorTester::fillWithAscendingComplex(spinor * in, int size)
+{
+	for(int i = 0; i < size; i++) {
+	    in[i].e0.e0 = {1., 2.};
+	    in[i].e0.e1 = {3., 4.};
+	    in[i].e0.e2 = {5., 6.};
+	    in[i].e1.e0 = {7., 8.};
+	    in[i].e1.e1 = {9., 10.};
+	    in[i].e1.e2 = {11., 12.};
+	    in[i].e2.e0 = {13., 14.};
+	    in[i].e2.e1 = {15., 16.};
+	    in[i].e2.e2 = {17., 18.};
+	    in[i].e3.e0 = {19., 20.};
+	    in[i].e3.e1 = {21., 22.};
+	    in[i].e3.e2 = {23., 24.};
+	}
+}
+
+
 void SpinorTester::fill_with_one_minusone_for_gamma5_use(spinor * in, int size)
 {
   for(int i = 0; i < size; ++i) {
@@ -270,8 +289,11 @@ spinor * SpinorTester::createSpinorfield(SpinorFillType fillTypeIn)
 	case SpinorFillType::oneZero :
 		fill_with_one_zero(in, spinorfieldElements);
 		break;
-	case SpinorFillType::ascending :
+	case SpinorFillType::ascendingReal :
 		fill_with_ascending(in, spinorfieldElements);
+		break;
+	case SpinorFillType::ascendingComplex :
+		fillWithAscendingComplex(in, spinorfieldElements);
 		break;
 	default:
 		logger.fatal() << "do not know fill type!";
