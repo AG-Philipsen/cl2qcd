@@ -28,7 +28,7 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
-enum fillType{ zero, one, zeroOne, oneZero, ascending};
+enum SpinorFillType{ zero, one, zeroOne, oneZero, ascending};
 
 struct SpinorTestParameters: public TestParameters
 {
@@ -52,7 +52,7 @@ protected:
 	
 	bool allocatedObjects;
 
-	spinor * createSpinorfield( fillType );
+	spinor * createSpinorfield( SpinorFillType );
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
 	void fill_with_one(spinor * in, int size);

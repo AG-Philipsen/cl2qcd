@@ -253,24 +253,24 @@ spinor * SpinorTester::createSpinorfield(size_t numberOfElements, int seed)
   return in;
 }
 
-spinor * SpinorTester::createSpinorfield(fillType fillTypeIn)
+spinor * SpinorTester::createSpinorfield(SpinorFillType fillTypeIn)
 {
   spinor * in;
   in = new spinor[spinorfieldElements];
   switch (fillTypeIn) {
-	case fillType::zero :
+	case SpinorFillType::zero :
 		fill_with_zero(in, spinorfieldElements);
 		break;
-	case fillType::one :
+	case SpinorFillType::one :
 		fill_with_one(in, spinorfieldElements);
 		break;
-	case fillType::zeroOne :
+	case SpinorFillType::zeroOne :
 		fill_with_zero_one(in, spinorfieldElements);
 		break;
-	case fillType::oneZero :
+	case SpinorFillType::oneZero :
 		fill_with_one_zero(in, spinorfieldElements);
 		break;
-	case fillType::ascending :
+	case SpinorFillType::ascending :
 		fill_with_ascending(in, spinorfieldElements);
 		break;
 	default:
