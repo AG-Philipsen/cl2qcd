@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {3072.}, ns4, nt4, SpinorFillType::one} );
+		performSquarenormTest( SpinorTestParameters {referenceValues {ns4*ns4*ns4*nt4*12}, ns4, nt4, SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_2 )
@@ -88,17 +88,17 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_1 )
 	{
-		SquarenormTester("/global_squarenorm_reduction_input_1");
+		performSquarenormTest( SpinorTestParameters {referenceValues {ns8*ns8*ns8*nt12*12}, ns8, nt12, SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_2 )
 	{
-		SquarenormTester("/global_squarenorm_reduction_input_2");
+		performSquarenormTest( SpinorTestParameters {referenceValues {ns12*ns12*ns12*nt16*12}, ns12, nt16, SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_3 )
 	{
-		SquarenormTester("/global_squarenorm_reduction_input_3");
+		performSquarenormTest( SpinorTestParameters {referenceValues {ns16*ns16*ns16*nt8*12}, ns16, nt8, SpinorFillType::one} );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
