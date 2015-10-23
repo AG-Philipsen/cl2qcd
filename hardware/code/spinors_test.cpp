@@ -49,6 +49,33 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
+	struct SquarenormTestParameters: public SpinorTestParameters
+	{
+		SquarenormTestParameters(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn) :
+			SpinorTestParameters{referenceValues{calculateReferenceValues(nsIn, ntIn, fillTypeIn)} , nsIn, ntIn, fillTypeIn} {};
+
+		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn)
+		{
+			const int latticeVolume = nsIn * nsIn * nsIn * ntIn;
+			switch( fillTypeIn )
+			{
+				case SpinorFillType::one :
+				{
+					return referenceValues{latticeVolume * 12.};
+				}
+				case SpinorFillType::ascendingComplex:
+				{
+					return referenceValues{latticeVolume * 4900.}; //sum of squares up to 24
+				}
+				default:
+				{
+					return referenceValues{-1.23456};
+				}
+			}
+			return referenceValues{-1.23456};
+		}
+	};
+
 	struct SquarenormTester: public SpinorTester
 	{
 		SquarenormTester(const hardware::HardwareParametersInterface & hardwareParameters,
@@ -70,27 +97,27 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {ns4*ns4*ns4*nt4*12}, ns4, nt4, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns4, nt4, SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_2 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {ns8*ns8*ns8*nt4*4900}, ns8, nt4, SpinorFillType::ascendingComplex} );
+		performSquarenormTest( SquarenormTestParameters {ns8, nt4, SpinorFillType::ascendingComplex} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_1 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {ns8*ns8*ns8*nt12*12}, ns8, nt12, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns8, nt12, SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_2 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {ns12*ns12*ns12*nt16*12}, ns12, nt16, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns12, nt16, SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_3 )
 	{
-		performSquarenormTest( SpinorTestParameters {referenceValues {ns16*ns16*ns16*nt8*12}, ns16, nt8, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns16, nt8, SpinorFillType::one} );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -122,7 +149,6 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 		SquarenormEvenOddTester(hardwareParameters, kernelParameters, parametersForThisTest);
 	}
-
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
 	{

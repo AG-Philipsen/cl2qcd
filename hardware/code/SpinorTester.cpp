@@ -77,7 +77,7 @@ SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::S
 
 SpinorTester::SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
 		const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
-		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), useRandom(testParameters.useEvenOdd), prngParameters(nullptr)
+		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), useRandom(testParameters.useEvenOdd), prngParameters(nullptr), prng(nullptr)
 {
 	setMembersNew();
 	code = device->getSpinorCode();
