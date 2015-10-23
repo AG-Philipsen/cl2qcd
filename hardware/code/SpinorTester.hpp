@@ -36,6 +36,7 @@ struct SpinorTestParameters: public TestParameters
 		TestParameters(referenceValuesIn, nsIn, ntIn), fillType(fillTypeIn), useEvenOdd(useEvenOddIn)
 	{};
 	const SpinorFillType fillType;
+	//todo: can this be removed?
 	const bool useEvenOdd;
 };
 

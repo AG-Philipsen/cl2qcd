@@ -216,11 +216,63 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 				kernelResult[0] = resultTmp.re;
 				kernelResult[1] = resultTmp.im;
 			}
+		ScalarProductTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters testParameters):
+			SpinorTester("scalar_product", hardwareParameters, kernelParameters, testParameters)
+		{
+			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+			const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
+			in.load(createSpinorfield(spinorfieldElements, 123));
+			in2.load(createSpinorfield(spinorfieldElements, 456));
+			hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
+
+			code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
+			hmc_complex resultTmp;
+			sqnorm.dump(&resultTmp);
+
+			kernelResult[0] = resultTmp.re;
+			kernelResult[1] = resultTmp.im;
+		}
+	};
+
+	void performScalarProductTest( const SpinorTestParameters parametersForThisTest)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+		ScalarProductTester( hardwareParameters, kernelParameters, parametersForThisTest );
+	}
+
+	typedef std::vector<SpinorFillType> SpinorFillTypes;
+	struct ScalarProductTestParameters : public SpinorTestParameters
+	{
+		ScalarProductTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn):
+			SpinorTestParameters(calculateReferenceValues(nsIn, ntIn, fillTypesIn), nsIn, ntIn, fillTypesIn[0]), fillTypes(fillTypesIn){};
+
+		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn)
+		{
+			const int latticeVolume = nsIn * nsIn * nsIn * ntIn;
+			switch( fillTypesIn[0] )
+			{
+				case SpinorFillType::one :
+				{
+					return referenceValues{latticeVolume * 12.};
+				}
+				case SpinorFillType::ascendingComplex:
+				{
+					return referenceValues{latticeVolume * 4900.}; //sum of squares up to 24
+				}
+				default:
+				{
+					return referenceValues{-1.23456};
+				}
+			}
+		}
+		const SpinorFillTypes fillTypes;
 	};
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
 	{
-		ScalarProductTester scalarProductTester("scalar_product_input_1");
+		performScalarProductTest( ScalarProductTestParameters(ns4, nt4, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one} ));
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_2 )
