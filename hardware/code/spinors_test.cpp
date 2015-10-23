@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 					SpinorTester("global_squarenorm_eo", hardwareParameters, kernelParameters, testParameters)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
-			in.load(createSpinorfield(spinorfieldEvenOddElements));
+			in.load( createSpinorfield( testParameters.fillType ) );
 			calcSquarenormEvenOddAndStoreAsKernelResult(&in);
 		}
 	};
@@ -127,27 +127,26 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
 	{
 		performSquarenormEvenOddTest( SpinorTestParameters {referenceValues {ns16*ns16*ns16*nt8*12./2.}, ns16, nt8, SpinorFillType::one, true} );
-		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_input_1");
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_2 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_input_2");
+		performSquarenormEvenOddTest( SpinorTestParameters {referenceValues {ns16*ns16*ns16*nt8*4900./2.}, ns16, nt8, SpinorFillType::ascendingComplex, true} );
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_1 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_reduction_input_1");
+		performSquarenormEvenOddTest( SpinorTestParameters {referenceValues {ns4*ns4*ns4*nt16*12./2.}, ns4, nt16, SpinorFillType::one, true} );
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_2 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_reduction_input_2");
+		performSquarenormEvenOddTest( SpinorTestParameters {referenceValues {ns8*ns8*ns8*nt4*12./2.}, ns8, nt4, SpinorFillType::one, true} );
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_3 )
 	{
-		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_reduction_input_3");
+		performSquarenormEvenOddTest( SpinorTestParameters {referenceValues {ns16*ns16*ns16*nt16*12./2.}, ns16, nt16, SpinorFillType::one, true} );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

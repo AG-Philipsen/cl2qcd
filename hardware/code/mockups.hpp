@@ -524,8 +524,8 @@ namespace hardware {
 			}
 		protected:
 			const int ns, nt;
-			const bool useEvenOdd;
 			const size_t prec;
+			const bool useEvenOdd;
 		};
 	}
 }
