@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
 	{
 		hardware::HardwareParametersMockup hardwareParameters(4,4);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
 		SpinorTestParameters testParameters{std::vector<double> {-1.234}, 4,4, SpinorFillType::zero};
 		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", hardwareParameters, kernelParameters, testParameters) );
 	}
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 	void performSquarenormTest( const SpinorTestParameters parametersForThisTest )
 	{
 		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
 		SquarenormTester(hardwareParameters, kernelParameters, parametersForThisTest);
 	}
 
@@ -97,9 +97,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
-	class SquarenormEvenOddTester: public SpinorTester
+	struct SquarenormEvenOddTester: public SpinorTester
 	{
-	public:
 		SquarenormEvenOddTester(std::string inputfile):
 			SpinorTester("global_squarenorm_eo", inputfile, 1)
 			{
@@ -107,10 +106,27 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 				in.load(createSpinorfield(spinorfieldEvenOddElements));
 				calcSquarenormEvenOddAndStoreAsKernelResult(&in);
 			}
+		SquarenormEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
+					SpinorTester("global_squarenorm_eo", hardwareParameters, kernelParameters, testParameters)
+		{
+			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+			in.load(createSpinorfield(spinorfieldEvenOddElements));
+			calcSquarenormEvenOddAndStoreAsKernelResult(&in);
+		}
 	};
 	
+	void performSquarenormEvenOddTest( const SpinorTestParameters parametersForThisTest )
+	{
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+		SquarenormEvenOddTester(hardwareParameters, kernelParameters, parametersForThisTest);
+	}
+
+
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
 	{
+		performSquarenormEvenOddTest( SpinorTestParameters {referenceValues {ns16*ns16*ns16*nt8*12./2.}, ns16, nt8, SpinorFillType::one, true} );
 		SquarenormEvenOddTester squarenormEoTester("global_squarenorm_eo_input_1");
 	}
 

@@ -31,7 +31,6 @@ void SpinorTester::setMembers()
 		beta_host = {parameters->get_kappa(), parameters->get_mu()};
 		iterations = parameters->get_integrationsteps(0);
 		parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
-
 }
 
 void SpinorTester::setMembersNew()
@@ -40,7 +39,6 @@ void SpinorTester::setMembersNew()
 	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
 	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
 	useRandom = false; // todo: make changeable (parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
-	evenOrOdd = true; //todo: make changeable (parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
 	alpha_host = {kernelParameters->getBeta(), kernelParameters->getRho()}; // todo: make changeable {parameters->get_beta(), parameters->get_rho()};
 	beta_host = {kernelParameters->getKappa(), kernelParameters->getMuBar()}; //todo: mubar was mu originally
 	iterations = 1; // todo: make changeable parameters->get_integrationsteps(0);
@@ -79,7 +77,7 @@ SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::S
 
 SpinorTester::SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
 		const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
-		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), prngParameters(nullptr)
+		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), useRandom(testParameters.useEvenOdd), prngParameters(nullptr)
 {
 	setMembersNew();
 	code = device->getSpinorCode();
