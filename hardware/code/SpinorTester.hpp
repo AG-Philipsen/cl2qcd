@@ -32,12 +32,9 @@ enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComple
 
 struct SpinorTestParameters: public TestParameters
 {
-	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillType fillTypeIn, const bool useEvenOddIn = false) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), fillType(fillTypeIn), useEvenOdd(useEvenOddIn)
+	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn) :
+		TestParameters(referenceValuesIn, nsIn, ntIn)
 	{};
-	const SpinorFillType fillType;
-	//todo: can this be removed?
-	const bool useEvenOdd;
 };
 
 class SpinorTester : public KernelTester {

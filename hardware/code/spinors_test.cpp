@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 	{
 		hardware::HardwareParametersMockup hardwareParameters(4,4);
 		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
-		SpinorTestParameters testParameters{std::vector<double> {-1.234}, 4,4, SpinorFillType::zero};
+		SpinorTestParameters testParameters{std::vector<double> {-1.234}, 4,4};
 		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", hardwareParameters, kernelParameters, testParameters) );
 	}
 
@@ -49,29 +49,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
-	struct SquarenormTester: public SpinorTester
-	{
-		SquarenormTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
-					SpinorTester("global squarenorm", hardwareParameters, kernelParameters, testParameters)
-		{
-			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-			in.load(createSpinorfield( testParameters.fillType) );
-			calcSquarenormAndStoreAsKernelResult(&in);
-		}
-	};
-
-	void performSquarenormTest( const SpinorTestParameters parametersForThisTest )
-	{
-		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
-		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
-		SquarenormTester(hardwareParameters, kernelParameters, parametersForThisTest);
-	}
-
 	struct SquarenormTestParameters: public SpinorTestParameters
 	{
 		SquarenormTestParameters(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn) :
-			SpinorTestParameters{referenceValues{calculateReferenceValues(nsIn, ntIn, fillTypeIn)} , nsIn, ntIn, fillTypeIn} {};
+			SpinorTestParameters{referenceValues{calculateReferenceValues(nsIn, ntIn, fillTypeIn)} , nsIn, ntIn}, fillType(fillTypeIn) {};
 
 		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn)
 		{
@@ -92,7 +73,28 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 				}
 			}
 		}
+
+		const SpinorFillType fillType;
 	};
+
+	struct SquarenormTester: public SpinorTester
+	{
+		SquarenormTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SquarenormTestParameters & testParameters):
+					SpinorTester("global squarenorm", hardwareParameters, kernelParameters, testParameters)
+		{
+			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+			in.load(createSpinorfield( testParameters.fillType) );
+			calcSquarenormAndStoreAsKernelResult(&in);
+		}
+	};
+
+	void performSquarenormTest( const SquarenormTestParameters parametersForThisTest )
+	{
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+		SquarenormTester(hardwareParameters, kernelParameters, parametersForThisTest);
+	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
 	{
@@ -123,29 +125,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
-	struct SquarenormEvenOddTester: public SpinorTester
-	{
-		SquarenormEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
-					SpinorTester("global_squarenorm_eo", hardwareParameters, kernelParameters, testParameters)
-		{
-			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
-			in.load( createSpinorfield( testParameters.fillType ) );
-			calcSquarenormEvenOddAndStoreAsKernelResult(&in);
-		}
-	};
-	
-	void performSquarenormEvenOddTest( const SpinorTestParameters parametersForThisTest )
-	{
-		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-		SquarenormEvenOddTester(hardwareParameters, kernelParameters, parametersForThisTest);
-	}
-
 	struct SquarenormEvenOddTestParameters: public SpinorTestParameters
 	{
 		SquarenormEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn) :
-			SpinorTestParameters{referenceValues{calculateReferenceValues(nsIn, ntIn, fillTypeIn)} , nsIn, ntIn, fillTypeIn, true} {};
+			SpinorTestParameters{referenceValues{calculateReferenceValues(nsIn, ntIn, fillTypeIn)} , nsIn, ntIn}, fillType(fillTypeIn) {};
 
 		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn)
 		{
@@ -166,7 +149,28 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 				}
 			}
 		}
+
+		const SpinorFillType fillType;
 	};
+
+	struct SquarenormEvenOddTester: public SpinorTester
+	{
+		SquarenormEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SquarenormEvenOddTestParameters & testParameters):
+					SpinorTester("global_squarenorm_eo", hardwareParameters, kernelParameters, testParameters)
+		{
+			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+			in.load( createSpinorfield( testParameters.fillType ) );
+			calcSquarenormEvenOddAndStoreAsKernelResult(&in);
+		}
+	};
+	
+	void performSquarenormEvenOddTest( const SquarenormEvenOddTestParameters parametersForThisTest )
+	{
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+		SquarenormEvenOddTester(hardwareParameters, kernelParameters, parametersForThisTest);
+	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
 	{
@@ -246,7 +250,7 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 	struct ScalarProductTestParameters : public SpinorTestParameters
 	{
 		ScalarProductTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn):
-			SpinorTestParameters(calculateReferenceValues(nsIn, ntIn, fillTypesIn), nsIn, ntIn, fillTypesIn[0]), fillTypes(fillTypesIn){};
+			SpinorTestParameters(calculateReferenceValues(nsIn, ntIn, fillTypesIn), nsIn, ntIn), fillTypes(fillTypesIn){};
 
 		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn)
 		{
