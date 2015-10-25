@@ -25,6 +25,79 @@
 
 #include "mockups.hpp"
 
+static hmc_float sumOfIntegers(const int start, const int end, const int increment) noexcept
+{
+	// One could also implement some variant of Faulhabers Formula here to save the loop
+	hmc_float sum = 0.;
+	for(int iteration = start; iteration <= end; iteration += increment)
+	{
+		sum += iteration;
+	}
+	return sum;
+}
+
+static hmc_float sumOfIntegersSquared(const int end) noexcept
+{
+	return (2*end*end*end + 3*end*end + end) / 6.; // Faulhaber`s formula
+}
+
+static int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
+{
+	return 	nsIn * nsIn * nsIn * ntIn;
+}
+
+static int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateLatticeVolume(nsIn, ntIn);
+}
+
+static int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
+}
+
+const referenceValues calculateReferenceValues_globalSquarenorm(const int latticeVolume, const SpinorFillTypes fillTypesIn)
+{
+	switch( fillTypesIn.at(0) )
+	{
+		case SpinorFillType::one :
+		{
+			return referenceValues{latticeVolume * 12.};
+		}
+		case SpinorFillType::ascendingComplex:
+		{
+			return referenceValues{latticeVolume * sumOfIntegersSquared(24)};
+		}
+		default:
+		{
+			return referenceValues{-1.23456};
+		}
+	}
+}
+
+const referenceValues calculateReferenceValues_scalarProduct(const int latticeVolume, const SpinorFillTypes fillTypesIn)
+{
+	if(fillTypesIn[0] == SpinorFillType::one and fillTypesIn[1] == SpinorFillType::one)
+	{
+		return referenceValues{latticeVolume * 12., 0.};
+	}
+	else if( fillTypesIn[0] == SpinorFillType::one and fillTypesIn[1] == SpinorFillType::ascendingComplex )
+	{
+		return referenceValues{latticeVolume * sumOfIntegers(1,23,2), latticeVolume * sumOfIntegers(2,24,2)};
+	}
+	else if( fillTypesIn[0] == SpinorFillType::ascendingComplex and fillTypesIn[1] == SpinorFillType::one )
+	{
+		return referenceValues{latticeVolume * sumOfIntegers(1,23,2), -latticeVolume * sumOfIntegers(2,24,2)};
+	}
+	else if ( fillTypesIn[0] == SpinorFillType::ascendingComplex and fillTypesIn[1] == SpinorFillType::ascendingComplex  )
+	{
+		return referenceValues{latticeVolume * sumOfIntegersSquared(24), 0.};
+	}
+	else
+		return referenceValues{-1.23456};
+}
+
+
 BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -41,7 +114,7 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 	{
 		hardware::HardwareParametersMockup hardwareParameters(4,4);
 		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
-		SpinorTestParameters testParameters{std::vector<double> {-1.234}, 4,4};
+		SpinorTestParameters testParameters{std::vector<double> {-1.234}, 4,4, SpinorFillTypes{SpinorFillType::one}};
 		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", hardwareParameters, kernelParameters, testParameters) );
 	}
 
@@ -51,30 +124,8 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	struct SquarenormTestParameters: public SpinorTestParameters
 	{
-		SquarenormTestParameters(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn) :
-			SpinorTestParameters{referenceValues{calculateReferenceValues(nsIn, ntIn, fillTypeIn)} , nsIn, ntIn}, fillType(fillTypeIn) {};
-
-		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn)
-		{
-			const int latticeVolume = nsIn * nsIn * nsIn * ntIn;
-			switch( fillTypeIn )
-			{
-				case SpinorFillType::one :
-				{
-					return referenceValues{latticeVolume * 12.};
-				}
-				case SpinorFillType::ascendingComplex:
-				{
-					return referenceValues{latticeVolume * 4900.}; //sum of squares up to 24
-				}
-				default:
-				{
-					return referenceValues{-1.23456};
-				}
-			}
-		}
-
-		const SpinorFillType fillType;
+		SquarenormTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn) :
+			SpinorTestParameters{referenceValues{calculateReferenceValues_globalSquarenorm( calculateSpinorfieldSize(nsIn, ntIn), fillTypesIn)} , nsIn, ntIn, fillTypesIn} {};
 	};
 
 	struct SquarenormTester: public SpinorTester
@@ -84,7 +135,7 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 					SpinorTester("global squarenorm", hardwareParameters, kernelParameters, testParameters)
 		{
 			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-			in.load(createSpinorfield( testParameters.fillType) );
+			in.load(createSpinorfield( testParameters.fillTypes.at(0)) );
 			calcSquarenormAndStoreAsKernelResult(&in);
 		}
 	};
@@ -98,27 +149,27 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
 	{
-		performSquarenormTest( SquarenormTestParameters {ns4, nt4, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns4, nt4, SpinorFillTypes{ SpinorFillType::one} });
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_2 )
 	{
-		performSquarenormTest( SquarenormTestParameters {ns8, nt4, SpinorFillType::ascendingComplex} );
+		performSquarenormTest( SquarenormTestParameters {ns8, nt4, SpinorFillTypes{ SpinorFillType::ascendingComplex} } );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_1 )
 	{
-		performSquarenormTest( SquarenormTestParameters {ns8, nt12, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns8, nt12, SpinorFillTypes{ SpinorFillType::one } } );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_2 )
 	{
-		performSquarenormTest( SquarenormTestParameters {ns12, nt16, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns12, nt16, SpinorFillTypes{ SpinorFillType::one } } );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_3 )
 	{
-		performSquarenormTest( SquarenormTestParameters {ns16, nt8, SpinorFillType::one} );
+		performSquarenormTest( SquarenormTestParameters {ns16, nt8, SpinorFillTypes{ SpinorFillType::one} } );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -127,30 +178,8 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
 	struct SquarenormEvenOddTestParameters: public SpinorTestParameters
 	{
-		SquarenormEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn) :
-			SpinorTestParameters{referenceValues{calculateReferenceValues(nsIn, ntIn, fillTypeIn)} , nsIn, ntIn}, fillType(fillTypeIn) {};
-
-		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillType fillTypeIn)
-		{
-			const int latticeVolume = nsIn * nsIn * nsIn * ntIn / 2;
-			switch( fillTypeIn )
-			{
-				case SpinorFillType::one :
-				{
-					return referenceValues{latticeVolume * 12.};
-				}
-				case SpinorFillType::ascendingComplex:
-				{
-					return referenceValues{latticeVolume * 4900.}; //sum of squares up to 24
-				}
-				default:
-				{
-					return referenceValues{-1.23456};
-				}
-			}
-		}
-
-		const SpinorFillType fillType;
+		SquarenormEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn) :
+			SpinorTestParameters{referenceValues{calculateReferenceValues_globalSquarenorm( calculateEvenOddSpinorfieldSize(nsIn, ntIn), fillTypesIn)} , nsIn, ntIn, fillTypesIn} {};
 	};
 
 	struct SquarenormEvenOddTester: public SpinorTester
@@ -160,7 +189,7 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 					SpinorTester("global_squarenorm_eo", hardwareParameters, kernelParameters, testParameters)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
-			in.load( createSpinorfield( testParameters.fillType ) );
+			in.load( createSpinorfield( testParameters.fillTypes.at(0) ) );
 			calcSquarenormEvenOddAndStoreAsKernelResult(&in);
 		}
 	};
@@ -174,62 +203,37 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
 	{
-		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns16, nt8, SpinorFillType::one} );
+		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns16, nt8, SpinorFillTypes{ SpinorFillType::one } } );
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_2 )
 	{
-		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns16, nt8, SpinorFillType::ascendingComplex} );
+		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns16, nt8, SpinorFillTypes{ SpinorFillType::ascendingComplex } } );
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_1 )
 	{
-		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns4, nt16, SpinorFillType::one} );
+		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns4, nt16, SpinorFillTypes{ SpinorFillType::one } } );
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_2 )
 	{
-		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns8, nt4, SpinorFillType::one} );
+		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns8, nt4, SpinorFillTypes{ SpinorFillType::one } } );
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_3 )
 	{
-		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns16, nt16, SpinorFillType::one} );
+		performSquarenormEvenOddTest( SquarenormEvenOddTestParameters {ns16, nt16, SpinorFillTypes { SpinorFillType::one } } );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
-	typedef std::vector<SpinorFillType> SpinorFillTypes;
 	struct ScalarProductTestParameters : public SpinorTestParameters
 	{
 		ScalarProductTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn):
-			SpinorTestParameters(calculateReferenceValues(nsIn, ntIn, fillTypesIn), nsIn, ntIn), fillTypes(fillTypesIn){};
-
-		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn)
-		{
-			const int latticeVolume = nsIn * nsIn * nsIn * ntIn;
-			if(fillTypesIn[0] == SpinorFillType::one and fillTypesIn[1] == SpinorFillType::one)
-			{
-				return referenceValues{latticeVolume * 12., 0.};
-			}
-			else if( fillTypesIn[0] == SpinorFillType::one and fillTypesIn[1] == SpinorFillType::ascendingComplex )
-			{
-				return referenceValues{latticeVolume * 24. * 6., latticeVolume * 26. * 6.}; // 1 + 3 + ... + 23 = 24 * 6, 2 + 4 + ... + 24 = 26*6
-			}
-			else if( fillTypesIn[0] == SpinorFillType::ascendingComplex and fillTypesIn[1] == SpinorFillType::one )
-			{
-				return referenceValues{latticeVolume * 24. * 6., - latticeVolume * 26. * 6.}; // 1 + 3 + ... + 23 = 24 * 6, 2 + 4 + ... + 24 = 26*6
-			}
-			else if ( fillTypesIn[0] == SpinorFillType::ascendingComplex and fillTypesIn[1] == SpinorFillType::ascendingComplex  )
-			{
-				return referenceValues{latticeVolume * 4900., 0.}; //sum of squares up to 24
-			}
-			else
-				return referenceValues{-1.23456};
-		}
-		const SpinorFillTypes fillTypes;
+			SpinorTestParameters(calculateReferenceValues_scalarProduct( calculateSpinorfieldSize(nsIn, ntIn), fillTypesIn), nsIn, ntIn, fillTypesIn){};
 	};
 
 	class ScalarProductTester: public SpinorTester
@@ -304,31 +308,7 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 	struct ScalarProductEvenOddTestParameters : public SpinorTestParameters
 	{
 		ScalarProductEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn):
-			SpinorTestParameters(calculateReferenceValues(nsIn, ntIn, fillTypesIn), nsIn, ntIn), fillTypes(fillTypesIn){};
-
-		const referenceValues calculateReferenceValues(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn)
-		{
-			const int latticeVolume = nsIn * nsIn * nsIn * ntIn / 2;
-			if(fillTypesIn[0] == SpinorFillType::one and fillTypesIn[1] == SpinorFillType::one)
-			{
-				return referenceValues{latticeVolume * 12., 0.};
-			}
-			else if( fillTypesIn[0] == SpinorFillType::one and fillTypesIn[1] == SpinorFillType::ascendingComplex )
-			{
-				return referenceValues{latticeVolume * 24. * 6., latticeVolume * 26. * 6.}; // 1 + 3 + ... + 23 = 24 * 6, 2 + 4 + ... + 24 = 26*6
-			}
-			else if( fillTypesIn[0] == SpinorFillType::ascendingComplex and fillTypesIn[1] == SpinorFillType::one )
-			{
-				return referenceValues{latticeVolume * 24. * 6., - latticeVolume * 26. * 6.}; // 1 + 3 + ... + 23 = 24 * 6, 2 + 4 + ... + 24 = 26*6
-			}
-			else if ( fillTypesIn[0] == SpinorFillType::ascendingComplex and fillTypesIn[1] == SpinorFillType::ascendingComplex  )
-			{
-				return referenceValues{latticeVolume * 4900., 0.}; //sum of squares up to 24
-			}
-			else
-				return referenceValues{-1.23456};
-		}
-		const SpinorFillTypes fillTypes;
+			SpinorTestParameters(calculateReferenceValues_scalarProduct(calculateEvenOddSpinorfieldSize(nsIn, ntIn), fillTypesIn), nsIn, ntIn, fillTypesIn) {};
 	};
 
 	class ScalarProductEvenOddTester: public SpinorTester
@@ -340,16 +320,16 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
-			in.load(createSpinorfield (testParameters.fillTypes[0]));
-			in2.load(createSpinorfield(testParameters.fillTypes[1]));
+			in.load(createSpinorfield (testParameters.fillTypes.at(0)));
+			in2.load(createSpinorfield(testParameters.fillTypes.at(1)));
 			hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
 
 			code->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
 			hmc_complex resultTmp;
 			sqnorm.dump(&resultTmp);
 
-			kernelResult[0] = resultTmp.re;
-			kernelResult[1] = resultTmp.im;
+			kernelResult.at(0) = resultTmp.re;
+			kernelResult.at(1) = resultTmp.im;
 		}
 	};
 

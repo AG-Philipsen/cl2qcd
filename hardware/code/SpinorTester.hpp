@@ -29,12 +29,14 @@
 #include "complex.hpp"
 
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
+typedef std::vector<SpinorFillType> SpinorFillTypes;
 
 struct SpinorTestParameters: public TestParameters
 {
-	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn)
+	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn) :
+		TestParameters(referenceValuesIn, nsIn, ntIn), fillTypes(fillTypesIn)
 	{};
+	const SpinorFillTypes fillTypes;
 };
 
 class SpinorTester : public KernelTester {
