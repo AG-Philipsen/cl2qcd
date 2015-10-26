@@ -62,10 +62,10 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
         }
     } else {
         if (parameters.get_measure_correlators()) {
-            physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(gaugefield, currentConfigurationName);
+            physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(gaugefield, currentConfigurationName, *interfacesHandler);
         }
         if (parameters.get_measure_pbp()) {
-            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
+            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName, *interfacesHandler);
         }
     }
 }

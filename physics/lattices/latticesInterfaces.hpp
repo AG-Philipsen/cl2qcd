@@ -23,6 +23,7 @@
 
 #include "../../common_header_files/types.h"
 #include <string>
+#include "../fermionmatrix/fermionmatrixInterfaces.hpp"
 
 namespace physics {
     namespace lattices {
@@ -62,17 +63,22 @@ namespace physics {
                 virtual unsigned getNumberOfElements() const = 0;
         };
 
-        class StaggaredfieldEoParametersInterface {
+        class SpinorfieldEoParametersInterface {
+        	public:
+        		virtual ~SpinorfieldEoParametersInterface(){}
+        };
+
+        class StaggeredfieldEoParametersInterface {
             public:
-                virtual ~StaggaredfieldEoParametersInterface(){}
+                virtual ~StaggeredfieldEoParametersInterface(){}
                 virtual unsigned getNs() const = 0;
                 virtual unsigned getNt() const = 0;
                 virtual unsigned getNumberOfElements() const = 0;
         };
 
-        class RootedStaggaredfieldEoParametersInterface {
+        class RootedStaggeredfieldEoParametersInterface {
             public:
-                virtual ~RootedStaggaredfieldEoParametersInterface(){}
+                virtual ~RootedStaggeredfieldEoParametersInterface(){}
                 virtual unsigned getMetropolisRationalApproximationOrder() const = 0;
                 virtual unsigned getMolecularDynamicsRationalApproximationOrder() const = 0;
         };
@@ -187,7 +193,7 @@ namespace physics {
 
         class SpinorfieldParametersImplementation final : public SpinorfieldParametersInterface {
             public:
-                SpinorfieldParametersImplementation() = delete;
+                SpinorfieldParametersImplementation();
                 SpinorfieldParametersImplementation(const meta::Inputparameters& paramsIn)
                         : parameters(paramsIn)
                 {
@@ -211,14 +217,23 @@ namespace physics {
                 const meta::Inputparameters& parameters;
         };
 
-        class StaggaredfieldEoParametersImplementation final : public StaggaredfieldEoParametersInterface {
+        class SpinorfieldEoParametersImplementation final : public SpinorfieldEoParametersInterface {
+        	public:
+        		SpinorfieldEoParametersImplementation() = delete;
+        		SpinorfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
+        				: parameters(paramsIn){}
+        	private:
+				const meta::Inputparameters& parameters;
+        };
+
+        class StaggeredfieldEoParametersImplementation final : public StaggeredfieldEoParametersInterface {
             public:
-                StaggaredfieldEoParametersImplementation() = delete;
-                StaggaredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
+                StaggeredfieldEoParametersImplementation() = delete;
+                StaggeredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
                         : parameters(paramsIn)
                 {
                 }
-                ~StaggaredfieldEoParametersImplementation()
+                ~StaggeredfieldEoParametersImplementation()
                 {
                 }
                 unsigned getNt() const override
@@ -237,15 +252,15 @@ namespace physics {
                 const meta::Inputparameters& parameters;
         };
 
-        class RootedStaggaredfieldEoParametersImplementation final : public StaggaredfieldEoParametersInterface,
-                public RootedStaggaredfieldEoParametersInterface {
+        class RootedStaggeredfieldEoParametersImplementation final : public StaggeredfieldEoParametersInterface,
+                public RootedStaggeredfieldEoParametersInterface {
             public:
-                RootedStaggaredfieldEoParametersImplementation() = delete;
-                RootedStaggaredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
+                RootedStaggeredfieldEoParametersImplementation() = delete;
+                RootedStaggeredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
                         : parameters(paramsIn)
                 {
                 }
-                ~RootedStaggaredfieldEoParametersImplementation()
+                ~RootedStaggeredfieldEoParametersImplementation()
                 {
                 }
                 unsigned getNt() const override

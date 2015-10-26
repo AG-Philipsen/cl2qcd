@@ -32,7 +32,7 @@
 
 //this function takes to args kappa and mubar because one has to use it with different masses when mass-prec is used and when not
 
-void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::lattices::Spinorfield_eo;
 	using namespace physics::algorithms::solvers;
@@ -42,8 +42,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-	Spinorfield_eo solution(system);
-	Spinorfield_eo phi_inv(system);
+	Spinorfield_eo solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	Spinorfield_eo phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	if(params.get_solver() == common::cg) {
 		/**
 		 * The first inversion calculates
@@ -61,15 +61,15 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 */
 		solution.cold();
 
-		const QplusQminus_eo fm(kappa, mubar, system);
-		cg(&solution, fm, gf, phi, system, params.get_force_prec());
+		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		cg(&solution, fm, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		/**
 		 * Y_even is now just
 		 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 psi =
 		 *    = (Qplus_eo)^-1 ps"\tinv. field before inversion i
 		 */
-		const Qminus_eo qminus(kappa, mubar, system);
+		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		qminus(&phi_inv, gf, solution);
 	} else {
 		///@todo if wanted, solvertimer has to be used here..
@@ -93,8 +93,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.zero();
 		solution.gamma5();
 
-		const Qplus_eo qplus(kappa, mubar, system);
-		bicgstab(&solution, qplus, gf, phi, system, params.get_force_prec());
+		const Qplus_eo qplus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		bicgstab(&solution, qplus, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		copyData(&phi_inv, solution);
 
@@ -109,14 +109,14 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		//logger.debug() << "\t\tcalc X_even...";
 		//copy former solution to clmem_source
-		Spinorfield_eo source_even(system);
+		Spinorfield_eo source_even(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		copyData(&source_even, solution);
 
 		//this sets clmem_inout cold as trial-solution
 		solution.cold();
 
-		const Qminus_eo qminus(kappa, mubar, system);
-		bicgstab(&solution, qminus, gf, source_even, system, params.get_force_prec());
+		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		bicgstab(&solution, qminus, gf, source_even, system, params.get_force_prec(), interfacesHandler);
 	}
 	/**
 	 * At this point, one has calculated X_odd and Y_odd.
@@ -131,12 +131,12 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	//calculate X_odd
 	//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
 	//  this is used as a default in the force-function.
-	Spinorfield_eo tmp_1(system);
+	Spinorfield_eo tmp_1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	if(params.get_fermact() == common::action::wilson) {
 		dslash(&tmp_1, gf, solution, ODD, kappa);
 		sax(&tmp_1, { -1., 0.}, tmp_1);
 	} else if(params.get_fermact() == common::action::twistedmass) {
-		Spinorfield_eo tmp_2(system);
+		Spinorfield_eo tmp_2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		dslash(&tmp_1, gf, solution, ODD, kappa);
 		M_tm_inverse_sitediagonal_minus(&tmp_2, tmp_1, mubar);
 		sax(&tmp_1, { -1., 0.}, tmp_2);
@@ -154,7 +154,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		dslash(&tmp_1, gf, phi_inv, ODD, kappa);
 		sax(&tmp_1, { -1., 0.}, tmp_1);
 	} else if(params.get_fermact() == common::action::twistedmass) {
-		Spinorfield_eo tmp_2(system);
+		Spinorfield_eo tmp_2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		dslash(&tmp_1, gf, phi_inv, ODD, kappa);
 		M_tm_inverse_sitediagonal(&tmp_2, tmp_1, mubar);
 		sax(&tmp_1, { -1., 0.}, tmp_2);
@@ -167,7 +167,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 }
 
 
-void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa, const hmc_float mubar)
 {
 	using physics::lattices::Spinorfield;
 	using namespace physics::algorithms::solvers;
@@ -175,8 +175,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 	const auto & params = system.get_inputparameters();
 
-	Spinorfield solution(system);
-	Spinorfield phi_inv(system);
+	Spinorfield solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	Spinorfield phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -198,8 +198,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.cold();
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-		const QplusQminus fm(kappa, mubar, system);
-		cg(&solution, fm, gf, phi, system, params.get_force_prec());
+		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		cg(&solution, fm, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		/**
 		 * Y is now just
@@ -231,7 +231,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const Qplus q_plus(kappa, mubar, system);
-		bicgstab(&solution, q_plus, gf, phi, system, params.get_force_prec());
+		bicgstab(&solution, q_plus, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		//store this result in clmem_phi_inv
 		copyData(&phi_inv, solution);
@@ -246,14 +246,14 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 */
 
 		//copy former solution to clmem_source
-		Spinorfield source(system);
+		Spinorfield source(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		copyData(&source, solution);
 
 		logger.debug() << "\t\t\tstart solver";
 
 		solution.cold();
 		const Qminus q_minus(kappa, mubar, system);
-		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
+		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec(), interfacesHandler);
 	}
 	log_squarenorm("\tY ", phi_inv);
 	log_squarenorm("\tX ", solution);
@@ -263,7 +263,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 }
 
 
-void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
+void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
 	using physics::lattices::Spinorfield;
 	using namespace physics::algorithms::solvers;
@@ -290,11 +290,11 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	const hmc_float kappa2 = params.get_kappa_mp();
 	const hmc_float mubar2 = meta::get_mubar_mp(params);
 
-	const Spinorfield phi_inv(system);
-	const Spinorfield solution(system);
+	const Spinorfield phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 	//CP: Init tmp spinorfield
-	const Spinorfield tmp(system);
+	const Spinorfield tmp(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	//the source is now Q_2^+ phi = sf_tmp
 	const Qplus q_plus_mp(kappa2, mubar2, system);
@@ -318,8 +318,8 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-		const QplusQminus fm(kappa, mubar, system);
-		cg(&solution, fm, gf, tmp, system, params.get_force_prec());
+		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		cg(&solution, fm, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		/**
 		 * Y is now just
@@ -351,7 +351,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		Qplus q_plus(kappa, mubar, system);
-		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec());
+		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		copyData(&phi_inv, solution);
 
@@ -365,7 +365,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 */
 
 		//copy former solution to clmem_source
-		const Spinorfield source(system);
+		const Spinorfield source(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		copyData(&source, solution);
 		logger.debug() << "\t\t\tstart solver";
 
@@ -373,7 +373,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		Qminus q_minus(kappa, mubar, system);
-		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec());
+		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec(), interfacesHandler);
 	}
 
 	log_squarenorm("\tY ", phi_inv);
@@ -393,7 +393,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	fermion_force(force, phi_inv, solution, gf, kappa2);
 }
 
-void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system)
+void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
 	using physics::lattices::Spinorfield_eo;
 	using namespace physics::algorithms::solvers;
@@ -420,15 +420,15 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	const hmc_float kappa2 = params.get_kappa_mp();
 	const hmc_float mubar2 = meta::get_mubar_mp(params);
 
-	const Spinorfield_eo solution(system);
-	const Spinorfield_eo phi_inv(system);
+	const Spinorfield_eo solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	const physics::lattices::Scalar<hmc_complex> mone(system);
 	mone.store( { -1., 0.});
 
-	const Spinorfield_eo tmp(system);
+	const Spinorfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	//the source is now Q_2^+ phi = sf_eo_tmp
-	const Qplus_eo q_plus_mp(kappa2, mubar2, system);
+	const Qplus_eo q_plus_mp(kappa2, mubar2, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	q_plus_mp(&tmp, gf, phi_mp);
 	if(params.get_solver() == common::cg) {
 		/**
@@ -447,15 +447,15 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 */
 		solution.cold();
 
-		const QplusQminus_eo fm(kappa, mubar, system);
-		cg(&solution, fm, gf, tmp, system, params.get_force_prec());
+		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		cg(&solution, fm, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		/**
 		 * Y_even is now just
 		 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 sf_eo_tmp =
 		 *    = (Qplus_eo)^-1 Q_2^+ psi
 		 */
-		const Qminus_eo q_minus(kappa, mubar, system);
+		const Qminus_eo q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		q_minus(&phi_inv, gf, solution);
 	} else {
 		///@todo if wanted, solvertimer has to be used here..
@@ -478,8 +478,8 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.zero();
 		solution.gamma5();
 
-		const Qplus_eo q_plus(kappa, mubar, system);
-		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec());
+		const Qplus_eo q_plus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		//store this result in clmem_phi_inv
 		copyData(&phi_inv, solution);
@@ -493,14 +493,14 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 		logger.debug() << "\t\tcalc X_even...";
 		//copy former solution to clmem_source
-		const Spinorfield_eo source_even(system);
+		const Spinorfield_eo source_even(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		copyData(&source_even, solution);
 
 		//this sets clmem_inout cold as trial-solution
 		solution.cold();
 
-		Qminus_eo q_minus(kappa, mubar, system);
-		bicgstab(&solution, q_minus, gf, source_even, system, params.get_force_prec());
+		Qminus_eo q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		bicgstab(&solution, q_minus, gf, source_even, system, params.get_force_prec(), interfacesHandler);
 	}
 	/**
 	 * At this point, one has to calculate X_odd and Y_odd.
@@ -511,8 +511,8 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	 *  Y_odd = -R(mu)_inv D Y_even
 	 */
 
-	const Spinorfield_eo tmp1(system);
-	const Spinorfield_eo tmp2(system);
+	const Spinorfield_eo tmp1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo tmp2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	///@NOTE the following calculations could also go in a new function for convenience
 	//calculate X_odd
@@ -593,7 +593,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	fermion_force(force, tmp1, solution, ODD, gf, kappa2);
 }
 
-template<class SPINORFIELD> static void calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+template<class SPINORFIELD> static void calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar)
 {
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
@@ -606,7 +606,7 @@ template<class SPINORFIELD> static void calc_fermion_forces(const physics::latti
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
-	calc_fermion_force(force, gf, phi, system, kappa, mubar);
+	calc_fermion_force(force, gf, phi, system, interfacesHandler, kappa, mubar);
 	if(params.get_use_smearing() == true) {
 		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
 		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
@@ -614,14 +614,14 @@ template<class SPINORFIELD> static void calc_fermion_forces(const physics::latti
 	}
 }
 
-void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar)
 {
-	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+	::calc_fermion_forces(force, gf, phi, system, interfacesHandler, kappa, mubar);
 }
 
-void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar)
+void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar)
 {
-	::calc_fermion_forces(force, gf, phi, system, kappa, mubar);
+	::calc_fermion_forces(force, gf, phi, system, interfacesHandler, kappa, mubar);
 }
 
 void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X, const physics::lattices::Gaugefield& gf, const hmc_float kappa)
@@ -673,7 +673,7 @@ void physics::algorithms::fermion_force(const physics::lattices::Gaugemomenta * 
 }
 
 
-template<class SPINORFIELD> static void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system)
+template<class SPINORFIELD> static void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
@@ -686,7 +686,7 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
-	calc_fermion_force_detratio(force, gf, phi_mp, system);
+	calc_fermion_force_detratio(force, gf, phi_mp, system, interfacesHandler);
 	if(params.get_use_smearing() == true) {
 		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
 		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
@@ -694,11 +694,11 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	}
 }
 
-void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system)
+void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
-	::calc_detratio_forces(force, gf, phi_mp, system);
+	::calc_detratio_forces(force, gf, phi_mp, system, interfacesHandler);
 }
-void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system)
+void physics::algorithms::calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
-	::calc_detratio_forces(force, gf, phi_mp, system);
+	::calc_detratio_forces(force, gf, phi_mp, system, interfacesHandler);
 }

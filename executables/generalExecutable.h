@@ -68,7 +68,7 @@ protected:
 	hardware::System * system;
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
-	std::unique_ptr<physics::InterfacesHandler> interfaceHandler;
+	std::unique_ptr<physics::InterfacesHandler> interfacesHandler;
 	std::ofstream outputToFile;
 	const char* generalTimeOutputFilename = "general_time_output";
 

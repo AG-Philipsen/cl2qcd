@@ -28,12 +28,12 @@ static std::string create_log_prefix_solver(std::string name, int number) noexce
 
 namespace {
 
-int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec);
-int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec);
+int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler & interfacesHandler);
+int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler & interfacesHandler);
 
 }
 
-int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
+int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler& interfacesHandler)
 {
 	using physics::lattices::Spinorfield;
 	using physics::algorithms::solvers::SolverStuck;
@@ -44,9 +44,9 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 	/// @todo start timer synchronized with device(s)
 	klepsydra::Monotonic timer;
 
-	const Spinorfield rn(system);
-	const Spinorfield p(system);
-	const Spinorfield v(system);
+	const Spinorfield rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 	hmc_complex rho_next;
 	hmc_float resid;
@@ -138,12 +138,12 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
-int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler & interfacesHandler)
 {
 	if(system.get_devices().size() > 1) {
-		return cg_multidev(x, f, gf, b, system, prec);
+		return cg_multidev(x, f, gf, b, system, prec, interfacesHandler);
 	} else {
-		return cg_singledev(x, f, gf, b, system, prec);
+		return cg_singledev(x, f, gf, b, system, prec, interfacesHandler);
 	}
 }
 
@@ -233,7 +233,7 @@ public:
   }
 };
   
-int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler & interfacesHandler)
 {
   const cl_ulong mf_flops = f.get_flops();
   const cl_ulong mf_bw = f.get_read_write_size();
@@ -241,9 +241,9 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
   Solver solver(system,  &system.get_inputparameters(), mf_flops, mf_bw );
 	using namespace physics::lattices;
 
-	const Spinorfield_eo p(system);
-	const Spinorfield_eo rn(system);
-	const Spinorfield_eo v(system);
+	const Spinorfield_eo p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	const Scalar<hmc_complex> alpha(system);
 	const Scalar<hmc_complex> beta(system);
@@ -352,7 +352,7 @@ int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fer
 	throw physics::algorithms::solvers::SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
-int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler & interfacesHandler)
 {
 	using namespace physics::lattices;
 	using physics::algorithms::solvers::SolverStuck;
@@ -368,9 +368,9 @@ int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::ferm
 	klepsydra::Monotonic timer;
 	klepsydra::Monotonic timer_noWarmup;
 
-	const Spinorfield_eo p(system);
-	const Spinorfield_eo rn(system);
-	const Spinorfield_eo v(system);
+	const Spinorfield_eo p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	const Scalar<hmc_float> tmp_float(system);
 	const Scalar<hmc_complex> tmp_complex(system);

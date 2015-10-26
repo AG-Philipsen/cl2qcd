@@ -153,13 +153,13 @@ BOOST_AUTO_TEST_CASE(calc_tot_force)
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield sf1(system);
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 24);
 		gm.zero();
 
-		physics::algorithms::calc_total_force(&gm, gf, sf1, system);
+		physics::algorithms::calc_total_force(&gm, gf, sf1, system, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 89317.106966900712, 0.01);
 	}
 }
@@ -176,16 +176,16 @@ BOOST_AUTO_TEST_CASE(calc_tot_force_eo)
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 25);
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::calc_total_force(&gm, gf, sf1, system);
+		physics::algorithms::calc_total_force(&gm, gf, sf1, system, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 56762.555327447422, 0.01);
 	}
 }

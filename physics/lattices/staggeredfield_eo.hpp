@@ -95,7 +95,7 @@ public:
 private:
 	hardware::System const& system;
 	//TODO: Make the following pointer a reference
-	const StaggaredfieldEoParametersInterface* staggaredfieldEoParametersInterface;
+	const StaggeredfieldEoParametersInterface* staggaredfieldEoParametersInterface;
 	const std::vector<const hardware::buffers::SU3vec *> buffers;
 	void import(const su3vec * const host) const;
 

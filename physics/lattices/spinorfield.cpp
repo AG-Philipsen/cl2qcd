@@ -28,10 +28,12 @@
 #include "../../hardware/buffers/halo_update.hpp"
 #include "../../host_functionality/host_geometry.h"
 
+
+
 static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
 
-physics::lattices::Spinorfield::Spinorfield(const hardware::System& system, const bool place_on_host)
-	: system(system), spinorfieldParametersInterface(new SpinorfieldParametersImplementation(system.get_inputparameters())),
+physics::lattices::Spinorfield::Spinorfield(const hardware::System& system, const SpinorfieldParametersInterface& spinorfieldParametersInterface, const bool place_on_host)
+	: system(system), spinorfieldParametersInterface(spinorfieldParametersInterface),
 	  buffers(allocate_buffers(system, place_on_host)), place_on_host(place_on_host)
 {
 }
@@ -49,8 +51,6 @@ static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(c
 
 physics::lattices::Spinorfield::~Spinorfield()
 {
-    //TODO: Remove this delete
-    delete spinorfieldParametersInterface;
 	clear_buffers();
 }
 
@@ -72,13 +72,13 @@ void physics::lattices::Spinorfield::fill_buffers()
 	buffers = allocate_buffers(system, place_on_host);
 }
 
-std::vector<physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host)
+std::vector<physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n, physics::InterfacesHandler& interfacesHandler, const bool place_on_host)
 {
 	std::vector<Spinorfield *> fields;
 	fields.reserve(n);
 
 	for(size_t i = 0; i < n; ++i) {
-		fields.push_back(new Spinorfield(system, place_on_host));
+		fields.push_back(new Spinorfield(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>(), place_on_host));
 	}
 
 	return fields;
@@ -318,21 +318,21 @@ void physics::lattices::Spinorfield::import(const spinor * const host) const
 			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size);
-			buffer->load(&host[get_global_pos(offset, spinorfieldParametersInterface->getNt(), spinorfieldParametersInterface->getNs())], local_volume);
+			buffer->load(&host[get_global_pos(offset, spinorfieldParametersInterface.getNt(), spinorfieldParametersInterface.getNs())], local_volume);
 
 			const size_t halo_volume = get_vol4d(halo_size);
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % spinorfieldParametersInterface->getNt());
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % spinorfieldParametersInterface.getNt());
 			logger.debug() << halo_offset;
-			logger.trace() << get_global_pos(halo_offset, spinorfieldParametersInterface->getNt(), spinorfieldParametersInterface->getNs());
+			logger.trace() << get_global_pos(halo_offset, spinorfieldParametersInterface.getNt(), spinorfieldParametersInterface.getNs());
 			logger.trace() << halo_volume;
 			logger.trace() << get_elements();
-			assert(get_global_pos(halo_offset, spinorfieldParametersInterface->getNt(), spinorfieldParametersInterface->getNs()) + halo_volume <= get_elements());
-			buffer->load(&host[get_global_pos(halo_offset, spinorfieldParametersInterface->getNt(), spinorfieldParametersInterface->getNs())], halo_volume, local_volume);
+			assert(get_global_pos(halo_offset, spinorfieldParametersInterface.getNt(), spinorfieldParametersInterface.getNs()) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, spinorfieldParametersInterface.getNt(), spinorfieldParametersInterface.getNs())], halo_volume, local_volume);
 
-			halo_offset = size_4(0, 0, 0, (offset.t + spinorfieldParametersInterface->getNt() - halo_size.t) % spinorfieldParametersInterface->getNt());
+			halo_offset = size_4(0, 0, 0, (offset.t + spinorfieldParametersInterface.getNt() - halo_size.t) % spinorfieldParametersInterface.getNt());
 			logger.debug() << halo_offset;
-			assert(get_global_pos(halo_offset, spinorfieldParametersInterface->getNt(), spinorfieldParametersInterface->getNs()) + halo_volume <= get_elements());
-			buffer->load(&host[get_global_pos(halo_offset, spinorfieldParametersInterface->getNt(), spinorfieldParametersInterface->getNs())], halo_volume, local_volume + halo_volume);
+			assert(get_global_pos(halo_offset, spinorfieldParametersInterface.getNt(), spinorfieldParametersInterface.getNs()) + halo_volume <= get_elements());
+			buffer->load(&host[get_global_pos(halo_offset, spinorfieldParametersInterface.getNt(), spinorfieldParametersInterface.getNs())], halo_volume, local_volume + halo_volume);
 
 		}
 	}
@@ -341,7 +341,7 @@ void physics::lattices::Spinorfield::import(const spinor * const host) const
 
 unsigned physics::lattices::Spinorfield::get_elements() const noexcept
 {
-    return spinorfieldParametersInterface->getNumberOfElements();
+    return spinorfieldParametersInterface.getNumberOfElements();
 }
 
 void physics::lattices::fill_window(const physics::lattices::Spinorfield* out, const physics::lattices::Spinorfield& src, const size_t idx)

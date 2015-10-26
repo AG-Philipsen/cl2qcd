@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(testSpinorfieldParameters)
 BOOST_AUTO_TEST_CASE(testStaggeredfieldEoParameters)
 {
     auto params = createDefaultMetaInputparameters();
-    physics::lattices::StaggaredfieldEoParametersImplementation test(*params);
+    physics::lattices::StaggeredfieldEoParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
     BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(testStaggeredfieldEoParameters)
 BOOST_AUTO_TEST_CASE(testRootedStaggeredfieldEoParameters)
 {
     auto params = createDefaultMetaInputparameters();
-    physics::lattices::RootedStaggaredfieldEoParametersImplementation test(*params);
+    physics::lattices::RootedStaggeredfieldEoParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
     BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());

@@ -118,7 +118,7 @@ void rhmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 void rhmcExecutable::generateAccordingToSpecificAlgorithm()
 {
 	const double randomNumber = prng->get_double();
-	observables = physics::algorithms::perform_rhmc_step(*approx_hb, *approx_md, *approx_met, gaugefield, iteration, randomNumber, *prng, *system, *interfaceHandler);
+	observables = physics::algorithms::perform_rhmc_step(*approx_hb, *approx_md, *approx_met, gaugefield, iteration, randomNumber, *prng, *system, *interfacesHandler);
 	acceptanceRate += observables.accept;
 }
 

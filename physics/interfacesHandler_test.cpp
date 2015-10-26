@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     const physics::lattices::GaugefieldParametersImplementation gaugefieldParametersImplementation{params.get()};
     const physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersImplementation{*params};
     const physics::lattices::SpinorfieldParametersImplementation spinorfieldParametersImplementation{*params};
-//    const physics::lattices::SpinorfieldEoParametersImplementation spinorfieldEoParametersImplementation{*params};
-    const physics::lattices::StaggaredfieldEoParametersImplementation staggaredfieldEoParametersImplementation{*params};
-    const physics::lattices::RootedStaggaredfieldEoParametersImplementation rootedStaggaredfieldEoParametersImplementation{*params};
+    const physics::lattices::SpinorfieldEoParametersImplementation spinorfieldEoParametersImplementation{*params};
+    const physics::lattices::StaggeredfieldEoParametersImplementation staggaredfieldEoParametersImplementation{*params};
+    const physics::lattices::RootedStaggeredfieldEoParametersImplementation rootedStaggaredfieldEoParametersImplementation{*params};
     const physics::fermionmatrix::FermionmatrixParametersImplementation fermionmatrixParametersImplementation{*params};
     const physics::observables::GaugeObservablesParametersImplementation gaugeObservablesParametersImplementation{*params};
     const physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation wilsonTwoFlavourChiralCondensateParametersImplementation{*params};
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     BOOST_CHECK( typeid(gaugefieldParametersImplementation) == typeid(test.getInterface<physics::lattices::Gaugefield>()) );
     BOOST_CHECK( typeid(gaugemomentaParametersImplementation) == typeid(test.getInterface<physics::lattices::Gaugemomenta>()) );
     BOOST_CHECK( typeid(spinorfieldParametersImplementation) == typeid(test.getInterface<physics::lattices::Spinorfield>()) );
-//    BOOST_CHECK( typeid(spinorfieldEoParametersImplementation) == typeid(test.getInterface<physics::lattices::Spinorfield_eo>()) );
+    BOOST_CHECK( typeid(spinorfieldEoParametersImplementation) == typeid(test.getInterface<physics::lattices::Spinorfield_eo>()) );
     BOOST_CHECK( typeid(staggaredfieldEoParametersImplementation) == typeid(test.getInterface<physics::lattices::Staggeredfield_eo>()) );
     BOOST_CHECK( typeid(rootedStaggaredfieldEoParametersImplementation) == typeid(test.getInterface<physics::lattices::Rooted_Staggeredfield_eo>()) );
     BOOST_CHECK( typeid(fermionmatrixParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Fermionmatrix>()) );

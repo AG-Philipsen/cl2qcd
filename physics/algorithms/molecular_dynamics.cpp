@@ -24,6 +24,7 @@
 #include "molecular_dynamics.hpp"
 
 #include <stdexcept>
+#include <type_traits>
 #include "../fermionmatrix/fermionmatrix.hpp"
 #include "../../meta/util.hpp"
 #include "solvers/solvers.hpp"
@@ -61,10 +62,10 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
 }
 
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+        const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler, const hmc_float kappa, const hmc_float mubar)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF";
-    physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system);
+    physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
     qplus(out, gf, orig);
     log_squarenorm("Spinorfield after update", *out);
 }
@@ -108,20 +109,48 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
 }
 
 /**
+ * In contrast to Qplus_eo and Qminus_eo the functors Qplus and Qminus don't have the spinorfieldParametersInterface and hence in their constructors
+ * expect a different number of arguments.
+ * For this reason objects of these types are constructed and wrapped via the template class and specialization FermionmatrixObjectContainer
+ * which allows to construct objects of Qplus/minus_eo and Qplus/minus via the same call.
+ */
+template<typename SPINORFIELD, typename FERMIONMATRIX>
+struct FermionmatrixObjectContainer{
+	FermionmatrixObjectContainer(const hmc_float kappa, const hmc_float mubar, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+		: fermionmatrix(new FERMIONMATRIX(kappa, mubar, system, interfacesHandler.getInterface<SPINORFIELD>())) {}
+
+	std::unique_ptr<FERMIONMATRIX> fermionmatrix;
+};
+
+template<typename SPINORFIELD>
+struct FermionmatrixObjectContainer<SPINORFIELD, physics::fermionmatrix::Qplus>{
+	FermionmatrixObjectContainer(const hmc_float kappa, const hmc_float mubar, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+		: fermionmatrix(new physics::fermionmatrix::Qplus(kappa, mubar, system)) {}
+
+	std::unique_ptr<physics::fermionmatrix::Qplus> fermionmatrix;
+};
+template<typename SPINORFIELD>
+struct FermionmatrixObjectContainer<SPINORFIELD, physics::fermionmatrix::Qminus>{
+	FermionmatrixObjectContainer(const hmc_float kappa, const hmc_float mubar, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+		: fermionmatrix(new physics::fermionmatrix::Qminus(kappa, mubar, system)) {}
+
+	std::unique_ptr<physics::fermionmatrix::Qminus> fermionmatrix;
+};
+/**
  * template for md_update_spinorfield_mp
  * this needs 3 fermionmatrices in order to use cg as default solver (because for the cg one needs a hermitian matrix)
  */
 template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM, class SPINORFIELD> static void md_update_spinorfield_mp(
-        const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system, const hmc_float kappa,
+        const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa,
         const hmc_float mubar)
 {
-    SPINORFIELD tmp(system);
-    FERMIONMATRIX qplus(kappa, mubar, system);
+    SPINORFIELD temporarySpinorfield(system, interfacesHandler.getInterface<SPINORFIELD>());
+    FermionmatrixObjectContainer<SPINORFIELD, FERMIONMATRIX> qplusContainer(kappa, mubar, system, interfacesHandler);
     const auto & params = system.get_inputparameters();
 
     log_squarenorm("Spinorfield before update: ", orig);
 
-    qplus(&tmp, gf, orig);
+    (*qplusContainer.fermionmatrix)(&temporarySpinorfield, gf, orig);
 
     /**
      * Now one needs ( Qplus )^-1 (heavy_mass) using tmp as source to get phi_mp
@@ -140,13 +169,13 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         out->zero();
         out->gamma5();
 
-        FERMIONMATRIX qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-        physics::algorithms::solvers::bicgstab(out, qplus_mp, gf, tmp, system, params.get_solver_prec());
+        FermionmatrixObjectContainer<SPINORFIELD, FERMIONMATRIX> qplusMpContainer(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler);
+        physics::algorithms::solvers::bicgstab(out, *qplusMpContainer.fermionmatrix, gf, temporarySpinorfield, system, params.get_solver_prec(), interfacesHandler);
     }   //try
     catch (physics::algorithms::solvers::SolverException& e) {
         logger.fatal() << e.what();
         logger.info() << "Retry with CG...";
-        SPINORFIELD tmp2(system);
+        SPINORFIELD tmp2(system, interfacesHandler.getInterface<SPINORFIELD>());
         /**
          * @todo at the moment, we can only put in a cold spinorfield
          * or a point-source spinorfield as trial-solution
@@ -154,44 +183,45 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         tmp2.zero();
         tmp2.gamma5();
 
-        FERMIONMATRIX_HERM fm_herm(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-        physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, tmp, system, params.get_solver_prec());
-        FERMIONMATRIX_CONJ fm_conj(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
-        fm_conj(out, gf, tmp2);
+        FERMIONMATRIX_HERM fm_herm(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<SPINORFIELD>());
+
+        physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, temporarySpinorfield, system, params.get_solver_prec(), interfacesHandler);
+        FermionmatrixObjectContainer<SPINORFIELD, FERMIONMATRIX_CONJ> fmConjContainer(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler);
+        (*fmConjContainer.fermionmatrix)(out, gf, tmp2);
     }
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+        const physics::lattices::Spinorfield& orig, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa, const hmc_float mubar)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF_MP";
     using physics::fermionmatrix::Qplus;
     using physics::fermionmatrix::Qminus;
     using physics::fermionmatrix::QplusQminus;
 
-    ::md_update_spinorfield_mp<Qplus, Qminus, QplusQminus>(out, gf, orig, system, kappa, mubar);
+    ::md_update_spinorfield_mp<Qplus, Qminus, QplusQminus>(out, gf, orig, system, interfacesHandler, kappa, mubar);
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+        const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa, const hmc_float mubar)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF_MP";
     using physics::fermionmatrix::Qplus_eo;
     using physics::fermionmatrix::Qminus_eo;
     using physics::fermionmatrix::QplusQminus_eo;
 
-    ::md_update_spinorfield_mp<Qplus_eo, Qminus_eo, QplusQminus_eo>(out, gf, orig, system, kappa, mubar);
+    ::md_update_spinorfield_mp<Qplus_eo, Qminus_eo, QplusQminus_eo>(out, gf, orig, system, interfacesHandler, kappa, mubar);
 }
 
 template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
         const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar,
-        physics::InterfacesHandler& interfaceHandler)
+        physics::InterfacesHandler& interfacesHandler)
 {
     using namespace physics::algorithms;
 
-    physics::lattices::Gaugemomenta delta_p(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
+    physics::lattices::Gaugemomenta delta_p(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     delta_p.zero();
-    calc_total_force(&delta_p, gf, phi, system, kappa, mubar);
+    calc_total_force(&delta_p, gf, phi, system, interfacesHandler, kappa, mubar);
 
     logger.debug() << "\tHMC " << "[UP]:\tupdate GM [" << eps << "]";
     physics::lattices::saxpy(inout, -1. * eps, delta_p);
@@ -238,13 +268,13 @@ void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices:
 
 template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
         const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar,
-        physics::InterfacesHandler& interfaceHandler)
+        physics::InterfacesHandler& interfacesHandler)
 {
     using namespace physics::algorithms;
 
-    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
+    const physics::lattices::Gaugemomenta force(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
-    calc_fermion_force(&force, gf, phi, system, kappa, mubar);
+    calc_fermion_force(&force, gf, phi, system, interfacesHandler, kappa, mubar);
     log_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
     logger.debug() << "\tHMC " << "[UP]:\tupdate GM [" << eps << "]";
     physics::lattices::saxpy(inout, -1. * eps, force);
@@ -278,13 +308,13 @@ void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattice
 }
 
 template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfaceHandler)
+        const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
     using namespace physics::algorithms;
 
-    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
+    const physics::lattices::Gaugemomenta force(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
-    calc_detratio_forces(&force, gf, phi_mp, system);
+    calc_detratio_forces(&force, gf, phi_mp, system, interfacesHandler);
     log_squarenorm("\tHMC [UP]:\tFORCE [DETRAT]:\t", force);
 
     logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";

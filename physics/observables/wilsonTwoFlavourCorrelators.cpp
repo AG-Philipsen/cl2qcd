@@ -53,11 +53,12 @@
 #include "../lattices/swappable.hpp"
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/correlator.hpp"
+#include "../interfacesHandler.hpp"
 
 static size_t get_num_corr_entries(const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface);
 static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results, physics::lattices::Spinorfield* corr,
                                  physics::lattices::Spinorfield* source, const hardware::System& system,
-                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface);
+                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler& interfacesHandler);
 static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results,
                                  physics::lattices::Spinorfield* corr1, physics::lattices::Spinorfield* source1,
                                  physics::lattices::Spinorfield* corr2, physics::lattices::Spinorfield* source2,
@@ -67,7 +68,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 
 static void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources,
                                         std::string corr_fn, const hardware::System& system,
-                                        const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface)
+                                        const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler & interfacesHandler)
 {
 	using namespace std;
 
@@ -76,14 +77,14 @@ static void flavour_doublet_correlators(const std::vector<physics::lattices::Spi
 	  throw File_Exception(corr_fn);
 	}
 
-	auto result_ps = physics::observables::wilson::calculate_correlator("ps", result, sources, system);
-	auto result_sc = physics::observables::wilson::calculate_correlator("sc", result, sources, system);
-	auto result_vx = physics::observables::wilson::calculate_correlator("vx", result, sources, system);
-	auto result_vy = physics::observables::wilson::calculate_correlator("vy", result, sources, system);
-	auto result_vz = physics::observables::wilson::calculate_correlator("vz", result, sources, system);
-	auto result_ax = physics::observables::wilson::calculate_correlator("ax", result, sources, system);
-	auto result_ay = physics::observables::wilson::calculate_correlator("ay", result, sources, system);
-	auto result_az = physics::observables::wilson::calculate_correlator("az", result, sources, system);
+	auto result_ps = physics::observables::wilson::calculate_correlator("ps", result, sources, system, interfacesHandler);
+	auto result_sc = physics::observables::wilson::calculate_correlator("sc", result, sources, system, interfacesHandler);
+	auto result_vx = physics::observables::wilson::calculate_correlator("vx", result, sources, system, interfacesHandler);
+	auto result_vy = physics::observables::wilson::calculate_correlator("vy", result, sources, system, interfacesHandler);
+	auto result_vz = physics::observables::wilson::calculate_correlator("vz", result, sources, system, interfacesHandler);
+	auto result_ax = physics::observables::wilson::calculate_correlator("ax", result, sources, system, interfacesHandler);
+	auto result_ay = physics::observables::wilson::calculate_correlator("ay", result, sources, system, interfacesHandler);
+	auto result_az = physics::observables::wilson::calculate_correlator("az", result, sources, system, interfacesHandler);
 
 	if(parametersInterface.printToScreen())
 		parametersInterface.printInformationOfFlavourDoubletCorrelator();
@@ -122,7 +123,7 @@ static void flavour_doublet_correlators(const std::vector<physics::lattices::Spi
 	//the avps correlator
 	if (parametersInterface.getCorrelatorDirection() == 0)
 	  {
-	    auto result_avps = physics::observables::wilson::calculate_correlator("avps", result, sources, system);
+	    auto result_avps = physics::observables::wilson::calculate_correlator("avps", result, sources, system, interfacesHandler);
 	    for(size_t j = 0; j < result_avps.size(); j++) {
 	      of << scientific << setprecision(14) << "1 0 0 1\t" << j << "\t" << result_avps[j] << endl;
 	    }
@@ -132,7 +133,7 @@ static void flavour_doublet_correlators(const std::vector<physics::lattices::Spi
 
 static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results,
                                  physics::lattices::Spinorfield* corr, physics::lattices::Spinorfield* source, const hardware::System& system,
-                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface)
+                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler& interfacesHandler)
 {
 	try_swap_in(corr);
 	try_swap_in(source);
@@ -148,7 +149,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 
 	// the ps_z kernel needs to have the source windowed...
 	if(num_bufs > 1 && parametersInterface.getSourceType() != common::sourcetypes::point && type == "ps" && parametersInterface.getCorrelatorDirection() == 3) {
-		physics::lattices::Spinorfield window(system);
+		physics::lattices::Spinorfield window(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		auto window_bufs = window.get_buffers();
 		for(size_t i_window = 0; i_window < num_bufs; ++i_window) {
 			fill_window(&window, *source, i_window);
@@ -226,7 +227,7 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 
 static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
                                                                  const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
-                                                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface)
+                                                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler & interfacesHandler)
 {
 	// assert single device
 	auto first_corr = corr.at(0);
@@ -248,7 +249,7 @@ static std::vector<hmc_float> calculate_correlator_componentwise(const std::stri
 	}
 
 	for(size_t i = 0; i < corr.size(); i++) {
-		calculate_correlator(type, results, corr.at(i), sources.at(i), system, parametersInterface);
+		calculate_correlator(type, results, corr.at(i), sources.at(i), system, parametersInterface, interfacesHandler);
 	}
 
 	std::vector<hmc_float> host_result(num_corr_entries);
@@ -327,11 +328,11 @@ static size_t get_num_corr_entries(const physics::observables::WilsonTwoFlavourC
 }
 
 
-std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system)
+std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
     physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation parametersInterface{system.get_inputparameters()};
 	if(type == "ps"  || type == "avps" ) {
-		return calculate_correlator_componentwise(type, corr, sources, system, parametersInterface);
+		return calculate_correlator_componentwise(type, corr, sources, system, parametersInterface, interfacesHandler);
 	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az") {
 		return calculate_correlator_colorwise(type, corr, sources, parametersInterface);
 	} {
@@ -339,7 +340,7 @@ std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const 
 	}
 }
 
-void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
+void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
 {
     auto system = gaugefield->getSystem();
     physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation parametersInterface{system->get_inputparameters()};
@@ -347,15 +348,15 @@ void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefie
 
 	std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);
 	// for the correlator calculation, all sources are needed on the device
-	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parametersInterface.getNumberOfSources());
-	const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), parametersInterface.placeOfSourcesOnHost());
+	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parametersInterface.getNumberOfSources(), interfacesHandler);
+	const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), interfacesHandler, parametersInterface.placeOfSourcesOnHost());
 	swap_out(sources);
 	swap_out(result);
-	physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
+	physics::algorithms::perform_inversion(&result, gaugefield, sources, *system, interfacesHandler);
 	logger.info() << "Finished inversion. Starting measurements.";
 	swap_in(sources);
 	swap_in(result);
-	flavour_doublet_correlators(result, sources, filenameForCorrelatorData, *system, parametersInterface);
+	flavour_doublet_correlators(result, sources, filenameForCorrelatorData, *system, parametersInterface, interfacesHandler);
 	release_spinorfields(result);
 	release_spinorfields(sources);
 }

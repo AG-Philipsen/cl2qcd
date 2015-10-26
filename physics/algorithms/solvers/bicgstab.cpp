@@ -27,31 +27,31 @@
  * It is explicitely checked if the true residuum also fullfills the break condition.
  * This is chosen if "bicgstab_save" is selected.
  */
-static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
-static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
+static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler);
+static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler);
 
 /**
  * BICGstab implementation with a different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
  * In particular this version does not perform the check if the "real" residuum is sufficiently small!
  */
-static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
-static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
+static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler);
+static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler);
 
 static std::string create_log_prefix_solver(std::string name, int number) noexcept;
 static std::string create_log_prefix_bicgstab(int number) noexcept;
 
-int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec)
+int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler)
 {
 	const auto & params = system.get_inputparameters();
 
 	if (params.get_solver() == common::bicgstab_save) {
-		return bicgstab_save(x, A, gf, b, system, prec);
+		return bicgstab_save(x, A, gf, b, system, prec, interfacesHandler);
 	} else {
-		return bicgstab_fast(x, A, gf, b, system, prec);
+		return bicgstab_fast(x, A, gf, b, system, prec, interfacesHandler);
 	}
 }
 
-static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
+static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler& interfacesHandler)
 {
 	// @todo this function often contains -1 in the comment but 1 in the code...
 	using physics::lattices::Spinorfield;
@@ -66,13 +66,13 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 	hmc_float resid;
 	hmc_complex alpha, omega, rho{std::nan(""), std::nan("")};
 
-	const Spinorfield v(system);
-	const Spinorfield p(system);
-	const Spinorfield rn(system);
-	const Spinorfield rhat(system);
-	const Spinorfield s(system);
-	const Spinorfield t(system);
-	const Spinorfield aux(system);
+	const Spinorfield v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield rhat(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield s(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield t(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield aux(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 	int iter=0;
 	log_squarenorm(create_log_prefix_bicgstab(iter) + "b: ", b);
@@ -204,7 +204,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
-static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec)
+static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler& interfacesHandler)
 {
 	using physics::lattices::Spinorfield;
 	using physics::algorithms::solvers::SolverStuck;
@@ -218,12 +218,12 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 	hmc_float resid;
 	hmc_complex rho;
 
-	const Spinorfield p(system);
-	const Spinorfield rn(system);
-	const Spinorfield rhat(system);
-	const Spinorfield v(system);
-	const Spinorfield s(system);
-	const Spinorfield t(system);
+	const Spinorfield p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield rhat(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield s(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+	const Spinorfield t(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 	int iter=0;
 	log_squarenorm(create_log_prefix_bicgstab(iter) + "b: ", b);
@@ -345,18 +345,18 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
-int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec)
+int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler)
 {
 	const auto & params = system.get_inputparameters();
 
 	if (params.get_solver() == common::bicgstab_save) {
-	  return bicgstab_save(x, A, gf, b, system, prec);
+	  return bicgstab_save(x, A, gf, b, system, prec, interfacesHandler);
 	} else { 
-	  return bicgstab_fast(x, A, gf, b, system, prec);
+	  return bicgstab_fast(x, A, gf, b, system, prec, interfacesHandler);
 	}
 }
 
-static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec)
+static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, const hmc_float prec, physics::InterfacesHandler & interfacesHandler)
 {
 	using physics::algorithms::solvers::SolverStuck;
 	using physics::algorithms::solvers::SolverDidNotSolve;
@@ -367,13 +367,13 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 
 	auto & params = system.get_inputparameters();
 
-	const Spinorfield_eo s(system);
-	const Spinorfield_eo t(system);
-	const Spinorfield_eo v(system);
-	const Spinorfield_eo p(system);
-	const Spinorfield_eo rn(system);
-	const Spinorfield_eo rhat(system);
-	const Spinorfield_eo aux(system);
+	const Spinorfield_eo s(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo t(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo rhat(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo aux(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	unsigned retests = 0;
 	int cgmax = params.get_cgmax();
@@ -510,7 +510,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 	throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
-static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec)
+static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler & interfacesHandler)
 {
 	using namespace physics::lattices;
 	using physics::algorithms::solvers::SolverStuck;
@@ -521,12 +521,12 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
 
 	auto & params = system.get_inputparameters();
 
-	const Spinorfield_eo p(system);
-	const Spinorfield_eo rn(system);
-	const Spinorfield_eo rhat(system);
-	const Spinorfield_eo s(system);
-	const Spinorfield_eo t(system);
-	const Spinorfield_eo v(system);
+	const Spinorfield_eo p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo rhat(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo s(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo t(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Spinorfield_eo v(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	const Scalar<hmc_complex> alpha(system);
 	const Scalar<hmc_complex> beta(system);

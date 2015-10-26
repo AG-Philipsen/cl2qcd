@@ -30,6 +30,7 @@
 #include "scalar.hpp"
 #include "../../common_header_files/types_fermions.h"
 #include "latticesInterfaces.hpp"
+#include "../interfacesHandler.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -48,7 +49,7 @@ class Spinorfield {
         /**
          * Construct a gaugefield based on the input-files of the system
          */
-        Spinorfield(const hardware::System&, const bool place_on_host = false);
+        Spinorfield(const hardware::System&, const SpinorfieldParametersInterface&,const bool place_on_host = false);
 
         /**
          * Release resources
@@ -111,7 +112,7 @@ class Spinorfield {
     private:
         hardware::System const& system;
         //TODO: turn the following pointer in a reference
-        const SpinorfieldParametersInterface* spinorfieldParametersInterface;
+        const SpinorfieldParametersInterface& spinorfieldParametersInterface;
         std::vector<const hardware::buffers::Plain<spinor> *> buffers;
         const bool place_on_host;
         void import(const spinor * const host) const;
@@ -129,8 +130,7 @@ class Spinorfield {
  *
  * \param n The number of spinorfields to create
  */
-std::vector<Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false)
-;
+std::vector<Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n, physics::InterfacesHandler& interfacesHandler, const bool place_on_host = false);
 
 /**
  * Release the given spinorfields

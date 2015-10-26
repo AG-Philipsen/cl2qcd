@@ -34,7 +34,7 @@ public:
   ~TwoFlavourChiralCondensate();
   
   std::vector<double> getChiralCondensate();
-  void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield);
+  void measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, physics::InterfacesHandler & interfacesHandler);
   void writeChiralCondensateToFile();
   
 private:
@@ -103,13 +103,13 @@ std::vector<double> TwoFlavourChiralCondensate::getChiralCondensate()
 	return chiralCondensate;
 }
 				
-void TwoFlavourChiralCondensate::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield)
+void TwoFlavourChiralCondensate::measureChiralCondensate(const physics::lattices::Gaugefield * gaugefield, physics::InterfacesHandler & interfacesHandler)
 {
 	logger.info() << "chiral condensate:" ;
 	for (int sourceNumber = 0; sourceNumber < parametersInterface.getNumberOfSources(); sourceNumber++) {
-		auto sources = physics::create_sources(*system, *prng, 1);
-		auto result = physics::lattices::create_spinorfields(*system, sources.size());
-		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system);
+		auto sources = physics::create_sources(*system, *prng, 1, interfacesHandler);
+		auto result = physics::lattices::create_spinorfields(*system, sources.size(), interfacesHandler);
+		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system, interfacesHandler);
 		flavour_doublet_chiral_condensate(result[0], sources[0]);
 		physics::lattices::release_spinorfields(result);
 		physics::lattices::release_spinorfields(sources);
@@ -221,21 +221,21 @@ void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics
 	chiralCondensate.push_back(result);
 }
 
-std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName)
+std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
 {
     physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation parametersInterface{gaugefield->getSystem()->get_inputparameters()};
     TwoFlavourChiralCondensate condensate(gaugefield, parametersInterface, currentConfigurationName, gaugefield->get_trajectoryNumberAtInit());
-	condensate.measureChiralCondensate(gaugefield);
+	condensate.measureChiralCondensate(gaugefield, interfacesHandler);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
 }
 
-std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration)
+std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration, physics::InterfacesHandler & interfacesHandler)
 {
     physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation parametersInterface{gaugefield->getSystem()->get_inputparameters()};
 	std::string currentConfigurationName = gaugefield->getName(iteration);
 	TwoFlavourChiralCondensate condensate(gaugefield, parametersInterface, currentConfigurationName, iteration);
-	condensate.measureChiralCondensate(gaugefield);
+	condensate.measureChiralCondensate(gaugefield, interfacesHandler);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
 }
