@@ -175,47 +175,47 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{1536.}, ns4, nt4, FillType::cold, 1});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{1536.}, ns4, nt4, FillType::cold, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{1536.002605}, ns4, nt4, FillType::nonTrivial, 1});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{1536.002605}, ns4, nt4, FillType::nonTrivial, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.}, ns4, nt4, FillType::cold, 2});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.}, ns4, nt4, FillType::cold, 2});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 2});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 2});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.}, ns4, nt4, FillType::cold, 3});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.}, ns4, nt4, FillType::cold, 3});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 3});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 3});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{24576}, ns8, nt8, FillType::cold, 1});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{24576}, ns8, nt8, FillType::cold, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{124416}, ns12, nt12, FillType::cold, 1});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{124416}, ns12, nt12, FillType::cold, 1});
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {referenceValues{393216}, ns16, nt16, FillType::cold, 1});
+		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{393216}, ns16, nt16, FillType::cold, 1});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -246,27 +246,27 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{64.,0.}, ns4, nt4, FillType::cold});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{64.,0.}, ns4, nt4, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_2)
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{-17.1117721375,-31.0747993518}, ns4, nt4, FillType::nonTrivial});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{-17.1117721375,-31.0747993518}, ns4, nt4, FillType::nonTrivial});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{512.,0.}, ns8, nt8, FillType::cold});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{512.,0.}, ns8, nt8, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{1728.,0.}, ns12, nt12, FillType::cold});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{1728.,0.}, ns12, nt12, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{4096.,0.}, ns16, nt16, FillType::cold});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{4096.,0.}, ns16, nt16, FillType::cold});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -325,35 +325,35 @@ void instantiateMockupsAndCallTester(struct TestParametersSpecToSmear testParams
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.001;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.001538;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_4 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_5 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.001;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {referenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
+		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -381,27 +381,27 @@ BOOST_AUTO_TEST_SUITE ( RECTANGLES )
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{3072.}, ns4, nt4, FillType::cold});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{3072.}, ns4, nt4, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{3072.00781501}, ns4, nt4, FillType::nonTrivial});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{3072.00781501}, ns4, nt4, FillType::nonTrivial});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
 	{
-			instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{49152.}, ns8, nt8, FillType::cold});
+			instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{49152.}, ns8, nt8, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{248832.}, ns12, nt12, FillType::cold});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{248832.}, ns12, nt12, FillType::cold});
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {referenceValues{786432.}, ns16, nt16, FillType::cold});
+		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{786432.}, ns16, nt16, FillType::cold});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

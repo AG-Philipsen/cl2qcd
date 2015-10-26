@@ -33,9 +33,10 @@ typedef std::vector<SpinorFillType> SpinorFillTypes;
 
 struct SpinorTestParameters: public TestParameters
 {
-	SpinorTestParameters(const referenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), fillTypes(fillTypesIn)
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn)
 	{};
+	const bool isEvenOdd;
 	const SpinorFillTypes fillTypes;
 };
 

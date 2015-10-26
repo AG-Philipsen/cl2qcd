@@ -31,7 +31,7 @@
 #include "../device.hpp"
 #include "mockups.hpp"
 
-typedef std::vector<double> referenceValues;
+typedef std::vector<double> ReferenceValues;
 struct TestParameters {
 	std::vector<double> referenceValue;
 	int ns;
