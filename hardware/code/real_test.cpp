@@ -24,21 +24,97 @@
 
 #include "real.hpp"
 #include "kernelTester.hpp"
+#include "mockups.hpp"
+
+const int ns4 = 4;
+const int nt4 = 4;
+const int ns8 = 8;
+const int nt8 = 8;
+const int ns12 = 12;
+const int nt12 = 12;
+const int ns16 = 16;
+const int nt16 = 16;
+
+
+struct TestParametersBuild : public TestParameters
+{
+	bool useEo;
+	bool useMergeKernelsFermion;
+	bool useChemPotRe;
+	bool useChemPotIm;
+
+	TestParametersBuild(std::vector<double> referenceValueIn, int nsIn, int ntIn, bool useEoIn, bool useMergeKernelsFermionIn, bool useChemPotReIn, bool useChemPotImIn):
+		TestParameters(referenceValueIn, nsIn, ntIn) {
+		useEo = useEoIn;
+		useMergeKernelsFermion = useMergeKernelsFermionIn;
+		useChemPotRe = useChemPotReIn;
+		useChemPotIm = useChemPotImIn;
+	}
+};
+
+struct TestParametersReal : public TestParameters
+{
+	double beta;
+	double kappa;
+
+	TestParametersReal(std::vector<double> referenceValueIn, int nsIn, int ntIn, double betaIn, double kappaIn):
+		TestParameters(referenceValueIn, nsIn, ntIn) {
+		beta = betaIn;
+		kappa = kappaIn;
+	}
+};
+
+struct TestParametersRealAccess : public TestParametersReal
+{
+	double rho;
+	double mu;
+
+	TestParametersRealAccess(std::vector<double> referenceValueIn, int nsIn, int ntIn ,double betaIn, double kappaIn, double rhoIn, double muIn):
+		TestParametersReal(referenceValueIn, nsIn, ntIn, betaIn, kappaIn) {
+		rho = rhoIn;
+		mu = muIn;
+	}
+};
+
+struct TestParametersRealUpdate : public TestParametersRealAccess
+{
+	double mass;
+
+	TestParametersRealUpdate(std::vector<double> referenceValueIn, int nsIn, int ntIn ,double betaIn, double kappaIn, double rhoIn, double muIn, double massIn):
+		TestParametersRealAccess(referenceValueIn, nsIn, ntIn, betaIn, kappaIn, rhoIn, muIn) {
+		mass = massIn;
+	}
+};
 
 class RealTester : public KernelTester {
    public:
-	RealTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1,
-	    int typeOfComparision = 1) : 
-	    KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision) {
+	RealTester(std::string kernelName, const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup kernelParameters,
+			struct TestParametersReal testParams):
+//	RealTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1,
+//	    int typeOfComparision = 1) :
+	    KernelTester(kernelName,  hardwareParameters, kernelParameters, testParams) {
 		code = device->getRealCode();
-		hmc_float alpha_host = parameters->get_beta();
-		hmc_float beta_host = parameters->get_kappa();
+		hmc_float alpha_host = kernelParameters.getBeta();
+		hmc_float beta_host = kernelParameters.getKappa();
 		alpha = new hardware::buffers::Plain<hmc_float>(1, device);
 		beta = new hardware::buffers::Plain<hmc_float>(1, device);
 		result = new hardware::buffers::Plain<hmc_float>(1, device);
 		alpha->load(&alpha_host);
 		beta->load(&beta_host);
 	}
+	RealTester(std::string kernelName, const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup kernelParameters,
+			struct TestParametersBuild testParams):
+		KernelTester(kernelName,  hardwareParameters, kernelParameters, testParams) {
+		code = device->getRealCode();
+		hmc_float alpha_host = kernelParameters.getBeta();
+		hmc_float beta_host = kernelParameters.getKappa();
+		alpha = new hardware::buffers::Plain<hmc_float>(1, device);
+		beta = new hardware::buffers::Plain<hmc_float>(1, device);
+		result = new hardware::buffers::Plain<hmc_float>(1, device);
+		alpha->load(&alpha_host);
+		beta->load(&beta_host);
+
+	};
 	
 	virtual ~RealTester(){
 		delete alpha;
@@ -64,15 +140,23 @@ class RealTester : public KernelTester {
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
+	void instantiateMockupsAndCallTester(struct TestParametersBuild testParams)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt);
+		BOOST_CHECK_NO_THROW(RealTester("build", hardwareParameters, kernelParameters, testParams));
+	}
+
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
 	{
-	    BOOST_CHECK_NO_THROW(RealTester("build", "real_build_input_1", 0));
+		instantiateMockupsAndCallTester(TestParametersBuild {referenceValues{0.,0.}, ns4, nt4, true, true, true, true});
+//	    BOOST_CHECK_NO_THROW(RealTester("build", "real_build_input_1", 0));
 	}
-	
-	BOOST_AUTO_TEST_CASE( BUILD_2 )
-	{
-	    BOOST_CHECK_NO_THROW(RealTester("build", "real_build_input_2", 0));
-	}
+
+//	BOOST_AUTO_TEST_CASE( BUILD_2 )
+//	{
+//	    BOOST_CHECK_NO_THROW(RealTester("build", "real_build_input_2", 0));
+//	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -82,74 +166,81 @@ BOOST_AUTO_TEST_SUITE(PRODUCT)
 
 	class RealProductTester: public RealTester{
 	  public:
-		RealProductTester(std::string inputfile, bool multiple_operation = false) :
-		   RealTester("product", inputfile){
+		RealProductTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
+				struct TestParametersReal testParams, bool multiple_operation = false) :
+				RealTester("product",hardwareParameters,kernelParameters,testParams){
 			code->set_real_to_product_device(alpha, beta, result);
 			if(multiple_operation)
 			  code->set_real_to_product_device(alpha, result, result);
-			
+
 			result->dump(&kernelResult[0]);
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersReal testParams, bool multiple_operation = false)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt,testParams.beta,testParams.kappa);
+		RealProductTester(hardwareParameters, kernelParameters, testParams, multiple_operation);
+	}
 	BOOST_AUTO_TEST_CASE( PRODUCT_1 )
 	{
-	    RealProductTester("product_input_1");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_2 )
 	{
-	    RealProductTester("product_input_2");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 0.});
 	}
-	
-	BOOST_AUTO_TEST_CASE( PRODUCT_3 )
+
+	BOOST_AUTO_TEST_CASE( PRODUCT_3 )//same as 2
 	{
-	    RealProductTester("product_input_3");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_4 )
 	{
-	    RealProductTester("product_input_4");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_5 )
 	{
-	    RealProductTester("product_input_5");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, -1., 1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_6 )
 	{
-	    RealProductTester("product_input_6");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, 1., -1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_7 )
 	{
-	    RealProductTester("product_input_7", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_8 )
 	{
-	    RealProductTester("product_input_8", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 0.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_9 )
 	{
-	    RealProductTester("product_input_9", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, -1., 1.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_10 )
 	{
-	    RealProductTester("product_input_10", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_11 )
 	{
-	    RealProductTester("product_input_11", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{63.}, ns4, nt4, -3., 7.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( PRODUCT_12 )
 	{
-	    RealProductTester("product_input_12", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-100.}, ns4, nt4, 10., -1.}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -160,54 +251,62 @@ BOOST_AUTO_TEST_SUITE(RATIO)
 
 	class RealRatioTester: public RealTester{
 	  public:
-		RealRatioTester(std::string inputfile, bool multiple_operation = false) :
-		   RealTester("ratio", inputfile){
+		RealRatioTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
+				struct TestParametersReal testParams, bool multiple_operation = false) :
+		   RealTester("ratio",hardwareParameters,kernelParameters,testParams){
 			code->set_real_to_ratio_device(alpha, beta, result);
 			if(multiple_operation)
 			  code->set_real_to_ratio_device(result, beta, result);
-			
+
 			result->dump(&kernelResult[0]);
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersReal testParams, bool multiple_operation = false)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt,testParams.beta,testParams.kappa);
+		RealRatioTester(hardwareParameters, kernelParameters, testParams, multiple_operation);
+	}
+
 	BOOST_AUTO_TEST_CASE( RATIO_1 )
 	{
-	    RealRatioTester("ratio_input_1");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( RATIO_2 )
 	{
-	    RealRatioTester("ratio_input_2");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( RATIO_3 )
 	{
-	    RealRatioTester("ratio_input_3");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 5., 5.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( RATIO_4 )
 	{
-	    RealRatioTester("ratio_input_4");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, 1., -1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( RATIO_5 )
 	{
-	    RealRatioTester("ratio_input_5", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 1.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( RATIO_6 )
 	{
-	    RealRatioTester("ratio_input_6", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( RATIO_7 )
 	{
-	    RealRatioTester("ratio_input_7", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, -4., 2.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( RATIO_8 )
 	{
-	    RealRatioTester("ratio_input_8", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., -1.}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -218,44 +317,52 @@ BOOST_AUTO_TEST_SUITE(SUM)
 
 	class RealSumTester: public RealTester{
 	  public:
-		RealSumTester(std::string inputfile, bool multiple_operation = false) :
-		   RealTester("sum", inputfile){
+		RealSumTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
+				struct TestParametersReal testParams, bool multiple_operation = false) :
+		   RealTester("sum",hardwareParameters,kernelParameters,testParams){
 			code->set_real_to_sum_device(alpha, beta, result);
 			if(multiple_operation)
 			  code->set_real_to_sum_device(alpha, result, result);
-			
+
 			result->dump(&kernelResult[0]);
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersReal testParams, bool multiple_operation = false)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt,testParams.beta,testParams.kappa);
+		RealSumTester(hardwareParameters, kernelParameters, testParams, multiple_operation);
+	}
+
 	BOOST_AUTO_TEST_CASE( SUM_1 )
 	{
-	    RealSumTester("sum_input_1");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SUM_2 )
 	{
-	    RealSumTester("sum_input_2");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 3., -3.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SUM_3 )
 	{
-	    RealSumTester("sum_input_3");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-6.66}, ns4, nt4, 1.23, -7.89});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SUM_4 )
 	{
-	    RealSumTester("sum_input_4", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SUM_5 )
 	{
-	    RealSumTester("sum_input_5", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{3.}, ns4, nt4, 3., -3.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SUM_6 )
 	{
-	    RealSumTester("sum_input_6", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-5.43}, ns4, nt4, 1.23, -7.89}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -266,44 +373,52 @@ BOOST_AUTO_TEST_SUITE(DIFFERENCE)
 
 	class RealDifferenceTester: public RealTester{
 	  public:
-		RealDifferenceTester(std::string inputfile, bool multiple_operation = false) :
-		   RealTester("difference", inputfile){
+		RealDifferenceTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
+				struct TestParametersReal testParams, bool multiple_operation = false) :
+		   RealTester("difference",hardwareParameters,kernelParameters,testParams){
 			code->set_real_to_difference_device(alpha, beta, result);
 			if(multiple_operation)
 			  code->set_real_to_difference_device(result, beta, result);
-			
+
 			result->dump(&kernelResult[0]);
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersReal testParams, bool multiple_operation = false)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt,testParams.beta,testParams.kappa);
+		RealDifferenceTester(hardwareParameters, kernelParameters, testParams, multiple_operation);
+	}
+
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_1 )
 	{
-	    RealDifferenceTester("difference_input_1");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_2 )
 	{
-	    RealDifferenceTester("difference_input_2");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_3 )
 	{
-	    RealDifferenceTester("difference_input_3");
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-2.2}, ns4, nt4, 1.5, 3.7});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_4 )
 	{
-	    RealDifferenceTester("difference_input_4", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_5 )
 	{
-	    RealDifferenceTester("difference_input_5", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, 1., 1.}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_6 )
 	{
-	    RealDifferenceTester("difference_input_6", true);
+		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-5.9}, ns4, nt4, 1.5, 3.7}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -316,9 +431,11 @@ BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 	//use BOOST directly here. Probably one could think about a better object.
 	class RealAccessVectorElementTester: public KernelTester{
 	  public:
-		RealAccessVectorElementTester(std::string inputfile, bool get_element) :
-		   KernelTester("Access_vector_element", ("real/" + inputfile), 0){
-		   
+		RealAccessVectorElementTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
+				struct TestParametersRealAccess testParams, bool get_element) :
+//		   KernelTester("Access_vector_element", ("real/" + inputfile), 0){
+			KernelTester("Access_vector_element", hardwareParameters, kernelParameters, testParams){
+
 			const hardware::code::Real * code = device->getRealCode();
 			hardware::buffers::Plain<hmc_float> scalar_buf(1, device);
 			hardware::buffers::Plain<hmc_float> vector_buf(4, device);
@@ -326,10 +443,10 @@ BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 			hmc_float scalar_host;
 
 			if(get_element){
-			   vector_host[0] = parameters->get_beta();
-			   vector_host[1] = parameters->get_kappa();
-			   vector_host[2] = parameters->get_rho();
-			   vector_host[3] = parameters->get_mu();
+			   vector_host[0] = kernelParameters.getBeta();
+			   vector_host[1] = kernelParameters.getKappa();
+			   vector_host[2] = kernelParameters.getRho();
+			   vector_host[3] = kernelParameters.getMu();
 			   vector_buf.load(&vector_host[0]);
 			   for(uint i=0; i<vector_host.size(); i++){
 			      code->set_real_to_vector_element_device(&vector_buf, i, &scalar_buf);
@@ -338,8 +455,8 @@ BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 			      BOOST_REQUIRE_CLOSE(cpu_res, vector_host[i], 1.e-8);
 			   }
 			}else{
-			   scalar_host = parameters->get_beta() + parameters->get_kappa() +
-			                 parameters->get_rho() + parameters->get_mu();
+			   scalar_host = kernelParameters.getBeta() + kernelParameters.getKappa() +
+			                 kernelParameters.getRho() + kernelParameters.getMu();
 			   scalar_buf.load(&scalar_host);
 			   for(uint i=0; i<vector_host.size(); i++){
 			      code->set_vector_element_to_real_device(&scalar_buf, i, &vector_buf);
@@ -351,15 +468,22 @@ BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersRealAccess testParams, bool get_element)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt,testParams.rho,testParams.beta,testParams.kappa,testParams.mu);
+		RealAccessVectorElementTester(hardwareParameters, kernelParameters, testParams, get_element);
+	}
+
 	BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_1 )
 	{
-	    RealAccessVectorElementTester("access_element_vector_input_1", true);
+		instantiateMockupsAndCallTester(TestParametersRealAccess {referenceValues{}, ns4, nt4, 1.1, 2.2, 3.3, 4.4}, true);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_2 )
 	{
-	    RealAccessVectorElementTester("access_element_vector_input_1", false);
-	} 
+		instantiateMockupsAndCallTester(TestParametersRealAccess {referenceValues{}, ns4, nt4, 1.1, 2.2, 3.3, 4.4}, false);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -369,24 +493,26 @@ BOOST_AUTO_TEST_SUITE(REAL_UPDATE)
 
 	class RealUpdateTester: public RealTester{
 	  public:
-		RealUpdateTester(std::string inputfile, int which_update) : RealTester("update", inputfile){
-			
+		RealUpdateTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
+				struct TestParametersRealUpdate testParams, int which_update) :
+			RealTester("update", hardwareParameters, kernelParameters, testParams){
+
 		   //Variable 1 and 3 are in the base class as alpha and beta Plain<hmc_float> buffers
 		   hardware::buffers::Plain<hmc_float> variable_2(1, device);
 		   hardware::buffers::Plain<hmc_float> variable_4(1, device);
 		   hardware::buffers::Plain<hmc_float> variable_5(1, device);
 		   hardware::buffers::Plain<hmc_float> variable_6(1, device);
-		   
-		   hmc_float variable_2_host = parameters->get_rho();
-		   hmc_float variable_4_host = parameters->get_mu();
-		   hmc_float variable_5_host = parameters->get_mass(); 
-		   hmc_float variable_6_host = parameters->get_approx_lower(); 
-		   
+
+		   hmc_float variable_2_host = kernelParameters.getRho();
+		   hmc_float variable_4_host = kernelParameters.getMu();
+		   hmc_float variable_5_host = kernelParameters.getMass();
+		   hmc_float variable_6_host = kernelParameters.getApproxLower();
+
 		   variable_2.load(&variable_2_host);
 		   variable_4.load(&variable_4_host);
 		   variable_5.load(&variable_5_host);
 		   variable_6.load(&variable_6_host);
-		   
+
 		   if(which_update == 0)
 		     code->update_alpha_cgm_device(alpha, &variable_2, beta, &variable_4, &variable_5, 1, result);
 		   else if (which_update ==1)
@@ -398,20 +524,28 @@ BOOST_AUTO_TEST_SUITE(REAL_UPDATE)
 		}
 	};
 
+	void instantiateMockupsAndCallTester(struct TestParametersRealUpdate testParams, int which_update)
+	{
+		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt,testParams.rho,testParams.beta,testParams.kappa,testParams.mu,testParams.mass);
+		RealUpdateTester(hardwareParameters, kernelParameters, testParams, which_update);
+	}
+
 	BOOST_AUTO_TEST_CASE( ALPHA_1 )
 	{
-	    RealUpdateTester("update_alpha_input_1", 0);
+		instantiateMockupsAndCallTester(TestParametersRealUpdate {referenceValues{-0.6375}, ns4, nt4, 1.35, -1.25, 3.4, -2., 4.5}, 0);
 	}
-	
-	BOOST_AUTO_TEST_CASE( BETA_1 )
+
+	BOOST_AUTO_TEST_CASE( BETA_1 )//needs beta, kappa, rho (hence a different struct)
 	{
-	    RealUpdateTester("update_beta_input_1", 1);
+		instantiateMockupsAndCallTester(TestParametersRealUpdate {referenceValues{-6.4752}, ns4, nt4, -1.52, -2.5, 10.65, 0.006, 0.1}, 1); //check these value!! (rho, mass)
+//	    RealUpdateTester("update_beta_input_1", 1);
 	}
-	
-	BOOST_AUTO_TEST_CASE( ZETA_1 )
-	{
-	    RealUpdateTester("update_zeta_input_1", 2);
-	}
+
+//	BOOST_AUTO_TEST_CASE( ZETA_1 )
+//	{
+//	    RealUpdateTester("update_zeta_input_1", 2);
+//	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
