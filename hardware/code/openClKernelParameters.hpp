@@ -50,6 +50,8 @@ namespace hardware {
 			virtual double getMass() const = 0;
 			virtual bool getUseSameRndNumbers() const = 0;
 			virtual uint32_t getHostSeed() const = 0;
+			virtual double getMu() const = 0;
+			virtual double getApproxLower() const = 0;
 		};
 	}
 }
@@ -224,6 +226,14 @@ namespace hardware {
 			virtual bool getUseMergeKernelsSpinor() const override
 			{
 				return fullParameters->get_use_merge_kernels_spinor();
+			}
+			virtual double getMu() const override
+			{
+				return fullParameters->get_mu();
+			}
+			virtual double getApproxLower() const override
+			{
+				return fullParameters->get_approx_lower();
 			}
 		private:
 			const meta::Inputparameters * fullParameters;

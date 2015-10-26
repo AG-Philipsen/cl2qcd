@@ -165,13 +165,19 @@ namespace hardware {
 		{
 		public:
 			OpenClKernelParametersMockup(int nsIn, int ntIn , size_t precIn = 64) :
-				ns(nsIn), nt(ntIn), prec(precIn) {};
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, bool useSmearingIn , size_t precIn = 64):
-				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useSmearing(useSmearingIn), prec(precIn) {};
+				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(useSmearingIn), prec(precIn) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn , size_t precIn = 64):
-				ns(nsIn), nt(ntIn), useRectangles(useRectanglesIn), prec(precIn) {};
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(useRectanglesIn), useSmearing(false), prec(precIn) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, common::action fermactIn = common::action::twistedmass, bool useRectanglesIn=false, bool useSmearingIn=false, size_t precIn = 64) :
-				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), fermact(fermactIn), useRectangles(useRectanglesIn), useSmearing(useSmearingIn), prec(precIn) {};
+				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(fermactIn), useRectangles(useRectanglesIn), useSmearing(useSmearingIn), prec(precIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn , double betaIn, double kappaIn, size_t precIn = 64) :
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), beta(betaIn), kappa(kappaIn), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn , double betaIn, double kappaIn, double rhoIn, double muIn, size_t precIn = 64) :
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(rhoIn), beta(betaIn), kappa(kappaIn), mu(muIn), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn , double betaIn, double kappaIn, double rhoIn, double muIn, double massIn, size_t precIn = 64) :
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(rhoIn), beta(betaIn), kappa(kappaIn), mu(muIn), mass(massIn), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
 			~OpenClKernelParametersMockup()	{};
 			virtual int getNs() const override
 			{
@@ -243,11 +249,11 @@ namespace hardware {
 			}
 			virtual double getBeta() const override
 			{
-				return 5.69;
+				return beta;
 			}
 			virtual double getKappa() const override
 			{
-				return 0.125;
+				return kappa;
 			}
 			virtual int getNumSources() const override
 			{
@@ -324,7 +330,7 @@ namespace hardware {
 			}
 			virtual double getMass() const override
 			{
-				return 0.1;
+				return mass;
 			}
 			virtual bool getUseSameRndNumbers() const override
 			{
@@ -338,9 +344,17 @@ namespace hardware {
 			{
 				return false;
 			}
+			virtual double getMu() const override
+			{
+				return mu;
+			}
+			virtual double getApproxLower() const override
+			{
+				return 1.e-5;
+			}
 		protected:
 			int ns, nt, rhoIter;
-			double rho;
+			double rho, beta, kappa, mu, mass;
 			common::action fermact;
 			bool useRectangles, useSmearing;
 			size_t prec;
