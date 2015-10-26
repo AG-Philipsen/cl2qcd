@@ -28,13 +28,25 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
-enum fillType{ zero, one, zeroOne, oneZero, ascending};
+enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
+typedef std::vector<SpinorFillType> SpinorFillTypes;
+
+struct SpinorTestParameters: public TestParameters
+{
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn)
+	{};
+	const bool isEvenOdd;
+	const SpinorFillTypes fillTypes;
+};
 
 class SpinorTester : public KernelTester {
 public:
 	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
 	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
 	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
+	SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &,
+			const SpinorTestParameters & testParameters );
 	~SpinorTester();
 	
 protected:
@@ -42,13 +54,14 @@ protected:
 	
 	bool allocatedObjects;
 
-	spinor * createSpinorfield( fillType );
+	spinor * createSpinorfield( SpinorFillType );
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
 	void fill_with_one(spinor * in, int size);
 	void fill_with_zero_one(spinor * in, int size);
 	void fill_with_one_zero(spinor * in, int size);
 	void fill_with_ascending(spinor * in, int size);
+	void fillWithAscendingComplex(spinor * in, int size);
 	void fill_with_one_minusone_for_gamma5_use(spinor * in, int size);
 	void fill_with_random(spinor * in, int size, int seed);
 	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
@@ -64,6 +77,7 @@ protected:
 	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
 	
 	void setMembers();
+	void setMembersNew();
 	
 	const hardware::code::Spinors * code;
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;

@@ -23,15 +23,28 @@
 void SpinorTester::setMembers()
 {
 		//todo: some of these could also be put into the specific child-classes where they are actually used.
-	spinorfieldElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime(); //todo: make proper
-	spinorfieldEvenOddElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime() / 2; //todo: make proper
-	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
-	(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
-	alpha_host = {parameters->get_beta(), parameters->get_rho()};
-	beta_host = {parameters->get_kappa(), parameters->get_mu()};
-	iterations = parameters->get_integrationsteps(0);
-	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+		spinorfieldElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime(); //todo: make proper
+		spinorfieldEvenOddElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime() / 2; //todo: make proper
+		(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
+		(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
+		alpha_host = {parameters->get_beta(), parameters->get_rho()};
+		beta_host = {parameters->get_kappa(), parameters->get_mu()};
+		iterations = parameters->get_integrationsteps(0);
+		parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
 }
+
+void SpinorTester::setMembersNew()
+{
+		//todo: some of these could also be put into the specific child-classes where they are actually used.
+	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
+	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
+	useRandom = false; // todo: make changeable (parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
+	alpha_host = {kernelParameters->getBeta(), kernelParameters->getRho()}; // todo: make changeable {parameters->get_beta(), parameters->get_rho()};
+	beta_host = {kernelParameters->getKappa(), kernelParameters->getMuBar()}; //todo: mubar was mu originally
+	iterations = 1; // todo: make changeable parameters->get_integrationsteps(0);
+	calcVariance = false; // todo: make changeable parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+}
+
 
 SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
   KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( parameters )
@@ -62,9 +75,19 @@ SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::S
 	code = device->getSpinorCode();
 }
 
+SpinorTester::SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
+		const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
+		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), prngParameters(nullptr), prng(nullptr)
+{
+	setMembersNew();
+	code = device->getSpinorCode();
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+}
+
 
 SpinorTester::~SpinorTester()
 {
+	//todo: after refactoring, review these deletes here...
 	if(allocatedObjects)
 	{
 		delete doubleBuffer;
@@ -167,6 +190,25 @@ void SpinorTester::fill_with_ascending(spinor * in, int size)
 	}
 }
 
+void SpinorTester::fillWithAscendingComplex(spinor * in, int size)
+{
+	for(int i = 0; i < size; i++) {
+	    in[i].e0.e0 = {1., 2.};
+	    in[i].e0.e1 = {3., 4.};
+	    in[i].e0.e2 = {5., 6.};
+	    in[i].e1.e0 = {7., 8.};
+	    in[i].e1.e1 = {9., 10.};
+	    in[i].e1.e2 = {11., 12.};
+	    in[i].e2.e0 = {13., 14.};
+	    in[i].e2.e1 = {15., 16.};
+	    in[i].e2.e2 = {17., 18.};
+	    in[i].e3.e0 = {19., 20.};
+	    in[i].e3.e1 = {21., 22.};
+	    in[i].e3.e2 = {23., 24.};
+	}
+}
+
+
 void SpinorTester::fill_with_one_minusone_for_gamma5_use(spinor * in, int size)
 {
   for(int i = 0; i < size; ++i) {
@@ -228,25 +270,28 @@ spinor * SpinorTester::createSpinorfield(size_t numberOfElements, int seed)
   return in;
 }
 
-spinor * SpinorTester::createSpinorfield(fillType fillTypeIn)
+spinor * SpinorTester::createSpinorfield(SpinorFillType fillTypeIn)
 {
   spinor * in;
   in = new spinor[spinorfieldElements];
   switch (fillTypeIn) {
-	case fillType::zero :
+	case SpinorFillType::zero :
 		fill_with_zero(in, spinorfieldElements);
 		break;
-	case fillType::one :
+	case SpinorFillType::one :
 		fill_with_one(in, spinorfieldElements);
 		break;
-	case fillType::zeroOne :
+	case SpinorFillType::zeroOne :
 		fill_with_zero_one(in, spinorfieldElements);
 		break;
-	case fillType::oneZero :
+	case SpinorFillType::oneZero :
 		fill_with_one_zero(in, spinorfieldElements);
 		break;
-	case fillType::ascending :
+	case SpinorFillType::ascendingReal :
 		fill_with_ascending(in, spinorfieldElements);
+		break;
+	case SpinorFillType::ascendingComplex :
+		fillWithAscendingComplex(in, spinorfieldElements);
 		break;
 	default:
 		logger.fatal() << "do not know fill type!";

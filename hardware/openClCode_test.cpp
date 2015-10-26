@@ -28,7 +28,8 @@ BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 {
 	const char * argv []  = {"foo"};
 	const meta::Inputparameters fullParameters{1, argv};
-	hardware::OpenClCode_fromMetaInputparameters codeBuilder( fullParameters );
+	const hardware::code::OpenClKernelParametersImplementation kernelParameters(fullParameters);
+	hardware::OpenClCode_fromMetaInputparameters codeBuilder( kernelParameters );
 	/**
 	 * @Todo: How to test this in a meaningful way?
 	 */
