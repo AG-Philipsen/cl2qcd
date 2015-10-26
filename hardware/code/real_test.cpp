@@ -26,16 +26,6 @@
 #include "kernelTester.hpp"
 #include "mockups.hpp"
 
-const int ns4 = 4;
-const int nt4 = 4;
-const int ns8 = 8;
-const int nt8 = 8;
-const int ns12 = 12;
-const int nt12 = 12;
-const int ns16 = 16;
-const int nt16 = 16;
-
-
 struct TestParametersBuild : public TestParameters
 {
 	bool useEo;
@@ -149,7 +139,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersBuild {referenceValues{0.,0.}, ns4, nt4, true, true, true, true});
+		instantiateMockupsAndCallTester(TestParametersBuild {ReferenceValues{0.,0.}, ns4, nt4, true, true, true, true});
 //	    BOOST_CHECK_NO_THROW(RealTester("build", "real_build_input_1", 0));
 	}
 
@@ -185,62 +175,62 @@ BOOST_AUTO_TEST_SUITE(PRODUCT)
 	}
 	BOOST_AUTO_TEST_CASE( PRODUCT_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 0.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 1., 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_3 )//same as 2
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 0.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 1., 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_4 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{1.}, ns4, nt4, 1., 1.});
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_5 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, -1., 1.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-1.}, ns4, nt4, -1., 1.});
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_6 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, 1., -1.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-1.}, ns4, nt4, 1., -1.});
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_7 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 0.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_8 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 0.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 1., 0.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_9 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, -1., 1.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{1.}, ns4, nt4, -1., 1.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_10 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{1.}, ns4, nt4, 1., 1.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_11 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{63.}, ns4, nt4, -3., 7.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{63.}, ns4, nt4, -3., 7.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( PRODUCT_12 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-100.}, ns4, nt4, 10., -1.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-100.}, ns4, nt4, 10., -1.}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -271,42 +261,42 @@ BOOST_AUTO_TEST_SUITE(RATIO)
 
 	BOOST_AUTO_TEST_CASE( RATIO_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 1.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 1.});
 	}
 
 	BOOST_AUTO_TEST_CASE( RATIO_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{1.}, ns4, nt4, 1., 1.});
 	}
 
 	BOOST_AUTO_TEST_CASE( RATIO_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 5., 5.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{1.}, ns4, nt4, 5., 5.});
 	}
 
 	BOOST_AUTO_TEST_CASE( RATIO_4 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, 1., -1.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-1.}, ns4, nt4, 1., -1.});
 	}
 
 	BOOST_AUTO_TEST_CASE( RATIO_5 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 1.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 1.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( RATIO_6 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., 1.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{1.}, ns4, nt4, 1., 1.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( RATIO_7 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, -4., 2.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-1.}, ns4, nt4, -4., 2.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( RATIO_8 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{1.}, ns4, nt4, 1., -1.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{1.}, ns4, nt4, 1., -1.}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -337,32 +327,32 @@ BOOST_AUTO_TEST_SUITE(SUM)
 
 	BOOST_AUTO_TEST_CASE( SUM_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( SUM_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 3., -3.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 3., -3.});
 	}
 
 	BOOST_AUTO_TEST_CASE( SUM_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-6.66}, ns4, nt4, 1.23, -7.89});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-6.66}, ns4, nt4, 1.23, -7.89});
 	}
 
 	BOOST_AUTO_TEST_CASE( SUM_4 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 0.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( SUM_5 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{3.}, ns4, nt4, 3., -3.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{3.}, ns4, nt4, 3., -3.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( SUM_6 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-5.43}, ns4, nt4, 1.23, -7.89}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-5.43}, ns4, nt4, 1.23, -7.89}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -393,32 +383,32 @@ BOOST_AUTO_TEST_SUITE(DIFFERENCE)
 
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 1., 1.});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 1., 1.});
 	}
 
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-2.2}, ns4, nt4, 1.5, 3.7});
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-2.2}, ns4, nt4, 1.5, 3.7});
 	}
 
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_4 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{0.}, ns4, nt4, 0., 0.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{0.}, ns4, nt4, 0., 0.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_5 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-1.}, ns4, nt4, 1., 1.}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-1.}, ns4, nt4, 1., 1.}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( DIFFERENCE_6 )
 	{
-		instantiateMockupsAndCallTester(TestParametersReal {referenceValues{-5.9}, ns4, nt4, 1.5, 3.7}, true);
+		instantiateMockupsAndCallTester(TestParametersReal {ReferenceValues{-5.9}, ns4, nt4, 1.5, 3.7}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -477,12 +467,12 @@ BOOST_AUTO_TEST_SUITE(ACCESS_ELEMENT)
 
 	BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersRealAccess {referenceValues{}, ns4, nt4, 1.1, 2.2, 3.3, 4.4}, true);
+		instantiateMockupsAndCallTester(TestParametersRealAccess {ReferenceValues{}, ns4, nt4, 1.1, 2.2, 3.3, 4.4}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( ACCESS_ELEMENT_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersRealAccess {referenceValues{}, ns4, nt4, 1.1, 2.2, 3.3, 4.4}, false);
+		instantiateMockupsAndCallTester(TestParametersRealAccess {ReferenceValues{}, ns4, nt4, 1.1, 2.2, 3.3, 4.4}, false);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -533,12 +523,12 @@ BOOST_AUTO_TEST_SUITE(REAL_UPDATE)
 
 	BOOST_AUTO_TEST_CASE( ALPHA_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersRealUpdate {referenceValues{-0.6375}, ns4, nt4, 1.35, -1.25, 3.4, -2., 4.5}, 0);
+		instantiateMockupsAndCallTester(TestParametersRealUpdate {ReferenceValues{-0.6375}, ns4, nt4, 1.35, -1.25, 3.4, -2., 4.5}, 0);
 	}
 
 	BOOST_AUTO_TEST_CASE( BETA_1 )//needs beta, kappa, rho (hence a different struct)
 	{
-		instantiateMockupsAndCallTester(TestParametersRealUpdate {referenceValues{-6.4752}, ns4, nt4, -1.52, -2.5, 10.65, 0.006, 0.1}, 1); //check these value!! (rho, mass)
+		instantiateMockupsAndCallTester(TestParametersRealUpdate {ReferenceValues{-6.4752}, ns4, nt4, -1.52, -2.5, 10.65, 0.006, 0.1}, 1); //check these value!! (rho, mass)
 //	    RealUpdateTester("update_beta_input_1", 1);
 	}
 
