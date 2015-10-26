@@ -536,6 +536,14 @@ namespace hardware {
 			{
 				return false;
 			}
+			virtual double getMu() const override
+			{
+				return 0.006;
+			}
+			virtual double getApproxLower() const override
+			{
+				return 1.e-5;
+			}
 		protected:
 			const int ns, nt;
 			const size_t prec;
