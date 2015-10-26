@@ -96,7 +96,7 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     phi.Rescale_Coefficients(approx3, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
     //this call calculates also the HMC-Observables
     const hmc_observables obs = metropolis(rnd_number, params.get_beta(), *gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp.get(), spinor_energy_init_mp,
-            system);
+            system, interfaceHandler);
 
     if(obs.accept == 1) {
         // perform the change nonprimed->primed !

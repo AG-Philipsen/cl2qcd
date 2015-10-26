@@ -141,11 +141,11 @@ BOOST_AUTO_TEST_CASE(stochastic_source_3)
 	test_correlator(params, ps, sc, vx, vy, vz, ax, ay, az);
 }
 
-void check_correlator(std::string which, const std::vector<physics::lattices::Spinorfield*>& solved, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system, const std::vector<hmc_float>& ref)
+void check_correlator(std::string which, const std::vector<physics::lattices::Spinorfield*>& solved, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system, const std::vector<hmc_float>& ref, physics::InterfacesHandler & interfacesHandler)
 {
 	using namespace std;
 
-	auto result = physics::observables::wilson::calculate_correlator(which, solved, sources, system);
+	auto result = physics::observables::wilson::calculate_correlator(which, solved, sources, system, interfacesHandler);
 	logger.debug() << which;
 for(auto val: result) {
 		logger.debug() << scientific << setprecision(14) << val;
@@ -162,15 +162,16 @@ void test_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref
 
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	const physics::PRNG prng{system, &prngParameters};
 
 	size_t num_sources = params.get_num_sources();
-	auto sources = create_spinorfields(system, num_sources);
+	auto sources = create_spinorfields(system, num_sources, interfacesHandler);
 	for(size_t i = 0; i < num_sources; ++i) {
 		pseudo_randomize<Spinorfield, spinor>(sources[i], i);
 	}
-	auto solved = create_spinorfields(system, num_sources);
+	auto solved = create_spinorfields(system, num_sources, interfacesHandler);
 	for(size_t i = 0; i < num_sources; ++i) {
 		pseudo_randomize<Spinorfield, spinor>(solved[i], i + num_sources);
 	}
@@ -179,14 +180,14 @@ for(auto source: sources) {
 		log_squarenorm("Source: ", *source);
 	}
 
-	check_correlator("ps", solved, sources, system, ps_ref);
-	check_correlator("sc", solved, sources, system, sc_ref);
-	check_correlator("vx", solved, sources, system, vx_ref);
-	check_correlator("vy", solved, sources, system, vy_ref);
-	check_correlator("vz", solved, sources, system, vz_ref);
-	check_correlator("ax", solved, sources, system, ax_ref);
-	check_correlator("ay", solved, sources, system, ay_ref);
-	check_correlator("az", solved, sources, system, az_ref);
+	check_correlator("ps", solved, sources, system, ps_ref, interfacesHandler);
+	check_correlator("sc", solved, sources, system, sc_ref, interfacesHandler);
+	check_correlator("vx", solved, sources, system, vx_ref, interfacesHandler);
+	check_correlator("vy", solved, sources, system, vy_ref, interfacesHandler);
+	check_correlator("vz", solved, sources, system, vz_ref, interfacesHandler);
+	check_correlator("ax", solved, sources, system, ax_ref, interfacesHandler);
+	check_correlator("ay", solved, sources, system, ay_ref, interfacesHandler);
+	check_correlator("az", solved, sources, system, az_ref, interfacesHandler);
 
 	release_spinorfields(solved);
 	release_spinorfields(sources);

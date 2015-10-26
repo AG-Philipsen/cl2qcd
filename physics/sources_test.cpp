@@ -41,10 +41,11 @@ void test_sources(std::string type, int num_sources)
 	const char * _params[] = {"foo", n_sources_string.c_str(), sourcetype_string.c_str()};
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 
-	auto sources = create_sources(system, prng, params.get_num_sources());
+	auto sources = create_sources(system, prng, params.get_num_sources(), interfacesHandler);
 
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), static_cast<const int>(sources.size()));
 

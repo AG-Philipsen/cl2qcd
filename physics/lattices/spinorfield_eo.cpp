@@ -28,14 +28,15 @@
 #include "util.hpp"
 #include <algorithm>
 
+
 static std::vector<const hardware::buffers::Spinor *> allocate_buffers(const hardware::System& system);
 static void update_halo_soa(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_soa_async(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_soa_finalize(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system, const unsigned width);
 static void update_halo_aos(const std::vector<const hardware::buffers::Spinor *> buffers, const hardware::System& system);
 
-physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system)
-	: system(system), buffers(allocate_buffers(system))
+physics::lattices::Spinorfield_eo::Spinorfield_eo(const hardware::System& system, const SpinorfieldEoParametersInterface& spinorfieldEoParametersInterface)
+	: system(system), buffers(allocate_buffers(system)), spinorfieldEoParametersInterface(spinorfieldEoParametersInterface)
 #ifdef LAZY_HALO_UPDATES
 	  , valid_halo_width(0)
 #endif

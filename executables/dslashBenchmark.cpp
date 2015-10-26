@@ -30,8 +30,8 @@
 dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
   benchmarkExecutable(argc, argv)
 {
-  spinorfield1 = new physics::lattices::Spinorfield_eo(*system);
-  spinorfield2 = new physics::lattices::Spinorfield_eo(*system);
+  spinorfield1 = new physics::lattices::Spinorfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Spinorfield_eo>());
+  spinorfield2 = new physics::lattices::Spinorfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Spinorfield_eo>());
 }
 
 void dslashBenchmark::performBenchmarkForSpecificKernels()

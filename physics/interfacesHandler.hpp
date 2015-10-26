@@ -22,7 +22,6 @@
 #pragma once
 
 #include "fermionmatrix/fermionmatrixInterfaces.hpp"
-#include "fermionmatrix/fermionmatrix.hpp"
 #include "lattices/latticesInterfaces.hpp"
 #include "observables/observablesInterfaces.hpp"
 #include "../executables/exceptions.h"
@@ -33,8 +32,13 @@ namespace physics {
         class Gaugefield;
         class Gaugemomenta;
         class Spinorfield;
+        class Spinorfield_eo;
         class Staggeredfield_eo;
         class Rooted_Staggeredfield_eo;
+    }
+
+    namespace fermionmatrix {
+    	class Fermionmatrix;
     }
 
     template<typename NOT_IMPORTANT> struct InterfaceType; //Not defined in order to prevent non specialized template instatiation!
@@ -52,16 +56,16 @@ namespace physics {
             using value = physics::lattices::SpinorfieldParametersInterface;
     };
     template<>
-//    struct InterfaceType<physics::lattices::Spinorfield_eo> {
-//            using value = physics::lattices::SpinorfieldEoParametersInterface;
-//    };
+    struct InterfaceType<physics::lattices::Spinorfield_eo> {
+            using value = physics::lattices::SpinorfieldEoParametersInterface;
+    };
     template<>
     struct InterfaceType<physics::lattices::Staggeredfield_eo> {
-            using value = physics::lattices::StaggaredfieldEoParametersInterface;
+            using value = physics::lattices::StaggeredfieldEoParametersInterface;
     };
     template<>
     struct InterfaceType<physics::lattices::Rooted_Staggeredfield_eo> {
-            using value = physics::lattices::RootedStaggaredfieldEoParametersInterface;
+            using value = physics::lattices::RootedStaggeredfieldEoParametersInterface;
     };
     template<>
     struct InterfaceType<physics::fermionmatrix::Fermionmatrix> {
@@ -83,9 +87,9 @@ namespace physics {
             virtual const physics::lattices::GaugefieldParametersInterface& getGaugefieldParametersInterface() = 0;
             virtual const physics::lattices::GaugemomentaParametersInterface& getGaugemomentaParametersInterface() = 0;
             virtual const physics::lattices::SpinorfieldParametersInterface& getSpinorfieldParametersInterface() = 0;
-//            virtual const physics::lattices::SpinorfieldEoParametersInterface& getSpinorfieldEoParametersInterface() = 0;
-            virtual const physics::lattices::StaggaredfieldEoParametersInterface& getStaggeredfieldEoParametersInterface() = 0;
-            virtual const physics::lattices::RootedStaggaredfieldEoParametersInterface& getRootedStaggeredfieldEoParametersInterface() = 0;
+            virtual const physics::lattices::SpinorfieldEoParametersInterface& getSpinorfieldEoParametersInterface() = 0;
+            virtual const physics::lattices::StaggeredfieldEoParametersInterface& getStaggeredfieldEoParametersInterface() = 0;
+            virtual const physics::lattices::RootedStaggeredfieldEoParametersInterface& getRootedStaggeredfieldEoParametersInterface() = 0;
             virtual const physics::fermionmatrix::FermionmatrixParametersInterface& getFermionmatrixParametersInterface() = 0;
     };
 
@@ -101,10 +105,10 @@ namespace physics {
     {
         return getSpinorfieldParametersInterface();
     }
-//    template<> inline const typename InterfaceType<physics::lattices::Spinorfield_eo>::value& InterfacesHandler::getInterface<physics::lattices::Spinorfield_eo>()
-//    {
-//        return getSpinorfieldEoParametersInterface();
-//    }
+    template<> inline const typename InterfaceType<physics::lattices::Spinorfield_eo>::value& InterfacesHandler::getInterface<physics::lattices::Spinorfield_eo>()
+    {
+        return getSpinorfieldEoParametersInterface();
+    }
     template<> inline const typename InterfaceType<physics::lattices::Staggeredfield_eo>::value& InterfacesHandler::getInterface<physics::lattices::Staggeredfield_eo>()
     {
         return getStaggeredfieldEoParametersInterface();
@@ -133,7 +137,8 @@ namespace physics {
                   gaugefieldParametersInterface{nullptr},
                   gaugemomentaParametersInterface{nullptr},
                   spinorfieldParametersInterface{nullptr},
-                  staggaredfieldEoParametersInterface{nullptr},
+				  spinorfieldEoParametersInterface{nullptr},
+                  staggeredfieldEoParametersInterface{nullptr},
                   rootedStaggaredfieldEoParametersInterface{nullptr},
                   fermionmatrixParametersInterface{nullptr},
                   gaugeObservablesParametersInterface{nullptr},
@@ -185,22 +190,22 @@ namespace physics {
                     spinorfieldParametersInterface = std::unique_ptr<const physics::lattices::SpinorfieldParametersImplementation>(new physics::lattices::SpinorfieldParametersImplementation{parameters});
                 return *spinorfieldParametersInterface;
             }
-//            const physics::lattices::SpinorfieldEoParametersInterface& getSpinorfieldEoParametersInterface() override
-//            {
-//                if(spinorfieldEoParametersInterface == nullptr)
-//                    spinorfieldEoParametersInterface = std::unique_ptr<const physics::lattices::SpinorfieldEoParametersImplementation>(new physics::lattices::SpinorfieldEoParametersImplementation{parameters});
-//                return *spinorfieldEoParametersInterface;
-//            }
-            const physics::lattices::StaggaredfieldEoParametersInterface& getStaggeredfieldEoParametersInterface() override
+            const physics::lattices::SpinorfieldEoParametersInterface& getSpinorfieldEoParametersInterface() override
             {
-                if(staggaredfieldEoParametersInterface == nullptr)
-                    staggaredfieldEoParametersInterface = std::unique_ptr<const physics::lattices::StaggaredfieldEoParametersImplementation>(new physics::lattices::StaggaredfieldEoParametersImplementation{parameters});
-                return *staggaredfieldEoParametersInterface;
+            	if(spinorfieldEoParametersInterface == nullptr)
+            		spinorfieldEoParametersInterface = std::unique_ptr<const physics::lattices::SpinorfieldEoParametersImplementation>(new physics::lattices::SpinorfieldEoParametersImplementation{parameters});
+            	return *spinorfieldEoParametersInterface;
             }
-            const physics::lattices::RootedStaggaredfieldEoParametersInterface& getRootedStaggeredfieldEoParametersInterface() override
+            const physics::lattices::StaggeredfieldEoParametersInterface& getStaggeredfieldEoParametersInterface() override
+            {
+                if(staggeredfieldEoParametersInterface == nullptr)
+                    staggeredfieldEoParametersInterface = std::unique_ptr<const physics::lattices::StaggeredfieldEoParametersImplementation>(new physics::lattices::StaggeredfieldEoParametersImplementation{parameters});
+                return *staggeredfieldEoParametersInterface;
+            }
+            const physics::lattices::RootedStaggeredfieldEoParametersInterface& getRootedStaggeredfieldEoParametersInterface() override
             {
                 if(rootedStaggaredfieldEoParametersInterface == nullptr)
-                    rootedStaggaredfieldEoParametersInterface = std::unique_ptr<const physics::lattices::RootedStaggaredfieldEoParametersImplementation>(new physics::lattices::RootedStaggaredfieldEoParametersImplementation{parameters});
+                    rootedStaggaredfieldEoParametersInterface = std::unique_ptr<const physics::lattices::RootedStaggeredfieldEoParametersImplementation>(new physics::lattices::RootedStaggeredfieldEoParametersImplementation{parameters});
                 return *rootedStaggaredfieldEoParametersInterface;
             }
             const physics::fermionmatrix::FermionmatrixParametersInterface& getFermionmatrixParametersInterface() override
@@ -214,9 +219,9 @@ namespace physics {
             std::unique_ptr<const physics::lattices::GaugefieldParametersInterface> gaugefieldParametersInterface;
             std::unique_ptr<const physics::lattices::GaugemomentaParametersInterface> gaugemomentaParametersInterface;
             std::unique_ptr<const physics::lattices::SpinorfieldParametersInterface> spinorfieldParametersInterface;
-//            std::unique_ptr<const physics::lattices::SpinorfieldEoParametersInterface> spinorfieldEoParametersInterface;
-            std::unique_ptr<const physics::lattices::StaggaredfieldEoParametersInterface> staggaredfieldEoParametersInterface;
-            std::unique_ptr<const physics::lattices::RootedStaggaredfieldEoParametersInterface> rootedStaggaredfieldEoParametersInterface;
+            std::unique_ptr<const physics::lattices::SpinorfieldEoParametersInterface> spinorfieldEoParametersInterface;
+            std::unique_ptr<const physics::lattices::StaggeredfieldEoParametersInterface> staggeredfieldEoParametersInterface;
+            std::unique_ptr<const physics::lattices::RootedStaggeredfieldEoParametersInterface> rootedStaggaredfieldEoParametersInterface;
             std::unique_ptr<const physics::fermionmatrix::FermionmatrixParametersInterface> fermionmatrixParametersInterface;
             std::unique_ptr<const physics::observables::GaugeObservablesParametersInterface> gaugeObservablesParametersInterface;
             std::unique_ptr<const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface> wilsonTwoFlavourChiralCondensateParametersInterface;

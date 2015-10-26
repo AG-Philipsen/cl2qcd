@@ -24,6 +24,7 @@
 #define _PHYSICS_ALGORITHMS_SOLVERS_BICGSTAB_
 
 #include "solvers.hpp"
+#include "../../interfacesHandler.hpp"
 
 namespace physics {
 namespace algorithms {
@@ -37,7 +38,7 @@ namespace solvers {
  * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
  * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
  */
-int bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
+int bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler);
 
 /**
  * Solve the linear system A * x = b for x using the BiCGstab algorithm for even-odd preconditioned b and x.
@@ -46,7 +47,7 @@ int bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmat
  * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
  * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
  */
-int bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
+int bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec, physics::InterfacesHandler& interfacesHandler);
 
 }
 }

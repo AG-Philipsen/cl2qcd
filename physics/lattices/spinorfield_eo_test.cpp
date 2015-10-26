@@ -38,9 +38,10 @@ BOOST_AUTO_TEST_CASE(initialization)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 }
 
 BOOST_AUTO_TEST_CASE(gamma5)
@@ -50,10 +51,11 @@ BOOST_AUTO_TEST_CASE(gamma5)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	sf.zero();
 	sf.gamma5();
 	BOOST_CHECK_CLOSE(squarenorm(sf), 0., .1);
@@ -72,10 +74,11 @@ BOOST_AUTO_TEST_CASE(zero)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	sf.gaussian(prng);
 	sf.zero();
 	BOOST_CHECK_CLOSE(squarenorm(sf), 0., .1);
@@ -88,10 +91,11 @@ BOOST_AUTO_TEST_CASE(cold)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	sf.gaussian(prng);
 	sf.cold();
 	BOOST_CHECK_CLOSE(squarenorm(sf), .5, .1);
@@ -105,10 +109,11 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	sf.zero();
 	sf.gamma5();
 	hmc_float const gamma5 = squarenorm(sf);
@@ -123,10 +128,11 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	sf.zero();
 	sf.gamma5();
 	hmc_float const gamma5 = physics::lattices::squarenorm(sf);
@@ -144,19 +150,20 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo gaussian(system);
+	Spinorfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	gaussian.gaussian(prng);
 
-	Spinorfield_eo zero(system);
+	Spinorfield_eo zero(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	zero.zero();
 
-	Spinorfield_eo cold(system);
+	Spinorfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	cold.cold();
 
-	Spinorfield_eo gamma(system);
+	Spinorfield_eo gamma(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	gamma.zero();
 	gamma.gamma5();
 	gamma.gamma5();
@@ -182,12 +189,13 @@ BOOST_AUTO_TEST_CASE(sax)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo orig_sf(system);
+	Spinorfield_eo orig_sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	orig_sf.gaussian(prng);
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	physics::lattices::sax(&sf, {.5, 0}, orig_sf);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), .25 * physics::lattices::squarenorm(orig_sf), .1);
@@ -211,16 +219,17 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo gaussian(system);
+	Spinorfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	gaussian.gaussian(prng);
-	Spinorfield_eo cold(system);
+	Spinorfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	cold.cold();
-	Spinorfield_eo zero(system);
+	Spinorfield_eo zero(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	zero.zero();
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	physics::lattices::saxpy(&sf, {1., 0.}, gaussian, zero);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
@@ -237,16 +246,17 @@ BOOST_AUTO_TEST_CASE(saxsbypz)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Spinorfield_eo gaussian(system);
+	Spinorfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	gaussian.gaussian(prng);
-	Spinorfield_eo cold(system);
+	Spinorfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	cold.cold();
-	Spinorfield_eo zero(system);
+	Spinorfield_eo zero(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	zero.zero();
-	Spinorfield_eo sf(system);
+	Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	physics::lattices::saxsbypz(&sf, {1., 0.}, gaussian, {0., 0.}, cold, zero);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), .1);
@@ -269,16 +279,17 @@ BOOST_AUTO_TEST_CASE(conversion)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	for(size_t i = 0; i < 11; i++) {
-		const Spinorfield orig(system);
+		const Spinorfield orig(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		orig.gaussian(prng);
-		const Spinorfield recreated(system);
+		const Spinorfield recreated(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		recreated.gaussian(prng);
-		const Spinorfield_eo even(system);
-		const Spinorfield_eo odd(system);
+		const Spinorfield_eo even(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Spinorfield_eo odd(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		even.gaussian(prng);
 		odd.gaussian(prng);
 
@@ -304,10 +315,11 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	const char * _params[] = {"foo", "--ntime=16"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	const Spinorfield_eo sf(system);
+	const Spinorfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	sf.gaussian(prng);
 	orig_squarenorm = physics::lattices::squarenorm(sf);

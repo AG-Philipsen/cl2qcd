@@ -68,7 +68,7 @@ void hmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 void hmcExecutable::generateAccordingToSpecificAlgorithm()
 {
     const double randomNumber = prng->get_double();
-    observables = physics::algorithms::perform_hmc_step(gaugefield, iteration, randomNumber, *prng, *system, *interfaceHandler);
+    observables = physics::algorithms::perform_hmc_step(gaugefield, iteration, randomNumber, *prng, *system, *interfacesHandler);
     acceptanceRate += observables.accept;
 }
 
@@ -78,7 +78,7 @@ void hmcExecutable::performOnlineMeasurements()
         std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
         printHmcObservables(gaugeout_name);
         if(parameters.get_measure_pbp()) {
-            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, iteration);
+            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, iteration, *interfacesHandler);
         }
     }
 }

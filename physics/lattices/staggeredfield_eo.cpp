@@ -28,7 +28,7 @@
 static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const hardware::System& system);
 
 physics::lattices::Staggeredfield_eo::Staggeredfield_eo(const hardware::System& system)
-	: system(system), staggaredfieldEoParametersInterface(new StaggaredfieldEoParametersImplementation(system.get_inputparameters())),
+	: system(system), staggaredfieldEoParametersInterface(new StaggeredfieldEoParametersImplementation(system.get_inputparameters())),
 	  buffers(allocate_buffers(system))
 {
 }

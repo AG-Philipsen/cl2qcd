@@ -117,11 +117,11 @@ void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * ino
 
 static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const meta::Inputparameters& params);
 
-std::vector<physics::lattices::Spinorfield *> physics::create_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources)
+std::vector<physics::lattices::Spinorfield *> physics::create_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources, physics::InterfacesHandler & interfacesHandler)
 {
 	const auto & params = system.get_inputparameters();
 
-	auto sources = lattices::create_spinorfields(system, n_sources, params.get_place_sources_on_host());
+	auto sources = lattices::create_spinorfields(system, n_sources, interfacesHandler, params.get_place_sources_on_host());
 	fill_sources(sources, prng, params);
 	return sources;
 }
@@ -160,11 +160,11 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 	}
 }
 
-std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources)
+std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources, physics::InterfacesHandler & interfacesHandler)
 {
 	const auto & params = system.get_inputparameters();
 
-	auto sources = lattices::create_swappable_spinorfields(system, n_sources, params.get_place_sources_on_host());
+	auto sources = lattices::create_swappable_spinorfields(system, n_sources, interfacesHandler, params.get_place_sources_on_host());
 	fill_sources(sources, prng, params);
 	return sources;
 }

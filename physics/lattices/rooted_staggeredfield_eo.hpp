@@ -70,7 +70,7 @@ class Rooted_Staggeredfield_eo : public Staggeredfield_eo, public physics::algor
     private:
         //TODO: Remove the following pointer when an interface implementation will be passed to the constructor
         //      because at the moment this interface is used only in the constructor of this class!
-        const RootedStaggaredfieldEoParametersInterface* rootedStaggaredfieldEoParametersInterface;
+        const RootedStaggeredfieldEoParametersInterface* rootedStaggaredfieldEoParametersInterface;
 };
 
 }

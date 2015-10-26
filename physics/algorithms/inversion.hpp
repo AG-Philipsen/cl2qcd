@@ -38,7 +38,7 @@ namespace algorithms {
  * @param[in] sources Spinorfields from which to start the inversion
  * @param[in] params The inputparameters of the application
  */
-void perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, const physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system);
+void perform_inversion(const std::vector<physics::lattices::Spinorfield*> * result, const physics::lattices::Gaugefield* gaugefield, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
 
 }
 

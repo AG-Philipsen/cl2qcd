@@ -23,14 +23,14 @@
 #include "rooted_staggeredfield_eo.hpp"
 
 physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system)
-	: Staggeredfield_eo(system), rootedStaggaredfieldEoParametersInterface(new RootedStaggaredfieldEoParametersImplementation(system.get_inputparameters())),
+	: Staggeredfield_eo(system), rootedStaggaredfieldEoParametersInterface(new RootedStaggeredfieldEoParametersImplementation(system.get_inputparameters())),
 	  physics::algorithms::Rational_Coefficients(std::max(rootedStaggaredfieldEoParametersInterface->getMetropolisRationalApproximationOrder(),
 	                                                      rootedStaggaredfieldEoParametersInterface->getMolecularDynamicsRationalApproximationOrder()))
 {
 }
 
 physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System& system)
-	: Staggeredfield_eo(system), rootedStaggaredfieldEoParametersInterface(new RootedStaggaredfieldEoParametersImplementation(system.get_inputparameters())),
+	: Staggeredfield_eo(system), rootedStaggaredfieldEoParametersInterface(new RootedStaggeredfieldEoParametersImplementation(system.get_inputparameters())),
 	  physics::algorithms::Rational_Coefficients(approx.Get_order(), approx.Get_a0(), approx.Get_a(), approx.Get_b())
 {
 }

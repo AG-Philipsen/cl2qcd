@@ -1,4 +1,4 @@
-/** @file
+ /** @file
  * Declaration of the physics::lattices::Spinorfield_eo class
  *
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
@@ -29,6 +29,8 @@
 #include "spinorfield.hpp"
 #include "scalar.hpp"
 #include "../../common_header_files/types_fermions.h"
+#include "latticesInterfaces.hpp"
+
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -36,6 +38,7 @@
  */
 namespace physics {
 namespace lattices {
+
 
 class Spinorfield_eoHaloUpdate;
 
@@ -49,7 +52,7 @@ public:
 	/**
 	 * Construct a gaugefield based on the input-files of the system
 	 */
-	Spinorfield_eo(const hardware::System&);
+	Spinorfield_eo(const hardware::System&, const SpinorfieldEoParametersInterface& spinorfieldEoParametersInterface);
 
 	/**
 	 * Release resources
@@ -132,7 +135,7 @@ public:
 private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::Spinor *> buffers;
-
+	const SpinorfieldEoParametersInterface& spinorfieldEoParametersInterface;
 	/**
 	 * Unconditionally update the halo.
 	 *
