@@ -102,9 +102,32 @@ const ReferenceValues calculateReferenceValues_scalarProduct(const int latticeVo
 		return defaultReferenceValues();
 }
 
+const ReferenceValues calculateReferenceValues_sax (const int latticeVolume, Coefficients alphaIn)
+{
+	return ReferenceValues{ (alphaIn.at(0).im * alphaIn.at(0).im + alphaIn.at(0).re * alphaIn.at(0).re) * latticeVolume * sumOfIntegersSquared(24)};
+}
+
+const ReferenceValues calculateReferenceValues_saxpy(const int latticeVolume, Coefficients alphaIn)
+{
+	return ReferenceValues{calculateReferenceValues_sax(latticeVolume, Coefficients {{1. - alphaIn.at(0).re, 0. - alphaIn.at(0).im}}).at(0)};
+}
+
+const ReferenceValues calculateReferenceValues_saxsbypz(const int latticeVolume, Coefficients alphaIn)
+{
+	return ReferenceValues{calculateReferenceValues_sax(latticeVolume, Coefficients {{1. + alphaIn.at(0).re + alphaIn.at(1).re, 0. + alphaIn.at(0).im + alphaIn.at(1).im}}).at(0)};
+}
+
 template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, fillTypesIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
+	TesterClass(hardwareParameters, kernelParameters, parametersForThisTest);
+}
+
+template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const Coefficients alphaIn )
+{
+	ParameterClass parametersForThisTest(nsIn, ntIn, SpinorFillTypes{SpinorFillType::ascendingComplex}, alphaIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	TesterClass(hardwareParameters, kernelParameters, parametersForThisTest);
@@ -416,18 +439,27 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAX)
 
+	struct SaxTestParameters : public SpinorTestParameters
+	{
+		Coefficients alpha;
+
+		SaxTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients alphaIn):
+			SpinorTestParameters(calculateReferenceValues_sax(calculateSpinorfieldSize(nsIn, ntIn), alphaIn), nsIn, ntIn, fillTypesIn, false), alpha(alphaIn){}
+	};
+
 	class SaxTester: public SpinorTester
 	{
 	public:
-		SaxTester(std::string inputfile):
-			SpinorTester("sax", inputfile, 1)
+		SaxTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxTestParameters testParameters):
+			SpinorTester("sax", hardwareParameters, kernelParameters, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(spinorfieldElements, 123));
-				alpha.load(&alpha_host);
+				in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				alpha.load(&testParameters.alpha.at(0));
 
 				code->sax_device(&in, &alpha, &out);
 				calcSquarenormAndStoreAsKernelResult(&out);
@@ -436,55 +468,49 @@ BOOST_AUTO_TEST_SUITE(SAX)
 
 	BOOST_AUTO_TEST_CASE( SAX_1 )
 	{
-		SaxTester tester ("sax_input_1");
+		performTest<SaxTester, SaxTestParameters> (ns4, nt4, Coefficients {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_2 )
 	{
-		SaxTester tester ("sax_input_2");
+		performTest<SaxTester, SaxTestParameters> (ns8, nt4, Coefficients {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_3 )
 	{
-		SaxTester tester ("sax_input_3");
+		performTest<SaxTester, SaxTestParameters> (ns4, nt8, Coefficients {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_4 )
 	{
-		SaxTester tester ("sax_input_4");
-	}
-
-	BOOST_AUTO_TEST_CASE( SAX_5 )
-	{
-		SaxTester tester ("sax_input_5");
-	}
-
-	BOOST_AUTO_TEST_CASE( SAX_6 )
-	{
-		SaxTester tester ("sax_input_6");
-	}
-
-	BOOST_AUTO_TEST_CASE( SAX_7 )
-	{
-		SaxTester tester ("sax_input_7");
+		performTest<SaxTester, SaxTestParameters> (ns16, nt8, Coefficients {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAX_EO)
 
+	struct SaxEvenOddTestParameters : public SpinorTestParameters
+	{
+		Coefficients alpha;
+
+		SaxEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients alphaIn):
+			SpinorTestParameters(calculateReferenceValues_sax(calculateEvenOddSpinorfieldSize(nsIn, ntIn), alphaIn), nsIn, ntIn, fillTypesIn, true), alpha(alphaIn){}
+	};
+
 	class SaxEvenOddTester: public SpinorTester
 	{
 	public:
-		SaxEvenOddTester(std::string inputfile):
-			SpinorTester("sax_eo", inputfile, 1)
+		SaxEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxEvenOddTestParameters testParameters):
+		SpinorTester("sax_eo", hardwareParameters, kernelParameters, testParameters)
 			{
 				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
-				alpha.load(&alpha_host);
+				in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				alpha.load(&testParameters.alpha.at(0));
 
 				code->sax_eoprec_device(&in, &alpha, &out);
 				calcSquarenormEvenOddAndStoreAsKernelResult(&out);
@@ -493,454 +519,317 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_1 )
 	{
-		SaxEvenOddTester tester("sax_eo_input_1");
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (ns4, nt4, Coefficients {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_2 )
 	{
-		SaxEvenOddTester tester("sax_eo_input_2");
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (ns4, nt8, Coefficients {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_3 )
 	{
-		SaxEvenOddTester tester("sax_eo_input_3");
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (ns8, nt4, Coefficients {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_4 )
 	{
-		SaxEvenOddTester tester("sax_eo_input_4");
-	}
-
-	BOOST_AUTO_TEST_CASE( SAX_EO_5 )
-	{
-		SaxEvenOddTester tester("sax_eo_input_5");
-	}
-
-	BOOST_AUTO_TEST_CASE( SAX_EO_6 )
-	{
-		SaxEvenOddTester tester("sax_eo_input_6");
-	}
-
-	BOOST_AUTO_TEST_CASE( SAX_EO_7 )
-	{
-		SaxEvenOddTester tester("sax_eo_input_7");
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (ns16, nt8, Coefficients {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY)
 
+	struct SaxpyTestParameters : public SpinorTestParameters
+	{
+		Coefficients alpha;
+
+		SaxpyTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients alphaIn):
+			SpinorTestParameters(calculateReferenceValues_saxpy(calculateSpinorfieldSize(nsIn, ntIn), alphaIn), nsIn, ntIn, fillTypesIn, false), alpha(alphaIn){}
+	};
+
 	class SaxpyTester: public SpinorTester
 	{
 	public:
-		SaxpyTester(std::string inputfile, bool switcher):
-			SpinorTester("saxpy", inputfile, 1)
+	SaxpyTester(const hardware::HardwareParametersInterface & hardwareParameters,
+			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyTestParameters testParameters):
+			SpinorTester("saxpy", hardwareParameters, kernelParameters, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
 				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(spinorfieldElements, 123));
-				in2.load(createSpinorfield(spinorfieldElements, 456));
-				alpha.load(&alpha_host);
+				in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				in2.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				alpha.load(&testParameters.alpha.at(0));
 
-				(switcher) ? code->saxpy_device(&in, &in2, &alpha, &out) : code->saxpy_device(&in, &in2, alpha_host, &out);
+				code->saxpy_device(&in, &in2, &alpha, &out);
+				calcSquarenormAndStoreAsKernelResult(&out);
+			}
+	};
+
+	class SaxpyArgTester: public SpinorTester
+	{
+	public:
+	SaxpyArgTester(const hardware::HardwareParametersInterface & hardwareParameters,
+			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyTestParameters testParameters):
+			SpinorTester("saxpy_arg", hardwareParameters, kernelParameters, testParameters)
+			{
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
+				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
+				hardware::buffers::Plain<hmc_complex> alpha(1, device);
+
+				in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				in2.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				alpha.load(&testParameters.alpha.at(0));
+
+				code->saxpy_device(&in, &in2, testParameters.alpha.at(0), &out);
 				calcSquarenormAndStoreAsKernelResult(&out);
 			}
 	};
 
 	BOOST_AUTO_TEST_CASE( SAXPY_1 )
 	{
-		SaxpyTester tester("saxpy_input_1", true);
+		performTest<SaxpyTester, SaxpyTestParameters> (ns4, nt4, Coefficients {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_2 )
 	{
-		SaxpyTester tester("saxpy_input_2", true);
+		performTest<SaxpyTester, SaxpyTestParameters> (ns8, nt4, Coefficients {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_3 )
 	{
-		SaxpyTester tester("saxpy_input_3", true);
+		performTest<SaxpyTester, SaxpyTestParameters> (ns4, nt8, Coefficients {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_4 )
 	{
-		SaxpyTester tester("saxpy_input_4", true);
+		performTest<SaxpyArgTester, SaxpyTestParameters> (ns8, nt8, Coefficients {{1.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_5 )
 	{
-		SaxpyTester tester("/saxpy_input_5", true);
+		performTest<SaxpyArgTester, SaxpyTestParameters> (ns12, nt4, Coefficients {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_6 )
 	{
-		SaxpyTester tester("saxpy_input_6", true);
+		performTest<SaxpyArgTester, SaxpyTestParameters> (ns4, nt12, Coefficients {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_7 )
 	{
-		SaxpyTester tester("saxpy_input_7", true);
+		performTest<SaxpyArgTester, SaxpyTestParameters> (ns16, nt8, Coefficients {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_8 )
 	{
-		SaxpyTester tester("saxpy_input_8", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_9 )
-	{
-		SaxpyTester tester("saxpy_input_9", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_10 )
-	{
-		SaxpyTester tester("saxpy_input_10", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_11 )
-	{
-		SaxpyTester tester("saxpy_input_11", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_12 )
-	{
-		SaxpyTester tester("saxpy_input_12", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_13 )
-	{
-		SaxpyTester tester("saxpy_input_13", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_14 )
-	{
-		SaxpyTester tester("saxpy_input_14", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_1 )
-	{
-		SaxpyTester tester("saxpy_input_1", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_2 )
-	{
-		SaxpyTester tester("saxpy_input_2", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_3 )
-	{
-		SaxpyTester tester("saxpy_input_3", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_4 )
-	{
-		SaxpyTester tester("saxpy_input_4", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_5 )
-	{
-		SaxpyTester tester("saxpy_input_5", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_6 )
-	{
-		SaxpyTester tester("saxpy_input_6", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_7 )
-	{
-		SaxpyTester tester("saxpy_input_7", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_8 )
-	{
-		SaxpyTester tester("saxpy_input_8", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_9 )
-	{
-		SaxpyTester tester("saxpy_input_9", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_10 )
-	{
-		SaxpyTester tester("saxpy_input_10", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_11 )
-	{
-		SaxpyTester tester("saxpy_input_11", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_12 )
-	{
-		SaxpyTester tester("saxpy_input_12", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_13 )
-	{
-		SaxpyTester tester("saxpy_input_13", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_14 )
-	{
-		SaxpyTester tester("saxpy_input_14", false);
+		performTest<SaxpyArgTester, SaxpyTestParameters> (ns8, nt16, Coefficients {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
+struct SaxpyEvenOddTestParameters : public SpinorTestParameters
+{
+	Coefficients alpha;
+
+	SaxpyEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients alphaIn):
+		SpinorTestParameters(calculateReferenceValues_saxpy(calculateEvenOddSpinorfieldSize(nsIn, ntIn), alphaIn), nsIn, ntIn, fillTypesIn, true), alpha(alphaIn){}
+};
+
 	class SaxpyEvenOddTester: public SpinorTester
 	{
 	public:
-		SaxpyEvenOddTester(std::string inputfile, bool switcher):
-			SpinorTester("saxpy_eo or saxpy_arg_eo", inputfile, 1)
+		SaxpyEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyEvenOddTestParameters testParameters):
+			SpinorTester("saxpy_eo", hardwareParameters, kernelParameters, testParameters)
 			{
 				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
 				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-				in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
-				in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
-				alpha.load(&alpha_host);
+				in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				in2.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				alpha.load(&testParameters.alpha.at(0));
 
-				(switcher) ? code->saxpy_eoprec_device(&in, &in2, &alpha, &out) : code->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
+				code->saxpy_eoprec_device(&in, &in2, &alpha, &out);
 				calcSquarenormEvenOddAndStoreAsKernelResult(&out);
 			}
 	};
 
+	class SaxpyArgEvenOddTester: public SpinorTester
+	{
+	public:
+		SaxpyArgEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyEvenOddTestParameters testParameters):
+			SpinorTester("saxpy_arg_eo", hardwareParameters, kernelParameters, testParameters)
+			{
+				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
+				hardware::buffers::Plain<hmc_complex> alpha(1, device);
+
+				in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				in2.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				alpha.load(&testParameters.alpha.at(0));
+
+				code->saxpy_eoprec_device(&in, &in2, testParameters.alpha.at(0), &out);
+				calcSquarenormEvenOddAndStoreAsKernelResult(&out);
+			}
+	};
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_1 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_1", true);
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (ns4, nt4, Coefficients {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_2 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_2", true);
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (ns8, nt4, Coefficients {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_3 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_3", true);
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (ns4, nt8, Coefficients {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_4 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_4", true);
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (ns8, nt8, Coefficients {{1.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_5 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_5", true);
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (ns12, nt4, Coefficients {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_6 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_6", true);
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (ns4, nt12, Coefficients {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_7 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_7", true);
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (ns16, nt8, Coefficients {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_8 )
 	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_8", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_EO_9 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_9", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_EO_10 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_10", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_EO_11 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_11", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_EO_12 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_12", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_EO_13 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_13", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_EO_14 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_14", true);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_1 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_1", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_2 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_2", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_3 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_3", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_4 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_4", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_5 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_5", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_6 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_6", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_7 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_7", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_8 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_8", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_9 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_9", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_10 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_10", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_11 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_11", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_12 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_12", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_13 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_13", false);
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXPY_ARG_EO_14 )
-	{
-		SaxpyEvenOddTester tester("saxpy_eo_input_14", false);
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (ns8, nt16, Coefficients {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 
+struct SaxsbypzTestParameters : public SpinorTestParameters
+{
+	Coefficients alpha;
+
+	SaxsbypzTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients alphaIn):
+		SpinorTestParameters(calculateReferenceValues_saxsbypz(calculateSpinorfieldSize(nsIn, ntIn), alphaIn), nsIn, ntIn, fillTypesIn, false), alpha(alphaIn){}
+};
+
 	class SaxsbypzTester: public SpinorTester
 	{
 	public:
-		SaxsbypzTester(std::string inputfile):
-			SpinorTester("saxsbypz", inputfile, 1)
+	SaxsbypzTester(const hardware::HardwareParametersInterface & hardwareParameters,
+			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxsbypzTestParameters testParameters):
+			SpinorTester("saxsbypz", hardwareParameters, kernelParameters, testParameters)
 			{
-				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-				const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
-				const hardware::buffers::Plain<spinor> in3(spinorfieldElements, device);
-				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
-				hardware::buffers::Plain<hmc_complex> alpha(1, device);
-				hardware::buffers::Plain<hmc_complex> beta(1, device);
+				std::vector<const hardware::buffers::Plain<hmc_complex> *> coeff;
+				for (auto coefficient : testParameters.alpha)
+				{
+					coeff.push_back(new hardware::buffers::Plain<hmc_complex>(1, device));
+					coeff.back()->load(&coefficient);
+				}
 
-				in.load(createSpinorfield(spinorfieldElements, 123));
-				in2.load(createSpinorfield(spinorfieldElements, 456));
-				in3.load(createSpinorfield(spinorfieldElements, 789));
-				alpha.load(&alpha_host);
-				beta.load(&beta_host);
+				std::vector<const hardware::buffers::Plain<spinor> *> spinorfields;
+				for( auto number = 0; number < 4; number ++)
+				{
+					spinorfields.push_back(new hardware::buffers::Plain<spinor>(spinorfieldElements, device));
+					spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(0)));
+				}
 
-				code->saxsbypz_device(&in, &in2, &in3, &alpha, &beta, &out);
-				calcSquarenormAndStoreAsKernelResult(&out);
+				code->saxsbypz_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), coeff.at(0), coeff.at(1), spinorfields.at(3));
+				calcSquarenormAndStoreAsKernelResult(spinorfields.at(3));
 			}
 	};
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_1 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_1");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns4, nt4, Coefficients {{0.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_2 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_2");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns8, nt4, Coefficients {{1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_3 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_3");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns4, nt8, Coefficients {{0.,1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_4 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_4");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns8, nt8, Coefficients {{0.,-1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_5 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_5");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns12, nt4, Coefficients {{-1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_6 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_6");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns4, nt12, Coefficients {{0.,0.},{-1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_7 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_7");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns12, nt12, Coefficients {{0.,0.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_8 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_8");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns16, nt8, Coefficients {{0.,1.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_9 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_9");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns8, nt16, Coefficients {{0.,-1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_10 )
 	{
-		SaxsbypzTester tester("saxsbypz_input_10");
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (ns16, nt16, Coefficients {{-0.5,0.},{-0.5,0.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 
+struct SaxsbypzEvenOddTestParameters : public SpinorTestParameters
+{
+	Coefficients alpha;
+
+	SaxsbypzEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients alphaIn):
+		SpinorTestParameters(calculateReferenceValues_saxsbypz(calculateEvenOddSpinorfieldSize(nsIn, ntIn), alphaIn), nsIn, ntIn, fillTypesIn, true), alpha(alphaIn){}
+};
+
 	class SaxsbypzEvenOddTester: public SpinorTester
 	{
 	public:
-		SaxsbypzEvenOddTester(std::string inputfile):
-			SpinorTester("saxsbypz_eo", inputfile, 1)
+		SaxsbypzEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxsbypzEvenOddTestParameters testParameters):
+			SpinorTester("saxsbypz_eo", hardwareParameters, kernelParameters, testParameters)
 			{
 				const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
@@ -949,11 +838,11 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 				hardware::buffers::Plain<hmc_complex> alpha(1, device);
 				hardware::buffers::Plain<hmc_complex> beta(1, device);
 
-				in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
-				in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
-				in3.load(createSpinorfield(spinorfieldEvenOddElements, 789));
-				alpha.load(&alpha_host);
-				beta.load(&beta_host);
+				in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				in2.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				in3.load(createSpinorfield(testParameters.fillTypes.at(0)));
+				alpha.load(&testParameters.alpha.at(0));
+				beta.load(&testParameters.alpha.at(1));
 
 				code->saxsbypz_eoprec_device(&in, &in2, &in3, &alpha, &beta, &out);
 				calcSquarenormEvenOddAndStoreAsKernelResult(&out);
@@ -962,52 +851,47 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_1 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_1");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns4, nt4, Coefficients {{0.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_2 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_2");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns8, nt4, Coefficients {{1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_3 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_3");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns4, nt8, Coefficients {{0.,1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_4 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_4");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns8, nt8, Coefficients {{0.,-1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_5 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_5");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns12, nt4, Coefficients {{-1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_6 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_6");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns4, nt12, Coefficients {{0.,0.},{-1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_7 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_7");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns12, nt12, Coefficients {{0.,0.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_8 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_8");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns16, nt8, Coefficients {{0.,1.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_9 )
 	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_9");
-	}
-
-	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_10 )
-	{
-		SaxsbypzEvenOddTester tester("saxsbypz_eo_input_10");
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (ns8, nt16, Coefficients {{-0.5,0.},{-0.5,0.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
