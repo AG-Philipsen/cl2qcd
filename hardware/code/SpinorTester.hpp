@@ -30,6 +30,7 @@
 
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 typedef std::vector<SpinorFillType> SpinorFillTypes;
+typedef std::vector<hmc_complex> Coefficients;
 
 struct SpinorTestParameters: public TestParameters
 {
