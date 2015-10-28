@@ -33,7 +33,7 @@ namespace physics {
                 virtual bool useMergedFermionicKernels() const = 0;
         };
 
-        class FermionmatrixParametersImplementation final : public FermionmatrixParametersInterface {
+        class FermionmatrixParametersImplementation : public FermionmatrixParametersInterface {
             public:
                 FermionmatrixParametersImplementation() = delete;
                 FermionmatrixParametersImplementation(const meta::Inputparameters& paramsIn)
@@ -54,4 +54,73 @@ namespace physics {
         };
 
     }
+
 }
+
+//TODO: Think to a better place where to implement these interfaces
+#include "../lattices/latticesInterfaces.hpp"
+
+namespace physics {
+
+    class FermionParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldParametersInterface {
+        public:
+            virtual ~FermionParametersInterface(){}
+    };
+
+    class FermionEoParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldEoParametersInterface {
+        public:
+            virtual ~FermionEoParametersInterface(){}
+    };
+
+    class FermionParametersImplementation final : public FermionParametersInterface,
+            private lattices::SpinorfieldParametersImplementation,
+            private fermionmatrix::FermionmatrixParametersImplementation {
+        public:
+            FermionParametersImplementation() = delete;
+            FermionParametersImplementation(const meta::Inputparameters& parametersIn)
+                    : lattices::SpinorfieldParametersImplementation(parametersIn), fermionmatrix::FermionmatrixParametersImplementation(parametersIn)
+            {
+            }
+            unsigned getNt() const override
+            {
+                return lattices::SpinorfieldParametersImplementation::getNt();
+            }
+            unsigned getNs() const override
+            {
+                return lattices::SpinorfieldParametersImplementation::getNs();
+            }
+            unsigned getNumberOfElements() const override
+            {
+                return lattices::SpinorfieldParametersImplementation::getNumberOfElements();
+            }
+            common::action getFermionicActionType() const override
+            {
+                return fermionmatrix::FermionmatrixParametersImplementation::getFermionicActionType();
+            }
+            bool useMergedFermionicKernels() const override
+            {
+                return fermionmatrix::FermionmatrixParametersImplementation::useMergedFermionicKernels();
+            }
+    };
+
+    class FermionEoParametersImplementation final : public FermionEoParametersInterface,
+            private lattices::SpinorfieldEoParametersImplementation,
+            private fermionmatrix::FermionmatrixParametersImplementation {
+        public:
+            FermionEoParametersImplementation() = delete;
+            FermionEoParametersImplementation(const meta::Inputparameters& parametersIn)
+                    : lattices::SpinorfieldEoParametersImplementation(parametersIn), fermionmatrix::FermionmatrixParametersImplementation(parametersIn)
+            {
+            }
+            common::action getFermionicActionType() const override
+            {
+                return fermionmatrix::FermionmatrixParametersImplementation::getFermionicActionType();
+            }
+            bool useMergedFermionicKernels() const override
+            {
+                return fermionmatrix::FermionmatrixParametersImplementation::useMergedFermionicKernels();
+            }
+    };
+
+}
+
