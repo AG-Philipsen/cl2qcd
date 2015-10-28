@@ -89,14 +89,14 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			copyData(&tmp, source);
 			tmp.gamma5();
-			QplusQminus f_neo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+			QplusQminus f_neo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
 			converged = cg(result, f_neo, gf, tmp, system, params.get_solver_prec(), interfacesHandler);
 			copyData(&tmp, result);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
-			Qminus qminus(params.get_kappa(), meta::get_mubar(params), system);
+			Qminus qminus(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 			qminus(result, gf, tmp);
 		} else {
-			M f_neo(params.get_kappa(), meta::get_mubar(params), system);
+			M f_neo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::M>());
 			converged = bicgstab(result, f_neo, gf, *source, system, params.get_solver_prec(), interfacesHandler);
 		}
 	} else {
@@ -154,16 +154,16 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//to use cg, one needs an hermitian matrix, which is QplusQminus
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			source_even.gamma5();
-			QplusQminus_eo f_eo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+			QplusQminus_eo f_eo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
 			converged = cg(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec(), interfacesHandler);
 			//now, calc Qminus result_buf_eo to obtain x = A^⁻1 b
 			//therefore, use source as an intermediate buffer
-			Qminus_eo qminus(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+			Qminus_eo qminus(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
 			qminus(&source_even, gf, result_eo);
 			//save the result to result_buf
 			copyData(&result_eo, source_even);
 		} else {
-			Aee f_eo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+			Aee f_eo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Aee>());
 			converged = bicgstab(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec(), interfacesHandler);
 		}
 

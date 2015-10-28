@@ -61,7 +61,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 */
 		solution.cold();
 
-		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
 		cg(&solution, fm, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		/**
@@ -69,7 +69,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 psi =
 		 *    = (Qplus_eo)^-1 ps"\tinv. field before inversion i
 		 */
-		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
 		qminus(&phi_inv, gf, solution);
 	} else {
 		///@todo if wanted, solvertimer has to be used here..
@@ -93,7 +93,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.zero();
 		solution.gamma5();
 
-		const Qplus_eo qplus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qplus_eo qplus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
 		bicgstab(&solution, qplus, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		copyData(&phi_inv, solution);
@@ -115,7 +115,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		//this sets clmem_inout cold as trial-solution
 		solution.cold();
 
-		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
 		bicgstab(&solution, qminus, gf, source_even, system, params.get_force_prec(), interfacesHandler);
 	}
 	/**
@@ -198,7 +198,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.cold();
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
 		cg(&solution, fm, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		/**
@@ -206,7 +206,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		 *  Y = (Qminus) X = (Qminus) (Qplusminus)^-1 psi =
 		 *    = (Qplus)^-1 psi
 		 */
-		const Qminus qminus(kappa, mubar, system);
+		const Qminus qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
 		qminus(&phi_inv, gf, solution);
 
 	} else  {
@@ -230,7 +230,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.cold();
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-		const Qplus q_plus(kappa, mubar, system);
+		const Qplus q_plus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 		bicgstab(&solution, q_plus, gf, phi, system, params.get_force_prec(), interfacesHandler);
 
 		//store this result in clmem_phi_inv
@@ -252,7 +252,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		logger.debug() << "\t\t\tstart solver";
 
 		solution.cold();
-		const Qminus q_minus(kappa, mubar, system);
+		const Qminus q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
 		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec(), interfacesHandler);
 	}
 	log_squarenorm("\tY ", phi_inv);
@@ -297,7 +297,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	const Spinorfield tmp(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	//the source is now Q_2^+ phi = sf_tmp
-	const Qplus q_plus_mp(kappa2, mubar2, system);
+	const Qplus q_plus_mp(kappa2, mubar2, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 	q_plus_mp(&tmp, gf, phi_mp);
 
 	if(params.get_solver() == common::cg) {
@@ -318,7 +318,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
 		cg(&solution, fm, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		/**
@@ -326,7 +326,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 *  Y = (Qminus) X = (Qminus) (Qplusminus)^-1 sf_tmp =
 		 *    = (Qplus)^-1 sf_tmp
 		 */
-		const Qminus q_minus(kappa, mubar, system);
+		const Qminus q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
 		q_minus(&phi_inv, gf, solution);
 
 	} else {
@@ -350,7 +350,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-		Qplus q_plus(kappa, mubar, system);
+		Qplus q_plus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		copyData(&phi_inv, solution);
@@ -372,7 +372,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		//this sets clmem_inout cold as trial-solution
 		solution.cold();
 
-		Qminus q_minus(kappa, mubar, system);
+		Qminus q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
 		bicgstab(&solution, q_minus, gf, source, system, params.get_force_prec(), interfacesHandler);
 	}
 
@@ -428,7 +428,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	const Spinorfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	//the source is now Q_2^+ phi = sf_eo_tmp
-	const Qplus_eo q_plus_mp(kappa2, mubar2, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Qplus_eo q_plus_mp(kappa2, mubar2, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
 	q_plus_mp(&tmp, gf, phi_mp);
 	if(params.get_solver() == common::cg) {
 		/**
@@ -447,7 +447,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 */
 		solution.cold();
 
-		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
 		cg(&solution, fm, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		/**
@@ -455,7 +455,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 sf_eo_tmp =
 		 *    = (Qplus_eo)^-1 Q_2^+ psi
 		 */
-		const Qminus_eo q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qminus_eo q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
 		q_minus(&phi_inv, gf, solution);
 	} else {
 		///@todo if wanted, solvertimer has to be used here..
@@ -478,7 +478,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.zero();
 		solution.gamma5();
 
-		const Qplus_eo q_plus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qplus_eo q_plus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
 		bicgstab(&solution, q_plus, gf, tmp, system, params.get_force_prec(), interfacesHandler);
 
 		//store this result in clmem_phi_inv
@@ -499,7 +499,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		//this sets clmem_inout cold as trial-solution
 		solution.cold();
 
-		Qminus_eo q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Qminus_eo q_minus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
 		bicgstab(&solution, q_minus, gf, source_even, system, params.get_force_prec(), interfacesHandler);
 	}
 	/**

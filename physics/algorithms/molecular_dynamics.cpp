@@ -53,10 +53,11 @@ void physics::algorithms::md_update_gaugefield(const physics::lattices::Gaugefie
 }
 
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield& orig, const hardware::System& system, const hmc_float kappa, const hmc_float mubar)
+        const physics::lattices::Spinorfield& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
+        const hmc_float kappa, const hmc_float mubar)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF";
-    physics::fermionmatrix::Qplus qplus(kappa, mubar, system);
+    physics::fermionmatrix::Qplus qplus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
     qplus(out, gf, orig);
     log_squarenorm("Spinorfield after update", *out);
 }
@@ -65,7 +66,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
         const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler, const hmc_float kappa, const hmc_float mubar)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF";
-    physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+    physics::fermionmatrix::Qplus_eo qplus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
     qplus(out, gf, orig);
     log_squarenorm("Spinorfield after update", *out);
 }
@@ -109,34 +110,6 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
 }
 
 /**
- * In contrast to Qplus_eo and Qminus_eo the functors Qplus and Qminus don't have the spinorfieldParametersInterface and hence in their constructors
- * expect a different number of arguments.
- * For this reason objects of these types are constructed and wrapped via the template class and specialization FermionmatrixObjectContainer
- * which allows to construct objects of Qplus/minus_eo and Qplus/minus via the same call.
- */
-template<typename SPINORFIELD, typename FERMIONMATRIX>
-struct FermionmatrixObjectContainer{
-	FermionmatrixObjectContainer(const hmc_float kappa, const hmc_float mubar, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
-		: fermionmatrix(new FERMIONMATRIX(kappa, mubar, system, interfacesHandler.getInterface<SPINORFIELD>())) {}
-
-	std::unique_ptr<FERMIONMATRIX> fermionmatrix;
-};
-
-template<typename SPINORFIELD>
-struct FermionmatrixObjectContainer<SPINORFIELD, physics::fermionmatrix::Qplus>{
-	FermionmatrixObjectContainer(const hmc_float kappa, const hmc_float mubar, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
-		: fermionmatrix(new physics::fermionmatrix::Qplus(kappa, mubar, system)) {}
-
-	std::unique_ptr<physics::fermionmatrix::Qplus> fermionmatrix;
-};
-template<typename SPINORFIELD>
-struct FermionmatrixObjectContainer<SPINORFIELD, physics::fermionmatrix::Qminus>{
-	FermionmatrixObjectContainer(const hmc_float kappa, const hmc_float mubar, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
-		: fermionmatrix(new physics::fermionmatrix::Qminus(kappa, mubar, system)) {}
-
-	std::unique_ptr<physics::fermionmatrix::Qminus> fermionmatrix;
-};
-/**
  * template for md_update_spinorfield_mp
  * this needs 3 fermionmatrices in order to use cg as default solver (because for the cg one needs a hermitian matrix)
  */
@@ -145,12 +118,12 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         const hmc_float mubar)
 {
     SPINORFIELD temporarySpinorfield(system, interfacesHandler.getInterface<SPINORFIELD>());
-    FermionmatrixObjectContainer<SPINORFIELD, FERMIONMATRIX> qplusContainer(kappa, mubar, system, interfacesHandler);
+    FERMIONMATRIX qplus(kappa, mubar, system, interfacesHandler.getInterface<FERMIONMATRIX>());
     const auto & params = system.get_inputparameters();
 
     log_squarenorm("Spinorfield before update: ", orig);
 
-    (*qplusContainer.fermionmatrix)(&temporarySpinorfield, gf, orig);
+    qplus(&temporarySpinorfield, gf, orig);
 
     /**
      * Now one needs ( Qplus )^-1 (heavy_mass) using tmp as source to get phi_mp
@@ -169,8 +142,8 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         out->zero();
         out->gamma5();
 
-        FermionmatrixObjectContainer<SPINORFIELD, FERMIONMATRIX> qplusMpContainer(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler);
-        physics::algorithms::solvers::bicgstab(out, *qplusMpContainer.fermionmatrix, gf, temporarySpinorfield, system, params.get_solver_prec(), interfacesHandler);
+        FERMIONMATRIX qplusMp(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<FERMIONMATRIX>());
+        physics::algorithms::solvers::bicgstab(out, qplusMp, gf, temporarySpinorfield, system, params.get_solver_prec(), interfacesHandler);
     }   //try
     catch (physics::algorithms::solvers::SolverException& e) {
         logger.fatal() << e.what();
@@ -183,11 +156,10 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         tmp2.zero();
         tmp2.gamma5();
 
-        FERMIONMATRIX_HERM fm_herm(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<SPINORFIELD>());
-
+        FERMIONMATRIX_HERM fm_herm(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<FERMIONMATRIX_HERM>());
         physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, temporarySpinorfield, system, params.get_solver_prec(), interfacesHandler);
-        FermionmatrixObjectContainer<SPINORFIELD, FERMIONMATRIX_CONJ> fmConjContainer(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler);
-        (*fmConjContainer.fermionmatrix)(out, gf, tmp2);
+        FERMIONMATRIX_CONJ fmConj(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<FERMIONMATRIX_CONJ>());
+        fmConj(out, gf, tmp2);
     }
 }
 

@@ -53,13 +53,13 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	int iterations = 0;
 
 	if(params.get_solver() == common::cg) {
-		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
 		iterations  = cg(&solution, fm, gf, phi, system, params.get_solver_prec(), interfacesHandler);
-		const Qminus qminus(kappa, mubar, system);
+		const Qminus qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
 		qminus(&phi_inv, gf, solution);
 
 	} else  {
-		const Qplus fm(kappa, mubar, system);
+		const Qplus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 		iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec(), interfacesHandler);
 		copyData(&phi_inv, solution);
 	}
@@ -90,14 +90,14 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	if(params.get_solver() == common::cg) {
 		solution.cold();
 
-		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
 		iterations = cg(&solution, fm, gf, phi, system, params.get_solver_prec(), interfacesHandler);
-		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
 		qminus(&phi_inv, gf, solution);
 	} else {
 		solution.zero();
 		solution.gamma5();
-		const Qplus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qplus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
 		iterations = bicgstab(&solution, fm, gf, phi, system, params.get_solver_prec(), interfacesHandler);
 		copyData(&phi_inv, solution);
 	}
@@ -124,7 +124,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	const hmc_float mubar = meta::get_mubar(params);
 
 	const Spinorfield tmp(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
-	const Qplus qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system);
+	const Qplus qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 	qplus_mp(&tmp, gf, phi);
 
 	const Spinorfield solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -134,12 +134,12 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 	int iterations = 0;
 
 	if(params.get_solver() == common::cg) {
-		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		const QplusQminus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
 		iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec(), interfacesHandler);
-		const Qminus qminus(kappa, mubar, system);
+		const Qminus qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
 		qminus(&phi_inv, gf, solution);
 	} else  {
-		const Qplus fm(kappa, mubar, system);
+		const Qplus fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 		iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec(), interfacesHandler);
 		copyData(&phi_inv, solution);
 	}
@@ -169,7 +169,7 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 
 	//sf_tmp = Qplus(light_mass) phi_mp
 	const Spinorfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
-	const Qplus_eo qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+	const Qplus_eo qplus_mp(params.get_kappa_mp(), meta::get_mubar_mp(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
 	qplus_mp(&tmp, gf, phi);
 
 	const Spinorfield_eo solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -178,15 +178,15 @@ hmc_float physics::algorithms::calc_s_fermion_mp(const physics::lattices::Gaugef
 
 	if(params.get_solver() == common::cg) {
 		solution.cold();
-		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const QplusQminus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
 		iterations = cg(&solution, fm, gf, tmp, system, params.get_solver_prec(), interfacesHandler);
-		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qminus_eo qminus(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
 		qminus(&phi_inv, gf, solution);
 	} else {
 		solution.zero();
 		solution.gamma5();
 
-		const Qplus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		const Qplus_eo fm(kappa, mubar, system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
 		iterations = bicgstab(&solution, fm, gf, tmp, system, params.get_solver_prec(), interfacesHandler);
 
 		copyData(&phi_inv, solution);
