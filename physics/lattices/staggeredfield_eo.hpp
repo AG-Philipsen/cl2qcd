@@ -48,7 +48,7 @@ public:
 	/**
 	 * Construct a staggeredfield based on the input-files of the system
 	 */
-	Staggeredfield_eo(const hardware::System&);
+	Staggeredfield_eo(const hardware::System&, const StaggeredfieldEoParametersInterface&);
 
 	/**
 	 * Release resources
@@ -94,8 +94,7 @@ public:
 
 private:
 	hardware::System const& system;
-	//TODO: Make the following pointer a reference
-	const StaggeredfieldEoParametersInterface* staggaredfieldEoParametersInterface;
+	const StaggeredfieldEoParametersInterface& staggaredfieldEoParametersInterface;
 	const std::vector<const hardware::buffers::SU3vec *> buffers;
 	void import(const su3vec * const host) const;
 

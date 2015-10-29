@@ -28,7 +28,8 @@
 #include "../sources.hpp"
 #include "../algorithms/solver_shifted.hpp"
 
-hmc_complex physics::observables::staggered::measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system)
+hmc_complex physics::observables::staggered::measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system,
+                                                                     physics::InterfacesHandler& interfacesHandler)
 {
 	/**
 	 * The chiral condensate in the RHMC algorithm turns out to be
@@ -85,16 +86,16 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	
 	for(int i=0; i<number_sources; i++){
 	  //Noise sources
-	  Staggeredfield_eo eta_e(system);
-	  Staggeredfield_eo eta_o(system);
+	  Staggeredfield_eo eta_e(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+	  Staggeredfield_eo eta_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	  //Auxiliary fields
 	  std::vector<Staggeredfield_eo*> chi_e; //This is the type to be used in the inverter
-	  chi_e.push_back(new Staggeredfield_eo(system)); 
-	  Staggeredfield_eo chi_o(system);
+	  chi_e.push_back(new Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+	  Staggeredfield_eo chi_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	  //Fermionmatrix objects
 	  physics::fermionmatrix::D_KS_eo Deo(system, EVEN);
 	  physics::fermionmatrix::D_KS_eo Doe(system, ODD);
-	  physics::fermionmatrix::MdagM_eo MdagM(system, mass);
+	  physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), mass);
 	  
 	  /***********************************************************************************************/
 	  set_volume_source(&eta_e, prng);
@@ -105,7 +106,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  saxpby(&chi_o, mass, eta_e, -1.0, chi_o);
 	  //Here the CGM as standard CG is used
 	  std::vector<hmc_float> sigma(1, 0.0); //only one shift set to 0.0
-	  cg_m(chi_e, sigma, MdagM, gf, chi_o, system, parametersInterface.getSolverPrecision());
+	  cg_m(chi_e, sigma, MdagM, gf, chi_o, system, interfacesHandler, parametersInterface.getSolverPrecision());
 	  
 	  //Calculate chi_o = 1/m * (eta_o - Doe * chi_e)
 	  Doe(&chi_o, gf, *(chi_e[0]));
@@ -132,7 +133,8 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 }
 
 
-void physics::observables::staggered::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration)
+void physics::observables::staggered::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration,
+                                                                            physics::InterfacesHandler& interfacesHandler)
 {
     physics::observables::StaggeredChiralCondensateParametersImplementation parametersInterface{gf.getSystem()->get_inputparameters()};
     if( !parametersInterface.measurePbp() )
@@ -153,7 +155,7 @@ void physics::observables::staggered::measureChiralCondensateAndWriteToFile(cons
     outputToFile.setf( std::ios::scientific, std::ios::floatfield );
     std::vector<hmc_complex> pbp(parametersInterface.getPbpNumberOfMeasurements());
     for(size_t i=0; i<pbp.size(); i++){
-        pbp[i] = physics::observables::staggered::measureChiralCondensate(gf, *(gf.getPrng()), *(gf.getSystem()));
+        pbp[i] = physics::observables::staggered::measureChiralCondensate(gf, *(gf.getPrng()), *(gf.getSystem()), interfacesHandler);
         outputToFile << pbp[i].re << "   ";
     }
     outputToFile << std::endl;

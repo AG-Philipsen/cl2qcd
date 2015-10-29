@@ -27,6 +27,7 @@
 #define BOOST_TEST_MODULE physics::lattice::Staggeredfield_eo
 #include <boost/test/unit_test.hpp>
 
+#include "../interfacesHandler.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>
@@ -39,9 +40,10 @@ BOOST_AUTO_TEST_CASE(initialization)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 }
 
 BOOST_AUTO_TEST_CASE(squarenorm)
@@ -51,10 +53,11 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	sf.set_zero();
 	hmc_float const sq = physics::lattices::squarenorm(sf);
 	BOOST_REQUIRE_EQUAL(sq, 0);
@@ -71,10 +74,11 @@ BOOST_AUTO_TEST_CASE(zero)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	sf.set_gaussian(prng);
 	sf.set_zero();
 	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
@@ -87,10 +91,11 @@ BOOST_AUTO_TEST_CASE(cold)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	sf.set_gaussian(prng);
 	sf.set_cold();
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), 0.5, 1.e-8);
@@ -103,10 +108,11 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	sf.set_cold();
 	hmc_float const sq = physics::lattices::squarenorm(sf);
 	sf.set_gaussian(prng);
@@ -120,16 +126,17 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo gaussian(system);
+	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	gaussian.set_gaussian(prng);
 
-	Staggeredfield_eo zero(system);
+	Staggeredfield_eo zero(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	zero.set_zero();
 
-	Staggeredfield_eo cold(system);
+	Staggeredfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	cold.set_cold();
 
 	const hmc_complex gaussian_scalar_prod = physics::lattices::scalar_product(gaussian, gaussian);
@@ -158,11 +165,12 @@ BOOST_AUTO_TEST_CASE(sax)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo orig_sf(system);
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo orig_sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	physics::lattices::Scalar<hmc_complex> cplx(system);
 	physics::lattices::Scalar<hmc_float> real(system);
 	physics::lattices::Vector<hmc_float> real_vec(5, system);
@@ -212,16 +220,17 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo gaussian(system);
+	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	gaussian.set_gaussian(prng);
-	Staggeredfield_eo cold(system);
+	Staggeredfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	cold.set_cold();
-	Staggeredfield_eo zero(system);
+	Staggeredfield_eo zero(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	zero.set_zero();
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	physics::lattices::Scalar<hmc_complex> cplx(system);
 	physics::lattices::Scalar<hmc_float> real(system);
 	physics::lattices::Vector<hmc_float> real_vec(5, system);
@@ -259,16 +268,17 @@ BOOST_AUTO_TEST_CASE(saxpby)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo gaussian(system);
+	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	gaussian.set_gaussian(prng);
-	Staggeredfield_eo cold(system);
+	Staggeredfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	cold.set_cold();
-	Staggeredfield_eo zero(system);
+	Staggeredfield_eo zero(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	zero.set_zero();
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	physics::lattices::Scalar<hmc_complex> cplx(system);
 	physics::lattices::Scalar<hmc_float> real(system);
 	physics::lattices::Vector<hmc_float> real_vec1(5, system);
@@ -320,16 +330,17 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Staggeredfield_eo gaussian(system);
+	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	gaussian.set_gaussian(prng);
-	Staggeredfield_eo cold(system);
+	Staggeredfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	cold.set_cold();
-	Staggeredfield_eo zero(system);
+	Staggeredfield_eo zero(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	zero.set_zero();
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
 	physics::lattices::saxpbypz(&sf, {1., 0.}, gaussian, {0., 0.}, cold, zero);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(sf), physics::lattices::squarenorm(gaussian), 1.e-8);
@@ -350,6 +361,7 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
@@ -365,9 +377,9 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 	ones.store(ones_host);
 	alpha.store(alpha_host);
 	
-	Staggeredfield_eo cold(system);
+	Staggeredfield_eo cold(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	cold.set_cold();
-	Staggeredfield_eo rnd(system);
+	Staggeredfield_eo rnd(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	physics::lattices::pseudo_randomize<Staggeredfield_eo, su3vec>(&rnd, 123);
 
 	physics::lattices::sax_vec_and_squarenorm(&result, zeros, rnd);
@@ -393,10 +405,11 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 	
-	Staggeredfield_eo sf(system);
+	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	sf.set_zero();
 	BOOST_CHECK_EQUAL(physics::lattices::squarenorm(sf), 0);
 	physics::lattices::pseudo_randomize<Staggeredfield_eo, su3vec>(&sf, 123);

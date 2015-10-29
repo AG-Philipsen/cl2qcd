@@ -54,6 +54,7 @@ public:
 	 * Get the net flops performed by this function.
 	 */
 	virtual cl_ulong get_flops() const = 0;
+	virtual ~Fermionmatrix_stagg_basic(){}
 
 protected:
 	Fermionmatrix_stagg_basic(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF)
@@ -97,6 +98,7 @@ public:
 	 */
 	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const = 0;
 	virtual hmc_float get_mass() const = 0;
+	virtual ~Fermionmatrix_stagg_eo(){}
 
 protected:
 	Fermionmatrix_stagg_eo(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : Fermionmatrix_stagg_basic(system, herm, _mass) { };
@@ -122,7 +124,8 @@ private:
 
 class MdagM_eo final : public Fermionmatrix_stagg_eo {
 public:
-	MdagM_eo(const hardware::System& system, hmc_float _mass, bool ul=EVEN) : Fermionmatrix_stagg_eo(system, true, _mass), tmp(system), upper_left(ul) { };
+	MdagM_eo(const hardware::System& system, const physics::lattices::StaggeredfieldEoParametersInterface& staggeredfieldEoParametersInterface, hmc_float _mass, bool ul=EVEN)
+        : Fermionmatrix_stagg_eo(system, true, _mass), tmp(system, staggeredfieldEoParametersInterface), upper_left(ul) { };
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
 	cl_ulong get_flops() const override;
 	hmc_float get_mass() const noexcept override;

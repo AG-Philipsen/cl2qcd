@@ -86,19 +86,19 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
  *       appears in the perform_RHMC_step function.
  */
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, const hmc_float mass)
+        const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler, const hmc_float mass)
 {
     logger.debug() << "\tRHMC [UP]:\tupdate SF";
     const auto & params = system.get_inputparameters();
-    const physics::fermionmatrix::MdagM_eo fm(system, mass);
+    const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), mass);
 
     //Temporary fields for shifted inverter
     logger.trace() << "\t\tstart solver...";
     std::vector<physics::lattices::Staggeredfield_eo *> X;
     for (int i = 0; i < out->Get_order(); i++)
-        X.push_back(new physics::lattices::Staggeredfield_eo(system));
+        X.push_back(new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, out->Get_b(), fm, gf, orig, system, params.get_solver_prec());
+    const int iterations = physics::algorithms::solvers::cg_m(X, out->Get_b(), fm, gf, orig, system, interfacesHandler, params.get_solver_prec());
     logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
     physics::lattices::sax(out, { out->Get_a0(), 0. }, orig);

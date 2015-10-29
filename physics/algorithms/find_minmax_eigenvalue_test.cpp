@@ -23,6 +23,7 @@
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"
+#include "../interfacesHandler.hpp"
 
 
 // use the boost test framework
@@ -39,17 +40,17 @@ BOOST_AUTO_TEST_CASE(max)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
-	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1.01335);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
-	hmc_float max = find_max_eigenvalue(matrix, gf, system, 1.e-5);
+	hmc_float max = find_max_eigenvalue(matrix, gf, system, interfacesHandler, 1.e-5);
 	
 	logger.info() << "ref_max_eig = " << std::setprecision(16) << ref_max_eig;
 	logger.info() << "    max_eig = " << std::setprecision(16) << max;
@@ -69,17 +70,17 @@ BOOST_AUTO_TEST_CASE(min)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
-	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 1.01335);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1.01335);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
-	hmc_float min = find_min_eigenvalue(matrix, gf, system, 1.e-3);
+	hmc_float min = find_min_eigenvalue(matrix, gf, system, interfacesHandler, 1.e-3);
 	
 	logger.info() << "mass squared = " << std::setprecision(16) << matrix.get_mass()*matrix.get_mass();
 	logger.info() << " ref_min_eig = " << std::setprecision(16) << ref_min_eig;
@@ -102,18 +103,18 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
-	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 0.567);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	hmc_float max,min;
-	find_maxmin_eigenvalue(max, min, matrix, gf, system, 1.e-3);
+	find_maxmin_eigenvalue(max, min, matrix, gf, system, interfacesHandler, 1.e-3);
 	
 	logger.info() << "mass squared = " << std::setprecision(16) << matrix.get_mass()*matrix.get_mass();
 	logger.info() << " ref_max_eig = " << std::setprecision(16) << ref_max_eig;

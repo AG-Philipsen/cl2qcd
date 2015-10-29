@@ -55,7 +55,7 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
     if (parameters.get_fermact() == common::action::rooted_stagg) {
         if (parameters.get_measure_pbp()) {
             //NOTE: if parameters.get_read_multiple_configs()==1 maybe here the iteration number is not correct set as it is now
-            physics::observables::staggered::measureChiralCondensateAndWriteToFile(*gaugefield, gaugefield->get_trajectoryNumberAtInit());
+            physics::observables::staggered::measureChiralCondensateAndWriteToFile(*gaugefield, gaugefield->get_trajectoryNumberAtInit(), *interfacesHandler);
         }
         if (parameters.get_measure_correlators()) {
             logger.warn() << "Correlators not yet implemented in the staggered case! Required measurement will not be done!";

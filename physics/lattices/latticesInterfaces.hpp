@@ -72,8 +72,6 @@ namespace physics {
         class StaggeredfieldEoParametersInterface {
             public:
                 virtual ~StaggeredfieldEoParametersInterface(){}
-                virtual unsigned getNs() const = 0;
-                virtual unsigned getNt() const = 0;
                 virtual unsigned getNumberOfElements() const = 0;
         };
 
@@ -237,14 +235,6 @@ namespace physics {
                 ~StaggeredfieldEoParametersImplementation()
                 {
                 }
-                unsigned getNt() const override
-                {
-                    return parameters.get_ntime();
-                }
-                unsigned getNs() const override
-                {
-                    return parameters.get_nspace();
-                }
                 unsigned getNumberOfElements() const override
                 {
                     return meta::get_vol4d(parameters.get_ntime(), parameters.get_nspace());
@@ -262,14 +252,6 @@ namespace physics {
                 }
                 ~RootedStaggeredfieldEoParametersImplementation()
                 {
-                }
-                unsigned getNt() const override
-                {
-                    return StaggeredfieldEoParametersImplementation::getNt();
-                }
-                unsigned getNs() const override
-                {
-                    return StaggeredfieldEoParametersImplementation::getNs();
                 }
                 unsigned getNumberOfElements() const override
                 {

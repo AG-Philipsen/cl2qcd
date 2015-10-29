@@ -141,15 +141,15 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(3, _params);
-	GaugefieldParametersImplementation gaugefieldParameters( &params );
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 0.567);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	//Reference rescaled coefficients
 	hmc_float a0_ref = 3.78396627036665123;
@@ -188,8 +188,8 @@ BOOST_AUTO_TEST_CASE(rescale)
 				    2.3690543226274733968, 8.1633847494467222106,
 				    62.215004455600926292};
 	
-	Rational_Coefficients coeff = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3);
-	Rational_Coefficients coeff_cons = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3, true);
+	Rational_Coefficients coeff = approx.Rescale_Coefficients(matrix, gf, system, interfacesHandler, 1.e-3);
+	Rational_Coefficients coeff_cons = approx.Rescale_Coefficients(matrix, gf, system, interfacesHandler, 1.e-3, true);
 	
 	int ord = coeff.Get_order();
 	std::vector<hmc_float> a = coeff.Get_a();

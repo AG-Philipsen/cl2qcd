@@ -128,7 +128,7 @@ void rhmcExecutable::performOnlineMeasurements()
 		std::string gaugeout_name = meta::get_rhmc_obs_file_name(parameters, "");
 		printRhmcObservables(gaugeout_name);
 		if (parameters.get_measure_pbp()) {
-			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration);
+			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration, *interfacesHandler);
 		}
 	}
 }

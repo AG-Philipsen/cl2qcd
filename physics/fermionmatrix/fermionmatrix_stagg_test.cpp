@@ -21,6 +21,7 @@
 
 #include "fermionmatrix_stagg.hpp"
 
+#include "../interfacesHandler.hpp"
 #include "../lattices/util.hpp"
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
@@ -66,18 +67,19 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		meta::Inputparameters params(3, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		FERMIONMATRIX matrix1(system, 1., ODD);
-		FERMIONMATRIX matrix2(system, 1.);
+		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1., ODD);
+		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1.);
 
 		logger.info() << "The mass of the fermion is " << matrix1.get_mass();
 		
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Staggeredfield_eo sf1(system);
-		Staggeredfield_eo sf2(system);
-		Staggeredfield_eo out(system);
+		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
 		//Using these seeds I can use for the reference code the fermionic 
 		//fields of the explicit_stagg_test file, but pay attention to the fact
@@ -99,17 +101,18 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		meta::Inputparameters params(3, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		FERMIONMATRIX matrix1(system, 1., ODD);
-		FERMIONMATRIX matrix2(system, 1.);
+		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1., ODD);
+		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1.);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Staggeredfield_eo sf1(system);
-		Staggeredfield_eo sf2(system);
-		Staggeredfield_eo out(system);
+		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
 		//Using these seeds I can use for the reference code the fermionic 
 		//fields of the explicit_stagg_test file, but pay attention to the fact
@@ -135,6 +138,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		meta::Inputparameters params(3, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
@@ -142,9 +146,9 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Staggeredfield_eo sf1(system);
-		Staggeredfield_eo sf2(system);
-		Staggeredfield_eo out(system);
+		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
 		//Using these seeds I can use for the reference code the fermionic 
 		//fields of the explicit_stagg_test file, but pay attention to the fact
@@ -166,6 +170,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		meta::Inputparameters params(3, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
@@ -174,9 +179,9 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Staggeredfield_eo sf1(system);
-		Staggeredfield_eo sf2(system);
-		Staggeredfield_eo out(system);
+		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
 		//Using these seeds I can use for the reference code the fermionic 
 		//fields of the explicit_stagg_test file, but pay attention to the fact

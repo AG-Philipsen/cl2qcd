@@ -29,7 +29,7 @@
 #include "../hardware/code/test_util_staggered.h"
 #include <sstream>
 
-void test_sources(std::string type, int num_sources)
+static void test_sources(std::string type, int num_sources)
 {
 	using namespace physics::lattices;
 
@@ -52,7 +52,7 @@ void test_sources(std::string type, int num_sources)
 	release_spinorfields(sources);
 }
 
-void test_volume_source_stagg(std::string content)
+static void test_volume_source_stagg(std::string content)
 {
 	using namespace physics::lattices;
 
@@ -65,10 +65,11 @@ void test_volume_source_stagg(std::string content)
 	
 	meta::Inputparameters params(5, &(options[0]));
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 
-	Staggeredfield_eo source(system);
+	Staggeredfield_eo source(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	set_volume_source(&source, prng);
 	
 	//The following lines are to be used to produce the ref_vec file needed to get the ref_value
