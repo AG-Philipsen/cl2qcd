@@ -31,14 +31,19 @@
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> Coefficients;
+typedef int numberOfSpinors;
 
 struct SpinorTestParameters: public TestParameters
 {
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn)
-	{};
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn), typeOfComparison(1) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const int typeOfComparisonIn) :
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(false), fillTypes(SpinorFillType::one), typeOfComparison(typeOfComparisonIn) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const bool isEvenOddIn) :
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one), typeOfComparison(1) {};
 	const bool isEvenOdd;
 	const SpinorFillTypes fillTypes;
+	const int typeOfComparison;
 };
 
 class SpinorTester : public KernelTester {

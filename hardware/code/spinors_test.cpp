@@ -134,14 +134,25 @@ const ReferenceValues calculateReferenceValues_saxsbypz(const int latticeVolume,
 	return ReferenceValues{calculateReferenceValues_sax(latticeVolume, Coefficients {{1. + alphaIn.at(0).re + alphaIn.at(1).re, 0. + alphaIn.at(0).im + alphaIn.at(1).im}}).at(0)};
 }
 
+const ReferenceValues calculateReferenceValues_gaussian()
+{
+	return defaultReferenceValues();
+}
+
+const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolume)
+{
+	return ReferenceValues {latticeVolume * 12., 0.};
+}
+
 struct LinearCombinationTestParameters : public SpinorTestParameters
 {
 	Coefficients coefficients;
+	const size_t numberOfSpinors;
 
-	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn, const bool isEvenOddIn):
-		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), coefficients(coefficientsIn){}
+	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
+		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), coefficients(coefficientsIn), numberOfSpinors(numberOfSpinorsIn){}
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn):
-			SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), coefficients(Coefficients {{1.,0.}}){}
+			SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), coefficients(Coefficients {{1.,0.}}), numberOfSpinors(1){}
 };
 
 class LinearCombinationTester: public SpinorTester
@@ -157,17 +168,17 @@ public:
 					coeff.back()->load(&coefficient);
 				}
 
-				for( auto number = 0; number < 4; number ++)
+				for( size_t number = 0; number < testParameters.numberOfSpinors ; number ++)
 				{
 					if (testParameters.isEvenOdd)
 					{
 						spinorfieldsEvenOdd.push_back(new hardware::buffers::Spinor(spinorfieldEvenOddElements, device));
-						spinorfieldsEvenOdd.back()->load(createSpinorfield(testParameters.fillTypes.at(0)));
+						(testParameters.fillTypes.size() < testParameters.numberOfSpinors) ? spinorfieldsEvenOdd.back()->load(createSpinorfield(testParameters.fillTypes.at(0))) : spinorfieldsEvenOdd.back()->load(createSpinorfield(testParameters.fillTypes.at(number)));
 					}
 					else
 					{
 						spinorfields.push_back(new hardware::buffers::Plain<spinor>(spinorfieldElements, device));
-						spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(0)));
+						(testParameters.fillTypes.size() < testParameters.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(number)));
 					}
 				}
 			}
@@ -204,6 +215,14 @@ template<typename TesterClass, typename ParameterClass> void performTest( const 
 template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const std::string kernelNameIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, kernelNameIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
+	TesterClass(hardwareParameters, kernelParameters, parametersForThisTest);
+}
+
+template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const int typeOfComparisonIn )
+{
+	ParameterClass parametersForThisTest(nsIn, ntIn, typeOfComparisonIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	TesterClass(hardwareParameters, kernelParameters, parametersForThisTest);
@@ -323,28 +342,22 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
-	struct ScalarProductTestParameters : public SpinorTestParameters
+	struct ScalarProductTestParameters : public LinearCombinationTestParameters
 	{
 		ScalarProductTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn):
-			SpinorTestParameters(calculateReferenceValues_scalarProduct( calculateSpinorfieldSize(nsIn, ntIn), fillTypesIn), nsIn, ntIn, fillTypesIn, false){};
+			LinearCombinationTestParameters(calculateReferenceValues_scalarProduct( calculateSpinorfieldSize(nsIn, ntIn), fillTypesIn), nsIn, ntIn, fillTypesIn, Coefficients {{1.,0.}}, 2, false){};
 	};
 
-	class ScalarProductTester: public SpinorTester
+	class ScalarProductTester: public LinearCombinationTester
 	{
 	public:
 		ScalarProductTester(const hardware::HardwareParametersInterface & hardwareParameters,
 				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ScalarProductTestParameters testParameters):
-			SpinorTester("scalar_product", hardwareParameters, kernelParameters, testParameters)
+			LinearCombinationTester("scalar_product", hardwareParameters, kernelParameters, testParameters)
 		{
-			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-			const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
-			in.load(createSpinorfield(testParameters.fillTypes[0]));
-			in2.load(createSpinorfield(testParameters.fillTypes[1]));
-			hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
-
-			code->set_complex_to_scalar_product_device(&in, &in2, &sqnorm);
+			code->set_complex_to_scalar_product_device(spinorfields.at(0), spinorfields.at(1), coeff.at(0));
 			hmc_complex resultTmp;
-			sqnorm.dump(&resultTmp);
+			coeff.at(0)->dump(&resultTmp);
 
 			kernelResult[0] = resultTmp.re;
 			kernelResult[1] = resultTmp.im;
@@ -390,28 +403,22 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 
-	struct ScalarProductEvenOddTestParameters : public SpinorTestParameters
+	struct ScalarProductEvenOddTestParameters : public LinearCombinationTestParameters
 	{
 		ScalarProductEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn):
-			SpinorTestParameters(calculateReferenceValues_scalarProduct(calculateEvenOddSpinorfieldSize(nsIn, ntIn), fillTypesIn), nsIn, ntIn, fillTypesIn, true) {};
+			LinearCombinationTestParameters(calculateReferenceValues_scalarProduct(calculateEvenOddSpinorfieldSize(nsIn, ntIn), fillTypesIn), nsIn, ntIn, fillTypesIn, Coefficients {{1.,0.}}, 2, true) {};
 	};
 
-	class ScalarProductEvenOddTester: public SpinorTester
+	class ScalarProductEvenOddTester: public LinearCombinationTester
 	{
 	public:
 		ScalarProductEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
 				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ScalarProductEvenOddTestParameters testParameters):
-			SpinorTester("scalar_product_eo", hardwareParameters, kernelParameters, testParameters)
+			LinearCombinationTester("scalar_product_eo", hardwareParameters, kernelParameters, testParameters)
 		{
-			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
-			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
-			in.load(createSpinorfield (testParameters.fillTypes.at(0)));
-			in2.load(createSpinorfield(testParameters.fillTypes.at(1)));
-			hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
-
-			code->set_complex_to_scalar_product_eoprec_device(&in, &in2, &sqnorm);
+			code->set_complex_to_scalar_product_eoprec_device(spinorfieldsEvenOdd.at(0), spinorfieldsEvenOdd.at(1), coeff.at(0));
 			hmc_complex resultTmp;
-			sqnorm.dump(&resultTmp);
+			coeff.at(0)->dump(&resultTmp);
 
 			kernelResult.at(0) = resultTmp.re;
 			kernelResult.at(1) = resultTmp.im;
@@ -503,13 +510,13 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
 
-struct ColdAndZeroEvenOddTestParameters : public LinearCombinationTestParameters
-{
-	const std::string kernelName;
+	struct ColdAndZeroEvenOddTestParameters : public LinearCombinationTestParameters
+	{
+		const std::string kernelName;
 
-	ColdAndZeroEvenOddTestParameters(const int nsIn, const int ntIn, const std::string kernelNameIn):
-		LinearCombinationTestParameters(calculateReferenceValues_coldOrZero(kernelNameIn, true), nsIn, ntIn, SpinorFillTypes{SpinorFillType::one}, true), kernelName(kernelNameIn) {};
-};
+		ColdAndZeroEvenOddTestParameters(const int nsIn, const int ntIn, const std::string kernelNameIn):
+			LinearCombinationTestParameters(calculateReferenceValues_coldOrZero(kernelNameIn, true), nsIn, ntIn, SpinorFillTypes{SpinorFillType::one}, true), kernelName(kernelNameIn) {};
+	};
 
 	class ColdEvenOddTester: public LinearCombinationTester
 	{
@@ -552,7 +559,7 @@ BOOST_AUTO_TEST_SUITE(SAX)
 	struct SaxTestParameters : public LinearCombinationTestParameters
 	{
 		SaxTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
-			LinearCombinationTestParameters(calculateReferenceValues_sax(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, false){}
+			LinearCombinationTestParameters(calculateReferenceValues_sax(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 2, false){}
 	};
 
 	class SaxTester: public LinearCombinationTester
@@ -594,7 +601,7 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 	struct SaxEvenOddTestParameters : public LinearCombinationTestParameters
 	{
 		SaxEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
-			LinearCombinationTestParameters(calculateReferenceValues_sax(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, true){}
+			LinearCombinationTestParameters(calculateReferenceValues_sax(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 2, true){}
 	};
 
 	class SaxEvenOddTester: public LinearCombinationTester
@@ -636,7 +643,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 	struct SaxpyTestParameters : public LinearCombinationTestParameters
 	{
 		SaxpyTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
-			LinearCombinationTestParameters(calculateReferenceValues_saxpy(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, false){}
+			LinearCombinationTestParameters(calculateReferenceValues_saxpy(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 3, false){}
 	};
 
 	class SaxpyTester: public LinearCombinationTester
@@ -658,7 +665,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyTestParameters testParameters):
 			LinearCombinationTester("saxpy_arg", hardwareParameters, kernelParameters, testParameters)
 			{
-				code->saxpy_device(spinorfields.at(0), spinorfields.at(1), coeff.at(0), getOutSpinor());
+				code->saxpy_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), getOutSpinor());
 				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
 			}
 	};
@@ -707,11 +714,11 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
-struct SaxpyEvenOddTestParameters : public LinearCombinationTestParameters
-{
-	SaxpyEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
-		LinearCombinationTestParameters(calculateReferenceValues_saxpy(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, true){}
-};
+	struct SaxpyEvenOddTestParameters : public LinearCombinationTestParameters
+	{
+		SaxpyEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
+			LinearCombinationTestParameters(calculateReferenceValues_saxpy(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 3, true){}
+	};
 
 	class SaxpyEvenOddTester: public LinearCombinationTester
 	{
@@ -783,7 +790,7 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 	struct SaxsbypzTestParameters : public LinearCombinationTestParameters
 	{
 		SaxsbypzTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
-			LinearCombinationTestParameters(calculateReferenceValues_saxsbypz(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, false){}
+			LinearCombinationTestParameters(calculateReferenceValues_saxsbypz(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 4, false){}
 	};
 
 	class SaxsbypzTester: public LinearCombinationTester
@@ -852,11 +859,11 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 
-struct SaxsbypzEvenOddTestParameters : public LinearCombinationTestParameters
-{
-	SaxsbypzEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
-		LinearCombinationTestParameters(calculateReferenceValues_saxsbypz(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, true){}
-};
+	struct SaxsbypzEvenOddTestParameters : public LinearCombinationTestParameters
+	{
+		SaxsbypzEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, Coefficients coefficientsIn):
+			LinearCombinationTestParameters(calculateReferenceValues_saxsbypz(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 4, true){}
+	};
 
 	class SaxsbypzEvenOddTester: public LinearCombinationTester
 	{
@@ -920,83 +927,95 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 
-	class ConvertEvenOddTester: public SpinorTester
+struct ConvertEvenOddTestParameters: public SpinorTestParameters
+{
+	const std::string kernelName;
+
+	ConvertEvenOddTestParameters(const int nsIn, const int ntIn, const std::string kernelNameIn):
+		SpinorTestParameters(calculateReferenceValues_convert_eo(calculateEvenOddSpinorfieldSize(nsIn, ntIn)), nsIn, ntIn, true),
+		kernelName(kernelNameIn) {}
+};
+
+	class ConvertEvenOddToOrFromTester: public SpinorTester
 	{
 	public:
-		ConvertEvenOddTester(std::string inputfile, bool toOrFrom = true):
-			SpinorTester("convert_eo", inputfile, 2)
+		ConvertEvenOddToOrFromTester(const hardware::HardwareParametersInterface & hardwareParameters,
+			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ConvertEvenOddTestParameters testParameters):
+		SpinorTester("convert_eo_toOrFrom", hardwareParameters, kernelParameters, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
 				const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
 
-				
+				in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity() );
+				code->convert_to_eoprec_device(&in2, &in3, &in) ;
 
-				if ( toOrFrom )
-				{
-					in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity() );
-					code->convert_to_eoprec_device(&in2, &in3, &in) ;
-
-					code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
-					doubleBuffer->dump(&kernelResult[0]);
-					code->set_float_to_global_squarenorm_eoprec_device(&in3, doubleBuffer);
-					doubleBuffer->dump(&kernelResult[1]);
-					
-					if (evenOrOdd)
-					{
-						referenceValue[0] = spinorfieldEvenOddElements*12.; 
-						referenceValue[1] = 0.;
-					}
-					else
-					{ 
-						referenceValue[0] = 0.;
-						referenceValue[1] = spinorfieldEvenOddElements*12.; 
-					}
-				} else
-				{
-					fillTwoSpinorBuffersDependingOnParity(&in2, &in3);
-					code->convert_from_eoprec_device(&in2, &in3, &in);
-					
-					code->set_float_to_global_squarenorm_device(&in, doubleBuffer);
-					doubleBuffer->dump(&kernelResult[0]);
-					
-					referenceValue[0] = spinorfieldEvenOddElements*12.; 
-				}
-
-				
-
+				code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
+				doubleBuffer->dump(&kernelResult[0]);
+				code->set_float_to_global_squarenorm_eoprec_device(&in3, doubleBuffer);
+				doubleBuffer->dump(&kernelResult[1]);
 			}
+	};
+
+	class ConvertEvenOddTester: public SpinorTester
+	{
+	public:
+		ConvertEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ConvertEvenOddTestParameters testParameters):
+			SpinorTester("convert_eo", hardwareParameters, kernelParameters, testParameters)
+			{
+				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
+				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
+				const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
+
+				fillTwoSpinorBuffersDependingOnParity(&in2, &in3);
+				code->convert_from_eoprec_device(&in2, &in3, &in);
+
+				code->set_float_to_global_squarenorm_device(&in, doubleBuffer);
+				doubleBuffer->dump(&kernelResult[0]);
+				}
 	};
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_1 )
 	{
-		ConvertEvenOddTester tester("convert_eo_input_1");
+		performTest<ConvertEvenOddToOrFromTester, ConvertEvenOddTestParameters> (ns4, nt4, "convert_eo_toOrFrom");
 	}
 
-	BOOST_AUTO_TEST_CASE( CONVERT_EO_2 )
-	{
-		ConvertEvenOddTester tester("convert_eo_input_2");
-	}
+//	BOOST_AUTO_TEST_CASE( CONVERT_EO_2 )
+//	{
+//		performTest<ConvertEvenOddToOrFromTester, ConvertEvenOddTestParameters> (ns4, nt4, "convert_eo_toOrFrom");
+////		ConvertEvenOddToOrFromTester tester("convert_eo_input_2");
+//	}
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_3 )
 	{
-		ConvertEvenOddTester tester("convert_eo_input_1", false);
+		performTest<ConvertEvenOddTester, ConvertEvenOddTestParameters>(ns4, nt4, "convert_eo");
 	}
 
-	BOOST_AUTO_TEST_CASE( CONVERT_EO_4 )
-	{
-		ConvertEvenOddTester tester("convert_eo_input_2", false);
-	}
+//	BOOST_AUTO_TEST_CASE( CONVERT_EO_4 )
+//	{
+//		ConvertEvenOddTester tester("convert_eo_input_2");
+//	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
+	struct GaussianTestParameters : public SpinorTestParameters
+	{
+		const int typeOfComparison;
+
+		GaussianTestParameters(const int nsIn, const int ntIn, const int typeOfComparisonIn) :
+		SpinorTestParameters(calculateReferenceValues_gaussian(), nsIn, ntIn, typeOfComparisonIn), typeOfComparison(typeOfComparisonIn) {};
+	};
+
 	class GaussianTester: public SpinorTester
 	{
 	public:
-		GaussianTester(std::string inputfile):
-		  SpinorTester("generate_gaussian_spinorfield", inputfile, 1, 2)
+		GaussianTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const GaussianTestParameters testParameters):
+		  SpinorTester("generate_gaussian_spinorfield", hardwareParameters, kernelParameters, testParameters)
+//					const SpinorTestParameters & testParameters , inputfile, 1, 2)
 			{
 				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
 				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
@@ -1004,19 +1023,24 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 				spinor * outHost;
 				outHost = new spinor[spinorfieldElements * iterations];
 				BOOST_REQUIRE(out);
-				
-				auto prng_buf = prng->get_buffers().at(0);
-		
+
+				hardware::buffers::PRNGBuffer* buffer = new hardware::buffers::PRNGBuffer(device, true);
+				int elems = buffer->get_elements();
+				hardware::buffers::PRNGBuffer::prng_state_t * in = new hardware::buffers::PRNGBuffer::prng_state_t[elems];
+				// TODO fill with random data
+				buffer->load(in);
+				delete[] in;
+
 				double sum = 0;
 				for (int i = 0; i < iterations; i++) {
-					code->generate_gaussian_spinorfield_device(&out, prng_buf);
+					code->generate_gaussian_spinorfield_device(&out, buffer);
 					out.dump(&outHost[i * spinorfieldElements]);
 					sum += count_sf(&outHost[i * spinorfieldElements], spinorfieldElements);
 				}
 				sum /= iterations * spinorfieldElements * 24;
 				kernelResult[0] = sum;
 
-				if(calcVariance) 
+				if(calcVariance)
 				{
 					double var = 0.;
 					for (int i = 0; i < iterations; i++) {
@@ -1030,23 +1054,24 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_1 )
 	{
-		GaussianTester tester("gaussian_input_1");
+		performTest<GaussianTester, GaussianTestParameters>(2, 2, 2);
+//		GaussianTester tester("gaussian_input_1");
 	}
 
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_2 )
-	{
-		GaussianTester tester("gaussian_input_2");
-	}
-
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_3 )
-	{
-		GaussianTester tester("gaussian_input_3");
-	}
-
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_4 )
-	{
-		GaussianTester tester("gaussian_input_4");
-	}
+//	BOOST_AUTO_TEST_CASE( GAUSSIAN_2 )
+//	{
+//		GaussianTester tester("gaussian_input_2");
+//	}
+//
+//	BOOST_AUTO_TEST_CASE( GAUSSIAN_3 )
+//	{
+//		GaussianTester tester("gaussian_input_3");
+//	}
+//
+//	BOOST_AUTO_TEST_CASE( GAUSSIAN_4 )
+//	{
+//		GaussianTester tester("gaussian_input_4");
+//	}
 
 BOOST_AUTO_TEST_SUITE_END()
 

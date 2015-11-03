@@ -43,6 +43,7 @@ void SpinorTester::setMembersNew()
 	beta_host = {kernelParameters->getKappa(), kernelParameters->getMuBar()}; //todo: mubar was mu originally
 	iterations = 1; // todo: make changeable parameters->get_integrationsteps(0);
 	calcVariance = false; // todo: make changeable parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+	evenOrOdd = kernelParameters->getUseEo();
 }
 
 
@@ -331,8 +332,8 @@ void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
 		int global_pos;
 		int ns, nt;
 		
-		ns = parameters->get_nspace();
-		nt = parameters->get_ntime();
+		ns = hardwareParameters->getNs();
+		nt = hardwareParameters->getNt();
 
 		for (x = 0; x < ns; x++) {
 			for (y = 0; y < ns; y++) {
@@ -342,8 +343,8 @@ void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
 						coord[1] = x;
 						coord[2] = y;
 						coord[3] = z;
-						nspace =  get_nspace(coord, *parameters);
-						global_pos = get_global_pos(nspace, t, *parameters);
+						nspace = get_nspace(coord, nt, ns);
+						global_pos = get_global_pos(nspace, t, nt, ns);
 						if (global_pos >= size)
 							break;
 
@@ -572,8 +573,8 @@ void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * i
 		int global_pos;
 		int ns, nt;
 		
-		ns = parameters->get_nspace();
-		nt = parameters->get_ntime();
+		ns = hardwareParameters->getNs();
+		nt = hardwareParameters->getNt();
 
 		for (x = 0; x < ns; x++) {
 			for (y = 0; y < ns; y++) {
@@ -583,8 +584,8 @@ void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * i
 						coord[1] = x;
 						coord[2] = y;
 						coord[3] = z;
-						nspace =  get_nspace(coord, *parameters);
-						global_pos = get_global_pos(nspace, t, *parameters);
+						nspace = get_nspace(coord, nt, ns);
+						global_pos = get_global_pos(nspace, t, nt, ns);
 						if (global_pos >= size)
 							break;
 
