@@ -28,16 +28,30 @@ namespace physics {
 
         class FermionmatrixParametersInterface {
             public:
-                virtual ~FermionmatrixParametersInterface(){}
+                virtual ~FermionmatrixParametersInterface()
+                {
+                }
                 virtual common::action getFermionicActionType() const = 0;
                 virtual bool useMergedFermionicKernels() const = 0;
         };
+
+        class FermionmatrixStaggeredParametersInterface {
+            public:
+                virtual ~FermionmatrixStaggeredParametersInterface() = 0;
+        };
+        //Pure virtual destructors must be implemented outside the class! (inline for multiple inclusion of header)
+        inline FermionmatrixStaggeredParametersInterface::~FermionmatrixStaggeredParametersInterface()
+        {
+        }
 
         class FermionmatrixParametersImplementation : public FermionmatrixParametersInterface {
             public:
                 FermionmatrixParametersImplementation() = delete;
                 FermionmatrixParametersImplementation(const meta::Inputparameters& paramsIn)
                         : parameters(paramsIn)
+                {
+                }
+                virtual ~FermionmatrixParametersImplementation()
                 {
                 }
                 common::action getFermionicActionType() const override
@@ -50,9 +64,21 @@ namespace physics {
                 }
             private:
                 const meta::Inputparameters& parameters;
-
         };
 
+        class FermionmatrixStaggeredParametersImplementation : public FermionmatrixStaggeredParametersInterface {
+            public:
+                FermionmatrixStaggeredParametersImplementation() = delete;
+                FermionmatrixStaggeredParametersImplementation(const meta::Inputparameters& parametersIn)
+                        : parameters(parametersIn)
+                {
+                }
+                virtual ~FermionmatrixStaggeredParametersImplementation()
+                {
+                }
+            private:
+                const meta::Inputparameters& parameters;
+        };
     }
 
 }
@@ -64,17 +90,29 @@ namespace physics {
 
     class FermionParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldParametersInterface {
         public:
-            virtual ~FermionParametersInterface(){}
+            virtual ~FermionParametersInterface()
+            {
+            }
     };
 
     class FermionEoParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldEoParametersInterface {
         public:
-            virtual ~FermionEoParametersInterface(){}
+            virtual ~FermionEoParametersInterface()
+            {
+            }
     };
 
+    class FermionStaggeredEoParametersInterface : public fermionmatrix::FermionmatrixStaggeredParametersInterface, public lattices::StaggeredfieldEoParametersInterface {
+        public:
+            virtual ~FermionStaggeredEoParametersInterface()
+            {
+            }
+    };
+
+
     class FermionParametersImplementation final : public FermionParametersInterface,
-            private lattices::SpinorfieldParametersImplementation,
-            private fermionmatrix::FermionmatrixParametersImplementation {
+                                                  private lattices::SpinorfieldParametersImplementation,
+                                                  private fermionmatrix::FermionmatrixParametersImplementation {
         public:
             FermionParametersImplementation() = delete;
             FermionParametersImplementation(const meta::Inputparameters& parametersIn)
@@ -104,8 +142,8 @@ namespace physics {
     };
 
     class FermionEoParametersImplementation final : public FermionEoParametersInterface,
-            private lattices::SpinorfieldEoParametersImplementation,
-            private fermionmatrix::FermionmatrixParametersImplementation {
+                                                    private lattices::SpinorfieldEoParametersImplementation,
+                                                    private fermionmatrix::FermionmatrixParametersImplementation {
         public:
             FermionEoParametersImplementation() = delete;
             FermionEoParametersImplementation(const meta::Inputparameters& parametersIn)
@@ -119,6 +157,21 @@ namespace physics {
             bool useMergedFermionicKernels() const override
             {
                 return fermionmatrix::FermionmatrixParametersImplementation::useMergedFermionicKernels();
+            }
+    };
+
+    class FermionStaggeredEoParametersImplementation: public FermionStaggeredEoParametersInterface,
+                                                      private lattices::StaggeredfieldEoParametersImplementation,
+                                                      private fermionmatrix::FermionmatrixStaggeredParametersImplementation {
+        public:
+            FermionStaggeredEoParametersImplementation() = delete;
+            FermionStaggeredEoParametersImplementation(const meta::Inputparameters& parametersIn)
+                    : lattices::StaggeredfieldEoParametersImplementation(parametersIn), fermionmatrix::FermionmatrixStaggeredParametersImplementation(parametersIn)
+            {
+            }
+            unsigned getNumberOfElements() const override
+            {
+                return lattices::StaggeredfieldEoParametersImplementation::getNumberOfElements();
             }
     };
 

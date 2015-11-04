@@ -93,9 +93,9 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  chi_e.push_back(new Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
 	  Staggeredfield_eo chi_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	  //Fermionmatrix objects
-	  physics::fermionmatrix::D_KS_eo Deo(system, EVEN);
-	  physics::fermionmatrix::D_KS_eo Doe(system, ODD);
-	  physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), mass);
+	  physics::fermionmatrix::D_KS_eo Deo(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
+	  physics::fermionmatrix::D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
+	  physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), mass);
 	  
 	  /***********************************************************************************************/
 	  set_volume_source(&eta_e, prng);

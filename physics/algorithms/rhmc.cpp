@@ -60,7 +60,7 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     hmc_float spinor_energy_init = 0.f;
     hmc_float spinor_energy_init_mp = 0.f;
     //Here the coefficients of phi have to be set to the rescaled ones on the base of approx1
-    physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), ARG_DEF);   //with ARG_DEF, the mass is that of params
+    physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), ARG_DEF);   //with ARG_DEF, the mass is that of params
     phi.Rescale_Coefficients(approx1, fm, *gf, system, interfacesHandler, params.get_findminmax_prec(), params.get_conservative());
     if(!params.get_use_gauge_only()) {
         if(params.get_use_mp()) {

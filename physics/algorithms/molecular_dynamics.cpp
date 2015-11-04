@@ -90,7 +90,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
 {
     logger.debug() << "\tRHMC [UP]:\tupdate SF";
     const auto & params = system.get_inputparameters();
-    const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), mass);
+    const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), mass);
 
     //Temporary fields for shifted inverter
     logger.trace() << "\t\tstart solver...";

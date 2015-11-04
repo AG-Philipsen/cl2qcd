@@ -95,14 +95,14 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
         X.push_back(new Staggeredfield_eo(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
         Y.push_back(new Staggeredfield_eo(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
-    const MdagM_eo fm(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>(), mass);
+    const MdagM_eo fm(system, interfaceHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), mass);
     cg_m(X, phi.Get_b(), fm, gf, phi, system, interfaceHandler, params.get_force_prec());
     logger.debug() << "\t\t\t  end solver";
 
     //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
     //reconstruct the force. I will use a temporary Gaugemomenta to calculate the
     //partial force (on the whole lattice) that will be later added to "force"
-    const D_KS_eo Doe(system, ODD);   //with ODD it is the Doe operator
+    const D_KS_eo Doe(system, interfaceHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
     physics::lattices::Gaugemomenta tmp(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
 
     for (int i = 0; i < phi.Get_order(); i++) {

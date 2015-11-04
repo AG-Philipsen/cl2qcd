@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	    hmc_float pol[5] = {0.0002065381736724, 0.00302707751065980, 0.0200732678058145,
 	            0.12517586269872370, 1.0029328743375700};
 	    std::vector<hmc_float> sigma(pol, pol + sizeof(pol)/sizeof(hmc_float));
-	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 0.567);
+	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.567);
 
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
 	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	    //These are some possible values of sigma
 	    Rational_Approximation approx(8, 1,2, 1.e-5,1);
 	    std::vector<hmc_float> sigma = approx.Get_b();
-	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1.01335);
+	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 1.01335);
 
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
 	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	Rational_Approximation approx(16, 1,2, 1.e-5,1);
 	
 	std::vector<hmc_float> sigma = approx.Get_b();
-	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 0.01);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.01);
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 // 	Rational_Approximation approx(16, 1,2, 1.e-5,1);
 	
 	std::vector<hmc_float> sigma(1, 0.0);
-	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 0.01);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.01);
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");

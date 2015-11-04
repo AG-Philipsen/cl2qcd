@@ -71,8 +71,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1., ODD);
-		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1.);
+		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1., ODD);
+		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1.);
 
 		logger.info() << "The mass of the fermion is " << matrix1.get_mass();
 		
@@ -105,8 +105,8 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1., ODD);
-		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 1.);
+		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1., ODD);
+		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1.);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -142,8 +142,8 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		physics::fermionmatrix::D_KS_eo matrix1(system, EVEN);
-		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
+		physics::fermionmatrix::D_KS_eo matrix1(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
+		physics::fermionmatrix::D_KS_eo matrix2(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -174,8 +174,8 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		physics::fermionmatrix::D_KS_eo matrix1(system, EVEN);
-		physics::fermionmatrix::D_KS_eo matrix2(system, ODD);
+		physics::fermionmatrix::D_KS_eo matrix1(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
+		physics::fermionmatrix::D_KS_eo matrix2(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");

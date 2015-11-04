@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(rescale)
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), 0.567);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.567);
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	

@@ -218,7 +218,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	logger.trace() << "\tRHMC [DH]:\tcalc final fermion energy...";
 	
 	const auto & params = system.get_inputparameters();
-	const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>(), mass);
+	const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), mass);
 	int iterations = 0;
 
 	//Temporary fields for shifted inverter
