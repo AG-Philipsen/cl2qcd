@@ -204,8 +204,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		physics::PRNG prng{system, &prngParameters};
 		
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Rooted_Staggeredfield_eo sf1(approx, system);
-		Rooted_Staggeredfield_eo sf2(approx, system);
+		Rooted_Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+		Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
@@ -231,8 +231,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		physics::PRNG prng{system, &prngParameters};
 		
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Rooted_Staggeredfield_eo sf1(approx, system);
-		Rooted_Staggeredfield_eo sf2(approx, system);
+		Rooted_Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+		Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
@@ -258,8 +258,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		physics::PRNG prng{system, &prngParameters};
 		
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Rooted_Staggeredfield_eo sf1(approx, system);
-		Rooted_Staggeredfield_eo sf2(approx, system);
+		Rooted_Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+		Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)

@@ -40,11 +40,12 @@ BOOST_AUTO_TEST_CASE(initialization)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Rooted_Staggeredfield_eo sf(system);
+	Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
 	physics::algorithms::Rational_Approximation approx(3,1,4,1e-5,1);
-	Rooted_Staggeredfield_eo sf2(approx, system);
+	Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 	
 }
 
@@ -68,7 +69,7 @@ BOOST_AUTO_TEST_CASE(rescale)
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	const GaugefieldParametersImplementation gaugefieldParameters{ &params };
 	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-	Rooted_Staggeredfield_eo sf(system);
+	Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
 	
 	//Reference rescaled coefficients
 	hmc_float a0_ref = 3.78396627036665123;

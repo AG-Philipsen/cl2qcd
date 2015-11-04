@@ -55,8 +55,8 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     const Gaugemomenta p(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     p.gaussian(prng);
 
-    SPINORFIELD phi(system);
-    const std::auto_ptr<const SPINORFIELD> phi_mp(params.get_use_mp() ? new SPINORFIELD(system) : nullptr);
+    SPINORFIELD phi(system, interfacesHandler.getInterface<SPINORFIELD>());
+    const std::auto_ptr<const SPINORFIELD> phi_mp(params.get_use_mp() ? new SPINORFIELD(system, interfacesHandler.getInterface<SPINORFIELD>()) : nullptr);
     hmc_float spinor_energy_init = 0.f;
     hmc_float spinor_energy_init_mp = 0.f;
     //Here the coefficients of phi have to be set to the rescaled ones on the base of approx1
@@ -134,7 +134,7 @@ template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi
 
     const auto & params = system.get_inputparameters();
 
-    const SPINORFIELD initial(system);
+    const SPINORFIELD initial(system, interfacesHandler.getInterface<SPINORFIELD>());
 
     //init/update spinorfield phi
     initial.set_gaussian(prng);
