@@ -1,5 +1,6 @@
 /*
- * Copyright 2012, 2013, 2014 Christopher Pinke, Matthias Bach
+ * Copyright 2012, 2013, 2014, 2015 Christopher Pinke, Matthias Bach,
+ *         Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -119,17 +120,17 @@ const ReferenceValues calculateReferenceValues_coldOrZero(const std::string kern
 	}
 }
 
-const ReferenceValues calculateReferenceValues_sax (const int latticeVolume, ComplexNumbers alphaIn)
+const ReferenceValues calculateReferenceValues_sax (const int latticeVolume, const ComplexNumbers alphaIn)
 {
 	return ReferenceValues{ (alphaIn.at(0).im * alphaIn.at(0).im + alphaIn.at(0).re * alphaIn.at(0).re) * latticeVolume * sumOfIntegersSquared(24)};
 }
 
-const ReferenceValues calculateReferenceValues_saxpy(const int latticeVolume, ComplexNumbers alphaIn)
+const ReferenceValues calculateReferenceValues_saxpy(const int latticeVolume, const ComplexNumbers alphaIn)
 {
 	return ReferenceValues{calculateReferenceValues_sax(latticeVolume, ComplexNumbers {{1. - alphaIn.at(0).re, 0. - alphaIn.at(0).im}}).at(0)};
 }
 
-const ReferenceValues calculateReferenceValues_saxsbypz(const int latticeVolume, ComplexNumbers alphaIn)
+const ReferenceValues calculateReferenceValues_saxsbypz(const int latticeVolume, const ComplexNumbers alphaIn)
 {
 	return ReferenceValues{calculateReferenceValues_sax(latticeVolume, ComplexNumbers {{1. + alphaIn.at(0).re + alphaIn.at(1).re, 0. + alphaIn.at(0).im + alphaIn.at(1).im}}).at(0)};
 }
@@ -146,10 +147,10 @@ const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolum
 
 struct LinearCombinationTestParameters : public SpinorTestParameters
 {
-	ComplexNumbers complexNumbers;
+	const ComplexNumbers complexNumbers;
 	const size_t numberOfSpinors;
 
-	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
+	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
 		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(coefficientsIn), numberOfSpinors(numberOfSpinorsIn){}
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn):
 			SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(ComplexNumbers {{1.,0.}}), numberOfSpinors(1){}
@@ -158,8 +159,8 @@ struct LinearCombinationTestParameters : public SpinorTestParameters
 class LinearCombinationTester: public SpinorTester
 {
 public:
-	LinearCombinationTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
-			const hardware::code::OpenClKernelParametersInterface & kernelParameters, LinearCombinationTestParameters testParameters):
+	LinearCombinationTester(const std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
+			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const LinearCombinationTestParameters testParameters):
 			SpinorTester(kernelName, hardwareParameters, kernelParameters, testParameters){
 
 				for (auto coefficient : testParameters.complexNumbers)
@@ -186,42 +187,42 @@ protected:
 	std::vector<const hardware::buffers::Plain<hmc_complex> *> complexNums;
 	std::vector<const hardware::buffers::Plain<spinor> *> spinorfields;
 	std::vector<const hardware::buffers::Spinor *> spinorfieldsEvenOdd;
-	const hardware::buffers::Plain<spinor> * getOutSpinor()
+	const hardware::buffers::Plain<spinor> * getOutSpinor() const
 	{
 		return spinorfields.back();
 	}
-	const hardware::buffers::Spinor * getOutSpinorEvenOdd()
+	const hardware::buffers::Spinor * getOutSpinorEvenOdd() const
 	{
 		return spinorfieldsEvenOdd.back();
 	}
 };
 
-template<typename TesterClass, typename ParameterClass> void callTest(ParameterClass parametersForThisTest)
+template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest)
 {
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	TesterClass(hardwareParameters, kernelParameters, parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn )
+template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, fillTypesIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const ComplexNumbers alphaIn )
+template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const ComplexNumbers alphaIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, SpinorFillTypes{SpinorFillType::ascendingComplex}, alphaIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const std::string kernelNameIn )
+template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const std::string kernelNameIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, kernelNameIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest( const int nsIn, const int ntIn, const int typeOfComparisonIn )
+template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const int typeOfComparisonIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, typeOfComparisonIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
@@ -241,9 +242,9 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 
 	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
 	{
-		hardware::HardwareParametersMockup hardwareParameters(4,4);
-		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
-		SpinorTestParameters testParameters{ReferenceValues {-1.234}, 4,4, SpinorFillTypes{SpinorFillType::one}, false};
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
+		const SpinorTestParameters testParameters{ReferenceValues {-1.234}, 4,4, SpinorFillTypes{SpinorFillType::one}, false};
 		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", hardwareParameters, kernelParameters, testParameters) );
 	}
 
@@ -557,7 +558,7 @@ BOOST_AUTO_TEST_SUITE(SAX)
 
 	struct SaxTestParameters : public LinearCombinationTestParameters
 	{
-		SaxTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, ComplexNumbers coefficientsIn):
+		SaxTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			LinearCombinationTestParameters(calculateReferenceValues_sax(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 2, false){}
 	};
 
@@ -599,7 +600,7 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 
 	struct SaxEvenOddTestParameters : public LinearCombinationTestParameters
 	{
-		SaxEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, ComplexNumbers coefficientsIn):
+		SaxEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			LinearCombinationTestParameters(calculateReferenceValues_sax(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 2, true){}
 	};
 
@@ -641,7 +642,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 
 	struct SaxpyTestParameters : public LinearCombinationTestParameters
 	{
-		SaxpyTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, ComplexNumbers coefficientsIn):
+		SaxpyTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			LinearCombinationTestParameters(calculateReferenceValues_saxpy(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 3, false){}
 	};
 
@@ -715,7 +716,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
 	struct SaxpyEvenOddTestParameters : public LinearCombinationTestParameters
 	{
-		SaxpyEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, ComplexNumbers coefficientsIn):
+		SaxpyEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			LinearCombinationTestParameters(calculateReferenceValues_saxpy(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 3, true){}
 	};
 
@@ -788,7 +789,7 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 
 	struct SaxsbypzTestParameters : public LinearCombinationTestParameters
 	{
-		SaxsbypzTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, ComplexNumbers coefficientsIn):
+		SaxsbypzTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			LinearCombinationTestParameters(calculateReferenceValues_saxsbypz(calculateSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 4, false){}
 	};
 
@@ -860,7 +861,7 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 
 	struct SaxsbypzEvenOddTestParameters : public LinearCombinationTestParameters
 	{
-		SaxsbypzEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, ComplexNumbers coefficientsIn):
+		SaxsbypzEvenOddTestParameters(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			LinearCombinationTestParameters(calculateReferenceValues_saxsbypz(calculateEvenOddSpinorfieldSize(nsIn, ntIn), coefficientsIn), nsIn, ntIn, fillTypesIn, coefficientsIn, 4, true){}
 	};
 
