@@ -137,13 +137,15 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 		referenceValue = testParams.referenceValue;
 	}
 
+	//todo: the if and else can be removed if the enum is used anyway
 	if ( (testParams.typeOfComparison == 1) || (testParams.typeOfComparison == 2)  || (testParams.typeOfComparison == 3) || (testParams.typeOfComparison == 4) )
 	  {
 	    typeOfComparison = testParams.typeOfComparison;
-	  } else
-	  {
-	    throw( std::invalid_argument("Do not recognise type of comparison. Aborting...") );
 	  }
+	else
+	{
+	    throw( std::invalid_argument("Do not recognise type of comparison. Aborting...") );
+	}
 }
 
 
@@ -154,23 +156,23 @@ KernelTester::~KernelTester()
   //NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 		logger.info() << "compare result " << iteration;
-	  if (typeOfComparison == 1)
+		if (typeOfComparison == comparisonTypes::difference)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "Ref. Value = " << referenceValue[iteration];
 				BOOST_CHECK_CLOSE(referenceValue[iteration], kernelResult[iteration], testPrecision);
 	    }
-	  else if (typeOfComparison == 2)
+		else if (typeOfComparison == comparisonTypes::smallerThan)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "upper Bound = " << referenceValue[iteration];
-	      BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
+				BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
 	    }
-		else if (typeOfComparison == 3)
+		else if (typeOfComparison == comparisonTypes::differenceToFirstReferenceValue)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "Ref. Value = " << referenceValue[0];
-	      BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
+				BOOST_CHECK_CLOSE(referenceValue[0], kernelResult[iteration], testPrecision);
 	    }
 	}
 

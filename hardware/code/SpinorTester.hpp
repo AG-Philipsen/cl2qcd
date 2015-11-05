@@ -37,12 +37,13 @@ struct SpinorTestParameters: public TestParameters
 {
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
 		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const int typeOfComparisonIn) :
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn) :
 		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(false), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const bool isEvenOddIn) :
 		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn, const int typeOfComparisionIn) :
 		TestParameters(referenceValuesIn, nsIn, ntIn, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
+	SpinorTestParameters() : TestParameters(), isEvenOdd(false) {};
 	const bool isEvenOdd;
 	const SpinorFillTypes fillTypes;
 };

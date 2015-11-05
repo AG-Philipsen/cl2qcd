@@ -31,6 +31,8 @@
 #include "../device.hpp"
 #include "mockups.hpp"
 
+enum comparisonTypes{difference=1, smallerThan, differenceToFirstReferenceValue};
+
 typedef std::vector<double> ReferenceValues;
 struct TestParameters {
 	std::vector<double> referenceValue;
@@ -40,15 +42,16 @@ struct TestParameters {
 	size_t numberOfValues;
 
 	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn):
-		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(1), numberOfValues(referenceValueIn.size()) {}
+		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(comparisonTypes::difference), numberOfValues(referenceValueIn.size()) {}
 	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn, const int typeOfComparisonIn):
 		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
 	TestParameters():
-		referenceValue({-1234}), ns(4), nt(4), typeOfComparison(1), numberOfValues(referenceValue.size()) {}
+		referenceValue({0}), ns(4), nt(4), typeOfComparison(comparisonTypes::difference), numberOfValues(referenceValue.size()) {}
 };
 
 class KernelTester {
 public:
+	//todo: introduce comparisonTypes here!
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
 	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
