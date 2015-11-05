@@ -91,6 +91,7 @@ protected:
 
 	hardware::buffers::Plain<double> * doubleBuffer;
 	
+	//todo: most of these must go away!
 	size_t spinorfieldElements;
 	size_t spinorfieldEvenOddElements;
 	bool useRandom;

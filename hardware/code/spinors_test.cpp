@@ -137,7 +137,7 @@ const ReferenceValues calculateReferenceValues_saxsbypz(const int latticeVolume,
 
 const ReferenceValues calculateReferenceValues_gaussian()
 {
-	return defaultReferenceValues();
+	return ReferenceValues{ 0., 1.};
 }
 
 const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolume)
@@ -152,8 +152,10 @@ struct LinearCombinationTestParameters : public SpinorTestParameters
 
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
 		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(coefficientsIn), numberOfSpinors(numberOfSpinorsIn){}
+	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
+		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, SpinorFillTypes{SpinorFillType::one}, isEvenOddIn), complexNumbers(ComplexNumbers{}), numberOfSpinors(numberOfSpinorsIn){}
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn):
-			SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(ComplexNumbers {{1.,0.}}), numberOfSpinors(1){}
+		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(ComplexNumbers {{1.,0.}}), numberOfSpinors(1){}
 };
 
 class LinearCombinationTester: public SpinorTester
@@ -222,9 +224,9 @@ template<typename TesterClass, typename ParameterClass> void performTest(const i
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const int typeOfComparisonIn )
+template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const int typeOfComparisonIn, const bool isEvenOddIn )
 {
-	ParameterClass parametersForThisTest(nsIn, ntIn, typeOfComparisonIn);
+	ParameterClass parametersForThisTest(nsIn, ntIn, typeOfComparisonIn, isEvenOddIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
@@ -1001,141 +1003,112 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
-	struct GaussianTestParameters : public SpinorTestParameters
+	struct PrngTestParameters : public LinearCombinationTestParameters
 	{
-		const int typeOfComparison;
+	PrngTestParameters(const int nsIn, const int ntIn, const int typeOfComparisonIn, const bool isEvenOddIn) :
+		 LinearCombinationTestParameters(calculateReferenceValues_gaussian(), nsIn, ntIn, 1, isEvenOddIn), iterations(1) {};
 
-		GaussianTestParameters(const int nsIn, const int ntIn, const int typeOfComparisonIn) :
-		SpinorTestParameters(calculateReferenceValues_gaussian(), nsIn, ntIn, typeOfComparisonIn), typeOfComparison(typeOfComparisonIn) {};
+		const unsigned int iterations;
 	};
 
-	class GaussianTester: public SpinorTester
+	class PrngTester: public LinearCombinationTester
 	{
 	public:
-		GaussianTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const GaussianTestParameters testParameters):
-		  SpinorTester("generate_gaussian_spinorfield", hardwareParameters, kernelParameters, testParameters)
-//					const SpinorTestParameters & testParameters , inputfile, 1, 2)
-			{
-				const hardware::buffers::Plain<spinor> out(spinorfieldElements, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-				spinor * outHost;
-				outHost = new spinor[spinorfieldElements * iterations];
-				BOOST_REQUIRE(out);
-
-				hardware::buffers::PRNGBuffer* buffer = new hardware::buffers::PRNGBuffer(device, true);
-				int elems = buffer->get_elements();
-				hardware::buffers::PRNGBuffer::prng_state_t * in = new hardware::buffers::PRNGBuffer::prng_state_t[elems];
-				// TODO fill with random data
-				buffer->load(in);
-				delete[] in;
-
-				double sum = 0;
-				for (int i = 0; i < iterations; i++) {
-					code->generate_gaussian_spinorfield_device(&out, buffer);
-					out.dump(&outHost[i * spinorfieldElements]);
-					sum += count_sf(&outHost[i * spinorfieldElements], spinorfieldElements);
-				}
-				sum /= iterations * spinorfieldElements * 24;
-				kernelResult[0] = sum;
-
-				if(calcVariance)
-				{
-					double var = 0.;
-					for (int i = 0; i < iterations; i++) {
-						var += calc_var_sf(&outHost[i * spinorfieldElements], spinorfieldElements, sum);
-					}
-					var /= iterations * spinorfieldElements * 24;
-					kernelResult[0] =  sqrt(var);
-				}
-			}
+		PrngTester(const std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters & testParameters):
+					LinearCombinationTester(kernelName, hardwareParameters, kernelParameters, testParameters)
+		{
+			prng_init(kernelParameters.getHostSeed());
+			prngStates = new hardware::buffers::PRNGBuffer(device, hardwareParameters.useSameRandomNumbers() );
+			auto codePrng = device->getPrngCode();
+			codePrng->initialize(prngStates, kernelParameters.getHostSeed());
+		}
+		~PrngTester()
+		{
+			delete prngStates;
+		}
+		const hardware::buffers::PRNGBuffer* prngStates;
 	};
 
-	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (GAUSSIAN_1, 1)
-	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (GAUSSSIAN_2, 1)
-	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (GAUSSIAN_3, 1)
-	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (GAUSSIAN_4, 1)
-
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_1 )
-	{
-		performTest<GaussianTester, GaussianTestParameters>(2, 2, 2);
-//		GaussianTester tester("gaussian_input_1");
-	}
-
-//	BOOST_AUTO_TEST_CASE( GAUSSIAN_2 )
-//	{
-//		GaussianTester tester("gaussian_input_2");
-//	}
-//
-//	BOOST_AUTO_TEST_CASE( GAUSSIAN_3 )
-//	{
-//		GaussianTester tester("gaussian_input_3");
-//	}
-//
-//	BOOST_AUTO_TEST_CASE( GAUSSIAN_4 )
-//	{
-//		GaussianTester tester("gaussian_input_4");
-//	}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
-
-	class GaussianEvenOddTester: public SpinorTester
+	template< typename SpinorfieldType> class GaussianTester: public PrngTester
 	{
 	public:
-		GaussianEvenOddTester(std::string inputfile):
-		  SpinorTester("generate_gaussian_spinorfield_eo", inputfile, 1, 2)
-			{
-				const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
-				hardware::buffers::Plain<hmc_float> sqnorm(1, device);
+		GaussianTester(const std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters & testParameters, const int numberOfElements):
+					PrngTester(kernelName, hardwareParameters, kernelParameters, testParameters),
+					mean(0.), variance(0.), numberOfElements(numberOfElements),
+					hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters){}
 
-				spinor * outHost;
-				outHost = new spinor[spinorfieldEvenOddElements * iterations];
-				BOOST_REQUIRE(out);
-				
-				auto prng_buf = prng->get_buffers().at(0);
+		~GaussianTester()
+		{
+			calculateMean();
+			calculateVariance();
 
-				double sum = 0;
-				for (int i = 0; i < iterations; i++) {
-					code->generate_gaussian_spinorfield_eo_device(&out, prng_buf);
-					out.dump(&outHost[i * spinorfieldEvenOddElements]);
-					sum += count_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements);
-				}
-				sum /= iterations * spinorfieldElements * 24;
-				kernelResult[0] = sum;
+			kernelResult[0] = mean;
+			kernelResult[1] = sqrt(variance);
+		}
 
-				if(calcVariance) 
-				{
-					double var = 0.;
-					for (int i = 0; i < iterations; i++) {
-						var += calc_var_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements, sum);
-					}
-					var /= iterations * spinorfieldEvenOddElements * 24;
-					kernelResult[0] =  sqrt(var);
-				}
+		void calculateMean()
+		{
+			for (unsigned int i = 0; i < testParameters.iterations; i++) {
+				mean += count_sf(&hostOutput[i * numberOfElements], numberOfElements);
 			}
+			mean /= testParameters.iterations * numberOfElements * 24;
+		}
+
+		void calculateVariance()
+		{
+			for (unsigned int i = 0; i < testParameters.iterations; i++) {
+				variance += calc_var_sf(&hostOutput[i * numberOfElements], numberOfElements, mean);
+			}
+			variance /= testParameters.iterations * numberOfElements * 24;
+		}
+		const int numberOfElements;
+		double mean, variance;
+		std::vector<spinor> hostOutput;
+		const PrngTestParameters & testParameters;
 	};
 
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_1 )
+	class GaussianSpinorfieldTester: public GaussianTester<std::string>
 	{
-		GaussianEvenOddTester tester("gaussian_eo_input_1");
+	public:
+		GaussianSpinorfieldTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters testParameters):
+					GaussianTester("generate_gaussian_spinorfield", hardwareParameters, kernelParameters, testParameters,
+							calculateSpinorfieldSize(testParameters.ns, testParameters.nt)){}
+		~GaussianSpinorfieldTester()
+		{
+			for (unsigned int i = 0; i < testParameters.iterations; i++) {
+				code->generate_gaussian_spinorfield_device(this->getOutSpinor(), prngStates);
+				this->getOutSpinor()->dump(&hostOutput[i * numberOfElements]);
+			}
+		}
+	};
+
+	class GaussianSpinorfieldEvenOddTester: public GaussianTester<std::string>
+	{
+	public:
+		GaussianSpinorfieldEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
+				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters testParameters):
+					GaussianTester("generate_gaussian_spinorfield_eo", hardwareParameters, kernelParameters, testParameters,
+							calculateEvenOddSpinorfieldSize(testParameters.ns, testParameters.nt)){}
+		~GaussianSpinorfieldEvenOddTester()
+		{
+			for (int i = 0; i < iterations; i++) {
+				code->generate_gaussian_spinorfield_eo_device(this->getOutSpinorEvenOdd(), prngStates);
+				this->getOutSpinorEvenOdd()->dump(&hostOutput[i * spinorfieldEvenOddElements]);
+			}
+		}
+	};
+
+	BOOST_AUTO_TEST_CASE( GAUSSIAN_NONEO )
+	{
+		performTest<GaussianSpinorfieldTester, PrngTestParameters>(2, 2, 2, false);
 	}
 
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_2 )
+	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO )
 	{
-		GaussianEvenOddTester tester("gaussian_eo_input_2");
-	}
-
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_3 )
-	{
-		GaussianEvenOddTester tester("gaussian_eo_input_3");
-	}
-
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_4 )
-	{
-		GaussianEvenOddTester tester("gaussian_eo_input_4");
+		performTest<GaussianSpinorfieldEvenOddTester, PrngTestParameters>(2, 2, 2, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
