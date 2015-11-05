@@ -36,14 +36,15 @@ typedef int numberOfSpinors;
 struct SpinorTestParameters: public TestParameters
 {
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn), typeOfComparison(1) {};
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const int typeOfComparisonIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(false), fillTypes(SpinorFillType::one), typeOfComparison(typeOfComparisonIn) {};
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(false), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one), typeOfComparison(1) {};
+		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn, const int typeOfComparisionIn) :
+		TestParameters(referenceValuesIn, nsIn, ntIn, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
 	const bool isEvenOdd;
 	const SpinorFillTypes fillTypes;
-	const int typeOfComparison;
 };
 
 class SpinorTester : public KernelTester {

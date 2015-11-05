@@ -152,8 +152,8 @@ struct LinearCombinationTestParameters : public SpinorTestParameters
 
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
 		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(coefficientsIn), numberOfSpinors(numberOfSpinorsIn){}
-	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
-		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, SpinorFillTypes{SpinorFillType::one}, isEvenOddIn), complexNumbers(ComplexNumbers{}), numberOfSpinors(numberOfSpinorsIn){}
+	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn, const int typeOfComparisonIn):
+		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, SpinorFillTypes{SpinorFillType::one}, isEvenOddIn, typeOfComparisonIn), complexNumbers(ComplexNumbers{}), numberOfSpinors(numberOfSpinorsIn){}
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn):
 		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(ComplexNumbers {{1.,0.}}), numberOfSpinors(1){}
 };
@@ -1006,7 +1006,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	struct PrngTestParameters : public LinearCombinationTestParameters
 	{
 	PrngTestParameters(const int nsIn, const int ntIn, const int typeOfComparisonIn, const bool isEvenOddIn) :
-		 LinearCombinationTestParameters(calculateReferenceValues_gaussian(), nsIn, ntIn, 1, isEvenOddIn), iterations(1) {};
+		 LinearCombinationTestParameters(calculateReferenceValues_gaussian(), nsIn, ntIn, 1, isEvenOddIn, typeOfComparisonIn), iterations(1) {};
 
 		const unsigned int iterations;
 	};
@@ -1030,7 +1030,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 		const hardware::buffers::PRNGBuffer* prngStates;
 	};
 
-	template< typename SpinorfieldType> class GaussianTester: public PrngTester
+	class GaussianTester: public PrngTester
 	{
 	public:
 		GaussianTester(const std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
@@ -1069,7 +1069,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 		const PrngTestParameters & testParameters;
 	};
 
-	class GaussianSpinorfieldTester: public GaussianTester<std::string>
+	class GaussianSpinorfieldTester: public GaussianTester
 	{
 	public:
 		GaussianSpinorfieldTester(const hardware::HardwareParametersInterface & hardwareParameters,
@@ -1085,7 +1085,12 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 		}
 	};
 
-	class GaussianSpinorfieldEvenOddTester: public GaussianTester<std::string>
+	BOOST_AUTO_TEST_CASE( GAUSSIAN_NONEO )
+	{
+		performTest<GaussianSpinorfieldTester, PrngTestParameters>(ns8, nt4, 2, false);
+	}
+
+	class GaussianSpinorfieldEvenOddTester: public GaussianTester
 	{
 	public:
 		GaussianSpinorfieldEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
@@ -1094,21 +1099,16 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 							calculateEvenOddSpinorfieldSize(testParameters.ns, testParameters.nt)){}
 		~GaussianSpinorfieldEvenOddTester()
 		{
-			for (int i = 0; i < iterations; i++) {
+			for (int i = 0; i < testParameters.iterations; i++) {
 				code->generate_gaussian_spinorfield_eo_device(this->getOutSpinorEvenOdd(), prngStates);
-				this->getOutSpinorEvenOdd()->dump(&hostOutput[i * spinorfieldEvenOddElements]);
+				this->getOutSpinorEvenOdd()->dump(&hostOutput[i * numberOfElements]);
 			}
 		}
 	};
 
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_NONEO )
-	{
-		performTest<GaussianSpinorfieldTester, PrngTestParameters>(2, 2, 2, false);
-	}
-
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO )
 	{
-		performTest<GaussianSpinorfieldEvenOddTester, PrngTestParameters>(2, 2, 2, true);
+		performTest<GaussianSpinorfieldEvenOddTester, PrngTestParameters>(ns12, nt4, 2, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

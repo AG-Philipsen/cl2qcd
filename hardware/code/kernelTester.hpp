@@ -39,8 +39,12 @@ struct TestParameters {
 	int typeOfComparison;
 	size_t numberOfValues;
 
-	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn): referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(1), numberOfValues(referenceValueIn.size()) {}
-	TestParameters(): referenceValue({-1234}), ns(4), nt(4), typeOfComparison(1), numberOfValues(referenceValue.size()) {}
+	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn):
+		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(1), numberOfValues(referenceValueIn.size()) {}
+	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn, const int typeOfComparisonIn):
+		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
+	TestParameters():
+		referenceValue({-1234}), ns(4), nt(4), typeOfComparison(1), numberOfValues(referenceValue.size()) {}
 };
 
 class KernelTester {
