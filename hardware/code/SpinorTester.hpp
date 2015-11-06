@@ -33,6 +33,15 @@ typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
 typedef int numberOfSpinors;
 
+struct LatticeExtends
+{
+	LatticeExtends() : ns(4), nt(4) {};
+	LatticeExtends(const int nsIn, const int ntIn): ns(nsIn), nt(ntIn) {};
+	LatticeExtends(const unsigned int nsIn, const unsigned int ntIn): ns(nsIn), nt(ntIn) {};
+	const unsigned int ns;
+	const unsigned int nt;
+};
+
 static int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
 {
 	return 	nsIn * nsIn * nsIn * ntIn;
@@ -43,25 +52,37 @@ static int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
 	return 	calculateLatticeVolume(nsIn, ntIn);
 }
 
+static int calculateSpinorfieldSize(const LatticeExtends latticeExtendsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtendsIn.ns, latticeExtendsIn.nt);
+}
+
 static int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
 {
 	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
 }
 
+static int calculateEvenOddSpinorfieldSize(const LatticeExtends latticeExtendsIn) noexcept
+{
+	return 	calculateSpinorfieldSize(latticeExtendsIn.ns, latticeExtendsIn.nt) / 2;
+}
+
 struct SpinorTestParameters: public TestParameters
 {
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(false), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn, const int typeOfComparisionIn) :
-		TestParameters(referenceValuesIn, nsIn, ntIn, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), isEvenOdd(false), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const bool isEvenOddIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn, const int typeOfComparisionIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
 	SpinorTestParameters() : TestParameters(), isEvenOdd(false) {};
 
 	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ;
 	int getEvenOddSpinorfieldSize() const { return calculateEvenOddSpinorfieldSize(ns, nt); } ;
+	int getSpinorfieldSize(const LatticeExtends latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ;
+	int getEvenOddSpinorfieldSize(const LatticeExtends latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ;
 
 	const bool isEvenOdd;
 	const SpinorFillTypes fillTypes;
