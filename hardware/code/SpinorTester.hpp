@@ -33,6 +33,21 @@ typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
 typedef int numberOfSpinors;
 
+static int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
+{
+	return 	nsIn * nsIn * nsIn * ntIn;
+}
+
+static int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateLatticeVolume(nsIn, ntIn);
+}
+
+static int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
+}
+
 struct SpinorTestParameters: public TestParameters
 {
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
@@ -44,6 +59,10 @@ struct SpinorTestParameters: public TestParameters
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn, const int typeOfComparisionIn) :
 		TestParameters(referenceValuesIn, nsIn, ntIn, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
 	SpinorTestParameters() : TestParameters(), isEvenOdd(false) {};
+
+	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ;
+	int getEvenOddSpinorfieldSize() const { return calculateEvenOddSpinorfieldSize(ns, nt); } ;
+
 	const bool isEvenOdd;
 	const SpinorFillTypes fillTypes;
 };

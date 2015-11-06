@@ -34,6 +34,11 @@
 enum comparisonTypes{difference=1, smallerThan, differenceToFirstReferenceValue};
 
 typedef std::vector<double> ReferenceValues;
+static ReferenceValues defaultReferenceValues()
+{
+	return ReferenceValues{-1.23456};
+}
+
 struct TestParameters {
 	std::vector<double> referenceValue;
 	int ns;

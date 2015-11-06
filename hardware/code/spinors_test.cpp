@@ -43,26 +43,6 @@ static hmc_float sumOfIntegersSquared(const int end) noexcept
 	return (2*end*end*end + 3*end*end + end) / 6.; // Faulhaber`s formula
 }
 
-static int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
-{
-	return 	nsIn * nsIn * nsIn * ntIn;
-}
-
-static int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
-{
-	return 	calculateLatticeVolume(nsIn, ntIn);
-}
-
-static int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
-{
-	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
-}
-
-static ReferenceValues defaultReferenceValues()
-{
-	return ReferenceValues{-1.23456};
-}
-
 const ReferenceValues calculateReferenceValues_globalSquarenorm(const int latticeVolume, const SpinorFillTypes fillTypesIn)
 {
 	switch( fillTypesIn.at(0) )
@@ -147,15 +127,15 @@ const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolum
 
 struct LinearCombinationTestParameters : public SpinorTestParameters
 {
-	const ComplexNumbers complexNumbers;
-	const size_t numberOfSpinors;
-
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
 		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(coefficientsIn), numberOfSpinors(numberOfSpinorsIn){}
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn, const int typeOfComparisonIn):
 		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, SpinorFillTypes{SpinorFillType::one}, isEvenOddIn, typeOfComparisonIn), complexNumbers(ComplexNumbers{}), numberOfSpinors(numberOfSpinorsIn){}
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn):
 		SpinorTestParameters(referenceValuesIn, nsIn, ntIn, fillTypesIn, isEvenOddIn), complexNumbers(ComplexNumbers {{1.,0.}}), numberOfSpinors(1){}
+
+	const ComplexNumbers complexNumbers;
+	const size_t numberOfSpinors;
 };
 
 class LinearCombinationTester: public SpinorTester
@@ -206,6 +186,22 @@ template<typename TesterClass, typename ParameterClass> void callTest(const Para
 	TesterClass(hardwareParameters, kernelParameters, parametersForThisTest);
 }
 
+struct ParameterCollection
+{
+	ParameterCollection(const hardware::HardwareParametersInterface & hardwareParametersIn, const hardware::code::OpenClKernelParametersInterface & kernelParametersIn):
+		hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn) {};
+	const hardware::HardwareParametersInterface & hardwareParameters;
+	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
+};
+
+template<typename TesterClass, typename ParameterClass> void callTest2(const ParameterClass parametersForThisTest)
+{
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
+}
+
 template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, fillTypesIn);
@@ -227,7 +223,7 @@ template<typename TesterClass, typename ParameterClass> void performTest(const i
 template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const int typeOfComparisonIn, const bool isEvenOddIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, typeOfComparisonIn, isEvenOddIn);
-	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+	callTest2<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
 BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
@@ -1014,28 +1010,32 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	class PrngTester: public LinearCombinationTester
 	{
 	public:
-		PrngTester(const std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters & testParameters):
-					LinearCombinationTester(kernelName, hardwareParameters, kernelParameters, testParameters)
+		PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const PrngTestParameters & testParameters):
+					LinearCombinationTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters),
+					hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
+					useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
 		{
-			prng_init(kernelParameters.getHostSeed());
-			prngStates = new hardware::buffers::PRNGBuffer(device, hardwareParameters.useSameRandomNumbers() );
+			prng_init(hostSeed);
+			prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
 			auto codePrng = device->getPrngCode();
-			codePrng->initialize(prngStates, kernelParameters.getHostSeed());
+			codePrng->initialize(prngStates, hostSeed);
 		}
 		~PrngTester()
 		{
 			delete prngStates;
 		}
+	protected:
 		const hardware::buffers::PRNGBuffer* prngStates;
+	private:
+		uint32_t hostSeed;
+		bool useSameRandomNumbers;
 	};
 
 	class GaussianTester: public PrngTester
 	{
 	public:
-		GaussianTester(const std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters & testParameters, const int numberOfElements):
-					PrngTester(kernelName, hardwareParameters, kernelParameters, testParameters),
+		GaussianTester(const std::string kernelName, const ParameterCollection parameterCollection, const PrngTestParameters & testParameters, const int numberOfElements):
+					PrngTester(kernelName, parameterCollection, testParameters),
 					numberOfElements(numberOfElements), mean(0.), variance(0.),
 					hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters){}
 
@@ -1063,6 +1063,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 			}
 			variance /= testParameters.iterations * numberOfElements * 24;
 		}
+	protected:
 		const int numberOfElements;
 		double mean, variance;
 		std::vector<spinor> hostOutput;
@@ -1072,10 +1073,8 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	class GaussianSpinorfieldTester: public GaussianTester
 	{
 	public:
-		GaussianSpinorfieldTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters testParameters):
-					GaussianTester("generate_gaussian_spinorfield", hardwareParameters, kernelParameters, testParameters,
-							calculateSpinorfieldSize(testParameters.ns, testParameters.nt)){}
+		GaussianSpinorfieldTester(const ParameterCollection parameterCollection, const PrngTestParameters testParameters):
+					GaussianTester("generate_gaussian_spinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize() ){}
 		~GaussianSpinorfieldTester()
 		{
 			for (unsigned int i = 0; i < testParameters.iterations; i++) {
@@ -1095,10 +1094,8 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	class GaussianSpinorfieldEvenOddTester: public GaussianTester
 	{
 	public:
-		GaussianSpinorfieldEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const PrngTestParameters testParameters):
-					GaussianTester("generate_gaussian_spinorfield_eo", hardwareParameters, kernelParameters, testParameters,
-							calculateEvenOddSpinorfieldSize(testParameters.ns, testParameters.nt)){}
+		GaussianSpinorfieldEvenOddTester(const ParameterCollection parameterCollection, const PrngTestParameters testParameters):
+					GaussianTester("generate_gaussian_spinorfield_eo", parameterCollection, testParameters, testParameters.getEvenOddSpinorfieldSize() ) {};
 		~GaussianSpinorfieldEvenOddTester()
 		{
 			for (unsigned int i = 0; i < testParameters.iterations; i++) {
