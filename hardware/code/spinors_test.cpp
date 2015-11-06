@@ -125,6 +125,14 @@ const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolum
 	return ReferenceValues {latticeVolume * 12., 0.};
 }
 
+struct ParameterCollection
+{
+	ParameterCollection(const hardware::HardwareParametersInterface & hardwareParametersIn, const hardware::code::OpenClKernelParametersInterface & kernelParametersIn):
+		hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn) {};
+	const hardware::HardwareParametersInterface & hardwareParameters;
+	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
+};
+
 struct LinearCombinationTestParameters : public SpinorTestParameters
 {
 	LinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const int nsIn, const int ntIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn, const bool isEvenOddIn):
@@ -141,9 +149,8 @@ struct LinearCombinationTestParameters : public SpinorTestParameters
 class LinearCombinationTester: public SpinorTester
 {
 public:
-	LinearCombinationTester(const std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
-			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const LinearCombinationTestParameters testParameters):
-			SpinorTester(kernelName, hardwareParameters, kernelParameters, testParameters){
+	LinearCombinationTester(const std::string kernelName, const ParameterCollection parameterCollection, const LinearCombinationTestParameters testParameters):
+			SpinorTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters){
 
 				for (auto coefficient : testParameters.complexNumbers)
 				{
@@ -183,21 +190,6 @@ template<typename TesterClass, typename ParameterClass> void callTest(const Para
 {
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
-	TesterClass(hardwareParameters, kernelParameters, parametersForThisTest);
-}
-
-struct ParameterCollection
-{
-	ParameterCollection(const hardware::HardwareParametersInterface & hardwareParametersIn, const hardware::code::OpenClKernelParametersInterface & kernelParametersIn):
-		hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn) {};
-	const hardware::HardwareParametersInterface & hardwareParameters;
-	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
-};
-
-template<typename TesterClass, typename ParameterClass> void callTest2(const ParameterClass parametersForThisTest)
-{
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
-	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }
@@ -223,7 +215,7 @@ template<typename TesterClass, typename ParameterClass> void performTest(const i
 template<typename TesterClass, typename ParameterClass> void performTest(const int nsIn, const int ntIn, const int typeOfComparisonIn, const bool isEvenOddIn )
 {
 	ParameterClass parametersForThisTest(nsIn, ntIn, typeOfComparisonIn, isEvenOddIn);
-	callTest2<TesterClass, ParameterClass>(parametersForThisTest);
+	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
 BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
@@ -258,9 +250,8 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	struct SquarenormTester: public LinearCombinationTester
 	{
-		SquarenormTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SquarenormTestParameters & testParameters):
-					LinearCombinationTester("global squarenorm", hardwareParameters, kernelParameters, testParameters)
+		SquarenormTester(const ParameterCollection & parameterCollection, const SquarenormTestParameters & testParameters):
+					LinearCombinationTester("global squarenorm", parameterCollection, testParameters)
 		{
 			calcSquarenormAndStoreAsKernelResult(getOutSpinor());
 		}
@@ -303,9 +294,8 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
 	struct SquarenormEvenOddTester: public LinearCombinationTester
 	{
-		SquarenormEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SquarenormEvenOddTestParameters & testParameters):
-					LinearCombinationTester("global_squarenorm_eo", hardwareParameters, kernelParameters, testParameters)
+		SquarenormEvenOddTester(const ParameterCollection & parameterCollection, const SquarenormEvenOddTestParameters & testParameters):
+					LinearCombinationTester("global_squarenorm_eo", parameterCollection, testParameters)
 		{
 			calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
 		}
@@ -349,9 +339,8 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 	class ScalarProductTester: public LinearCombinationTester
 	{
 	public:
-		ScalarProductTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ScalarProductTestParameters testParameters):
-			LinearCombinationTester("scalar_product", hardwareParameters, kernelParameters, testParameters)
+		ScalarProductTester(const ParameterCollection & parameterCollection, const ScalarProductTestParameters testParameters):
+			LinearCombinationTester("scalar_product", parameterCollection, testParameters)
 		{
 			code->set_complex_to_scalar_product_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
 			hmc_complex resultTmp;
@@ -410,9 +399,8 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 	class ScalarProductEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		ScalarProductEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ScalarProductEvenOddTestParameters testParameters):
-			LinearCombinationTester("scalar_product_eo", hardwareParameters, kernelParameters, testParameters)
+		ScalarProductEvenOddTester(const ParameterCollection & parameterCollection, const ScalarProductEvenOddTestParameters testParameters):
+			LinearCombinationTester("scalar_product_eo", parameterCollection, testParameters)
 		{
 			code->set_complex_to_scalar_product_eoprec_device(spinorfieldsEvenOdd.at(0), spinorfieldsEvenOdd.at(1), complexNums.at(0));
 			hmc_complex resultTmp;
@@ -473,9 +461,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 	class ColdTester: public LinearCombinationTester
 	{
 	public:
-		ColdTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ColdAndZeroTestParameters testParameters):
-			LinearCombinationTester("cold", hardwareParameters, kernelParameters, testParameters)
+		ColdTester(const ParameterCollection & parameterCollection, const ColdAndZeroTestParameters testParameters):
+			LinearCombinationTester("cold", parameterCollection, testParameters)
 			{
 				code->set_spinorfield_cold_device(getOutSpinor());
 				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
@@ -485,9 +472,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 	class ZeroTester: public LinearCombinationTester
 	{
 	public:
-		ZeroTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ColdAndZeroTestParameters testParameters):
-			LinearCombinationTester("zero", hardwareParameters, kernelParameters, testParameters)
+		ZeroTester(const ParameterCollection & parameterCollection, const ColdAndZeroTestParameters testParameters):
+			LinearCombinationTester("zero", parameterCollection, testParameters)
 			{
 				code->set_zero_spinorfield_device(getOutSpinor());
 				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
@@ -519,9 +505,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
 	class ColdEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		ColdEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ColdAndZeroEvenOddTestParameters testParameters):
-			LinearCombinationTester ("cold_eo", hardwareParameters, kernelParameters, testParameters)
+		ColdEvenOddTester(const ParameterCollection & parameterCollection, const ColdAndZeroEvenOddTestParameters testParameters):
+			LinearCombinationTester ("cold_eo", parameterCollection, testParameters)
 			{
 				code->set_eoprec_spinorfield_cold_device(getOutSpinorEvenOdd());
 				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
@@ -531,9 +516,8 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
 	class ZeroEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		ZeroEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ColdAndZeroEvenOddTestParameters testParameters):
-			LinearCombinationTester("zero_eo",hardwareParameters, kernelParameters, testParameters)
+		ZeroEvenOddTester(const ParameterCollection & parameterCollection, const ColdAndZeroEvenOddTestParameters testParameters):
+			LinearCombinationTester("zero_eo",parameterCollection, testParameters)
 			{
 				code->set_zero_spinorfield_eoprec_device(getOutSpinorEvenOdd());
 				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
@@ -563,9 +547,8 @@ BOOST_AUTO_TEST_SUITE(SAX)
 	class SaxTester: public LinearCombinationTester
 	{
 	public:
-		SaxTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxTestParameters testParameters):
-			LinearCombinationTester("sax", hardwareParameters, kernelParameters, testParameters)
+		SaxTester(const ParameterCollection & parameterCollection, const SaxTestParameters testParameters):
+			LinearCombinationTester("sax", parameterCollection, testParameters)
 			{
 				code->sax_device(spinorfields.at(0), complexNums.at(0), getOutSpinor());
 				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
@@ -605,9 +588,8 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 	class SaxEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		SaxEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxEvenOddTestParameters testParameters):
-			LinearCombinationTester("sax_eo", hardwareParameters, kernelParameters, testParameters)
+		SaxEvenOddTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
+			LinearCombinationTester("sax_eo", parameterCollection, testParameters)
 			{
 				code->sax_eoprec_device(spinorfieldsEvenOdd.at(0), complexNums.at(0), getOutSpinorEvenOdd());
 				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
@@ -647,9 +629,8 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 	class SaxpyTester: public LinearCombinationTester
 	{
 	public:
-	SaxpyTester(const hardware::HardwareParametersInterface & hardwareParameters,
-			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyTestParameters testParameters):
-			LinearCombinationTester("saxpy", hardwareParameters, kernelParameters, testParameters)
+	SaxpyTester(const ParameterCollection & parameterCollection, const SaxpyTestParameters testParameters):
+			LinearCombinationTester("saxpy", parameterCollection, testParameters)
 			{
 				code->saxpy_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), getOutSpinor());
 				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
@@ -659,9 +640,8 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 	class SaxpyArgTester: public LinearCombinationTester
 	{
 	public:
-	SaxpyArgTester(const hardware::HardwareParametersInterface & hardwareParameters,
-			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyTestParameters testParameters):
-			LinearCombinationTester("saxpy_arg", hardwareParameters, kernelParameters, testParameters)
+	SaxpyArgTester(const ParameterCollection & parameterCollection, const SaxpyTestParameters testParameters):
+			LinearCombinationTester("saxpy_arg", parameterCollection, testParameters)
 			{
 				code->saxpy_device(spinorfields.at(0), spinorfields.at(1), testParameters.complexNumbers.at(0), getOutSpinor());
 				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
@@ -721,9 +701,8 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 	class SaxpyEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		SaxpyEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyEvenOddTestParameters testParameters):
-			LinearCombinationTester("saxpy_eo", hardwareParameters, kernelParameters, testParameters)
+		SaxpyEvenOddTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
+			LinearCombinationTester("saxpy_eo", parameterCollection, testParameters)
 			{
 				code->saxpy_eoprec_device(spinorfieldsEvenOdd.at(0), spinorfieldsEvenOdd.at(0), complexNums.at(0), getOutSpinorEvenOdd());
 				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
@@ -733,9 +712,8 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 	class SaxpyArgEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		SaxpyArgEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxpyEvenOddTestParameters testParameters):
-			LinearCombinationTester("saxpy_arg_eo", hardwareParameters, kernelParameters, testParameters)
+		SaxpyArgEvenOddTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
+			LinearCombinationTester("saxpy_arg_eo", parameterCollection, testParameters)
 			{
 				code->saxpy_eoprec_device(spinorfieldsEvenOdd.at(0), spinorfieldsEvenOdd.at(0), testParameters.complexNumbers.at(0), getOutSpinorEvenOdd());
 				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
@@ -794,9 +772,8 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 	class SaxsbypzTester: public LinearCombinationTester
 	{
 	public:
-	SaxsbypzTester(const hardware::HardwareParametersInterface & hardwareParameters,
-			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxsbypzTestParameters testParameters):
-			LinearCombinationTester("saxsbypz", hardwareParameters, kernelParameters, testParameters)
+	SaxsbypzTester(const ParameterCollection & parameterCollection, const SaxsbypzTestParameters testParameters):
+			LinearCombinationTester("saxsbypz", parameterCollection, testParameters)
 			{
 				code->saxsbypz_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), complexNums.at(0), complexNums.at(1), getOutSpinor());
 				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
@@ -866,9 +843,8 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 	class SaxsbypzEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		SaxsbypzEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SaxsbypzEvenOddTestParameters testParameters):
-				LinearCombinationTester("saxsbypz_eo", hardwareParameters, kernelParameters, testParameters)
+		SaxsbypzEvenOddTester(const ParameterCollection & parameterCollection, const SaxsbypzEvenOddTestParameters testParameters):
+				LinearCombinationTester("saxsbypz_eo", parameterCollection, testParameters)
 			{
 				code->saxsbypz_eoprec_device(spinorfieldsEvenOdd.at(0), spinorfieldsEvenOdd.at(1), spinorfieldsEvenOdd.at(2), complexNums.at(0), complexNums.at(1), getOutSpinorEvenOdd());
 				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
@@ -937,9 +913,8 @@ struct ConvertEvenOddTestParameters: public SpinorTestParameters
 	class ConvertEvenOddToOrFromTester: public SpinorTester
 	{
 	public:
-		ConvertEvenOddToOrFromTester(const hardware::HardwareParametersInterface & hardwareParameters,
-			const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ConvertEvenOddTestParameters testParameters):
-		SpinorTester("convert_eo_toOrFrom", hardwareParameters, kernelParameters, testParameters)
+		ConvertEvenOddToOrFromTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
+		SpinorTester("convert_eo_toOrFrom", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
@@ -958,9 +933,8 @@ struct ConvertEvenOddTestParameters: public SpinorTestParameters
 	class ConvertEvenOddTester: public SpinorTester
 	{
 	public:
-		ConvertEvenOddTester(const hardware::HardwareParametersInterface & hardwareParameters,
-				const hardware::code::OpenClKernelParametersInterface & kernelParameters, const ConvertEvenOddTestParameters testParameters):
-			SpinorTester("convert_eo", hardwareParameters, kernelParameters, testParameters)
+		ConvertEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
+			SpinorTester("convert_eo", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
@@ -1011,7 +985,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	{
 	public:
 		PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const PrngTestParameters & testParameters):
-					LinearCombinationTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters),
+					LinearCombinationTester(kernelName, parameterCollection, testParameters),
 					hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
 					useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
 		{
