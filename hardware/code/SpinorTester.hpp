@@ -24,14 +24,14 @@
 
 #include "../../meta/util.hpp"
 #include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
+#include "../../physics/prng.hpp" //todo: remove
 #include "spinors.hpp"
 #include "complex.hpp"
 
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
-typedef int numberOfSpinors;
+typedef size_t NumberOfSpinors;
 
 struct LatticeExtends
 {
@@ -69,24 +69,24 @@ static int calculateEvenOddSpinorfieldSize(const LatticeExtends latticeExtendsIn
 
 struct SpinorTestParameters: public TestParameters
 {
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool needEvenOddIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), needEvenOdd(needEvenOddIn), fillTypes(fillTypesIn) {};
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn) :
-		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), isEvenOdd(false), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn, const int typeOfComparisionIn) :
-		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
-	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const int typeOfComparisionIn, const bool isEvenOddIn) :
-		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters() : TestParameters(), isEvenOdd(false) {};
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), needEvenOdd(false), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const bool needEvenOddIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), needEvenOdd(needEvenOddIn), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool needEvenOddIn, const int typeOfComparisionIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt, typeOfComparisionIn), needEvenOdd(needEvenOddIn), fillTypes(fillTypesIn) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const int typeOfComparisionIn, const bool needEvenOddIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt, typeOfComparisionIn), needEvenOdd(needEvenOddIn), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters() : TestParameters(), needEvenOdd(false) {};
 
 	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ;
 	int getEvenOddSpinorfieldSize() const { return calculateEvenOddSpinorfieldSize(ns, nt); } ;
 	int getSpinorfieldSize(const LatticeExtends latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ;
 	int getEvenOddSpinorfieldSize(const LatticeExtends latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ;
 
-	const bool isEvenOdd;
+	const bool needEvenOdd;
 	const SpinorFillTypes fillTypes;
 };
 
@@ -118,17 +118,17 @@ struct EvenOddSpinorTestParameters : public SpinorTestParameters
 
 class SpinorTester : public KernelTester {
 public:
+	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters & testParameters );
+	//todo: remove these constructors
 	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
 	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
 	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &,
-			const SpinorTestParameters & testParameters );
 	~SpinorTester();
 	
 protected:
-	std::string getSpecificInputfile(std::string inputfileIn);
+	std::string getSpecificInputfile(std::string inputfileIn); //todo: remove
 	
-	bool allocatedObjects;
+	bool allocatedObjects; //todo: remove
 
 	spinor * createSpinorfield( SpinorFillType );
 	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
@@ -152,10 +152,11 @@ protected:
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
 	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
 	
-	void setMembers();
+	void setMembers(); //todo: remove
 	void setMembersNew();
 	
 	const hardware::code::Spinors * code;
+	//todo: remove
 	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
 	physics::PRNG * prng;
 

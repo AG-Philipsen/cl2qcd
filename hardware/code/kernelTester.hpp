@@ -54,14 +54,21 @@ struct TestParameters {
 		referenceValue({0}), ns(4), nt(4), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValue.size()) {}
 };
 
+struct ParameterCollection
+{
+	ParameterCollection(const hardware::HardwareParametersInterface & hardwareParametersIn, const hardware::code::OpenClKernelParametersInterface & kernelParametersIn):
+		hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn) {};
+	const hardware::HardwareParametersInterface & hardwareParameters;
+	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
+};
+
 class KernelTester {
 public:
 	//todo: introduce comparisonTypes here!
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
 	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&,
-			struct TestParameters);
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters);
 	virtual ~KernelTester();
 	void setReferenceValuesToZero();
 	

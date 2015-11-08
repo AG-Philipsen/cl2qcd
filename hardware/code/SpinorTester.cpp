@@ -76,15 +76,13 @@ SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::S
 	code = device->getSpinorCode();
 }
 
-SpinorTester::SpinorTester(std::string kernelName, const hardware::HardwareParametersInterface & hardwareParameters,
-		const hardware::code::OpenClKernelParametersInterface & kernelParameters, const SpinorTestParameters & testParameters):
-		KernelTester(kernelName, hardwareParameters, kernelParameters, testParameters), prngParameters(nullptr), prng(nullptr)
+SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters):
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters), prngParameters(nullptr), prng(nullptr)
 {
 	setMembersNew();
 	code = device->getSpinorCode();
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 }
-
 
 SpinorTester::~SpinorTester()
 {

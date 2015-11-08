@@ -23,7 +23,6 @@
 #define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS
 
 #include "SpinorTester.hpp"
-#include "../../host_functionality/logger.hpp"
 
 #include "mockups.hpp"
 
@@ -125,21 +124,13 @@ const ReferenceValues calculateReferenceValues_convertFromEvenOdd(const int latt
 	return ReferenceValues {latticeVolume * 12. / 2.};
 }
 
-struct ParameterCollection
-{
-	ParameterCollection(const hardware::HardwareParametersInterface & hardwareParametersIn, const hardware::code::OpenClKernelParametersInterface & kernelParametersIn):
-		hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn) {};
-	const hardware::HardwareParametersInterface & hardwareParameters;
-	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
-};
-
 struct LinearCombinationTestParameters
 {
 	LinearCombinationTestParameters(const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) : coefficients(coefficientsIn), numberOfSpinors(numberOfSpinorsIn) {};
 	LinearCombinationTestParameters(const size_t numberOfSpinorsIn) : coefficients(ComplexNumbers{}), numberOfSpinors(numberOfSpinorsIn) {};
 	LinearCombinationTestParameters() : coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
 	const ComplexNumbers coefficients;
-	const size_t numberOfSpinors;
+	const NumberOfSpinors numberOfSpinors;
 };
 
 struct NonEvenOddLinearCombinationTestParameters : public NonEvenOddSpinorTestParameters, LinearCombinationTestParameters
@@ -162,11 +153,10 @@ struct EvenOddLinearCombinationTestParameters : public EvenOddSpinorTestParamete
 		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn) {};
 };
 
-//todo: isEvenOdd should be named needEvenOdd
 template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest)
 {
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
-	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.needEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }
@@ -217,8 +207,9 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
+		ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
 		const SpinorTestParameters testParameters;
-		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", hardwareParameters, kernelParameters, testParameters) );
+		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", parameterCollection, testParameters) );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -227,12 +218,12 @@ class LinearCombinationTester: public SpinorTester
 {
 public:
 	LinearCombinationTester(const std::string kernelName, const ParameterCollection parameterCollection, const NonEvenOddLinearCombinationTestParameters testParameters):
-		SpinorTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+		SpinorTester(kernelName, parameterCollection, testParameters)
 	{
 		loadCoefficients(testParameters);
 	}
 	LinearCombinationTester(const std::string kernelName, const ParameterCollection parameterCollection, const EvenOddLinearCombinationTestParameters testParameters):
-		SpinorTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+		SpinorTester(kernelName, parameterCollection, testParameters)
 	{
 		loadCoefficients(testParameters);
 	}
@@ -983,7 +974,7 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	{
 	public:
 		ConvertToEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
-		SpinorTester("convert_to_eo", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+		SpinorTester("convert_to_eo", parameterCollection, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
@@ -1012,7 +1003,7 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	{
 	public:
 		ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
-			SpinorTester("convert_from_eo", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+			SpinorTester("convert_from_eo", parameterCollection, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
@@ -1049,7 +1040,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	{
 	public:
 		PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters):
-					SpinorTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters),
+					SpinorTester(kernelName, parameterCollection, testParameters),
 					hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
 					useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
 		{
