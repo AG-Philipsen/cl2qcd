@@ -31,7 +31,7 @@
 #include "../device.hpp"
 #include "mockups.hpp"
 
-enum comparisonTypes{difference=1, smallerThan, differenceToFirstReferenceValue};
+enum ComparisonType{difference=1, smallerThan, differenceToFirstReferenceValue};
 
 typedef std::vector<double> ReferenceValues;
 static ReferenceValues defaultReferenceValues()
@@ -47,11 +47,11 @@ struct TestParameters {
 	size_t numberOfValues;
 
 	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn):
-		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(comparisonTypes::difference), numberOfValues(referenceValueIn.size()) {}
+		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValueIn.size()) {}
 	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn, const int typeOfComparisonIn):
 		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
 	TestParameters():
-		referenceValue({0}), ns(4), nt(4), typeOfComparison(comparisonTypes::difference), numberOfValues(referenceValue.size()) {}
+		referenceValue({0}), ns(4), nt(4), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValue.size()) {}
 };
 
 class KernelTester {

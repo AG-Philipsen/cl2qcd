@@ -156,19 +156,19 @@ KernelTester::~KernelTester()
   //NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
 	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
 		logger.info() << "compare result " << iteration;
-		if (typeOfComparison == comparisonTypes::difference)
+		if (typeOfComparison == ComparisonType::difference)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "Ref. Value = " << referenceValue[iteration];
 				BOOST_CHECK_CLOSE(referenceValue[iteration], kernelResult[iteration], testPrecision);
 	    }
-		else if (typeOfComparison == comparisonTypes::smallerThan)
+		else if (typeOfComparison == ComparisonType::smallerThan)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "upper Bound = " << referenceValue[iteration];
 				BOOST_CHECK_SMALL(kernelResult[iteration], referenceValue[iteration]);
 	    }
-		else if (typeOfComparison == comparisonTypes::differenceToFirstReferenceValue)
+		else if (typeOfComparison == ComparisonType::differenceToFirstReferenceValue)
 	    {
 				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
 				logger.info() << "Ref. Value = " << referenceValue[0];
