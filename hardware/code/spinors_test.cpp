@@ -146,6 +146,26 @@ struct LinearCombinationTestParameters : public SpinorTestParameters
 	const size_t numberOfSpinors;
 };
 
+struct NonEvenOddLinearCombinationTestParameters : public LinearCombinationTestParameters
+{
+	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
+		LinearCombinationTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, coefficientsIn, numberOfSpinorsIn, false) {};
+	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const size_t numberOfSpinorsIn, const int typeOfComparisonIn):
+		LinearCombinationTestParameters(referenceValuesIn, latticeExtendsIn, numberOfSpinorsIn, false, typeOfComparisonIn){};
+	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn):
+		LinearCombinationTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, false){};
+};
+
+struct EvenOddLinearCombinationTestParameters : public LinearCombinationTestParameters
+{
+	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
+		LinearCombinationTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, coefficientsIn, numberOfSpinorsIn, true) {};
+	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const size_t numberOfSpinorsIn, const int typeOfComparisonIn):
+		LinearCombinationTestParameters(referenceValuesIn, latticeExtendsIn, numberOfSpinorsIn, true, typeOfComparisonIn){};
+	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn):
+		LinearCombinationTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, true){};
+};
+
 class LinearCombinationTester: public SpinorTester
 {
 public:
@@ -186,6 +206,7 @@ protected:
 	}
 };
 
+//todo: isEvenOdd should be names needEvenOdd
 template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest)
 {
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.isEvenOdd);
@@ -246,23 +267,83 @@ BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+class LinearCombinationTester2: public SpinorTester
+{
+public:
+	LinearCombinationTester2(const std::string kernelName, const ParameterCollection parameterCollection, const LinearCombinationTestParameters testParameters):
+			SpinorTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+	{
+		for (auto coefficient : testParameters.complexNumbers)
+		{
+			complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, device));
+			complexNums.back()->load(&coefficient);
+		}
+	}
+protected:
+	std::vector<const hardware::buffers::Plain<hmc_complex> *> complexNums;
+};
+
+class NonEvenOddLinearCombinationTester: public LinearCombinationTester2
+{
+public:
+	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection parameterCollection, const LinearCombinationTestParameters testParameters):
+		LinearCombinationTester2(kernelName, parameterCollection, testParameters)
+	{
+		for( size_t number = 0; number < testParameters.numberOfSpinors ; number ++)
+		{
+			spinorfields.push_back(new hardware::buffers::Plain<spinor>(spinorfieldElements, device));
+			(testParameters.fillTypes.size() < testParameters.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(number)));
+		}
+	}
+	~NonEvenOddLinearCombinationTester()
+	{
+		calcSquarenormAndStoreAsKernelResult(getOutSpinor());
+	}
+protected:
+	std::vector<const hardware::buffers::Plain<spinor> *> spinorfields;
+	const hardware::buffers::Plain<spinor> * getOutSpinor() const
+	{
+		return spinorfields.back();
+	}
+};
+
+class EvenOddLinearCombinationTester: public LinearCombinationTester2
+{
+public:
+	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection & parameterCollection, const LinearCombinationTestParameters & testParameters):
+		LinearCombinationTester2(kernelName, parameterCollection, testParameters)
+	{
+		for( size_t number = 0; number < testParameters.numberOfSpinors ; number ++)
+		{
+			spinorfields.push_back(new hardware::buffers::Spinor(spinorfieldEvenOddElements, device));
+			(testParameters.fillTypes.size() < testParameters.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(number)));
+		}
+	}
+	~EvenOddLinearCombinationTester()
+	{
+		calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinor());
+	}
+protected:
+	std::vector<const hardware::buffers::Spinor *> spinorfields;
+	const hardware::buffers::Spinor * getOutSpinor() const
+	{
+		return spinorfields.back();
+	}
+};
+
 BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
-	struct SquarenormTestParameters: public LinearCombinationTestParameters
+	struct SquarenormTestParameters: public NonEvenOddLinearCombinationTestParameters
 	{
-		SquarenormTestParameters(const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
-			LinearCombinationTestParameters{ReferenceValues{calculateReferenceValues_globalSquarenorm( getSpinorfieldSize(latticeExtendsIn), fillTypesIn)},
-			latticeExtendsIn, fillTypesIn, false}
-		{};
+		SquarenormTestParameters(const LatticeExtends & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
+			NonEvenOddLinearCombinationTestParameters{calculateReferenceValues_globalSquarenorm( getSpinorfieldSize(latticeExtendsIn), fillTypesIn),
+			latticeExtendsIn, fillTypesIn} {};
 	};
 
-	struct SquarenormTester: public LinearCombinationTester
+	struct SquarenormTester: public NonEvenOddLinearCombinationTester
 	{
 		SquarenormTester(const ParameterCollection & parameterCollection, const SquarenormTestParameters & testParameters):
-					LinearCombinationTester("global squarenorm", parameterCollection, testParameters)
-		{
-			calcSquarenormAndStoreAsKernelResult(getOutSpinor());
-		}
+			NonEvenOddLinearCombinationTester("global squarenorm", parameterCollection, testParameters) {}
 	};
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
@@ -294,19 +375,16 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
-	struct SquarenormEvenOddTestParameters: public LinearCombinationTestParameters
+	struct SquarenormEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
 	{
-		SquarenormEvenOddTestParameters(const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
-			LinearCombinationTestParameters{ReferenceValues{calculateReferenceValues_globalSquarenorm( getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn)} , latticeExtendsIn, fillTypesIn, true} {};
+		SquarenormEvenOddTestParameters(const LatticeExtends & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
+			EvenOddLinearCombinationTestParameters{calculateReferenceValues_globalSquarenorm( getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn) , latticeExtendsIn, fillTypesIn} {};
 	};
 
-	struct SquarenormEvenOddTester: public LinearCombinationTester
+	struct SquarenormEvenOddTester: public EvenOddLinearCombinationTester
 	{
 		SquarenormEvenOddTester(const ParameterCollection & parameterCollection, const SquarenormEvenOddTestParameters & testParameters):
-					LinearCombinationTester("global_squarenorm_eo", parameterCollection, testParameters)
-		{
-			calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
-		}
+			EvenOddLinearCombinationTester("global_squarenorm_eo", parameterCollection, testParameters) {}
 	};
 	
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
