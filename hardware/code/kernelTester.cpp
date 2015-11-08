@@ -144,6 +144,7 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 	  }
 	else
 	{
+		logger.fatal() << testParams.typeOfComparison;
 	    throw( std::invalid_argument("Do not recognise type of comparison. Aborting...") );
 	}
 }

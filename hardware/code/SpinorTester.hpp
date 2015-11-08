@@ -77,6 +77,8 @@ struct SpinorTestParameters: public TestParameters
 		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool isEvenOddIn, const int typeOfComparisionIn) :
 		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(fillTypesIn) {};
+	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const int typeOfComparisionIn, const bool isEvenOddIn) :
+		TestParameters(referenceValuesIn, latticeExtendsIn.ns, latticeExtendsIn.nt, typeOfComparisionIn), isEvenOdd(isEvenOddIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters() : TestParameters(), isEvenOdd(false) {};
 
 	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ;
@@ -86,6 +88,32 @@ struct SpinorTestParameters: public TestParameters
 
 	const bool isEvenOdd;
 	const SpinorFillTypes fillTypes;
+};
+
+struct NonEvenOddSpinorTestParameters : public SpinorTestParameters
+{
+	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, false) {};
+	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn) :
+		SpinorTestParameters(referenceValuesIn,latticeExtendsIn, false) {};
+	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComparisonType typeOfComparisionIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, false, typeOfComparisionIn) {};
+	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, false, typeOfComparisionIn) {};
+	NonEvenOddSpinorTestParameters() : SpinorTestParameters() {};
+};
+
+struct EvenOddSpinorTestParameters : public SpinorTestParameters
+{
+	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, true) {};
+	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn) :
+		SpinorTestParameters(referenceValuesIn,latticeExtendsIn, true) {};
+	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComparisonType typeOfComparisionIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, true, typeOfComparisionIn) {};
+	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, true, typeOfComparisionIn) {};
+	EvenOddSpinorTestParameters() : SpinorTestParameters() {};
 };
 
 class SpinorTester : public KernelTester {
