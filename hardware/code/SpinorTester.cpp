@@ -301,11 +301,11 @@ spinor * SpinorTester::createSpinorfield(SpinorFillType fillTypeIn)
   return in;
 }
 
-spinor * SpinorTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity()
+spinor * SpinorTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
 {
   spinor * in;
   in = new spinor[spinorfieldElements];
-  fill_with_one_eo(in, spinorfieldElements, evenOrOdd);
+  fill_with_one_eo(in, spinorfieldElements, fillEvenSites);
   return in;
 }
 
@@ -322,7 +322,7 @@ std::string SpinorTester::getSpecificInputfile(std::string inputfileIn)
   return "spinors/" + inputfileIn;
 }
 
-void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
+void SpinorTester::fill_with_one_eo(spinor * in, const int size, const bool fillEvenSites)
 	{
 		int x, y, z, t;
 		hmc_complex content;
@@ -350,8 +350,8 @@ void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
 
 						parityOfSite = (x + y + z + t) % 2 == 0;
 						content = (parityOfSite) ?
-							(eo ? hmc_complex_one : hmc_complex_zero) :
-							(eo ? hmc_complex_zero : hmc_complex_one);
+							(fillEvenSites ? hmc_complex_one : hmc_complex_zero) :
+							(fillEvenSites ? hmc_complex_zero : hmc_complex_one);
 
 						in[global_pos].e0.e0 = content;
 						in[global_pos].e0.e1 = content;

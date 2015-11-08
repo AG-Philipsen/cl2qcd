@@ -84,20 +84,14 @@ const ReferenceValues calculateReferenceValues_scalarProduct(const int latticeVo
 		return defaultReferenceValues();
 }
 
-const ReferenceValues calculateReferenceValues_coldOrZero(const std::string kernelName, const bool isEvenOdd)
+const ReferenceValues calculateReferenceValues_cold(const bool isEvenOdd)
 {
-	if(kernelName == "cold")
-	{
-		return (isEvenOdd) ? ReferenceValues{0.5} : ReferenceValues{1.};
-	}
-	if(kernelName == "zero")
-	{
-		return ReferenceValues{0.};
-	}
-	else
-	{
-		return defaultReferenceValues();
-	}
+	return (isEvenOdd) ? ReferenceValues{0.5} : ReferenceValues{1.};
+}
+
+const ReferenceValues calculateReferenceValues_zero()
+{
+	return ReferenceValues{0.};
 }
 
 const ReferenceValues calculateReferenceValues_sax (const int latticeVolume, const ComplexNumbers alphaIn)
@@ -120,9 +114,15 @@ const ReferenceValues calculateReferenceValues_gaussian()
 	return ReferenceValues{ 1e-3, .5};
 }
 
-const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolume)
+const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolume, const bool fillEvenSites)
 {
-	return ReferenceValues {latticeVolume * 12., 0.};
+	double nonTrivialValue = latticeVolume * 12.;
+	return ReferenceValues {fillEvenSites ? nonTrivialValue : 0, fillEvenSites ? 0. : nonTrivialValue};
+}
+
+const ReferenceValues calculateReferenceValues_convertFromEvenOdd(const int latticeVolume)
+{
+	return ReferenceValues {latticeVolume * 12. / 2.};
 }
 
 struct ParameterCollection
@@ -206,9 +206,15 @@ template<typename TesterClass, typename ParameterClass> void performTest(Lattice
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtends latticeExtendsIn, const std::string kernelNameIn )
+template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtends latticeExtendsIn, const bool fillEvenSitesIn )
 {
-	ParameterClass parametersForThisTest(latticeExtendsIn, kernelNameIn);
+	ParameterClass parametersForThisTest(latticeExtendsIn, fillEvenSitesIn);
+	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+}
+
+template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtends latticeExtendsIn )
+{
+	ParameterClass parametersForThisTest(latticeExtendsIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
@@ -450,31 +456,18 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
+BOOST_AUTO_TEST_SUITE(ZERO)
 
-	struct ColdAndZeroTestParameters : public LinearCombinationTestParameters
+	struct ZeroTestParameters : public LinearCombinationTestParameters
 	{
-		const std::string kernelName;
-
-		ColdAndZeroTestParameters(LatticeExtends latticeExtendsIn, const std::string kernelNameIn):
-			LinearCombinationTestParameters(calculateReferenceValues_coldOrZero(kernelNameIn, false), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, false), kernelName(kernelNameIn) {};
-	};
-
-	class ColdTester: public LinearCombinationTester
-	{
-	public:
-		ColdTester(const ParameterCollection & parameterCollection, const ColdAndZeroTestParameters testParameters):
-			LinearCombinationTester("cold", parameterCollection, testParameters)
-			{
-				code->set_spinorfield_cold_device(getOutSpinor());
-				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
-			}
+		ZeroTestParameters(LatticeExtends latticeExtendsIn):
+			LinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, false) {};
 	};
 
 	class ZeroTester: public LinearCombinationTester
 	{
 	public:
-		ZeroTester(const ParameterCollection & parameterCollection, const ColdAndZeroTestParameters testParameters):
+		ZeroTester(const ParameterCollection & parameterCollection, const ZeroTestParameters testParameters):
 			LinearCombinationTester("zero", parameterCollection, testParameters)
 			{
 				code->set_zero_spinorfield_device(getOutSpinor());
@@ -482,60 +475,89 @@ BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO)
 			}
 	};
 
-	BOOST_AUTO_TEST_CASE( COLD_1 )
-	{
-		performTest<ColdTester, ColdAndZeroTestParameters> (LatticeExtends{ns4, nt4}, "cold");
-	}
-
 	BOOST_AUTO_TEST_CASE( ZERO_1 )
 	{
-		performTest<ZeroTester, ColdAndZeroTestParameters> (LatticeExtends{ns4, nt4}, "zero");
+		performTest<ZeroTester, ZeroTestParameters> (LatticeExtends{ns4, nt4});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(COLD_AND_ZERO_EO)
+BOOST_AUTO_TEST_SUITE(COLD)
 
-	struct ColdAndZeroEvenOddTestParameters : public LinearCombinationTestParameters
+	struct ColdTestParameters : public LinearCombinationTestParameters
 	{
-		const std::string kernelName;
+		ColdTestParameters(LatticeExtends latticeExtendsIn):
+			LinearCombinationTestParameters(calculateReferenceValues_cold(false), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, false) {};
+	};
 
-		ColdAndZeroEvenOddTestParameters(LatticeExtends latticeExtendsIn, const std::string kernelNameIn):
-			LinearCombinationTestParameters(calculateReferenceValues_coldOrZero(kernelNameIn, true), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, true), kernelName(kernelNameIn) {};
+	class ColdTester: public LinearCombinationTester
+	{
+	public:
+		ColdTester(const ParameterCollection & parameterCollection, const ColdTestParameters testParameters):
+			LinearCombinationTester("cold", parameterCollection, testParameters)
+			{
+				code->set_spinorfield_cold_device(getOutSpinor());
+				calcSquarenormAndStoreAsKernelResult(getOutSpinor());
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( COLD_1 )
+	{
+		performTest<ColdTester, ColdTestParameters> (LatticeExtends{ns4, nt4});
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(ZERO_EO)
+
+	struct ZeroEvenOddTestParameters : public LinearCombinationTestParameters
+	{
+		ZeroEvenOddTestParameters(LatticeExtends latticeExtendsIn):
+			LinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, true) {};
+	};
+
+	class ZeroEvenOddTester: public LinearCombinationTester
+	{
+	public:
+		ZeroEvenOddTester(const ParameterCollection & parameterCollection, const ZeroEvenOddTestParameters testParameters):
+			LinearCombinationTester ("zero_eo", parameterCollection, testParameters)
+			{
+				code->set_zero_spinorfield_eoprec_device(getOutSpinorEvenOdd());
+				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
+			}
+	};
+
+	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
+	{
+		performTest<ZeroEvenOddTester, ZeroEvenOddTestParameters> (LatticeExtends{ns4, nt4});
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(COLD_EO)
+
+	struct ColdEvenOddTestParameters : public LinearCombinationTestParameters
+	{
+		ColdEvenOddTestParameters(LatticeExtends latticeExtendsIn):
+			LinearCombinationTestParameters(calculateReferenceValues_cold(true), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}, true) {};
 	};
 
 	class ColdEvenOddTester: public LinearCombinationTester
 	{
 	public:
-		ColdEvenOddTester(const ParameterCollection & parameterCollection, const ColdAndZeroEvenOddTestParameters testParameters):
-			LinearCombinationTester ("cold_eo", parameterCollection, testParameters)
+		ColdEvenOddTester(const ParameterCollection & parameterCollection, const ColdEvenOddTestParameters testParameters):
+			LinearCombinationTester("cold_eo",parameterCollection, testParameters)
 			{
 				code->set_eoprec_spinorfield_cold_device(getOutSpinorEvenOdd());
 				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
 			}
 	};
 
-	class ZeroEvenOddTester: public LinearCombinationTester
-	{
-	public:
-		ZeroEvenOddTester(const ParameterCollection & parameterCollection, const ColdAndZeroEvenOddTestParameters testParameters):
-			LinearCombinationTester("zero_eo",parameterCollection, testParameters)
-			{
-				code->set_zero_spinorfield_eoprec_device(getOutSpinorEvenOdd());
-				calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinorEvenOdd());
-			}
-	};
-	
 	BOOST_AUTO_TEST_CASE( COLD_EO_1 )
 	{
-		performTest<ColdEvenOddTester, ColdAndZeroEvenOddTestParameters> (LatticeExtends{ns4, nt4}, "cold");
+		performTest<ColdEvenOddTester, ColdEvenOddTestParameters> (LatticeExtends{ns4, nt4});
 	}
 
-	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
-	{
-		performTest<ZeroEvenOddTester, ColdAndZeroEvenOddTestParameters> (LatticeExtends{ns4, nt4}, "zero");
-	}
-	
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAX)
@@ -903,26 +925,26 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 
-struct ConvertEvenOddTestParameters: public SpinorTestParameters
-{
-	const std::string kernelName;
+	struct ConvertEvenOddTestParameters: public SpinorTestParameters
+	{
+		const bool fillEvenSites;
 
-	ConvertEvenOddTestParameters(LatticeExtends latticeExtendsIn, const std::string kernelNameIn):
-		SpinorTestParameters(calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(latticeExtendsIn)), latticeExtendsIn, true),
-		kernelName(kernelNameIn) {}
-};
+		ConvertEvenOddTestParameters(LatticeExtends latticeExtendsIn, const bool fillEvenSitesIn):
+			SpinorTestParameters(calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(latticeExtendsIn), fillEvenSitesIn), latticeExtendsIn, true),
+			fillEvenSites(fillEvenSitesIn) {}
+	};
 
-	class ConvertEvenOddToOrFromTester: public SpinorTester
+	class ConvertToEvenOddTester: public SpinorTester
 	{
 	public:
-		ConvertEvenOddToOrFromTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
-		SpinorTester("convert_eo_toOrFrom", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+		ConvertToEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
+		SpinorTester("convert_to_eo", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
 				const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
 
-				in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity() );
+				in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ) );
 				code->convert_to_eoprec_device(&in2, &in3, &in) ;
 
 				code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
@@ -932,11 +954,20 @@ struct ConvertEvenOddTestParameters: public SpinorTestParameters
 			}
 	};
 
-	class ConvertEvenOddTester: public SpinorTester
+	struct ConvertFromEvenOddTestParameters: public SpinorTestParameters
+	{
+		const bool fillEvenSites;
+
+		ConvertFromEvenOddTestParameters(LatticeExtends latticeExtendsIn, const bool fillEvenSitesIn):
+			SpinorTestParameters( calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(latticeExtendsIn) ), latticeExtendsIn, true),
+			fillEvenSites(fillEvenSitesIn) {}
+	};
+
+	class ConvertFromEvenOddTester: public SpinorTester
 	{
 	public:
-		ConvertEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
-			SpinorTester("convert_eo", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+		ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
+			SpinorTester("convert_from_eo", parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
 			{
 				const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 				const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
@@ -952,24 +983,18 @@ struct ConvertEvenOddTestParameters: public SpinorTestParameters
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_1 )
 	{
-		performTest<ConvertEvenOddToOrFromTester, ConvertEvenOddTestParameters> (LatticeExtends{ns4, nt4}, "convert_eo_toOrFrom");
+		performTest<ConvertToEvenOddTester, ConvertEvenOddTestParameters> (LatticeExtends{ns4, nt4}, true);
 	}
 
-//	BOOST_AUTO_TEST_CASE( CONVERT_EO_2 )
-//	{
-//		performTest<ConvertEvenOddToOrFromTester, ConvertEvenOddTestParameters> (LatticeExtends{ns4, nt4}, "convert_eo_toOrFrom");
-////		ConvertEvenOddToOrFromTester tester("convert_eo_input_2");
-//	}
+	BOOST_AUTO_TEST_CASE( CONVERT_EO_2 )
+	{
+		performTest<ConvertToEvenOddTester, ConvertEvenOddTestParameters> (LatticeExtends{ns8, nt4}, false);
+	}
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_3 )
 	{
-		performTest<ConvertEvenOddTester, ConvertEvenOddTestParameters>(LatticeExtends{ns4, nt4}, "convert_eo");
+		performTest<ConvertFromEvenOddTester, ConvertEvenOddTestParameters>(LatticeExtends{ns4, nt4}, true);
 	}
-
-//	BOOST_AUTO_TEST_CASE( CONVERT_EO_4 )
-//	{
-//		ConvertEvenOddTester tester("convert_eo_input_2");
-//	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
