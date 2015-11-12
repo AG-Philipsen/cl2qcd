@@ -5,12 +5,12 @@
 #include "GaugefieldTester.hpp"
 
 //todo: is there a better solution to this?
-struct FermionTestParameters : public SpinorTestParameters, GaugefieldTestParameters
+struct FermionTestParameters : public NonEvenOddSpinorTestParameters, GaugefieldTestParameters
 {
-	FermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const bool needEvenOddIn, const GaugefieldFillType gaugefieldFillTypesIn) :
-		SpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn, needEvenOddIn),
+	FermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const GaugefieldFillType gaugefieldFillTypesIn) :
+		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn),
 		GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
-	FermionTestParameters() : SpinorTestParameters(), GaugefieldTestParameters() {};
+	FermionTestParameters() : NonEvenOddSpinorTestParameters(), GaugefieldTestParameters() {};
 };
 
 class FermionTester : public SpinorTester

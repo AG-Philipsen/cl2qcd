@@ -60,6 +60,14 @@ public:
 		in->load(createSpinorfield(spinorfieldElements));
 		out->load(createSpinorfield(spinorfieldElements));
 	}
+	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters) :
+	FermionTester(kernelName, parameterCollection, testParameters)
+	{
+		in = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
+		out = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
+		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
+		out->load(createSpinorfield(SpinorFillType::zero));
+	}
 	~FermionmatrixTester()
 	{
 		calcSquarenormAndStoreAsKernelResult(out);
@@ -73,44 +81,85 @@ protected:
 
 BOOST_AUTO_TEST_SUITE( M_WILSON )
 
+	const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, double kappaIn)
+	{
+		switch( spinorFillTypeIn )
+		{
+			case SpinorFillType::one :
+			{
+				return ReferenceValues{latticeVolume * 12.};
+			}
+			case SpinorFillType::ascendingComplex:
+			{
+				return ReferenceValues{latticeVolume * sumOfIntegersSquared(24)};
+			}
+			default:
+			{
+				return defaultReferenceValues();
+			}
+		}
+	}
+
+	struct MWilsonTestParameters : public FermionTestParameters
+	{
+		MWilsonTestParameters(const LatticeExtents latticeExtentsIn, SpinorFillType spinorFillTypeIn, GaugefieldFillType gaugefieldFillTypeIn, double kappaIn) :
+			FermionTestParameters(calculateReferenceValues_mWilson( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), kappa(kappaIn) {};
+
+		double kappa;
+	};
+
 	class MWilsonTester : public FermionmatrixTester
 	{
-public:
+	public:
 		MWilsonTester(std::string inputfile) :
 		FermionmatrixTester("m_wilson", inputfile)
 		{
 			code->M_wilson_device(in, out,  this->getGaugefieldBuffer(), parameters->get_kappa());
 		}
+		MWilsonTester(const ParameterCollection parameterCollection, const MWilsonTestParameters & testParameters) :
+		FermionmatrixTester("m_wilson", parameterCollection, testParameters)
+		{
+			code->M_wilson_device(in, out,  gaugefieldBuffer, testParameters.kappa );
+		}
 	};
+
+	void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const double kappaIn)
+	{
+		MWilsonTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn);
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+		MWilsonTester tester(parameterCollection, parametersForThisTest);
+	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_1)
 	{
-		MWilsonTester tester("m_wilson_input_1");
+		callTest( LatticeExtents{ns4, nt8}, SpinorFillType::one, GaugefieldFillType::cold, 0.);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_2)
 	{
-		MWilsonTester tester("m_wilson_input_2");
+		callTest(LatticeExtents{ns8, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, 0.);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_3)
 	{
-		MWilsonTester tester("m_wilson_input_3");
+		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::one, GaugefieldFillType::cold, 0.1);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_4)
 	{
-		MWilsonTester tester("m_wilson_input_4");
+		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, 0.1);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_5)
 	{
-		MWilsonTester tester("m_wilson_input_5");
+		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::one, GaugefieldFillType::nonTrivial, 0.1);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_6)
 	{
-		MWilsonTester tester("m_wilson_input_6");
+		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, 0.1);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

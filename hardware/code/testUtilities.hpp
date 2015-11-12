@@ -38,4 +38,20 @@ const int nt12 = 12;
 const int ns16 = 16;
 const int nt16 = 16;
 
+static hmc_float sumOfIntegers(const int start, const int end, const int increment) noexcept
+{
+	// One could also implement some variant of Faulhabers Formula here to save the loop
+	hmc_float sum = 0.;
+	for(int iteration = start; iteration <= end; iteration += increment)
+	{
+		sum += iteration;
+	}
+	return sum;
+}
+
+static hmc_float sumOfIntegersSquared(const int end) noexcept
+{
+	return (2*end*end*end + 3*end*end + end) / 6.; // Faulhaber`s formula
+}
+
 #endif // _TESTUTILITIES_HPP_
