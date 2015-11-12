@@ -28,16 +28,17 @@
 #include "../../meta/inputparameters.hpp"
 #include "observablesInterfaces.hpp"
 
+namespace physics {
 
-namespace physics{
+    namespace observables {
 
-	namespace observables{
+        namespace wilson {
 
-		namespace wilson{
-
-		  std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName, physics::InterfacesHandler & interfacesHandler);
-		  std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration, physics::InterfacesHandler & interfacesHandler);
+            std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string configurationName,
+                                                                                physics::InterfacesHandler & interfacesHandler);
+            std::vector<double> measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration,
+                                                                                physics::InterfacesHandler & interfacesHandler);
+        }
     }
-  }
 }
 #endif

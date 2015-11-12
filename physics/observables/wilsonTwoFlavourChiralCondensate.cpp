@@ -223,8 +223,8 @@ void TwoFlavourChiralCondensate::flavour_doublet_chiral_condensate(const physics
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
 {
-    physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation parametersInterface{gaugefield->getSystem()->get_inputparameters()};
-    TwoFlavourChiralCondensate condensate(gaugefield, parametersInterface, currentConfigurationName, gaugefield->get_trajectoryNumberAtInit());
+    TwoFlavourChiralCondensate condensate(gaugefield, interfacesHandler.getWilsonTwoFlavourChiralCondensateParametersInterface(),
+                                          currentConfigurationName, gaugefield->get_trajectoryNumberAtInit());
 	condensate.measureChiralCondensate(gaugefield, interfacesHandler);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
@@ -232,9 +232,8 @@ std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondens
 
 std::vector<double> physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, int iteration, physics::InterfacesHandler & interfacesHandler)
 {
-    physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation parametersInterface{gaugefield->getSystem()->get_inputparameters()};
-	std::string currentConfigurationName = gaugefield->getName(iteration);
-	TwoFlavourChiralCondensate condensate(gaugefield, parametersInterface, currentConfigurationName, iteration);
+    TwoFlavourChiralCondensate condensate(gaugefield, interfacesHandler.getWilsonTwoFlavourChiralCondensateParametersInterface(),
+	                                      gaugefield->getName(iteration), iteration);
 	condensate.measureChiralCondensate(gaugefield, interfacesHandler);
 	condensate.writeChiralCondensateToFile();
 	return condensate.getChiralCondensate();
