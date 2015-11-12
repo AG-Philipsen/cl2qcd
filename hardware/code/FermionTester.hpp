@@ -2,33 +2,59 @@
 #define FERMIONTESTER_HPP
 
 #include "SpinorTester.hpp"
+#include "GaugefieldTester.hpp"
+
+//todo: is there a better solution to this?
+struct FermionTestParameters : public SpinorTestParameters, GaugefieldTestParameters
+{
+	FermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const bool needEvenOddIn, const GaugefieldFillType gaugefieldFillTypesIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn, needEvenOddIn),
+		GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
+	FermionTestParameters() : SpinorTestParameters(), GaugefieldTestParameters() {};
+};
 
 class FermionTester : public SpinorTester
 {
 public:
 	FermionTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-	SpinorTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues)
+		SpinorTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues), gaugefieldBuffer(nullptr)
 	{
-			code = device->getFermionCode();
-			physics::lattices::GaugefieldParametersImplementation params(&system->get_inputparameters());
-			gaugefield = new physics::lattices::Gaugefield(*system, &params, *prng);
+			code = SpinorTester::device->getFermionCode();
+			physics::lattices::GaugefieldParametersImplementation params(&SpinorTester::system->get_inputparameters());
+			gaugefield = new physics::lattices::Gaugefield(*SpinorTester::system, &params, *prng);
 	}
 	FermionTester(std::string kernelName, std::vector<std::string> parameterStrings, int numberOfValues = 1):
-	SpinorTester(kernelName, parameterStrings, numberOfValues)
+	SpinorTester(kernelName, parameterStrings, numberOfValues), gaugefieldBuffer(nullptr)
 	{
-			code = device->getFermionCode();
-			physics::lattices::GaugefieldParametersImplementation params(&system->get_inputparameters());
-			gaugefield = new physics::lattices::Gaugefield(*system, &params, *prng);
+			code = SpinorTester::device->getFermionCode();
+			physics::lattices::GaugefieldParametersImplementation params(&SpinorTester::system->get_inputparameters());
+			gaugefield = new physics::lattices::Gaugefield(*SpinorTester::system, &params, *prng);
 	}
+	FermionTester(std::string kernelName, const ParameterCollection & pC, const FermionTestParameters & testParameters):
+		SpinorTester(kernelName, pC, testParameters), gaugefield(nullptr)
+	{
+		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
+		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
+		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+		delete[] gf_host;
+
+		code = SpinorTester::device->getFermionCode();
+	}
+
 	~FermionTester()
 	{
-		delete gaugefield;
+		if (gaugefield)
+		{
+			delete gaugefield;
+		}
 	}
 	
 protected:
 	const hardware::code::Fermions * code;
-	physics::lattices::Gaugefield * gaugefield;
+	const hardware::buffers::SU3 * gaugefieldBuffer;
+	physics::lattices::Gaugefield * gaugefield; //todo: remove
 	
+	//todo: remove both fcts.
 	std::string getSpecificInputfile(std::string inputfileIn)
 	{
 		//todo: this is ugly, find a better solution.

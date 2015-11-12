@@ -29,6 +29,7 @@ struct GaugefieldTestParameters : public TestParameters
 
 	GaugefieldTestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn):
 		TestParameters(referenceValueIn, latticeExtentsIn), fillType( fillTypeIn ) {}
+	GaugefieldTestParameters() : TestParameters(), fillType( GaugefieldFillType::cold ) {}
 };
 
 class GaugefieldTester : public KernelTester {
@@ -42,7 +43,11 @@ protected:
 	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
+static int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
+}
 
-
+const Matrixsu3* createGaugefield(const int numberOfElements, const GaugefieldFillType fillTypeIn);
 
 

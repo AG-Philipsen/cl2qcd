@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
 		ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-		const SpinorTestParameters testParameters;
+		const FermionTestParameters testParameters;
 		BOOST_CHECK_NO_THROW( FermionTester( "build all kernels", parameterCollection, testParameters) );
 	}
 

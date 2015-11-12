@@ -28,4 +28,13 @@ struct LatticeExtents
 	const unsigned int nt;
 };
 
+static int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
+{
+	return 	nsIn * nsIn * nsIn * ntIn;
+}
+
+static int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn.ns, latticeExtentsIn.nt);
+}
 

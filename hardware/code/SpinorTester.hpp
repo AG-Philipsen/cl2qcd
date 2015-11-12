@@ -35,11 +35,6 @@ typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
 typedef size_t NumberOfSpinors;
 
-static int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
-{
-	return 	nsIn * nsIn * nsIn * ntIn;
-}
-
 static int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
 {
 	return 	calculateLatticeVolume(nsIn, ntIn);
