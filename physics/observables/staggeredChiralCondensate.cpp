@@ -78,7 +78,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	using namespace physics::lattices;
 	using namespace physics::algorithms::solvers;
 	
-	physics::observables::StaggeredChiralCondensateParametersImplementation parametersInterface{system.get_inputparameters()};
+	const physics::observables::StaggeredChiralCondensateParametersInterface& parametersInterface = interfacesHandler.getStaggeredChiralCondensateParametersInterface();
 	const int number_sources = parametersInterface.getNumberOfSources();
 	const hmc_float mass = parametersInterface.getMass();
 	//Result
@@ -136,7 +136,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 void physics::observables::staggered::measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration,
                                                                             physics::InterfacesHandler& interfacesHandler)
 {
-    physics::observables::StaggeredChiralCondensateParametersImplementation parametersInterface{gf.getSystem()->get_inputparameters()};
+    const physics::observables::StaggeredChiralCondensateParametersInterface& parametersInterface = interfacesHandler.getStaggeredChiralCondensateParametersInterface();
     if( !parametersInterface.measurePbp() )
     {
         throw std::logic_error("Chiral condensate calculation disabled in parameter setting. Aborting...");
