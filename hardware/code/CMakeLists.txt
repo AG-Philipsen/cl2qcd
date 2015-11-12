@@ -62,6 +62,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 add_library(kernelTestUtilities
 	testUtilities.cpp
 	kernelTester.cpp
+	GaugefieldTester.cpp
 	SpinorTester.cpp
 	GaugemomentumTester.cpp
 	SpinorStaggeredTester.cpp

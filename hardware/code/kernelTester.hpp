@@ -31,6 +31,8 @@
 #include "../device.hpp"
 #include "mockups.hpp"
 
+#include "latticeExtents.hpp"
+
 enum ComparisonType{difference=1, smallerThan, differenceToFirstReferenceValue};
 
 typedef std::vector<double> ReferenceValues;
@@ -46,10 +48,11 @@ struct TestParameters {
 	int typeOfComparison;
 	size_t numberOfValues;
 
-	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn):
-		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValueIn.size()) {}
-	TestParameters(std::vector<double> referenceValueIn, int nsIn, int ntIn, const int typeOfComparisonIn):
-		referenceValue(referenceValueIn), ns(nsIn), nt(ntIn), typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
+	//todo: introduce comparisonTypes here!
+	TestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn):
+		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValueIn.size()) {}
+	TestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, const int typeOfComparisonIn):
+		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
 	TestParameters():
 		referenceValue({0}), ns(4), nt(4), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValue.size()) {}
 };
@@ -64,30 +67,30 @@ struct ParameterCollection
 
 class KernelTester {
 public:
-	//todo: introduce comparisonTypes here!
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters);
+	//todo: remove these constructors
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
 	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters);
 	virtual ~KernelTester();
 	void setReferenceValuesToZero();
 	
 protected:
 	double testPrecision;
-	int typeOfComparison;
+	int typeOfComparison; //todo: introduce comparisonTypes here!
 	std::vector<double> kernelResult;
 	std::vector<double> referenceValue;
-	bool allocatedObjects;
+	bool allocatedObjects; //todo: remove
 	
-	meta::Inputparameters * parameters;
+	meta::Inputparameters * parameters; //todo: remove
 	const hardware::System * system;
 	hardware::Device * device;
 	const hardware::HardwareParametersInterface * hardwareParameters;
 	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
-	const hardware::OpenClCode * kernelBuilder;
+	const hardware::OpenClCode * kernelBuilder; //todo: remove
 
 private:
-	bool temporaryFlagForKernelTesterConstructorVersion = false;
+	bool temporaryFlagForKernelTesterConstructorVersion = false; //todo: remove
 };
 
 #endif /* KERNELTESTER_H_ */

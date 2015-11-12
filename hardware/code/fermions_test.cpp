@@ -38,6 +38,15 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 		FermionTester tester("build", "build_input_2");
 	}
 
+	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
+	{
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
+		ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
+		const SpinorTestParameters testParameters;
+		BOOST_CHECK_NO_THROW( FermionTester( "build all kernels", parameterCollection, testParameters) );
+	}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 class FermionmatrixTester : public FermionTester

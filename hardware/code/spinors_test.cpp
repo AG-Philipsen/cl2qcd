@@ -24,8 +24,6 @@
 
 #include "SpinorTester.hpp"
 
-#include "mockups.hpp"
-
 static hmc_float sumOfIntegers(const int start, const int end, const int increment) noexcept
 {
 	// One could also implement some variant of Faulhabers Formula here to save the loop
@@ -135,21 +133,21 @@ struct LinearCombinationTestParameters
 
 struct NonEvenOddLinearCombinationTestParameters : public NonEvenOddSpinorTestParameters, LinearCombinationTestParameters
 {
-	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
+	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
 		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn), LinearCombinationTestParameters{coefficientsIn, numberOfSpinorsIn} {};
-	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const size_t numberOfSpinorsIn, const ComparisonType typeOfComparisonIn):
+	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const size_t numberOfSpinorsIn, const ComparisonType typeOfComparisonIn):
 		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisonIn), LinearCombinationTestParameters{numberOfSpinorsIn}{};
-	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn):
+	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
 		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn) {};
 };
 
 struct EvenOddLinearCombinationTestParameters : public EvenOddSpinorTestParameters, LinearCombinationTestParameters
 {
-	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
+	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
 		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn), LinearCombinationTestParameters{coefficientsIn, numberOfSpinorsIn} {};
-	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const size_t numberOfSpinorsIn, const ComparisonType typeOfComparisonIn):
+	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const size_t numberOfSpinorsIn, const ComparisonType typeOfComparisonIn):
 		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisonIn), LinearCombinationTestParameters{numberOfSpinorsIn}{};
-	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn):
+	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
 		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn) {};
 };
 
@@ -161,31 +159,37 @@ template<typename TesterClass, typename ParameterClass> void callTest(const Para
 	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn )
+template<typename TesterClass, typename ParameterClass, typename AdditionalArgument> void performTest(LatticeExtents latticeExtendsIn, const AdditionalArgument addArg )
+{
+	ParameterClass parametersForThisTest(latticeExtendsIn, addArg);
+	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+}
+
+template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn )
 {
 	ParameterClass parametersForThisTest(latticeExtendsIn, fillTypesIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtends latticeExtendsIn, const ComplexNumbers alphaIn )
+template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn, const ComplexNumbers alphaIn )
 {
 	ParameterClass parametersForThisTest(latticeExtendsIn, SpinorFillTypes{SpinorFillType::ascendingComplex}, alphaIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtends latticeExtendsIn, const bool fillEvenSitesIn )
+template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn )
 {
 	ParameterClass parametersForThisTest(latticeExtendsIn, fillEvenSitesIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtends latticeExtendsIn )
+template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn )
 {
 	ParameterClass parametersForThisTest(latticeExtendsIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(const LatticeExtends latticeExtendsIn, const ComparisonType typeOfComparisonIn )
+template<typename TesterClass, typename ParameterClass> void performTest(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn )
 {
 	ParameterClass parametersForThisTest(latticeExtendsIn, typeOfComparisonIn);
 	callTest<TesterClass, ParameterClass>(parametersForThisTest);
@@ -306,7 +310,7 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	struct SquarenormTestParameters: public NonEvenOddLinearCombinationTestParameters
 	{
-		SquarenormTestParameters(const LatticeExtends & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
+		SquarenormTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
 			NonEvenOddLinearCombinationTestParameters{calculateReferenceValues_globalSquarenorm( getSpinorfieldSize(latticeExtendsIn), fillTypesIn),
 			latticeExtendsIn, fillTypesIn} {};
 	};
@@ -319,27 +323,27 @@ BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_1 )
 	{
-		performTest<SquarenormTester, SquarenormTestParameters>( LatticeExtends{ns4, nt4}, SpinorFillTypes{ SpinorFillType::one} );
+		performTest<SquarenormTester, SquarenormTestParameters>( LatticeExtents{ns4, nt4}, SpinorFillTypes{ SpinorFillType::one} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_2 )
 	{
-		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtends{ns8, nt4}, SpinorFillTypes{ SpinorFillType::ascendingComplex} );
+		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtents{ns8, nt4}, SpinorFillTypes{ SpinorFillType::ascendingComplex} );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_1 )
 	{
-		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtends{ns8, nt12}, SpinorFillTypes{ SpinorFillType::one } );
+		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtents{ns8, nt12}, SpinorFillTypes{ SpinorFillType::one } );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_2 )
 	{
-		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtends{ns12, nt16}, SpinorFillTypes{ SpinorFillType::one } );
+		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtents{ns12, nt16}, SpinorFillTypes{ SpinorFillType::one } );
 	}
 
 	BOOST_AUTO_TEST_CASE( GLOBAL_SQUARENORM_REDUCTION_3 )
 	{
-		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtends{ns16, nt8}, SpinorFillTypes{ SpinorFillType::one} );
+		performTest<SquarenormTester, SquarenormTestParameters>(LatticeExtents{ns16, nt8}, SpinorFillTypes{ SpinorFillType::one} );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -348,7 +352,7 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
 	struct SquarenormEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
 	{
-		SquarenormEvenOddTestParameters(const LatticeExtends & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
+		SquarenormEvenOddTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
 			EvenOddLinearCombinationTestParameters{calculateReferenceValues_globalSquarenorm( getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn) , latticeExtendsIn, fillTypesIn} {};
 	};
 
@@ -360,27 +364,27 @@ BOOST_AUTO_TEST_SUITE( GLOBAL_SQUARENORM_EO)
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
 	{
-		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtends{ns16, nt8}, SpinorFillTypes{ SpinorFillType::one });
+		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtents{ns16, nt8}, SpinorFillTypes{ SpinorFillType::one });
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_2 )
 	{
-		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtends{ns16, nt8}, SpinorFillTypes{ SpinorFillType::ascendingComplex });
+		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtents{ns16, nt8}, SpinorFillTypes{ SpinorFillType::ascendingComplex });
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_1 )
 	{
-		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtends{ns4, nt16}, SpinorFillTypes{ SpinorFillType::one });
+		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtents{ns4, nt16}, SpinorFillTypes{ SpinorFillType::one });
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_2 )
 	{
-		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtends{ns8, nt4}, SpinorFillTypes{ SpinorFillType::one });
+		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtents{ns8, nt4}, SpinorFillTypes{ SpinorFillType::one });
 	}
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_3 )
 	{
-		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtends{ns16, nt16}, SpinorFillTypes { SpinorFillType::one });
+		performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (LatticeExtents{ns16, nt16}, SpinorFillTypes { SpinorFillType::one });
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -389,7 +393,7 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
 	struct ScalarProductTestParameters : public NonEvenOddLinearCombinationTestParameters
 	{
-		ScalarProductTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn):
+		ScalarProductTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
 			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct( getSpinorfieldSize(latticeExtendsIn), fillTypesIn), latticeExtendsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2){};
 	};
 
@@ -410,37 +414,37 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
 	{
-		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtends{ns4, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_2 )
 	{
-		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtends{ns4, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex});
+		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_3 )
 	{
-		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtends{ns4, nt4}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::one});
+		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_4 )
 	{
-		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtends{ns4, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex});
+		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_1 )
 	{
-		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtends{ns8, nt12}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtents{ns8, nt12}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_2 )
 	{
-		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtends{ns8, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtents{ns8, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_3 )
 	{
-		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtends{ns8, nt16}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest< ScalarProductTester, ScalarProductTestParameters> (LatticeExtents{ns8, nt16}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -449,7 +453,7 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 
 	struct ScalarProductEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
 	{
-		ScalarProductEvenOddTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn):
+		ScalarProductEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
 			EvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct(getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn), latticeExtendsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2) {};
 	};
 
@@ -470,37 +474,37 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_1 )
 	{
-		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtends{ns8, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtents{ns8, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_2 )
 	{
-		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtends{ns4, nt12}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex});
+		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtents{ns4, nt12}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_3 )
 	{
-		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtends{ns8, nt8}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::one});
+		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtents{ns8, nt8}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_4 )
 	{
-		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtends{ns4, nt4}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex});
+		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_REDUCTION_1 )
 	{
-		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtends{ns16, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtents{ns16, nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_REDUCTION_2 )
 	{
-		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtends{ns16, nt8}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtents{ns16, nt8}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_REDUCTION_3 )
 	{
-		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtends{ns4, nt16}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
+		performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (LatticeExtents{ns4, nt16}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -509,7 +513,7 @@ BOOST_AUTO_TEST_SUITE(ZERO)
 
 	struct ZeroTestParameters : public NonEvenOddLinearCombinationTestParameters
 	{
-		ZeroTestParameters(LatticeExtends latticeExtendsIn):
+		ZeroTestParameters(LatticeExtents latticeExtendsIn):
 			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
 	};
 
@@ -525,7 +529,7 @@ BOOST_AUTO_TEST_SUITE(ZERO)
 
 	BOOST_AUTO_TEST_CASE( ZERO_1 )
 	{
-		performTest<ZeroTester, ZeroTestParameters> (LatticeExtends{ns4, nt4});
+		performTest<ZeroTester, ZeroTestParameters> (LatticeExtents{ns4, nt4});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -534,7 +538,7 @@ BOOST_AUTO_TEST_SUITE(COLD)
 
 	struct ColdTestParameters : public NonEvenOddLinearCombinationTestParameters
 	{
-		ColdTestParameters(LatticeExtends latticeExtendsIn):
+		ColdTestParameters(LatticeExtents latticeExtendsIn):
 			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(false), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
 	};
 
@@ -550,7 +554,7 @@ BOOST_AUTO_TEST_SUITE(COLD)
 
 	BOOST_AUTO_TEST_CASE( COLD_1 )
 	{
-		performTest<ColdTester, ColdTestParameters> (LatticeExtends{ns4, nt4});
+		performTest<ColdTester, ColdTestParameters> (LatticeExtents{ns4, nt4});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -559,7 +563,7 @@ BOOST_AUTO_TEST_SUITE(ZERO_EO)
 
 	struct ZeroEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
 	{
-		ZeroEvenOddTestParameters(LatticeExtends latticeExtendsIn):
+		ZeroEvenOddTestParameters(LatticeExtents latticeExtendsIn):
 			EvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
 	};
 
@@ -575,7 +579,7 @@ BOOST_AUTO_TEST_SUITE(ZERO_EO)
 
 	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
 	{
-		performTest<ZeroEvenOddTester, ZeroEvenOddTestParameters> (LatticeExtends{ns4, nt4});
+		performTest<ZeroEvenOddTester, ZeroEvenOddTestParameters> (LatticeExtents{ns4, nt4});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -584,7 +588,7 @@ BOOST_AUTO_TEST_SUITE(COLD_EO)
 
 	struct ColdEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
 	{
-		ColdEvenOddTestParameters(LatticeExtends latticeExtendsIn):
+		ColdEvenOddTestParameters(LatticeExtents latticeExtendsIn):
 			EvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(true), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
 	};
 
@@ -600,7 +604,7 @@ BOOST_AUTO_TEST_SUITE(COLD_EO)
 
 	BOOST_AUTO_TEST_CASE( COLD_EO_1 )
 	{
-		performTest<ColdEvenOddTester, ColdEvenOddTestParameters> (LatticeExtends{ns4, nt4});
+		performTest<ColdEvenOddTester, ColdEvenOddTestParameters> (LatticeExtents{ns4, nt4});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -609,7 +613,7 @@ BOOST_AUTO_TEST_SUITE(SAX)
 
 	struct SaxTestParameters : public NonEvenOddLinearCombinationTestParameters
 	{
-		SaxTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		SaxTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 2){}
 	};
 
@@ -625,22 +629,22 @@ BOOST_AUTO_TEST_SUITE(SAX)
 
 	BOOST_AUTO_TEST_CASE( SAX_1 )
 	{
-		performTest<SaxTester, SaxTestParameters> (LatticeExtends{ns4, nt4}, ComplexNumbers {{0.,0.}});
+		performTest<SaxTester, SaxTestParameters> (LatticeExtents{ns4, nt4}, ComplexNumbers {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_2 )
 	{
-		performTest<SaxTester, SaxTestParameters> (LatticeExtends{ns8, nt4}, ComplexNumbers {{1.,0.}});
+		performTest<SaxTester, SaxTestParameters> (LatticeExtents{ns8, nt4}, ComplexNumbers {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_3 )
 	{
-		performTest<SaxTester, SaxTestParameters> (LatticeExtends{ns4, nt8}, ComplexNumbers {{0.,1.}});
+		performTest<SaxTester, SaxTestParameters> (LatticeExtents{ns4, nt8}, ComplexNumbers {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_4 )
 	{
-		performTest<SaxTester, SaxTestParameters> (LatticeExtends{ns16, nt8}, ComplexNumbers {{1.,1.}});
+		performTest<SaxTester, SaxTestParameters> (LatticeExtents{ns16, nt8}, ComplexNumbers {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -649,7 +653,7 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 
 	struct SaxEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
 	{
-		SaxEvenOddTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		SaxEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			EvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getEvenOddSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 2){}
 	};
 
@@ -665,22 +669,22 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_1 )
 	{
-		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtends{ns4, nt4}, ComplexNumbers {{0.,0.}});
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtents{ns4, nt4}, ComplexNumbers {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_2 )
 	{
-		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtends{ns4, nt8}, ComplexNumbers {{1.,0.}});
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtents{ns4, nt8}, ComplexNumbers {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_3 )
 	{
-		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtends{ns8, nt4}, ComplexNumbers {{0.,1.}});
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtents{ns8, nt4}, ComplexNumbers {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAX_EO_4 )
 	{
-		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtends{ns16, nt8}, ComplexNumbers {{1.,1.}});
+		performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (LatticeExtents{ns16, nt8}, ComplexNumbers {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -689,7 +693,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 
 	struct SaxpyTestParameters : public NonEvenOddLinearCombinationTestParameters
 	{
-		SaxpyTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		SaxpyTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 3){}
 	};
 
@@ -715,42 +719,42 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 
 	BOOST_AUTO_TEST_CASE( SAXPY_1 )
 	{
-		performTest<SaxpyTester, SaxpyTestParameters> (LatticeExtends{ns4, nt4}, ComplexNumbers {{0.,0.}});
+		performTest<SaxpyTester, SaxpyTestParameters> (LatticeExtents{ns4, nt4}, ComplexNumbers {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_2 )
 	{
-		performTest<SaxpyTester, SaxpyTestParameters> (LatticeExtends{ns8, nt4}, ComplexNumbers {{1.,0.}});
+		performTest<SaxpyTester, SaxpyTestParameters> (LatticeExtents{ns8, nt4}, ComplexNumbers {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_3 )
 	{
-		performTest<SaxpyTester, SaxpyTestParameters> (LatticeExtends{ns4, nt8}, ComplexNumbers {{0.,1.}});
+		performTest<SaxpyTester, SaxpyTestParameters> (LatticeExtents{ns4, nt8}, ComplexNumbers {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_4 )
 	{
-		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtends{ns8, nt8}, ComplexNumbers {{1.,1.}});
+		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtents{ns8, nt8}, ComplexNumbers {{1.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_5 )
 	{
-		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtends{ns12, nt4}, ComplexNumbers {{0.,0.}});
+		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtents{ns12, nt4}, ComplexNumbers {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_6 )
 	{
-		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtends{ns4, nt12}, ComplexNumbers {{1.,0.}});
+		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtents{ns4, nt12}, ComplexNumbers {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_7 )
 	{
-		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtends{ns16, nt8}, ComplexNumbers {{0.,1.}});
+		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtents{ns16, nt8}, ComplexNumbers {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_8 )
 	{
-		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtends{ns8, nt16}, ComplexNumbers {{1.,1.}});
+		performTest<SaxpyArgTester, SaxpyTestParameters> (LatticeExtents{ns8, nt16}, ComplexNumbers {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -759,7 +763,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
 	struct SaxpyEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
 	{
-		SaxpyEvenOddTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		SaxpyEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getEvenOddSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 3){}
 	};
 
@@ -784,42 +788,42 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 	};
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_1 )
 	{
-		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns4, nt4}, ComplexNumbers {{0.,0.}});
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4, nt4}, ComplexNumbers {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_2 )
 	{
-		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns8, nt4}, ComplexNumbers {{1.,0.}});
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8, nt4}, ComplexNumbers {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_3 )
 	{
-		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns4, nt8}, ComplexNumbers {{0.,1.}});
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4, nt8}, ComplexNumbers {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_4 )
 	{
-		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns8, nt8}, ComplexNumbers {{1.,1.}});
+		performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8, nt8}, ComplexNumbers {{1.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_5 )
 	{
-		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns12, nt4}, ComplexNumbers {{0.,0.}});
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns12, nt4}, ComplexNumbers {{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_6 )
 	{
-		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns4, nt12}, ComplexNumbers {{1.,0.}});
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4, nt12}, ComplexNumbers {{1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_7 )
 	{
-		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns16, nt8}, ComplexNumbers {{0.,1.}});
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns16, nt8}, ComplexNumbers {{0.,1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXPY_EO_8 )
 	{
-		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtends{ns8, nt16}, ComplexNumbers {{1.,1.}});
+		performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8, nt16}, ComplexNumbers {{1.,1.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -828,7 +832,7 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 
 	struct SaxsbypzTestParameters : public NonEvenOddLinearCombinationTestParameters
 	{
-		SaxsbypzTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		SaxsbypzTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxsbypz(getSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 4){}
 	};
 
@@ -844,52 +848,52 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ)
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_1 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_2 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_3 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_4 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_5 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_6 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_7 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_8 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_9 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns8, nt16}, ComplexNumbers {{0.,-1.},{0.,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns8, nt16}, ComplexNumbers {{0.,-1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_10 )
 	{
-		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtends{ns16, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
+		performTest<SaxsbypzTester, SaxsbypzTestParameters> (LatticeExtents{ns16, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -898,7 +902,7 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 
 	struct SaxsbypzEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
 	{
-		SaxsbypzEvenOddTestParameters(LatticeExtends latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		SaxsbypzEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxsbypz(getEvenOddSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 4){}
 	};
 
@@ -914,47 +918,47 @@ BOOST_AUTO_TEST_SUITE(SAXSBYPZ_EO)
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_1 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_2 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_3 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_4 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_5 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_6 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_7 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_8 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
 	}
 
 	BOOST_AUTO_TEST_CASE( SAXSBYPZ_EO_9 )
 	{
-		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtends{ns8, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
+		performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (LatticeExtents{ns8, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -965,7 +969,7 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	{
 		const bool fillEvenSites;
 
-		ConvertEvenOddTestParameters(LatticeExtends latticeExtendsIn, const bool fillEvenSitesIn):
+		ConvertEvenOddTestParameters(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn):
 			SpinorTestParameters(calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(latticeExtendsIn), fillEvenSitesIn), latticeExtendsIn, true),
 			fillEvenSites(fillEvenSitesIn) {}
 	};
@@ -994,7 +998,7 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	{
 		const bool fillEvenSites;
 
-		ConvertFromEvenOddTestParameters(LatticeExtends latticeExtendsIn, const bool fillEvenSitesIn):
+		ConvertFromEvenOddTestParameters(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn):
 			SpinorTestParameters( calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(latticeExtendsIn) ), latticeExtendsIn, true),
 			fillEvenSites(fillEvenSitesIn) {}
 	};
@@ -1019,17 +1023,17 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_1 )
 	{
-		performTest<ConvertToEvenOddTester, ConvertEvenOddTestParameters> (LatticeExtends{ns4, nt4}, true);
+		performTest<ConvertToEvenOddTester, ConvertEvenOddTestParameters> (LatticeExtents{ns4, nt4}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_2 )
 	{
-		performTest<ConvertToEvenOddTester, ConvertEvenOddTestParameters> (LatticeExtends{ns8, nt4}, false);
+		performTest<ConvertToEvenOddTester, ConvertEvenOddTestParameters> (LatticeExtents{ns8, nt4}, false);
 	}
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_3 )
 	{
-		performTest<ConvertFromEvenOddTester, ConvertEvenOddTestParameters>(LatticeExtends{ns4, nt4}, true);
+		performTest<ConvertFromEvenOddTester, ConvertEvenOddTestParameters>(LatticeExtents{ns4, nt4}, true);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1063,7 +1067,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
 	struct GaussianTestParameters : public SpinorTestParameters
 	{
-		GaussianTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtends latticeExtendsIn, const ComparisonType & typeOfComparisonIn, const bool needsEvenOdd) :
+		GaussianTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const ComparisonType & typeOfComparisonIn, const bool needsEvenOdd) :
 			SpinorTestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisonIn, needsEvenOdd), iterations(1000) {};
 
 		const unsigned int iterations;
@@ -1115,7 +1119,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
 	struct NonEvenOddGaussianSpinorfieldTestParameters : public GaussianTestParameters
 	{
-		NonEvenOddGaussianSpinorfieldTestParameters(const LatticeExtends latticeExtendsIn, const ComparisonType typeOfComparisonIn) :
+		NonEvenOddGaussianSpinorfieldTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn) :
 			GaussianTestParameters(calculateReferenceValues_gaussian(), latticeExtendsIn, typeOfComparisonIn, false) {};
 	};
 
@@ -1138,12 +1142,12 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_NONEO )
 	{
-		performTest<NonEvenGaussianSpinorfieldTester, NonEvenOddGaussianSpinorfieldTestParameters>(LatticeExtends{ns8, nt4}, ComparisonType::smallerThan);
+		performTest<NonEvenGaussianSpinorfieldTester, NonEvenOddGaussianSpinorfieldTestParameters>(LatticeExtents{ns8, nt4}, ComparisonType::smallerThan);
 	}
 
 	struct EvenOddGaussianSpinorfieldTestParameters : public GaussianTestParameters
 	{
-		EvenOddGaussianSpinorfieldTestParameters(const LatticeExtends latticeExtendsIn, const ComparisonType typeOfComparisonIn) :
+		EvenOddGaussianSpinorfieldTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn) :
 			GaussianTestParameters(calculateReferenceValues_gaussian(), latticeExtendsIn, typeOfComparisonIn, true) {};
 	};
 
@@ -1166,7 +1170,7 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO )
 	{
-		performTest<EvenOddGaussianSpinorfieldEvenOddTester, EvenOddGaussianSpinorfieldTestParameters>(LatticeExtends{ns12, nt4}, ComparisonType::smallerThan);
+		performTest<EvenOddGaussianSpinorfieldEvenOddTester, EvenOddGaussianSpinorfieldTestParameters>(LatticeExtents{ns12, nt4}, ComparisonType::smallerThan);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

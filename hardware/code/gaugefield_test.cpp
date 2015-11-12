@@ -1,5 +1,6 @@
 /*
- * Copyright 2012, 2013, 2014 Christopher Pinke, Matthias Bach
+ * Copyright 2012, 2013, 2014, 2015
+ * 	Christopher Pinke, Matthias Bach, Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -21,201 +22,131 @@
 #define BOOST_TEST_MODULE hardware::code::Gaugefield
 #include <boost/test/unit_test.hpp>
 
-#include "testUtilities.hpp"
-#include "kernelTester.hpp"
-#include "gaugefield.hpp"
-#include "../../host_functionality/host_operations_gaugefield.h"
-#include "mockups.hpp"
+#include "GaugefieldTester.hpp"
 
-enum FillType {cold = 1, nonTrivial};
-
-struct TestParametersGaugeField : public TestParameters
+template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest)
 {
-	FillType fillType;
-
-	TestParametersGaugeField(std::vector<double> referenceValueIn, int nsIn, int ntIn, FillType fillTypeIn):
-		TestParameters(referenceValueIn, nsIn, ntIn) {
-		referenceValue = referenceValueIn;
-		ns = nsIn;
-		nt = ntIn;
-		fillType = fillTypeIn;
-	}
-};
-
-struct TestParametersSpecToPlaq : public TestParametersGaugeField
-{
-	int typeOfPlaquette;
-
-	TestParametersSpecToPlaq(std::vector<double> referenceValueIn, int nsIn, int ntIn, FillType fillTypeIn, int typeOfPlaquetteIn) :
-		TestParametersGaugeField(referenceValueIn, nsIn, ntIn, fillTypeIn)
-	{
-		referenceValue = referenceValueIn;
-		ns = nsIn;
-		nt = ntIn;
-		fillType = fillTypeIn;
-		typeOfPlaquette = typeOfPlaquetteIn;
-
-	}
-};
-
-struct TestParametersSpecToSmear : public TestParametersGaugeField
-{
-	int rhoIter;
-	double rho;
-
-	TestParametersSpecToSmear(std::vector<double> referenceValueIn, int nsIn, int ntIn, FillType fillTypeIn, int rhoIterIn, double rhoIn) :
-		TestParametersGaugeField(referenceValueIn, nsIn, ntIn, fillTypeIn)
-	{
-		referenceValue = referenceValueIn;
-		ns = nsIn;
-		nt = ntIn;
-		fillType = fillTypeIn;
-		rhoIter = rhoIterIn;
-		rho = rhoIn;
-	}
-};
-
-//todo: check if this can be moved elsewhere...
-void set_cold(Matrixsu3 * field, size_t elems)
-{
-	for(size_t i = 0; i < elems; ++i) {
-		field[i] = unit_matrixsu3();
-	}
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns,parametersForThisTest.nt);
+	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns,parametersForThisTest.nt);
+	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
+	TesterClass tester(parameterCollection, parametersForThisTest);
 }
 
-void setGaugefield(Matrixsu3 * field, size_t elems, const FillType fillTypeIn)
+template<typename ParameterClass, typename TesterClass> void performTest(const ReferenceValues refValuesIn, const LatticeExtents latticeExtentsIn, const GaugefieldFillType fillType)
 {
-	for(size_t i = 0; i < elems; ++i)
-	{
-		switch (fillTypeIn)
-		{
-		case cold:
-			field[i] = unit_matrixsu3();
-			break;
-		case nonTrivial:
-			field[i] = nonTrivialSu3Matrix();
-			break;
-		default:
-			BOOST_ERROR("No valid FillType specified");
-		}
-	}
+	ParameterClass testParams {refValuesIn, latticeExtentsIn, fillType};
+	callTest<TesterClass, ParameterClass>(testParams);
 }
 
-const Matrixsu3* createGaugefield(const int numberOfElements, const FillType fillTypeIn)
+template<typename ParameterClass, typename TesterClass, typename additionalArgument> void performTest(const ReferenceValues refValuesIn, const LatticeExtents latticeExtentsIn, const GaugefieldFillType fillType, const additionalArgument addArg)
 {
-	Matrixsu3 * tmp = new Matrixsu3[numberOfElements];
-	setGaugefield( tmp, numberOfElements, fillTypeIn);
-	return tmp;
+	ParameterClass testParams {refValuesIn, latticeExtentsIn, fillType, addArg};
+	callTest<TesterClass, ParameterClass>(testParams);
 }
 
-class GaugefieldTester : public KernelTester {
-public:
-		GaugefieldTester(std::string kernelName, const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-				struct TestParametersGaugeField testParams):
-			KernelTester(kernelName, hardwareParameters, kernelParameters, testParams),
-			numberOfElements(hardwareParameters.getLatticeVolume() * NDIM)
-	{
-		gaugefieldBuffer = new hardware::buffers::SU3( numberOfElements, device);
-		const Matrixsu3 * gf_host = createGaugefield(numberOfElements, testParams.fillType);
-		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
-		delete[] gf_host;
+template<typename ParameterClass, typename TesterClass> void performTest(const ReferenceValues refValuesIn, const LatticeExtents latticeExtentsIn, const GaugefieldFillType fillType, const int rhoIter, const double rho)
+{
+	const bool useSmearing = true;
+	ParameterClass testParams {refValuesIn, latticeExtentsIn, fillType, rhoIter, rho};
+	hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+	hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt, testParams.rhoIter, testParams.rho, useSmearing);
+	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
+	TesterClass tester(parameterCollection, testParams);
+}
 
-		code = device->getGaugefieldCode();
-	}
-
-	~GaugefieldTester()
-	{
-		delete gaugefieldBuffer;
-	}
-
-protected:
-	const int numberOfElements;
-	const hardware::code::Gaugefield * code;
-	const hardware::buffers::SU3 * gaugefieldBuffer;
-
-};
+template<typename TesterClass> void performTest(const ReferenceValues refValuesIn, const LatticeExtents latticeExtentsIn, const GaugefieldFillType fillType)
+{
+	const bool useRectangles = true;
+	GaugefieldTestParameters testParams {refValuesIn, latticeExtentsIn, fillType};
+	hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
+	hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt, useRectangles);
+	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
+	TesterClass tester(parameterCollection, testParams);
+}
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
+	enum TypeOfPlaquette {plaquette = 1, temporalPlaquette, spatialPlaquette };
+
+	struct PlaquetteTestParameters : public GaugefieldTestParameters
+	{
+		PlaquetteTestParameters(const ReferenceValues referenceValueIn, const LatticeExtents latticeExtentsIn, const GaugefieldFillType fillTypeIn, const TypeOfPlaquette typeOfPlaquetteIn) :
+			GaugefieldTestParameters(referenceValueIn,latticeExtentsIn, fillTypeIn), typeOfPlaquette(typeOfPlaquetteIn){}
+		TypeOfPlaquette typeOfPlaquette;
+	};
+
 	class PlaquetteTester : public GaugefieldTester {
 	public:
-			PlaquetteTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-							struct TestParametersSpecToPlaq testParams):
-				GaugefieldTester("plaquette", hardwareParameters, kernelParameters, testParams), typeOfPlaquette(testParams.typeOfPlaquette)  {
+		PlaquetteTester(const ParameterCollection & parameterCollection, const PlaquetteTestParameters testParams):
+			GaugefieldTester("plaquette", parameterCollection,  testParams), typeOfPlaquette(testParams.typeOfPlaquette)
+		{
 			const hardware::buffers::Plain<hmc_float> plaq(1, device);
 			const hardware::buffers::Plain<hmc_float> splaq(1, device);
 			const hardware::buffers::Plain<hmc_float> tplaq(1, device);
 			code->plaquette_device(gaugefieldBuffer, &plaq, &tplaq, &splaq);
 
 			switch( typeOfPlaquette ) {
-				case 1:
+				case TypeOfPlaquette::plaquette:
 					plaq.dump(&kernelResult[0]);
 					break;
-				case 2:
+				case TypeOfPlaquette::temporalPlaquette:
 					tplaq.dump(&kernelResult[0]);
 					break;
-				case 3:
+				case TypeOfPlaquette::spatialPlaquette:
 					splaq.dump(&kernelResult[0]);
 					break;
 				default:
-					throw std::invalid_argument(  "Do not recognize type of plaquette. Should be 1,2 or 3 (normal plaquette, temporal plaquette, spatial plaquette)" );
+					throw std::invalid_argument(  "Do not recognize type of plaquette" );
 					break;
 			}
 		}
 	private:
-		int typeOfPlaquette;
+		TypeOfPlaquette typeOfPlaquette;
 	};
-
-	void instantiateMockupsAndCallTester(struct TestParametersSpecToPlaq testParams)
-	{
-		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt);
-		PlaquetteTester plaquetteTester(hardwareParameters, kernelParameters, testParams);
-	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{1536.}, ns4, nt4, FillType::cold, 1});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{1536.}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, TypeOfPlaquette::plaquette );
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{1536.002605}, ns4, nt4, FillType::nonTrivial, 1});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{1536.002605}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, TypeOfPlaquette::plaquette );
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.}, ns4, nt4, FillType::cold, 2});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{768.}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, TypeOfPlaquette::temporalPlaquette);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_TEMPORAL_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 2});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{768.00130250240136}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial, TypeOfPlaquette::temporalPlaquette);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.}, ns4, nt4, FillType::cold, 3});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{768.}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold, TypeOfPlaquette::temporalPlaquette);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_SPATIAL_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{768.00130250240136}, ns4, nt4, FillType::nonTrivial, 3});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{768.00130250240136}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial, TypeOfPlaquette::spatialPlaquette);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{24576}, ns8, nt8, FillType::cold, 1});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{24576}, LatticeExtents{ns8, nt8}, GaugefieldFillType::cold, TypeOfPlaquette::plaquette);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{124416}, ns12, nt12, FillType::cold, 1});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{124416}, LatticeExtents{ns12, nt12}, GaugefieldFillType::cold, TypeOfPlaquette::plaquette);
 	}
 
 	BOOST_AUTO_TEST_CASE( PLAQUETTE_REDUCTION_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersSpecToPlaq {ReferenceValues{393216}, ns16, nt16, FillType::cold, 1});
+		performTest<PlaquetteTestParameters, PlaquetteTester, TypeOfPlaquette>(ReferenceValues{393216}, LatticeExtents{ns16, nt16}, GaugefieldFillType::cold, TypeOfPlaquette::plaquette);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -224,9 +155,9 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 	class PolyakovloopTester : public GaugefieldTester {
 	public:
-			PolyakovloopTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-					TestParametersGaugeField testParams):
-				GaugefieldTester("polyakov", hardwareParameters, kernelParameters, testParams) {
+			PolyakovloopTester(const ParameterCollection & parameterCollection,
+					GaugefieldTestParameters testParams):
+				GaugefieldTester("polyakov", parameterCollection,  testParams) {
 			const hardware::buffers::Plain<hmc_complex> pol(1, device);
 			code->polyakov_device(gaugefieldBuffer, &pol);
 
@@ -237,36 +168,29 @@ BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 		}
 	};
 
-	void instantiateMockupsAndCallTester(struct TestParametersGaugeField testParams)
-	{
-		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt);
-		PolyakovloopTester polyakovloopTester(hardwareParameters, kernelParameters, testParams);
-	}
-
 	BOOST_AUTO_TEST_CASE( POLYAKOV_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{64.,0.}, ns4, nt4, FillType::cold});
+		performTest<GaugefieldTestParameters, PolyakovloopTester>(ReferenceValues{64.,0.}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_2)
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{-17.1117721375,-31.0747993518}, ns4, nt4, FillType::nonTrivial});
+		performTest<GaugefieldTestParameters, PolyakovloopTester>(ReferenceValues{-17.1117721375,-31.0747993518}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{512.,0.}, ns8, nt8, FillType::cold});
+		performTest<GaugefieldTestParameters, PolyakovloopTester>(ReferenceValues{512.,0.}, LatticeExtents{ns8, nt8}, GaugefieldFillType::cold);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{1728.,0.}, ns12, nt12, FillType::cold});
+		performTest<GaugefieldTestParameters, PolyakovloopTester>(ReferenceValues{1728.,0.}, LatticeExtents{ns12, nt12}, GaugefieldFillType::cold);
 	}
 
 	BOOST_AUTO_TEST_CASE( POLYAKOV_REDUCTION_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{4096.,0.}, ns16, nt16, FillType::cold});
+		performTest<GaugefieldTestParameters, PolyakovloopTester>(ReferenceValues{4096.,0.}, LatticeExtents{ns16, nt16}, GaugefieldFillType::cold);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -291,11 +215,20 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 
+	struct SmearingTestParameters : public GaugefieldTestParameters
+	{
+		int rhoIter;
+		double rho;
+
+		SmearingTestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn, int rhoIterIn, double rhoIn) :
+			GaugefieldTestParameters(referenceValueIn,latticeExtentsIn, fillTypeIn), rhoIter(rhoIterIn), rho(rhoIn) {}
+	};
+
 	class StoutSmearTester : public GaugefieldTester {
 	public:
-			StoutSmearTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-					struct TestParametersSpecToSmear testParams):
-				GaugefieldTester("stout_smear", hardwareParameters, kernelParameters, testParams) {
+			StoutSmearTester(const ParameterCollection & parameterCollection,
+					struct SmearingTestParameters testParams):
+				GaugefieldTester("stout_smear", parameterCollection,  testParams) {
 
 			const hardware::buffers::Plain<hmc_float> plaq(1, device );
 			const hardware::buffers::Plain<hmc_float> splaq(1, device);
@@ -309,51 +242,43 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 		}
 	};
 
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_1, 1)
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_2, 1)
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_3, 1)
-
-void instantiateMockupsAndCallTester(struct TestParametersSpecToSmear testParams)
-	{
-		const bool useSmearing = true;
-		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt, testParams.rhoIter, testParams.rho, useSmearing);
-		StoutSmearTester StoutSmearTester(hardwareParameters, kernelParameters, testParams);
-	}
+	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_1, 1)
+	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_2, 1)
+	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (STOUT_SMEAR_3, 1)
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.001;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+		performTest<SmearingTestParameters, StoutSmearTester>( ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial, rhoIterIn, rhoIn);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+		performTest<SmearingTestParameters, StoutSmearTester>( ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial, rhoIterIn, rhoIn);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.001538;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{-1234}, ns4, nt4, FillType::nonTrivial, rhoIterIn, rhoIn});
+		performTest<SmearingTestParameters, StoutSmearTester>( ReferenceValues{-1234}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::nonTrivial, rhoIterIn, rhoIn);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_4 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
+		performTest<SmearingTestParameters, StoutSmearTester>( ReferenceValues{1536}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold, rhoIterIn, rhoIn);
 	}
 
 	BOOST_AUTO_TEST_CASE( STOUT_SMEAR_5 )
 	{
 		const int rhoIterIn = 1;
 		const double rhoIn = 0.001;
-		instantiateMockupsAndCallTester(TestParametersSpecToSmear {ReferenceValues{1536}, ns4, nt4, FillType::cold, rhoIterIn, rhoIn});
+		performTest<SmearingTestParameters, StoutSmearTester>( ReferenceValues{1536}, LatticeExtents{LatticeExtents{ns4, nt4}}, GaugefieldFillType::cold, rhoIterIn, rhoIn);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -362,46 +287,38 @@ BOOST_AUTO_TEST_SUITE ( RECTANGLES )
 
 	class RectanglesTester : public GaugefieldTester {
 	public:
-			RectanglesTester(const hardware::HardwareParametersMockup & hardwareParameters, const hardware::code::OpenClKernelParametersMockup & kernelParameters,
-					struct TestParametersGaugeField testParams):
-				GaugefieldTester("rectangles", hardwareParameters, kernelParameters, testParams) {
+		RectanglesTester(const ParameterCollection & parameterCollection, const GaugefieldTestParameters testParams):
+			GaugefieldTester("rectangles", parameterCollection,  testParams)
+		{
 			const hardware::buffers::Plain<hmc_float> rect(1, device );
 			code->rectangles_device(gaugefieldBuffer, &rect);
 			rect.dump(&kernelResult[0]);
 		}
 	};
 
-	void instantiateMockupsAndCallTester(struct TestParametersGaugeField testParams)
-	{
-		const bool useRectangles = true;
-		hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
-		hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt, useRectangles);
-		RectanglesTester rectanglesTester(hardwareParameters, kernelParameters, testParams);
-	}
-
 	BOOST_AUTO_TEST_CASE( RECTANGLES_1 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{3072.}, ns4, nt4, FillType::cold});
+		performTest<RectanglesTester>(ReferenceValues{3072.}, LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{3072.00781501}, ns4, nt4, FillType::nonTrivial});
+		performTest<RectanglesTester>(ReferenceValues{3072.00781501}, LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_1 )
 	{
-			instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{49152.}, ns8, nt8, FillType::cold});
+		performTest<RectanglesTester>(ReferenceValues{49152.}, LatticeExtents{ns8, nt8}, GaugefieldFillType::cold);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_2 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{248832.}, ns12, nt12, FillType::cold});
+		performTest<RectanglesTester>(ReferenceValues{248832.}, LatticeExtents{ns12, nt12}, GaugefieldFillType::cold);
 	}
 
 	BOOST_AUTO_TEST_CASE( RECTANGLES_REDUCTION_3 )
 	{
-		instantiateMockupsAndCallTester(TestParametersGaugeField {ReferenceValues{786432.}, ns16, nt16, FillType::cold});
+		performTest<RectanglesTester>(ReferenceValues{786432.}, LatticeExtents{ns16, nt16}, GaugefieldFillType::cold);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
