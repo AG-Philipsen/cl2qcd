@@ -72,8 +72,7 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     }
 
     logger.debug() << "\tRHMC:\tupdate gaugefield and gaugemomentum";
-    const GaugefieldParametersImplementation gaugefieldParameters { &params };
-    const Gaugefield new_u(system, &gaugefieldParameters, prng, false);
+    const Gaugefield new_u(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
     const Gaugemomenta new_p(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     // copy u->u' p->p' for the integrator
     copyData(&new_u, *gf);
