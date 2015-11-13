@@ -108,6 +108,7 @@ struct EvenOddSpinorTestParameters : public SpinorTestParameters
 	EvenOddSpinorTestParameters() : SpinorTestParameters() {};
 };
 
+//todo: need children for evenOdd and nonEvenOdd. Then, one can have a common "size" member instead of spinorfieldsize and evenOddSpinorfieldsize. This should simplify the usage a lot!
 class SpinorTester : public KernelTester {
 public:
 	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters & testParameters );

@@ -26,6 +26,13 @@
 
 #include "FermionTester.hpp"
 
+/** todo:
+ * - the way the reference values are passed is not nice, it should be somehow done automatically.
+ * 		Especially that one has to call the lattice volume explicitely is not nice
+ * - Using templates makes the actual test commands lenghty. Perhaps it is a good idea to create an
+ * 	in-between fct. which passes the arguments to the template.
+ */
+
 BOOST_AUTO_TEST_SUITE(BUILD)
 
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
@@ -263,6 +270,12 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GAMMA5 )
 
+	ReferenceValues calculateReferenceValues_gamma5(const int latticeVolume, const SpinorFillType spinorFillTypeIn)
+	{
+		return (spinorFillTypeIn == SpinorFillType::ascendingComplex) ? ReferenceValues{latticeVolume*( sumOfIntegers(1, 12, 1) - sumOfIntegers(13, 24, 1) )} : defaultReferenceValues() ;
+	}
+
+	//todo: merge these two
 	struct Gamma5Tester : public FermionTester
 	{
 		Gamma5Tester(const ParameterCollection parameterCollection, const NonEvenOddSpinorTestParameters & testParameters) :
@@ -280,28 +293,6 @@ BOOST_AUTO_TEST_SUITE( GAMMA5 )
 			delete sf_in;
 		}
 	};
-
-	void runTest(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
-	{
-		NonEvenOddSpinorTestParameters parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
-		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
-		Gamma5Tester tester(parameterCollection, parametersForThisTest);
-	}
-
-	//todo: add referenceValues
-	BOOST_AUTO_TEST_CASE( GAMMA5_1)
-	{
-		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::one);
-	}
-
-	BOOST_AUTO_TEST_CASE( GAMMA5_2 )
-	{
-		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex);
-	}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 	struct Gamma5EvenOddTester : public FermionTester
 	{
@@ -321,26 +312,24 @@ BOOST_AUTO_TEST_SUITE_END()
 		}
 	};
 
+	template<class TesterClass, class ParameterClass>
 	void runTest(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
 	{
-		EvenOddSpinorTestParameters parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
+		ParameterClass parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
 		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
 		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
 		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
-		Gamma5EvenOddTester tester(parameterCollection, parametersForThisTest);
+		TesterClass tester(parameterCollection, parametersForThisTest);
 	}
 
-BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
-
-	//todo: add referenceValues
-	BOOST_AUTO_TEST_CASE( GAMMA5_EO_1)
+	BOOST_AUTO_TEST_CASE( GAMMA5_NONEO )
 	{
-		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::one);
+		runTest<Gamma5Tester, NonEvenOddSpinorTestParameters>(calculateReferenceValues_gamma5(calculateSpinorfieldSize( LatticeExtents{ns4,nt4}), SpinorFillType::ascendingComplex), LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex);
 	}
 
-	BOOST_AUTO_TEST_CASE( GAMMA5_EO_2 )
+	BOOST_AUTO_TEST_CASE( GAMMA5_EO )
 	{
-		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex);
+		runTest<Gamma5EvenOddTester, EvenOddSpinorTestParameters>(calculateReferenceValues_gamma5(calculateEvenOddSpinorfieldSize( LatticeExtents{ns4,nt4}), SpinorFillType::ascendingComplex), LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
