@@ -172,15 +172,32 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
-	const ReferenceValues calculateReferenceValues_mTmMinus(const int latticeVolume, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, double kappaIn)
+	const double nonTrivialKappa = 0.123456;
+
+	const ReferenceValues calculateReferenceValues_mTmMinus(const int latticeVolume, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const double kappaIn, const double muIn)
 	{
+		if( kappaIn == nonTrivialKappa and spinorFillTypeIn == SpinorFillType::ascendingComplex )
+		{
+			if( muIn == 0. )
+			{
+				return ReferenceValues{latticeVolume * 0.7476023296000095};//todo: should be the same as MWilson!
+			}
+			else if (muIn == nonTrivialKappa and gaugefieldFillTypeIn == GaugefieldFillType::cold )
+			{
+				return ReferenceValues{latticeVolume * 5.300678101577363};
+			}
+			else if (muIn == nonTrivialKappa and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
+			{
+				return ReferenceValues{latticeVolume * 3513.465918997579};
+			}
+		}
 		return defaultReferenceValues();
 	}
 
 	struct MTmMinusTestParameters : public FermionTestParameters
 	{
 		MTmMinusTestParameters(const LatticeExtents latticeExtentsIn, SpinorFillType spinorFillTypeIn, GaugefieldFillType gaugefieldFillTypeIn, double kappaIn, double muIn) :
-			FermionTestParameters(calculateReferenceValues_mTmMinus( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), kappa(kappaIn), mu(muIn) {};
+			FermionTestParameters(calculateReferenceValues_mTmMinus( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn, muIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), kappa(kappaIn), mu(muIn) {};
 
 		double kappa;
 		double mu;
@@ -197,7 +214,7 @@ BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 		MTmMinusTester(const ParameterCollection parameterCollection, const MTmMinusTestParameters & testParameters) :
 			FermionmatrixTester("m_wilson", parameterCollection, testParameters)
 		{
-			code->M_tm_minus_device(in, out,  gaugefieldBuffer, testParameters.kappa, testParameters.mu); //todo: does this need to be mubar?
+			code->M_tm_minus_device(in, out,  gaugefieldBuffer, testParameters.kappa, 2.*testParameters.mu*testParameters.kappa); //todo: does this need to be mubar?
 		}
 	};
 
@@ -212,27 +229,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
 	{
-		callTest(LatticeExtents{ns4, nt8}, SpinorFillType::one, GaugefieldFillType::cold, 0.125, 0.006);
+		callTest(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, nonTrivialKappa, 0.);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
 	{
-		callTest(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, 0.125, 0.006);
+		callTest(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, nonTrivialKappa, nonTrivialKappa);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
 	{
-		callTest(LatticeExtents{ns4, nt16}, SpinorFillType::one, GaugefieldFillType::nonTrivial, 0.125, 0.006);
-	}
-
-	BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
-	{
-		callTest(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, 0.125, 0.006);
-	}
-
-	BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
-	{
-		callTest(LatticeExtents{ns12, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, 0., 0.04);
+		callTest(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, nonTrivialKappa, nonTrivialKappa);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
