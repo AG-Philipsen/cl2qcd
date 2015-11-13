@@ -234,37 +234,27 @@ BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
 
 	class MTmPlusTester : public FermionmatrixTester
 	{
-public:
-		MTmPlusTester(std::string inputfile) :
-		FermionmatrixTester("m_tm_plus", inputfile)
+	public:
+		MTmPlusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & testParameters) :
+			FermionmatrixTester("m_tm_plus", parameterCollection, testParameters)
 		{
-			code->M_tm_plus_device(in, out,  this->getGaugefieldBuffer(), parameters->get_kappa(), meta::get_mubar(*parameters));
+			code->M_tm_plus_device(in, out,  gaugefieldBuffer, testParameters.massParameters.kappa, testParameters.massParameters.getMubar() );
 		}
 	};
 
-	BOOST_AUTO_TEST_CASE( M_TM_PLUS_1 )
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
 	{
-		MTmPlusTester tester("m_tm_plus_input_1");
+		callTest<MTmPlusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, 0.});
 	}
 
-	BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
 	{
-		MTmPlusTester tester("m_tm_plus_input_2");
+		callTest<MTmPlusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
 	}
 
-	BOOST_AUTO_TEST_CASE( M_TM_PLUS_3 )
+	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
 	{
-		MTmPlusTester tester("m_tm_plus_input_3");
-	}
-
-	BOOST_AUTO_TEST_CASE( M_TM_PLUS_4 )
-	{
-		MTmPlusTester tester("m_tm_plus_input_4");
-	}
-
-	BOOST_AUTO_TEST_CASE( M_TM_PLUS_5 )
-	{
-		MTmPlusTester tester("m_tm_plus_input_5");
+		callTest<MTmPlusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
