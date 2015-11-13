@@ -41,6 +41,12 @@ public:
 		code = SpinorTester::device->getFermionCode();
 	}
 
+	FermionTester(std::string kernelName, const ParameterCollection & pC, const SpinorTestParameters & testParameters):
+		SpinorTester(kernelName, pC, testParameters), gaugefield(nullptr), gaugefieldBuffer(nullptr)
+	{
+		code = SpinorTester::device->getFermionCode();
+	}
+
 	~FermionTester()
 	{
 		if (gaugefield)

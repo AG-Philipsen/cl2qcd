@@ -230,6 +230,8 @@ BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+//todo: add own parameters
+//todo: test should not pass using M_tm_minus ref. values!
 BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
 
 	class MTmPlusTester : public FermionmatrixTester
@@ -242,17 +244,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
 		}
 	};
 
-	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_1 )
 	{
 		callTest<MTmPlusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, 0.});
 	}
 
-	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
 	{
 		callTest<MTmPlusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
 	}
 
-	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
+	BOOST_AUTO_TEST_CASE( M_TM_PLUS_3 )
 	{
 		callTest<MTmPlusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
 	}
@@ -261,33 +263,42 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GAMMA5 )
 
-	class Gamma5Tester : public FermionTester
+	struct Gamma5Tester : public FermionTester
 	{
-public:
-		Gamma5Tester(std::string inputfile) :
-			FermionTester("gamma5", inputfile, 1)
+		Gamma5Tester(const ParameterCollection parameterCollection, const NonEvenOddSpinorTestParameters & testParameters) :
+			FermionTester("gamma5", parameterCollection, testParameters)
 		{
 			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 			spinor * sf_in;
 			sf_in = new spinor[spinorfieldElements];
-			
-			in.load( createSpinorfield(spinorfieldElements) );
+
+			in.load( createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)) );
 			code->gamma5_device(&in);
 			in.dump(sf_in);
-			kernelResult[0] = count_sf(sf_in, spinorfieldElements);
-	
+			kernelResult.at(0) = count_sf(sf_in, spinorfieldElements);
+
 			delete sf_in;
 		}
 	};
 
+	void runTest(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
+	{
+		NonEvenOddSpinorTestParameters parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+		Gamma5Tester tester(parameterCollection, parametersForThisTest);
+	}
+
+	//todo: add referenceValues
 	BOOST_AUTO_TEST_CASE( GAMMA5_1)
 	{
-		Gamma5Tester tester("gamma5_input_1");
+		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::one);
 	}
 
 	BOOST_AUTO_TEST_CASE( GAMMA5_2 )
 	{
-		Gamma5Tester tester("gamma5_input_2");
+		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

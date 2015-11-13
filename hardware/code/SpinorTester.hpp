@@ -82,6 +82,8 @@ struct NonEvenOddSpinorTestParameters : public SpinorTestParameters
 {
 	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, false) {};
+	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillType fillTypeIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, SpinorFillTypes{fillTypeIn}, false) {};
 	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn) :
 		SpinorTestParameters(referenceValuesIn,latticeExtendsIn, false) {};
 	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComparisonType typeOfComparisionIn) :
@@ -95,6 +97,8 @@ struct EvenOddSpinorTestParameters : public SpinorTestParameters
 {
 	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, true) {};
+	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillType fillTypeIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, SpinorFillTypes{fillTypeIn}, true) {};
 	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn) :
 		SpinorTestParameters(referenceValuesIn,latticeExtendsIn, true) {};
 	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComparisonType typeOfComparisionIn) :
