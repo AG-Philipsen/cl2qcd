@@ -79,55 +79,95 @@ protected:
 	const hardware::buffers::Plain<spinor> * out;
 };
 
-BOOST_AUTO_TEST_SUITE( M_WILSON )
+const double nonTrivialMassParameter = 0.123456;
 
-	const double nonTrivialKappa = 0.123456;
+struct WilsonMassParameters
+{
+	WilsonMassParameters(const double kappaIn) : kappa(kappaIn){};
+	const double kappa;
+};
 
-	const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, double kappaIn)
+struct TwistedMassMassParameters : public WilsonMassParameters
+{
+	TwistedMassMassParameters(const double kappaIn, const double muIn):
+		WilsonMassParameters(kappaIn), mu(muIn) {}
+
+	const double mu;
+
+	double getMubar() const { return 2.*kappa*mu; }
+};
+
+const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn)
+{
+	if( massParametersIn.kappa == 0. and spinorFillTypeIn == SpinorFillType::ascendingComplex)
 	{
-		if( kappaIn == 0.)
+		return ReferenceValues{latticeVolume * sumOfIntegersSquared(24)};
+	}
+	else if (massParametersIn.kappa == nonTrivialMassParameter)
+	{
+		if (spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::cold )
 		{
-			if (spinorFillTypeIn == SpinorFillType::ascendingComplex )
-			{
-				return ReferenceValues{latticeVolume * sumOfIntegersSquared(24)};
-			}
-			else
-			{
-				return defaultReferenceValues();
-			}
+			return ReferenceValues{latticeVolume * 0.7476023296000095 };
 		}
-		else if (kappaIn == nonTrivialKappa)
+		else if (spinorFillTypeIn == SpinorFillType::one and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
 		{
-			if (spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::cold )
-			{
-				return ReferenceValues{latticeVolume * 0.7476023296000095 };
-			}
-			else if (spinorFillTypeIn == SpinorFillType::one and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
-			{
-				return ReferenceValues{latticeVolume * 7.03532241159178};
-			}
-			else if (spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial)
-			{
-				return ReferenceValues{latticeVolume * 3508.912843225604};
-			}
-			else
-			{
-				return defaultReferenceValues();
-			}
+			return ReferenceValues{latticeVolume * 7.03532241159178};
 		}
-		else
+		else if (spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial)
 		{
-			return defaultReferenceValues();
+			return ReferenceValues{latticeVolume * 3508.912843225604};
 		}
 	}
+	return defaultReferenceValues();
+}
 
-	struct MWilsonTestParameters : public FermionTestParameters
+const ReferenceValues calculateReferenceValues_mTmMinus(const int latticeVolume, const SpinorFillType spinorFillTypeIn,
+		const GaugefieldFillType gaugefieldFillTypeIn, const TwistedMassMassParameters massParametersIn)
+{
+	if( massParametersIn.kappa == nonTrivialMassParameter and spinorFillTypeIn == SpinorFillType::ascendingComplex )
 	{
-		MWilsonTestParameters(const LatticeExtents latticeExtentsIn, SpinorFillType spinorFillTypeIn, GaugefieldFillType gaugefieldFillTypeIn, double kappaIn) :
-			FermionTestParameters(calculateReferenceValues_mWilson( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), kappa(kappaIn) {};
+		if( massParametersIn.mu == 0. )
+		{
+			return calculateReferenceValues_mWilson(latticeVolume, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
+		}
+		else if (massParametersIn.mu == nonTrivialMassParameter and gaugefieldFillTypeIn == GaugefieldFillType::cold )
+		{
+			return ReferenceValues{latticeVolume * 5.300678101577363};
+		}
+		else if (massParametersIn.mu == nonTrivialMassParameter and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
+		{
+			return ReferenceValues{latticeVolume * 3513.465918997579};
+		}
+	}
+	return defaultReferenceValues();
+}
 
-		double kappa;
-	};
+//todo: these two can be combined with the reference fcts. as template arguments
+struct MWilsonTestParameters : public FermionTestParameters
+{
+	MWilsonTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn) :
+		FermionTestParameters(calculateReferenceValues_mWilson( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
+	const WilsonMassParameters massParameters;
+};
+
+struct TwistedMassTestParameters : public FermionTestParameters
+{
+	TwistedMassTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const TwistedMassMassParameters massParametersIn) :
+		FermionTestParameters(calculateReferenceValues_mTmMinus( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
+	const TwistedMassMassParameters massParameters;
+};
+
+template<typename TesterClass, typename MassParameters, typename KernelParameterMockup, typename TestParameters>
+void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const MassParameters massParametersIn)
+{
+	TestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+	KernelParameterMockup kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass tester(parameterCollection, parametersForThisTest);
+}
+
+BOOST_AUTO_TEST_SUITE( M_WILSON )
 
 	class MWilsonTester : public FermionmatrixTester
 	{
@@ -135,111 +175,57 @@ BOOST_AUTO_TEST_SUITE( M_WILSON )
 		MWilsonTester(const ParameterCollection parameterCollection, const MWilsonTestParameters & testParameters) :
 		FermionmatrixTester("m_wilson", parameterCollection, testParameters)
 		{
-			code->M_wilson_device(in, out,  gaugefieldBuffer, testParameters.kappa );
+			code->M_wilson_device(in, out,  gaugefieldBuffer, testParameters.massParameters.kappa );
 		}
 	};
 
-	void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const double kappaIn)
-	{
-		MWilsonTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn);
-		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
-		MWilsonTester tester(parameterCollection, parametersForThisTest);
-	}
-
 	BOOST_AUTO_TEST_CASE( M_WILSON_1)
 	{
-		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, 0.);
+		callTest<MWilsonTester, WilsonMassParameters,hardware::code::OpenClKernelParametersMockupForSpinorTests,MWilsonTestParameters>(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_2)
 	{
-		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, nonTrivialKappa);
+		callTest<MWilsonTester, WilsonMassParameters,hardware::code::OpenClKernelParametersMockupForSpinorTests,MWilsonTestParameters>(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialMassParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_3)
 	{
-		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::one, GaugefieldFillType::nonTrivial, nonTrivialKappa);
+		callTest<MWilsonTester, WilsonMassParameters,hardware::code::OpenClKernelParametersMockupForSpinorTests,MWilsonTestParameters>(LatticeExtents{ns4, nt4}, SpinorFillType::one, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialMassParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_4)
 	{
-		callTest(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, nonTrivialKappa);
+		callTest<MWilsonTester, WilsonMassParameters,hardware::code::OpenClKernelParametersMockupForSpinorTests,MWilsonTestParameters>(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialMassParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
-	const double nonTrivialKappa = 0.123456;
-
-	const ReferenceValues calculateReferenceValues_mTmMinus(const int latticeVolume, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const double kappaIn, const double muIn)
-	{
-		if( kappaIn == nonTrivialKappa and spinorFillTypeIn == SpinorFillType::ascendingComplex )
-		{
-			if( muIn == 0. )
-			{
-				return ReferenceValues{latticeVolume * 0.7476023296000095};//todo: should be the same as MWilson!
-			}
-			else if (muIn == nonTrivialKappa and gaugefieldFillTypeIn == GaugefieldFillType::cold )
-			{
-				return ReferenceValues{latticeVolume * 5.300678101577363};
-			}
-			else if (muIn == nonTrivialKappa and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
-			{
-				return ReferenceValues{latticeVolume * 3513.465918997579};
-			}
-		}
-		return defaultReferenceValues();
-	}
-
-	struct MTmMinusTestParameters : public FermionTestParameters
-	{
-		MTmMinusTestParameters(const LatticeExtents latticeExtentsIn, SpinorFillType spinorFillTypeIn, GaugefieldFillType gaugefieldFillTypeIn, double kappaIn, double muIn) :
-			FermionTestParameters(calculateReferenceValues_mTmMinus( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn, muIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), kappa(kappaIn), mu(muIn) {};
-
-		double kappa;
-		double mu;
-	};
-
 	class MTmMinusTester : public FermionmatrixTester
 	{
 	public:
-		MTmMinusTester(std::string inputfile) :
-		FermionmatrixTester("m_tm_minus", inputfile)
+		MTmMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & testParameters) :
+			FermionmatrixTester("m_tm_minus", parameterCollection, testParameters)
 		{
-			code->M_tm_minus_device(in, out,  this->getGaugefieldBuffer(), parameters->get_kappa(), meta::get_mubar(*parameters));
-		}
-		MTmMinusTester(const ParameterCollection parameterCollection, const MTmMinusTestParameters & testParameters) :
-			FermionmatrixTester("m_wilson", parameterCollection, testParameters)
-		{
-			code->M_tm_minus_device(in, out,  gaugefieldBuffer, testParameters.kappa, 2.*testParameters.mu*testParameters.kappa); //todo: does this need to be mubar?
+			code->M_tm_minus_device(in, out,  gaugefieldBuffer, testParameters.massParameters.kappa, testParameters.massParameters.getMubar() );
 		}
 	};
 
-	void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const double kappaIn, const double muIn)
-	{
-		MTmMinusTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, kappaIn, muIn);
-		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-		hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
-		MTmMinusTester tester(parameterCollection, parametersForThisTest);
-	}
-
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
 	{
-		callTest(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, nonTrivialKappa, 0.);
+		callTest<MTmMinusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
 	{
-		callTest(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, nonTrivialKappa, nonTrivialKappa);
+		callTest<MTmMinusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
 	{
-		callTest(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, nonTrivialKappa, nonTrivialKappa);
+		callTest<MTmMinusTester, TwistedMassMassParameters,hardware::code::OpenClKernelParametersMockupForTwistedMass,TwistedMassTestParameters>(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
