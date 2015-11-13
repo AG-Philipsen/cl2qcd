@@ -56,17 +56,8 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-class FermionmatrixTester : public FermionTester
+struct FermionmatrixTester : public FermionTester
 {
-public:
-	FermionmatrixTester(std::string kernelName, std::string inputfile) :
-	FermionTester(kernelName, inputfile, 1)
-	{
-		in = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		out = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		in->load(createSpinorfield(spinorfieldElements));
-		out->load(createSpinorfield(spinorfieldElements));
-	}
 	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters) :
 	FermionTester(kernelName, parameterCollection, testParameters)
 	{
@@ -84,6 +75,36 @@ public:
 protected:
 	const hardware::buffers::Plain<spinor> * in;
 	const hardware::buffers::Plain<spinor> * out;
+};
+
+class FermionmatrixEvenOddTester : public FermionTester
+{
+public:
+	FermionmatrixEvenOddTester(std::string kernelName, std::string inputfile) :
+	FermionTester(kernelName, inputfile, 1)
+	{
+		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		in->load(createSpinorfield(spinorfieldEvenOddElements));
+		out->load(createSpinorfield(spinorfieldEvenOddElements));
+	}
+	FermionmatrixEvenOddTester(std::string kernelName, const ParameterCollection parameterCollection, const EvenOddFermionTestParameters testParameters) :
+		FermionTester(kernelName, parameterCollection, testParameters)
+	{
+		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
+		out->load(createSpinorfield(SpinorFillType::zero));
+	}
+	~FermionmatrixEvenOddTester()
+	{
+		calcSquarenormEvenOddAndStoreAsKernelResult(out);
+		delete in;
+		delete out;
+	}
+protected:
+	const hardware::buffers::Spinor * in;
+	const hardware::buffers::Spinor * out;
 };
 
 const double nonTrivialMassParameter = 0.123456;
@@ -334,35 +355,23 @@ BOOST_AUTO_TEST_SUITE( GAMMA5 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-class FermionmatrixEvenOddTester : public FermionTester
+template<class TesterClass, class ParameterClass>
+void runTest(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
 {
-public:
-	FermionmatrixEvenOddTester(std::string kernelName, std::string inputfile) :
-	FermionTester(kernelName, inputfile, 1)
-	{
-		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		in->load(createSpinorfield(spinorfieldEvenOddElements));
-		out->load(createSpinorfield(spinorfieldEvenOddElements));
-	}
-	~FermionmatrixEvenOddTester()
-	{
-		calcSquarenormEvenOddAndStoreAsKernelResult(out);
-		delete in;
-		delete out;
-	}
-protected:
-	const hardware::buffers::Spinor * in;
-	const hardware::buffers::Spinor * out;
-};
+	ParameterClass parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass tester(parameterCollection, parametersForThisTest);
+}
 
+//todo: add reference values
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
-	class MTmSitediagonalTester: public FermionmatrixEvenOddTester
+	struct MTmSitediagonalTester: public FermionmatrixEvenOddTester
 	{
-	public:
-		MTmSitediagonalTester(std::string inputfile):
-			FermionmatrixEvenOddTester("m_tm_sitediagonal", inputfile)
+		MTmSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddFermionTestParameters & testParameters):
+			FermionmatrixEvenOddTester("m_tm_sitediagonal", parameterCollection, testParameters)
 			{
 				code->M_tm_sitediagonal_device( in, out);
 			}
@@ -370,17 +379,17 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_1)
 	{
-		MTmSitediagonalTester tester("m_tm_sitediagonal_input_1");
+		runTest<MTmSitediagonalTester, EvenOddFermionTestParameters>(defaultReferenceValues(), LatticeExtents{ns4,nt8}, SpinorFillType::one);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_2)
 	{
-		MTmSitediagonalTester tester("m_tm_sitediagonal_input_2");
+		runTest<MTmSitediagonalTester, EvenOddFermionTestParameters>(defaultReferenceValues(), LatticeExtents{ns4,nt8}, SpinorFillType::one);
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_3)
 	{
-		MTmSitediagonalTester tester("m_tm_sitediagonal_input_3");
+		runTest<MTmSitediagonalTester, EvenOddFermionTestParameters>(defaultReferenceValues(), LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

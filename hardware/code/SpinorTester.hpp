@@ -30,6 +30,7 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
+//todo: check if in the end, ascending is used at all. If not, remove and rename ascendingComplex to ascending
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;

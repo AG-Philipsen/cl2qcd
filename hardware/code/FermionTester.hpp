@@ -5,12 +5,23 @@
 #include "GaugefieldTester.hpp"
 
 //todo: is there a better solution to this?
+//todo: can this be SpinorFillType instead of the vector? One only needs one anyway...
+//todo: should this be called nonEvenOddFermionTestParameters?
 struct FermionTestParameters : public NonEvenOddSpinorTestParameters, GaugefieldTestParameters
 {
 	FermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const GaugefieldFillType gaugefieldFillTypesIn) :
 		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn),
 		GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
-	FermionTestParameters() : NonEvenOddSpinorTestParameters(), GaugefieldTestParameters() {};
+	FermionTestParameters() : NonEvenOddSpinorTestParameters(), GaugefieldTestParameters() {}; //todo: can be removed?
+};
+struct EvenOddFermionTestParameters : public EvenOddSpinorTestParameters, GaugefieldTestParameters
+{
+	EvenOddFermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn) :
+		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn),
+		GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, GaugefieldFillType::cold) {};
+	EvenOddFermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const GaugefieldFillType gaugefieldFillTypesIn) :
+			EvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn),
+			GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
 };
 
 class FermionTester : public SpinorTester
@@ -31,6 +42,16 @@ public:
 			gaugefield = new physics::lattices::Gaugefield(*SpinorTester::system, &params, *prng);
 	}
 	FermionTester(std::string kernelName, const ParameterCollection & pC, const FermionTestParameters & testParameters):
+		SpinorTester(kernelName, pC, testParameters), gaugefield(nullptr)
+	{
+		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
+		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
+		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+		delete[] gf_host;
+
+		code = SpinorTester::device->getFermionCode();
+	}
+	FermionTester(std::string kernelName, const ParameterCollection & pC, const EvenOddFermionTestParameters & testParameters):
 		SpinorTester(kernelName, pC, testParameters), gaugefield(nullptr)
 	{
 		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
