@@ -98,25 +98,75 @@ void hardware::code::Fermions::clear_kernels()
 	}
 
 	if(kernelParameters->getUseEo()) {
-		clerr = clReleaseKernel(dslash_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(_dslash_eo_boundary);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(_dslash_eo_inner);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(gamma5_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		if(dslash_eo)
+		{
+			clerr = clReleaseKernel(dslash_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
+		if(_dslash_eo_boundary)
+		{
+			clerr = clReleaseKernel(_dslash_eo_boundary);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
+		if(_dslash_eo_inner)
+		{
+			clerr = clReleaseKernel(_dslash_eo_inner);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
+		if (gamma5_eo)
+		{
+			clerr = clReleaseKernel(gamma5_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
 		if(kernelParameters->getFermact() == common::action::twistedmass) {
-			clerr = clReleaseKernel(M_tm_sitediagonal);
-			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-			clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
-			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-			clerr = clReleaseKernel(M_tm_sitediagonal_minus);
-			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-			clerr = clReleaseKernel(M_tm_inverse_sitediagonal_minus);
-			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-			clerr = clReleaseKernel(saxpy_AND_gamma5_eo);
-			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			if(M_tm_sitediagonal)
+			{
+				clerr = clReleaseKernel(M_tm_sitediagonal);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+			if (M_tm_inverse_sitediagonal)
+			{
+				clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+			if(M_tm_sitediagonal_minus)
+			{
+				clerr = clReleaseKernel(M_tm_sitediagonal_minus);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+			if(M_tm_inverse_sitediagonal_minus)
+			{
+				clerr = clReleaseKernel(M_tm_inverse_sitediagonal_minus);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+		}
+		if (kernelParameters->getUseMergeKernelsFermion() == true)
+		{
+			if(saxpy_AND_gamma5_eo)
+			{
+				clerr = clReleaseKernel(saxpy_AND_gamma5_eo);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+			if(dslash_AND_M_tm_inverse_sitediagonal_eo)
+			{
+				clerr = clReleaseKernel(dslash_AND_M_tm_inverse_sitediagonal_eo);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+			if(dslash_AND_M_tm_inverse_sitediagonal_minus_eo)
+			{
+				clerr = clReleaseKernel(dslash_AND_M_tm_inverse_sitediagonal_minus_eo);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+			if(M_tm_sitediagonal_AND_gamma5_eo)
+			{
+				clerr = clReleaseKernel(M_tm_sitediagonal_AND_gamma5_eo);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
+			if(M_tm_sitediagonal_minus_AND_gamma5_eo)
+			{
+				clerr = clReleaseKernel(M_tm_sitediagonal_minus_AND_gamma5_eo);
+				if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			}
 		}
 	}
 }
