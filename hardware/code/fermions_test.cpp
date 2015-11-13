@@ -303,35 +303,44 @@ BOOST_AUTO_TEST_SUITE( GAMMA5 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-	class Gamma5EvenOddTester : public FermionTester
+	struct Gamma5EvenOddTester : public FermionTester
 	{
-public:
-		Gamma5EvenOddTester(std::string inputfile) :
-			FermionTester("gamma5_eo", inputfile, 1)
+		Gamma5EvenOddTester(const ParameterCollection parameterCollection, const EvenOddSpinorTestParameters & testParameters) :
+			FermionTester("gamma5_eo", parameterCollection, testParameters)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 			spinor * sf_in;
 			sf_in = new spinor[spinorfieldEvenOddElements];
-			
-			in.load( createSpinorfield(spinorfieldEvenOddElements) );
+
+			in.load( createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)) );
 			code->gamma5_eo_device(&in);
 			in.dump(sf_in);
 			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
-	
+
 			delete sf_in;
 		}
 	};
 
-	BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
+	void runTest(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
+	{
+		EvenOddSpinorTestParameters parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+		hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+		Gamma5EvenOddTester tester(parameterCollection, parametersForThisTest);
+	}
 
+BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
+
+	//todo: add referenceValues
 	BOOST_AUTO_TEST_CASE( GAMMA5_EO_1)
 	{
-		Gamma5EvenOddTester tester("gamma5_eo_input_1");
+		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::one);
 	}
 
 	BOOST_AUTO_TEST_CASE( GAMMA5_EO_2 )
 	{
-		Gamma5EvenOddTester tester("gamma5_eo_input_2");
+		runTest(defaultReferenceValues(), LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
