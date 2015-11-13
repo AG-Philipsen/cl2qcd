@@ -366,6 +366,8 @@ void runTest(const ReferenceValues referenceValuesIn, const LatticeExtents latti
 }
 
 //todo: add reference values
+//todo: add mass parameters
+//todo: remove ARG_DEF from all the tm diagonal kernel fcts.!
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
 	struct MTmSitediagonalTester: public FermionmatrixEvenOddTester
