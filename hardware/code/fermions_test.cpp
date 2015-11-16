@@ -356,42 +356,46 @@ BOOST_AUTO_TEST_SUITE( GAMMA5 )
 BOOST_AUTO_TEST_SUITE_END()
 
 template<class TesterClass, class ParameterClass>
-void runTest(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
+void runTest(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParameters)
 {
-	ParameterClass parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
+	ParameterClass parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, massParameters);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
 	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass tester(parameterCollection, parametersForThisTest);
 }
 
-//todo: add reference values
-//todo: add mass parameters
+ReferenceValues calculateReferenceValues_mTmSitediagonal(const int latticeVolume, const TwistedMassMassParameters massParametersIn)
+{
+	if (massParametersIn.kappa == nonTrivialMassParameter and massParametersIn.mu == nonTrivialMassParameter)
+	{
+		return ReferenceValues{ latticeVolume * 4904.553075771979};
+	}
+	return defaultReferenceValues();
+}
+
 //todo: remove ARG_DEF from all the tm diagonal kernel fcts.!
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
+	struct MTmSitediagonalTestParameters: public EvenOddFermionTestParameters
+	{
+		MTmSitediagonalTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn) :
+			EvenOddFermionTestParameters(calculateReferenceValues_mTmSitediagonal( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
+		const TwistedMassMassParameters massParameters;
+	};
+
 	struct MTmSitediagonalTester: public FermionmatrixEvenOddTester
 	{
-		MTmSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddFermionTestParameters & testParameters):
+		MTmSitediagonalTester(const ParameterCollection parameterCollection, const MTmSitediagonalTestParameters & testParameters):
 			FermionmatrixEvenOddTester("m_tm_sitediagonal", parameterCollection, testParameters)
 			{
-				code->M_tm_sitediagonal_device( in, out);
+				code->M_tm_sitediagonal_device( in, out, testParameters.massParameters.getMubar());
 			}
 	};
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_1)
 	{
-		runTest<MTmSitediagonalTester, EvenOddFermionTestParameters>(defaultReferenceValues(), LatticeExtents{ns4,nt8}, SpinorFillType::one);
-	}
-
-	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_2)
-	{
-		runTest<MTmSitediagonalTester, EvenOddFermionTestParameters>(defaultReferenceValues(), LatticeExtents{ns4,nt8}, SpinorFillType::one);
-	}
-
-	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_3)
-	{
-		runTest<MTmSitediagonalTester, EvenOddFermionTestParameters>(defaultReferenceValues(), LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex);
+		runTest<MTmSitediagonalTester, MTmSitediagonalTestParameters>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
