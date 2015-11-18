@@ -402,19 +402,30 @@ ReferenceValues calculateReferenceValues_mTmInverseSitediagonalMinus(const int l
 	return defaultReferenceValues();
 }
 
+struct EvenOddTwistedMassTestParameters: public EvenOddFermionTestParameters
+{
+	EvenOddTwistedMassTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn,
+			const TwistedMassMassParameters massParametersIn, ReferenceValues(*referenceValueCalculation) (int, TwistedMassMassParameters) ) :
+		EvenOddFermionTestParameters(referenceValueCalculation( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
+	const TwistedMassMassParameters massParameters;
+};
+
+template<class TesterClass>
+void runTest(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParameters, ReferenceValues (* dd) (int, TwistedMassMassParameters))
+{
+	EvenOddTwistedMassTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, massParameters, dd);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass tester(parameterCollection, parametersForThisTest);
+}
+
 //todo: remove ARG_DEF from all the tm diagonal kernel fcts.!
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
-	struct MTmSitediagonalTestParameters: public EvenOddFermionTestParameters
-	{
-		MTmSitediagonalTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn) :
-			EvenOddFermionTestParameters(calculateReferenceValues_mTmSitediagonal( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
-		const TwistedMassMassParameters massParameters;
-	};
-
 	struct MTmSitediagonalTester: public FermionmatrixEvenOddTester
 	{
-		MTmSitediagonalTester(const ParameterCollection parameterCollection, const MTmSitediagonalTestParameters & testParameters):
+		MTmSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
 			FermionmatrixEvenOddTester("m_tm_sitediagonal", parameterCollection, testParameters)
 			{
 				code->M_tm_sitediagonal_device( in, out, testParameters.massParameters.getMubar());
@@ -423,23 +434,17 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_1)
 	{
-		runTest<MTmSitediagonalTester, MTmSitediagonalTestParameters>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		runTest<MTmSitediagonalTester>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex,
+				TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter}, calculateReferenceValues_mTmSitediagonal);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
 
-	struct MTmInverseSitediagonalTestParameters: public EvenOddFermionTestParameters
-	{
-		MTmInverseSitediagonalTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn) :
-			EvenOddFermionTestParameters(calculateReferenceValues_mTmInverseSitediagonal( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
-		const TwistedMassMassParameters massParameters;
-	};
-
 	struct MTmInverseSitediagonalTester: public FermionmatrixEvenOddTester
 	{
-		MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const MTmInverseSitediagonalTestParameters & testParameters):
+		MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
 			FermionmatrixEvenOddTester("m_tm_inverse_sitediagonal", parameterCollection, testParameters)
 			{
 				code->M_tm_inverse_sitediagonal_device( in, out, testParameters.massParameters.getMubar());
@@ -448,23 +453,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
 
 	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
 	{
-		runTest<MTmInverseSitediagonalTester, MTmInverseSitediagonalTestParameters>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		runTest<MTmInverseSitediagonalTester>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex,
+				TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter}, calculateReferenceValues_mTmInverseSitediagonal);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
 
-	struct MTmSitediagonalMinusTestParameters: public EvenOddFermionTestParameters
-	{
-	MTmSitediagonalMinusTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn) :
-			EvenOddFermionTestParameters(calculateReferenceValues_mTmSitediagonalMinus( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
-		const TwistedMassMassParameters massParameters;
-	};
-
 	struct MTmSitediagonalTester: public FermionmatrixEvenOddTester
 	{
-		MTmSitediagonalTester(const ParameterCollection parameterCollection, const MTmSitediagonalMinusTestParameters & testParameters):
+		MTmSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
 			FermionmatrixEvenOddTester("m_tm_sitediagonal_minus", parameterCollection, testParameters)
 			{
 				code->M_tm_sitediagonal_minus_device( in, out, testParameters.massParameters.getMubar());
@@ -473,23 +472,17 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
 	{
-		runTest<MTmSitediagonalTester, MTmSitediagonalMinusTestParameters>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		runTest<MTmSitediagonalTester>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex,
+				TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter}, calculateReferenceValues_mTmSitediagonalMinus);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
 
-	struct MTmInverseSitediagonalMinusTestParameters: public EvenOddFermionTestParameters
-	{
-		MTmInverseSitediagonalMinusTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn) :
-			EvenOddFermionTestParameters(calculateReferenceValues_mTmInverseSitediagonalMinus( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
-		const TwistedMassMassParameters massParameters;
-	};
-
 	struct MTmInverseSitediagonalTester: public FermionmatrixEvenOddTester
 	{
-		MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const MTmInverseSitediagonalMinusTestParameters & testParameters):
+		MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
 			FermionmatrixEvenOddTester("m_tm_inverse_sitediagonal", parameterCollection, testParameters)
 			{
 				code->M_tm_inverse_sitediagonal_minus_device( in, out, testParameters.massParameters.getMubar());
@@ -498,7 +491,8 @@ BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
 
 	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
 	{
-		runTest<MTmInverseSitediagonalTester, MTmInverseSitediagonalMinusTestParameters>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		runTest<MTmInverseSitediagonalTester>(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex,
+				TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter}, calculateReferenceValues_mTmInverseSitediagonalMinus);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
