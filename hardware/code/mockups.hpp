@@ -565,5 +565,23 @@ namespace hardware {
 			}
 			common::action fermact;
 		};
+		class OpenClKernelParametersMockupForDslashEvenOdd : public OpenClKernelParametersMockupForSpinorTests
+		{
+		public:
+			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn, const double thetaTIn, const double thetaSIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), thetaFermionTemporal(thetaTIn), thetaFermionSpatial(thetaSIn)
+			{}
+			virtual double  getThetaFermionTemporal() const override
+			{
+				return thetaFermionTemporal;
+			}
+			virtual double getThetaFermionSpatial() const override
+			{
+				return thetaFermionSpatial;
+			}
+
+			double thetaFermionTemporal;
+			double thetaFermionSpatial;
+		};
 	}
 }
