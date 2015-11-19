@@ -223,11 +223,11 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 
 	//Temporary fields for shifted inverter
 	logger.debug() << "\t\tstart solver...";
-	std::vector<physics::lattices::Staggeredfield_eo *> X;
+	std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > X;
 	for(int i=0; i<phi.Get_order(); i++)
-		X.push_back(new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+		X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
 	//Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-	iterations = physics::algorithms::solvers::cg_m(X, phi.Get_b(), fm, gf, phi, system, interfacesHandler, params.get_solver_prec());
+	iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.Get_b(), phi, system, interfacesHandler, params.get_solver_prec());
 	logger.debug() << "\t\t...end solver in " << iterations << " iterations";
 	
 	physics::lattices::Staggeredfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()); //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
@@ -236,7 +236,6 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 		saxpy(&tmp, {(phi.Get_a())[i], 0.}, *X[i], tmp);
 	}
 	
-	meta::free_container(X);
 	logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";
 	return scalar_product(phi, tmp).re;
   

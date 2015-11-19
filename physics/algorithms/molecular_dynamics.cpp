@@ -94,11 +94,11 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
 
     //Temporary fields for shifted inverter
     logger.trace() << "\t\tstart solver...";
-    std::vector<physics::lattices::Staggeredfield_eo *> X;
+    std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > X;
     for (int i = 0; i < out->Get_order(); i++)
-        X.push_back(new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+        X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, out->Get_b(), fm, gf, orig, system, interfacesHandler, params.get_solver_prec());
+    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->Get_b(), orig, system, interfacesHandler, params.get_solver_prec());
     logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
     physics::lattices::sax(out, { out->Get_a0(), 0. }, orig);
@@ -106,7 +106,6 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
         physics::lattices::saxpy(out, { (out->Get_a())[i], 0. }, *X[i], *out);
 
     log_squarenorm("Staggeredfield_eo after update", *out);
-    meta::free_container(X);
 }
 
 /**

@@ -89,8 +89,8 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  Staggeredfield_eo eta_e(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	  Staggeredfield_eo eta_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	  //Auxiliary fields
-	  std::vector<Staggeredfield_eo*> chi_e; //This is the type to be used in the inverter
-	  chi_e.push_back(new Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+	  std::vector<std::shared_ptr<Staggeredfield_eo> > chi_e; //This is the type to be used in the inverter
+	  chi_e.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
 	  Staggeredfield_eo chi_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	  //Fermionmatrix objects
 	  physics::fermionmatrix::D_KS_eo Deo(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
@@ -106,7 +106,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  saxpby(&chi_o, mass, eta_e, -1.0, chi_o);
 	  //Here the CGM as standard CG is used
 	  std::vector<hmc_float> sigma(1, 0.0); //only one shift set to 0.0
-	  cg_m(chi_e, sigma, MdagM, gf, chi_o, system, interfacesHandler, parametersInterface.getSolverPrecision());
+	  cg_m(chi_e, MdagM, gf, sigma, chi_o, system, interfacesHandler, parametersInterface.getSolverPrecision());
 	  
 	  //Calculate chi_o = 1/m * (eta_o - Doe * chi_e)
 	  Doe(&chi_o, gf, *(chi_e[0]));
@@ -119,8 +119,6 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  scalar_product(&tmp2, eta_o, chi_o);
 	  add(&tmp1, tmp1, tmp2);
 	  pbp += tmp1.get();
-	  
-	  meta::free_container(chi_e);
 	}
 	
 	//Multiply by the overall factor, namely pbp = 1/VOL4D*N_flavour/4 * <Tr(M^{-1})>

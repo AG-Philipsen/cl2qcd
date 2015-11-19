@@ -44,10 +44,112 @@ namespace physics {
              *
              * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
              */
-            int cg_m(const std::vector<physics::lattices::Staggeredfield_eo *> x, const std::vector<hmc_float> sigma,
-                     const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
+//            int cg_m(const std::vector<physics::lattices::Staggeredfield_eo *> x, const std::vector<hmc_float> sigma,
+//                     const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
+//                     const physics::lattices::Staggeredfield_eo& b, const hardware::System& system,
+//                     physics::InterfacesHandler& interfacesHandler, hmc_float prec);
+
+            int cg_m(const std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > x, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
+                     const physics::lattices::Gaugefield& gf, const std::vector<hmc_float> sigma,
                      const physics::lattices::Staggeredfield_eo& b, const hardware::System& system,
                      physics::InterfacesHandler& interfacesHandler, hmc_float prec);
+
+
+            template<typename FERMIONFIELD, typename FERMIONMATRIX>
+            class SolverShifted {
+                public:
+                    SolverShifted(const std::vector<std::shared_ptr<FERMIONFIELD> >, const FERMIONMATRIX&,
+                                  const physics::lattices::Gaugefield&, const std::vector<hmc_float>, const FERMIONFIELD&,
+                                  const hardware::System&, physics::InterfacesHandler&, hmc_float);
+                    ~SolverShifted(){};
+
+                    SolverShifted() = delete;
+                    SolverShifted(const SolverShifted&) = delete;
+                    SolverShifted& operator=(const SolverShifted&) = delete;
+                    unsigned int getNumberOfIterationsDone();
+                    const std::vector<std::shared_ptr<FERMIONFIELD> > solve();
+
+                private:
+                    void setInitialConditions();
+                    void updateBetaScalar();
+                    void updateAuxiliaryFieldR();
+                    void updateAlphaScalar();
+                    void updateAuxiliaryFieldP();
+                    void updateVectorQuantities();
+                    void updateSingleFieldOfSolution(unsigned int);
+                    void updateSingleFieldOfAuxiliaryFieldPs(unsigned int);
+                    void checkFiledsSquarenormsForPossibleNaN();
+                    void updateQuantitiesForFollowingIteration();
+                    void calculateResiduumSingleEquation(bool, unsigned int = 0);
+                    void checkIfSingleEquationConverged(unsigned int);
+                    bool hasSingleSystemConverged(unsigned int);
+                    bool hasSystemConverged();
+                    void makePerformanceReport();
+                    void resetNoWarmupTimer();
+                    std::string createLogPrefix();
+                    void debugLogSquarenormSetOfFields(const std::string&, const std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> >, const int);
+                    void debugCompareSquarenormsOfResultFieldsBetweenBeginAndEndOfIteration();
+                    void debugMakeReportOfFieldsSquarenorm();
+                    void debugCalculateSquarenormOfResultField();
+
+
+                    //Parameter read from outside
+                    const std::vector<std::shared_ptr<FERMIONFIELD> > x;
+                    const FERMIONMATRIX& A;
+                    const physics::lattices::Gaugefield& gf;
+                    const std::vector<hmc_float> sigma;
+                    const FERMIONFIELD& b;
+                    const hardware::System& system;
+                    physics::InterfacesHandler& interfacesHandler;
+                    hmc_float solverPrecision;
+                    //TODO:Remove following inputparameters object
+                    const meta::Inputparameters& params;
+
+                    //Variable of the solver
+                    bool hasSystemBeSolved;
+                    unsigned int numberOfEquations;
+                    int iterationNumber;
+                    hmc_float residuumValue;
+                    klepsydra::Monotonic timer; /// @TODO: start timers synchronized with device(s)
+                    klepsydra::Monotonic timer_noWarmup;
+                    bool USE_ASYNC_COPY;     /// @todo make configurable from outside
+                    int MINIMUM_ITERATIONS;  /// @todo make configurable from outside
+
+
+                    //Auxiliary staggered fields
+                    const FERMIONFIELD r;
+                    const FERMIONFIELD p;
+                    std::vector<std::shared_ptr<FERMIONFIELD> > ps;
+
+                    //Auxiliary scalar vectors
+                    const physics::lattices::Vector<hmc_float> zeta_prev;    //This is zeta at the step iter-1
+                    const physics::lattices::Vector<hmc_float> zeta;         //This is zeta at the step iter
+                    const physics::lattices::Vector<hmc_float> zeta_foll;    //This is zeta at the step iter+1
+                    physics::lattices::Vector<hmc_float> alpha_vec;
+                    physics::lattices::Vector<hmc_float> beta_vec;
+                    physics::lattices::Vector<hmc_float> shift;              //This is to store constants sigma
+                    std::vector<bool> single_system_converged;               //This is to stop calculation on single system
+                    std::vector<uint> single_system_iter;                    //This is to calculate performance properly
+                    std::vector<hmc_float> resultSquarenorm;
+
+                    //Auxiliary scalars
+                    const physics::lattices::Scalar<hmc_float> alpha_scalar_prev;       //This is alpha_scalar at the step iter-1
+                    const physics::lattices::Scalar<hmc_float> alpha_scalar;            //This is alpha_scalar at the step iter
+                    const physics::lattices::Scalar<hmc_float> beta_scalar_prev;        //This is beta_scalar at the step iter-1
+                    const physics::lattices::Scalar<hmc_float> beta_scalar;             //This is beta_scalar at the step iter
+                    const physics::lattices::Scalar<hmc_float> zero;
+
+                    //Auxiliary containers for temporary saving
+                    const FERMIONFIELD v;                               //This is to store A.p
+                    const physics::lattices::Scalar<hmc_float> tmp1;    //This is to store (r,r) before updating r
+                    const physics::lattices::Scalar<hmc_float> tmp2;    //This is to store (r,r) after updating r
+                    const physics::lattices::Scalar<hmc_float> tmp3;    //This is to store (p,v) as Scalar
+
+                    //Only if merged kernels are used (this is to store the single eq. residuum all at once)
+                    std::unique_ptr<physics::lattices::Vector<hmc_float> > single_eq_resid;
+                    std::unique_ptr<std::vector<hmc_float> > single_eq_resid_host;
+
+            };
 
         }
     }

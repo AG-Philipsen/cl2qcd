@@ -61,6 +61,7 @@ public:
 	Staggeredfield_eo& operator=(const Staggeredfield_eo&) = delete;
 	Staggeredfield_eo(const Staggeredfield_eo&) = delete;
 	Staggeredfield_eo() = delete;
+	Staggeredfield_eo(Staggeredfield_eo&&) = default;
 
 	/**
 	 * Get the buffers containing the staggeredfield state on the devices.
