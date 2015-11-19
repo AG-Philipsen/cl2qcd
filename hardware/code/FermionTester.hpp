@@ -1,8 +1,29 @@
-#ifndef FERMIONTESTER_HPP
-#define FERMIONTESTER_HPP
+/*
+ * Copyright 2015 Christopher Pinke
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+# pragma once
 
 #include "SpinorTester.hpp"
 #include "GaugefieldTester.hpp"
+#include "../../physics/lattices/gaugefield.hpp"
+#include "gaugefield.hpp"
+#include "fermions.hpp"
 
 //todo: is there a better solution to this?
 //todo: can this be SpinorFillType instead of the vector? One only needs one anyway...
@@ -94,4 +115,84 @@ protected:
 	}
 };
 
-#endif
+//todo: this can probably be merged with FermionTester to be only one class (same for EvenOdd version)
+struct FermionmatrixTester : public FermionTester
+{
+	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters) :
+	FermionTester(kernelName, parameterCollection, testParameters)
+	{
+		in = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
+		out = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
+		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
+		out->load(createSpinorfield(SpinorFillType::zero));
+	}
+	~FermionmatrixTester()
+	{
+		calcSquarenormAndStoreAsKernelResult(out);
+		delete in;
+		delete out;
+	}
+protected:
+	const hardware::buffers::Plain<spinor> * in;
+	const hardware::buffers::Plain<spinor> * out;
+};
+
+class FermionmatrixEvenOddTester : public FermionTester
+{
+public:
+	FermionmatrixEvenOddTester(std::string kernelName, std::string inputfile) :
+	FermionTester(kernelName, inputfile, 1)
+	{
+		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		in->load(createSpinorfield(spinorfieldEvenOddElements));
+		out->load(createSpinorfield(spinorfieldEvenOddElements));
+	}
+	FermionmatrixEvenOddTester(std::string kernelName, const ParameterCollection parameterCollection, const EvenOddFermionTestParameters testParameters) :
+		FermionTester(kernelName, parameterCollection, testParameters)
+	{
+		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
+		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
+		out->load(createSpinorfield(SpinorFillType::zero));
+	}
+	~FermionmatrixEvenOddTester()
+	{
+		calcSquarenormEvenOddAndStoreAsKernelResult(out);
+		delete in;
+		delete out;
+	}
+protected:
+	const hardware::buffers::Spinor * in;
+	const hardware::buffers::Spinor * out;
+};
+
+const double nonTrivialMassParameter = 0.123456;
+
+struct WilsonMassParameters
+{
+	WilsonMassParameters(const double kappaIn) : kappa(kappaIn){};
+	const double kappa;
+};
+
+struct TwistedMassMassParameters : public WilsonMassParameters
+{
+	TwistedMassMassParameters(const double kappaIn, const double muIn):
+		WilsonMassParameters(kappaIn), mu(muIn) {}
+
+	const double mu;
+
+	double getMubar() const { return 2.*kappa*mu; }
+};
+
+//todo: rename FermionTestParameters to NonEvenOddFermionTestParameters
+template< class MassParameters>
+ struct FermionMatrixTestParameters : public FermionTestParameters
+{
+	FermionMatrixTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
+			const MassParameters massParametersIn, const ReferenceValues (* rV) (const int, const SpinorFillType, const GaugefieldFillType, const MassParameters)) :
+		FermionTestParameters(rV( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn), latticeExtentsIn,
+				SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
+	const MassParameters massParameters;
+};
+

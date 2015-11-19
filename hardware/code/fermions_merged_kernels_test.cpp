@@ -1,6 +1,7 @@
 /*
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *   2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -18,22 +19,18 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testUtilities.hpp"
-
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../../physics/lattices/gaugefield.hpp"
-#include "../device.hpp"
-#include "spinors.hpp"
-#include "fermions.hpp"
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS
+#define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS_MERGED_KERNELS
 #include <boost/test/unit_test.hpp>
 
-//some functionality
-#include "test_util.h"
+#include "FermionTester.hpp"
+#include "test_util.h" //@todo: check if this is needed in the end
+
+/**
+ * @todo: work over these classes...
+ */
+#include "../../host_functionality/host_random.h" //@todo: remove, this is needed for meta-fcts.
 
 class TestGaugefield {
 
@@ -411,9 +408,12 @@ BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#include "FermionTester.hpp"
-
 BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
+
+	struct TmpTestParameters: public EvenOddFermionTestParameters
+	{
+
+	};
 
 	class SaxpyAndGamma5EvenOddTester : public FermionTester
 	{

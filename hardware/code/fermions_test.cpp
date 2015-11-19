@@ -20,16 +20,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE HARDWARE_CODE_FERMIONS
 
-#include "gaugefield.hpp"
-#include "fermions.hpp"
-#include "../../physics/lattices/gaugefield.hpp"
-
 #include "FermionTester.hpp"
-
-/** todo:
- * - the way the reference values are passed is not nice, it should be somehow done automatically.
- * 		Especially that one has to call the lattice volume explicitely is not nice
- */
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
@@ -54,76 +45,10 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-//todo: this can probably be merged with FermionTester to be only one class (same for EvenOdd version)
-struct FermionmatrixTester : public FermionTester
-{
-	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters) :
-	FermionTester(kernelName, parameterCollection, testParameters)
-	{
-		in = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		out = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
-		out->load(createSpinorfield(SpinorFillType::zero));
-	}
-	~FermionmatrixTester()
-	{
-		calcSquarenormAndStoreAsKernelResult(out);
-		delete in;
-		delete out;
-	}
-protected:
-	const hardware::buffers::Plain<spinor> * in;
-	const hardware::buffers::Plain<spinor> * out;
-};
-
-class FermionmatrixEvenOddTester : public FermionTester
-{
-public:
-	FermionmatrixEvenOddTester(std::string kernelName, std::string inputfile) :
-	FermionTester(kernelName, inputfile, 1)
-	{
-		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		in->load(createSpinorfield(spinorfieldEvenOddElements));
-		out->load(createSpinorfield(spinorfieldEvenOddElements));
-	}
-	FermionmatrixEvenOddTester(std::string kernelName, const ParameterCollection parameterCollection, const EvenOddFermionTestParameters testParameters) :
-		FermionTester(kernelName, parameterCollection, testParameters)
-	{
-		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
-		out->load(createSpinorfield(SpinorFillType::zero));
-	}
-	~FermionmatrixEvenOddTester()
-	{
-		calcSquarenormEvenOddAndStoreAsKernelResult(out);
-		delete in;
-		delete out;
-	}
-protected:
-	const hardware::buffers::Spinor * in;
-	const hardware::buffers::Spinor * out;
-};
-
-const double nonTrivialMassParameter = 0.123456;
-
-struct WilsonMassParameters
-{
-	WilsonMassParameters(const double kappaIn) : kappa(kappaIn){};
-	const double kappa;
-};
-
-struct TwistedMassMassParameters : public WilsonMassParameters
-{
-	TwistedMassMassParameters(const double kappaIn, const double muIn):
-		WilsonMassParameters(kappaIn), mu(muIn) {}
-
-	const double mu;
-
-	double getMubar() const { return 2.*kappa*mu; }
-};
-
+/** todo:
+ * - the way the reference values are passed is not nice, it should be somehow done automatically.
+ * 		Especially that one has to call the lattice volume explicitely is not nice
+ */
 const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn)
 {
 	if( massParametersIn.kappa == 0. and spinorFillTypeIn == SpinorFillType::ascendingComplex)
@@ -225,17 +150,6 @@ ReferenceValues calculateReferenceValues_gamma5(const int latticeVolume, const S
 {
 	return (spinorFillTypeIn == SpinorFillType::ascendingComplex) ? ReferenceValues{latticeVolume*( sumOfIntegers(1, 12, 1) - sumOfIntegers(13, 24, 1) )} : defaultReferenceValues() ;
 }
-
-//todo: rename FermionTestParameters to NonEvenOddFermionTestParameters
-template< class MassParameters>
- struct FermionMatrixTestParameters : public FermionTestParameters
-{
-	FermionMatrixTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
-			const MassParameters massParametersIn, const ReferenceValues (* rV) (const int, const SpinorFillType, const GaugefieldFillType, const MassParameters)) :
-		FermionTestParameters(rV( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn), latticeExtentsIn,
-				SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
-	const MassParameters massParameters;
-};
 
 typedef FermionMatrixTestParameters<WilsonMassParameters> WilsonTestParameters;
 typedef FermionMatrixTestParameters<TwistedMassMassParameters> TwistedMassTestParameters;
@@ -602,6 +516,10 @@ BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+/**
+ * @todo: This will not work in future when the FermionTester is definitely evenOdd or not.
+ * Hence, one needs to inherit from two classes...
+ */
 class MFermionEvenOddComparator : public FermionTester
 {
 public:
@@ -663,9 +581,6 @@ protected:
 		const hardware::buffers::Spinor * intermediate3;
 		hardware::buffers::Plain<hmc_complex> * minusone;
 };
-
-
-
 
 BOOST_AUTO_TEST_SUITE(M_WILSON_COMPARE_NONEO_EO )
 
