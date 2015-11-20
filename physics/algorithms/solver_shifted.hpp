@@ -44,11 +44,6 @@ namespace physics {
              *
              * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
              */
-//            int cg_m(const std::vector<physics::lattices::Staggeredfield_eo *> x, const std::vector<hmc_float> sigma,
-//                     const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-//                     const physics::lattices::Staggeredfield_eo& b, const hardware::System& system,
-//                     physics::InterfacesHandler& interfacesHandler, hmc_float prec);
-
             int cg_m(const std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > x, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
                      const physics::lattices::Gaugefield& gf, const std::vector<hmc_float> sigma,
                      const physics::lattices::Staggeredfield_eo& b, const hardware::System& system,
