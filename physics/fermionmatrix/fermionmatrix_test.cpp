@@ -99,7 +99,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system, interfacesHandler.getInterface<FERMIONMATRIX>());
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -109,9 +109,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		pseudo_randomize<Spinorfield, spinor>(&src, seed);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[0], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[1], 0.01);
 	}
 
@@ -124,7 +124,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system, interfacesHandler.getInterface<FERMIONMATRIX>());
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -134,9 +134,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		pseudo_randomize<Spinorfield, spinor>(&src, seed);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[2], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[3], 0.01);
 	}
 }
@@ -154,7 +154,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system, interfacesHandler.getInterface<FERMIONMATRIX>());
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -163,9 +163,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, seed);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, seed + 1);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[0], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[1], 0.01);
 	}
 
@@ -178,7 +178,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system, interfacesHandler.getInterface<FERMIONMATRIX>());
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -187,9 +187,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, seed + 2);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, seed + 3);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[2], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[3], 0.01);
 	}
 }

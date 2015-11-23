@@ -89,15 +89,15 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			copyData(&tmp, source);
 			tmp.gamma5();
-			QplusQminus f_neo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
-			converged = cg(result, f_neo, gf, tmp, system, params.get_solver_prec(), interfacesHandler);
+			QplusQminus f_neo(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
+			converged = cg(result, f_neo, gf, tmp, system, interfacesHandler, params.get_solver_prec(), params.get_kappa(), meta::get_mubar(params));
 			copyData(&tmp, result);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
-			Qminus qminus(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
-			qminus(result, gf, tmp);
+			Qminus qminus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
+			qminus(result, gf, tmp, params.get_kappa(), meta::get_mubar(params));
 		} else {
-			M f_neo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::M>());
-			converged = bicgstab(result, f_neo, gf, *source, system, params.get_solver_prec(), interfacesHandler);
+			M f_neo(system, interfacesHandler.getInterface<physics::fermionmatrix::M>());
+			converged = bicgstab(result, f_neo, gf, *source, system, interfacesHandler, params.get_solver_prec(), params.get_kappa(), meta::get_mubar(params));
 		}
 	} else {
 		/**
@@ -137,11 +137,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 */
 		if(params.get_fermact() == common::action::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			dslash(&tmp1, gf, source_odd, EVEN);
+			dslash(&tmp1, gf, source_odd, EVEN, params.get_kappa());
 			saxpy(&source_even, one, source_even, tmp1);
 		} else if(params.get_fermact() == common::action::twistedmass) {
-			M_tm_inverse_sitediagonal(&tmp1, source_odd);
-			dslash(&tmp2, gf, tmp1, EVEN);
+			M_tm_inverse_sitediagonal(&tmp1, source_odd, meta::get_mubar(params));
+			dslash(&tmp2, gf, tmp1, EVEN, params.get_kappa());
 			saxpy(&source_even, one, source_even, tmp2);
 		}
 
@@ -154,17 +154,17 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//to use cg, one needs an hermitian matrix, which is QplusQminus
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			source_even.gamma5();
-			QplusQminus_eo f_eo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
-			converged = cg(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec(), interfacesHandler);
+			QplusQminus_eo f_eo(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
+			converged = cg(&result_eo, f_eo, gf, source_even, system, interfacesHandler, params.get_solver_prec(), params.get_kappa(), meta::get_mubar(params));
 			//now, calc Qminus result_buf_eo to obtain x = A^⁻1 b
 			//therefore, use source as an intermediate buffer
-			Qminus_eo qminus(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
-			qminus(&source_even, gf, result_eo);
+			Qminus_eo qminus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
+			qminus(&source_even, gf, result_eo, params.get_kappa(), meta::get_mubar(params));
 			//save the result to result_buf
 			copyData(&result_eo, source_even);
 		} else {
-			Aee f_eo(params.get_kappa(), meta::get_mubar(params), system, interfacesHandler.getInterface<physics::fermionmatrix::Aee>());
-			converged = bicgstab(&result_eo, f_eo, gf, source_even, system, params.get_solver_prec(), interfacesHandler);
+			Aee f_eo(system, interfacesHandler.getInterface<physics::fermionmatrix::Aee>());
+			converged = bicgstab(&result_eo, f_eo, gf, source_even, system, interfacesHandler, params.get_solver_prec(), params.get_kappa(), meta::get_mubar(params));
 		}
 
 		//odd solution
@@ -176,13 +176,13 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 */
 		if(params.get_fermact() == common::action::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			dslash(&tmp1, gf, result_eo, ODD);
+			dslash(&tmp1, gf, result_eo, ODD, params.get_kappa());
 			saxpy(&tmp1, mone, tmp1, source_odd);
 			sax(&tmp1, mone, tmp1);
 		} else if(params.get_fermact() == common::action::twistedmass) {
-			dslash(&tmp2, gf, result_eo, ODD);
-			M_tm_inverse_sitediagonal(&tmp1, tmp2);
-			M_tm_inverse_sitediagonal(&tmp2, source_odd);
+			dslash(&tmp2, gf, result_eo, ODD, params.get_kappa());
+			M_tm_inverse_sitediagonal(&tmp1, tmp2, meta::get_mubar(params));
+			M_tm_inverse_sitediagonal(&tmp2, source_odd, meta::get_mubar(params));
 			saxpy(&tmp1, mone, tmp1, tmp2);
 			sax(&tmp1, mone, tmp1);
 		}
