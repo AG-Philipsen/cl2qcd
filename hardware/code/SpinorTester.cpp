@@ -22,7 +22,17 @@
 #include "../../host_functionality/host_random.h" //@todo: remove this in the end!
 
 SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters):
-		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters)
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters), isEvenOdd(false), elements(0)
+{
+	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
+	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
+	evenOrOdd = kernelParameters->getUseEo();
+	code = device->getSpinorCode();
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+}
+
+SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const bool isEvenOddIn, const size_t elementsIn):
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters), isEvenOdd(isEvenOddIn), elements(elementsIn)
 {
 	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
 	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper

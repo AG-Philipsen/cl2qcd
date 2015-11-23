@@ -62,8 +62,8 @@ struct SpinorTestParameters: public TestParameters
 		TestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisionIn), needEvenOdd(needEvenOddIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters() : TestParameters(), needEvenOdd(false) {};
 
-	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ; //@todo: remove
-	int getEvenOddSpinorfieldSize() const { return calculateEvenOddSpinorfieldSize(ns, nt); } ; //@todo: remove
+	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ; //@todo: remove?
+	int getEvenOddSpinorfieldSize() const { return calculateEvenOddSpinorfieldSize(ns, nt); } ; //@todo: remove?
 	int getSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ; //@todo: remove
 	int getEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ; //@todo: remove
 
@@ -103,8 +103,9 @@ struct EvenOddSpinorTestParameters : public SpinorTestParameters
 
 //todo: need children for evenOdd and nonEvenOdd. Then, one can have a common "size" member instead of spinorfieldsize and evenOddSpinorfieldsize. This should simplify the usage a lot!
 class SpinorTester : public KernelTester {
-public:
-	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters & testParameters );
+public: //@todo: make these protected!
+	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters & ); //@todo: this must go away in the end!
+	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters &, const bool, const size_t );
 	
 protected:
 	spinor * createSpinorfield( SpinorFillType ); // @todo: this always create a nonEo field!!!
@@ -121,6 +122,9 @@ protected:
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
 	
+	int getSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ;
+	int getEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ;
+
 	const hardware::code::Spinors * code;
 
 	hardware::buffers::Plain<double> * doubleBuffer;
@@ -129,5 +133,21 @@ protected:
 	size_t spinorfieldElements;
 	size_t spinorfieldEvenOddElements;
 	bool evenOrOdd;
+	const bool isEvenOdd;
+	const size_t elements;
+};
+
+class NonEvenOddSpinorTester : public SpinorTester
+{
+public:
+	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP) :
+		SpinorTester(kernelName, pC, tP, false, getSpinorfieldSize(tP.latticeExtents)) {};
+};
+
+class EvenOddSpinorTester : public SpinorTester
+{
+public:
+	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP) :
+		SpinorTester(kernelName, pC, tP, true, getEvenOddSpinorfieldSize(tP.latticeExtents)) {};
 };
 
