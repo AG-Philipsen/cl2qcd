@@ -38,9 +38,23 @@ void SpinorStaggeredTester::setMembers(){
 	iterations = parameters->get_integrationsteps(0);
 }
 
+void SpinorStaggeredTester::setMembersNew()
+{
+		//todo: some of these could also be put into the specific child-classes where they are actually used.
+	inputfield = NULL;
+	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
+	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
+	useRandom = false; // todo: make changeable (parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
+	alpha_host = {kernelParameters->getBeta(), kernelParameters->getRho()}; // todo: make changeable {parameters->get_beta(), parameters->get_rho()};
+	beta_host = {kernelParameters->getKappa(), kernelParameters->getMuBar()}; //todo: mubar was mu originally
+	iterations = 1; // todo: make changeable parameters->get_integrationsteps(0);
+	calcVariance = false; // todo: make changeable parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
+	evenOrOdd = kernelParameters->getUseEo();
+}
+
 SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
 					      int numberOfValues, int typeOfComparision) :
-	prngParameters( parameters ), KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision)
+	KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( parameters )
 {
 	code = device->getSpinorStaggeredCode();
 	prng = new physics::PRNG(*system, &prngParameters);
@@ -55,6 +69,14 @@ SpinorStaggeredTester::SpinorStaggeredTester(meta::Inputparameters * parameters,
 {
 	setMembers();
 	code = device->getSpinorStaggeredCode();
+}
+
+SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorStaggeredTestParameters & testParameters):
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters), prngParameters(nullptr), prng(nullptr)
+{
+	setMembersNew();
+	code = device->getSpinorStaggeredCode();
+	doubleBuffer = new hardware::buffers::Plain<double> (1,device);
 }
 
 SpinorStaggeredTester::~SpinorStaggeredTester()
@@ -86,6 +108,26 @@ void SpinorStaggeredTester::fill_with_zero(su3vec * sf_in, int size)
     sf_in[i].e0 = hmc_complex_zero;
     sf_in[i].e1 = hmc_complex_zero;
     sf_in[i].e2 = hmc_complex_zero;
+  }
+  return;
+}
+
+void SpinorStaggeredTester::fill_with_ascending(su3vec * sf_in, int size)
+{
+  for(int i = 0; i < size; ++i) {
+    sf_in[i].e0 = {1., 0.};
+    sf_in[i].e1 = {2., 0.};
+    sf_in[i].e2 = {3., 0.};
+  }
+  return;
+}
+
+void SpinorStaggeredTester::fillWithAscendingComplex(su3vec * sf_in, int size)
+{
+  for(int i = 0; i < size; ++i) {
+    sf_in[i].e0 = {1., 2.};
+    sf_in[i].e1 = {3., 4.};
+    sf_in[i].e2 = {5., 6.};
   }
   return;
 }
@@ -230,6 +272,30 @@ su3vec * SpinorStaggeredTester::createSpinorfield(size_t numberOfElements, int s
   useRandom ? fill_with_random(inputfield, numberOfElements, seed) : fill_with_one(inputfield, numberOfElements);
   BOOST_REQUIRE(inputfield);
   return inputfield;
+}
+
+su3vec * SpinorStaggeredTester::createSpinorfield(SpinorFillType fillTypeIn)
+{
+	su3vec * in;
+  in = new su3vec[spinorfieldElements];
+  switch (fillTypeIn) {
+	case SpinorFillType::zero :
+		fill_with_zero(in, spinorfieldElements);
+		break;
+	case SpinorFillType::one :
+		fill_with_one(in, spinorfieldElements);
+		break;
+	case SpinorFillType::ascendingReal :
+		fill_with_ascending(in, spinorfieldElements);
+		break;
+	case SpinorFillType::ascendingComplex :
+		fillWithAscendingComplex(in, spinorfieldElements);
+		break;
+	default:
+		logger.fatal() << "do not know fill type!";
+  }
+  BOOST_REQUIRE(in);
+  return in;
 }
 
 su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity()

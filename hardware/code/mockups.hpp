@@ -539,5 +539,25 @@ namespace hardware {
 			const size_t prec;
 			const bool useEvenOdd;
 		};
+
+		class OpenClKernelParametersMockupForSpinorStaggered : public OpenClKernelParametersMockupForSpinorTests
+		{
+		public:
+			OpenClKernelParametersMockupForSpinorStaggered(const int nsIn, const int ntIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn), fermact(common::action::rooted_stagg)
+		{
+				fermact = common::action::rooted_stagg;
+		};
+			OpenClKernelParametersMockupForSpinorStaggered(const int nsIn, const int ntIn, const bool useEvenOddIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, useEvenOddIn), fermact(common::action::rooted_stagg)
+		{
+				fermact = common::action::rooted_stagg;
+		};
+		virtual common::action getFermact() const override
+		{
+			return fermact;
+		}
+		common::action fermact;
+		};
 	}
 }
