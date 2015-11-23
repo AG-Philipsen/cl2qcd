@@ -21,7 +21,6 @@
 
 #include "SpinorTester.hpp"
 #include "GaugefieldTester.hpp"
-#include "../../physics/lattices/gaugefield.hpp"
 #include "gaugefield.hpp"
 #include "fermions.hpp"
 
@@ -46,25 +45,10 @@ struct EvenOddFermionTestParameters : public EvenOddSpinorTestParameters, Gaugef
 			GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
 };
 
-class FermionTester : public SpinorTester
+struct FermionTester : public SpinorTester
 {
-public:
-	FermionTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-		SpinorTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues), gaugefieldBuffer(nullptr)
-	{
-			code = SpinorTester::device->getFermionCode();
-			physics::lattices::GaugefieldParametersImplementation params(&SpinorTester::system->get_inputparameters());
-			gaugefield = new physics::lattices::Gaugefield(*SpinorTester::system, &params, *prng);
-	}
-	FermionTester(std::string kernelName, std::vector<std::string> parameterStrings, int numberOfValues = 1):
-	SpinorTester(kernelName, parameterStrings, numberOfValues), gaugefieldBuffer(nullptr)
-	{
-			code = SpinorTester::device->getFermionCode();
-			physics::lattices::GaugefieldParametersImplementation params(&SpinorTester::system->get_inputparameters());
-			gaugefield = new physics::lattices::Gaugefield(*SpinorTester::system, &params, *prng);
-	}
 	FermionTester(std::string kernelName, const ParameterCollection & pC, const FermionTestParameters & testParameters):
-		SpinorTester(kernelName, pC, testParameters), gaugefield(nullptr)
+		SpinorTester(kernelName, pC, testParameters)
 	{
 		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
 		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
@@ -74,7 +58,7 @@ public:
 		code = SpinorTester::device->getFermionCode();
 	}
 	FermionTester(std::string kernelName, const ParameterCollection & pC, const EvenOddFermionTestParameters & testParameters):
-		SpinorTester(kernelName, pC, testParameters), gaugefield(nullptr)
+		SpinorTester(kernelName, pC, testParameters)
 	{
 		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
 		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
@@ -85,35 +69,14 @@ public:
 	}
 
 	FermionTester(std::string kernelName, const ParameterCollection & pC, const SpinorTestParameters & testParameters):
-		SpinorTester(kernelName, pC, testParameters), gaugefield(nullptr), gaugefieldBuffer(nullptr)
+		SpinorTester(kernelName, pC, testParameters), gaugefieldBuffer(nullptr)
 	{
 		code = SpinorTester::device->getFermionCode();
-	}
-
-	~FermionTester()
-	{
-		if (gaugefield)
-		{
-			delete gaugefield;
-		}
 	}
 	
 protected:
 	const hardware::code::Fermions * code;
 	const hardware::buffers::SU3 * gaugefieldBuffer;
-	physics::lattices::Gaugefield * gaugefield; //todo: remove
-	
-	//todo: remove both fcts.
-	std::string getSpecificInputfile(std::string inputfileIn)
-	{
-		//todo: this is ugly, find a better solution.
-		// The problem is that the parent class calls a similar fct.
-		return "../fermions/" + inputfileIn;
-	}
-	
-	const hardware::buffers::SU3* getGaugefieldBuffer() {
-		return gaugefield->get_buffers()[0];
-	}
 };
 
 //todo: this can probably be merged with FermionTester to be only one class (same for EvenOdd version)
@@ -141,14 +104,6 @@ protected:
 class FermionmatrixEvenOddTester : public FermionTester
 {
 public:
-	FermionmatrixEvenOddTester(std::string kernelName, std::string inputfile) :
-	FermionTester(kernelName, inputfile, 1)
-	{
-		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		in->load(createSpinorfield(spinorfieldEvenOddElements));
-		out->load(createSpinorfield(spinorfieldEvenOddElements));
-	}
 	FermionmatrixEvenOddTester(std::string kernelName, const ParameterCollection parameterCollection, const EvenOddFermionTestParameters testParameters) :
 		FermionTester(kernelName, parameterCollection, testParameters)
 	{
