@@ -583,5 +583,15 @@ namespace hardware {
 			double thetaFermionTemporal;
 			double thetaFermionSpatial;
 		};
+		class OpenClKernelParametersMockupForMergedFermionKernels : public OpenClKernelParametersMockupForSpinorTests
+		{
+		public:
+			OpenClKernelParametersMockupForMergedFermionKernels(int nsIn, int ntIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, true) {}
+			virtual bool getUseMergeKernelsFermion() const override
+			{
+				return true;
+			}
+		};
 	}
 }

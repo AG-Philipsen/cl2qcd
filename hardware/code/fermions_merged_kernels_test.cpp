@@ -410,125 +410,74 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
 
-	struct TmpTestParameters: public EvenOddFermionTestParameters
-	{
+	/**
+	 * @todo: use this createSpinorfieldWithOnesAndMinusOneForGamma5Use ?
+	 */
 
+	ReferenceValues calculateReferenceValues_saxpyAndGamma5EvenOdd(const int latticeVolume, const hmc_complex coefficient)
+	{
+		if( coefficient.re == 0. and coefficient.im == 0.)
+		{
+			return ReferenceValues{ latticeVolume * (-144.) };
+		}
+		else if ( coefficient.re == -nonTrivialMassParameter and coefficient.im == 2.*nonTrivialMassParameter)
+		{
+			return ReferenceValues{ latticeVolume * (-161.7776640000001) };
+		}
+		else
+		{
+			return defaultReferenceValues();
+		}
+	}
+
+	struct SaxpyAndGamma5EvenOddTestParameters: public EvenOddFermionTestParameters
+	{
+		SaxpyAndGamma5EvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const hmc_complex coefficientIn) :
+			EvenOddFermionTestParameters(calculateReferenceValues_saxpyAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(latticeExtentsIn), coefficientIn),
+					latticeExtentsIn, spinorFillTypesIn), coefficient(coefficientIn) {};
+		const hmc_complex coefficient;
 	};
 
-	class SaxpyAndGamma5EvenOddTester : public FermionTester
+	struct SaxpyAndGamma5EvenOddTester : public FermionTester
 	{
-	public:
-		SaxpyAndGamma5EvenOddTester(std::vector<std::string> parameterStrings, uint num) :
-			FermionTester("saxpy_AND_gamma5", parameterStrings, 1)
+		SaxpyAndGamma5EvenOddTester(const ParameterCollection & pc, const SaxpyAndGamma5EvenOddTestParameters & testParameters) :
+			FermionTester("saxpy_AND_gamma5", pc, testParameters)
 		{
 			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
 			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
 			const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
-			hardware::buffers::Plain<hmc_complex> alpha(1, device);
 
-			if (num == 1){
-				in.load(createSpinorfield(spinorfieldEvenOddElements));
-				in2.load(createSpinorfield(spinorfieldEvenOddElements));
-			}
-			else{
-				in.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
-				in2.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
-			}
-			alpha.load(&alpha_host);
-			
+			in.load(createSpinorfield(testParameters.fillTypes.at(0)));
+			in2.load(createSpinorfield(testParameters.fillTypes.at(1)));
+			out.load(createSpinorfield(SpinorFillType::zero));
+
+			code->saxpy_AND_gamma5_eo_device(&in, &in2, testParameters.coefficient, &out);
+
 			spinor * sf_in;
 			sf_in = new spinor[spinorfieldEvenOddElements];
-			
-			code->saxpy_AND_gamma5_eo_device(&in, &in2, alpha_host, &out);
 			out.dump(sf_in);
 			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
-	
 			delete sf_in;
 		}
 	};
 
+	void testSaxpyAndGamma5EvenOdd(const LatticeExtents lE, const SpinorFillTypes sF, const hmc_complex coefficient)
+	{
+		SaxpyAndGamma5EvenOddTestParameters parametersForThisTest{lE, sF, coefficient};
+		hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+		hardware::code::OpenClKernelParametersMockupForMergedFermionKernels kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt);
+		ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+		SaxpyAndGamma5EvenOddTester( parameterCollection, parametersForThisTest);
+	}
+
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=0", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+		testSaxpyAndGamma5EvenOdd(LatticeExtents{ns4, nt8}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex}, hmc_complex{0.,0.});
 	}
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_2)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_3)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_4)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_5)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_6)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_7)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_8)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=1536", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_9)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_10)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=3072.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_11)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_12)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=3072.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_13)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=1536.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_14)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=4608.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+		testSaxpyAndGamma5EvenOdd(LatticeExtents{ns4, nt12}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex}, hmc_complex{-nonTrivialMassParameter, 2.*nonTrivialMassParameter});
 	}
 	
 BOOST_AUTO_TEST_SUITE_END()

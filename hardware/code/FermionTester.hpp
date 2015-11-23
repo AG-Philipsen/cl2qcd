@@ -40,7 +40,8 @@ struct EvenOddFermionTestParameters : public EvenOddSpinorTestParameters, Gaugef
 	EvenOddFermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn) :
 		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn),
 		GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, GaugefieldFillType::cold) {};
-	EvenOddFermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const GaugefieldFillType gaugefieldFillTypesIn) :
+	EvenOddFermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn,
+			const GaugefieldFillType gaugefieldFillTypesIn = GaugefieldFillType::cold) :
 			EvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn),
 			GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
 };
@@ -167,6 +168,7 @@ protected:
 	const hardware::buffers::Spinor * out;
 };
 
+//@todo: rename nonTrivialMassParameter to nonTrivialParameter
 const double nonTrivialMassParameter = 0.123456;
 
 struct WilsonMassParameters
