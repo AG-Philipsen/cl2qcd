@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_SUITE( F_FERMION_COMPARE_NONEO_EO )
 			
 			//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
 			//therefore, simply convert the eo input back to noneo
-			if(SpinorTester::useRandom)
+			if(SpinorTester::useRandom) //this variable has been removed from SpinorTester and should not be used here anyway (use some enum filltype instead)
 			{
 				if (SpinorTester::evenOrOdd)
 				{

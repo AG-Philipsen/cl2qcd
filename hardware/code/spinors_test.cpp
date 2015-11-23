@@ -181,16 +181,6 @@ template<typename TesterClass, typename ParameterClass> void performTest(const L
 
 BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 
-	BOOST_AUTO_TEST_CASE( BUILD_1 )
-	{
-		BOOST_CHECK_NO_THROW(   SpinorTester spinorTester("build all kernels", "spinors_build_input_1") );
-	}
-
-	BOOST_AUTO_TEST_CASE( BUILD_2 )
-	{
-		BOOST_CHECK_NO_THROW(   SpinorTester spinorTester("build all kernels", "spinors_build_input_2") );
-	}
-
 	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
@@ -1021,6 +1011,8 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
+
+#include "../../host_functionality/host_random.h" //@todo: remove this in the end!
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
