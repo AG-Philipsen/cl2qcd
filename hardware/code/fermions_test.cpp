@@ -154,14 +154,6 @@ ReferenceValues calculateReferenceValues_gamma5(const int latticeVolume, const S
 typedef FermionMatrixTestParameters<WilsonMassParameters> WilsonTestParameters;
 typedef FermionMatrixTestParameters<TwistedMassMassParameters> TwistedMassTestParameters;
 
-struct EvenOddTwistedMassTestParameters: public EvenOddFermionTestParameters
-{
-	EvenOddTwistedMassTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn,
-			const TwistedMassMassParameters massParametersIn, const ReferenceValues(*referenceValueCalculation) (int, TwistedMassMassParameters) ) :
-		EvenOddFermionTestParameters(referenceValueCalculation( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
-	const TwistedMassMassParameters massParameters;
-};
-
 struct DslashEvenOddTestParameters: public EvenOddFermionTestParameters
 {
 DslashEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn) :

@@ -552,8 +552,8 @@ namespace hardware {
 		class OpenClKernelParametersMockupForTwistedMass : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:
-			OpenClKernelParametersMockupForTwistedMass(int nsIn, int ntIn, const bool needEvenOddIn) :
-				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), fermact(common::action::wilson)
+			OpenClKernelParametersMockupForTwistedMass(int nsIn, int ntIn, const bool needEvenOddIn, const bool useMergedKernels= false) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), fermact(common::action::wilson), useMergedKernels(useMergedKernels)
 			{
 				//NOTE: for the moment, these member are set here in order to overwrite the settings from the parent class, but this should be done nicer!
 				fermact = common::action::twistedmass;
@@ -563,7 +563,12 @@ namespace hardware {
 			{
 				return fermact;
 			}
+			virtual bool getUseMergeKernelsFermion() const override
+			{
+				return useMergedKernels;
+			}
 			common::action fermact;
+			const bool useMergedKernels;
 		};
 		class OpenClKernelParametersMockupForDslashEvenOdd : public OpenClKernelParametersMockupForSpinorTests
 		{

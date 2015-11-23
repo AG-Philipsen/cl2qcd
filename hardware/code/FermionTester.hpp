@@ -198,3 +198,17 @@ template< class MassParameters>
 	const MassParameters massParameters;
 };
 
+struct EvenOddTwistedMassTestParameters: public EvenOddFermionTestParameters
+{
+	EvenOddTwistedMassTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn,
+			const TwistedMassMassParameters massParametersIn, const ReferenceValues(*referenceValueCalculation) (int, TwistedMassMassParameters) ) :
+		EvenOddFermionTestParameters(referenceValueCalculation( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn,
+				SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
+	EvenOddTwistedMassTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gF,
+			const TwistedMassMassParameters massParametersIn, const ReferenceValues(*referenceValueCalculation) (int, const GaugefieldFillType gF, TwistedMassMassParameters) ) :
+		EvenOddFermionTestParameters(referenceValueCalculation( getEvenOddSpinorfieldSize(latticeExtentsIn), gF, massParametersIn), latticeExtentsIn,
+				SpinorFillTypes{spinorFillTypeIn}, gF), massParameters(massParametersIn) {};
+
+	const TwistedMassMassParameters massParameters;
+};
+

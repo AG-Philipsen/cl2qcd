@@ -431,13 +431,6 @@ void hardware::code::Fermions::dslash_eo_inner(const hardware::buffers::Spinor *
 
 void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar) const
 {
-	//get kappa
-	hmc_float kappa_tmp, mubar_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = kernelParameters->getKappa();
-	else kappa_tmp = kappa;
-	if(mubar == ARG_DEF) mubar_tmp = kernelParameters->getMuBar();
-	else mubar_tmp = kappa;
-
 	cl_int eo = evenodd;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -456,10 +449,10 @@ void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(co
 	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 3, sizeof(cl_int), &eo);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 4, sizeof(hmc_float), &kappa_tmp);
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 4, sizeof(hmc_float), &kappa);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 5, sizeof(hmc_float), &mubar_tmp);
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 5, sizeof(hmc_float), &mubar);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(dslash_AND_M_tm_inverse_sitediagonal_eo , gs2, ls2);
@@ -467,13 +460,6 @@ void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(co
 
 void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa, hmc_float mubar) const
 {
-	//get kappa
-	hmc_float kappa_tmp, mubar_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = kernelParameters->getKappa();
-	else kappa_tmp = kappa;
-	if(mubar == ARG_DEF) mubar_tmp = kernelParameters->getMuBar();
-	else mubar_tmp = kappa;
-
 	cl_int eo = evenodd;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -492,10 +478,10 @@ void hardware::code::Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_dev
 	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 3, sizeof(cl_int), &eo);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 4, sizeof(hmc_float), &kappa_tmp);
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 4, sizeof(hmc_float), &kappa);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 5, sizeof(hmc_float), &mubar_tmp);
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 5, sizeof(hmc_float), &mubar);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(dslash_AND_M_tm_inverse_sitediagonal_minus_eo , gs2, ls2);
