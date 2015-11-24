@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 12);
 		gm.zero();
 
-		physics::algorithms::fermion_force(&gm, sf1, sf2, gf);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 18550.897680606064, 0.01);
 	}
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(fermion_force)
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 14);
 		gm.zero();
 
-		physics::algorithms::fermion_force(&gm, sf1, sf2, gf);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, gf, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 3561.5546616746424, 0.01);
 	}
 }
@@ -98,9 +98,9 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		gm.zero();
 
 		BOOST_REQUIRE_SMALL(squarenorm(gm), 0.001);
-		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN, gf);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN, gf, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 6180.0548464319563, 0.01);
-		physics::algorithms::fermion_force(&gm, sf1, sf2, ODD, gf);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, ODD, gf, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 18590.240819832132, 0.01);
 	}
 
@@ -123,9 +123,9 @@ BOOST_AUTO_TEST_CASE(fermion_force_eo)
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN, gf);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, EVEN, gf, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1294.880037707632, 0.01);
-		physics::algorithms::fermion_force(&gm, sf1, sf2, ODD, gf);
+		physics::algorithms::fermion_force(&gm, sf1, sf2, ODD, gf, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 3659.59932413153, 0.01);
 	}
 }
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 21);
 		gm.zero();
 
-		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler);
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(gm), 42199.514415107173, 0.01);
 	}
 }
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_forces_eo)
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler);
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(gm), 3441.344988280136, 0.01);
 	}
 }

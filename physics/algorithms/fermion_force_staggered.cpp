@@ -106,7 +106,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     physics::lattices::Gaugemomenta tmp(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
 
     for (int i = 0; i < phi.Get_order(); i++) {
-        Doe(Y[i].get(), gf, *X[i], &mass);
+        Doe(Y[i].get(), gf, *X[i]);
         tmp.zero();
         fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
         fermion_force(&tmp, *X[i], *Y[i], gf, ODD);

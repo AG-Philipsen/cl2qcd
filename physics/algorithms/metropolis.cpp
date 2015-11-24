@@ -230,7 +230,8 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.Get_b(), phi, system, interfacesHandler, params.get_solver_prec(), mass);
 	logger.debug() << "\t\t...end solver in " << iterations << " iterations";
 	
-	physics::lattices::Staggeredfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()); //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
+	//this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
+	physics::lattices::Staggeredfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	sax(&tmp, {phi.Get_a0(), 0.}, phi);
 	for(int i=0; i<phi.Get_order(); i++){
 		saxpy(&tmp, {(phi.Get_a())[i], 0.}, *X[i], tmp);
@@ -339,7 +340,7 @@ template <class SPINORFIELD> static hmc_observables metropolis(const hmc_float r
 				throw Print_Error_Message("NAN occured in Metropolis! Aborting!", __FILE__, __LINE__);
 			}
 		} else {
-			hmc_float s_fermion_final = calc_s_fermion(new_u, phi, system, interfacesHandler);
+			hmc_float s_fermion_final = calc_s_fermion(new_u, phi, system, interfacesHandler, params.get_kappa(), meta::get_mubar(params));
 			deltaH += spinor_energy_init - s_fermion_final;
 
 			print_info_debug(params, "[DH]:\tS[DET]_0:\t", spinor_energy_init, false);

@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(calc_tot_force)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 24);
 		gm.zero();
 
-		physics::algorithms::calc_total_force(&gm, gf, sf1, system, interfacesHandler);
+		physics::algorithms::calc_total_force(&gm, gf, sf1, system, interfacesHandler, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(gm), 89317.106966900712, 0.01);
 	}
 }
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(calc_tot_force_eo)
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::calc_total_force(&gm, gf, sf1, system, interfacesHandler);
+		physics::algorithms::calc_total_force(&gm, gf, sf1, system, interfacesHandler, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(gm), 56762.555327447422, 0.01);
 	}
 }
