@@ -30,6 +30,7 @@
 #include "spinors.hpp"
 #include "complex.hpp"
 
+//todo: check if in the end, ascending is used at all. If not, remove and rename ascendingComplex to ascending
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
@@ -82,6 +83,8 @@ struct NonEvenOddSpinorTestParameters : public SpinorTestParameters
 {
 	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, false) {};
+	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillType fillTypeIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, SpinorFillTypes{fillTypeIn}, false) {};
 	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn) :
 		SpinorTestParameters(referenceValuesIn,latticeExtendsIn, false) {};
 	NonEvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComparisonType typeOfComparisionIn) :
@@ -95,6 +98,8 @@ struct EvenOddSpinorTestParameters : public SpinorTestParameters
 {
 	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn, true) {};
+	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillType fillTypeIn) :
+		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, SpinorFillTypes{fillTypeIn}, true) {};
 	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn) :
 		SpinorTestParameters(referenceValuesIn,latticeExtendsIn, true) {};
 	EvenOddSpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComparisonType typeOfComparisionIn) :
@@ -104,6 +109,7 @@ struct EvenOddSpinorTestParameters : public SpinorTestParameters
 	EvenOddSpinorTestParameters() : SpinorTestParameters() {};
 };
 
+//todo: need children for evenOdd and nonEvenOdd. Then, one can have a common "size" member instead of spinorfieldsize and evenOddSpinorfieldsize. This should simplify the usage a lot!
 class SpinorTester : public KernelTester {
 public:
 	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters & testParameters );

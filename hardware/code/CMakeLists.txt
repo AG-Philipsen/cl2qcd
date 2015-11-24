@@ -99,7 +99,6 @@ add_test(hardware_code_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURR
 
 add_executable(hardware_code_fermions_test fermions_test.cpp)
 target_link_libraries(hardware_code_fermions_test
-	prng
 	lattices
 	kernelTestUtilities
 )
