@@ -194,8 +194,8 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
 	{
-		const hardware::HardwareParametersMockup hardwareParameters(4,4);
-		const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
+		const hardware::HardwareParametersMockup hardwareParameters(4,4, true);//this implicitly sets useEvenOdd(false) if true is not there
+		const hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(4,4);
 		ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
 		const SpinorStaggeredTestParameters testParameters;
 		BOOST_CHECK_NO_THROW( SpinorStaggeredTester( "build all kernels", parameterCollection, testParameters) );
@@ -1136,35 +1136,35 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
 	struct SaxpyEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
 	{
-		SaxpyEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		SaxpyEvenOddTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
 			EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn),latticeExtentsIn, fillTypesIn, coefficientsIn, 3){}
 	};
 
-	class SaxpyEvenOddComplexTester: public EvenOddLinearCombinationTester
+	class SaxpyEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
 	{
 	public:
 		SaxpyEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTester("saxpy_eo_complex", parameterCollection, testParameters)
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_eo_complex", parameterCollection, testParameters)
 		{
 			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), getOutSpinor());
 		}
 	};
 
-	class SaxpyArgEvenOddComplexTester: public EvenOddLinearCombinationTester
+	class SaxpyArgEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
 	{
 	public:
 		SaxpyArgEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTester("saxpy_arg_eo_complex", parameterCollection, testParameters)
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg_eo_complex", parameterCollection, testParameters)
 		{
 			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), getOutSpinor());
 		}
 	};
 
-	class SaxpyEvenOddRealTester: public EvenOddLinearCombinationTester
+	class SaxpyEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
 	{
 	public:
 		SaxpyEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTester("saxpy_eo_real", parameterCollection, testParameters)
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_eo_real", parameterCollection, testParameters)
 		{
 			hmc_complex complexNumbers;
 			complexNums.at(0)->dump(&complexNumbers);
@@ -1172,11 +1172,11 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 		}
 	};
 
-	class SaxpyArgEvenOddRealTester: public EvenOddLinearCombinationTester
+	class SaxpyArgEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
 	{
 	public:
 		SaxpyArgEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTester("saxpy_arg_eo_real", parameterCollection, testParameters)
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg_eo_real", parameterCollection, testParameters)
 		{
 			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0).re, getOutSpinor());
 		}
@@ -1197,316 +1197,89 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 
 	};
 
-	class SaxpyEvenOddTester: public SpinorStaggeredTester{
-	   public:
-		SaxpyEvenOddTester(std::string inputfile, int switcher):SpinorStaggeredTester("saxpy_eo or saxpy_arg_eo", inputfile, 1){
-			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements, device);
-			const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
-			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements, device);
-			in.load(createSpinorfield(spinorfieldEvenOddElements, 123));
-			in2.load(createSpinorfield(spinorfieldEvenOddElements, 456));
-			
-			if(switcher==0 || switcher==1){
-				hardware::buffers::Plain<hmc_complex> alpha(1, device);
-				alpha.load(&alpha_host);
-				if(switcher==0)
-				    code->saxpy_eoprec_device(&in, &in2, &alpha, &out);
-				if(switcher==1)
-				    code->saxpy_eoprec_device(&in, &in2, alpha_host, &out);
-			}else if(switcher==2 || switcher==3){
-				hardware::buffers::Plain<hmc_float> alpha_real(1, device);
-				alpha_real.load(&alpha_host.re);
-				if(switcher==2)
-				    code->saxpy_eoprec_device(&in, &in2, &alpha_real, &out);
-				if(switcher==3)
-				    code->saxpy_eoprec_device(&in, &in2, alpha_host.re, &out);
-			}else{
-				hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device);
-				std::vector<hmc_float> alpha_host_real_vec(5, alpha_host.re);
-				const int index_alpha = 3;
-				alpha_real_vec.load(&alpha_host_real_vec[0]); 
-				code->saxpy_eoprec_device(&in,  &in2, &alpha_real_vec, index_alpha, &out);
-			}
-				
-			calcSquarenormEvenOddAndStoreAsKernelResult(&out);
-
-     /*
-     print_staggeredfield_eo_to_textfile("ref_vec_saxpy1_eo", createSpinorfield(spinorfieldEvenOddElements, 123)); 
-     logger.info() << "Produced the ref_vec_saxpy1_eo text file with the staggered field for the ref. code.";   
-     print_staggeredfield_eo_to_textfile("ref_vec_saxpy2_eo", createSpinorfield(spinorfieldEvenOddElements, 456)); 
-     logger.info() << "Produced the ref_vec_saxpy2_eo text file with the staggered field for the ref. code.";
-     */
-		}
-	};
-
 	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_1 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_1", 0);
+	    performTest<SaxpyEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt4}, ComplexNumbers {{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_2 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_2", 0);
+	    performTest<SaxpyEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8,nt4}, ComplexNumbers {{1.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_3 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_3", 0);
+	    performTest<SaxpyEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt8}, ComplexNumbers {{0.,1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_4 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_4", 0);
+	    performTest<SaxpyEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns16,nt8}, ComplexNumbers {{1.,-1.}});
 	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_5 )
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_CPLX_EO_1 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_5", 0);
+	    performTest<SaxpyArgEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt4}, ComplexNumbers {{0.,0.}});
 	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_6 )
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_CPLX_EO_2 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_6", 0);
+	    performTest<SaxpyArgEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8,nt4}, ComplexNumbers {{1.,0.}});
 	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_7 )
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_CPLX_EO_3 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_7", 0);
+	    performTest<SaxpyArgEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt8}, ComplexNumbers {{0.,1.}});
 	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_8 )
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_CPLX_EO_4 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_8", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_9 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_9", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_10 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_10", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_11 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_11", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_12 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_12", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_13 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_13", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_14 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_14", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_15 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_15", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_16 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_16", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_17 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_17", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_18 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_18", 0);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_1 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_1", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_2 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_2", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_3 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_3", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_4 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_4", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_5 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_5", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_6 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_6", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_7 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_7", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_8 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_8", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_9 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_9", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_10 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_10", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_11 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_11", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_12 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_12", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_13 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_13", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_14 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_14", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_15 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_15", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_16 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_16", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_17 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_17", 1);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_ARG_EO_18 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_18", 1);
+	    performTest<SaxpyArgEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns16,nt8}, ComplexNumbers {{1.,-1.}});
 	}
 	
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_1 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_1", 2);
+	    performTest<SaxpyEvenOddRealTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt4}, ComplexNumbers {{0.,0.}});
 	}
 	
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_2 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_2", 2);
+	    performTest<SaxpyEvenOddRealTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8,nt4}, ComplexNumbers {{1.,0.}});
 	}
 	
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_3 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_6", 2);
+	    performTest<SaxpyEvenOddRealTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt8}, ComplexNumbers {{-1.,0.}});
 	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_4 )
+
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_REAL_EO_1 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_10", 2);
+	    performTest<SaxpyArgEvenOddRealTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt4}, ComplexNumbers {{0.,0.}});
 	}
 	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_5 )
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_REAL_EO_2 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_11", 2);
+	    performTest<SaxpyArgEvenOddRealTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8,nt4}, ComplexNumbers {{1.,0.}});
 	}
 	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_6 )
+	BOOST_AUTO_TEST_CASE( SAXPY_ARG_REAL_EO_3 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_15", 2);
+	    performTest<SaxpyArgEvenOddRealTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt8}, ComplexNumbers {{-1.,0.}});
 	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_ARG_EO_1 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_1", 3);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_ARG_EO_2 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_2", 3);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_ARG_EO_3 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_6", 3);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_ARG_EO_4 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_10", 3);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_ARG_EO_5 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_11", 3);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_ARG_EO_6 )
-	{
-	    SaxpyEvenOddTester("saxpy_eo_input_15", 3);
-	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_1 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_1", 4);
+	    performTest<SaxpyVecEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt4}, ComplexNumbers {{0.,0.}});
 	}
 	
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_2 )
 	{
-	    SaxpyEvenOddTester("saxpy_eo_input_2", 4);
+	    performTest<SaxpyVecEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns8,nt4}, ComplexNumbers {{1.,0.}});
 	}
 	
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_3 )
 	{
-	      SaxpyEvenOddTester("saxpy_eo_input_6", 4);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_4 )
-	{
-	      SaxpyEvenOddTester("saxpy_eo_input_10", 4);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_5 )
-	{
-	      SaxpyEvenOddTester("saxpy_eo_input_11", 4);
-	}
-	
-	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_6 )
-	{
-	      SaxpyEvenOddTester("saxpy_eo_input_15", 4);
+	    performTest<SaxpyVecEvenOddTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt8}, ComplexNumbers {{-1.,0.}});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
