@@ -207,7 +207,7 @@ namespace physics {
                  */
                 Rational_Coefficients Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
                                                            const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                                                           hmc_float prec, bool conservative = false) const;
+                                                           hmc_float prec, hmc_float mass, bool conservative) const;
 
             private:
                 bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)

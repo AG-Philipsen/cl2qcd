@@ -31,10 +31,10 @@
 static std::string create_log_prefix_find_max(int number) noexcept;
 static std::string create_log_prefix_find_min(int number) noexcept;
 static hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                      const hardware::System& system,  physics::InterfacesHandler& interfacesHandler, hmc_float prec);
+                                      const hardware::System& system,  physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass);
 
 hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                                   const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec)
+                                                   const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass)
 {
     using namespace physics::lattices;
     using namespace physics::algorithms;
@@ -64,7 +64,7 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
 
     for (int i = 0; i < params.get_findminmax_max(); i++) {
         //Apply A onto v1
-        A(&v2, gf, v1);
+        A(&v2, gf, v1, &mass);
         if(i % 100 == 0)
             log_squarenorm(create_log_prefix_find_max(i) + "v2: ", v2);
         //Normalize v2
@@ -81,7 +81,7 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
             logger.debug() << create_log_prefix_find_max(i) << "resid: " << std::setprecision(8) << resid;
 
             if(resid < prec) {
-                A(&v1, gf, v2);
+                A(&v1, gf, v2, &mass);
                 scalar_product(&max, v2, v1);
                 hmc_complex result = max.get();
                 logger.debug() << "max.im = " << result.im;
@@ -104,36 +104,37 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
 }
 
 hmc_float physics::algorithms::find_min_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                                   const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec, const bool conservative)
+                                                   const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec,
+                                                   hmc_float mass, const bool conservative)
 {
     if(conservative) {
-        hmc_float mass = A.get_mass();
+        hmc_float mass = system.get_inputparameters().get_mass(); //TODO: This mass should somehow be a const member (e.g. minimumEigenvalue) of A.
         return mass * mass;
     }
 
     if(!(A.is_hermitian()))
         throw std::invalid_argument("Unable to deal with non-hermitian matrices in find_max_eigenvalue!");
 
-    hmc_float max = find_max_eigenvalue(A, gf, system, interfacesHandler, prec);
+    hmc_float max = find_max_eigenvalue(A, gf, system, interfacesHandler, prec, mass);
 
-    return find_min_knowing_max(max, A, gf, system, interfacesHandler, prec);
+    return find_min_knowing_max(max, A, gf, system, interfacesHandler, prec, mass);
 
 }
 
 void physics::algorithms::find_maxmin_eigenvalue(hmc_float& max, hmc_float& min, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
                                                  const physics::lattices::Gaugefield& gf, const hardware::System& system,
-                                                 physics::InterfacesHandler& interfacesHandler, hmc_float prec, const bool conservative)
+                                                 physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass, const bool conservative)
 {
     //This timer is to know how long this function takes
     klepsydra::Monotonic timer;
 
-    max = find_max_eigenvalue(A, gf, system, interfacesHandler, prec);
+    max = find_max_eigenvalue(A, gf, system, interfacesHandler, prec, mass);
 
     if(conservative) {
-        hmc_float mass = A.get_mass();
+        hmc_float mass = system.get_inputparameters().get_mass(); //TODO: This mass should somehow be a const member (e.g. minimumEigenvalue) of A.
         min = mass * mass;
     } else {
-        min = find_min_knowing_max(max, A, gf, system, interfacesHandler, prec);
+        min = find_min_knowing_max(max, A, gf, system, interfacesHandler, prec, mass);
     }
 
     //Here we are sure the eigenvalue is correctly found, then we get the duration
@@ -143,7 +144,7 @@ void physics::algorithms::find_maxmin_eigenvalue(hmc_float& max, hmc_float& min,
 }
 
 static hmc_float find_min_knowing_max(const hmc_float max, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec)
+                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass)
 {
     using namespace physics::lattices;
     using namespace physics::algorithms;
@@ -171,7 +172,7 @@ static hmc_float find_min_knowing_max(const hmc_float max, const physics::fermio
 
     for (int i = 0; i < params.get_findminmax_max(); i++) {
         //Apply (max-A) onto v1
-        A(&v2, gf, v1);
+        A(&v2, gf, v1, &mass);
         saxpby(&v2, { max, 0. }, v1, { -1., 0. }, v2);   //Now in v2 there is (max-A)*v1
         if(i % 100 == 0)
             log_squarenorm(create_log_prefix_find_min(i) + "v2: ", v2);
@@ -190,7 +191,7 @@ static hmc_float find_min_knowing_max(const hmc_float max, const physics::fermio
 
             if(resid < prec) {
                 //Apply (max-A) onto v2
-                A(&v1, gf, v2);
+                A(&v1, gf, v2, &mass);
                 saxpby(&v1, { max, 0. }, v2, { -1., 0. }, v1);   //Now in v1 there is (max-A)*v2
                 scalar_product(&min, v2, v1);
                 hmc_complex result = min.get();

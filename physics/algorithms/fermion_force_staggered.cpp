@@ -95,8 +95,8 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
         X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
         Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
-    const MdagM_eo fm(system, interfaceHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), mass);
-    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfaceHandler, params.get_force_prec());
+    const MdagM_eo fm(system, interfaceHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
+    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfaceHandler, params.get_force_prec(), mass);
     logger.debug() << "\t\t\t  end solver";
 
     //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
@@ -106,7 +106,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     physics::lattices::Gaugemomenta tmp(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
 
     for (int i = 0; i < phi.Get_order(); i++) {
-        Doe(Y[i].get(), gf, *X[i]);
+        Doe(Y[i].get(), gf, *X[i], &mass);
         tmp.zero();
         fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
         fermion_force(&tmp, *X[i], *Y[i], gf, ODD);

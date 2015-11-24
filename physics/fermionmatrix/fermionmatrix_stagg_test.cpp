@@ -63,18 +63,19 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		//Test with cold links, periodic BC, random field, 8**4 lattice
 		logger.info() << "First test...";
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
-		meta::Inputparameters params(3, _params);
+		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg", "--mass=1."};
+		meta::Inputparameters params(4, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1., ODD);
-		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1.);
+		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
+		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		logger.info() << "The mass of the fermion is " << matrix1.get_mass();
+		hmc_float mass = params.get_mass();
+		logger.info() << "The mass of the fermion is " << mass;
 		
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -87,9 +88,9 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 13);
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 31);
 
-		matrix1(&out, gf, sf1);
+		matrix1(&out, gf, sf1, &mass);
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[0], 1.e-8);
-		matrix2(&out, gf, sf2);
+		matrix2(&out, gf, sf2, &mass);
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[1], 1.e-8);
 	}
 
@@ -97,16 +98,17 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		//Test with hot links, periodic BC, random field, 4**4 lattice
 		logger.info() << "Second test...";
 		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-		meta::Inputparameters params(3, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1."};
+		meta::Inputparameters params(4, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
-		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1., ODD);
-		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>(), 1.);
+		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
+		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>());
+        hmc_float mass = params.get_mass();
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -120,9 +122,9 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123);
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321);
 
-		matrix1(&out, gf, sf1);
+		matrix1(&out, gf, sf1, &mass);
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[2], 1.e-8);
-		matrix2(&out, gf, sf2);
+		matrix2(&out, gf, sf2, &mass);
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[3], 1.e-8);
 	}
 }

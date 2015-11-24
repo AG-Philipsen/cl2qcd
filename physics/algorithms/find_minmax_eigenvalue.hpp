@@ -49,7 +49,7 @@ namespace physics {
          *        if and only if the operator A is hermitian.
          */
         hmc_float find_max_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec);
+                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass);
 
         /**
          * This function returns the minimum eigenvalue of the operator A up to some specified precision.
@@ -70,7 +70,8 @@ namespace physics {
          *        that one could be conservative and return the mass^2 as minimum eigenvalue.
          */
         hmc_float find_min_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec, const bool conservative = false);
+                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec,
+                                      hmc_float mass, const bool conservative);
 
         /**
          * This function finds both the minimum and the maximum eigenvalue of the operator A
@@ -89,7 +90,7 @@ namespace physics {
          */
         void find_maxmin_eigenvalue(hmc_float& max, hmc_float& min, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
                                     const physics::lattices::Gaugefield& gf, const hardware::System& system,  physics::InterfacesHandler& interfacesHandler,
-                                    hmc_float prec, const bool conservative = false);
+                                    hmc_float prec, hmc_float mass, const bool conservative);
 
     }
 

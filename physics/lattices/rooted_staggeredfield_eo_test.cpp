@@ -57,15 +57,15 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(3, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567"};
+	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.567);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	const GaugefieldParametersImplementation gaugefieldParameters{ &params };
 	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -110,12 +110,12 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	int ord = sf.Get_order();
 
-	sf.Rescale_Coefficients(approx, matrix, gf, system, interfacesHandler, 1.e-3);
+	sf.Rescale_Coefficients(approx, matrix, gf, system, interfacesHandler, 1.e-3, params.get_mass(), false);
 	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref, 5.e-5);
 	std::vector<hmc_float> a = sf.Get_a();
 	std::vector<hmc_float> b = sf.Get_b();
 	
-	sf.Rescale_Coefficients(approx, matrix, gf, system, interfacesHandler, 1.e-3, true);
+	sf.Rescale_Coefficients(approx, matrix, gf, system, interfacesHandler, 1.e-3, params.get_mass(), true);
 	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref_cons, 5.e-5);
 	std::vector<hmc_float> a_cons = sf.Get_a();
 	std::vector<hmc_float> b_cons = sf.Get_b();

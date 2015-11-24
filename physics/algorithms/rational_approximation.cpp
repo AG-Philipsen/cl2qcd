@@ -195,7 +195,7 @@ hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
 physics::algorithms::Rational_Coefficients
 physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
                                                                   const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                                                                  hmc_float prec, bool conservative) const
+                                                                  hmc_float prec, hmc_float mass, bool conservative) const
 {
     if(high != 1)
         throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
@@ -208,7 +208,7 @@ physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics:
 
     hmc_float max;
     hmc_float min;
-    find_maxmin_eigenvalue(max, min, A, gf, system, interfacesHandler, prec, conservative);
+    find_maxmin_eigenvalue(max, min, A, gf, system, interfacesHandler, prec, mass, conservative);
     if(conservative)
         max *= 1.05;
 

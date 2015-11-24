@@ -41,9 +41,9 @@ physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hard
 void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx,
                                                                        const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
                                                                        const physics::lattices::Gaugefield& gf, const hardware::System& system,
-                                                                       physics::InterfacesHandler& interfacesHandler, hmc_float prec, bool conservative)
+                                                                       physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass, bool conservative)
 {
-	physics::algorithms::Rational_Coefficients aux = approx.Rescale_Coefficients(A, gf, system, interfacesHandler, prec, conservative);
+	physics::algorithms::Rational_Coefficients aux = approx.Rescale_Coefficients(A, gf, system, interfacesHandler, prec, mass, conservative);
 	
 	Set_coeff(aux.Get_a0(), aux.Get_a(), aux.Get_b());
 }

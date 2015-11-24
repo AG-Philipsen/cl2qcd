@@ -90,7 +90,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
 {
     logger.debug() << "\tRHMC [UP]:\tupdate SF";
     const auto & params = system.get_inputparameters();
-    const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), mass);
+    const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 
     //Temporary fields for shifted inverter
     logger.trace() << "\t\tstart solver...";
@@ -98,7 +98,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
     for (int i = 0; i < out->Get_order(); i++)
         X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->Get_b(), orig, system, interfacesHandler, params.get_solver_prec());
+    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->Get_b(), orig, system, interfacesHandler, params.get_solver_prec(), mass);
     logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
     physics::lattices::sax(out, { out->Get_a0(), 0. }, orig);

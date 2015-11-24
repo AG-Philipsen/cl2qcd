@@ -218,7 +218,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	logger.trace() << "\tRHMC [DH]:\tcalc final fermion energy...";
 	
 	const auto & params = system.get_inputparameters();
-	const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), mass);
+	const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	int iterations = 0;
 
 	//Temporary fields for shifted inverter
@@ -227,7 +227,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
 	for(int i=0; i<phi.Get_order(); i++)
 		X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
 	//Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-	iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.Get_b(), phi, system, interfacesHandler, params.get_solver_prec());
+	iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.Get_b(), phi, system, interfacesHandler, params.get_solver_prec(), mass);
 	logger.debug() << "\t\t...end solver in " << iterations << " iterations";
 	
 	physics::lattices::Staggeredfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()); //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi

@@ -47,7 +47,7 @@ namespace physics {
             int cg_m(const std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > x, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
                      const physics::lattices::Gaugefield& gf, const std::vector<hmc_float> sigma,
                      const physics::lattices::Staggeredfield_eo& b, const hardware::System& system,
-                     physics::InterfacesHandler& interfacesHandler, hmc_float prec);
+                     physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass);
 
 
             template<typename FERMIONFIELD, typename FERMIONMATRIX>
@@ -55,7 +55,7 @@ namespace physics {
                 public:
                     SolverShifted(const std::vector<std::shared_ptr<FERMIONFIELD> >, const FERMIONMATRIX&,
                                   const physics::lattices::Gaugefield&, const std::vector<hmc_float>, const FERMIONFIELD&,
-                                  const hardware::System&, physics::InterfacesHandler&, hmc_float);
+                                  const hardware::System&, physics::InterfacesHandler&, hmc_float, hmc_float);
                     ~SolverShifted(){};
 
                     SolverShifted() = delete;
@@ -97,6 +97,7 @@ namespace physics {
                     const hardware::System& system;
                     physics::InterfacesHandler& interfacesHandler;
                     hmc_float solverPrecision;
+                    hmc_float fermionMass;
                     //TODO:Remove following inputparameters object
                     const meta::Inputparameters& params;
 

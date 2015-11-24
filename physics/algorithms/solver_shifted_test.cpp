@@ -41,24 +41,24 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	meta::Inputparameters* params;
 	for(int i=0; i<2; i++){
 	    if(i==0){
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	        params = new meta::Inputparameters(3, _params);
-	    }else{
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg",
-	                "--use_merge_kernels_spinor=true"};
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567"};
 	        params = new meta::Inputparameters(4, _params);
+	    }else{
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--use_merge_kernels_spinor=true"};
+	        params = new meta::Inputparameters(5, _params);
 	    }
 
 	    hardware::System system(*params);
 	    physics::InterfacesHandlerImplementation interfacesHandler{*params};
 	    physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
 	    physics::PRNG prng{system, &prngParameters};
+	    hmc_float mass = params->get_mass();
 
 	    //This are some possible values of sigma
 	    hmc_float pol[5] = {0.0002065381736724, 0.00302707751065980, 0.0200732678058145,
 	            0.12517586269872370, 1.0029328743375700};
 	    std::vector<hmc_float> sigma(pol, pol + sizeof(pol)/sizeof(hmc_float));
-	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.567);
+	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
 	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	    //This field is NOT that of the test explicit_stagg (D_KS_eo) because here the lattice is 4^4
 	    pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 13);
 
-	    int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-23);
+	    int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-23, mass);
 	    logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 
 	    //Once obtained the solution we apply each operator (matrix + sigma) onto the field
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	    logger.info() << "                           sqnorm(b)=" << std::setprecision(16) << sqnorm_b;
 	    for(uint i=0; i<sigma.size(); i++){
 	        aux.push_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-	        matrix(aux[i].get(), gf, *out[i]);
+	        matrix(aux[i].get(), gf, *out[i], &mass);
 	        saxpy(aux[i].get(), {sigma[i],0.}, *out[i], *aux[i]);
 	        sqnorm_out.push_back(squarenorm(*aux[i]));
 	        logger.info() << "sqnorm((matrix + sigma[" << i << "]) * out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
@@ -102,12 +102,11 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	meta::Inputparameters* params;
 	for(int i=0; i<2; i++){
 	    if(i==0){
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	        params = new meta::Inputparameters(3, _params);
-	    }else{
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg",
-	                "--use_merge_kernels_spinor=true"};
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335"};
 	        params = new meta::Inputparameters(4, _params);
+	    }else{
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335", "--use_merge_kernels_spinor=true"};
+	        params = new meta::Inputparameters(5, _params);
 	    }
 
 	    hardware::System system(*params);
@@ -118,7 +117,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	    //These are some possible values of sigma
 	    Rational_Approximation approx(8, 1,2, 1.e-5,1);
 	    std::vector<hmc_float> sigma = approx.Get_b();
-	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 1.01335);
+	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
 	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -140,7 +139,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	    sqnorms_ref.push_back(50.327004662008008040);
 	    sqnorms_ref.push_back(22.236536652925686042);
 	    //Now I calculate the fields out
-        int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-12);
+        int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-12, params->get_mass());
 	    logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 
 	    std::vector<hmc_float> sqnorm_out;
@@ -159,8 +158,8 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(3, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01"};
+	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
@@ -170,7 +169,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	Rational_Approximation approx(16, 1,2, 1.e-5,1);
 	
 	std::vector<hmc_float> sigma = approx.Get_b();
-	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.01);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -199,7 +198,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	sqnorms_ref.push_back(215.02535309652577666);
 	sqnorms_ref.push_back(58.529059535207736076);
 	sqnorms_ref.push_back(6.2407847688851161294);
-	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24);
+	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, params.get_mass());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 	
 	std::vector<hmc_float> sqnorm_out;
@@ -222,15 +221,15 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(3, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01"};
+	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 
 	std::vector<hmc_float> sigma(1, 0.0);
-	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), 0.01);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -244,7 +243,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	b.set_cold();
 	//These is the sqnorm of the output of the CG algorithm from the reference code
 	hmc_float sqnorms_ref = 9.0597433493689383255;
-	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24);
+	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, params.get_mass());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 	
 	hmc_float sqnorm_out = squarenorm(*out[0]);
@@ -257,7 +256,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
 	//These is the sqnorm of the output of the CG algorithm from the reference code
 	hmc_float sqnorms_ref = 3790.3193634090343949;
-	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24);
+	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, params.get_mass());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 	
 	hmc_float sqnorm_out = squarenorm(*out[0]);
