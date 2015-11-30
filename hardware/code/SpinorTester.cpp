@@ -41,6 +41,16 @@ SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection par
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 }
 
+SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const bool isEvenOddIn, const size_t elementsIn, const ReferenceValues rV):
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV), isEvenOdd(isEvenOddIn), elements(elementsIn)
+{
+	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
+	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
+	evenOrOdd = kernelParameters->getUseEo();
+	code = device->getSpinorCode();
+	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+}
+
 //@todo: check if these are all actually used!
 void fill_with_one(spinor * in, int size);
 void fill_with_zero_one(spinor * in, int size);

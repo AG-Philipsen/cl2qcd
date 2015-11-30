@@ -106,6 +106,7 @@ class SpinorTester : public KernelTester {
 public: //@todo: make these protected!
 	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters & ); //@todo: this must go away in the end!
 	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters &, const bool, const size_t );
+	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters &, const bool, const size_t, const ReferenceValues );
 	
 protected:
 	spinor * createSpinorfield( SpinorFillType ); // @todo: this always create a nonEo field!!!
@@ -137,17 +138,21 @@ protected:
 	const size_t elements;
 };
 
-class NonEvenOddSpinorTester : public SpinorTester
+struct NonEvenOddSpinorTester : public SpinorTester
 {
-public:
 	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP) :
 		SpinorTester(kernelName, pC, tP, false, getSpinorfieldSize(tP.latticeExtents)) {};
+	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes sF)) :
+		SpinorTester(kernelName, pC, tP, false, getSpinorfieldSize(tP.latticeExtents), rV(getSpinorfieldSize(tP.latticeExtents), tP.fillTypes)) {};
+	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
+		SpinorTester(kernelName, pC, tP, false, getSpinorfieldSize(tP.latticeExtents), rV) {};
 };
 
-class EvenOddSpinorTester : public SpinorTester
+struct EvenOddSpinorTester : public SpinorTester
 {
-public:
 	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP) :
 		SpinorTester(kernelName, pC, tP, true, getEvenOddSpinorfieldSize(tP.latticeExtents)) {};
+	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
+		SpinorTester(kernelName, pC, tP, true, getEvenOddSpinorfieldSize(tP.latticeExtents), rV) {};
 };
 

@@ -107,129 +107,154 @@ const ReferenceValues calculateReferenceValues_convertFromEvenOdd(const int latt
 	return ReferenceValues {latticeVolume * 12. / 2.};
 }
 
-struct LinearCombinationTestParameters
+struct LinearCombinationTestParameters : public SpinorTestParameters
 {
-	LinearCombinationTestParameters(const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) : coefficients(coefficientsIn), numberOfSpinors(numberOfSpinorsIn) {};
-	LinearCombinationTestParameters(const size_t numberOfSpinorsIn) : coefficients(ComplexNumbers{}), numberOfSpinors(numberOfSpinorsIn) {};
-	LinearCombinationTestParameters() : coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
+	LinearCombinationTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+		SpinorTestParameters(defaultReferenceValues(), latticeExtendsIn, fillTypesIn, false), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
+	LinearCombinationTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers cN, const size_t numberOfSpinorsIn) :
+		SpinorTestParameters(defaultReferenceValues(), latticeExtendsIn, fillTypesIn, false), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
 	const ComplexNumbers coefficients;
 	const NumberOfSpinors numberOfSpinors;
 };
 
-struct NonEvenOddLinearCombinationTestParameters : public NonEvenOddSpinorTestParameters, LinearCombinationTestParameters
+struct GaussianTestParameters : public SpinorTestParameters
 {
-	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
-		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn), LinearCombinationTestParameters{coefficientsIn, numberOfSpinorsIn} {};
-	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const size_t numberOfSpinorsIn, const ComparisonType typeOfComparisonIn):
-		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisonIn), LinearCombinationTestParameters{numberOfSpinorsIn}{};
-	NonEvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
-		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn) {};
+	GaussianTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType & typeOfComparisonIn) :
+		SpinorTestParameters(defaultReferenceValues(), latticeExtendsIn, typeOfComparisonIn, false), iterations(100) {};
+
+	const unsigned int iterations;
 };
 
-struct EvenOddLinearCombinationTestParameters : public EvenOddSpinorTestParameters, LinearCombinationTestParameters
+template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest, const bool needEvenOdd)
 {
-	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn, const size_t numberOfSpinorsIn) :
-		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn), LinearCombinationTestParameters{coefficientsIn, numberOfSpinorsIn} {};
-	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const size_t numberOfSpinorsIn, const ComparisonType typeOfComparisonIn):
-		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisonIn), LinearCombinationTestParameters{numberOfSpinorsIn}{};
-	EvenOddLinearCombinationTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
-		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn) {};
-};
-
-template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest)
-{
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.needEvenOdd);
-	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.needEvenOdd);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, needEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass, typename AdditionalArgument> void performTest(LatticeExtents latticeExtendsIn, const AdditionalArgument addArg )
+template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool needEvenOdd)
 {
-	ParameterClass parametersForThisTest(latticeExtendsIn, addArg);
-	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+	LinearCombinationTestParameters parametersForThisTest(latticeExtendsIn, fillTypesIn);
+	callTest<TesterClass, LinearCombinationTestParameters>(parametersForThisTest, needEvenOdd);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn )
+template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const ComplexNumbers alphaIn, const int numberOfSpinors, const bool needEvenOdd )
 {
-	ParameterClass parametersForThisTest(latticeExtendsIn, fillTypesIn);
-	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+	LinearCombinationTestParameters parametersForThisTest(latticeExtendsIn, SpinorFillTypes{SpinorFillType::ascendingComplex}, alphaIn, numberOfSpinors);
+	callTest<TesterClass, LinearCombinationTestParameters>(parametersForThisTest, needEvenOdd);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn, const ComplexNumbers alphaIn )
+template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const SpinorFillTypes sF, const ComplexNumbers alphaIn, const int numberOfSpinors, const bool needEvenOdd )
 {
-	ParameterClass parametersForThisTest(latticeExtendsIn, SpinorFillTypes{SpinorFillType::ascendingComplex}, alphaIn);
-	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+	LinearCombinationTestParameters parametersForThisTest(latticeExtendsIn, sF, alphaIn, numberOfSpinors);
+	callTest<TesterClass, LinearCombinationTestParameters>(parametersForThisTest, needEvenOdd);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn )
+template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn )
 {
-	ParameterClass parametersForThisTest(latticeExtendsIn, fillEvenSitesIn);
-	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+	SpinorTestParameters parametersForThisTest(defaultReferenceValues(), latticeExtendsIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest, fillEvenSitesIn);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(LatticeExtents latticeExtendsIn )
+template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn)
 {
-	ParameterClass parametersForThisTest(latticeExtendsIn);
-	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+	SpinorTestParameters parametersForThisTest(defaultReferenceValues(), latticeExtendsIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-template<typename TesterClass, typename ParameterClass> void performTest(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn )
+template<typename TesterClass> void performTest(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn, const bool needEvenOdd )
 {
-	ParameterClass parametersForThisTest(latticeExtendsIn, typeOfComparisonIn);
-	callTest<TesterClass, ParameterClass>(parametersForThisTest);
+	GaussianTestParameters parametersForThisTest(latticeExtendsIn, typeOfComparisonIn);
+	callTest<TesterClass, GaussianTestParameters>(parametersForThisTest, needEvenOdd);
 }
 
 //@todo: this should take the coefficients from another class or be a template class!
-struct NonEvenOddLinearCombinationTester3 : public NonEvenOddSpinorTester
+struct NonEvenOddLinearCombinationTester : public NonEvenOddSpinorTester
 {
-	NonEvenOddLinearCombinationTester3(const std::string kernelName, const ParameterCollection pC, const NonEvenOddLinearCombinationTestParameters tP):
-		NonEvenOddSpinorTester(kernelName, pC, tP)
+	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes)):
+		NonEvenOddSpinorTester(kernelName, pC, tP, rV)
 	{
 		loadCoefficients(tP);
+		loadSpinorfields(tP);
+	}
+	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
+		NonEvenOddSpinorTester(kernelName, pC, tP, rV(getSpinorfieldSize(tP.latticeExtents), tP.coefficients))
+	{
+		loadCoefficients(tP);
+		loadSpinorfields(tP);
+	}
+	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues rV):
+		NonEvenOddSpinorTester(kernelName, pC, tP, rV)
+	{
+		loadCoefficients(tP);
+		loadSpinorfields(tP);
+	}
+protected:
+	std::vector<const hardware::buffers::Plain<spinor> *> spinorfields;
+	std::vector<const hardware::buffers::Plain<hmc_complex> *> complexNums;
+	const hardware::buffers::Plain<spinor> * getOutSpinor() const
+	{
+		return spinorfields.back();
+	}
+private:
+	void loadCoefficients(const LinearCombinationTestParameters & testParameters)
+	{
+		for (auto coefficient : testParameters.coefficients)
+		{
+			complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, SpinorTester::device));
+			complexNums.back()->load(&coefficient);
+		}
+	}
+	void loadSpinorfields(const LinearCombinationTestParameters & tP)
+	{
 		for( size_t number = 0; number < tP.numberOfSpinors ; number ++)
 		{
 			spinorfields.push_back(new hardware::buffers::Plain<spinor>(elements, device));
 			(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(number)));
 		}
 	}
-	~NonEvenOddLinearCombinationTester3()
+};
+
+struct NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult : public NonEvenOddLinearCombinationTester
+{
+	NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes)):
+		NonEvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
+	NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
+		NonEvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
+	NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues rV):
+		NonEvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
+	~NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult()
 	{
 		calcSquarenormAndStoreAsKernelResult(getOutSpinor());
 	}
-	protected:
-		std::vector<const hardware::buffers::Plain<spinor> *> spinorfields;
-		std::vector<const hardware::buffers::Plain<hmc_complex> *> complexNums;
-		const hardware::buffers::Plain<spinor> * getOutSpinor() const
-		{
-			return spinorfields.back();
-		}
-	private:
-		void loadCoefficients(const LinearCombinationTestParameters & testParameters)
-		{
-			for (auto coefficient : testParameters.coefficients)
-			{
-				complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, SpinorTester::device));
-				complexNums.back()->load(&coefficient);
-			}
-		}
 };
 
-struct EvenOddLinearCombinationTester3 : public EvenOddSpinorTester
+struct EvenOddLinearCombinationTester : public EvenOddSpinorTester
 {
-	EvenOddLinearCombinationTester3(const std::string kernelName, const ParameterCollection pC, const EvenOddLinearCombinationTestParameters tP):
-		EvenOddSpinorTester(kernelName, pC, tP)
+	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes)):
+		EvenOddSpinorTester(kernelName, pC, tP, rV( getEvenOddSpinorfieldSize(tP.latticeExtents), tP.fillTypes))
 	{
 		loadCoefficients(tP);
-		for( size_t number = 0; number < tP.numberOfSpinors ; number ++)
-		{
-			spinorfields.push_back(new hardware::buffers::Spinor(elements, device));
-			(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(number)));
-		}
+		loadSpinorfields(tP);
 	}
-	~EvenOddLinearCombinationTester3()
+	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
+		EvenOddSpinorTester(kernelName, pC, tP, rV( getEvenOddSpinorfieldSize(tP.latticeExtents), tP.coefficients))
 	{
-		calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinor());
+		loadCoefficients(tP);
+		loadSpinorfields(tP);
+	}
+	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues rV):
+		EvenOddSpinorTester(kernelName, pC, tP, rV)
+	{
+		loadCoefficients(tP);
+		loadSpinorfields(tP);
 	}
 	protected:
 		std::vector<const hardware::buffers::Plain<hmc_complex> *> complexNums;
@@ -247,88 +272,25 @@ struct EvenOddLinearCombinationTester3 : public EvenOddSpinorTester
 				complexNums.back()->load(&coefficient);
 			}
 		}
-};
-
-struct LinearCombinationTester: public SpinorTester
-{
-	LinearCombinationTester(const std::string kernelName, const ParameterCollection parameterCollection, const NonEvenOddLinearCombinationTestParameters testParameters):
-		SpinorTester(kernelName, parameterCollection, testParameters)
-	{
-		loadCoefficients(testParameters);
-	}
-	LinearCombinationTester(const std::string kernelName, const ParameterCollection parameterCollection, const EvenOddLinearCombinationTestParameters testParameters):
-		SpinorTester(kernelName, parameterCollection, testParameters)
-	{
-		loadCoefficients(testParameters);
-	}
-protected:
-	std::vector<const hardware::buffers::Plain<hmc_complex> *> complexNums;
-private:
-	void loadCoefficients(const LinearCombinationTestParameters & testParameters)
-	{
-		for (auto coefficient : testParameters.coefficients)
+		void loadSpinorfields(const LinearCombinationTestParameters & tP)
 		{
-			complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, device));
-			complexNums.back()->load(&coefficient);
+			for( size_t number = 0; number < tP.numberOfSpinors ; number ++)
+			{
+				spinorfields.push_back(new hardware::buffers::Spinor(elements, device));
+				(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(number)));
+			}
 		}
-	}
 };
 
-struct NonEvenOddLinearCombinationTester: public LinearCombinationTester
+struct EvenOddLinearCombinationTesterWithSquarenormAsKernelResult : public EvenOddLinearCombinationTester
 {
-	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection parameterCollection, const NonEvenOddLinearCombinationTestParameters testParameters):
-		LinearCombinationTester(kernelName, parameterCollection, testParameters)
-	{
-		for( size_t number = 0; number < testParameters.numberOfSpinors ; number ++)
-		{
-			spinorfields.push_back(new hardware::buffers::Plain<spinor>(spinorfieldElements, device));
-			(testParameters.fillTypes.size() < testParameters.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(number)));
-		}
-	}
-protected:
-	std::vector<const hardware::buffers::Plain<spinor> *> spinorfields;
-	const hardware::buffers::Plain<spinor> * getOutSpinor() const
-	{
-		return spinorfields.back();
-	}
-};
-
-struct NonEvenOddLinearCombinationTesterWithSquarenormAsResult : public NonEvenOddLinearCombinationTester
-{
-	NonEvenOddLinearCombinationTesterWithSquarenormAsResult(const std::string kernelName, const ParameterCollection parameterCollection, const NonEvenOddLinearCombinationTestParameters testParameters) :
-		NonEvenOddLinearCombinationTester(kernelName, parameterCollection, testParameters) {};
-
-	~NonEvenOddLinearCombinationTesterWithSquarenormAsResult()
-	{
-		calcSquarenormAndStoreAsKernelResult(getOutSpinor());
-	}
-};
-
-struct EvenOddLinearCombinationTester: public LinearCombinationTester
-{
-	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection & parameterCollection, const EvenOddLinearCombinationTestParameters & testParameters):
-		LinearCombinationTester(kernelName, parameterCollection, testParameters)
-	{
-		for( size_t number = 0; number < testParameters.numberOfSpinors ; number ++)
-		{
-			spinorfields.push_back(new hardware::buffers::Spinor(spinorfieldEvenOddElements, device));
-			(testParameters.fillTypes.size() < testParameters.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(testParameters.fillTypes.at(number)));
-		}
-	}
-protected:
-	std::vector<const hardware::buffers::Spinor *> spinorfields;
-	const hardware::buffers::Spinor * getOutSpinor() const
-	{
-		return spinorfields.back();
-	}
-};
-
-struct EvenOddLinearCombinationTesterWithSquarenormAsResult : public EvenOddLinearCombinationTester
-{
-	EvenOddLinearCombinationTesterWithSquarenormAsResult(const std::string kernelName, const ParameterCollection parameterCollection, const EvenOddLinearCombinationTestParameters testParameters) :
-		EvenOddLinearCombinationTester(kernelName, parameterCollection, testParameters) {};
-
-	~EvenOddLinearCombinationTesterWithSquarenormAsResult()
+	EvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes)):
+		EvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
+	EvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
+		EvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
+	EvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues rV):
+		EvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
+	~EvenOddLinearCombinationTesterWithSquarenormAsKernelResult()
 	{
 		calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinor());
 	}
@@ -336,8 +298,8 @@ struct EvenOddLinearCombinationTesterWithSquarenormAsResult : public EvenOddLine
 
 struct PrngTester: public SpinorTester
 {
-	PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters):
-				SpinorTester(kernelName, parameterCollection, testParameters),
+	PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const ReferenceValues & rV):
+				SpinorTester(kernelName, parameterCollection, testParameters, false, 1, rV),
 				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
 				useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
 	{
@@ -357,19 +319,10 @@ private:
 	bool useSameRandomNumbers;
 };
 
-
-struct GaussianTestParameters : public SpinorTestParameters
-{
-	GaussianTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const ComparisonType & typeOfComparisonIn, const bool needsEvenOdd) :
-		SpinorTestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisonIn, needsEvenOdd), iterations(100) {};
-
-	const unsigned int iterations;
-};
-
 struct GaussianTester: public PrngTester
 {
 	GaussianTester(const std::string kernelName, const ParameterCollection parameterCollection, const GaussianTestParameters & testParameters, const int numberOfElements):
-				PrngTester(kernelName, parameterCollection, testParameters),
+				PrngTester(kernelName, parameterCollection, testParameters, calculateReferenceValues_gaussian()),
 				numberOfElements(numberOfElements), mean(0.), variance(0.),
 				hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters){}
 
@@ -409,12 +362,6 @@ protected:
 	const GaussianTestParameters & testParameters;
 };
 
-struct NonEvenOddGaussianSpinorfieldTestParameters : public GaussianTestParameters
-{
-	NonEvenOddGaussianSpinorfieldTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn) :
-		GaussianTestParameters(calculateReferenceValues_gaussian(), latticeExtendsIn, typeOfComparisonIn, false) {};
-};
-
 struct NonEvenGaussianSpinorfieldTester: public GaussianTester
 {
 	NonEvenGaussianSpinorfieldTester(const ParameterCollection parameterCollection, const GaussianTestParameters testParameters):
@@ -427,12 +374,6 @@ struct NonEvenGaussianSpinorfieldTester: public GaussianTester
 			outSpinor.dump(&hostOutput[i * numberOfElements]);
 		}
 	}
-};
-
-struct EvenOddGaussianSpinorfieldTestParameters : public GaussianTestParameters
-{
-	EvenOddGaussianSpinorfieldTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn) :
-		GaussianTestParameters(calculateReferenceValues_gaussian(), latticeExtendsIn, typeOfComparisonIn, true) {};
 };
 
 struct EvenOddGaussianSpinorfieldEvenOddTester: public GaussianTester
@@ -449,25 +390,17 @@ struct EvenOddGaussianSpinorfieldEvenOddTester: public GaussianTester
 	}
 };
 
-struct ConvertEvenOddTestParameters: public SpinorTestParameters
-{
-	const bool fillEvenSites;
-
-	ConvertEvenOddTestParameters(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn):
-		SpinorTestParameters(calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(latticeExtendsIn), fillEvenSitesIn), latticeExtendsIn, true),
-		fillEvenSites(fillEvenSitesIn) {}
-};
-
 struct ConvertToEvenOddTester: public SpinorTester
 {
-	ConvertToEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
-	SpinorTester("convert_to_eo", parameterCollection, testParameters)
+	ConvertToEvenOddTester(const ParameterCollection & parameterCollection, const SpinorTestParameters tP, const bool fillEvenSitesIn):
+		SpinorTester("convert_to_eo", parameterCollection, tP, true, getSpinorfieldSize(tP.latticeExtents),
+				calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(tP.latticeExtents), fillEvenSitesIn) )
 		{
 			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
 			const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
 
-			in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ) );
+			in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity( fillEvenSitesIn ) );
 			code->convert_to_eoprec_device(&in2, &in3, &in) ;
 
 			code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
@@ -477,19 +410,11 @@ struct ConvertToEvenOddTester: public SpinorTester
 		}
 };
 
-struct ConvertFromEvenOddTestParameters: public SpinorTestParameters
-{
-	const bool fillEvenSites;
-
-	ConvertFromEvenOddTestParameters(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn):
-		SpinorTestParameters( calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(latticeExtendsIn) ), latticeExtendsIn, true),
-		fillEvenSites(fillEvenSitesIn) {}
-};
-
 struct ConvertFromEvenOddTester: public SpinorTester
 {
-	ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, const ConvertEvenOddTestParameters testParameters):
-		SpinorTester("convert_from_eo", parameterCollection, testParameters)
+	ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, const SpinorTestParameters tP):
+		SpinorTester("convert_to_eo", parameterCollection, tP, true, getSpinorfieldSize(tP.latticeExtents),
+				calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(tP.latticeExtents)) )
 		{
 			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
 			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
@@ -503,91 +428,54 @@ struct ConvertFromEvenOddTester: public SpinorTester
 			}
 };
 
-struct SaxsbypzEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
+struct SaxsbypzEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxsbypzEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-		EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxsbypz(getEvenOddSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 4){}
-};
-
-struct SaxsbypzEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	SaxsbypzEvenOddTester(const ParameterCollection & parameterCollection, const SaxsbypzEvenOddTestParameters testParameters):
-		EvenOddLinearCombinationTesterWithSquarenormAsResult("saxsbypz_eo", parameterCollection, testParameters)
+	SaxsbypzEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxsbypz_eo", parameterCollection, testParameters, calculateReferenceValues_saxsbypz)
 		{
 			code->saxsbypz_eoprec_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), complexNums.at(0), complexNums.at(1), getOutSpinor());
 		}
 };
 
-struct SaxsbypzTestParameters : public NonEvenOddLinearCombinationTestParameters
+struct SaxsbypzTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxsbypzTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxsbypz(getSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 4){}
-};
-
-struct SaxsbypzTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	SaxsbypzTester(const ParameterCollection & parameterCollection, const SaxsbypzTestParameters testParameters):
-		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("saxsbypz", parameterCollection, testParameters)
+	SaxsbypzTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxsbypz", parameterCollection, testParameters, calculateReferenceValues_saxsbypz)
 		{
 			code->saxsbypz_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), complexNums.at(0), complexNums.at(1), getOutSpinor());
 		}
 };
 
-struct SquarenormTestParameters: public NonEvenOddLinearCombinationTestParameters
+struct SquarenormTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SquarenormTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
-		NonEvenOddLinearCombinationTestParameters{calculateReferenceValues_globalSquarenorm( getSpinorfieldSize(latticeExtendsIn), fillTypesIn),
-		latticeExtendsIn, fillTypesIn} {};
+	SquarenormTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters & testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("global squarenorm", parameterCollection, testParameters, calculateReferenceValues_globalSquarenorm) {}
 };
 
-struct SquarenormTester: public NonEvenOddLinearCombinationTester3
+struct SquarenormEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SquarenormTester(const ParameterCollection & parameterCollection, const SquarenormTestParameters & testParameters):
-		NonEvenOddLinearCombinationTester3("global squarenorm", parameterCollection, testParameters) {}
-};
-
-struct SquarenormEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
-{
-	SquarenormEvenOddTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
-		EvenOddLinearCombinationTestParameters{calculateReferenceValues_globalSquarenorm( getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn) , latticeExtendsIn, fillTypesIn} {};
-};
-
-struct SquarenormEvenOddTester: public EvenOddLinearCombinationTester3
-{
-	SquarenormEvenOddTester(const ParameterCollection & parameterCollection, const SquarenormEvenOddTestParameters & testParameters):
-		EvenOddLinearCombinationTester3("global_squarenorm_eo", parameterCollection, testParameters) {}
-};
-
-struct ScalarProductTestParameters : public NonEvenOddLinearCombinationTestParameters
-{
-	ScalarProductTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct( getSpinorfieldSize(latticeExtendsIn), fillTypesIn), latticeExtendsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2){};
+	SquarenormEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters & testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult("global_squarenorm_eo", parameterCollection, testParameters, calculateReferenceValues_globalSquarenorm) {}
 };
 
 struct ScalarProductTester: public NonEvenOddLinearCombinationTester
 {
-	ScalarProductTester(const ParameterCollection & parameterCollection, const ScalarProductTestParameters testParameters):
-		NonEvenOddLinearCombinationTester("scalar_product", parameterCollection, testParameters)
+	ScalarProductTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		NonEvenOddLinearCombinationTester("scalar_product", parameterCollection, testParameters, calculateReferenceValues_scalarProduct)
 	{
 		code->set_complex_to_scalar_product_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
 		hmc_complex resultTmp;
 		complexNums.at(0)->dump(&resultTmp);
 
-		kernelResult[0] = resultTmp.re;
-		kernelResult[1] = resultTmp.im;
+		kernelResult.at(0) = resultTmp.re;
+		kernelResult.at(1) = resultTmp.im;
 	}
-};
-
-struct ScalarProductEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
-{
-	ScalarProductEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn):
-		EvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct(getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn), latticeExtendsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2) {};
 };
 
 struct ScalarProductEvenOddTester: public EvenOddLinearCombinationTester
 {
-	ScalarProductEvenOddTester(const ParameterCollection & parameterCollection, const ScalarProductEvenOddTestParameters testParameters):
-		EvenOddLinearCombinationTester("scalar_product_eo", parameterCollection, testParameters)
+	ScalarProductEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		EvenOddLinearCombinationTester("scalar_product_eo", parameterCollection, testParameters, calculateReferenceValues_scalarProduct)
 	{
 		code->set_complex_to_scalar_product_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
 		hmc_complex resultTmp;
@@ -598,223 +486,195 @@ struct ScalarProductEvenOddTester: public EvenOddLinearCombinationTester
 	}
 };
 
-struct ZeroTestParameters : public NonEvenOddLinearCombinationTestParameters
+struct ZeroTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	ZeroTestParameters(LatticeExtents latticeExtendsIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
-};
-
-struct ZeroTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	ZeroTester(const ParameterCollection & parameterCollection, const ZeroTestParameters & testParameters):
-		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("zero", parameterCollection, testParameters)
+	ZeroTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters & testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("zero", parameterCollection, testParameters, calculateReferenceValues_zero())
 		{
 			code->set_zero_spinorfield_device(getOutSpinor());
 		}
 };
 
-
-struct ColdTestParameters : public NonEvenOddLinearCombinationTestParameters
+struct ColdTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	ColdTestParameters(LatticeExtents latticeExtendsIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(false), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
-};
-
-struct ColdTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	ColdTester(const ParameterCollection & parameterCollection, const ColdTestParameters testParameters):
-		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("cold", parameterCollection, testParameters)
+	ColdTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("cold", parameterCollection, testParameters, calculateReferenceValues_cold(false))
 		{
 			code->set_spinorfield_cold_device(getOutSpinor());
 		}
 };
 
-struct ZeroEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
+struct ZeroEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	ZeroEvenOddTestParameters(LatticeExtents latticeExtendsIn):
-		EvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
-};
-
-struct ZeroEvenOddTester: public EvenOddLinearCombinationTester
-{
-	ZeroEvenOddTester(const ParameterCollection & parameterCollection, const ZeroEvenOddTestParameters testParameters):
-		EvenOddLinearCombinationTester ("zero_eo", parameterCollection, testParameters)
+	ZeroEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult ("zero_eo", parameterCollection, testParameters, calculateReferenceValues_zero())
 		{
 			code->set_zero_spinorfield_eoprec_device(getOutSpinor());
 		}
 };
 
-struct ColdEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
+struct ColdEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	ColdEvenOddTestParameters(LatticeExtents latticeExtendsIn):
-		EvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(true), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
-};
-
-struct ColdEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	ColdEvenOddTester(const ParameterCollection & parameterCollection, const ColdEvenOddTestParameters testParameters):
-		EvenOddLinearCombinationTesterWithSquarenormAsResult("cold_eo",parameterCollection, testParameters)
+	ColdEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult("cold_eo",parameterCollection, testParameters, calculateReferenceValues_cold(true))
 		{
 			code->set_eoprec_spinorfield_cold_device(getOutSpinor());
 		}
 };
 
-struct SaxTestParameters : public NonEvenOddLinearCombinationTestParameters
+struct SaxTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 2){}
-};
-
-struct SaxTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	SaxTester(const ParameterCollection & parameterCollection, const SaxTestParameters testParameters):
-		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("sax", parameterCollection, testParameters)
+	SaxTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("sax", parameterCollection, testParameters, calculateReferenceValues_sax)
 		{
 			code->sax_device(spinorfields.at(0), complexNums.at(0), getOutSpinor());
 		}
 };
 
-struct SaxEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
+struct SaxEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-		EvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getEvenOddSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 2){}
-};
-
-struct SaxEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	SaxEvenOddTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
-		EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo", parameterCollection, testParameters)
+	SaxEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult("sax_eo", parameterCollection, testParameters, calculateReferenceValues_sax)
 		{
 			code->sax_eoprec_device(spinorfields.at(0), complexNums.at(0), getOutSpinor());
 		}
 };
 
-struct SaxpyTestParameters : public NonEvenOddLinearCombinationTestParameters
+struct SaxpyTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxpyTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 3){}
-};
-
-struct SaxpyTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult
-{
-	SaxpyTester(const ParameterCollection & parameterCollection, const SaxpyTestParameters testParameters):
-	NonEvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy", parameterCollection, testParameters)
+	SaxpyTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxpy", parameterCollection, testParameters, calculateReferenceValues_saxpy)
 		{
 			code->saxpy_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), getOutSpinor());
 		}
 };
 
-struct SaxpyArgTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult
+struct SaxpyArgTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxpyArgTester(const ParameterCollection & parameterCollection, const SaxpyTestParameters testParameters):
-		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg", parameterCollection, testParameters)
+	SaxpyArgTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxpy_arg", parameterCollection, testParameters, calculateReferenceValues_saxpy)
 		{
 			code->saxpy_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), getOutSpinor());
 		}
 };
-struct SaxpyEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
-{
-	SaxpyEvenOddTestParameters(LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-		EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getEvenOddSpinorfieldSize(latticeExtendsIn), coefficientsIn), latticeExtendsIn, fillTypesIn, coefficientsIn, 3){}
-};
 
-struct SaxpyEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+struct SaxpyEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxpyEvenOddTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-		EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_eo", parameterCollection, testParameters)
+	SaxpyEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxpy_eo", parameterCollection, testParameters, calculateReferenceValues_saxpy)
 		{
 			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(0), complexNums.at(0), getOutSpinor());
 		}
 };
 
-struct SaxpyArgEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+struct SaxpyArgEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsKernelResult
 {
-	SaxpyArgEvenOddTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-		EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg_eo", parameterCollection, testParameters)
+	SaxpyArgEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxpy_arg_eo", parameterCollection, testParameters, calculateReferenceValues_saxpy)
 		{
 			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(0), testParameters.coefficients.at(0), getOutSpinor());
 		}
 };
 
-void testEvenOddScalarProduct( const LatticeExtents lE, const SpinorFillTypes sF)
-{
-	performTest<ScalarProductEvenOddTester, ScalarProductEvenOddTestParameters> (lE, sF);
-}
-
-void testNonEvenOddSax(const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxTester, SaxTestParameters> (lE, cN);
-}
-
-void testEvenOddSax(const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxEvenOddTester, SaxEvenOddTestParameters> (lE, cN);
-}
-
-void testNonEvenOddSaxpy(const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxpyTester, SaxpyTestParameters> (lE, cN);
-}
-
-void testNonEvenOddSaxpyArg(const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxpyArgTester, SaxpyTestParameters> (lE, cN);
-}
-
-void testEvenOddSaxpy(const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxpyEvenOddTester, SaxpyEvenOddTestParameters> (lE, cN);
-}
-
-void testEvenOddSaxpyArg(const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxpyArgEvenOddTester, SaxpyEvenOddTestParameters> (lE, cN);
-}
-
-void testEvenOddGaussianSpinorfield( const LatticeExtents lE)
-{
-	performTest<NonEvenGaussianSpinorfieldTester, NonEvenOddGaussianSpinorfieldTestParameters>(lE, ComparisonType::smallerThan);
-}
-
-void testNonEvenOddGaussianSpinorfield( const LatticeExtents lE)
-{
-	performTest<EvenOddGaussianSpinorfieldEvenOddTester, EvenOddGaussianSpinorfieldTestParameters>(lE, ComparisonType::smallerThan);
-}
-
-void testConvertToEvenOdd(const LatticeExtents lE, const bool fillEvenSites)
-{
-	performTest<ConvertToEvenOddTester, ConvertEvenOddTestParameters> (lE, fillEvenSites);
-}
-
-void testConvertFromEvenOdd(const LatticeExtents lE, const bool fillEvenSites)
-{
-	performTest<ConvertFromEvenOddTester, ConvertEvenOddTestParameters> (lE, fillEvenSites);
-}
-
-void testSaxsbypzEvenOdd( const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxsbypzEvenOddTester, SaxsbypzEvenOddTestParameters> (lE, cN);
-}
-void testNonEvenOddSaxsbypz(const LatticeExtents lE, const ComplexNumbers cN)
-{
-	performTest<SaxsbypzTester, SaxsbypzTestParameters> (lE, cN);
-}
-
 void testNonEvenOddSquarenorm( const LatticeExtents lE, const SpinorFillTypes sF)
 {
-	performTest<SquarenormTester, SquarenormTestParameters> (lE, sF);
-}
-
-void testEvenOddSquarenorm( const LatticeExtents lE, const SpinorFillTypes sF)
-{
-	performTest<SquarenormEvenOddTester, SquarenormEvenOddTestParameters> (lE, sF);
+	performTest<SquarenormTester> (lE, sF, false);
 }
 
 void testNonEvenOddScalarProduct( const LatticeExtents lE, const SpinorFillTypes sF)
 {
-	performTest<ScalarProductTester, ScalarProductTestParameters> (lE, sF);
+	performTest<ScalarProductTester> (lE, sF, ComplexNumbers{{1,0}}, 2, false);
 }
 
+void testEvenOddScalarProduct( const LatticeExtents lE, const SpinorFillTypes sF)
+{
+	performTest<ScalarProductEvenOddTester> (lE, sF, ComplexNumbers{{1,0}}, 2, true);
+}
+
+void testNonEvenOddSax(const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxTester> (lE, cN, 2, false);
+}
+
+void testEvenOddSax(const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxEvenOddTester> (lE, cN, 2, true);
+}
+
+void testNonEvenOddSaxpy(const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxpyTester> (lE, cN, 3, false);
+}
+
+void testNonEvenOddSaxpyArg(const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxpyArgTester> (lE, cN, 3, false);
+}
+
+void testEvenOddSaxpy(const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxpyEvenOddTester> (lE, cN, 3, true);
+}
+
+void testEvenOddSaxpyArg(const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxpyArgEvenOddTester> (lE, cN, 3, true);
+}
+
+void testNonEvenOddGaussianSpinorfield( const LatticeExtents lE)
+{
+	performTest<NonEvenGaussianSpinorfieldTester>(lE, ComparisonType::smallerThan, false);
+}
+
+void testEvenOddGaussianSpinorfield( const LatticeExtents lE)
+{
+	performTest<EvenOddGaussianSpinorfieldEvenOddTester>(lE, ComparisonType::smallerThan, true);
+}
+
+void testConvertToEvenOdd(const LatticeExtents lE, const bool fillEvenSites)
+{
+	performTest<ConvertToEvenOddTester> (lE, fillEvenSites);
+}
+
+void testConvertFromEvenOdd(const LatticeExtents lE)
+{
+	performTest<ConvertFromEvenOddTester> (lE);
+}
+
+void testSaxsbypzEvenOdd( const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxsbypzEvenOddTester> (lE, cN, 4, true);
+}
+
+void testNonEvenOddSaxsbypz(const LatticeExtents lE, const ComplexNumbers cN)
+{
+	performTest<SaxsbypzTester> (lE, cN, 4, false);
+}
+
+void testEvenOddSquarenorm( const LatticeExtents lE, const SpinorFillTypes sF)
+{
+	performTest<SquarenormEvenOddTester> (lE, sF, true);
+}
+
+void testEvenOddCold(const LatticeExtents lE, const SpinorFillTypes sF)
+{
+	performTest<ColdEvenOddTester> (lE, sF, true);
+}
+
+void testEvenOddZero(const LatticeExtents lE, const SpinorFillTypes sF)
+{
+	performTest<ZeroEvenOddTester> (lE, sF, true);
+}
+
+void testNonEvenOddCold(const LatticeExtents lE, const SpinorFillTypes sF)
+{
+	performTest<ColdTester> (lE, sF, false);
+}
+
+void testNonEvenOddZero(const LatticeExtents lE, const SpinorFillTypes sF)
+{
+	performTest<ZeroTester> (lE, sF, false);
+}
 
 BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
 
@@ -969,7 +829,7 @@ BOOST_AUTO_TEST_SUITE(ZERO)
 
 	BOOST_AUTO_TEST_CASE( ZERO_1 )
 	{
-		performTest<ZeroTester, ZeroTestParameters> (LatticeExtents{ns4, nt4});
+		testNonEvenOddZero(LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::one});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -978,7 +838,7 @@ BOOST_AUTO_TEST_SUITE(COLD)
 
 	BOOST_AUTO_TEST_CASE( COLD_1 )
 	{
-		performTest<ColdTester, ColdTestParameters> (LatticeExtents{ns4, nt4});
+		testNonEvenOddCold(LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::one});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -987,7 +847,7 @@ BOOST_AUTO_TEST_SUITE(ZERO_EO)
 
 	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
 	{
-		performTest<ZeroEvenOddTester, ZeroEvenOddTestParameters> (LatticeExtents{ns4, nt4});
+		testEvenOddZero( LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::one} );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -996,7 +856,7 @@ BOOST_AUTO_TEST_SUITE(COLD_EO)
 
 	BOOST_AUTO_TEST_CASE( COLD_EO_1 )
 	{
-		performTest<ColdEvenOddTester, ColdEvenOddTestParameters> (LatticeExtents{ns4, nt4});
+		testEvenOddCold(LatticeExtents{ns4, nt4}, SpinorFillTypes{SpinorFillType::one});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1255,7 +1115,7 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_3 )
 	{
-		testConvertFromEvenOdd(LatticeExtents{ns4, nt4}, true);
+		testConvertFromEvenOdd(LatticeExtents{ns4, nt4});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
