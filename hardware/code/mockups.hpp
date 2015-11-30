@@ -167,20 +167,12 @@ namespace hardware {
 		class OpenClKernelParametersMockup : public OpenClKernelParametersInterface
 		{
 		public:
-			OpenClKernelParametersMockup(int nsIn, int ntIn , size_t precIn = 64) :
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
-			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, bool useSmearingIn , size_t precIn = 64):
-				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(useSmearingIn), prec(precIn) {};
-			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn , size_t precIn = 64):
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(useRectanglesIn), useSmearing(false), prec(precIn) {};
-			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, common::action fermactIn = common::action::twistedmass, bool useRectanglesIn=false, bool useSmearingIn=false, size_t precIn = 64) :
-				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), beta(5.69), kappa(0.125), mu(0.006), mass(0.1), fermact(fermactIn), useRectangles(useRectanglesIn), useSmearing(useSmearingIn), prec(precIn) {};
-			OpenClKernelParametersMockup(int nsIn, int ntIn , double betaIn, double kappaIn, size_t precIn = 64) :
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), beta(betaIn), kappa(kappaIn), mu(0.006), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
-			OpenClKernelParametersMockup(int nsIn, int ntIn , double betaIn, double kappaIn, double rhoIn, double muIn, size_t precIn = 64) :
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(rhoIn), beta(betaIn), kappa(kappaIn), mu(muIn), mass(0.1), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
-			OpenClKernelParametersMockup(int nsIn, int ntIn , double betaIn, double kappaIn, double rhoIn, double muIn, double massIn, size_t precIn = 64) :
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(rhoIn), beta(betaIn), kappa(kappaIn), mu(muIn), mass(massIn), fermact(common::action::wilson), useRectangles(false), useSmearing(false), prec(precIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn):
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, bool useSmearingIn):
+				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useRectangles(false), useSmearing(useSmearingIn) {};
+			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn):
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false) {};
 			~OpenClKernelParametersMockup()	{};
 			virtual int getNs() const override
 			{
@@ -192,7 +184,7 @@ namespace hardware {
 			}
 			virtual size_t getPrecision() const override
 			{
-				return prec;
+				return 64;
 			}
 			virtual bool getUseChemPotRe() const override
 			{
@@ -232,7 +224,7 @@ namespace hardware {
 			}
 			virtual common::action  getFermact() const override
 			{
-				return fermact;
+				return common::action::wilson;
 			}
 			virtual int getMetroApproxOrd() const override
 			{
@@ -252,11 +244,11 @@ namespace hardware {
 			}
 			virtual double getBeta() const override
 			{
-				return beta;
+				return 5.69;
 			}
 			virtual double getKappa() const override
 			{
-				return kappa;
+				return 0.125;
 			}
 			virtual int getNumSources() const override
 			{
@@ -300,7 +292,7 @@ namespace hardware {
 			}
 			virtual size_t getFloatSize() const override
 			{
-				return prec / 8;
+				return getPrecision() / 8;
 			}
 			virtual size_t getMatSize() const override
 			{
@@ -333,7 +325,7 @@ namespace hardware {
 			}
 			virtual double getMass() const override
 			{
-				return mass;
+				return 0.1;
 			}
 			virtual bool getUseSameRndNumbers() const override
 			{
@@ -349,7 +341,7 @@ namespace hardware {
 			}
 			virtual double getMu() const override
 			{
-				return mu;
+				return 0.006;
 			}
 			virtual double getApproxLower() const override
 			{
@@ -357,10 +349,8 @@ namespace hardware {
 			}
 		protected:
 			int ns, nt, rhoIter;
-			double rho, beta, kappa, mu, mass;
-			common::action fermact;
+			double rho;
 			bool useRectangles, useSmearing;
-			size_t prec;
 		};
 
 		class OpenClKernelParametersMockupForSpinorTests : public OpenClKernelParametersInterface
@@ -549,6 +539,27 @@ namespace hardware {
 			const size_t prec;
 			const bool useEvenOdd;
 		};
+
+		class OpenClKernelParametersMockupForSpinorStaggered : public OpenClKernelParametersMockupForSpinorTests
+		{
+		public:
+			OpenClKernelParametersMockupForSpinorStaggered(const int nsIn, const int ntIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn), fermact(common::action::rooted_stagg)
+		{
+				fermact = common::action::rooted_stagg;
+		};
+			OpenClKernelParametersMockupForSpinorStaggered(const int nsIn, const int ntIn, const bool useEvenOddIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, useEvenOddIn), fermact(common::action::rooted_stagg)
+		{
+				fermact = common::action::rooted_stagg;
+		};
+		virtual common::action getFermact() const override
+		{
+			return fermact;
+		}
+		common::action fermact;
+		};
+
 		class OpenClKernelParametersMockupForTwistedMass : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:
