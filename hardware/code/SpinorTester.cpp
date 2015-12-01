@@ -21,32 +21,9 @@
 #include "../../host_functionality/host_geometry.h"
 #include "../../host_functionality/host_random.h" //@todo: remove this in the end!
 
-SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters):
-		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters), isEvenOdd(false), elements(0)
+SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const size_t elementsIn, const ReferenceValues rV):
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV), elements(elementsIn)
 {
-	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
-	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
-	evenOrOdd = kernelParameters->getUseEo();
-	code = device->getSpinorCode();
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-}
-
-SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const bool isEvenOddIn, const size_t elementsIn):
-		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters), isEvenOdd(isEvenOddIn), elements(elementsIn)
-{
-	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
-	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
-	evenOrOdd = kernelParameters->getUseEo();
-	code = device->getSpinorCode();
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-}
-
-SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const bool isEvenOddIn, const size_t elementsIn, const ReferenceValues rV):
-		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV), isEvenOdd(isEvenOddIn), elements(elementsIn)
-{
-	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
-	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
-	evenOrOdd = kernelParameters->getUseEo();
 	code = device->getSpinorCode();
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 }
@@ -226,25 +203,25 @@ void fill_with_random(spinor * in, int size, int seed)
 spinor * SpinorTester::createSpinorfield(SpinorFillType fillTypeIn)
 {
   spinor * in;
-  in = new spinor[spinorfieldElements];
+  in = new spinor[elements];
   switch (fillTypeIn) {
 	case SpinorFillType::zero :
-		fill_with_zero(in, spinorfieldElements);
+		fill_with_zero(in, elements);
 		break;
 	case SpinorFillType::one :
-		fill_with_one(in, spinorfieldElements);
+		fill_with_one(in, elements);
 		break;
 	case SpinorFillType::zeroOne :
-		fill_with_zero_one(in, spinorfieldElements);
+		fill_with_zero_one(in, elements);
 		break;
 	case SpinorFillType::oneZero :
-		fill_with_one_zero(in, spinorfieldElements);
+		fill_with_one_zero(in, elements);
 		break;
 	case SpinorFillType::ascendingReal :
-		fill_with_ascending(in, spinorfieldElements);
+		fill_with_ascending(in, elements);
 		break;
 	case SpinorFillType::ascendingComplex :
-		fillWithAscendingComplex(in, spinorfieldElements);
+		fillWithAscendingComplex(in, elements);
 		break;
 	default:
 		logger.fatal() << "do not know fill type!";
@@ -256,8 +233,8 @@ spinor * SpinorTester::createSpinorfield(SpinorFillType fillTypeIn)
 spinor * SpinorTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
 {
   spinor * in;
-  in = new spinor[spinorfieldElements];
-  fill_with_one_eo(in, spinorfieldElements, fillEvenSites, hardwareParameters->getNs(), hardwareParameters->getNt());
+  in = new spinor[elements];
+  fill_with_one_eo(in, elements, fillEvenSites, hardwareParameters->getNs(), hardwareParameters->getNt());
   return in;
 }
 
@@ -450,19 +427,19 @@ void SpinorTester::fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, c
 {
 	spinor * sf_in1;
 	spinor * sf_in2;
-	sf_in1 = new spinor[spinorfieldEvenOddElements];
-	sf_in2 = new spinor[spinorfieldEvenOddElements];
+	sf_in1 = new spinor[elements];
+	sf_in2 = new spinor[elements];
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 	
 	if (false ) // original: if( useRandom )
 	{ 
-		fillTwoSpinorfieldsWithRandomNumbers(sf_in1, sf_in2, spinorfieldEvenOddElements, seed);
+		fillTwoSpinorfieldsWithRandomNumbers(sf_in1, sf_in2, elements, seed);
 	}
 	else
 	{
-		fill_with_one(sf_in1, spinorfieldEvenOddElements);
-		fill_with_one(sf_in2, spinorfieldEvenOddElements);
+		fill_with_one(sf_in1, elements);
+		fill_with_one(sf_in2, elements);
 	}
 	
 	in1->load(sf_in1);
@@ -476,12 +453,12 @@ void SpinorTester::fillTwoSpinorBuffersDependingOnParity(const hardware::buffers
 {
 	spinor * sf_in1;
 	spinor * sf_in2;
-	sf_in1 = new spinor[spinorfieldEvenOddElements];
-	sf_in2 = new spinor[spinorfieldEvenOddElements];
+	sf_in1 = new spinor[elements];
+	sf_in2 = new spinor[elements];
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 	
-	fillTwoSpinorfieldsDependingOnParity(sf_in1, sf_in2, spinorfieldEvenOddElements);
+	fillTwoSpinorfieldsDependingOnParity(sf_in1, sf_in2, elements);
 	
 	in1->load(sf_in1);
 	in2->load(sf_in2);

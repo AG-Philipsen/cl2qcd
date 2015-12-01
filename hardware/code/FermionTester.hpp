@@ -21,7 +21,6 @@
 
 #include "SpinorTester.hpp"
 #include "GaugefieldTester.hpp"
-#include "gaugefield.hpp"
 #include "fermions.hpp"
 
 const double nonTrivialParameter = 0.123456;
@@ -72,7 +71,7 @@ typedef FermionMatrixTestParameters<TwistedMassMassParameters> TwistedMassTestPa
 template <class BufferType, class TesterType>
 struct FermionmatrixTester : public TesterType
 {
-	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV, const int numberOfElements) :
+	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
 		TesterType(kernelName, parameterCollection, testParameters, rV)
 	{
 		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), this->device);
@@ -82,8 +81,8 @@ struct FermionmatrixTester : public TesterType
 
 		code = SpinorTester::device->getFermionCode();
 
-		in = new const BufferType(numberOfElements, this->device);
-		out = new const BufferType(numberOfElements, this->device);
+		in = new const BufferType(TesterType::elements, this->device);
+		out = new const BufferType(TesterType::elements, this->device);
 		out->load(TesterType::createSpinorfield(SpinorFillType::zero));
 		in->load(TesterType::createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
 	}
@@ -97,7 +96,7 @@ protected:
 struct NonEvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>
 {
 	NonEvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV, calculateSpinorfieldSize(testParameters.SpinorTestParameters::latticeExtents)) {}
+		FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV) {}
 };
 
 struct NonEvenOddFermionmatrixTesterWithSquarenormAsResult : public NonEvenOddFermionmatrixTester
@@ -113,7 +112,7 @@ struct NonEvenOddFermionmatrixTesterWithSquarenormAsResult : public NonEvenOddFe
 struct EvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>
 {
 	EvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV, calculateEvenOddSpinorfieldSize(testParameters.SpinorTestParameters::latticeExtents)) {}
+		FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV) {}
 };
 
 struct FermionmatrixEvenOddTesterWithSquarenormAsKernelResult : public EvenOddFermionmatrixTester
@@ -133,9 +132,9 @@ struct FermionmatrixEvenOddTesterWithSumAsKernelResult : public EvenOddFermionma
 	~FermionmatrixEvenOddTesterWithSumAsKernelResult()
 	{
 		spinor * sf_in;
-		sf_in = new spinor[spinorfieldEvenOddElements];
+		sf_in = new spinor[elements];
 		out->dump(sf_in);
-		kernelResult.at(0) = count_sf(sf_in, spinorfieldEvenOddElements);
+		kernelResult.at(0) = count_sf(sf_in, elements);
 		delete sf_in;
 	}
 };
