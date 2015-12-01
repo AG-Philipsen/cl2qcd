@@ -62,8 +62,7 @@ const ReferenceValues calculateReferenceValues_scalarProduct(const int latticeVo
 	{
 		return ReferenceValues{latticeVolume * sumOfIntegersSquared(24), 0.};
 	}
-	else
-		return defaultReferenceValues();
+	return defaultReferenceValues();
 }
 
 const ReferenceValues calculateReferenceValues_cold(const bool isEvenOdd)
@@ -110,9 +109,9 @@ const ReferenceValues calculateReferenceValues_convertFromEvenOdd(const int latt
 struct LinearCombinationTestParameters : public SpinorTestParameters
 {
 	LinearCombinationTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
-		SpinorTestParameters(defaultReferenceValues(), latticeExtendsIn, fillTypesIn, false), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
+		SpinorTestParameters(latticeExtendsIn, fillTypesIn), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
 	LinearCombinationTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers cN, const size_t numberOfSpinorsIn) :
-		SpinorTestParameters(defaultReferenceValues(), latticeExtendsIn, fillTypesIn, false), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
+		SpinorTestParameters(latticeExtendsIn, fillTypesIn), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
 	const ComplexNumbers coefficients;
 	const NumberOfSpinors numberOfSpinors;
 };
@@ -120,7 +119,7 @@ struct LinearCombinationTestParameters : public SpinorTestParameters
 struct GaussianTestParameters : public SpinorTestParameters
 {
 	GaussianTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType & typeOfComparisonIn) :
-		SpinorTestParameters(defaultReferenceValues(), latticeExtendsIn, typeOfComparisonIn, false), iterations(100) {};
+		SpinorTestParameters(latticeExtendsIn, typeOfComparisonIn), iterations(100) {};
 
 	const unsigned int iterations;
 };
@@ -153,7 +152,7 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn,
 
 template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn )
 {
-	SpinorTestParameters parametersForThisTest(defaultReferenceValues(), latticeExtendsIn);
+	SpinorTestParameters parametersForThisTest(latticeExtendsIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
@@ -162,7 +161,7 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn,
 
 template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn)
 {
-	SpinorTestParameters parametersForThisTest(defaultReferenceValues(), latticeExtendsIn);
+	SpinorTestParameters parametersForThisTest(latticeExtendsIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
@@ -178,12 +177,6 @@ template<typename TesterClass> void performTest(const LatticeExtents latticeExte
 //@todo: this should take the coefficients from another class or be a template class!
 struct NonEvenOddLinearCombinationTester : public NonEvenOddSpinorTester
 {
-	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes)):
-		NonEvenOddSpinorTester(kernelName, pC, tP, rV)
-	{
-		loadCoefficients(tP);
-		loadSpinorfields(tP);
-	}
 	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
 		NonEvenOddSpinorTester(kernelName, pC, tP, rV(getSpinorfieldSize(tP.latticeExtents), tP.coefficients))
 	{
@@ -225,7 +218,7 @@ private:
 struct NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult : public NonEvenOddLinearCombinationTester
 {
 	NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes)):
-		NonEvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
+		NonEvenOddLinearCombinationTester(kernelName, pC, tP, rV(calculateSpinorfieldSize(tP.latticeExtents), tP.fillTypes) ) {}
 	NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
 		NonEvenOddLinearCombinationTester(kernelName, pC, tP, rV) {}
 	NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues rV):
@@ -299,7 +292,7 @@ struct EvenOddLinearCombinationTesterWithSquarenormAsKernelResult : public EvenO
 struct PrngTester: public SpinorTester
 {
 	PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const ReferenceValues & rV):
-				SpinorTester(kernelName, parameterCollection, testParameters, false, 1, rV),
+				SpinorTester(kernelName, parameterCollection, testParameters, 1, rV),
 				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
 				useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
 	{
@@ -365,10 +358,10 @@ protected:
 struct NonEvenGaussianSpinorfieldTester: public GaussianTester
 {
 	NonEvenGaussianSpinorfieldTester(const ParameterCollection parameterCollection, const GaussianTestParameters testParameters):
-		GaussianTester("generate_gaussian_spinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize() ){}
+		GaussianTester("generate_gaussian_spinorfield", parameterCollection, testParameters, calculateSpinorfieldSize(testParameters.latticeExtents) ){}
 	~NonEvenGaussianSpinorfieldTester()
 	{
-		const hardware::buffers::Plain<spinor> outSpinor(spinorfieldElements, device);
+		const hardware::buffers::Plain<spinor> outSpinor(numberOfElements, device);
 		for (unsigned int i = 0; i < testParameters.iterations; i++) {
 			code->generate_gaussian_spinorfield_device(&outSpinor, prngStates);
 			outSpinor.dump(&hostOutput[i * numberOfElements]);
@@ -379,10 +372,10 @@ struct NonEvenGaussianSpinorfieldTester: public GaussianTester
 struct EvenOddGaussianSpinorfieldEvenOddTester: public GaussianTester
 {
 	EvenOddGaussianSpinorfieldEvenOddTester(const ParameterCollection parameterCollection, const GaussianTestParameters testParameters):
-				GaussianTester("generate_gaussian_spinorfield_eo", parameterCollection, testParameters, testParameters.getEvenOddSpinorfieldSize() ) {};
+				GaussianTester("generate_gaussian_spinorfield_eo", parameterCollection, testParameters, calculateEvenOddSpinorfieldSize(testParameters.latticeExtents) ) {};
 	~EvenOddGaussianSpinorfieldEvenOddTester()
 	{
-		const hardware::buffers::Spinor outSpinor(spinorfieldEvenOddElements, device);
+		const hardware::buffers::Spinor outSpinor(numberOfElements, device);
 		for (unsigned int i = 0; i < testParameters.iterations; i++) {
 			code->generate_gaussian_spinorfield_eo_device(&outSpinor, prngStates);
 			outSpinor.dump(&hostOutput[i * numberOfElements]);
@@ -393,12 +386,12 @@ struct EvenOddGaussianSpinorfieldEvenOddTester: public GaussianTester
 struct ConvertToEvenOddTester: public SpinorTester
 {
 	ConvertToEvenOddTester(const ParameterCollection & parameterCollection, const SpinorTestParameters tP, const bool fillEvenSitesIn):
-		SpinorTester("convert_to_eo", parameterCollection, tP, true, getSpinorfieldSize(tP.latticeExtents),
+		SpinorTester("convert_to_eo", parameterCollection, tP, getSpinorfieldSize(tP.latticeExtents),
 				calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(tP.latticeExtents), fillEvenSitesIn) )
 		{
-			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
-			const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
+			const hardware::buffers::Plain<spinor> in(getSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in2(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in3(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
 
 			in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity( fillEvenSitesIn ) );
 			code->convert_to_eoprec_device(&in2, &in3, &in) ;
@@ -413,12 +406,12 @@ struct ConvertToEvenOddTester: public SpinorTester
 struct ConvertFromEvenOddTester: public SpinorTester
 {
 	ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, const SpinorTestParameters tP):
-		SpinorTester("convert_to_eo", parameterCollection, tP, true, getSpinorfieldSize(tP.latticeExtents),
+		SpinorTester("convert_to_eo", parameterCollection, tP, getSpinorfieldSize(tP.latticeExtents),
 				calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(tP.latticeExtents)) )
 		{
-			const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
-			const hardware::buffers::Spinor in3(spinorfieldEvenOddElements, device);
+			const hardware::buffers::Plain<spinor> in(getSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in2(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in3(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
 
 			fillTwoSpinorBuffersDependingOnParity(&in2, &in3);
 			code->convert_from_eoprec_device(&in2, &in3, &in);
@@ -461,7 +454,7 @@ struct SquarenormEvenOddTester: public EvenOddLinearCombinationTesterWithSquaren
 struct ScalarProductTester: public NonEvenOddLinearCombinationTester
 {
 	ScalarProductTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
-		NonEvenOddLinearCombinationTester("scalar_product", parameterCollection, testParameters, calculateReferenceValues_scalarProduct)
+		NonEvenOddLinearCombinationTester("scalar_product", parameterCollection, testParameters, calculateReferenceValues_scalarProduct(calculateSpinorfieldSize(testParameters.latticeExtents), testParameters.fillTypes))
 	{
 		code->set_complex_to_scalar_product_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
 		hmc_complex resultTmp;
@@ -475,7 +468,7 @@ struct ScalarProductTester: public NonEvenOddLinearCombinationTester
 struct ScalarProductEvenOddTester: public EvenOddLinearCombinationTester
 {
 	ScalarProductEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
-		EvenOddLinearCombinationTester("scalar_product_eo", parameterCollection, testParameters, calculateReferenceValues_scalarProduct)
+		EvenOddLinearCombinationTester("scalar_product_eo", parameterCollection, testParameters, calculateReferenceValues_scalarProduct(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), testParameters.fillTypes))
 	{
 		code->set_complex_to_scalar_product_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
 		hmc_complex resultTmp;
@@ -675,19 +668,6 @@ void testNonEvenOddZero(const LatticeExtents lE, const SpinorFillTypes sF)
 {
 	performTest<ZeroTester> (lE, sF, false);
 }
-
-BOOST_AUTO_TEST_SUITE(SPINORTESTER_BUILD)
-
-	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
-	{
-		const hardware::HardwareParametersMockup hardwareParameters(4,4);
-		const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
-		ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-		const SpinorTestParameters testParameters;
-		BOOST_CHECK_NO_THROW( SpinorTester( "build all kernels", parameterCollection, testParameters) );
-	}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GLOBAL_SQUARENORM)
 

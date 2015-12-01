@@ -52,8 +52,12 @@ struct TestParameters {
 	//todo: introduce comparisonTypes here!
 	TestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn):
 		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValueIn.size()) {}
+	TestParameters(const LatticeExtents latticeExtentsIn):
+		referenceValue(defaultReferenceValues()), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference), numberOfValues(defaultReferenceValues().size()) {}
 	TestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, const int typeOfComparisonIn):
 		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
+	TestParameters(const LatticeExtents latticeExtentsIn, const int typeOfComparisonIn):
+		referenceValue(defaultReferenceValues()), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(defaultReferenceValues().size()) {}
 	TestParameters():
 		referenceValue({0}), ns(4), nt(4), latticeExtents(LatticeExtents{4,4}),typeOfComparison(ComparisonType::difference), numberOfValues(referenceValue.size()) {}
 };
