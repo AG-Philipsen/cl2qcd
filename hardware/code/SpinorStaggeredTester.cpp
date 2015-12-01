@@ -184,7 +184,7 @@ hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float
 //This function fills the field sf_in in the following way
 // eo==true  ---> sf_in[even]=ONE  and sf_in[odd]=ZERO
 // eo==false ---> sf_in[even]=ZERO and sf_in[odd]=ONE
-static void fill_with_one_eo(su3vec * sf_in, int size, bool eo, const meta::Inputparameters * parameters)
+void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo, const meta::Inputparameters * parameters)
 {
   int ns = parameters->get_nspace();
   int nt = parameters->get_ntime();
@@ -205,6 +205,42 @@ static void fill_with_one_eo(su3vec * sf_in, int size, bool eo, const meta::Inpu
 	  coord[3] = z;
 	  nspace =  get_nspace(coord, *parameters);
 	  global_pos = get_global_pos(nspace, t, *parameters);
+	  if (global_pos >= size)
+	    break;
+	  parityOfSite = (x + y + z + t) % 2 == 0;
+	  content = (parityOfSite) ? (eo ? hmc_complex_one : hmc_complex_zero) :
+				      (eo ? hmc_complex_zero : hmc_complex_one);
+	  sf_in[global_pos].e0 = content;
+	  sf_in[global_pos].e1 = content;
+	  sf_in[global_pos].e2 = content;
+	}
+      }
+    }
+  }
+  return;
+}
+
+void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
+{
+  int ns = hardwareParameters->getNs();
+  int nt = hardwareParameters->getNt();
+  int x,y,z,t;
+  hmc_complex content;
+  int coord[4];
+  bool parityOfSite;
+  int nspace;
+  int global_pos;
+
+  for (x = 0; x<ns; x++){
+    for (y = 0; y<ns; y++){
+      for (z = 0; z<ns; z++){
+	for (t = 0; t<nt; t++){
+	  coord[0] = t;
+	  coord[1] = x;
+	  coord[2] = y;
+	  coord[3] = z;
+	  nspace =  get_nspace(coord, nt, ns);
+	  global_pos = get_global_pos(nspace, t, nt, ns);
 	  if (global_pos >= size)
 	    break;
 	  parityOfSite = (x + y + z + t) % 2 == 0;
@@ -307,6 +343,14 @@ su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSite
   return inputfield;
 }
 
+su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
+{
+  su3vec * in;
+  in = new su3vec[spinorfieldElements];
+  fill_with_one_eo(in, spinorfieldElements, fillEvenSites);
+  return in;
+}
+
 su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity()
 {
   if(inputfield !=NULL)
@@ -314,6 +358,14 @@ su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependin
   inputfield = new su3vec[spinorfieldEvenOddElements];
   fill_with_one_eo(inputfield, spinorfieldEvenOddElements, evenOrOdd, parameters);
   return inputfield;
+}
+
+su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
+{
+  su3vec * in;
+  in = new su3vec[spinorfieldEvenOddElements];
+  fill_with_one_eo(in, spinorfieldEvenOddElements, fillEvenSites);
+  return in;
 }
 
 std::string SpinorStaggeredTester::getSpecificInputfile(std::string inputfileIn)
