@@ -101,6 +101,8 @@ protected:
 	void fill_with_zero(su3vec * sf_in, int size);
 	void fill_with_ascending(su3vec * sf_in, int size);
 	void fillWithAscendingComplex(su3vec * in, int size);
+	void fill_with_one_eo(su3vec * sf_in, int size, bool eo);
+	void fill_with_one_eo(su3vec * sf_in, int size, bool eo, const meta::Inputparameters * parameters);
 	hmc_float count_sf(su3vec * in, int size);
 	hmc_float calc_var(hmc_float in, hmc_float mean);
 	hmc_float calc_var_sf(su3vec * in, int size, hmc_float sum);
@@ -108,7 +110,9 @@ protected:
 	su3vec * createSpinorfield(size_t numberOfElements, int seed = 123456);
 	su3vec * createSpinorfield(SpinorFillType);
 	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
+	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
 	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity();
+	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
 	std::string getSpecificInputfile(std::string inputfileIn);
