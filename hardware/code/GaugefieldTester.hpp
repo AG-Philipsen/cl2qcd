@@ -23,7 +23,7 @@
 
 enum GaugefieldFillType {cold = 1, nonTrivial};
 
-struct GaugefieldTestParameters : public TestParameters
+struct GaugefieldTestParameters : public virtual TestParameters
 {
 	GaugefieldFillType fillType;
 
