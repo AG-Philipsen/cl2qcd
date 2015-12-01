@@ -101,7 +101,7 @@ const ReferenceValues calculateReferenceValues_saxpbypz(const int latticeVolume,
 
 const ReferenceValues calculateReferenceValues_gaussian()
 {
-	return ReferenceValues{1e-3, .5};
+	return ReferenceValues{1e-3, .71};
 }
 
 const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolume, const bool fillEvenSites)
@@ -314,6 +314,112 @@ struct EvenOddLinearCombinationTesterWithSquarenormAsResult : public EvenOddLine
 	{
 		calcSquarenormEvenOddAndStoreAsKernelResult(getOutSpinor());
 	}
+};
+
+struct GaussianTestParameters: public NonEvenOddLinearCombinationTestParameters
+{
+	GaussianTestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType & typeOfComparisonIn) :
+		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_gaussian(), latticeExtentsIn, 1, typeOfComparisonIn),
+		iterations(4000){};
+
+	const unsigned int iterations;
+};
+
+struct PrngTester: public NonEvenOddLinearCombinationTester
+{
+	PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const GaussianTestParameters & testParameters):
+		NonEvenOddLinearCombinationTester(kernelName, parameterCollection, testParameters),
+				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
+				useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
+	{
+		prng_init(hostSeed);
+		prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
+		auto codePrng = device->getPrngCode();
+		codePrng->initialize(prngStates, hostSeed);
+	}
+	~PrngTester()
+	{
+		delete prngStates;
+	}
+protected:
+	const hardware::buffers::PRNGBuffer* prngStates;
+private:
+	uint32_t hostSeed;
+	bool useSameRandomNumbers;
+};
+
+class GaussianTester: public PrngTester{
+public:
+	GaussianTester(std::string kernelName, const ParameterCollection & parameterCollection, const GaussianTestParameters & testParameters, const int numberOfElements):
+		PrngTester(kernelName, parameterCollection, testParameters),
+		numberOfElements(numberOfElements), mean(0.), variance(0.),
+		hostOutput(std::vector<su3vec>(numberOfElements * testParameters.iterations)), testParameters(testParameters){}
+
+	~GaussianTester()
+	{
+		calculateMean();
+		calculateVariance();
+		KolmogorovSmirnov();
+
+		kernelResult[0] = mean;
+		kernelResult[1] = sqrt(variance);
+	}
+	double normalize(double valueIn)
+	{
+		return valueIn/= testParameters.iterations * numberOfElements * 6;
+	}
+
+	void calculateMean()
+	{
+		for (unsigned int i = 0; i < testParameters.iterations; i++) {
+//				if(i%100==0) logger.info() << "Run kernel for the " << i << "th time";
+			mean += count_sf(&hostOutput[i * numberOfElements], numberOfElements);
+		}
+		mean = normalize(mean);
+	}
+
+	void calculateVariance()
+	{
+		for (unsigned int i = 0; i < testParameters.iterations; i++) {
+			variance += calc_var_sf(&hostOutput[i * numberOfElements], numberOfElements, mean);
+		}
+		variance = normalize(variance);
+	}
+
+	void KolmogorovSmirnov()
+	{
+		vector<vector<hmc_float>> samples;
+		vector<hmc_float> tmp;
+		vector<hmc_float> tmp2;
+		for(unsigned int i=0; i<testParameters.iterations; i++){
+		  vector<hmc_float> tmp;
+		  for(int j=0; j<numberOfElements; j++){
+		    tmp2=reals_from_su3vec(hostOutput[i*numberOfElements+j]);
+		    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
+		    tmp2.clear();
+		  }
+		  samples.push_back(tmp);
+		  tmp.clear();
+		}
+		logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
+		logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
+
+		//Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
+		//Note that in the test BOOST_CHECK is used.
+		mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
+		mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
+		mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
+		//Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
+		//Note that in the test BOOST_CHECK is used.
+		variance_test_multiple_set(samples,2.,sqrt(0.5));
+		variance_test_multiple_set(samples,3.,sqrt(0.5));
+		variance_test_multiple_set(samples,4.,sqrt(0.5));
+	}
+	protected:
+		const int numberOfElements;
+		double mean, variance;
+		std::vector<su3vec> hostOutput;
+		const GaussianTestParameters & testParameters;
 };
 
 BOOST_AUTO_TEST_SUITE(SQUARENORM)
@@ -620,178 +726,23 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
-	struct GaussianTestParameters: public SpinorStaggeredTestParameters
+	struct NonEvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
 	{
-		GaussianTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const ComparisonType & typeOfComparisonIn, const bool needsEvenOdd) :
-			SpinorStaggeredTestParameters(referenceValuesIn, latticeExtentsIn, typeOfComparisonIn, needsEvenOdd), iterations(1000) {};
-
-		const unsigned int iterations;
-	};
-
-	class GaussianTester2: public SpinorStaggeredTester{
-	public:
-		GaussianTester2(std::string kernelName, ParameterCollection & parameterCollection, GaussianTestParameters testParameters):
-			SpinorStaggeredTester("gaussian_spinorfield", parameterCollection, testParameters)
+		NonEvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
+			GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize()) {}
+		~NonEvenOddGaussianStaggeredSpinorfieldTester()
 		{
-			const hardware::buffers::Plain<su3vec> out(spinorfieldElements, device);
-			hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-			su3vec * outHost;
-			outHost = new su3vec[spinorfieldElements * testParameters.iterations];
-			BOOST_REQUIRE(out);
-
-			auto prng_buf = prng->get_buffers().at(0);
-
-			double sum = 0;
-			for (int i = 0; i < testParameters.iterations; i++) {
-				if(i%100==0) logger.info() << "Run kernel for the " << i << "th time";
-				code->set_gaussian_spinorfield_device(&out, prng_buf);
-				out.dump(&outHost[i * spinorfieldElements]);
-				sum += count_sf(&outHost[i * spinorfieldElements], spinorfieldElements);
-			}
-			//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real gaussian numbers
-			sum /= (iterations * spinorfieldElements * 6);
-			kernelResult[0] = sum;
-
-			if(calcVariance){
-				double var = 0.;
-				for (int i = 0; i < iterations; i++) {
-				   var += calc_var_sf(&outHost[i * spinorfieldElements], spinorfieldElements, sum);
-				}
-				//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
-				var /= (iterations * spinorfieldElements * 6);
-				kernelResult[0] = sqrt(var);
-			}
-
-			/**
-			 * @TODO This piece of code contains actually tests for the RNG itself
-			 *       and should be moved elsewhere.
-			 */
-			//The Kolmogorov_Smirnov test requires set of n samples with n around 1000
-			//(to big n and to small n are not good choices for this test)
-			//So we can consider each kernel result as a set (NUM_ELEMENTS_SF*6=1536 for a 4^4 lattice)
-			vector<vector<hmc_float>> samples;
-			vector<hmc_float> tmp;
-			vector<hmc_float> tmp2;
-			for(int i=0; i<iterations; i++){
-			  vector<hmc_float> tmp;
-			  for(uint j=0; j<spinorfieldElements; j++){
-			    tmp2=reals_from_su3vec(outHost[i*spinorfieldElements+j]);
-			    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
-			    tmp2.clear();
-			  }
-			  samples.push_back(tmp);
-			  tmp.clear();
-			}
-			logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
-			logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
-
-			if(!calcVariance){
-			  //Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
-			  //Note that in the test BOOST_CHECK is used.
-			  mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
-			  mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
-			  mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
-			}else{
-			  //Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
-			  //Note that in the test BOOST_CHECK is used.
-			  variance_test_multiple_set(samples,2.,sqrt(0.5));
-			  variance_test_multiple_set(samples,3.,sqrt(0.5));
-			  variance_test_multiple_set(samples,4.,sqrt(0.5));
-			}
-		}
-};
-
-	class GaussianTester: public SpinorStaggeredTester{
-	   public:
-		GaussianTester(std::string inputfile) : SpinorStaggeredTester("gaussian_spinorfield", inputfile, 1, 2){
-			const hardware::buffers::Plain<su3vec> out(spinorfieldElements, device);
-			hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-			su3vec * outHost;
-			outHost = new su3vec[spinorfieldElements * iterations];
-			BOOST_REQUIRE(out);
-				
-			auto prng_buf = prng->get_buffers().at(0);
-		
-			double sum = 0;
-			for (int i = 0; i < iterations; i++) {
-				if(i%100==0) logger.info() << "Run kernel for the " << i << "th time";
-				code->set_gaussian_spinorfield_device(&out, prng_buf);
-				out.dump(&outHost[i * spinorfieldElements]);
-				sum += count_sf(&outHost[i * spinorfieldElements], spinorfieldElements);
-			}
-			//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real gaussian numbers
-			sum /= (iterations * spinorfieldElements * 6);
-			kernelResult[0] = sum;
-
-			if(calcVariance){
-				double var = 0.;
-				for (int i = 0; i < iterations; i++) {
-				   var += calc_var_sf(&outHost[i * spinorfieldElements], spinorfieldElements, sum);
-				}
-				//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
-				var /= (iterations * spinorfieldElements * 6);
-				kernelResult[0] = sqrt(var);
-			}
-			
-			/** 
-			 * @TODO This piece of code contains actually tests for the RNG itself 
-			 *       and should be moved elsewhere. 
-			 */
-			//The Kolmogorov_Smirnov test requires set of n samples with n around 1000
-			//(to big n and to small n are not good choices for this test)
-			//So we can consider each kernel result as a set (NUM_ELEMENTS_SF*6=1536 for a 4^4 lattice)
-			vector<vector<hmc_float>> samples;
-			vector<hmc_float> tmp;
-			vector<hmc_float> tmp2;
-			for(int i=0; i<iterations; i++){
-			  vector<hmc_float> tmp;
-			  for(uint j=0; j<spinorfieldElements; j++){
-			    tmp2=reals_from_su3vec(outHost[i*spinorfieldElements+j]);
-			    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
-			    tmp2.clear();
-			  }
-			  samples.push_back(tmp);
-			  tmp.clear();
-			}
-			logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
-			logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
-			
-			if(!calcVariance){
-			  //Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
-			  //Note that in the test BOOST_CHECK is used.
-			  mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
-			  mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
-			  mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
-			}else{
-			  //Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
-			  //Note that in the test BOOST_CHECK is used.
-			  variance_test_multiple_set(samples,2.,sqrt(0.5));
-			  variance_test_multiple_set(samples,3.,sqrt(0.5));
-			  variance_test_multiple_set(samples,4.,sqrt(0.5));
+			const hardware::buffers::Plain<su3vec> outSpinor(spinorfieldElements, device);
+			for (unsigned int i = 0; i < testParameters.iterations; i++){
+				code->set_gaussian_spinorfield_device(&outSpinor,prngStates);
+				outSpinor.dump(&hostOutput[i * numberOfElements]);
 			}
 		}
 	};
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_1 )
 	{
-	    GaussianTester("gaussian_input_1");
-	}
-	
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_2 )
-	{
-	    GaussianTester("gaussian_input_2");
-	}
-	
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_3 )
-	{
-	    GaussianTester("gaussian_input_3");
-	}
-	
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_4 )
-	{
-	    GaussianTester("gaussian_input_4");
+	    performTest<NonEvenOddGaussianStaggeredSpinorfieldTester, GaussianTestParameters>(LatticeExtents{ns4,nt4}, ComparisonType::smallerThan);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1768,96 +1719,23 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 
-	class GaussianEvenOddTester: public SpinorStaggeredTester{
-	   public:
-		GaussianEvenOddTester(std::string inputfile) : SpinorStaggeredTester("gaussian_spinorfield_eo", inputfile, 1, 2){
-			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements, device);
-			hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-
-			su3vec * outHost;
-			outHost = new su3vec[spinorfieldEvenOddElements * iterations];
-			BOOST_REQUIRE(out);
-				
-			auto prng_buf = prng->get_buffers().at(0);
-		
-			double sum = 0;
-			for (int i = 0; i < iterations; i++) {
-				if(i%200==0) logger.info() << "Run kernel for the " << i << "th time";
-				code->set_gaussian_spinorfield_eoprec_device(&out, prng_buf);
-				out.dump(&outHost[i * spinorfieldEvenOddElements]);
-				sum += count_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements);
-			}
-			//sum is the sum of iterations*NUM_ELEMENTS_SF*6 real gaussian numbers
-			sum /= (iterations * spinorfieldEvenOddElements * 6);
-			kernelResult[0] = sum;
-
-			if(calcVariance){
-				double var = 0.;
-				for (int i = 0; i < iterations; i++) {
-				   var += calc_var_sf(&outHost[i * spinorfieldEvenOddElements], spinorfieldEvenOddElements, sum);
-				}
-				//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
-				var /= (iterations * spinorfieldEvenOddElements * 6);
-				kernelResult[0] = sqrt(var);
-			}
-			
-			/** 
-			 * @TODO This piece of code contains actually tests for the RNG itself 
-			 *       and should be moved elsewhere. 
-			 */
-			//The Kolmogorov_Smirnov test requires set of n samples with n around 1000
-			//(to big n and to small n are not good choices for this test)
-			//So we can consider each kernel result as a set (NUM_ELEMENTS_SF*6=1536 for a 4^4 lattice)
-			vector<vector<hmc_float>> samples;
-			vector<hmc_float> tmp;
-			vector<hmc_float> tmp2;
-			for(int i=0; i<iterations; i++){
-			  vector<hmc_float> tmp;
-			  for(uint j=0; j<spinorfieldEvenOddElements; j++){
-			    tmp2=reals_from_su3vec(outHost[i*spinorfieldEvenOddElements+j]);
-			    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
-			    tmp2.clear();
-			  }
-			  samples.push_back(tmp);
-			  tmp.clear();
-			}
-			logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
-			logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
-			
-			if(!calcVariance){
-			  //Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
-			  //Note that in the test BOOST_CHECK is used.
-			  mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
-			  mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
-			  mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
-			}else{
-			  //Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
-			  //Note that in the test BOOST_CHECK is used.
-			  variance_test_multiple_set(samples,2.,sqrt(0.5));
-			  variance_test_multiple_set(samples,3.,sqrt(0.5));
-			  variance_test_multiple_set(samples,4.,sqrt(0.5));
+	struct EvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
+	{
+		EvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
+			GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize()) {}
+		~EvenOddGaussianStaggeredSpinorfieldTester()
+		{
+			const hardware::buffers::Plain<su3vec> outSpinor(spinorfieldElements, device);
+			for (unsigned int i = 0; i < testParameters.iterations; i++){
+				code->set_gaussian_spinorfield_device(&outSpinor,prngStates);
+				outSpinor.dump(&hostOutput[i * numberOfElements]);
 			}
 		}
 	};
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_1 )
 	{
-	    GaussianEvenOddTester("gaussian_eo_input_1");
-	}
-	
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_2 )
-	{
-	    GaussianEvenOddTester("gaussian_eo_input_2");
-	}
-	
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_3 )
-	{
-	    GaussianEvenOddTester("gaussian_eo_input_3");
-	}
-	
-	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_4 )
-	{
-	    GaussianEvenOddTester("gaussian_eo_input_4");
+	    performTest<EvenOddGaussianStaggeredSpinorfieldTester, GaussianTestParameters>(LatticeExtents{ns4,nt4}, ComparisonType::smallerThan);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
