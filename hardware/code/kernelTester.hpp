@@ -69,6 +69,7 @@ struct ParameterCollection
 class KernelTester {
 public:
 	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters);
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
 	//todo: remove these constructors
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
@@ -80,7 +81,7 @@ protected:
 	double testPrecision;
 	int typeOfComparison; //todo: introduce comparisonTypes here!
 	std::vector<double> kernelResult;
-	std::vector<double> referenceValue;
+	std::vector<double> referenceValue; //@todo: must be ReferenceValues
 	bool allocatedObjects; //todo: remove
 	
 	meta::Inputparameters * parameters; //todo: remove
