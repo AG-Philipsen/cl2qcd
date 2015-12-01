@@ -144,227 +144,226 @@ ReferenceValues calculateReferenceValues_gamma5(const int latticeVolume, const S
 typedef FermionMatrixTestParameters<WilsonMassParameters> WilsonTestParameters;
 typedef FermionMatrixTestParameters<TwistedMassMassParameters> TwistedMassTestParameters;
 
-struct DslashEvenOddTestParameters: public EvenOddFermionTestParameters
+struct DslashEvenOddTestParameters: public WilsonTestParameters
 {
-DslashEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn) :
-		EvenOddFermionTestParameters( calculateReferenceValuesDslashEvenOdd( getEvenOddSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn ), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn),
+	DslashEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn) :
+		WilsonTestParameters( latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn),
 		massParameters(massParametersIn), thetaT(0.), thetaS(0.) {};
 	const WilsonMassParameters massParameters;
 	double thetaT, thetaS;
 };
 
-struct MWilsonTester : public FermionmatrixTester
+struct MWilsonTester : public FermionmatrixTester2
 {
-	MWilsonTester(const ParameterCollection parameterCollection, const WilsonTestParameters & testParameters) :
-	FermionmatrixTester("m_wilson", parameterCollection, testParameters)
+	MWilsonTester(const ParameterCollection parameterCollection, const WilsonTestParameters & tP) :
+		FermionmatrixTester2("m_wilson", parameterCollection, tP, calculateReferenceValues_mWilson( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters) )
 	{
-		code->M_wilson_device(in, out,  gaugefieldBuffer, testParameters.massParameters.kappa );
+		code->M_wilson_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa );
 	}
 };
-struct MTmMinusTester : public FermionmatrixTester
+struct MTmMinusTester : public FermionmatrixTester2
 {
-	MTmMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & testParameters) :
-		FermionmatrixTester("m_tm_minus", parameterCollection, testParameters)
+	MTmMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
+		FermionmatrixTester2("m_tm_minus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
-		code->M_tm_minus_device(in, out,  gaugefieldBuffer, testParameters.massParameters.kappa, testParameters.massParameters.getMubar() );
+		code->M_tm_minus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
 };
-struct MTmPlusTester : public FermionmatrixTester
+struct MTmPlusTester : public FermionmatrixTester2
 {
-	MTmPlusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & testParameters) :
-		FermionmatrixTester("m_tm_plus", parameterCollection, testParameters)
+	MTmPlusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
+		FermionmatrixTester2("m_tm_plus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
-		code->M_tm_plus_device(in, out,  gaugefieldBuffer, testParameters.massParameters.kappa, testParameters.massParameters.getMubar() );
+		code->M_tm_plus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
 };
 
-//todo: merge these two
-//todo: can be a fermionmatrixtester once the sum is used as result rather than the squarenorm!
-struct Gamma5Tester : public FermionTester
+template< class bufferType>
+struct Gamma5Tester : public FermionmatrixTester2a
 {
-	Gamma5Tester(const ParameterCollection parameterCollection, const NonEvenOddSpinorTestParameters & testParameters) :
-		FermionTester("gamma5", parameterCollection, testParameters)
+	Gamma5Tester( const std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters & tP, const ReferenceValues rV, const int numberOfElementsIn) :
+		FermionmatrixTester2a(kernelName, parameterCollection, tP, rV), numberOfElements (numberOfElementsIn)
 	{
-		const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-		spinor * sf_in;
-		sf_in = new spinor[spinorfieldElements];
+		sf_in = new spinor[numberOfElements];
+		in = new bufferType(numberOfElements, device);
 
-		in.load( createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)) );
-		code->gamma5_device(&in);
-		in.dump(sf_in);
-		kernelResult.at(0) = count_sf(sf_in, spinorfieldElements);
-
+		in->load( createSpinorfield(tP.SpinorTestParameters::fillTypes.at(0)) );
+	}
+	~Gamma5Tester()
+	{
+		in->dump(sf_in);
+		kernelResult.at(0) = count_sf(sf_in, numberOfElements);
 		delete sf_in;
 	}
+protected:
+	const int numberOfElements;
+	spinor * sf_in;
+	const bufferType * in;
 };
 
-struct Gamma5EvenOddTester : public FermionTester
+struct Gamma5NonEvenOddTester : public Gamma5Tester<hardware::buffers::Plain<spinor> >
 {
-	Gamma5EvenOddTester(const ParameterCollection parameterCollection, const EvenOddSpinorTestParameters & testParameters) :
-		FermionTester("gamma5_eo", parameterCollection, testParameters)
+	Gamma5NonEvenOddTester(const ParameterCollection parameterCollection, const FermionTestParameters & tP) :
+		Gamma5Tester<hardware::buffers::Plain<spinor>>("gamma5", parameterCollection, tP,
+				calculateReferenceValues_gamma5(calculateSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ), tP.fillTypes.at(0) ), calculateSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ) )
 	{
-		const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
-		spinor * sf_in;
-		sf_in = new spinor[spinorfieldEvenOddElements];
-
-		in.load( createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)) );
-		code->gamma5_eo_device(&in);
-		in.dump(sf_in);
-		kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
-
-		delete sf_in;
+		code->gamma5_device(in);
 	}
+};
+
+struct Gamma5EvenOddTester : public Gamma5Tester<hardware::buffers::Spinor>
+{
+	Gamma5EvenOddTester(const ParameterCollection parameterCollection, const FermionTestParameters & tP) :
+		Gamma5Tester<hardware::buffers::Spinor>("gamma5_eo", parameterCollection, tP,
+				calculateReferenceValues_gamma5(calculateEvenOddSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ), tP.fillTypes.at(0) ), calculateEvenOddSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ) )
+		{
+			code->gamma5_eo_device(in);
+		}
 };
 
 //todo: remove ARG_DEF from all the tm diagonal kernel fcts.!
-struct MTmSitediagonalTester: public FermionmatrixEvenOddTester
+struct MTmSitediagonalTester: public FermionmatrixEvenOddTester2
 {
-	MTmSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
-		FermionmatrixEvenOddTester("m_tm_sitediagonal", parameterCollection, testParameters)
+	MTmSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
+		FermionmatrixEvenOddTester2("m_tm_sitediagonal", parameterCollection, tP,
+				calculateReferenceValues_mTmSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
-			code->M_tm_sitediagonal_device( in, out, testParameters.massParameters.getMubar());
+			code->M_tm_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct MTmInverseSitediagonalTester: public FermionmatrixEvenOddTester
+struct MTmInverseSitediagonalTester: public FermionmatrixEvenOddTester2
 {
-	MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
-		FermionmatrixEvenOddTester("m_tm_inverse_sitediagonal", parameterCollection, testParameters)
+	MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
+		FermionmatrixEvenOddTester2("m_tm_inverse_sitediagonal", parameterCollection, tP,
+				calculateReferenceValues_mTmInverseSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
-			code->M_tm_inverse_sitediagonal_device( in, out, testParameters.massParameters.getMubar());
+			code->M_tm_inverse_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
 };
-struct MTmSitediagonalMinusTester: public FermionmatrixEvenOddTester
+struct MTmSitediagonalMinusTester: public FermionmatrixEvenOddTester2
 {
-	MTmSitediagonalMinusTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
-		FermionmatrixEvenOddTester("m_tm_sitediagonal_minus", parameterCollection, testParameters)
+	MTmSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
+		FermionmatrixEvenOddTester2("m_tm_sitediagonal_minus", parameterCollection, tP,
+				calculateReferenceValues_mTmSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
-			code->M_tm_sitediagonal_minus_device( in, out, testParameters.massParameters.getMubar());
-		}
-};
-
-struct MTmInverseSitediagonalMinusTester: public FermionmatrixEvenOddTester
-{
-	MTmInverseSitediagonalMinusTester(const ParameterCollection parameterCollection, const EvenOddTwistedMassTestParameters & testParameters):
-		FermionmatrixEvenOddTester("m_tm_inverse_sitediagonal", parameterCollection, testParameters)
-		{
-			code->M_tm_inverse_sitediagonal_minus_device( in, out, testParameters.massParameters.getMubar());
+			code->M_tm_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct DslashEvenOddTester: public FermionmatrixEvenOddTester
+struct MTmInverseSitediagonalMinusTester: public FermionmatrixEvenOddTester2
 {
-	DslashEvenOddTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & testParameters, const bool evenOrOddIn):
-		FermionmatrixEvenOddTester("dslash_eo", parameterCollection, testParameters)
+	MTmInverseSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
+		FermionmatrixEvenOddTester2("m_tm_inverse_sitediagonal", parameterCollection, tP,
+				calculateReferenceValues_mTmInverseSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
+		{
+			code->M_tm_inverse_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
+		}
+};
+
+struct DslashEvenOddTester: public FermionmatrixEvenOddTester2
+{
+	DslashEvenOddTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
+		FermionmatrixEvenOddTester2("dslash_eo", parameterCollection, tP,
+				calculateReferenceValuesDslashEvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 		{
 			evenOrOddIn ?
-				code->dslash_eo_device( in, out,  gaugefieldBuffer, EVEN, testParameters.massParameters.kappa) :
-				code->dslash_eo_device( in, out,  gaugefieldBuffer, ODD, testParameters.massParameters.kappa );
+				code->dslash_eo_device( in, out,  gaugefieldBuffer, EVEN, tP.massParameters.kappa) :
+				code->dslash_eo_device( in, out,  gaugefieldBuffer, ODD, tP.massParameters.kappa );
 		}
 };
 
-typedef const ReferenceValues (* WilsonReferenceValues )(const int, const SpinorFillType, const GaugefieldFillType, const WilsonMassParameters);
-typedef const ReferenceValues (* TwistedMassReferenceValues ) (const int, const SpinorFillType, const GaugefieldFillType, const TwistedMassMassParameters);
-
-template<typename TesterClass, typename TestParameters, typename KernelParameterMockup>
-void runTest( const TestParameters parametersForThisTest)
+template<typename TesterClass, typename MassParameters, typename TestParameters, typename KernelParameterMockup>
+void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
+		const MassParameters massParametersIn, const bool needEvenOdd)
 {
-	KernelParameterMockup kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
+	TestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
+	KernelParameterMockup kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd); //todo: could also use latticeExtendsIn here!
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass tester(parameterCollection, parametersForThisTest);
 }
 
-template<typename TesterClass, typename MassParameters, typename TestParameters, typename KernelParameterMockup, typename ReferenceValuesCalculationSignature>
-void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
-		const MassParameters massParametersIn, ReferenceValuesCalculationSignature rV)
+template<class TesterClass>
+void callTest(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParameters, const bool needEvenOdd)
 {
-	TestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, rV);
-	runTest<TesterClass, TestParameters, KernelParameterMockup>(parametersForThisTest);
+	TwistedMassTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, massParameters);
+	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass tester(parameterCollection, parametersForThisTest);
 }
 
 template<class TesterClass>
-void callTest(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParameters, const ReferenceValues (* rV) (int, TwistedMassMassParameters))
+void callTest(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const bool needEvenOdd)
 {
-	EvenOddTwistedMassTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, massParameters, rV);
-	runTest<TesterClass, EvenOddTwistedMassTestParameters, hardware::code::OpenClKernelParametersMockupForTwistedMass>(parametersForThisTest);
-}
-
-template<class TesterClass, class ParameterClass>
-void callTest(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
-{
-	ParameterClass parametersForThisTest(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn);
-	runTest<TesterClass, ParameterClass, hardware::code::OpenClKernelParametersMockupForSpinorTests>(parametersForThisTest);
-}
-
-template<typename TesterClass, typename MassParameters, typename KernelParameterMockup, typename TestParameters>
-void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
-		const MassParameters massParametersIn, const bool evenOrOddIn)
-{
-	TestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd);
-	KernelParameterMockup kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, parametersForThisTest.needEvenOdd, parametersForThisTest.thetaT, parametersForThisTest.thetaS);
+	FermionTestParameters parametersForThisTest(latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn} );
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
-	TesterClass tester(parameterCollection, parametersForThisTest, evenOrOddIn);
+	TesterClass tester(parameterCollection, parametersForThisTest);
 }
 
 void testMWilson(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
 		const WilsonMassParameters massParametersIn)
 {
-	callTest<MWilsonTester, WilsonMassParameters, WilsonTestParameters, hardware::code::OpenClKernelParametersMockupForSpinorTests, WilsonReferenceValues>
-		(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, calculateReferenceValues_mWilson);
+	callTest<MWilsonTester, WilsonMassParameters, WilsonTestParameters, hardware::code::OpenClKernelParametersMockupForSpinorTests>
+		(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, false);
 }
 
 void testMTmMinus(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
 		const TwistedMassMassParameters massParametersIn)
 {
-	callTest<MTmMinusTester, TwistedMassMassParameters, TwistedMassTestParameters, hardware::code::OpenClKernelParametersMockupForTwistedMass, TwistedMassReferenceValues>
-		(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, calculateReferenceValues_mTmMinus);
+	callTest<MTmMinusTester, TwistedMassMassParameters, TwistedMassTestParameters, hardware::code::OpenClKernelParametersMockupForTwistedMass>
+		(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, false);
 }
 
 //todo: test should not pass using M_tm_minus ref. values!
 void testMTmPlus(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
 		const TwistedMassMassParameters massParametersIn)
 {
-	callTest<MTmPlusTester, TwistedMassMassParameters, TwistedMassTestParameters, hardware::code::OpenClKernelParametersMockupForTwistedMass, TwistedMassReferenceValues>
-		(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, calculateReferenceValues_mTmMinus);
+	callTest<MTmPlusTester, TwistedMassMassParameters, TwistedMassTestParameters, hardware::code::OpenClKernelParametersMockupForTwistedMass>
+		(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, false);
 }
 
 void testNonEvenOddGamma5(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
 {
-	callTest<Gamma5Tester, NonEvenOddSpinorTestParameters>(calculateReferenceValues_gamma5(calculateSpinorfieldSize( latticeExtentsIn ), spinorFillTypeIn ), latticeExtentsIn, spinorFillTypeIn);
+	callTest<Gamma5NonEvenOddTester>(latticeExtentsIn, spinorFillTypeIn, false);
 }
 
 void testEvenOddGamma5(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn)
 {
-	callTest<Gamma5EvenOddTester, EvenOddSpinorTestParameters>(calculateReferenceValues_gamma5(calculateEvenOddSpinorfieldSize( latticeExtentsIn ), spinorFillTypeIn ), latticeExtentsIn, spinorFillTypeIn);
+	callTest<Gamma5EvenOddTester>(latticeExtentsIn, spinorFillTypeIn, true);
 }
 
 void testMTmSitediagonal(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn)
 {
-	callTest<MTmSitediagonalTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, calculateReferenceValues_mTmSitediagonal);
+	callTest<MTmSitediagonalTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, true);
 }
 
 void testMTmInverseSitediagonal(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn)
 {
-	callTest<MTmInverseSitediagonalTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, calculateReferenceValues_mTmInverseSitediagonal);
+	callTest<MTmInverseSitediagonalTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, true);
 }
 
 void testMTmSitediagonalMinus(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn)
 {
-	callTest<MTmSitediagonalMinusTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, calculateReferenceValues_mTmSitediagonalMinus);
+	callTest<MTmSitediagonalMinusTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, true);
 }
 
 void testMTmInverseSitediagonalMinus(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParametersIn)
 {
-	callTest<MTmInverseSitediagonalMinusTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, calculateReferenceValues_mTmInverseSitediagonalMinus);
+	callTest<MTmInverseSitediagonalMinusTester>(latticeExtentsIn, spinorFillTypeIn, massParametersIn, true);
 }
 
 void testDslashEvenOdd(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
 		const WilsonMassParameters massParametersIn, const bool evenOrOddIn)
 {
-	callTest<DslashEvenOddTester, WilsonMassParameters,hardware::code::OpenClKernelParametersMockupForDslashEvenOdd,DslashEvenOddTestParameters>
-		(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, evenOrOddIn);
+	DslashEvenOddTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, true);
+	hardware::code::OpenClKernelParametersMockupForDslashEvenOdd kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, true, parametersForThisTest.thetaT, parametersForThisTest.thetaS);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	DslashEvenOddTester tester(parameterCollection, parametersForThisTest, evenOrOddIn);
 }
 
 BOOST_AUTO_TEST_SUITE( M_WILSON )
