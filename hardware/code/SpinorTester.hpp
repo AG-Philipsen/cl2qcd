@@ -48,7 +48,7 @@ static int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn
 	return 	calculateSpinorfieldSize(latticeExtendsIn.ns, latticeExtendsIn.nt) / 2;
 }
 
-struct SpinorTestParameters: public TestParameters
+struct SpinorTestParameters: public virtual TestParameters
 {
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const bool needEvenOddIn) :
 		TestParameters(referenceValuesIn, latticeExtendsIn), needEvenOdd(needEvenOddIn), fillTypes(fillTypesIn) {};
@@ -61,6 +61,8 @@ struct SpinorTestParameters: public TestParameters
 	SpinorTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const int typeOfComparisionIn, const bool needEvenOddIn) :
 		TestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisionIn), needEvenOdd(needEvenOddIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters() : TestParameters(), needEvenOdd(false) {};
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+		TestParameters(defaultReferenceValues(), latticeExtendsIn), needEvenOdd(false), fillTypes(fillTypesIn) {};
 
 	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ; //@todo: remove?
 	int getEvenOddSpinorfieldSize() const { return calculateEvenOddSpinorfieldSize(ns, nt); } ; //@todo: remove?

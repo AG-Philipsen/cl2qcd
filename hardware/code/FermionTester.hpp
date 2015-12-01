@@ -24,122 +24,7 @@
 #include "gaugefield.hpp"
 #include "fermions.hpp"
 
-//todo: is there a better solution to this?
-//todo: can this be SpinorFillType instead of the vector? One only needs one anyway...
-//todo: should this be called nonEvenOddFermionTestParameters?
-struct FermionTestParameters : public NonEvenOddSpinorTestParameters, GaugefieldTestParameters
-{
-	FermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const GaugefieldFillType gaugefieldFillTypesIn) :
-		NonEvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn),
-		GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
-	FermionTestParameters(const LatticeExtents lE, const SpinorFillTypes spinorFillTypesIn, const GaugefieldFillType gaugefieldFillTypesIn) :
-		NonEvenOddSpinorTestParameters(defaultReferenceValues(), lE, spinorFillTypesIn),
-		GaugefieldTestParameters(defaultReferenceValues(), lE, gaugefieldFillTypesIn) {};
-	FermionTestParameters(const LatticeExtents lE, const SpinorFillTypes spinorFillTypesIn) :
-		NonEvenOddSpinorTestParameters(defaultReferenceValues(), lE, spinorFillTypesIn),
-		GaugefieldTestParameters(defaultReferenceValues(), lE, GaugefieldFillType::cold) {};
-	FermionTestParameters() : NonEvenOddSpinorTestParameters(), GaugefieldTestParameters() {};
-};
-
-struct FermionTestParameters2 : public SpinorTestParameters, GaugefieldTestParameters
-{
-	FermionTestParameters2(const LatticeExtents lE, const SpinorFillTypes spinorFillTypesIn, const GaugefieldFillType gaugefieldFillTypesIn) :
-		SpinorTestParameters(defaultReferenceValues(), lE, spinorFillTypesIn, false),
-		GaugefieldTestParameters(defaultReferenceValues(), lE, gaugefieldFillTypesIn) {};
-	FermionTestParameters2() : SpinorTestParameters(), GaugefieldTestParameters() {};
-};
-
-struct EvenOddFermionTestParameters : public EvenOddSpinorTestParameters, GaugefieldTestParameters
-{
-	EvenOddFermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn) :
-		EvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypeIn),
-		GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, GaugefieldFillType::cold) {};
-	EvenOddFermionTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn,
-			const GaugefieldFillType gaugefieldFillTypesIn = GaugefieldFillType::cold) :
-			EvenOddSpinorTestParameters(referenceValuesIn, latticeExtentsIn, spinorFillTypesIn),
-			GaugefieldTestParameters(referenceValuesIn, latticeExtentsIn, gaugefieldFillTypesIn) {};
-};
-
-struct FermionTester : public SpinorTester
-{
-	FermionTester(std::string kernelName, const ParameterCollection & pC, const FermionTestParameters & testParameters):
-		SpinorTester(kernelName, pC, testParameters)
-	{
-		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
-		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
-		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
-		delete[] gf_host;
-
-		code = SpinorTester::device->getFermionCode();
-	}
-	FermionTester(std::string kernelName, const ParameterCollection & pC, const EvenOddFermionTestParameters & testParameters):
-		SpinorTester(kernelName, pC, testParameters)
-	{
-		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
-		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
-		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
-		delete[] gf_host;
-
-		code = SpinorTester::device->getFermionCode();
-	}
-
-	FermionTester(std::string kernelName, const ParameterCollection & pC, const SpinorTestParameters & testParameters):
-		SpinorTester(kernelName, pC, testParameters), gaugefieldBuffer(nullptr)
-	{
-		code = SpinorTester::device->getFermionCode();
-	}
-	
-protected:
-	const hardware::code::Fermions * code;
-	const hardware::buffers::SU3 * gaugefieldBuffer;
-};
-
-//todo: this can probably be merged with FermionTester to be only one class (same for EvenOdd version)
-struct FermionmatrixTester : public FermionTester
-{
-	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters) :
-	FermionTester(kernelName, parameterCollection, testParameters)
-	{
-		in = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		out = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
-		out->load(createSpinorfield(SpinorFillType::zero));
-	}
-	~FermionmatrixTester()
-	{
-		calcSquarenormAndStoreAsKernelResult(out);
-		delete in;
-		delete out;
-	}
-protected:
-	const hardware::buffers::Plain<spinor> * in;
-	const hardware::buffers::Plain<spinor> * out;
-};
-
-class FermionmatrixEvenOddTester : public FermionTester
-{
-public:
-	FermionmatrixEvenOddTester(std::string kernelName, const ParameterCollection parameterCollection, const EvenOddFermionTestParameters testParameters) :
-		FermionTester(kernelName, parameterCollection, testParameters)
-	{
-		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
-		out->load(createSpinorfield(SpinorFillType::zero));
-	}
-	~FermionmatrixEvenOddTester()
-	{
-		calcSquarenormEvenOddAndStoreAsKernelResult(out);
-		delete in;
-		delete out;
-	}
-protected:
-	const hardware::buffers::Spinor * in;
-	const hardware::buffers::Spinor * out;
-};
-
-//@todo: rename nonTrivialMassParameter to nonTrivialParameter
-const double nonTrivialMassParameter = 0.123456;
+const double nonTrivialParameter = 0.123456;
 
 struct WilsonMassParameters
 {
@@ -157,101 +42,100 @@ struct TwistedMassMassParameters : public WilsonMassParameters
 	double getMubar() const { return 2.*kappa*mu; }
 };
 
-//todo: rename FermionTestParameters to NonEvenOddFermionTestParameters
+struct FermionTestParameters : public SpinorTestParameters, GaugefieldTestParameters
+{
+	FermionTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypesIn) :
+		SpinorTestParameters(lE, SpinorFillTypes{spinorFillTypeIn}),
+		GaugefieldTestParameters(defaultReferenceValues(), lE, gaugefieldFillTypesIn) {};
+	FermionTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn) :
+		SpinorTestParameters(lE, SpinorFillTypes{spinorFillTypeIn}),
+		GaugefieldTestParameters(defaultReferenceValues(), lE, GaugefieldFillType::cold) {};
+	FermionTestParameters(const LatticeExtents lE, const SpinorFillTypes spinorFillTypesIn) :
+		SpinorTestParameters(lE, spinorFillTypesIn),
+		GaugefieldTestParameters(defaultReferenceValues(), lE, GaugefieldFillType::cold) {};
+};
+
 template< class MassParameters>
  struct FermionMatrixTestParameters : public FermionTestParameters
 {
 	FermionMatrixTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
-			const MassParameters massParametersIn, const ReferenceValues (* rV) (const int, const SpinorFillType, const GaugefieldFillType, const MassParameters)) :
-		FermionTestParameters(rV( getSpinorfieldSize(latticeExtentsIn), spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn), latticeExtentsIn,
-				SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
-	FermionMatrixTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
 			const MassParameters massParametersIn) :
-		FermionTestParameters(defaultReferenceValues(), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
+		FermionTestParameters(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
 	FermionMatrixTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const MassParameters massParametersIn ) :
-		FermionTestParameters(defaultReferenceValues(), latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
+		FermionTestParameters(latticeExtentsIn, spinorFillTypeIn, GaugefieldFillType::cold), massParameters(massParametersIn) {};
 	const MassParameters massParameters;
 };
 
-struct EvenOddTwistedMassTestParameters: public EvenOddFermionTestParameters
-{
-	EvenOddTwistedMassTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn,
-			const TwistedMassMassParameters massParametersIn, const ReferenceValues(*referenceValueCalculation) (int, TwistedMassMassParameters) ) :
-		EvenOddFermionTestParameters(referenceValueCalculation( getEvenOddSpinorfieldSize(latticeExtentsIn), massParametersIn), latticeExtentsIn,
-				SpinorFillTypes{spinorFillTypeIn}, GaugefieldFillType::cold), massParameters(massParametersIn) {};
-	EvenOddTwistedMassTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gF,
-			const TwistedMassMassParameters massParametersIn, const ReferenceValues(*referenceValueCalculation) (int, const GaugefieldFillType gF, TwistedMassMassParameters) ) :
-		EvenOddFermionTestParameters(referenceValueCalculation( getEvenOddSpinorfieldSize(latticeExtentsIn), gF, massParametersIn), latticeExtentsIn,
-				SpinorFillTypes{spinorFillTypeIn}, gF), massParameters(massParametersIn) {};
+typedef FermionMatrixTestParameters<WilsonMassParameters> WilsonTestParameters;
+typedef FermionMatrixTestParameters<TwistedMassMassParameters> TwistedMassTestParameters;
 
-	const TwistedMassMassParameters massParameters;
-};
-
-struct FermionmatrixTester2a : public NonEvenOddSpinorTester
+template <class BufferType, class TesterType>
+struct FermionmatrixTester : public TesterType
 {
-	FermionmatrixTester2a(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		NonEvenOddSpinorTester(kernelName, parameterCollection, testParameters, rV)
+	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV, const int numberOfElements) :
+		TesterType(kernelName, parameterCollection, testParameters, rV)
 	{
-		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
+		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), this->device);
 		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
-		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+		this->device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
 		delete[] gf_host;
 
 		code = SpinorTester::device->getFermionCode();
 
-		in = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		out = new const hardware::buffers::Plain<spinor>(spinorfieldElements, device);
-		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
-		out->load(createSpinorfield(SpinorFillType::zero));
-	}
-	~FermionmatrixTester2a()
-	{
-		delete in;
-		delete out;
+		in = new const BufferType(numberOfElements, this->device);
+		out = new const BufferType(numberOfElements, this->device);
+		out->load(TesterType::createSpinorfield(SpinorFillType::zero));
+		in->load(TesterType::createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
 	}
 protected:
-	const hardware::buffers::Plain<spinor> * in;
-	const hardware::buffers::Plain<spinor> * out;
+	const BufferType * in;
+	const BufferType * out;
 	const hardware::code::Fermions * code;
 	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
-struct FermionmatrixTester2 : public FermionmatrixTester2a
+struct NonEvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>
 {
-	FermionmatrixTester2(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		FermionmatrixTester2a(kernelName, parameterCollection, testParameters, rV) {};
-	~FermionmatrixTester2()
+	NonEvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
+		FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV, calculateSpinorfieldSize(testParameters.SpinorTestParameters::latticeExtents)) {}
+};
+
+struct NonEvenOddFermionmatrixTesterWithSquarenormAsResult : public NonEvenOddFermionmatrixTester
+{
+	NonEvenOddFermionmatrixTesterWithSquarenormAsResult(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
+		NonEvenOddFermionmatrixTester(kernelName, parameterCollection, testParameters, rV) {};
+	~NonEvenOddFermionmatrixTesterWithSquarenormAsResult()
 	{
 		calcSquarenormAndStoreAsKernelResult(out);
 	}
 };
 
-struct FermionmatrixEvenOddTester2 : public EvenOddSpinorTester
+struct EvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>
 {
-	FermionmatrixEvenOddTester2(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		EvenOddSpinorTester(kernelName, parameterCollection, testParameters, rV)
-	{
-		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), device);
-		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
-		device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
-		delete[] gf_host;
+	EvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
+		FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV, calculateEvenOddSpinorfieldSize(testParameters.SpinorTestParameters::latticeExtents)) {}
+};
 
-		code = SpinorTester::device->getFermionCode();
-
-		in = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		out = new const hardware::buffers::Spinor(spinorfieldEvenOddElements, device);
-		in->load(createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
-		out->load(createSpinorfield(SpinorFillType::zero));
-	}
-	~FermionmatrixEvenOddTester2()
+struct FermionmatrixEvenOddTesterWithSquarenormAsKernelResult : public EvenOddFermionmatrixTester
+{
+	FermionmatrixEvenOddTesterWithSquarenormAsKernelResult(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
+		EvenOddFermionmatrixTester(kernelName, parameterCollection, testParameters, rV) {}
+	~FermionmatrixEvenOddTesterWithSquarenormAsKernelResult()
 	{
 		calcSquarenormEvenOddAndStoreAsKernelResult(out);
-		delete in;
-		delete out;
 	}
-protected:
-	const hardware::buffers::Spinor * in;
-	const hardware::buffers::Spinor * out;
-	const hardware::code::Fermions * code;
-	const hardware::buffers::SU3 * gaugefieldBuffer;
+};
+
+struct FermionmatrixEvenOddTesterWithSumAsKernelResult : public EvenOddFermionmatrixTester
+{
+	FermionmatrixEvenOddTesterWithSumAsKernelResult(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
+		EvenOddFermionmatrixTester(kernelName, parameterCollection, testParameters, rV) {}
+	~FermionmatrixEvenOddTesterWithSumAsKernelResult()
+	{
+		spinor * sf_in;
+		sf_in = new spinor[spinorfieldEvenOddElements];
+		out->dump(sf_in);
+		kernelResult.at(0) = count_sf(sf_in, spinorfieldEvenOddElements);
+		delete sf_in;
+	}
 };

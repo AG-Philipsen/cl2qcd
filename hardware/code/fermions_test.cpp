@@ -22,19 +22,6 @@
 
 #include "FermionTester.hpp"
 
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-	BOOST_AUTO_TEST_CASE( BUILDFROMPARAMETERS )
-	{
-		const hardware::HardwareParametersMockup hardwareParameters(4,4);
-		const hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(4,4);
-		ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-		const FermionTestParameters testParameters;
-		BOOST_CHECK_NO_THROW( FermionTester( "build all kernels", parameterCollection, testParameters) );
-	}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 /** todo:
  * - the way the reference values are passed is not nice, it should be somehow done automatically.
  * 		Especially that one has to call the lattice volume explicitely is not nice
@@ -45,7 +32,7 @@ const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, 
 	{
 		return ReferenceValues{latticeVolume * sumOfIntegersSquared(24)};
 	}
-	else if (massParametersIn.kappa == nonTrivialMassParameter)
+	else if (massParametersIn.kappa == nonTrivialParameter)
 	{
 		if (spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::cold )
 		{
@@ -66,17 +53,17 @@ const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, 
 const ReferenceValues calculateReferenceValues_mTmMinus(const int latticeVolume, const SpinorFillType spinorFillTypeIn,
 		const GaugefieldFillType gaugefieldFillTypeIn, const TwistedMassMassParameters massParametersIn)
 {
-	if( massParametersIn.kappa == nonTrivialMassParameter and spinorFillTypeIn == SpinorFillType::ascendingComplex )
+	if( massParametersIn.kappa == nonTrivialParameter and spinorFillTypeIn == SpinorFillType::ascendingComplex )
 	{
 		if( massParametersIn.mu == 0. )
 		{
 			return calculateReferenceValues_mWilson(latticeVolume, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
 		}
-		else if (massParametersIn.mu == nonTrivialMassParameter and gaugefieldFillTypeIn == GaugefieldFillType::cold )
+		else if (massParametersIn.mu == nonTrivialParameter and gaugefieldFillTypeIn == GaugefieldFillType::cold )
 		{
 			return ReferenceValues{latticeVolume * 5.300678101577363};
 		}
-		else if (massParametersIn.mu == nonTrivialMassParameter and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
+		else if (massParametersIn.mu == nonTrivialParameter and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
 		{
 			return ReferenceValues{latticeVolume * 3513.465918997579};
 		}
@@ -86,7 +73,7 @@ const ReferenceValues calculateReferenceValues_mTmMinus(const int latticeVolume,
 
 const ReferenceValues calculateReferenceValues_mTmSitediagonal(const int latticeVolume, const TwistedMassMassParameters massParametersIn)
 {
-	if (massParametersIn.kappa == nonTrivialMassParameter and massParametersIn.mu == nonTrivialMassParameter)
+	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
 		return ReferenceValues{ latticeVolume * 4904.553075771979};
 	}
@@ -95,7 +82,7 @@ const ReferenceValues calculateReferenceValues_mTmSitediagonal(const int lattice
 
 const ReferenceValues calculateReferenceValues_mTmSitediagonalMinus(const int latticeVolume, const TwistedMassMassParameters massParametersIn)
 {
-	if (massParametersIn.kappa == nonTrivialMassParameter and massParametersIn.mu == nonTrivialMassParameter)
+	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
 		return ReferenceValues{ latticeVolume * 4904.553075771979};
 	}
@@ -104,7 +91,7 @@ const ReferenceValues calculateReferenceValues_mTmSitediagonalMinus(const int la
 
 const ReferenceValues calculateReferenceValues_mTmInverseSitediagonal(const int latticeVolume, const TwistedMassMassParameters massParametersIn)
 {
-	if (massParametersIn.kappa == nonTrivialMassParameter and massParametersIn.mu == nonTrivialMassParameter)
+	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
 		return ReferenceValues{ latticeVolume * 4895.451151014576};
 	}
@@ -113,7 +100,7 @@ const ReferenceValues calculateReferenceValues_mTmInverseSitediagonal(const int 
 
 const ReferenceValues calculateReferenceValues_mTmInverseSitediagonalMinus(const int latticeVolume, const TwistedMassMassParameters massParametersIn)
 {
-	if (massParametersIn.kappa == nonTrivialMassParameter and massParametersIn.mu == nonTrivialMassParameter)
+	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
 		return ReferenceValues{ latticeVolume * 4895.451151014576};
 	}
@@ -122,7 +109,7 @@ const ReferenceValues calculateReferenceValues_mTmInverseSitediagonalMinus(const
 
 const ReferenceValues calculateReferenceValuesDslashEvenOdd(const int latticeVolumeIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn)
 {
-	if (massParametersIn.kappa == nonTrivialMassParameter and spinorFillTypeIn == SpinorFillType::ascendingComplex)
+	if (massParametersIn.kappa == nonTrivialParameter and spinorFillTypeIn == SpinorFillType::ascendingComplex)
 	{
 		if (gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
 		{
@@ -141,9 +128,6 @@ ReferenceValues calculateReferenceValues_gamma5(const int latticeVolume, const S
 	return (spinorFillTypeIn == SpinorFillType::ascendingComplex) ? ReferenceValues{latticeVolume*( sumOfIntegers(1, 12, 1) - sumOfIntegers(13, 24, 1) )} : defaultReferenceValues() ;
 }
 
-typedef FermionMatrixTestParameters<WilsonMassParameters> WilsonTestParameters;
-typedef FermionMatrixTestParameters<TwistedMassMassParameters> TwistedMassTestParameters;
-
 struct DslashEvenOddTestParameters: public WilsonTestParameters
 {
 	DslashEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn) :
@@ -153,36 +137,36 @@ struct DslashEvenOddTestParameters: public WilsonTestParameters
 	double thetaT, thetaS;
 };
 
-struct MWilsonTester : public FermionmatrixTester2
+struct MWilsonTester : public NonEvenOddFermionmatrixTesterWithSquarenormAsResult
 {
 	MWilsonTester(const ParameterCollection parameterCollection, const WilsonTestParameters & tP) :
-		FermionmatrixTester2("m_wilson", parameterCollection, tP, calculateReferenceValues_mWilson( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters) )
+		NonEvenOddFermionmatrixTesterWithSquarenormAsResult("m_wilson", parameterCollection, tP, calculateReferenceValues_mWilson( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters) )
 	{
 		code->M_wilson_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa );
 	}
 };
-struct MTmMinusTester : public FermionmatrixTester2
+struct MTmMinusTester : public NonEvenOddFermionmatrixTesterWithSquarenormAsResult
 {
 	MTmMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
-		FermionmatrixTester2("m_tm_minus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
+		NonEvenOddFermionmatrixTesterWithSquarenormAsResult("m_tm_minus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
 		code->M_tm_minus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
 };
-struct MTmPlusTester : public FermionmatrixTester2
+struct MTmPlusTester : public NonEvenOddFermionmatrixTesterWithSquarenormAsResult
 {
 	MTmPlusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
-		FermionmatrixTester2("m_tm_plus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
+		NonEvenOddFermionmatrixTesterWithSquarenormAsResult("m_tm_plus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
 		code->M_tm_plus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
 };
 
 template< class bufferType>
-struct Gamma5Tester : public FermionmatrixTester2a
+struct Gamma5Tester : public NonEvenOddFermionmatrixTester
 {
 	Gamma5Tester( const std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters & tP, const ReferenceValues rV, const int numberOfElementsIn) :
-		FermionmatrixTester2a(kernelName, parameterCollection, tP, rV), numberOfElements (numberOfElementsIn)
+		NonEvenOddFermionmatrixTester(kernelName, parameterCollection, tP, rV), numberOfElements (numberOfElementsIn)
 	{
 		sf_in = new spinor[numberOfElements];
 		in = new bufferType(numberOfElements, device);
@@ -222,49 +206,49 @@ struct Gamma5EvenOddTester : public Gamma5Tester<hardware::buffers::Spinor>
 };
 
 //todo: remove ARG_DEF from all the tm diagonal kernel fcts.!
-struct MTmSitediagonalTester: public FermionmatrixEvenOddTester2
+struct MTmSitediagonalTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
 {
 	MTmSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTester2("m_tm_sitediagonal", parameterCollection, tP,
+		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_sitediagonal", parameterCollection, tP,
 				calculateReferenceValues_mTmSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct MTmInverseSitediagonalTester: public FermionmatrixEvenOddTester2
+struct MTmInverseSitediagonalTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
 {
 	MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTester2("m_tm_inverse_sitediagonal", parameterCollection, tP,
+		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_inverse_sitediagonal", parameterCollection, tP,
 				calculateReferenceValues_mTmInverseSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_inverse_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
 };
-struct MTmSitediagonalMinusTester: public FermionmatrixEvenOddTester2
+struct MTmSitediagonalMinusTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
 {
 	MTmSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTester2("m_tm_sitediagonal_minus", parameterCollection, tP,
+		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_sitediagonal_minus", parameterCollection, tP,
 				calculateReferenceValues_mTmSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct MTmInverseSitediagonalMinusTester: public FermionmatrixEvenOddTester2
+struct MTmInverseSitediagonalMinusTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
 {
 	MTmInverseSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTester2("m_tm_inverse_sitediagonal", parameterCollection, tP,
+		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_inverse_sitediagonal", parameterCollection, tP,
 				calculateReferenceValues_mTmInverseSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_inverse_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct DslashEvenOddTester: public FermionmatrixEvenOddTester2
+struct DslashEvenOddTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
 {
 	DslashEvenOddTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
-		FermionmatrixEvenOddTester2("dslash_eo", parameterCollection, tP,
+		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("dslash_eo", parameterCollection, tP,
 				calculateReferenceValuesDslashEvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 		{
 			evenOrOddIn ?
@@ -375,17 +359,17 @@ BOOST_AUTO_TEST_SUITE( M_WILSON )
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_2)
 	{
-		testMWilson(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialMassParameter});
+		testMWilson(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_3)
 	{
-		testMWilson(LatticeExtents{ns4, nt4}, SpinorFillType::one, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialMassParameter});
+		testMWilson(LatticeExtents{ns4, nt4}, SpinorFillType::one, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_WILSON_4)
 	{
-		testMWilson(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialMassParameter});
+		testMWilson(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -394,17 +378,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
 	{
-		testMTmMinus(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, 0.});
+		testMTmMinus(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialParameter, 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
 	{
-		testMTmMinus(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		testMTmMinus(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
 	{
-		testMTmMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		testMTmMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -413,17 +397,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
 
 	BOOST_AUTO_TEST_CASE( M_TM_PLUS_1 )
 	{
-		testMTmPlus(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, 0.});
+		testMTmPlus(LatticeExtents{ns12, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialParameter, 0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
 	{
-		testMTmPlus(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		testMTmPlus(LatticeExtents{ns4, nt16}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_PLUS_3 )
 	{
-		testMTmPlus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		testMTmPlus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -446,22 +430,22 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_1)
 	{
-		testMTmSitediagonal(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		testMTmSitediagonal(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
 	{
-		testMTmInverseSitediagonal(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		testMTmInverseSitediagonal(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter});
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
 	{
-		testMTmSitediagonalMinus(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter} );
+		testMTmSitediagonalMinus(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter} );
 	}
 
 	BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1)
 	{
-		testMTmInverseSitediagonalMinus(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialMassParameter, nonTrivialMassParameter});
+		testMTmInverseSitediagonalMinus(LatticeExtents{ns4,nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{nonTrivialParameter, nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -477,22 +461,22 @@ BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_1)
 	{
-		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialMassParameter}, true);
+		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialParameter}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_2)
 	{
-		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialMassParameter}, false);
+		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialParameter}, false);
 	}
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_3)
 	{
-		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialMassParameter}, true);
+		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter}, true);
 	}
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_4)
 	{
-		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialMassParameter}, false);
+		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter}, false);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
