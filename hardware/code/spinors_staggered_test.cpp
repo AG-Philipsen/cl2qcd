@@ -151,6 +151,126 @@ struct EvenOddLinearCombinationTestParameters : public EvenOddSpinorStaggeredTes
 		EvenOddSpinorStaggeredTestParameters(referenceValuesIn, latticeExtendsIn, fillTypesIn) {};
 };
 
+struct SquarenormTestParameters: public NonEvenOddLinearCombinationTestParameters
+{
+	SquarenormTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
+		NonEvenOddLinearCombinationTestParameters{calculateReferenceValues_squarenorm( getSpinorfieldSize(latticeExtendsIn), fillTypesIn),
+		latticeExtendsIn, fillTypesIn} {};
+};
+
+struct ScalarProductTestParameters: public NonEvenOddLinearCombinationTestParameters
+{
+	ScalarProductTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn):
+		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct(getSpinorfieldSize(latticeExtentsIn),fillTypesIn), latticeExtentsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2) {};
+};
+
+struct ZeroTestParameters : public NonEvenOddLinearCombinationTestParameters
+{
+	ZeroTestParameters(LatticeExtents latticeExtendsIn):
+		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
+};
+
+struct ColdTestParameters : public NonEvenOddLinearCombinationTestParameters
+{
+	ColdTestParameters(LatticeExtents latticeExtendsIn):
+		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(false), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
+};
+
+struct SaxTestParameters : public NonEvenOddLinearCombinationTestParameters
+{
+	SaxTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 2) {}
+};
+
+struct SaxpyTestParameters: public NonEvenOddLinearCombinationTestParameters
+{
+	SaxpyTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 3){}
+
+};
+
+struct SaxpbypzTestParameters: public NonEvenOddLinearCombinationTestParameters
+{
+	SaxpbypzTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpbypz(getSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 4){}
+};
+
+struct ConvertEvenOddTestParameters: public SpinorStaggeredTestParameters
+{
+	const bool fillEvenSites;
+	ConvertEvenOddTestParameters(LatticeExtents latticeExtentsIn, const bool fillEvenSitesIn):
+		SpinorStaggeredTestParameters(calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(latticeExtentsIn), fillEvenSitesIn), latticeExtentsIn, true),
+		fillEvenSites(fillEvenSitesIn) {}
+
+};
+
+struct ConvertFromEvenOddTestParameters: public SpinorStaggeredTestParameters
+{
+	const bool fillEvenSites;
+	ConvertFromEvenOddTestParameters(LatticeExtents latticeExtentsIn, const bool fillEvenSitesIn):
+		SpinorStaggeredTestParameters(calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(latticeExtentsIn)), latticeExtentsIn, true),
+		fillEvenSites(fillEvenSitesIn) {}
+
+};
+
+struct SquarenormEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
+{
+	SquarenormEvenOddTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn):
+		EvenOddLinearCombinationTestParameters{calculateReferenceValues_squarenorm( getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn),latticeExtendsIn, fillTypesIn}{};
+};
+
+struct ScalarProductEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
+{
+	ScalarProductEvenOddTestParameters(const LatticeExtents & latticeExtentsIn, const SpinorFillTypes & fillTypesIn) :
+		EvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct( getEvenOddSpinorfieldSize(latticeExtentsIn), fillTypesIn), latticeExtentsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2) {};
+};
+
+struct ZeroEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
+{
+	ZeroEvenOddTestParameters(const LatticeExtents latticeExtentsIn):
+		EvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtentsIn, SpinorFillTypes{SpinorFillType::one}) {};
+};
+
+struct ColdEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
+{
+	ColdEvenOddTestParameters(const LatticeExtents latticeExtentsIn):
+		EvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(true), latticeExtentsIn, SpinorFillTypes{SpinorFillType::one}) {};
+};
+
+struct SaxEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
+{
+	SaxEvenOddTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+	EvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 2){}
+};
+
+struct SaxpyEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
+{
+	SaxpyEvenOddTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn),latticeExtentsIn, fillTypesIn, coefficientsIn, 3){}
+};
+
+struct SaxpbyEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
+{
+	SaxpbyEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		EvenOddLinearCombinationTestParameters(calculateReferenceValue_saxpby(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn),latticeExtentsIn, fillTypesIn, coefficientsIn, 3 ) {}
+};
+
+struct SaxpbypzEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
+{
+	SaxpbypzEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
+		EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpbypz(getEvenOddSpinorfieldSize(latticeExtentsIn),coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 4) {}
+};
+
+struct SaxVecAndSqnormEvenOddTestParameters: public EvenOddSpinorStaggeredTestParameters
+{
+	SaxVecAndSqnormEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const ComplexNumbers coefficientsIn, const int numEqsIn):
+	    EvenOddSpinorStaggeredTestParameters(calculateReferenceValue_sax_vec_and_sqnorm(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn, numEqsIn), latticeExtentsIn),
+		coefficients(coefficientsIn),
+		numEqs(numEqsIn){};
+		ComplexNumbers coefficients;
+		const int numEqs;
+};
+
 template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest)
 {
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.needEvenOdd);
@@ -316,6 +436,387 @@ struct EvenOddLinearCombinationTesterWithSquarenormAsResult : public EvenOddLine
 	}
 };
 
+class SquarenormTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
+  public:
+	SquarenormTester(const ParameterCollection & parameterCollection, const SquarenormTestParameters & testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("squarenorm", parameterCollection, testParameters) {
+	}
+};
+
+class ScalarProductTester: public NonEvenOddLinearCombinationTester{
+public:
+ ScalarProductTester(const ParameterCollection & parameterCollection, const ScalarProductTestParameters testParameters):
+	 NonEvenOddLinearCombinationTester("scalar_product", parameterCollection, testParameters)
+{
+		code->set_complex_to_scalar_product_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
+		hmc_complex resultHost;
+		complexNums.at(0)->dump(&resultHost);
+
+		kernelResult[0] = resultHost.re;
+		kernelResult[1] = resultHost.im;
+}
+};
+
+class ZeroTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
+   public:
+ZeroTester(const ParameterCollection & parameterCollection, const ZeroTestParameters & testParameters):
+	NonEvenOddLinearCombinationTesterWithSquarenormAsResult("zero", parameterCollection, testParameters)
+	{
+		code->set_zero_spinorfield_device(getOutSpinor());
+	}
+};
+
+class ColdTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
+   public:
+	ColdTester(const ParameterCollection & parameterCollection, const ColdTestParameters testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("cold", parameterCollection, testParameters)
+		{
+			code->set_cold_spinorfield_device(getOutSpinor());
+		}
+};
+
+class SaxTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
+   public:
+	SaxTester(const ParameterCollection & parameterCollection, const SaxTestParameters testParameters):
+		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("sax", parameterCollection, testParameters)
+		{
+			code->sax_device(spinorfields.at(0), complexNums.at(0), getOutSpinor());
+	}
+};
+
+class SaxpyTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
+	public:
+		SaxpyTester(const ParameterCollection & parameterCollection, const SaxpyTestParameters testParameters):
+			NonEvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy", parameterCollection, testParameters)
+			{
+				code->saxpy_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), getOutSpinor());
+			}
+};
+
+class SaxpbypzTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
+	public:
+		SaxpbypzTester(const ParameterCollection & parameterCollection, const SaxpbypzTestParameters testParameters):
+			NonEvenOddLinearCombinationTesterWithSquarenormAsResult("saxpbypz", parameterCollection, testParameters)
+	{
+			code->saxpbypz_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(3), complexNums.at(0), complexNums.at(1), getOutSpinor());
+	}
+};
+
+class ConvertToEvenOddTester: public SpinorStaggeredTester
+{
+	public:
+		ConvertToEvenOddTester(const ParameterCollection & parameterCollection, ConvertEvenOddTestParameters testParameters):
+			SpinorStaggeredTester("convert_to_eo", parameterCollection, testParameters)
+	{
+			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+			const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
+			const hardware::buffers::SU3vec in3(spinorfieldEvenOddElements, device);
+
+			in.load(createSpinorfieldWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ));
+			code->convert_to_eoprec_device(&in2, &in3, &in);
+
+			code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
+			doubleBuffer->dump(&kernelResult[0]);
+			code->set_float_to_global_squarenorm_eoprec_device(&in3, doubleBuffer);
+			doubleBuffer->dump(&kernelResult[1]);
+	}
+};
+
+class ConvertFromEvenOddTester: public SpinorStaggeredTester
+{
+public:
+	ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, ConvertFromEvenOddTestParameters testParameters):
+		SpinorStaggeredTester("convert_from_eo", parameterCollection, testParameters)
+	{
+		const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
+		const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
+		const hardware::buffers::SU3vec in3(spinorfieldEvenOddElements, device);
+
+		in2.load(createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ));
+		in3.load(createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ));
+		code->convert_from_eoprec_device(&in2, &in3, &in);
+		code->set_float_to_global_squarenorm_device(&in, doubleBuffer);
+		doubleBuffer->dump(&kernelResult[0]);
+
+	}
+};
+
+class SquarenormEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult{
+	public:
+		SquarenormEvenOddTester(const ParameterCollection & parameterCollection, const SquarenormEvenOddTestParameters & testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("squarenorm_eo", parameterCollection, testParameters){}
+};
+
+	class ScalarProductEvenOddRealTester: public EvenOddLinearCombinationTester{
+	public:
+		ScalarProductEvenOddRealTester(const ParameterCollection & parameterCollection, const ScalarProductEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTester("scalar_product_real_eo", parameterCollection, testParameters)
+		{
+			hardware::buffers::Plain<hmc_float> sqnorm(1, device);
+			code->set_float_to_scalar_product_real_part_eoprec_device(spinorfields.at(0), spinorfields.at(1), &sqnorm);
+			hmc_float resultTmp;
+			sqnorm.dump(&resultTmp);
+			kernelResult[0] = resultTmp;
+			kernelResult[1] = 0;
+		}
+};
+
+class ScalarProductEvenOddComplexTester: public EvenOddLinearCombinationTester{
+public:
+	ScalarProductEvenOddComplexTester(const ParameterCollection & parameterCollection, const ScalarProductEvenOddTestParameters testParameters):
+		EvenOddLinearCombinationTester("scalar_product_real_eo", parameterCollection, testParameters)
+	{
+		code->set_complex_to_scalar_product_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
+		hmc_complex resultTmp;
+		complexNums.at(0)->dump(&resultTmp);
+		kernelResult[0] = resultTmp.re;
+		kernelResult[1] = resultTmp.im;
+	}
+};
+
+class ZeroEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+{
+public:
+	ZeroEvenOddTester(const ParameterCollection & parameterCollection, const ZeroEvenOddTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsResult("zero_eo", parameterCollection, testParameters)
+		{
+			code->set_zero_spinorfield_eoprec_device(getOutSpinor());
+		}
+};
+
+class ColdEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult{
+   public:
+	ColdEvenOddTester(const ParameterCollection & parameterCollection, const ColdEvenOddTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsResult("cold_eo", parameterCollection, testParameters)
+	{
+		code->set_cold_spinorfield_eoprec_device(getOutSpinor());
+	}
+};
+
+class SaxEvenOddComplexTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
+{
+public:
+		SaxEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_complex", parameterCollection, testParameters)
+		{
+			code->sax_eoprec_device(spinorfields.at(0), complexNums.at(0), getOutSpinor());
+		}
+};
+
+class SaxArgEvenOddComplexTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
+{
+public:
+		SaxArgEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_arg_eo_complex", parameterCollection, testParameters)
+		{
+			code->sax_eoprec_device(spinorfields.at(0), testParameters.coefficients.at(0), getOutSpinor());
+		}
+};
+
+class SaxEvenOddRealTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
+{
+public:
+	SaxEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
+		EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_real", parameterCollection, testParameters)
+	{
+		hmc_complex complexNumbers;
+		complexNums.at(0)->dump(&complexNumbers);
+		code->sax_eoprec_device(spinorfields.at(0), complexNumbers.re, getOutSpinor());
+	}
+};
+
+class SaxArgEvenOddRealTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
+{
+public:
+		SaxArgEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_arg_eo_real", parameterCollection, testParameters)
+	{
+		code->sax_eoprec_device(spinorfields.at(0), testParameters.coefficients.at(0).re, getOutSpinor());
+	}
+};
+
+class SaxVecEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+{
+public:
+		SaxVecEvenOddTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_vec", parameterCollection, testParameters)
+	{
+			hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device);
+			std::vector<hmc_float> alpha_host_real_vec(5, testParameters.coefficients.at(0).re);
+			const int index_alpha = 3;
+			alpha_real_vec.load(&alpha_host_real_vec[0]);
+			code->sax_eoprec_device(spinorfields.at(0), &alpha_real_vec, index_alpha, getOutSpinor());
+	}
+
+};
+
+	class SaxpyEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpyEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_eo_complex", parameterCollection, testParameters)
+		{
+			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), getOutSpinor());
+		}
+	};
+
+	class SaxpyArgEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpyArgEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg_eo_complex", parameterCollection, testParameters)
+		{
+			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), getOutSpinor());
+		}
+	};
+
+	class SaxpyEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpyEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_eo_real", parameterCollection, testParameters)
+		{
+			hmc_complex complexNumbers;
+			complexNums.at(0)->dump(&complexNumbers);
+			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNumbers.re, getOutSpinor());
+		}
+	};
+
+	class SaxpyArgEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpyArgEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg_eo_real", parameterCollection, testParameters)
+		{
+			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0).re, getOutSpinor());
+		}
+	};
+
+	class SaxpyVecEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+			SaxpyVecEvenOddTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
+				EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_vec", parameterCollection, testParameters)
+		{
+				hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device);
+				std::vector<hmc_float> alpha_host_real_vec(5, testParameters.coefficients.at(0).re);
+				const int index_alpha = 3;
+				alpha_real_vec.load(&alpha_host_real_vec[0]);
+				code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), &alpha_real_vec, index_alpha, getOutSpinor());
+		}
+
+	};
+
+	class SaxpbyEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpbyEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_eo_complex", parameterCollection, testParameters)
+		{
+		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), complexNums.at(1), getOutSpinor());
+		}
+	};
+
+	class SaxpbyArgEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpbyArgEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_arg_eo_complex", parameterCollection, testParameters)
+		{
+		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), testParameters.coefficients.at(1), getOutSpinor());
+		}
+	};
+
+	class SaxpbyEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpbyEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_eo_real", parameterCollection, testParameters)
+		{
+			hmc_complex complexNumbers1;
+			hmc_complex complexNumbers2;
+			complexNums.at(0)->dump(&complexNumbers1);
+			complexNums.at(1)->dump(&complexNumbers2);
+		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNumbers1.re, complexNumbers2.re, getOutSpinor());
+		}
+	};
+
+	class SaxpbyArgEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpbyArgEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_arg_eo_real", parameterCollection, testParameters)
+		{
+		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0).re, testParameters.coefficients.at(1).re, getOutSpinor());
+		}
+	};
+
+	class SaxpbyVecEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+	{
+	public:
+		SaxpbyVecEvenOddTester(const ParameterCollection parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
+			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_eo_vec", parameterCollection, testParameters)
+		{
+			hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device);
+			std::vector<hmc_float> alpha_host_real_vec(5, testParameters.coefficients.at(0).re);
+			const int index_alpha = 3;
+			hardware::buffers::Plain<hmc_float> beta_real_vec(5, device);
+			std::vector<hmc_float> beta_host_real_vec(5, testParameters.coefficients.at(1).re);
+			const int index_beta = 2;
+			alpha_real_vec.load(&alpha_host_real_vec[0]);
+			beta_real_vec.load(&beta_host_real_vec[0]);
+			code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), &alpha_real_vec, &beta_real_vec, index_alpha, index_beta, getOutSpinor());
+		}
+	};
+
+		class SaxpbypzEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+		{
+		public:
+			SaxpbypzEvenOddTester(const ParameterCollection & parameterCollection, SaxpbypzEvenOddTestParameters testParameters):
+				 EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpbypz_eo", parameterCollection, testParameters) {
+					code->saxpbypz_eoprec_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), complexNums.at(0), complexNums.at(1), getOutSpinor());
+			}
+
+		};
+
+		class SaxpbypzArgEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
+		{
+		public:
+			SaxpbypzArgEvenOddTester(const ParameterCollection & parameterCollection, SaxpbypzEvenOddTestParameters testParameters):
+				 EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpbypz_arg_eo", parameterCollection, testParameters) {
+					code->saxpbypz_eoprec_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), testParameters.coefficients.at(0), testParameters.coefficients.at(1), getOutSpinor());
+			}
+
+		};
+
+		class SaxVecAndSqnormEvenOddTester: public SpinorStaggeredTester
+		{
+		public:
+			SaxVecAndSqnormEvenOddTester(const ParameterCollection & parameterCollection, const SaxVecAndSqnormEvenOddTestParameters testParameters):
+				SpinorStaggeredTester("sax_vectorized_and_squarenorm_eoprec", parameterCollection, testParameters)
+			{
+				int NUM_EQS = testParameters.numEqs;
+				const hardware::buffers::SU3vec in(spinorfieldEvenOddElements*NUM_EQS, device);
+				const hardware::buffers::SU3vec out(spinorfieldEvenOddElements*NUM_EQS, device);
+				in.load(createSpinorfield(SpinorFillType::one));
+
+				hardware::buffers::Plain<hmc_float> sqnorm(NUM_EQS, device);
+				hardware::buffers::Plain<hmc_float> alpha(NUM_EQS, device);
+				std::vector<hmc_float> alpha_vec_host(NUM_EQS, testParameters.coefficients.at(0).re);
+				for(uint i=0; i<alpha_vec_host.size(); i++)
+				    alpha_vec_host[i] += i*testParameters.coefficients.at(0).im;
+				alpha.load(&alpha_vec_host[0]);
+
+				code->sax_vectorized_and_squarenorm_eoprec_device(&in, &alpha, NUM_EQS, &sqnorm);
+				std::vector<hmc_float> cpu_res(NUM_EQS);
+				sqnorm.dump(&cpu_res[0]);
+
+				kernelResult[0] = std::accumulate(cpu_res.begin(), cpu_res.end(), 0.0);
+
+			}
+		};
+
+
 struct GaussianTestParameters: public NonEvenOddLinearCombinationTestParameters
 {
 	GaussianTestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType & typeOfComparisonIn) :
@@ -422,21 +923,35 @@ public:
 		const GaussianTestParameters & testParameters;
 };
 
-BOOST_AUTO_TEST_SUITE(SQUARENORM)
-
-	struct SquarenormTestParameters: public NonEvenOddLinearCombinationTestParameters
+struct NonEvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
+{
+	NonEvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
+		GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize()) {}
+	~NonEvenOddGaussianStaggeredSpinorfieldTester()
 	{
-		SquarenormTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn) :
-			NonEvenOddLinearCombinationTestParameters{calculateReferenceValues_squarenorm( getSpinorfieldSize(latticeExtendsIn), fillTypesIn),
-			latticeExtendsIn, fillTypesIn} {};
-	};
-
-	class SquarenormTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
-	  public:
-		SquarenormTester(const ParameterCollection & parameterCollection, const SquarenormTestParameters & testParameters):
-			NonEvenOddLinearCombinationTesterWithSquarenormAsResult("squarenorm", parameterCollection, testParameters) {
+		const hardware::buffers::Plain<su3vec> outSpinor(spinorfieldElements, device);
+		for (unsigned int i = 0; i < testParameters.iterations; i++){
+			code->set_gaussian_spinorfield_device(&outSpinor,prngStates);
+			outSpinor.dump(&hostOutput[i * numberOfElements]);
 		}
-	};
+	}
+};
+
+struct EvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
+{
+	EvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
+		GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize()) {}
+	~EvenOddGaussianStaggeredSpinorfieldTester()
+	{
+		const hardware::buffers::Plain<su3vec> outSpinor(spinorfieldElements, device);
+		for (unsigned int i = 0; i < testParameters.iterations; i++){
+			code->set_gaussian_spinorfield_device(&outSpinor,prngStates);
+			outSpinor.dump(&hostOutput[i * numberOfElements]);
+		}
+	}
+};
+
+BOOST_AUTO_TEST_SUITE(SQUARENORM)
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_1 )
 	{
@@ -469,26 +984,6 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
-	struct ScalarProductTestParameters: public NonEvenOddLinearCombinationTestParameters
-	{
-		ScalarProductTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn):
-			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct(getSpinorfieldSize(latticeExtentsIn),fillTypesIn), latticeExtentsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2) {};
-	};
-
-	class ScalarProductTester: public NonEvenOddLinearCombinationTester{
-	public:
-	 ScalarProductTester(const ParameterCollection & parameterCollection, const ScalarProductTestParameters testParameters):
-		 NonEvenOddLinearCombinationTester("scalar_product", parameterCollection, testParameters)
-	{
-			code->set_complex_to_scalar_product_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
-			hmc_complex resultHost;
-			complexNums.at(0)->dump(&resultHost);
-
-			kernelResult[0] = resultHost.re;
-			kernelResult[1] = resultHost.im;
-	}
-};
-
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
 	{
 		performTest<ScalarProductTester, ScalarProductTestParameters>( LatticeExtents{ns4, nt4}, SpinorFillTypes{ SpinorFillType::one, SpinorFillType::one} );
@@ -520,21 +1015,6 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(ZERO)
 
-struct ZeroTestParameters : public NonEvenOddLinearCombinationTestParameters
-{
-	ZeroTestParameters(LatticeExtents latticeExtendsIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
-};
-
-	class ZeroTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
-	   public:
-	ZeroTester(const ParameterCollection & parameterCollection, const ZeroTestParameters & testParameters):
-		NonEvenOddLinearCombinationTesterWithSquarenormAsResult("zero", parameterCollection, testParameters)
-		{
-			code->set_zero_spinorfield_device(getOutSpinor());
-		}
-	};
-
 	BOOST_AUTO_TEST_CASE( ZERO_1 )
 	{
 		performTest<ZeroTester, ZeroTestParameters> (LatticeExtents{ns4, nt4});
@@ -544,21 +1024,6 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(COLD)
-
-struct ColdTestParameters : public NonEvenOddLinearCombinationTestParameters
-{
-	ColdTestParameters(LatticeExtents latticeExtendsIn):
-		NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(false), latticeExtendsIn, SpinorFillTypes{SpinorFillType::one}) {};
-};
-
-	class ColdTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
-	   public:
-		ColdTester(const ParameterCollection & parameterCollection, const ColdTestParameters testParameters):
-			NonEvenOddLinearCombinationTesterWithSquarenormAsResult("cold", parameterCollection, testParameters)
-			{
-				code->set_cold_spinorfield_device(getOutSpinor());
-			}
-	};
 
 	BOOST_AUTO_TEST_CASE( ZERO_1 )
 	{
@@ -570,21 +1035,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAX)
-
-	struct SaxTestParameters : public NonEvenOddLinearCombinationTestParameters
-	{
-		SaxTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 2) {}
-	};
-
-	class SaxTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
-	   public:
-		SaxTester(const ParameterCollection & parameterCollection, const SaxTestParameters testParameters):
-			NonEvenOddLinearCombinationTesterWithSquarenormAsResult("sax", parameterCollection, testParameters)
-			{
-				code->sax_device(spinorfields.at(0), complexNums.at(0), getOutSpinor());
-		}
-	};
 
 	BOOST_AUTO_TEST_CASE( SAX_1 )
 	{
@@ -612,22 +1062,6 @@ BOOST_AUTO_TEST_SUITE(SAX)
 
 BOOST_AUTO_TEST_SUITE(SAXPY)
 
-	struct SaxpyTestParameters: public NonEvenOddLinearCombinationTestParameters
-	{
-		SaxpyTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 3){}
-
-	};
-
-	class SaxpyTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
-		public:
-			SaxpyTester(const ParameterCollection & parameterCollection, const SaxpyTestParameters testParameters):
-				NonEvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy", parameterCollection, testParameters)
-				{
-					code->saxpy_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), getOutSpinor());
-				}
-	};
-
 	BOOST_AUTO_TEST_CASE( SAXPY_1 )
 	{
 		performTest<SaxpyTester, SaxpyTestParameters> (LatticeExtents{ns4, nt4}, ComplexNumbers{{0.,0.}});
@@ -654,21 +1088,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAXPBYPZ)
-
-	struct SaxpbypzTestParameters: public NonEvenOddLinearCombinationTestParameters
-	{
-		SaxpbypzTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-			NonEvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpbypz(getSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 4){}
-	};
-
-	class SaxpbypzTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsResult{
-		public:
-			SaxpbypzTester(const ParameterCollection & parameterCollection, const SaxpbypzTestParameters testParameters):
-				NonEvenOddLinearCombinationTesterWithSquarenormAsResult("saxpbypz", parameterCollection, testParameters)
-		{
-				code->saxpbypz_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(3), complexNums.at(0), complexNums.at(1), getOutSpinor());
-		}
-	};
 
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_1 )
 	{
@@ -726,20 +1145,6 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
-	struct NonEvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
-	{
-		NonEvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
-			GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize()) {}
-		~NonEvenOddGaussianStaggeredSpinorfieldTester()
-		{
-			const hardware::buffers::Plain<su3vec> outSpinor(spinorfieldElements, device);
-			for (unsigned int i = 0; i < testParameters.iterations; i++){
-				code->set_gaussian_spinorfield_device(&outSpinor,prngStates);
-				outSpinor.dump(&hostOutput[i * numberOfElements]);
-			}
-		}
-	};
-
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_1 )
 	{
 	    performTest<NonEvenOddGaussianStaggeredSpinorfieldTester, GaussianTestParameters>(LatticeExtents{ns4,nt4}, ComparisonType::smallerThan);
@@ -754,63 +1159,6 @@ BOOST_AUTO_TEST_SUITE_END()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(CONVERT_EO)
-
-	struct ConvertEvenOddTestParameters: public SpinorStaggeredTestParameters
-	{
-		const bool fillEvenSites;
-		ConvertEvenOddTestParameters(LatticeExtents latticeExtentsIn, const bool fillEvenSitesIn):
-			SpinorStaggeredTestParameters(calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(latticeExtentsIn), fillEvenSitesIn), latticeExtentsIn, true),
-			fillEvenSites(fillEvenSitesIn) {}
-
-	};
-
-	class ConvertToEvenOddTester: public SpinorStaggeredTester
-	{
-		public:
-			ConvertToEvenOddTester(const ParameterCollection & parameterCollection, ConvertEvenOddTestParameters testParameters):
-				SpinorStaggeredTester("convert_to_eo", parameterCollection, testParameters)
-		{
-				const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
-				const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
-				const hardware::buffers::SU3vec in3(spinorfieldEvenOddElements, device);
-
-				in.load(createSpinorfieldWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ));
-				code->convert_to_eoprec_device(&in2, &in3, &in);
-
-				code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
-				doubleBuffer->dump(&kernelResult[0]);
-				code->set_float_to_global_squarenorm_eoprec_device(&in3, doubleBuffer);
-				doubleBuffer->dump(&kernelResult[1]);
-		}
-	};
-
-	struct ConvertFromEvenOddTestParameters: public SpinorStaggeredTestParameters
-	{
-		const bool fillEvenSites;
-		ConvertFromEvenOddTestParameters(LatticeExtents latticeExtentsIn, const bool fillEvenSitesIn):
-			SpinorStaggeredTestParameters(calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(latticeExtentsIn)), latticeExtentsIn, true),
-			fillEvenSites(fillEvenSitesIn) {}
-
-	};
-
-	class ConvertFromEvenOddTester: public SpinorStaggeredTester
-	{
-	public:
-		ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, ConvertFromEvenOddTestParameters testParameters):
-			SpinorStaggeredTester("convert_from_eo", parameterCollection, testParameters)
-		{
-			const hardware::buffers::Plain<su3vec> in(spinorfieldElements, device);
-			const hardware::buffers::SU3vec in2(spinorfieldEvenOddElements, device);
-			const hardware::buffers::SU3vec in3(spinorfieldEvenOddElements, device);
-
-			in2.load(createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ));
-			in3.load(createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity( testParameters.fillEvenSites ));
-			code->convert_from_eoprec_device(&in2, &in3, &in);
-			code->set_float_to_global_squarenorm_device(&in, doubleBuffer);
-			doubleBuffer->dump(&kernelResult[0]);
-
-		}
-	};
 
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_1 )
 	{
@@ -837,18 +1185,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SQUARENORM_EO)
-
-	struct SquarenormEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
-	{
-		SquarenormEvenOddTestParameters(const LatticeExtents & latticeExtendsIn, const SpinorFillTypes & fillTypesIn):
-			EvenOddLinearCombinationTestParameters{calculateReferenceValues_squarenorm( getEvenOddSpinorfieldSize(latticeExtendsIn), fillTypesIn),latticeExtendsIn, fillTypesIn}{};
-	};
-
-	class SquarenormEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult{
-		public:
-			SquarenormEvenOddTester(const ParameterCollection & parameterCollection, const SquarenormEvenOddTestParameters & testParameters):
-				EvenOddLinearCombinationTesterWithSquarenormAsResult("squarenorm_eo", parameterCollection, testParameters){}
-	};
 
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_1 )
 	{
@@ -880,39 +1216,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
-
-	struct ScalarProductEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
-	{
-		ScalarProductEvenOddTestParameters(const LatticeExtents & latticeExtentsIn, const SpinorFillTypes & fillTypesIn) :
-			EvenOddLinearCombinationTestParameters(calculateReferenceValues_scalarProduct( getEvenOddSpinorfieldSize(latticeExtentsIn), fillTypesIn), latticeExtentsIn, fillTypesIn, ComplexNumbers {{1.,0.}}, 2) {};
-	};
-
-	class ScalarProductEvenOddRealTester: public EvenOddLinearCombinationTester{
-	public:
-		ScalarProductEvenOddRealTester(const ParameterCollection & parameterCollection, const ScalarProductEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTester("scalar_product_real_eo", parameterCollection, testParameters)
-		{
-			hardware::buffers::Plain<hmc_float> sqnorm(1, device);
-			code->set_float_to_scalar_product_real_part_eoprec_device(spinorfields.at(0), spinorfields.at(1), &sqnorm);
-			hmc_float resultTmp;
-			sqnorm.dump(&resultTmp);
-			kernelResult[0] = resultTmp;
-			kernelResult[1] = 0;
-		}
-};
-
-	class ScalarProductEvenOddComplexTester: public EvenOddLinearCombinationTester{
-	public:
-		ScalarProductEvenOddComplexTester(const ParameterCollection & parameterCollection, const ScalarProductEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTester("scalar_product_real_eo", parameterCollection, testParameters)
-		{
-			code->set_complex_to_scalar_product_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0));
-			hmc_complex resultTmp;
-			complexNums.at(0)->dump(&resultTmp);
-			kernelResult[0] = resultTmp.re;
-			kernelResult[1] = resultTmp.im;
-		}
-};
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_1 )
 	{
@@ -979,22 +1282,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 BOOST_AUTO_TEST_SUITE(ZERO_EO)
 
-	struct ZeroEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
-	{
-		ZeroEvenOddTestParameters(const LatticeExtents latticeExtentsIn):
-			EvenOddLinearCombinationTestParameters(calculateReferenceValues_zero(), latticeExtentsIn, SpinorFillTypes{SpinorFillType::one}) {};
-	};
-
-	class ZeroEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		ZeroEvenOddTester(const ParameterCollection & parameterCollection, const ZeroEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("zero_eo", parameterCollection, testParameters)
-			{
-				code->set_zero_spinorfield_eoprec_device(getOutSpinor());
-			}
-	};
-
 	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
 	{
 		performTest<ZeroEvenOddTester, ZeroEvenOddTestParameters> (LatticeExtents {ns4, nt4});
@@ -1003,21 +1290,6 @@ BOOST_AUTO_TEST_SUITE(ZERO_EO)
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(COLD_EO)
-
-	struct ColdEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
-	{
-		ColdEvenOddTestParameters(const LatticeExtents latticeExtentsIn):
-			EvenOddLinearCombinationTestParameters(calculateReferenceValues_cold(true), latticeExtentsIn, SpinorFillTypes{SpinorFillType::one}) {};
-	};
-
-	class ColdEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult{
-	   public:
-		ColdEvenOddTester(const ParameterCollection & parameterCollection, const ColdEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("cold_eo", parameterCollection, testParameters)
-		{
-			code->set_cold_spinorfield_eoprec_device(getOutSpinor());
-		}
-	};
 
 	BOOST_AUTO_TEST_CASE( COLD_EO_1 )
 	{
@@ -1029,69 +1301,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAX_EO)
-
-	struct SaxEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
-	{
-		SaxEvenOddTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-		EvenOddLinearCombinationTestParameters(calculateReferenceValues_sax(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 2){}
-	};
-
-	class SaxEvenOddComplexTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-			SaxEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
-				EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_complex", parameterCollection, testParameters)
-			{
-				code->sax_eoprec_device(spinorfields.at(0), complexNums.at(0), getOutSpinor());
-			}
-	};
-
-	class SaxArgEvenOddComplexTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-			SaxArgEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
-				EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_arg_eo_complex", parameterCollection, testParameters)
-			{
-				code->sax_eoprec_device(spinorfields.at(0), testParameters.coefficients.at(0), getOutSpinor());
-			}
-	};
-
-	class SaxEvenOddRealTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_real", parameterCollection, testParameters)
-		{
-			hmc_complex complexNumbers;
-			complexNums.at(0)->dump(&complexNumbers);
-			code->sax_eoprec_device(spinorfields.at(0), complexNumbers.re, getOutSpinor());
-		}
-	};
-
-	class SaxArgEvenOddRealTester: EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-			SaxArgEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
-				EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_arg_eo_real", parameterCollection, testParameters)
-		{
-			code->sax_eoprec_device(spinorfields.at(0), testParameters.coefficients.at(0).re, getOutSpinor());
-		}
-	};
-
-	class SaxVecEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-			SaxVecEvenOddTester(const ParameterCollection & parameterCollection, const SaxEvenOddTestParameters testParameters):
-				EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_vec", parameterCollection, testParameters)
-		{
-				hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device);
-				std::vector<hmc_float> alpha_host_real_vec(5, testParameters.coefficients.at(0).re);
-				const int index_alpha = 3;
-				alpha_real_vec.load(&alpha_host_real_vec[0]);
-				code->sax_eoprec_device(spinorfields.at(0), &alpha_real_vec, index_alpha, getOutSpinor());
-		}
-
-	};
 
 	BOOST_AUTO_TEST_CASE( SAX_CPLX_EO_1 )
 	{
@@ -1183,70 +1392,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAXPY_EO)
-
-	struct SaxpyEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
-	{
-		SaxpyEvenOddTestParameters(LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-			EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpy(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn),latticeExtentsIn, fillTypesIn, coefficientsIn, 3){}
-	};
-
-	class SaxpyEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpyEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_eo_complex", parameterCollection, testParameters)
-		{
-			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), getOutSpinor());
-		}
-	};
-
-	class SaxpyArgEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpyArgEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg_eo_complex", parameterCollection, testParameters)
-		{
-			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), getOutSpinor());
-		}
-	};
-
-	class SaxpyEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpyEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_eo_real", parameterCollection, testParameters)
-		{
-			hmc_complex complexNumbers;
-			complexNums.at(0)->dump(&complexNumbers);
-			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNumbers.re, getOutSpinor());
-		}
-	};
-
-	class SaxpyArgEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpyArgEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpy_arg_eo_real", parameterCollection, testParameters)
-		{
-			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0).re, getOutSpinor());
-		}
-	};
-
-	class SaxpyVecEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-			SaxpyVecEvenOddTester(const ParameterCollection & parameterCollection, const SaxpyEvenOddTestParameters testParameters):
-				EvenOddLinearCombinationTesterWithSquarenormAsResult("sax_eo_vec", parameterCollection, testParameters)
-		{
-				hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device);
-				std::vector<hmc_float> alpha_host_real_vec(5, testParameters.coefficients.at(0).re);
-				const int index_alpha = 3;
-				alpha_real_vec.load(&alpha_host_real_vec[0]);
-				code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(1), &alpha_real_vec, index_alpha, getOutSpinor());
-		}
-
-	};
-
 	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_1 )
 	{
 	    performTest<SaxpyEvenOddComplexTester, SaxpyEvenOddTestParameters> (LatticeExtents{ns4,nt4}, ComplexNumbers {{0.,0.}});
@@ -1337,74 +1482,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
-
-	struct SaxpbyEvenOddTestParameters: public EvenOddLinearCombinationTestParameters
-	{
-		SaxpbyEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-			EvenOddLinearCombinationTestParameters(calculateReferenceValue_saxpby(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn),latticeExtentsIn, fillTypesIn, coefficientsIn, 3 ) {}
-	};
-
-	class SaxpbyEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpbyEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_eo_complex", parameterCollection, testParameters)
-		{
-		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNums.at(0), complexNums.at(1), getOutSpinor());
-		}
-	};
-
-	class SaxpbyArgEvenOddComplexTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpbyArgEvenOddComplexTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_arg_eo_complex", parameterCollection, testParameters)
-		{
-		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), testParameters.coefficients.at(1), getOutSpinor());
-		}
-	};
-
-	class SaxpbyEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpbyEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_eo_real", parameterCollection, testParameters)
-		{
-			hmc_complex complexNumbers1;
-			hmc_complex complexNumbers2;
-			complexNums.at(0)->dump(&complexNumbers1);
-			complexNums.at(1)->dump(&complexNumbers2);
-		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), complexNumbers1.re, complexNumbers2.re, getOutSpinor());
-		}
-	};
-
-	class SaxpbyArgEvenOddRealTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpbyArgEvenOddRealTester(const ParameterCollection & parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_arg_eo_real", parameterCollection, testParameters)
-		{
-		    code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0).re, testParameters.coefficients.at(1).re, getOutSpinor());
-		}
-	};
-
-	class SaxpbyVecEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpbyVecEvenOddTester(const ParameterCollection parameterCollection, const SaxpbyEvenOddTestParameters testParameters):
-			EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpby_eo_vec", parameterCollection, testParameters)
-		{
-			hardware::buffers::Plain<hmc_float> alpha_real_vec(5, device);
-			std::vector<hmc_float> alpha_host_real_vec(5, testParameters.coefficients.at(0).re);
-			const int index_alpha = 3;
-			hardware::buffers::Plain<hmc_float> beta_real_vec(5, device);
-			std::vector<hmc_float> beta_host_real_vec(5, testParameters.coefficients.at(1).re);
-			const int index_beta = 2;
-			alpha_real_vec.load(&alpha_host_real_vec[0]);
-			beta_real_vec.load(&beta_host_real_vec[0]);
-			code->saxpby_eoprec_device(spinorfields.at(0), spinorfields.at(1), &alpha_real_vec, &beta_real_vec, index_alpha, index_beta, getOutSpinor());
-		}
-	};
 
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_1 )
 	{
@@ -1587,32 +1664,6 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPBYPZ_EO)
 
-	struct SaxpbypzEvenOddTestParameters : public EvenOddLinearCombinationTestParameters
-	{
-		SaxpbypzEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers coefficientsIn):
-			EvenOddLinearCombinationTestParameters(calculateReferenceValues_saxpbypz(getEvenOddSpinorfieldSize(latticeExtentsIn),coefficientsIn), latticeExtentsIn, fillTypesIn, coefficientsIn, 4) {}
-	};
-
-	class SaxpbypzEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpbypzEvenOddTester(const ParameterCollection & parameterCollection, SaxpbypzEvenOddTestParameters testParameters):
-			 EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpbypz_eo", parameterCollection, testParameters) {
-				code->saxpbypz_eoprec_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), complexNums.at(0), complexNums.at(1), getOutSpinor());
-		}
-
-	};
-
-	class SaxpbypzArgEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenormAsResult
-	{
-	public:
-		SaxpbypzArgEvenOddTester(const ParameterCollection & parameterCollection, SaxpbypzEvenOddTestParameters testParameters):
-			 EvenOddLinearCombinationTesterWithSquarenormAsResult("saxpbypz_arg_eo", parameterCollection, testParameters) {
-				code->saxpbypz_eoprec_device(spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), testParameters.coefficients.at(0), testParameters.coefficients.at(1), getOutSpinor());
-		}
-
-	};
-
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_1 )
 	{
 	    performTest<SaxpbypzEvenOddTester,SaxpbypzEvenOddTestParameters> (LatticeExtents {ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
@@ -1719,20 +1770,6 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 
-	struct EvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
-	{
-		EvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
-			GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, testParameters.getSpinorfieldSize()) {}
-		~EvenOddGaussianStaggeredSpinorfieldTester()
-		{
-			const hardware::buffers::Plain<su3vec> outSpinor(spinorfieldElements, device);
-			for (unsigned int i = 0; i < testParameters.iterations; i++){
-				code->set_gaussian_spinorfield_device(&outSpinor,prngStates);
-				outSpinor.dump(&hostOutput[i * numberOfElements]);
-			}
-		}
-	};
-
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_1 )
 	{
 	    performTest<EvenOddGaussianStaggeredSpinorfieldTester, GaussianTestParameters>(LatticeExtents{ns4,nt4}, ComparisonType::smallerThan);
@@ -1743,43 +1780,6 @@ BOOST_AUTO_TEST_SUITE_END()
 ///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAX_VEC_AND_SQNORM)
-
-	struct SaxVecAndSqnormEvenOddTestParameters: public EvenOddSpinorStaggeredTestParameters
-	{
-		SaxVecAndSqnormEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const ComplexNumbers coefficientsIn, const int numEqsIn):
-		    EvenOddSpinorStaggeredTestParameters(calculateReferenceValue_sax_vec_and_sqnorm(getEvenOddSpinorfieldSize(latticeExtentsIn), coefficientsIn, numEqsIn), latticeExtentsIn),
-			coefficients(coefficientsIn),
-			numEqs(numEqsIn){};
-			ComplexNumbers coefficients;
-			const int numEqs;
-	};
-
-	class SaxVecAndSqnormEvenOddTester: public SpinorStaggeredTester
-	{
-	public:
-		SaxVecAndSqnormEvenOddTester(const ParameterCollection & parameterCollection, const SaxVecAndSqnormEvenOddTestParameters testParameters):
-			SpinorStaggeredTester("sax_vectorized_and_squarenorm_eoprec", parameterCollection, testParameters)
-		{
-			int NUM_EQS = testParameters.numEqs;
-			const hardware::buffers::SU3vec in(spinorfieldEvenOddElements*NUM_EQS, device);
-			const hardware::buffers::SU3vec out(spinorfieldEvenOddElements*NUM_EQS, device);
-			in.load(createSpinorfield(SpinorFillType::one));
-
-			hardware::buffers::Plain<hmc_float> sqnorm(NUM_EQS, device);
-			hardware::buffers::Plain<hmc_float> alpha(NUM_EQS, device);
-			std::vector<hmc_float> alpha_vec_host(NUM_EQS, testParameters.coefficients.at(0).re);
-			for(uint i=0; i<alpha_vec_host.size(); i++)
-			    alpha_vec_host[i] += i*testParameters.coefficients.at(0).im;
-			alpha.load(&alpha_vec_host[0]);
-
-			code->sax_vectorized_and_squarenorm_eoprec_device(&in, &alpha, NUM_EQS, &sqnorm);
-			std::vector<hmc_float> cpu_res(NUM_EQS);
-			sqnorm.dump(&cpu_res[0]);
-
-			kernelResult[0] = std::accumulate(cpu_res.begin(), cpu_res.end(), 0.0);
-
-		}
-	};
 
 	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_1 )
 	{
