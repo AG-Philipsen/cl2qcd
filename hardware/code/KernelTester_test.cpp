@@ -86,9 +86,9 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 	BOOST_AUTO_TEST_CASE( BUILD_4 )
 	{
 		const hardware::HardwareParametersMockup params(4,4);
-		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,0,0.,common::action::twistedmass,false,false,64);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
 		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		const struct TestParameters testParams;
+		const struct TestParameters testParams(LatticeExtents(4,4));
 		BOOST_CHECK_NO_THROW(KernelTester kernelTester("testMockup", params, kernelParameters, testParams) );
 	}
 

@@ -131,7 +131,7 @@ ReferenceValues calculateReferenceValues_gamma5(const int latticeVolume, const S
 struct DslashEvenOddTestParameters: public WilsonTestParameters
 {
 	DslashEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn) :
-		WilsonTestParameters( latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn),
+		TestParameters(latticeExtentsIn), WilsonTestParameters( latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn),
 		massParameters(massParametersIn), thetaT(0.), thetaS(0.) {};
 	const WilsonMassParameters massParameters;
 	double thetaT, thetaS;

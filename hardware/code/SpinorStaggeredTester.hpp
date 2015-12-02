@@ -47,7 +47,7 @@ struct SpinorStaggeredTestParameters: public TestParameters
 		TestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisionIn), needEvenOdd(needEvenOddIn), fillTypes(fillTypesIn) {};
 	SpinorStaggeredTestParameters(const ReferenceValues referenceValuesIn, const LatticeExtents latticeExtendsIn, const int typeOfComparisionIn, const bool needEvenOddIn) :
 		TestParameters(referenceValuesIn, latticeExtendsIn, typeOfComparisionIn), needEvenOdd(needEvenOddIn), fillTypes(SpinorFillType::one) {};
-	SpinorStaggeredTestParameters() : TestParameters(), needEvenOdd(true) {};
+	SpinorStaggeredTestParameters() : TestParameters(LatticeExtents{4,4}), needEvenOdd(true) {};
 
 	int getSpinorfieldSize() const { return calculateSpinorfieldSize(ns, nt); } ;
 	int getEvenOddSpinorfieldSize() const { return calculateEvenOddSpinorfieldSize(ns, nt); } ;

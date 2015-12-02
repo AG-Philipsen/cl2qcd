@@ -58,8 +58,7 @@ struct TestParameters {
 		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
 	TestParameters(const LatticeExtents latticeExtentsIn, const int typeOfComparisonIn):
 		referenceValue(defaultReferenceValues()), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(defaultReferenceValues().size()) {}
-	TestParameters():
-		referenceValue({0}), ns(4), nt(4), latticeExtents(LatticeExtents{4,4}),typeOfComparison(ComparisonType::difference), numberOfValues(referenceValue.size()) {}
+	TestParameters() = delete;
 };
 
 struct ParameterCollection
@@ -72,14 +71,14 @@ struct ParameterCollection
 
 class KernelTester {
 public:
-	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters);
 	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
 	//todo: remove these constructors
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters);
 	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
 	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
 	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
 	virtual ~KernelTester();
-	void setReferenceValuesToZero();
+	void setReferenceValuesToZero(); //@todo: is this really needed?
 	
 protected:
 	double testPrecision;

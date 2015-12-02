@@ -44,12 +44,15 @@ struct TwistedMassMassParameters : public WilsonMassParameters
 struct FermionTestParameters : public SpinorTestParameters, GaugefieldTestParameters
 {
 	FermionTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypesIn) :
+		TestParameters(lE),
 		SpinorTestParameters(lE, SpinorFillTypes{spinorFillTypeIn}),
 		GaugefieldTestParameters(defaultReferenceValues(), lE, gaugefieldFillTypesIn) {};
 	FermionTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn) :
+		TestParameters(lE),
 		SpinorTestParameters(lE, SpinorFillTypes{spinorFillTypeIn}),
 		GaugefieldTestParameters(defaultReferenceValues(), lE, GaugefieldFillType::cold) {};
 	FermionTestParameters(const LatticeExtents lE, const SpinorFillTypes spinorFillTypesIn) :
+		TestParameters(lE),
 		SpinorTestParameters(lE, spinorFillTypesIn),
 		GaugefieldTestParameters(defaultReferenceValues(), lE, GaugefieldFillType::cold) {};
 };
@@ -59,8 +62,10 @@ template< class MassParameters>
 {
 	FermionMatrixTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
 			const MassParameters massParametersIn) :
+		TestParameters(latticeExtentsIn),
 		FermionTestParameters(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn), massParameters(massParametersIn) {};
 	FermionMatrixTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const MassParameters massParametersIn ) :
+		TestParameters(latticeExtentsIn),
 		FermionTestParameters(latticeExtentsIn, spinorFillTypeIn, GaugefieldFillType::cold), massParameters(massParametersIn) {};
 	const MassParameters massParameters;
 };

@@ -108,18 +108,18 @@ const ReferenceValues calculateReferenceValues_convertFromEvenOdd(const int latt
 
 struct LinearCombinationTestParameters : public SpinorTestParameters
 {
-	LinearCombinationTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
-		SpinorTestParameters(latticeExtendsIn, fillTypesIn), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
-	LinearCombinationTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers cN, const size_t numberOfSpinorsIn) :
-		SpinorTestParameters(latticeExtendsIn, fillTypesIn), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
+	LinearCombinationTestParameters(const LatticeExtents lE, const SpinorFillTypes sF) :
+		TestParameters(lE), SpinorTestParameters(lE, sF), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
+	LinearCombinationTestParameters(const LatticeExtents lE, const SpinorFillTypes sF, const ComplexNumbers cN, const size_t numberOfSpinorsIn) :
+		TestParameters(lE), SpinorTestParameters(lE, sF), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
 	const ComplexNumbers coefficients;
 	const NumberOfSpinors numberOfSpinors;
 };
 
 struct GaussianTestParameters : public SpinorTestParameters
 {
-	GaussianTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType & typeOfComparisonIn) :
-		SpinorTestParameters(latticeExtendsIn, typeOfComparisonIn), iterations(100) {};
+	GaussianTestParameters(const LatticeExtents lE, const ComparisonType & typeOfComparisonIn) :
+		TestParameters(lE), SpinorTestParameters(lE, typeOfComparisonIn), iterations(100) {};
 
 	const unsigned int iterations;
 };
