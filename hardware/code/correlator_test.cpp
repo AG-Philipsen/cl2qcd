@@ -80,7 +80,7 @@ void fill_sf_with_one_eo(spinor * sf_in, int size, bool eo, meta::Inputparameter
 	    else
 	      content = hmc_complex_one;
 	  }
-	  
+
 	  sf_in[global_pos].e0.e0 = content;
 	  sf_in[global_pos].e0.e1 = content;
 	  sf_in[global_pos].e0.e2 = content;
@@ -123,17 +123,17 @@ hmc_float count_sf_eo(spinor * sf_in, int size, bool eo, meta::Inputparameters &
 	    {
 	      int i = global_pos;
 	      sum +=
-		sf_in[i].e0.e0.re+ sf_in[i].e0.e0.im 
-		+sf_in[i].e0.e1.re+ sf_in[i].e0.e1.im 
-		+sf_in[i].e0.e2.re+ sf_in[i].e0.e2.im 
-		+sf_in[i].e1.e0.re+ sf_in[i].e0.e0.im 
-		+sf_in[i].e1.e1.re+ sf_in[i].e0.e1.im 
-		+sf_in[i].e1.e2.re+ sf_in[i].e0.e2.im 
-		+sf_in[i].e2.e0.re+ sf_in[i].e0.e0.im 
-		+sf_in[i].e2.e1.re+ sf_in[i].e0.e1.im 
-		+sf_in[i].e2.e2.re+ sf_in[i].e0.e1.im 
-		+sf_in[i].e3.e0.re+ sf_in[i].e0.e0.im 
-		+sf_in[i].e3.e1.re+ sf_in[i].e0.e1.im 
+		sf_in[i].e0.e0.re+ sf_in[i].e0.e0.im
+		+sf_in[i].e0.e1.re+ sf_in[i].e0.e1.im
+		+sf_in[i].e0.e2.re+ sf_in[i].e0.e2.im
+		+sf_in[i].e1.e0.re+ sf_in[i].e0.e0.im
+		+sf_in[i].e1.e1.re+ sf_in[i].e0.e1.im
+		+sf_in[i].e1.e2.re+ sf_in[i].e0.e2.im
+		+sf_in[i].e2.e0.re+ sf_in[i].e0.e0.im
+		+sf_in[i].e2.e1.re+ sf_in[i].e0.e1.im
+		+sf_in[i].e2.e2.re+ sf_in[i].e0.e1.im
+		+sf_in[i].e3.e0.re+ sf_in[i].e0.e0.im
+		+sf_in[i].e3.e1.re+ sf_in[i].e0.e1.im
 		+sf_in[i].e3.e2.re+ sf_in[i].e0.e1.im;
 	    }
 	  else{
@@ -148,23 +148,23 @@ hmc_float count_sf(spinor * sf_in, int size)
   hmc_float sum = 0.;
   for (int i = 0; i<size;i++){
     sum +=
-       sf_in[i].e0.e0.re+ sf_in[i].e0.e0.im 
-      +sf_in[i].e0.e1.re+ sf_in[i].e0.e1.im 
-      +sf_in[i].e0.e2.re+ sf_in[i].e0.e2.im 
-      +sf_in[i].e1.e0.re+ sf_in[i].e1.e0.im 
-      +sf_in[i].e1.e1.re+ sf_in[i].e1.e1.im 
-      +sf_in[i].e1.e2.re+ sf_in[i].e1.e2.im 
-      +sf_in[i].e2.e0.re+ sf_in[i].e2.e0.im 
-      +sf_in[i].e2.e1.re+ sf_in[i].e2.e1.im 
-      +sf_in[i].e2.e2.re+ sf_in[i].e2.e2.im 
-      +sf_in[i].e3.e0.re+ sf_in[i].e3.e0.im 
-      +sf_in[i].e3.e1.re+ sf_in[i].e3.e1.im 
+       sf_in[i].e0.e0.re+ sf_in[i].e0.e0.im
+      +sf_in[i].e0.e1.re+ sf_in[i].e0.e1.im
+      +sf_in[i].e0.e2.re+ sf_in[i].e0.e2.im
+      +sf_in[i].e1.e0.re+ sf_in[i].e1.e0.im
+      +sf_in[i].e1.e1.re+ sf_in[i].e1.e1.im
+      +sf_in[i].e1.e2.re+ sf_in[i].e1.e2.im
+      +sf_in[i].e2.e0.re+ sf_in[i].e2.e0.im
+      +sf_in[i].e2.e1.re+ sf_in[i].e2.e1.im
+      +sf_in[i].e2.e2.re+ sf_in[i].e2.e2.im
+      +sf_in[i].e3.e0.re+ sf_in[i].e3.e0.im
+      +sf_in[i].e3.e1.re+ sf_in[i].e3.e1.im
       +sf_in[i].e3.e2.re+ sf_in[i].e3.e2.im;
   }
   return sum;
 }
 
-hmc_float calc_var(hmc_float in, hmc_float mean){
+hmc_float calc_var(hmc_float in, hmc_float mean){ //@todo: this is already defined in spinors test!
   return (in - mean) * (in - mean);
 }
 
@@ -172,28 +172,28 @@ hmc_float calc_var_sf(spinor * sf_in, int size, hmc_float sum){
   hmc_float var = 0.;
   for(int k = 0; k<size; k++){
     var +=
-      calc_var( sf_in[k].e0.e0.re , sum) 
-      + calc_var( sf_in[k].e0.e0.im , sum) 
+      calc_var( sf_in[k].e0.e0.re , sum)
+      + calc_var( sf_in[k].e0.e0.im , sum)
       + calc_var( sf_in[k].e0.e1.re , sum)
-      + calc_var( sf_in[k].e0.e1.im , sum) 
-      + calc_var( sf_in[k].e0.e2.re , sum) 
-      + calc_var( sf_in[k].e0.e2.im , sum) 
-      + calc_var( sf_in[k].e1.e0.re , sum) 
-      + calc_var( sf_in[k].e1.e0.im , sum) 
-      + calc_var( sf_in[k].e1.e1.re , sum) 
-      + calc_var( sf_in[k].e1.e1.im , sum) 
-      + calc_var( sf_in[k].e1.e2.re , sum) 
-      + calc_var( sf_in[k].e1.e2.im , sum) 
+      + calc_var( sf_in[k].e0.e1.im , sum)
+      + calc_var( sf_in[k].e0.e2.re , sum)
+      + calc_var( sf_in[k].e0.e2.im , sum)
+      + calc_var( sf_in[k].e1.e0.re , sum)
+      + calc_var( sf_in[k].e1.e0.im , sum)
+      + calc_var( sf_in[k].e1.e1.re , sum)
+      + calc_var( sf_in[k].e1.e1.im , sum)
+      + calc_var( sf_in[k].e1.e2.re , sum)
+      + calc_var( sf_in[k].e1.e2.im , sum)
       + calc_var( sf_in[k].e2.e0.re , sum)
-      + calc_var( sf_in[k].e2.e0.im , sum) 
+      + calc_var( sf_in[k].e2.e0.im , sum)
       + calc_var( sf_in[k].e2.e1.re , sum)
-      + calc_var( sf_in[k].e2.e1.im , sum) 
+      + calc_var( sf_in[k].e2.e1.im , sum)
       + calc_var( sf_in[k].e2.e2.re , sum)
-      + calc_var( sf_in[k].e2.e2.im , sum) 
+      + calc_var( sf_in[k].e2.e2.im , sum)
       + calc_var( sf_in[k].e3.e0.re , sum)
-      + calc_var( sf_in[k].e3.e0.im , sum) 
+      + calc_var( sf_in[k].e3.e0.im , sum)
       + calc_var( sf_in[k].e3.e1.re , sum)
-      + calc_var( sf_in[k].e3.e1.im , sum) 
+      + calc_var( sf_in[k].e3.e1.im , sum)
       + calc_var( sf_in[k].e3.e2.re , sum)
       + calc_var( sf_in[k].e3.e2.im , sum);
   }
@@ -292,7 +292,7 @@ void test_src_volume(std::string inputfile)
 	}
 	logger.info() << "result: mean";
 	hmc_float cpu_res = 0.;
-	sum = sum/iterations/NUM_ELEMENTS_SF/24;	
+	sum = sum/iterations/NUM_ELEMENTS_SF/24;
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
@@ -303,7 +303,7 @@ void test_src_volume(std::string inputfile)
 	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
 	  }
 	  var=var/iterations/NUM_ELEMENTS_SF/24;
-	  
+
 	  cpu_res = sqrt(var);
 	  logger.info() << "result: variance";
 	  logger.info() << cpu_res;
@@ -361,7 +361,7 @@ void test_src_zslice(std::string inputfile)
 	}
 	logger.info() << "result: mean";
 	hmc_float cpu_res = 0.;
-	sum = sum/iterations/NUM_ELEMENTS_SRC/24;	
+	sum = sum/iterations/NUM_ELEMENTS_SRC/24;
 	cpu_res= sum;
 	logger.info() << cpu_res;
 
@@ -372,7 +372,7 @@ void test_src_zslice(std::string inputfile)
 	    var += calc_var_sf(&sf_out[i*NUM_ELEMENTS_SF], NUM_ELEMENTS_SF, sum);
 	  }
 	  var=var/iterations/NUM_ELEMENTS_SRC/24;
-	  
+
 	  cpu_res = sqrt(var);
 	  logger.info() << "result: variance";
 	  logger.info() << cpu_res;
@@ -683,542 +683,423 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#include "SpinorTester.hpp"
+enum CorrelatorDirection {temporal=0, spatialX=1, spatialY=2, spatialZ=3}; //@todo: should this be name more general, "direction" or so?
+typedef std::string KernelIdentifier;
 
-class CorrelatorTester : public SpinorTester
+struct CorrelatorTestParameters : public SpinorTestParameters
 {
-public:
-	CorrelatorTester(std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, SpinorFillType fillTypeIn):
-		SpinorTester(kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
-	{
-		const hardware::code::Correlator * code = device->getCorrelatorCode();
-
-		const int correlatorEntries = expectedResult.size();
-		const hardware::buffers::Plain<spinor> in(spinorfieldElements, device);
-
-		auto spinorfield = SpinorTester::createSpinorfield(fillTypeIn);
-		in.load(spinorfield);
-		delete[] spinorfield;
-
-		const hardware::buffers::Plain<hmc_float> result(correlatorEntries, device);
-		result.clear();
-
-		code->correlator(code->get_correlator_kernel(kernelIdentifier), &result, &in );
-
-		result.dump(&kernelResult.at(0));
-
-		logger.fatal() << "correlator result is:";
-		for(int i = 0; i < correlatorEntries; i++)
-		{
-			logger.fatal() << kernelResult[i];
-		}
-
-	};
-
-	CorrelatorTester(std::string kernelIdentifier, std::vector<std::string> parameterStrings, std::vector<double> expectedResult, SpinorFillType fillTypeIn1, SpinorFillType fillTypeIn2, SpinorFillType fillTypeIn3, SpinorFillType fillTypeIn4):
-		SpinorTester(kernelIdentifier, parameterStrings, expectedResult.size(), 1, expectedResult)
-	{
-		const hardware::code::Correlator * code = device->getCorrelatorCode();
-
-		const int correlatorEntries = expectedResult.size();
-		const hardware::buffers::Plain<spinor> in1(spinorfieldElements, device);
-		const hardware::buffers::Plain<spinor> in2(spinorfieldElements, device);
-		const hardware::buffers::Plain<spinor> in3(spinorfieldElements, device);
-		const hardware::buffers::Plain<spinor> in4(spinorfieldElements, device);
-
-		auto spinorfield = SpinorTester::createSpinorfield(fillTypeIn1);
-		in1.load(spinorfield);
-		spinorfield = SpinorTester::createSpinorfield(fillTypeIn2);
-		in2.load(spinorfield);
-		spinorfield = SpinorTester::createSpinorfield(fillTypeIn3);
-		in3.load(spinorfield);
-		spinorfield = SpinorTester::createSpinorfield(fillTypeIn4);
-		in4.load(spinorfield);
-		delete[] spinorfield;
-
-		const hardware::buffers::Plain<hmc_float> result(correlatorEntries, device);
-		result.clear();
-
-		code->correlator(code->get_correlator_kernel(kernelIdentifier), &result, &in1, &in2, &in3, &in4);
-
-		result.dump(&kernelResult.at(0));
-
-		logger.fatal() << "correlator result is:";
-		for(int i = 0; i < correlatorEntries; i++)
-		{
-			logger.fatal() << kernelResult[i];
-		}
-	};
+	CorrelatorTestParameters(LatticeExtents lE, CorrelatorDirection directionIn, SpinorFillTypes sF) :
+		TestParameters(lE), SpinorTestParameters(lE, sF), direction(directionIn) {};
+	const double kappa=1.;
+	CorrelatorDirection direction;
 };
+
+struct CorrelatorTester : public NonEvenOddSpinorTester
+{
+	CorrelatorTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorTestParameters tP):
+		NonEvenOddSpinorTester(kI, pC, tP, rV), correlatorEntries(rV.size())
+	{
+		code = device->getCorrelatorCode();
+		result = new hardware::buffers::Plain<hmc_float>(correlatorEntries, device);
+		result->clear();
+
+		for( unsigned int i=0; i<tP.fillTypes.size(); i++ )
+		{
+			spinorfields.push_back( new hardware::buffers::Plain<spinor> (elements, device) );
+			auto spinorfield = SpinorTester::createSpinorfield(tP.fillTypes.at(i));
+			spinorfields.at(i)->load(spinorfield);
+			delete[] spinorfield;
+		}
+	};
+	~CorrelatorTester()
+	{
+		result->dump(&kernelResult.at(0));
+	}
+protected:
+	const int correlatorEntries;
+	const hardware::buffers::Plain<hmc_float> * result;
+	const hardware::code::Correlator * code;
+	std::vector< const hardware::buffers::Plain<spinor>* > spinorfields;
+};
+
+struct ComponentwiseCorrelatorTester : public CorrelatorTester
+{
+	ComponentwiseCorrelatorTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorTestParameters tP):
+		CorrelatorTester(kI, pC, rV, tP)
+	{
+		code->correlator(code->get_correlator_kernel(kI), result, spinorfields.at(0) );
+	}
+};
+
+struct ColorwiseCorrelatorTester : public CorrelatorTester
+{
+	ColorwiseCorrelatorTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorTestParameters tP):
+		CorrelatorTester(kI, pC, rV, tP)
+	{
+		code->correlator(code->get_correlator_kernel(kI), result, spinorfields.at(0), spinorfields.at(1), spinorfields.at(2), spinorfields.at(3));
+	}
+};
+
+template <class TesterClass>
+void callTest(const KernelIdentifier kI, const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	CorrelatorTestParameters parametersForThisTest(lE, cD, sF);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, false);
+	hardware::code::OpenClKernelParametersMockupForCorrelators kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, parametersForThisTest.kappa, parametersForThisTest.direction);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(kI, parameterCollection, rV, parametersForThisTest );
+}
+
+void testPsCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ComponentwiseCorrelatorTester>("ps", lE, cD, sF, rV);
+}
+
+void testAvpsCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ComponentwiseCorrelatorTester>("avps", lE, cD, sF, rV);
+}
+
+void testScCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ColorwiseCorrelatorTester>("sc", lE, cD, sF, rV);
+}
+
+void testVxCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ColorwiseCorrelatorTester>("vx", lE, cD, sF, rV);
+}
+
+void testVyCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ColorwiseCorrelatorTester>("vy", lE, cD, sF, rV);
+}
+
+void testVzCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ColorwiseCorrelatorTester>("vz", lE, cD, sF, rV);
+}
+
+void testAxCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ColorwiseCorrelatorTester>("ax", lE, cD, sF, rV);
+}
+
+void testAyCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ColorwiseCorrelatorTester>("ay", lE, cD, sF, rV);
+}
+
+void testAzCorrelator(const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	callTest<ColorwiseCorrelatorTester>("az", lE, cD, sF, rV);
+}
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_Z)
 
-	std::string kernelIdentifier = "ps";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
-	BOOST_AUTO_TEST_CASE( zeroOne )
+	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero );
+		testPsCorrelator(LatticeExtents{ ns8, nt4}, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero}, ReferenceValues(ns8, 0.));
 	}
 
-	BOOST_AUTO_TEST_CASE( nonZero )
+	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 48.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one );
+		testPsCorrelator(LatticeExtents{ ns8, nt4}, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one}, ReferenceValues(ns8, 48.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_T)
 
-	std::string kernelIdentifier = "ps";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero );
+		testPsCorrelator(LatticeExtents {ns8, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero}, ReferenceValues(nt4, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 48.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one );
+		testPsCorrelator(LatticeExtents {ns8, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one}, ReferenceValues(nt4, 48.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_SC_Z)
 
-	std::string kernelIdentifier = "sc";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testScCorrelator(LatticeExtents{ ns8, nt4}, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(ns8, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testScCorrelator(LatticeExtents{ ns8, nt4}, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns8, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 1872.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testScCorrelator(LatticeExtents{ ns8, nt4}, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns8, 1872));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_SC_T)
 
-	std::string kernelIdentifier = "sc";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testScCorrelator(LatticeExtents{ ns4, nt8}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt8, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testScCorrelator(LatticeExtents{ ns4, nt8}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt8, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 1872.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testScCorrelator(LatticeExtents{ ns4, nt8}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt8, 1872));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_VX_Z)
 
-	std::string kernelIdentifier = "vx";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testVxCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(ns8, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 192.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testVxCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns8, 192.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero2 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 96.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne);
+		testVxCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne}, ReferenceValues(ns8, 96.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_VX_T)
 
-	std::string kernelIdentifier = "vx";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testVxCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt12, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 192.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testVxCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, 192.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero2 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 96.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne);
+		testVxCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne}, ReferenceValues(nt12, 96.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_VY_Z)
 
-	std::string kernelIdentifier = "vy";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testVyCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(ns8, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testVyCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns8, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 96.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne);
+		testVyCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne}, ReferenceValues(ns8, 96.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_VY_T)
 
-	std::string kernelIdentifier = "vy";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testVyCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt12, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testVyCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 96.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne);
+		testVyCorrelator(LatticeExtents{ ns8, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne}, ReferenceValues(nt12, 96.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_VZ_Z)
 
-	std::string kernelIdentifier = "vz";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testVzCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(ns4, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testVzCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns4, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 96.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne);
+		testVzCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne}, ReferenceValues(ns4, 96.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_VZ_T)
 
-	std::string kernelIdentifier = "vz";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testVzCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt12, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testVzCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 96.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne);
+		testVzCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::oneZero, SpinorFillType::zeroOne, SpinorFillType::oneZero, SpinorFillType::zeroOne}, ReferenceValues(nt12, 96.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_AX_Z)
 
-	std::string kernelIdentifier = "ax";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testAxCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(ns4, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testAxCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns4, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 144.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testAxCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns4, 144.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_AX_T)
 
-	std::string kernelIdentifier = "ax";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testAxCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt12, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testAxCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 144.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testAxCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, 144.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_AY_Z)
 
-	std::string kernelIdentifier = "ay";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testAyCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(ns4, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testAyCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns4, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, -144.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testAyCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns4, -144.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_AY_T)
 
-	std::string kernelIdentifier = "ay";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testAyCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt12, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testAyCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, -144.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testAyCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, -144.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_AZ_Z)
 
-	std::string kernelIdentifier = "az";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testAzCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(ns4, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(spatialExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testAzCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns4, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(spatialExtent, -432.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=3"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testAzCorrelator(LatticeExtents{ ns4, nt12 }, CorrelatorDirection::spatialZ, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(ns4, -432.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_AZ_T)
 
-	std::string kernelIdentifier = "az";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero );
+		testAzCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt12, 0));
 	}
 
 	BOOST_AUTO_TEST_CASE( zero2 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one );
+		testAzCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, -432.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one );
+		testAzCorrelator(LatticeExtents{ ns12, nt12 }, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::oneZero, SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt12, -432.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_AVPS_T)
 
-	std::string kernelIdentifier = "avps";
-	const int spatialExtent = 6;
-	const int temporalExtent = 4;
-
 	BOOST_AUTO_TEST_CASE( zero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, 0.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::zero );
+		testAvpsCorrelator(LatticeExtents {ns8, nt8}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero}, ReferenceValues(nt8, 0.));
 	}
 
 	BOOST_AUTO_TEST_CASE( nonZero1 )
 	{
-		std::vector<double> expectedResult(temporalExtent, -48.);
-		std::vector<std::string> parameterStrings { setArgument_temporalExtent(temporalExtent), setArgument_spatialExtent(spatialExtent), "--kappa=1.", "--measure_correlators=true", "--corr_dir=0"};
-		CorrelatorTester(kernelIdentifier, parameterStrings, expectedResult, SpinorFillType::one );
+		testAvpsCorrelator(LatticeExtents {ns8, nt8}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one}, ReferenceValues(nt8, -48.));
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
+
