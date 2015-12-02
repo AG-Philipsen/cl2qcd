@@ -560,6 +560,24 @@ namespace hardware {
 		common::action fermact;
 		};
 
+		class OpenClKernelParametersMockupForCorrelators : public OpenClKernelParametersMockupForSpinorTests
+		{
+		public:
+			OpenClKernelParametersMockupForCorrelators(const int nsIn, const int ntIn, const double kappaIn, const double directionIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn), correlatorDirection(directionIn), kappa(kappaIn) {};
+
+		virtual int getCorrDir() const override
+		{
+			return correlatorDirection;
+		}
+		virtual double getKappa() const override
+		{
+			return kappa;
+		}
+		const int correlatorDirection;
+		const double kappa;
+		};
+
 		class OpenClKernelParametersMockupForTwistedMass : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:

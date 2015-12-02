@@ -116,27 +116,6 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 
 	testPrecision = 10e-8; //todo: pass as arg via TestParameters
 
-//	if (testParams.referenceValue.size() == 0)
-//	{
-//		for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++) {
-//			if(iteration == 0) {
-//				referenceValue[iteration] = testParams.referenceValue.at(0);
-//			} else if(iteration == 1) {
-//				referenceValue[iteration] = testParams.referenceValue.at(1);
-//			} else {
-//				throw( std::invalid_argument("Can only set 2 reference values at the moment. Aborting...") );
-//			}
-//		}
-//	}
-//	else
-//	{
-//		if( testParams.numberOfValues != testParams.referenceValue.size() )
-//		{
-//			throw( std::invalid_argument("Number of arguments and size of expected results do not match. Aborting...") );
-//		}
-//		referenceValue = testParams.referenceValue;
-//	}
-
 	//todo: the if and else can be removed if the enum is used anyway
 	if ( (testParams.typeOfComparison == 1) || (testParams.typeOfComparison == 2)  || (testParams.typeOfComparison == 3) || (testParams.typeOfComparison == 4) )
 	  {
@@ -199,8 +178,6 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 	    throw( std::invalid_argument("Do not recognise type of comparison. Aborting...") );
 	}
 }
-
-
 
 #include <boost/test/floating_point_comparison.hpp>
 KernelTester::~KernelTester()

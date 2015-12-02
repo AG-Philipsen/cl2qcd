@@ -108,7 +108,7 @@ const ReferenceValues calculateReferenceValues_dslashEvenOddAndMTmInverseSitedia
 struct SaxpyAndGamma5EvenOddTestParameters: public FermionTestParameters
 {
 	SaxpyAndGamma5EvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const hmc_complex coefficientIn) :
-		FermionTestParameters(latticeExtentsIn, spinorFillTypesIn), coefficient(coefficientIn) {};
+		TestParameters(latticeExtentsIn), FermionTestParameters(latticeExtentsIn, spinorFillTypesIn), coefficient(coefficientIn) {};
 	const hmc_complex coefficient;
 };
 
