@@ -652,5 +652,15 @@ namespace hardware {
 				return true;
 			}
 		};
+		class OpenClKernelParametersMockupForMergedSpinorKernels : public OpenClKernelParametersMockupForSpinorTests
+		{
+		public:
+			OpenClKernelParametersMockupForMergedSpinorKernels(int nsIn, int ntIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, true) {}
+			virtual bool getUseMergeKernelsSpinor() const override
+			{
+				return true;
+			}
+		};
 	}
 }
