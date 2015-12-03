@@ -24,72 +24,11 @@
 #include "../../host_functionality/host_geometry.h"
 #include "spinors.hpp" //this is for get_spinorfieldsize, get_eoprec_spinorfieldsize
 
-
-void SpinorStaggeredTester::setMembers(){
-	//todo: some of these could also be put into the specific child-classes where they are actually used.
-	inputfield = NULL;
-	spinorfieldElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime(); //todo: make proper
-	spinorfieldEvenOddElements = parameters->get_nspace() * parameters->get_nspace() * parameters->get_nspace() * parameters->get_ntime() / 2; //todo: make proper
-	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
-	parameters->get_read_multiple_configs() ? evenOrOdd = true : evenOrOdd = false;
-	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
-	alpha_host = {parameters->get_beta(), parameters->get_rho()};
-	beta_host = {parameters->get_kappa(), parameters->get_mu()};
-	iterations = parameters->get_integrationsteps(0);
-}
-
-void SpinorStaggeredTester::setMembersNew()
+SpinorStaggeredTester::SpinorStaggeredTester(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters2 & tP, const size_t elementsIn, const ReferenceValues rV):
+		KernelTester(kN, pC.hardwareParameters, pC.kernelParameters, tP, rV), elements(elementsIn)
 {
-		//todo: some of these could also be put into the specific child-classes where they are actually used.
-	inputfield = NULL;
-	spinorfieldElements = kernelParameters->getNt() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs(); //todo: make proper
-	spinorfieldEvenOddElements = kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNs() * kernelParameters->getNt() / 2; //todo: make proper
-	useRandom = false; // todo: make changeable (parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
-	alpha_host = {kernelParameters->getBeta(), kernelParameters->getRho()}; // todo: make changeable {parameters->get_beta(), parameters->get_rho()};
-	beta_host = {kernelParameters->getKappa(), kernelParameters->getMuBar()}; //todo: mubar was mu originally
-	iterations = 1; // todo: make changeable parameters->get_integrationsteps(0);
-	calcVariance = false; // todo: make changeable parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
-	evenOrOdd = kernelParameters->getUseEo();
-}
-
-SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
-					      int numberOfValues, int typeOfComparision) :
-	KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( parameters )
-{
-	code = device->getSpinorStaggeredCode();
-	prng = new physics::PRNG(*system, &prngParameters);
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-	allocatedObjects = true;
-	setMembers();
-}
-
-SpinorStaggeredTester::SpinorStaggeredTester(meta::Inputparameters * parameters, const hardware::System * system,
-					     hardware::Device * device) : 
-      KernelTester(parameters, system, device), allocatedObjects(false), prngParameters( parameters )
-{
-	setMembers();
-	code = device->getSpinorStaggeredCode();
-}
-
-SpinorStaggeredTester::SpinorStaggeredTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorStaggeredTestParameters & testParameters):
-		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters), prngParameters(nullptr), prng(nullptr)
-{
-	setMembersNew();
 	code = device->getSpinorStaggeredCode();
 	doubleBuffer = new hardware::buffers::Plain<double> (1,device);
-}
-
-SpinorStaggeredTester::~SpinorStaggeredTester()
-{
-	if(allocatedObjects){
-		delete doubleBuffer;
- 		delete prng;
-	}
-	doubleBuffer = NULL;
-	prng = NULL;
-	code = NULL;
-	if(inputfield != NULL)
-	  delete[] inputfield;
 }
 
 static void fill_with_one(su3vec * sf_in, int size)
@@ -102,7 +41,7 @@ static void fill_with_one(su3vec * sf_in, int size)
   return;
 }
 
-void SpinorStaggeredTester::fill_with_zero(su3vec * sf_in, int size)
+void fill_with_zero(su3vec * sf_in, int size)
 {
   for(int i = 0; i < size; ++i) {
     sf_in[i].e0 = hmc_complex_zero;
@@ -112,7 +51,7 @@ void SpinorStaggeredTester::fill_with_zero(su3vec * sf_in, int size)
   return;
 }
 
-void SpinorStaggeredTester::fill_with_ascending(su3vec * sf_in, int size)
+void fill_with_ascending(su3vec * sf_in, int size)
 {
   for(int i = 0; i < size; ++i) {
     sf_in[i].e0 = {1., 0.};
@@ -122,7 +61,7 @@ void SpinorStaggeredTester::fill_with_ascending(su3vec * sf_in, int size)
   return;
 }
 
-void SpinorStaggeredTester::fillWithAscendingComplex(su3vec * sf_in, int size)
+void fillWithAscendingComplex(su3vec * sf_in, int size)
 {
   for(int i = 0; i < size; ++i) {
     sf_in[i].e0 = {1., 2.};
@@ -139,11 +78,11 @@ static void fill_with_random(su3vec * sf_in, int size, int seed)
     sf_in[i].e0.re = prng_double();
     sf_in[i].e1.re = prng_double();
     sf_in[i].e2.re = prng_double();
-    
+
     sf_in[i].e0.im = prng_double();
     sf_in[i].e1.im = prng_double();
     sf_in[i].e2.im = prng_double();
-  } 
+  }
   return;
 }
 
@@ -179,45 +118,6 @@ hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float
       + calc_var(sf_in[k].e2.im, sum);
   }
   return var;
-}
-
-//This function fills the field sf_in in the following way
-// eo==true  ---> sf_in[even]=ONE  and sf_in[odd]=ZERO
-// eo==false ---> sf_in[even]=ZERO and sf_in[odd]=ONE
-void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo, const meta::Inputparameters * parameters)
-{
-  int ns = parameters->get_nspace();
-  int nt = parameters->get_ntime();
-  int x,y,z,t;
-  hmc_complex content;
-  int coord[4];
-  bool parityOfSite;
-  int nspace;
-  int global_pos;
-  
-  for (x = 0; x<ns; x++){
-    for (y = 0; y<ns; y++){
-      for (z = 0; z<ns; z++){
-	for (t = 0; t<nt; t++){
-	  coord[0] = t;
-	  coord[1] = x;
-	  coord[2] = y;
-	  coord[3] = z;
-	  nspace =  get_nspace(coord, *parameters);
-	  global_pos = get_global_pos(nspace, t, *parameters);
-	  if (global_pos >= size)
-	    break;
-	  parityOfSite = (x + y + z + t) % 2 == 0;
-	  content = (parityOfSite) ? (eo ? hmc_complex_one : hmc_complex_zero) :
-				      (eo ? hmc_complex_zero : hmc_complex_one);
-	  sf_in[global_pos].e0 = content;
-	  sf_in[global_pos].e1 = content;
-	  sf_in[global_pos].e2 = content;
-	}
-      }
-    }
-  }
-  return;
 }
 
 void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
@@ -256,76 +156,22 @@ void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
   return;
 }
 
-//This function works in the following way
-// eo==true  ---> sum of all components of sf_in[even] is returned
-// eo==false ---> sum of all components of sf_in[odd]  is returned
-hmc_float SpinorStaggeredTester::count_sf_eo(su3vec * sf_in, int size, bool eo)
-{
-  int ns = parameters->get_nspace();
-  int nt = parameters->get_ntime();
-  int x,y,z,t;
-  hmc_float sum = 0.;
-  for (x = 0; x<ns; x++){
-    for (y = 0; y<ns; y++){
-      for (z = 0; z<ns; z++){
-	for (t = 0; t<nt; t++){
-	  int coord[4];
-	  coord[0] = t;
-	  coord[1] = x;
-	  coord[2] = y;
-	  coord[3] = z;
-	  int nspace =  get_nspace(coord, *parameters);
-	  int global_pos = get_global_pos(nspace, t, *parameters);
-	  if (global_pos >= size)
-	    break;
-	  if (
-	      ( eo ==true && (x+y+z+t) %2 == 0) ||
-	      ( eo ==false &&  (x+y+z+t) %2 == 1 )
-	      )
-	    {
-	      int i = global_pos;
-	      sum +=
-		sf_in[i].e0.re+ sf_in[i].e0.im 
-		+sf_in[i].e1.re+ sf_in[i].e1.im 
-		+sf_in[i].e2.re+ sf_in[i].e2.im;
-	    }
-	  else{
-	    continue;
-	  }
-	}
-      }
-    }
-  }
-  return sum;
-}
-
-
-su3vec * SpinorStaggeredTester::createSpinorfield(size_t numberOfElements, int seed)
-{
-  if(inputfield !=NULL)
-    delete[] inputfield;
-  inputfield = new su3vec[numberOfElements];
-  useRandom ? fill_with_random(inputfield, numberOfElements, seed) : fill_with_one(inputfield, numberOfElements);
-  BOOST_REQUIRE(inputfield);
-  return inputfield;
-}
-
 su3vec * SpinorStaggeredTester::createSpinorfield(SpinorFillType fillTypeIn)
 {
 	su3vec * in;
-  in = new su3vec[spinorfieldElements];
+  in = new su3vec[elements];
   switch (fillTypeIn) {
 	case SpinorFillType::zero :
-		fill_with_zero(in, spinorfieldElements);
+		fill_with_zero(in, elements);
 		break;
 	case SpinorFillType::one :
-		fill_with_one(in, spinorfieldElements);
+		fill_with_one(in, elements);
 		break;
 	case SpinorFillType::ascendingReal :
-		fill_with_ascending(in, spinorfieldElements);
+		fill_with_ascending(in, elements);
 		break;
 	case SpinorFillType::ascendingComplex :
-		fillWithAscendingComplex(in, spinorfieldElements);
+		fillWithAscendingComplex(in, elements);
 		break;
 	default:
 		logger.fatal() << "do not know fill type!";
@@ -334,45 +180,21 @@ su3vec * SpinorStaggeredTester::createSpinorfield(SpinorFillType fillTypeIn)
   return in;
 }
 
-su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity()
-{
-  if(inputfield !=NULL)
-    delete[] inputfield;
-  inputfield = new su3vec[spinorfieldElements];
-  fill_with_one_eo(inputfield, spinorfieldElements, evenOrOdd, parameters);
-  return inputfield;
-}
-
 su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
 {
   su3vec * in;
-  in = new su3vec[spinorfieldElements];
-  fill_with_one_eo(in, spinorfieldElements, fillEvenSites);
+  in = new su3vec[elements];
+  fill_with_one_eo(in, elements, fillEvenSites);
   return in;
-}
-
-su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity()
-{
-  if(inputfield !=NULL)
-    delete[] inputfield;
-  inputfield = new su3vec[spinorfieldEvenOddElements];
-  fill_with_one_eo(inputfield, spinorfieldEvenOddElements, evenOrOdd, parameters);
-  return inputfield;
 }
 
 su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
 {
   su3vec * in;
-  in = new su3vec[spinorfieldEvenOddElements];
-  fill_with_one_eo(in, spinorfieldEvenOddElements, fillEvenSites);
+  in = new su3vec[elements];
+  fill_with_one_eo(in, elements, fillEvenSites);
   return in;
 }
-
-std::string SpinorStaggeredTester::getSpecificInputfile(std::string inputfileIn)
-{
-  return "spinors_staggered/" + inputfileIn;
-}
-
 
 void SpinorStaggeredTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in)
 {
@@ -490,5 +312,3 @@ std::vector<hmc_float> SpinorStaggeredTester::reals_from_su3vec(su3vec v){
   out.push_back(v.e2.im);
   return out;
 }
-
-
