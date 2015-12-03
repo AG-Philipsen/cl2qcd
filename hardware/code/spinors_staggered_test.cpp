@@ -1,6 +1,7 @@
 /*
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra,
+ * Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -207,7 +208,6 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn)
 	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-//@todo: this should take the coefficients from another class or be a template class!
 struct NonEvenOddLinearCombinationTester : public NonEvenOddSpinorStaggeredTester
 {
 	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
@@ -1003,8 +1003,6 @@ BOOST_AUTO_TEST_SUITE(SQUARENORM)
 	
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
-
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_1 )
@@ -1034,8 +1032,6 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
-
 BOOST_AUTO_TEST_SUITE(ZERO)
 
 	BOOST_AUTO_TEST_CASE( ZERO_1 )
@@ -1054,8 +1050,6 @@ BOOST_AUTO_TEST_SUITE(COLD)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAX)
 
@@ -1079,9 +1073,7 @@ BOOST_AUTO_TEST_SUITE(SAX)
 		testNonEvenOddSax( LatticeExtents{ns16,nt4}, ComplexNumbers {{1.,1.}} );
 	}
 	
-	BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY)
 
@@ -1107,8 +1099,6 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 	}
 	
 BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAXPBYPZ)
 
@@ -1164,8 +1154,6 @@ BOOST_AUTO_TEST_SUITE(SAXPBYPZ)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
-
 BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_1 )
@@ -1174,12 +1162,6 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////           EVEN-ODD PRECONDITIONING             //////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 
@@ -1204,8 +1186,6 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SQUARENORM_EO)
 
@@ -1235,8 +1215,6 @@ BOOST_AUTO_TEST_SUITE(SQUARENORM_EO)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 
@@ -1302,7 +1280,6 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
 BOOST_AUTO_TEST_SUITE(ZERO_EO)
 
 	BOOST_AUTO_TEST_CASE( ZERO_EO_1 )
@@ -1320,8 +1297,6 @@ BOOST_AUTO_TEST_SUITE(COLD_EO)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAX_EO)
 
@@ -1412,9 +1387,8 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 	
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
-
 BOOST_AUTO_TEST_SUITE(SAXPY_EO)
+
 	BOOST_AUTO_TEST_CASE( SAXPY_CPLX_EO_1 )
 	{
 	    testEvenOddSaxpyComplex( LatticeExtents{ns4,nt4}, ComplexNumbers {{0.,0.}});
@@ -1501,8 +1475,6 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 
@@ -1658,8 +1630,6 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 	
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
-
 BOOST_AUTO_TEST_SUITE(SAXPBYPZ_EO)
 
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_1 )
@@ -1754,8 +1724,6 @@ BOOST_AUTO_TEST_SUITE(SAXPBYPZ_EO)
 	
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
-
 BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO_1 )
@@ -1764,8 +1732,6 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
-///////////////////////////////////////
 
 BOOST_AUTO_TEST_SUITE(SAX_VEC_AND_SQNORM)
 
