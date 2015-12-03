@@ -23,7 +23,7 @@
 #define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS
 
 #include "SpinorTester.hpp"
-#include "../../host_functionality/host_random.h" //@todo: remove this in the end!
+#include "PrngSpinorTester.hpp"
 
 const ReferenceValues calculateReferenceValues_globalSquarenorm(const int latticeVolume, const SpinorFillTypes fillTypesIn)
 {
@@ -116,14 +116,6 @@ struct LinearCombinationTestParameters : public SpinorTestParameters
 	const NumberOfSpinors numberOfSpinors;
 };
 
-struct GaussianTestParameters : public SpinorTestParameters
-{
-	GaussianTestParameters(const LatticeExtents lE, const ComparisonType & typeOfComparisonIn) :
-		TestParameters(lE), SpinorTestParameters(lE, typeOfComparisonIn), iterations(100) {};
-
-	const unsigned int iterations;
-};
-
 template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest, const bool needEvenOdd)
 {
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, needEvenOdd);
@@ -168,10 +160,11 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn)
 	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-template<typename TesterClass> void performTest(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisonIn, const bool needEvenOdd )
+template<typename TesterClass, typename ParametersClass>
+void performTest(const LatticeExtents latticeExtendsIn, const bool needEvenOdd )
 {
-	GaussianTestParameters parametersForThisTest(latticeExtendsIn, typeOfComparisonIn);
-	callTest<TesterClass, GaussianTestParameters>(parametersForThisTest, needEvenOdd);
+	ParametersClass parametersForThisTest(latticeExtendsIn);
+	callTest<TesterClass, PrngSpinorTestParameters>(parametersForThisTest, needEvenOdd);
 }
 
 //@todo: this should take the coefficients from another class or be a template class!
@@ -289,76 +282,10 @@ struct EvenOddLinearCombinationTesterWithSquarenormAsKernelResult : public EvenO
 	}
 };
 
-struct PrngTester: public SpinorTester
+struct NonEvenGaussianSpinorfieldTester: public PrngSpinorTester
 {
-	PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const ReferenceValues & rV):
-				SpinorTester(kernelName, parameterCollection, testParameters, 1, rV),
-				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
-				useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
-	{
-		prng_init(hostSeed);
-		prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
-		auto codePrng = device->getPrngCode();
-		codePrng->initialize(prngStates, hostSeed);
-	}
-	~PrngTester()
-	{
-		delete prngStates;
-	}
-protected:
-	const hardware::buffers::PRNGBuffer* prngStates;
-private:
-	uint32_t hostSeed;
-	bool useSameRandomNumbers;
-};
-
-struct GaussianTester: public PrngTester
-{
-	GaussianTester(const std::string kernelName, const ParameterCollection parameterCollection, const GaussianTestParameters & testParameters, const int numberOfElements):
-				PrngTester(kernelName, parameterCollection, testParameters, calculateReferenceValues_gaussian()),
-				numberOfElements(numberOfElements), mean(0.), variance(0.),
-				hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters){}
-
-	~GaussianTester()
-	{
-		calculateMean();
-		calculateVariance();
-
-		kernelResult[0] = mean;
-		kernelResult[1] = sqrt(variance);
-	}
-
-	double normalize(double valueIn)
-	{
-		return valueIn/= testParameters.iterations * numberOfElements * 24;
-	}
-
-	void calculateMean()
-	{
-		for (unsigned int i = 0; i < testParameters.iterations; i++) {
-			mean += count_sf(&hostOutput[i * numberOfElements], numberOfElements);
-		}
-		mean = normalize(mean);
-	}
-
-	void calculateVariance()
-	{
-		for (unsigned int i = 0; i < testParameters.iterations; i++) {
-			variance += calc_var_sf(&hostOutput[i * numberOfElements], numberOfElements, mean);
-		}
-		variance = normalize(variance);
-	}
-protected:
-	const int numberOfElements;
-	double mean, variance;
-	std::vector<spinor> hostOutput;
-	const GaussianTestParameters & testParameters;
-};
-
-struct NonEvenGaussianSpinorfieldTester: public GaussianTester
-{
-	NonEvenGaussianSpinorfieldTester(const ParameterCollection parameterCollection, const GaussianTestParameters testParameters):
-		GaussianTester("generate_gaussian_spinorfield", parameterCollection, testParameters, calculateSpinorfieldSize(testParameters.latticeExtents) ){}
+	NonEvenGaussianSpinorfieldTester(const ParameterCollection parameterCollection, const PrngSpinorTestParameters testParameters):
+		PrngSpinorTester("generate_gaussian_spinorfield", parameterCollection, testParameters, calculateSpinorfieldSize(testParameters.latticeExtents), calculateReferenceValues_gaussian() ){}
 	~NonEvenGaussianSpinorfieldTester()
 	{
 		const hardware::buffers::Plain<spinor> outSpinor(numberOfElements, device);
@@ -369,10 +296,10 @@ struct NonEvenGaussianSpinorfieldTester: public GaussianTester
 	}
 };
 
-struct EvenOddGaussianSpinorfieldEvenOddTester: public GaussianTester
+struct EvenOddGaussianSpinorfieldEvenOddTester: public PrngSpinorTester
 {
-	EvenOddGaussianSpinorfieldEvenOddTester(const ParameterCollection parameterCollection, const GaussianTestParameters testParameters):
-				GaussianTester("generate_gaussian_spinorfield_eo", parameterCollection, testParameters, calculateEvenOddSpinorfieldSize(testParameters.latticeExtents) ) {};
+	EvenOddGaussianSpinorfieldEvenOddTester(const ParameterCollection parameterCollection, const PrngSpinorTestParameters testParameters):
+				PrngSpinorTester("generate_gaussian_spinorfield_eo", parameterCollection, testParameters, calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), calculateReferenceValues_gaussian() ) {};
 	~EvenOddGaussianSpinorfieldEvenOddTester()
 	{
 		const hardware::buffers::Spinor outSpinor(numberOfElements, device);
@@ -616,12 +543,12 @@ void testEvenOddSaxpyArg(const LatticeExtents lE, const ComplexNumbers cN)
 
 void testNonEvenOddGaussianSpinorfield( const LatticeExtents lE)
 {
-	performTest<NonEvenGaussianSpinorfieldTester>(lE, ComparisonType::smallerThan, false);
+	performTest<NonEvenGaussianSpinorfieldTester, PrngSpinorTestParameters>(lE, false);
 }
 
 void testEvenOddGaussianSpinorfield( const LatticeExtents lE)
 {
-	performTest<EvenOddGaussianSpinorfieldEvenOddTester>(lE, ComparisonType::smallerThan, true);
+	performTest<EvenOddGaussianSpinorfieldEvenOddTester, PrngSpinorTestParameters>(lE, true);
 }
 
 void testConvertToEvenOdd(const LatticeExtents lE, const bool fillEvenSites)

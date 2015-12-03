@@ -35,18 +35,25 @@ __kernel void create_zslice_source(__global spinor * const restrict b, __global 
 	hmc_complex tmp;
 	st_idx pos;
 	uint3 coord;
-	coord.z=zslice;
 
 	hmc_float sigma;
 
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 	  for(int y = 0; y<NSPACE; y++) {
-	    for (int t = 0; t < NTIME_LOCAL; t++){
+	  	for(int z = 0; z<NSPACE; z++) {
+	      for (int t = 0; t < NTIME_LOCAL; t++){
 	      coord.x = id_tmp;
 	      coord.y = y;
+	      coord.z = z;
 	      pos.space = get_nspace(coord);
 	      pos.time = t;
 	      
+	      if( z != zslice )
+	      {
+	      	out_tmp = set_spinor_zero();
+	      }
+	      else
+	      {
 	      //CP: switch between source content
 	      switch(SOURCE_CONTENT){
 	      case 1:  //"one"
@@ -139,10 +146,12 @@ __kernel void create_zslice_source(__global spinor * const restrict b, __global 
 		if(id == 0) printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
 		out_tmp = set_spinor_zero();
 	      }
+	      }
 	      put_spinor_to_field(out_tmp, b, pos.space, pos.time);
 	    }
 	  }
 	}	    
+	}
 	prng_storeState(rngStates, &rnd);
 	    
 	return;
