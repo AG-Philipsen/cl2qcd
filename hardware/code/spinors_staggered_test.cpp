@@ -25,6 +25,7 @@
 #include "SpinorStaggeredTester.hpp"
 #include "Kolmogorov_Smirnov.h"
 #include "Normal_RNG_tests.h"
+#include "PrngSpinorTester.hpp"
 
 #include "../../host_functionality/logger.hpp"
 
@@ -122,30 +123,30 @@ const ReferenceValues calculateReferenceValue_sax_vec_and_sqnorm(const int latti
 	return ReferenceValues {latticeVolume * 3. * std::accumulate(alpha.begin(), alpha.end(), 0.0)};
 }
 
-struct LinearCombinationTestParameters : public SpinorStaggeredTestParameters2
+struct LinearCombinationTestParameters : public SpinorStaggeredTestParameters
 {
 	LinearCombinationTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn) :
-		TestParameters(latticeExtentsIn), SpinorStaggeredTestParameters2(latticeExtentsIn, fillTypesIn), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
+		TestParameters(latticeExtentsIn), SpinorStaggeredTestParameters(latticeExtentsIn, fillTypesIn), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
 	LinearCombinationTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes fillTypesIn, const ComplexNumbers cN, const size_t numberOfSpinorsIn) :
-		TestParameters(latticeExtentsIn), SpinorStaggeredTestParameters2(latticeExtentsIn, fillTypesIn), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
+		TestParameters(latticeExtentsIn), SpinorStaggeredTestParameters(latticeExtentsIn, fillTypesIn), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
 	const ComplexNumbers coefficients;
 	const NumberOfSpinors numberOfSpinors;
 };
 
-struct SaxVecAndSqnormEvenOddTestParameters: public SpinorStaggeredTestParameters2
+struct SaxVecAndSqnormEvenOddTestParameters: public SpinorStaggeredTestParameters
 {
 	SaxVecAndSqnormEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const ComplexNumbers coefficientsIn, const int numEqsIn):
-		TestParameters(latticeExtentsIn), SpinorStaggeredTestParameters2(latticeExtentsIn),
+		TestParameters(latticeExtentsIn), SpinorStaggeredTestParameters(latticeExtentsIn),
 		coefficients(coefficientsIn),
 		numEqs(numEqsIn){};
 		ComplexNumbers coefficients;
 		const int numEqs;
 };
 
-struct GaussianTestParameters: public SpinorStaggeredTestParameters2
+struct GaussianTestParameters: public SpinorStaggeredTestParameters
 {
 	GaussianTestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType & typeOfComparisonIn) :
-		TestParameters(latticeExtentsIn, ComparisonType::smallerThan), SpinorStaggeredTestParameters2(latticeExtentsIn, typeOfComparisonIn),	iterations(1000){};
+		TestParameters(latticeExtentsIn, ComparisonType::smallerThan), SpinorStaggeredTestParameters(latticeExtentsIn, typeOfComparisonIn),	iterations(1000){};
 
 	const unsigned int iterations;
 };
@@ -190,7 +191,7 @@ template<typename TesterClass> void performTest(const LatticeExtents latticeExte
 
 template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn )
 {
-	SpinorStaggeredTestParameters2 parametersForThisTest(latticeExtendsIn);
+	SpinorStaggeredTestParameters parametersForThisTest(latticeExtendsIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
@@ -199,7 +200,7 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn,
 
 template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn)
 {
-	SpinorStaggeredTestParameters2 parametersForThisTest(latticeExtendsIn);
+	SpinorStaggeredTestParameters parametersForThisTest(latticeExtendsIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
@@ -388,7 +389,7 @@ struct SaxpbypzTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsK
 
 struct ConvertToEvenOddTester: public SpinorStaggeredTester
 {
-	ConvertToEvenOddTester(const ParameterCollection & parameterCollection, SpinorStaggeredTestParameters2 testParameters, const bool fillEvenSitesIn):
+	ConvertToEvenOddTester(const ParameterCollection & parameterCollection, SpinorStaggeredTestParameters testParameters, const bool fillEvenSitesIn):
 		SpinorStaggeredTester("convert_to_eo", parameterCollection, testParameters, getSpinorfieldSize(testParameters.latticeExtents),
 				calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(testParameters.latticeExtents), fillEvenSitesIn))
 		{
@@ -408,7 +409,7 @@ struct ConvertToEvenOddTester: public SpinorStaggeredTester
 
 struct ConvertFromEvenOddTester: public SpinorStaggeredTester
 {
-	ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, SpinorStaggeredTestParameters2 testParameters, const bool fillEvenSitesIn):
+	ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, SpinorStaggeredTestParameters testParameters, const bool fillEvenSitesIn):
 		SpinorStaggeredTester("convert_from_eo", parameterCollection, testParameters, getSpinorfieldSize(testParameters.latticeExtents),
 				calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(testParameters.latticeExtents)))
 		{
@@ -725,7 +726,7 @@ public:
 	void calculateMean()
 	{
 		for (unsigned int i = 0; i < testParameters.iterations; i++) {
-//				if(i%100==0) logger.info() << "Run kernel for the " << i << "th time";
+				if(i%100==0) logger.info() << "Run kernel for the " << i << "th time";
 			mean += count_sf(&hostOutput[i * numberOfElements], numberOfElements);
 		}
 		mean = normalize(mean);

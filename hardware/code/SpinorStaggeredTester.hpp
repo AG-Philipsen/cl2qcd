@@ -23,24 +23,16 @@
 #define _HARDWARE_CODE_SPINOR_STAGGERED_TESTER_
 
 #include "kernelTester.hpp"
-
-#include "latticeExtents.hpp"
-
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
-#include "../../physics/lattices/staggeredfield_eo.hpp"
 #include "spinors_staggered.hpp"
 #include "SpinorTester.hpp"
-#include "complex.hpp"
 
-struct SpinorStaggeredTestParameters2: public virtual TestParameters
+struct SpinorStaggeredTestParameters: public virtual TestParameters
 {
-	SpinorStaggeredTestParameters2(const LatticeExtents latticeExtendsIn) :
+	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn) :
 		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
-	SpinorStaggeredTestParameters2(const LatticeExtents latticeExtendsIn, const int typeOfComparisionIn) :
+	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn, const int typeOfComparisionIn) :
 		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillTypes(SpinorFillType::one) {};
-	SpinorStaggeredTestParameters2(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};
 
 	const SpinorFillTypes fillTypes;
@@ -48,7 +40,7 @@ struct SpinorStaggeredTestParameters2: public virtual TestParameters
 
 class SpinorStaggeredTester : public KernelTester {
 public:
-	SpinorStaggeredTester(const std::string kernelName, const ParameterCollection, const SpinorStaggeredTestParameters2 &, const size_t, const ReferenceValues);
+	SpinorStaggeredTester(const std::string kernelName, const ParameterCollection, const SpinorStaggeredTestParameters &, const size_t, const ReferenceValues);
 protected:
 	//Methods (protected for inheritance resons)
 	su3vec * createSpinorfield(SpinorFillType);
@@ -80,13 +72,13 @@ protected:
 
 struct NonEvenOddSpinorStaggeredTester : public SpinorStaggeredTester
 {
-	NonEvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters2 & tP, const ReferenceValues & rV) :
+	NonEvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues & rV) :
 		SpinorStaggeredTester(kernelName, pC, tP, getSpinorfieldSize(tP.latticeExtents), rV) {};
 };
 
 struct EvenOddSpinorStaggeredTester : public SpinorStaggeredTester
 {
-	EvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters2 & tP, const ReferenceValues & rV) :
+	EvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues & rV) :
 		SpinorStaggeredTester(kernelName, pC, tP, getEvenOddSpinorfieldSize(tP.latticeExtents), rV) {};
 };
 

@@ -22,9 +22,9 @@
 
 #include "SpinorStaggeredTester.hpp"
 #include "../../host_functionality/host_geometry.h"
-#include "spinors.hpp" //this is for get_spinorfieldsize, get_eoprec_spinorfieldsize
+#include "../../host_functionality/host_random.h"
 
-SpinorStaggeredTester::SpinorStaggeredTester(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters2 & tP, const size_t elementsIn, const ReferenceValues rV):
+SpinorStaggeredTester::SpinorStaggeredTester(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const size_t elementsIn, const ReferenceValues rV):
 		KernelTester(kN, pC.hardwareParameters, pC.kernelParameters, tP, rV), elements(elementsIn)
 {
 	code = device->getSpinorStaggeredCode();
@@ -84,40 +84,6 @@ static void fill_with_random(su3vec * sf_in, int size, int seed)
     sf_in[i].e2.im = prng_double();
   }
   return;
-}
-
-//This function sums the real and imaginary parts of all su3vec contained in sf_in
-hmc_float SpinorStaggeredTester::count_sf(su3vec * sf_in, int size)
-{
-  hmc_float sum = 0.;
-  for (int i=0; i<size; i++){
-    sum +=
-        sf_in[i].e0.re + sf_in[i].e0.im 
-      + sf_in[i].e1.re + sf_in[i].e1.im 
-      + sf_in[i].e2.re + sf_in[i].e2.im;
-  }
-  return sum;
-}
-
-//The following two function return the sum of the square deviation (frome the mean) of the numbers
-//in sf_in. To get the variance, i.e. the mean square deviation, the result
-//must be divided by the number of numbers summed.
-hmc_float SpinorStaggeredTester::calc_var(hmc_float in, hmc_float mean){
-  return (in - mean) * (in - mean);
-}
-
-hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float sum){
-  hmc_float var = 0.;
-  for(int k=0; k<size; k++){
-    var +=
-        calc_var(sf_in[k].e0.re, sum) 
-      + calc_var(sf_in[k].e0.im, sum) 
-      + calc_var(sf_in[k].e1.re, sum)
-      + calc_var(sf_in[k].e1.im, sum) 
-      + calc_var(sf_in[k].e2.re, sum) 
-      + calc_var(sf_in[k].e2.im, sum);
-  }
-  return var;
 }
 
 void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
@@ -206,6 +172,40 @@ void SpinorStaggeredTester::calcSquarenormEvenOddAndStoreAsKernelResult(const ha
 {
   code->set_float_to_global_squarenorm_eoprec_device(in, doubleBuffer);
   doubleBuffer->dump(&kernelResult[0]);
+}
+
+//This function sums the real and imaginary parts of all su3vec contained in sf_in
+hmc_float SpinorStaggeredTester::count_sf(su3vec * sf_in, int size)
+{
+  hmc_float sum = 0.;
+  for (int i=0; i<size; i++){
+    sum +=
+        sf_in[i].e0.re + sf_in[i].e0.im
+      + sf_in[i].e1.re + sf_in[i].e1.im
+      + sf_in[i].e2.re + sf_in[i].e2.im;
+  }
+  return sum;
+}
+
+//The following two function return the sum of the square deviation (frome the mean) of the numbers
+//in sf_in. To get the variance, i.e. the mean square deviation, the result
+//must be divided by the number of numbers summed.
+hmc_float SpinorStaggeredTester::calc_var(hmc_float in, hmc_float mean){
+  return (in - mean) * (in - mean);
+}
+
+hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float sum){
+  hmc_float var = 0.;
+  for(int k=0; k<size; k++){
+    var +=
+        calc_var(sf_in[k].e0.re, sum)
+      + calc_var(sf_in[k].e0.im, sum)
+      + calc_var(sf_in[k].e1.re, sum)
+      + calc_var(sf_in[k].e1.im, sum)
+      + calc_var(sf_in[k].e2.re, sum)
+      + calc_var(sf_in[k].e2.im, sum);
+  }
+  return var;
 }
 
 /**
