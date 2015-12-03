@@ -311,7 +311,6 @@ void hardware::code::Correlator::create_zslice_source_device(const hardware::buf
 	cl_uint num_groups;
 	this->get_work_sizes(create_zslice_source, &ls2, &gs2, &num_groups);
 	//set arguments
-
 	int clerr = clSetKernelArg(create_zslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -576,7 +575,8 @@ void hardware::code::Correlator::print_profiling(const std::string& filename, in
 hardware::code::Correlator::Correlator(const hardware::code::OpenClKernelParametersInterface& kernelParameters , hardware::Device * device)
 	: Opencl_Module(kernelParameters, device),
 	  create_point_source(0), create_volume_source(0), create_timeslice_source(0), create_zslice_source(0),
-	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0), pbp_std(0), pbp_tm_one_end(0)
+	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0), pbp_std(0), pbp_tm_one_end(0),
+	  correlator_avps(0)
 {
 	fill_kernels();
 }

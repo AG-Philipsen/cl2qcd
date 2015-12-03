@@ -566,16 +566,41 @@ namespace hardware {
 			OpenClKernelParametersMockupForCorrelators(const int nsIn, const int ntIn, const double kappaIn, const double directionIn) :
 				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn), correlatorDirection(directionIn), kappa(kappaIn) {};
 
-		virtual int getCorrDir() const override
+			virtual int getCorrDir() const override
+			{
+				return correlatorDirection;
+			}
+			virtual double getKappa() const override
+			{
+				return kappa;
+			}
+			virtual bool getMeasureCorrelators() const override
+			{
+				return true;
+			}
+			const int correlatorDirection;
+			const double kappa;
+		};
+
+		struct OpenClKernelParametersMockupForSourceTests : public OpenClKernelParametersMockupForSpinorTests
 		{
-			return correlatorDirection;
-		}
-		virtual double getKappa() const override
-		{
-			return kappa;
-		}
-		const int correlatorDirection;
-		const double kappa;
+			OpenClKernelParametersMockupForSourceTests(const int nsIn, const int ntIn, const common::sourcecontents sC, const common::sourcetypes sT) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn), sC(sC), sT(sT) {};
+
+			virtual common::sourcecontents getSourceContent() const override
+			{
+				return sC;
+			}
+			virtual common::sourcetypes getSourceType() const override
+			{
+				return sT;
+			}
+			virtual bool getMeasureCorrelators() const override
+			{
+				return false;
+			}
+			const common::sourcecontents sC;
+			const common::sourcetypes sT;
 		};
 
 		class OpenClKernelParametersMockupForTwistedMass : public OpenClKernelParametersMockupForSpinorTests
