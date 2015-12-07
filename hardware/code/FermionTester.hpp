@@ -130,16 +130,17 @@ struct FermionmatrixEvenOddTesterWithSquarenormAsKernelResult : public EvenOddFe
 	}
 };
 
-struct FermionmatrixEvenOddTesterWithSumAsKernelResult : public EvenOddFermionmatrixTester
+template <typename TesterType >
+struct FermionmatrixTesterWithSumAsKernelResult : public TesterType
 {
-	FermionmatrixEvenOddTesterWithSumAsKernelResult(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		EvenOddFermionmatrixTester(kernelName, parameterCollection, testParameters, rV) {}
-	~FermionmatrixEvenOddTesterWithSumAsKernelResult()
+	FermionmatrixTesterWithSumAsKernelResult( const std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
+		TesterType(kernelName, parameterCollection, testParameters, rV) {}
+	~FermionmatrixTesterWithSumAsKernelResult()
 	{
 		spinor * sf_in;
-		sf_in = new spinor[elements];
-		out->dump(sf_in);
-		kernelResult.at(0) = count_sf(sf_in, elements);
+		sf_in = new spinor[TesterType::elements];
+		TesterType::out->dump(sf_in);
+		TesterType::kernelResult.at(0) = TesterType::count_sf(sf_in, TesterType::elements);
 		delete sf_in;
 	}
 };

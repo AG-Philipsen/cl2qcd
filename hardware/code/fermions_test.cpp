@@ -30,21 +30,21 @@ const ReferenceValues calculateReferenceValues_mWilson(const int latticeVolume, 
 {
 	if( massParametersIn.kappa == 0. and spinorFillTypeIn == SpinorFillType::ascendingComplex)
 	{
-		return ReferenceValues{latticeVolume * sumOfIntegersSquared(24)};
+		return ReferenceValues{latticeVolume * 300.};
 	}
 	else if (massParametersIn.kappa == nonTrivialParameter)
 	{
 		if (spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::cold )
 		{
-			return ReferenceValues{latticeVolume * 0.7476023296000095 };
+			return ReferenceValues{latticeVolume * 3.705600000000023 };
 		}
 		else if (spinorFillTypeIn == SpinorFillType::one and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
 		{
-			return ReferenceValues{latticeVolume * 7.03532241159178};
+			return ReferenceValues{latticeVolume * 4.590333841920002};
 		}
 		else if (spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial)
 		{
-			return ReferenceValues{latticeVolume * 3508.912843225604};
+			return ReferenceValues{latticeVolume * 197.113059468288};
 		}
 	}
 	return defaultReferenceValues();
@@ -61,11 +61,11 @@ const ReferenceValues calculateReferenceValues_mTmMinus(const int latticeVolume,
 		}
 		else if (massParametersIn.mu == nonTrivialParameter and gaugefieldFillTypeIn == GaugefieldFillType::cold )
 		{
-			return ReferenceValues{latticeVolume * 5.300678101577363};
+			return ReferenceValues{latticeVolume * 3.705600000000016};
 		}
 		else if (massParametersIn.mu == nonTrivialParameter and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
 		{
-			return ReferenceValues{latticeVolume * 3513.465918997579};
+			return ReferenceValues{latticeVolume * 197.113059468288};
 		}
 	}
 	return defaultReferenceValues();
@@ -75,7 +75,7 @@ const ReferenceValues calculateReferenceValues_mTmSitediagonal(const int lattice
 {
 	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
-		return ReferenceValues{ latticeVolume * 4904.553075771979};
+		return ReferenceValues{ latticeVolume * 300.};
 	}
 	return defaultReferenceValues();
 }
@@ -84,7 +84,7 @@ const ReferenceValues calculateReferenceValues_mTmSitediagonalMinus(const int la
 {
 	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
-		return ReferenceValues{ latticeVolume * 4904.553075771979};
+		return ReferenceValues{ latticeVolume * 299.9999999999999};
 	}
 	return defaultReferenceValues();
 }
@@ -93,7 +93,7 @@ const ReferenceValues calculateReferenceValues_mTmInverseSitediagonal(const int 
 {
 	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
-		return ReferenceValues{ latticeVolume * 4895.451151014576};
+		return ReferenceValues{ latticeVolume * 299.7214990417087};
 	}
 	return defaultReferenceValues();
 }
@@ -102,7 +102,7 @@ const ReferenceValues calculateReferenceValues_mTmInverseSitediagonalMinus(const
 {
 	if (massParametersIn.kappa == nonTrivialParameter and massParametersIn.mu == nonTrivialParameter)
 	{
-		return ReferenceValues{ latticeVolume * 4895.451151014576};
+		return ReferenceValues{ latticeVolume * 299.7214990417086};
 	}
 	return defaultReferenceValues();
 }
@@ -113,11 +113,11 @@ const ReferenceValues calculateReferenceValuesDslashEvenOdd(const int latticeVol
 	{
 		if (gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
 		{
-			return ReferenceValues{ latticeVolumeIn * 2447.547780792424};
+			return ReferenceValues{ latticeVolumeIn * -102.886940531712};
 		}
 		else if (gaugefieldFillTypeIn == GaugefieldFillType::cold )
 		{
-			return ReferenceValues{ latticeVolumeIn *4779.698002329599};
+			return ReferenceValues{ latticeVolumeIn *-296.2943999999999};
 		}
 	}
 	return defaultReferenceValues();
@@ -137,46 +137,46 @@ struct DslashEvenOddTestParameters: public WilsonTestParameters
 	double thetaT, thetaS;
 };
 
-struct MWilsonTester : public NonEvenOddFermionmatrixTesterWithSquarenormAsResult
+struct MWilsonTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>
 {
 	MWilsonTester(const ParameterCollection parameterCollection, const WilsonTestParameters & tP) :
-		NonEvenOddFermionmatrixTesterWithSquarenormAsResult("m_wilson", parameterCollection, tP, calculateReferenceValues_mWilson( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters) )
+		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_wilson", parameterCollection, tP, calculateReferenceValues_mWilson( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters) )
 	{
 		code->M_wilson_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa );
 	}
 };
-struct MTmMinusTester : public NonEvenOddFermionmatrixTesterWithSquarenormAsResult
+struct MTmMinusTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>
 {
 	MTmMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
-		NonEvenOddFermionmatrixTesterWithSquarenormAsResult("m_tm_minus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
+		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_tm_minus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
 		code->M_tm_minus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
 };
-struct MTmPlusTester : public NonEvenOddFermionmatrixTesterWithSquarenormAsResult
+struct MTmPlusTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>
 {
 	MTmPlusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
-		NonEvenOddFermionmatrixTesterWithSquarenormAsResult("m_tm_plus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
+		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_tm_plus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
 		code->M_tm_plus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
 };
 
-template< class bufferType>
-struct Gamma5Tester : public NonEvenOddFermionmatrixTester
+template< class bufferType, typename TesterType>
+struct Gamma5Tester : public TesterType
 {
 	Gamma5Tester( const std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters & tP, const ReferenceValues rV, const int numberOfElementsIn) :
-		NonEvenOddFermionmatrixTester(kernelName, parameterCollection, tP, rV), numberOfElements (numberOfElementsIn)
+		TesterType(kernelName, parameterCollection, tP, rV), numberOfElements (numberOfElementsIn)
 	{
 		sf_in = new spinor[numberOfElements];
-		in = new bufferType(numberOfElements, device);
+		in = new bufferType(numberOfElements, this->device);
 
-		in->load( createSpinorfield(tP.SpinorTestParameters::fillTypes.at(0)) );
+		in->load( TesterType::createSpinorfield(tP.SpinorTestParameters::fillTypes.at(0)) );
 	}
 	~Gamma5Tester()
 	{
 		in->dump(sf_in);
-		kernelResult.at(0) = count_sf(sf_in, numberOfElements);
+		TesterType::kernelResult.at(0) = TesterType::count_sf(sf_in, numberOfElements);
 		delete sf_in;
 	}
 protected:
@@ -185,20 +185,20 @@ protected:
 	const bufferType * in;
 };
 
-struct Gamma5NonEvenOddTester : public Gamma5Tester<hardware::buffers::Plain<spinor> >
+struct Gamma5NonEvenOddTester : public Gamma5Tester<hardware::buffers::Plain<spinor>, NonEvenOddFermionmatrixTester >
 {
 	Gamma5NonEvenOddTester(const ParameterCollection parameterCollection, const FermionTestParameters & tP) :
-		Gamma5Tester<hardware::buffers::Plain<spinor>>("gamma5", parameterCollection, tP,
+		Gamma5Tester<hardware::buffers::Plain<spinor>, NonEvenOddFermionmatrixTester>("gamma5", parameterCollection, tP,
 				calculateReferenceValues_gamma5(calculateSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ), tP.fillTypes.at(0) ), calculateSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ) )
 	{
 		code->gamma5_device(in);
 	}
 };
 
-struct Gamma5EvenOddTester : public Gamma5Tester<hardware::buffers::Spinor>
+struct Gamma5EvenOddTester : public Gamma5Tester<hardware::buffers::Spinor, EvenOddFermionmatrixTester>
 {
 	Gamma5EvenOddTester(const ParameterCollection parameterCollection, const FermionTestParameters & tP) :
-		Gamma5Tester<hardware::buffers::Spinor>("gamma5_eo", parameterCollection, tP,
+		Gamma5Tester<hardware::buffers::Spinor, EvenOddFermionmatrixTester>("gamma5_eo", parameterCollection, tP,
 				calculateReferenceValues_gamma5(calculateEvenOddSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ), tP.fillTypes.at(0) ), calculateEvenOddSpinorfieldSize( tP.SpinorTestParameters::latticeExtents ) )
 		{
 			code->gamma5_eo_device(in);
@@ -206,49 +206,49 @@ struct Gamma5EvenOddTester : public Gamma5Tester<hardware::buffers::Spinor>
 };
 
 //todo: remove ARG_DEF from all the tm diagonal kernel fcts.!
-struct MTmSitediagonalTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
+struct MTmSitediagonalTester: public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	MTmSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_sitediagonal", parameterCollection, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal", parameterCollection, tP,
 				calculateReferenceValues_mTmSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct MTmInverseSitediagonalTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
+struct MTmInverseSitediagonalTester: public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_inverse_sitediagonal", parameterCollection, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_inverse_sitediagonal", parameterCollection, tP,
 				calculateReferenceValues_mTmInverseSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_inverse_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
 };
-struct MTmSitediagonalMinusTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
+struct MTmSitediagonalMinusTester: public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	MTmSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_sitediagonal_minus", parameterCollection, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_minus", parameterCollection, tP,
 				calculateReferenceValues_mTmSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct MTmInverseSitediagonalMinusTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
+struct MTmInverseSitediagonalMinusTester: public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	MTmInverseSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
-		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("m_tm_inverse_sitediagonal", parameterCollection, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_inverse_sitediagonal", parameterCollection, tP,
 				calculateReferenceValues_mTmInverseSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_inverse_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
 		}
 };
 
-struct DslashEvenOddTester: public FermionmatrixEvenOddTesterWithSquarenormAsKernelResult
+struct DslashEvenOddTester: public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	DslashEvenOddTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
-		FermionmatrixEvenOddTesterWithSquarenormAsKernelResult("dslash_eo", parameterCollection, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_eo", parameterCollection, tP,
 				calculateReferenceValuesDslashEvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 		{
 			evenOrOddIn ?
