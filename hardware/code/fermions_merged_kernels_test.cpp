@@ -112,10 +112,10 @@ struct SaxpyAndGamma5EvenOddTestParameters: public FermionTestParameters
 	const hmc_complex coefficient;
 };
 
-struct SaxpyAndGamma5EvenOddTester : public FermionmatrixEvenOddTesterWithSumAsKernelResult
+struct SaxpyAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	SaxpyAndGamma5EvenOddTester(const ParameterCollection & pc, const SaxpyAndGamma5EvenOddTestParameters & tP) :
-		FermionmatrixEvenOddTesterWithSumAsKernelResult("saxpy_AND_gamma5", pc, tP, calculateReferenceValues_saxpyAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.coefficient))
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("saxpy_AND_gamma5", pc, tP, calculateReferenceValues_saxpyAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.coefficient))
 	{
 		const hardware::buffers::Spinor in2(elements, device);
 		in2.load(createSpinorfield(tP.fillTypes.at(1)));
@@ -123,30 +123,30 @@ struct SaxpyAndGamma5EvenOddTester : public FermionmatrixEvenOddTesterWithSumAsK
 	}
 };
 
-struct MTmSitediagonalMinusAndGamma5EvenOddTester : public FermionmatrixEvenOddTesterWithSumAsKernelResult
+struct MTmSitediagonalMinusAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	MTmSitediagonalMinusAndGamma5EvenOddTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP) :
-		FermionmatrixEvenOddTesterWithSumAsKernelResult("m_tm_sitediagonal_minus_AND_gamma5_eo", pc, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_minus_AND_gamma5_eo", pc, tP,
 				calculateReferenceValues_mTmSitediagonalMinusAndGamma5EvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters) )
 	{
 		code->M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, out, tP.massParameters.getMubar());
 	}
 };
 
-struct MTmSitediagonalAndGamma5EvenOddTester : public FermionmatrixEvenOddTesterWithSumAsKernelResult
+struct MTmSitediagonalAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	MTmSitediagonalAndGamma5EvenOddTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP) :
-		FermionmatrixEvenOddTesterWithSumAsKernelResult("m_tm_sitediagonal_AND_gamma5_eo", pc, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_AND_gamma5_eo", pc, tP,
 				calculateReferenceValues_mTmSitediagonalAndGamma5EvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 	{
 		code->M_tm_sitediagonal_AND_gamma5_eo_device(in, out, tP.massParameters.getMubar());
 	}
 };
 
-struct DslashEvenOddAndMTmInverseSitediagonalMinusTester : public FermionmatrixEvenOddTesterWithSumAsKernelResult
+struct DslashEvenOddAndMTmInverseSitediagonalMinusTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	DslashEvenOddAndMTmInverseSitediagonalMinusTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP, const bool evenOrOdd) :
-		FermionmatrixEvenOddTesterWithSumAsKernelResult("dslash_AND_m_tm_inverse_sitediagonal_minus", pc, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_AND_m_tm_inverse_sitediagonal_minus", pc, tP,
 				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
 	{
 		code->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, out, gaugefieldBuffer, evenOrOdd, tP.massParameters.kappa,
@@ -154,10 +154,10 @@ struct DslashEvenOddAndMTmInverseSitediagonalMinusTester : public FermionmatrixE
 	}
 };
 
-struct DslashEvenOddAndMTmInverseSitediagonalTester : public FermionmatrixEvenOddTesterWithSumAsKernelResult
+struct DslashEvenOddAndMTmInverseSitediagonalTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
 	DslashEvenOddAndMTmInverseSitediagonalTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP, const bool evenOrOdd) :
-		FermionmatrixEvenOddTesterWithSumAsKernelResult("dslash_AND_m_tm_inverse_sitediagonal", pc, tP,
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_AND_m_tm_inverse_sitediagonal", pc, tP,
 				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
 	{
 		code->dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, out, gaugefieldBuffer, evenOrOdd, tP.massParameters.kappa,

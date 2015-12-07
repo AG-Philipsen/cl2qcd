@@ -104,30 +104,10 @@ struct NonEvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buff
 		FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV) {}
 };
 
-struct NonEvenOddFermionmatrixTesterWithSquarenormAsResult : public NonEvenOddFermionmatrixTester
-{
-	NonEvenOddFermionmatrixTesterWithSquarenormAsResult(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		NonEvenOddFermionmatrixTester(kernelName, parameterCollection, testParameters, rV) {};
-	~NonEvenOddFermionmatrixTesterWithSquarenormAsResult()
-	{
-		calcSquarenormAndStoreAsKernelResult(out);
-	}
-};
-
 struct EvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>
 {
 	EvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
 		FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV) {}
-};
-
-struct FermionmatrixEvenOddTesterWithSquarenormAsKernelResult : public EvenOddFermionmatrixTester
-{
-	FermionmatrixEvenOddTesterWithSquarenormAsKernelResult(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		EvenOddFermionmatrixTester(kernelName, parameterCollection, testParameters, rV) {}
-	~FermionmatrixEvenOddTesterWithSquarenormAsKernelResult()
-	{
-		calcSquarenormEvenOddAndStoreAsKernelResult(out);
-	}
 };
 
 template <typename TesterType >
