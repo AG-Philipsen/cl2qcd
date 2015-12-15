@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 	struct PlaquetteTestParameters : public GaugefieldTestParameters
 	{
 		PlaquetteTestParameters(const ReferenceValues referenceValueIn, const LatticeExtents latticeExtentsIn, const GaugefieldFillType fillTypeIn, const TypeOfPlaquette typeOfPlaquetteIn) :
-			GaugefieldTestParameters(referenceValueIn,latticeExtentsIn, fillTypeIn), typeOfPlaquette(typeOfPlaquetteIn){}
+			GaugefieldTestParameters(referenceValueIn,latticeExtentsIn, fillTypeIn), typeOfPlaquette(typeOfPlaquetteIn), TestParameters(latticeExtentsIn){}
 		TypeOfPlaquette typeOfPlaquette;
 	};
 
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 		double rho;
 
 		SmearingTestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn, int rhoIterIn, double rhoIn) :
-			GaugefieldTestParameters(referenceValueIn,latticeExtentsIn, fillTypeIn), rhoIter(rhoIterIn), rho(rhoIn) {}
+			GaugefieldTestParameters(referenceValueIn,latticeExtentsIn, fillTypeIn), rhoIter(rhoIterIn), rho(rhoIn), TestParameters(latticeExtentsIn) {}
 	};
 
 	class StoutSmearTester : public GaugefieldTester {
