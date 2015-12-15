@@ -126,11 +126,11 @@ const ReferenceValues calculateReferenceValuesDslashEvenOdd(LatticeExtents latti
 		{
 			if (gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
 			{
-				return ReferenceValues{ latticeVolumeIn * (-102.886940531712 * cos(M_PI/latticeExtentsIn.ns) + 189.153782988288 * sin(M_PI/latticeExtentsIn.ns))};
+				return ReferenceValues{ latticeVolumeIn * (-72.61889049538556 * cos(M_PI*thetaS/latticeExtentsIn.ns) + 144.307369760256 * sin(M_PI*thetaS/latticeExtentsIn.ns) - 30.2680500363264 * cos(M_PI*thetaT/latticeExtentsIn.nt) + 44.84641322803199  * sin(M_PI*thetaT/latticeExtentsIn.nt))};
 			}
 			else if (gaugefieldFillTypeIn == GaugefieldFillType::cold )
 			{
-				return ReferenceValues{ latticeVolumeIn * (-296.29439999999977 * cos(M_PI/latticeExtentsIn.ns) + 38.51827200000004 * sin(M_PI/latticeExtentsIn.ns))};
+				return ReferenceValues{ latticeVolumeIn * (-222.2208 * cos(M_PI*thetaS/latticeExtentsIn.ns) + 35.55532799999998 * sin(M_PI*thetaS/latticeExtentsIn.ns) - 74.07360000000003 * cos(M_PI*thetaT/latticeExtentsIn.nt) + 2.962943999999992  * sin(M_PI*thetaT/latticeExtentsIn.nt))};
 			}
 		}
 	}
@@ -481,7 +481,6 @@ BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 
 	/**
 	 * @todo: Missing tests:
-	 * - boundary conditions (spatial, temporal, needs nt and ns!)
 	 * - chemical potential (real, imaginary) (need test with dummy activation?)
 	 * Think about if one can automatize the evenOrOdd tests, they do not influence the reference values (?)
 	 */
@@ -508,7 +507,7 @@ BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_1)
 	{
-		testDslashEvenOddWithSpecificBC(LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialParameter}, 1., 1., true);
+		testDslashEvenOddWithSpecificBC(LatticeExtents{ns8,nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialParameter}, 1., 0., true);
 	}
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_2)
@@ -518,7 +517,7 @@ BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_3)
 	{
-		testDslashEvenOddWithSpecificBC(LatticeExtents{ns8,nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter}, 1., 1., true);
+		testDslashEvenOddWithSpecificBC(LatticeExtents{ns8,nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter}, 1., 0., true);
 	}
 
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_4)
