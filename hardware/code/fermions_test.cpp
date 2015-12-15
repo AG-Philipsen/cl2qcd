@@ -107,17 +107,31 @@ const ReferenceValues calculateReferenceValues_mTmInverseSitediagonalMinus(const
 	return defaultReferenceValues();
 }
 
-const ReferenceValues calculateReferenceValuesDslashEvenOdd(const int latticeVolumeIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn)
+const ReferenceValues calculateReferenceValuesDslashEvenOdd(LatticeExtents latticeExtentsIn, const int latticeVolumeIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn, const double thetaT, const double thetaS)
 {
 	if (massParametersIn.kappa == nonTrivialParameter and spinorFillTypeIn == SpinorFillType::ascendingComplex)
 	{
-		if (gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
+		if (thetaS == 0. and thetaT == 0.)
 		{
-			return ReferenceValues{ latticeVolumeIn * -102.886940531712};
+			if (gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
+			{
+				return ReferenceValues{ latticeVolumeIn * -102.886940531712};
+			}
+			else if (gaugefieldFillTypeIn == GaugefieldFillType::cold )
+			{
+				return ReferenceValues{ latticeVolumeIn * -296.2943999999999};
+			}
 		}
-		else if (gaugefieldFillTypeIn == GaugefieldFillType::cold )
+		else
 		{
-			return ReferenceValues{ latticeVolumeIn *-296.2943999999999};
+			if (gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial )
+			{
+				return ReferenceValues{ latticeVolumeIn * (-102.886940531712 * cos(M_PI/latticeExtentsIn.ns) + 189.153782988288 * sin(M_PI/latticeExtentsIn.ns))};
+			}
+			else if (gaugefieldFillTypeIn == GaugefieldFillType::cold )
+			{
+				return ReferenceValues{ latticeVolumeIn * (-296.29439999999977 * cos(M_PI/latticeExtentsIn.ns) + 38.51827200000004 * sin(M_PI/latticeExtentsIn.ns))};
+			}
 		}
 	}
 	return defaultReferenceValues();
@@ -133,6 +147,9 @@ struct DslashEvenOddTestParameters: public WilsonTestParameters
 	DslashEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn) :
 		TestParameters(latticeExtentsIn), WilsonTestParameters( latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn),
 		massParameters(massParametersIn), thetaT(0.), thetaS(0.) {};
+	DslashEvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn, const double thetaSIn, const double thetaTIn) :
+		TestParameters(latticeExtentsIn), WilsonTestParameters( latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn),
+		massParameters(massParametersIn), thetaT(thetaSIn), thetaS(thetaTIn) {};
 	const WilsonMassParameters massParameters;
 	double thetaT, thetaS;
 };
@@ -249,7 +266,7 @@ struct DslashEvenOddTester: public FermionmatrixTesterWithSumAsKernelResult<Even
 {
 	DslashEvenOddTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_eo", parameterCollection, tP,
-				calculateReferenceValuesDslashEvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
+				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS))
 		{
 			evenOrOddIn ?
 				code->dslash_eo_device( in, out,  gaugefieldBuffer, EVEN, tP.massParameters.kappa) :
@@ -344,6 +361,16 @@ void testDslashEvenOdd(const LatticeExtents latticeExtentsIn, const SpinorFillTy
 		const WilsonMassParameters massParametersIn, const bool evenOrOddIn)
 {
 	DslashEvenOddTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, true);
+	hardware::code::OpenClKernelParametersMockupForDslashEvenOdd kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, true, parametersForThisTest.thetaT, parametersForThisTest.thetaS);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	DslashEvenOddTester tester(parameterCollection, parametersForThisTest, evenOrOddIn);
+}
+
+void testDslashEvenOddWithSpecificBC(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn,
+		const WilsonMassParameters massParametersIn, const double thetaTIn, const double thetaSIn, const bool evenOrOddIn)
+{
+	DslashEvenOddTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn, thetaTIn, thetaSIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, true);
 	hardware::code::OpenClKernelParametersMockupForDslashEvenOdd kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, true, parametersForThisTest.thetaT, parametersForThisTest.thetaS);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
@@ -477,6 +504,26 @@ BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 	BOOST_AUTO_TEST_CASE( DSLASH_EO_4)
 	{
 		testDslashEvenOdd(LatticeExtents{ns4, nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter}, false);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_1)
+	{
+		testDslashEvenOddWithSpecificBC(LatticeExtents{ns4,nt4}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialParameter}, 1., 1., true);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_2)
+	{
+		testDslashEvenOddWithSpecificBC(LatticeExtents{ns8,nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, WilsonMassParameters{nonTrivialParameter}, 1., 1., false);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_3)
+	{
+		testDslashEvenOddWithSpecificBC(LatticeExtents{ns8,nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter}, 1., 1., true);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_EO_ABC_4)
+	{
+		testDslashEvenOddWithSpecificBC(LatticeExtents{ns12,nt12}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, WilsonMassParameters{nonTrivialParameter}, 1., 1., false);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
