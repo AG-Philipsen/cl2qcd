@@ -23,16 +23,15 @@
 #include "kernelTester.hpp"
 #include "gaugemomentum.hpp"
 #include "../../host_functionality/host_random.h"
-
-enum GaugemomentumFilltype {one, zero};
+#include "SpinorTester.hpp"
 
 struct GaugemomentumTestParameters: public TestParameters
 {
 	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn) :
-		TestParameters(latticeExtendsIn), fillType(GaugemomentumFilltype::one)
+		TestParameters(latticeExtendsIn), fillType(SpinorFillType::one)
 	{};
 
-	const GaugemomentumFilltype fillType;
+	const SpinorFillType fillType;
 };
 
 //@todo: work over the members and remove a lot!

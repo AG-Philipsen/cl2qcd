@@ -23,6 +23,7 @@
 #include "spinors.hpp"
 
 //@todo: move to common place
+//@todo: rename to FillType
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
