@@ -42,7 +42,6 @@ add_library(code
 )
 
 target_link_libraries(code
-		meta
 		buffers
 		klepsydra
 		einhard
@@ -59,9 +58,18 @@ configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
+# todo: remove the meta dependence here!
+add_library(needsMeta
+ 	testUtilities.cpp
+	kernelTester.cpp
+)
+target_link_libraries( needsMeta 
+	meta
+)
+
 add_library(kernelTestUtilities
 	testUtilities.cpp
-	kernelTester.cpp
+	# kernelTester.cpp # todo: Put back in once meta dependence has been removed
 	GaugefieldTester.cpp
 	SpinorTester.cpp
 	GaugemomentumTester.cpp
@@ -71,45 +79,52 @@ add_library(kernelTestUtilities
 target_link_libraries(kernelTestUtilities
 	${Boost_LIBRARIES}
 	host_functionality
-	meta
 	hardware
+	needsMeta
 )
 
 add_unit_test_withLibraries(hardware::code::Parameters openClKernelParameters_test meta)
 add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities)
 
+# TODO: move 4 different test settings into executables?
+
 add_executable(hardware_code_gaugefield_test gaugefield_test.cpp)
-target_link_libraries(hardware_code_gaugefield_test
-	kernelTestUtilities
-	lattices
-)
+target_link_libraries(hardware_code_gaugefield_test kernelTestUtilities)
 add_test(hardware::code::Gaugefield_CPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware::code::Gaugefield_CPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(hardware::code::Gaugefield_GPU       hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware::code::Gaugefield_GPU_REC12 hardware_code_gaugefield_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(hardware_code_spinors_test spinors_test.cpp)
-target_link_libraries(hardware_code_spinors_test
-	prng
-	lattices
-	kernelTestUtilities
-)
+target_link_libraries(hardware_code_spinors_test kernelTestUtilities)
 add_test(hardware_code_spinors_CPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false)
 add_test(hardware_code_spinors_GPU       hardware_code_spinors_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true)
 
 add_executable(hardware_code_fermions_test fermions_test.cpp)
-target_link_libraries(hardware_code_fermions_test
-	lattices
-	kernelTestUtilities
-)
+target_link_libraries(hardware_code_fermions_test kernelTestUtilities )
 add_test(hardware_code_fermions_CPU       hardware_code_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_fermions_CPU_REC12 hardware_code_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(hardware_code_fermions_GPU       hardware_code_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_fermions_GPU_REC12 hardware_code_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
+add_executable(hardware_code_fermions_merged_kernels_test fermions_merged_kernels_test.cpp)
+target_link_libraries(hardware_code_fermions_merged_kernels_test kernelTestUtilities)
+add_test(hardware_code_fermions_merged_kernels_test_CPU       hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_fermions_merged_kernels_test_CPU_REC12 hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(hardware_code_fermions_merged_kernels_test_GPU       hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(hardware_code_fermions_merged_kernels_test_GPU_REC12 hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+
+add_executable(hardware_code_spinors_staggered_test spinors_staggered_test.cpp)
+target_link_libraries(hardware_code_spinors_staggered_test kernelTestUtilities)
+add_test(hardware_code_spinors_staggered_CPU       hardware_code_spinors_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_spinors_staggered_GPU       hardware_code_spinors_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
+# todo: These have to be refactored or are even broken!
+# todo: All dependencies on lattices, prng or meta should be removed
+
 add_executable(hardware_code_gaugemomentum_test gaugemomentum_test.cpp)
-target_link_libraries(hardware_code_gaugemomentum_test
-	prng
+target_link_libraries(hardware_code_gaugemomentum_test 
+	prng #Todo: Remove!
 	kernelTestUtilities
 )
 add_test(hardware_code_gaugemomentum_CPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
@@ -126,15 +141,6 @@ add_test(hardware_code_molecular_dynamics_CPU       hardware_code_molecular_dyna
 add_test(hardware_code_molecular_dynamics_CPU_REC12 hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(hardware_code_molecular_dynamics_GPU       hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_molecular_dynamics_GPU_REC12 hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
-
-add_executable(hardware_code_spinors_staggered_test spinors_staggered_test.cpp)
-target_link_libraries(hardware_code_spinors_staggered_test
-	prng
-	lattices
-	kernelTestUtilities
-)
-add_test(hardware_code_spinors_staggered_CPU       hardware_code_spinors_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(hardware_code_spinors_staggered_GPU       hardware_code_spinors_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
 add_executable(hardware_code_fermions_staggered_test fermions_staggered_test.cpp)
 target_link_libraries(hardware_code_fermions_staggered_test
@@ -158,11 +164,7 @@ add_test(hardware_code_real_CPU       hardware_code_real_test ${CMAKE_CURRENT_SO
 add_test(hardware_code_real_GPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
 add_executable(hardware_code_correlator_test correlator_test.cpp)
-target_link_libraries(hardware_code_correlator_test
-	lattices
-	prng
-        kernelTestUtilities
-)
+target_link_libraries(hardware_code_correlator_test kernelTestUtilities )
 add_test(hardware_code_correlator_CPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_correlator_GPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
@@ -182,15 +184,5 @@ target_link_libraries(hardware_code_spinors_merged_kernels_test
 )
 add_test(hardware_code_spinors_merged_kernels_test_CPU       hardware_code_spinors_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_spinors_merged_kernels_test_GPU       hardware_code_spinors_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-
-add_executable(hardware_code_fermions_merged_kernels_test fermions_merged_kernels_test.cpp)
-target_link_libraries(hardware_code_fermions_merged_kernels_test
-	lattices
-	kernelTestUtilities
-)
-add_test(hardware_code_fermions_merged_kernels_test_CPU       hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(hardware_code_fermions_merged_kernels_test_CPU_REC12 hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(hardware_code_fermions_merged_kernels_test_GPU       hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(hardware_code_fermions_merged_kernels_test_GPU_REC12 hardware_code_fermions_merged_kernels_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 

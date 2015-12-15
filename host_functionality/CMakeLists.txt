@@ -32,4 +32,4 @@ add_library(host_functionality
 	host_random.cpp
 )
 
-target_link_libraries(host_functionality logger)
+target_link_libraries(host_functionality logger ranlux)
