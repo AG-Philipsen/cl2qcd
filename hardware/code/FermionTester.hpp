@@ -23,8 +23,6 @@
 #include "GaugefieldTester.hpp"
 #include "fermions.hpp"
 
-const double nonTrivialParameter = 0.123456;
-
 struct WilsonMassParameters
 {
 	WilsonMassParameters(const double kappaIn) : kappa(kappaIn){};

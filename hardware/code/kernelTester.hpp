@@ -35,6 +35,8 @@
 
 enum ComparisonType{difference=1, smallerThan, differenceToFirstReferenceValue};
 
+const double nonTrivialParameter = 0.123456;
+
 typedef std::vector<double> ReferenceValues;
 static ReferenceValues defaultReferenceValues()
 {

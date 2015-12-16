@@ -129,7 +129,7 @@ target_link_libraries(hardware_code_correlator_test kernelTestUtilities )
 add_test(hardware_code_correlator_CPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_correlator_GPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
-# todo: this contains only dummy tests
+# todo: these contain only dummy tests
 add_executable(hardware_code_gaugemomentum_test gaugemomentum_test.cpp)
 target_link_libraries(hardware_code_gaugemomentum_test kernelTestUtilities )
 add_test(hardware_code_gaugemomentum_CPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
@@ -137,7 +137,6 @@ add_test(hardware_code_gaugemomentum_CPU_REC12 hardware_code_gaugemomentum_test 
 add_test(hardware_code_gaugemomentum_GPU       hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_gaugemomentum_GPU_REC12 hardware_code_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
-# todo: this contains only dummy tests
 add_executable(hardware_code_molecular_dynamics_test molecular_dynamics_test.cpp)
 target_link_libraries(hardware_code_molecular_dynamics_test kernelTestUtilities )
 add_test(hardware_code_molecular_dynamics_CPU       hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
@@ -145,19 +144,15 @@ add_test(hardware_code_molecular_dynamics_CPU_REC12 hardware_code_molecular_dyna
 add_test(hardware_code_molecular_dynamics_GPU       hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_molecular_dynamics_GPU_REC12 hardware_code_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
-# todo: These have to be refactored or are even broken!
-# todo: All dependencies on lattices, prng or meta should be removed
-
 add_executable(hardware_code_fermions_staggered_test fermions_staggered_test.cpp)
-target_link_libraries(hardware_code_fermions_staggered_test
-	prng
-	lattices
-	kernelTestUtilities
-)
+target_link_libraries(hardware_code_fermions_staggered_test kernelTestUtilities)
 add_test(hardware_code_fermions_staggered_CPU       hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_fermions_staggered_CPU_REC12 hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
 add_test(hardware_code_fermions_staggered_GPU       hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_fermions_staggered_GPU_REC12 hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+
+# todo: These have to be refactored or are even broken!
+# todo: All dependencies on lattices, prng or meta should be removed
 
 add_executable(hardware_code_complex_test complex_test.cpp)
 target_link_libraries(hardware_code_complex_test kernelTestUtilities )
