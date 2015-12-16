@@ -627,9 +627,16 @@ namespace hardware {
 		class OpenClKernelParametersMockupForDslashEvenOdd : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:
+			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), thetaFermionTemporal(0.), thetaFermionSpatial(0.),
+				useChemPotIm(false), chemPotIm(0.) {}
 			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn, const double thetaTIn, const double thetaSIn) :
-				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), thetaFermionTemporal(thetaTIn), thetaFermionSpatial(thetaSIn)
-			{}
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), thetaFermionTemporal(thetaTIn), thetaFermionSpatial(thetaSIn),
+				useChemPotIm(false), chemPotIm(0.) {}
+			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn, const bool useChemPotImIn, const double chemPotImIn) :
+				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), thetaFermionTemporal(0.), thetaFermionSpatial(0.),
+				useChemPotIm(useChemPotImIn), chemPotIm(chemPotImIn) {}
+
 			virtual double  getThetaFermionTemporal() const override
 			{
 				return thetaFermionTemporal;
@@ -638,9 +645,19 @@ namespace hardware {
 			{
 				return thetaFermionSpatial;
 			}
+			virtual bool getUseChemPotIm() const override
+			{
+				return useChemPotIm;
+			}
+			virtual double getChemPotIm() const override
+			{
+				return chemPotIm;
+			}
 
 			double thetaFermionTemporal;
 			double thetaFermionSpatial;
+			bool useChemPotIm;
+			double chemPotIm;
 		};
 		class OpenClKernelParametersMockupForMergedFermionKernels : public OpenClKernelParametersMockupForSpinorTests
 		{
