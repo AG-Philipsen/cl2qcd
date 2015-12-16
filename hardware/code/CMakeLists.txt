@@ -151,6 +151,11 @@ add_test(hardware_code_fermions_staggered_CPU_REC12 hardware_code_fermions_stagg
 add_test(hardware_code_fermions_staggered_GPU       hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(hardware_code_fermions_staggered_GPU_REC12 hardware_code_fermions_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
+add_executable(hardware_code_correlator_staggered_test correlator_staggered_test.cpp)
+target_link_libraries(hardware_code_correlator_staggered_test kernelTestUtilities)
+add_test(hardware_code_correlator_staggered_CPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_correlator_staggered_GPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 # todo: These have to be refactored or are even broken!
 # todo: All dependencies on lattices, prng or meta should be removed
 
@@ -164,14 +169,6 @@ target_link_libraries(hardware_code_real_test kernelTestUtilities)
 add_test(hardware_code_real_CPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_real_GPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
-add_executable(hardware_code_correlator_staggered_test correlator_staggered_test.cpp)
-target_link_libraries(hardware_code_correlator_staggered_test
-	prng
-	lattices
-        kernelTestUtilities
-)
-add_test(hardware_code_correlator_staggered_CPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(hardware_code_correlator_staggered_GPU       hardware_code_correlator_staggered_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
 
 

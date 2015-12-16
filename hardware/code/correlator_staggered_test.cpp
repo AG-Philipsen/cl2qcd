@@ -24,17 +24,28 @@
 
 #include "correlator_staggered.hpp"
 #include "SpinorStaggeredTester.hpp"
+#include "PrngSpinorTester.hpp"
 
-class CorrelatorsStaggeredTester : public SpinorStaggeredTester{
-   public:
-	CorrelatorsStaggeredTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1):
-	     SpinorStaggeredTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues){
-		
-		code = device->getCorrelatorStaggeredCode();
-		sourcecontent = parameters->get_sourcecontent();
-		outBuffer = new hardware::buffers::SU3vec(spinorfieldEvenOddElements, device);
-		outHost = new su3vec[spinorfieldEvenOddElements * iterations];
-		
+struct StaggeredFermionsCorrelatorsTestParameters : public SpinorStaggeredTestParameters
+{
+	StaggeredFermionsCorrelatorsTestParameters(const LatticeExtents lE):
+		TestParameters(lE), SpinorStaggeredTestParameters(lE), iterations(100), sourcecontent(common::sourcecontents::one) {};
+	const int iterations;
+	common::sourcecontents sourcecontent;
+};
+
+//todo: make this virtual inheritance so that calls to device are clear
+struct CorrelatorsStaggeredTester : public SpinorStaggeredTester, PrngSpinorTester
+{
+	CorrelatorsStaggeredTester(const std::string kernelName, const ParameterCollection pC, const StaggeredFermionsCorrelatorsTestParameters tP, const ReferenceValues rV):
+	     SpinorStaggeredTester(kernelName, pC, tP, calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV),
+	     PrngSpinorTester(kernelName, pC, PrngSpinorTestParameters(tP.latticeExtents), calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV),
+	     elements(calculateEvenOddSpinorfieldSize(tP.latticeExtents))
+	{
+		code = SpinorStaggeredTester::device->getCorrelatorStaggeredCode();
+		sourcecontent = tP.sourcecontent;
+		outBuffer = new hardware::buffers::SU3vec(elements, SpinorStaggeredTester::device);
+		outHost = new su3vec[elements * tP.iterations];
 	}
 	
 	virtual ~CorrelatorsStaggeredTester(){
@@ -48,124 +59,80 @@ class CorrelatorsStaggeredTester : public SpinorStaggeredTester{
 	const hardware::buffers::SU3vec *outBuffer;
 	su3vec * outHost;
 	common::sourcecontents sourcecontent;
-	
-	std::string getSpecificInputfile(std::string inputfileIn)
-	{
-		//todo: this is ugly, find a better solution.
-		// The problem is that the parent class calls a similar fct.
-		return "../correlatorStaggered/" + inputfileIn;
-	}
-
+	const int elements;
 };
 
-///////////////////////////////////////
-
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-	BOOST_AUTO_TEST_CASE( BUILD_1 )
+struct VolumeSourceTester : public CorrelatorsStaggeredTester
+{
+	VolumeSourceTester(const ParameterCollection pC, const StaggeredFermionsCorrelatorsTestParameters tP) :
+		CorrelatorsStaggeredTester("Volume_source", pC, tP, defaultReferenceValues())
 	{
-	  BOOST_CHECK_NO_THROW(CorrelatorsStaggeredTester("build", "correlators_staggered_build_input_1", 0));
-	}
-	
-	BOOST_AUTO_TEST_CASE( BUILD_2 )
-	{
-	  BOOST_CHECK_NO_THROW(CorrelatorsStaggeredTester("build", "correlators_staggered_build_input_2", 0));
-	}
+		hmc_float sum = 0;
+		for (int i = 0; i< tP.iterations; i++){
+		  if(i%400==0)logger.info() << "Run kernel for the " << i << "th time";
+		  outBuffer->clear();
+		  code->create_volume_source_stagg_eoprec_device(outBuffer, prngStates);
+		  outBuffer->dump(&outHost[i*elements]);
+		  //Here we sum the entries to calculate the mean later
+		  sum += SpinorStaggeredTester::count_sf(&outHost[i*elements], elements);
+		}
+		logger.info() << "result: mean";
+		//sum is the sum of iterations*spinorfieldEvenOddElements*6 real numbers
+		if(sourcecontent == common::z2)
+		{
+			sum = sum/tP.iterations/elements/3; //because immaginary part is not randomly drawn, it is 0.0 always
+		}else{
+			sum = sum/tP.iterations/elements/6;
+		}
 
-BOOST_AUTO_TEST_SUITE_END()
+		SpinorStaggeredTester::kernelResult[0] = sum;
+		logger.info() << sum;
 
-///////////////////////////////////////
+		hmc_float var=0.;
+			for (int i=0; i<tP.iterations; i++){
+				var += SpinorStaggeredTester::calc_var_sf(&outHost[i*elements], elements, sum);
+			}
+			//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
+			if(sourcecontent == common::z2){
+				//because immaginary part is not randomly drawn, it is 0.0 always
+				var=var/tP.iterations/elements/3;
+			}else{
+				var=var/tP.iterations/elements/6;
+			}
+			SpinorStaggeredTester::kernelResult[0] = sqrt(var);
+			logger.info() << "result: variance";
+			logger.info() << sqrt(var);
+		
+		//todo: introduce into testParameters
+		if(sourcecontent == common::one || sourcecontent == common::z2 )
+		{
+			SpinorStaggeredTester::typeOfComparison=1;
+		}
+		else
+		{
+			SpinorStaggeredTester::typeOfComparison=2;
+		}
+	}
+};
+
+void testVolumeSource(const LatticeExtents lE)
+{
+	StaggeredFermionsCorrelatorsTestParameters parametersForThisTest(lE);
+	//todo: Work over these!
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	VolumeSourceTester(parameterCollection, parametersForThisTest);
+}
 
 BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 
-	class VolumeSourceTester : public CorrelatorsStaggeredTester{
-	   public:
-		VolumeSourceTester(std::string inputfile) : CorrelatorsStaggeredTester("Volume_source", inputfile){
-			
-			hmc_float sum = 0;
-			for (int i = 0; i< iterations; i++){
-			  if(i%400==0)logger.info() << "Run kernel for the " << i << "th time";
-			  outBuffer->clear();
-			  code->create_volume_source_stagg_eoprec_device(outBuffer, prng->get_buffers().at(0));
-			  outBuffer->dump(&outHost[i*spinorfieldEvenOddElements]);
-			  //Here we sum the entries to calculate the mean later
-			  sum += count_sf(&outHost[i*spinorfieldEvenOddElements], spinorfieldEvenOddElements);
-			}
-			logger.info() << "result: mean";
-			//sum is the sum of iterations*spinorfieldEvenOddElements*6 real numbers
-			if(sourcecontent == common::z2){
-				//because immaginary part is not randomly drawn, it is 0.0 always
-				sum = sum/iterations/spinorfieldEvenOddElements/3;
-			}else{
-				sum = sum/iterations/spinorfieldEvenOddElements/6;
-			}
-			if(calcVariance == false){
-				kernelResult[0] = sum;
-				logger.info() << sum;
-			}else{
-				hmc_float var=0.;
-				for (int i=0; i<iterations; i++){
-					var += calc_var_sf(&outHost[i*spinorfieldEvenOddElements], spinorfieldEvenOddElements, sum);
-				}
-				//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
-				if(sourcecontent == common::z2){
-					//because immaginary part is not randomly drawn, it is 0.0 always
-					var=var/iterations/spinorfieldEvenOddElements/3;
-				}else{
-					var=var/iterations/spinorfieldEvenOddElements/6;
-				}
-				kernelResult[0] = sqrt(var);
-				logger.info() << "result: variance";
-				logger.info() << sqrt(var);
-			}
-			
-			if(sourcecontent == common::one ||
-			  (sourcecontent == common::z2 && calcVariance)){
-				typeOfComparison=1;
-			}else{
-				typeOfComparison=2;
-			}
-		}
-		
-
-	};
-
+	//@todo: add more tests like in "src_volume_staggered_eo_input_{1-7}"
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_1 )
 	{
-	    VolumeSourceTester("/src_volume_staggered_eo_input_1");
+		testVolumeSource(LatticeExtents{ns4, nt4});
 	}
 	
-	BOOST_AUTO_TEST_CASE( SRC_VOLUME_2 )
-	{
-	    VolumeSourceTester("/src_volume_staggered_eo_input_2");
-	}
-	
-	BOOST_AUTO_TEST_CASE( SRC_VOLUME_3 )
-	{
-	    VolumeSourceTester("/src_volume_staggered_eo_input_3");
-	}
-	
-	BOOST_AUTO_TEST_CASE( SRC_VOLUME_4 )
-	{
-	    VolumeSourceTester("/src_volume_staggered_eo_input_4");
-	}
-	
-	BOOST_AUTO_TEST_CASE( SRC_VOLUME_5 )
-	{
-	    VolumeSourceTester("/src_volume_staggered_eo_input_5");
-	}
-	
-	BOOST_AUTO_TEST_CASE( SRC_VOLUME_6 )
-	{
-	    VolumeSourceTester("/src_volume_staggered_eo_input_6");
-	}
-	
-	BOOST_AUTO_TEST_CASE( SRC_VOLUME_7 )
-	{
-	    VolumeSourceTester("/src_volume_staggered_eo_input_7");
-	}
-
 BOOST_AUTO_TEST_SUITE_END()
 
-///////////////////////////////////////
 
