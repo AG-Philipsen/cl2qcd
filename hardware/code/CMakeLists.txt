@@ -129,6 +129,11 @@ target_link_libraries(hardware_code_correlator_test kernelTestUtilities )
 add_test(hardware_code_correlator_CPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_correlator_GPU       hardware_code_correlator_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
+add_executable(hardware_code_real_test real_test.cpp)
+target_link_libraries(hardware_code_real_test kernelTestUtilities)
+add_test(hardware_code_real_CPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(hardware_code_real_GPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 # todo: these contain only dummy tests
 add_executable(hardware_code_gaugemomentum_test gaugemomentum_test.cpp)
 target_link_libraries(hardware_code_gaugemomentum_test kernelTestUtilities )
@@ -161,13 +166,8 @@ target_link_libraries(hardware_code_complex_test kernelTestUtilities )
 add_test(hardware_code_complex_CPU       hardware_code_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
 add_test(hardware_code_complex_GPU       hardware_code_complex_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 
-# todo: These have to be refactored or are even broken!
-# todo: All dependencies on lattices, prng or meta should be removed
 
-add_executable(hardware_code_real_test real_test.cpp)
-target_link_libraries(hardware_code_real_test kernelTestUtilities)
-add_test(hardware_code_real_CPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(hardware_code_real_GPU       hardware_code_real_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+
 
 
 
