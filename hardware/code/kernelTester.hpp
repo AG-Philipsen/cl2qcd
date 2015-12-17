@@ -18,8 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KERNELTESTER_H_
-#define KERNELTESTER_H_
+# pragma once
 
 #include <vector>
 
@@ -33,7 +32,7 @@
 
 #include "latticeExtents.hpp"
 
-enum ComparisonType{difference=1, smallerThan, differenceToFirstReferenceValue};
+enum ComparisonType{difference=1, smallerThan};
 
 const double nonTrivialParameter = 0.123456;
 
@@ -44,21 +43,22 @@ static ReferenceValues defaultReferenceValues()
 }
 
 struct TestParameters {
-	std::vector<double> referenceValue;
+	ReferenceValues referenceValue; //@todo: remove this from here, should be only in KernelTester directly
 	int ns;
 	int nt;
 	LatticeExtents latticeExtents;
-	int typeOfComparison;
+	ComparisonType typeOfComparison;
 	size_t numberOfValues;
+	const double testPrecision = 10e-8;
 
-	//todo: introduce comparisonTypes here!
-	TestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn):
+	//@todo: remove the constructors with ReferenceValues in them
+	TestParameters(ReferenceValues referenceValueIn, const LatticeExtents latticeExtentsIn):
 		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValueIn.size()) {}
 	TestParameters(const LatticeExtents latticeExtentsIn):
 		referenceValue(defaultReferenceValues()), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference), numberOfValues(defaultReferenceValues().size()) {}
-	TestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, const int typeOfComparisonIn):
+	TestParameters(ReferenceValues referenceValueIn, const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn):
 		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
-	TestParameters(const LatticeExtents latticeExtentsIn, const int typeOfComparisonIn):
+	TestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn):
 		referenceValue(defaultReferenceValues()), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(defaultReferenceValues().size()) {}
 	TestParameters() = delete;
 };
@@ -71,33 +71,21 @@ struct ParameterCollection
 	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
 };
 
-class KernelTester {
-public:
-	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
-	//todo: remove these constructors
-	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&, const hardware::code::OpenClKernelParametersInterface&, struct TestParameters);
-	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
-	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, size_t numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
-	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
+struct KernelTester
+{
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
+			const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
 	virtual ~KernelTester();
-	void setReferenceValuesToZero(); //@todo: is this really needed?
 	
 protected:
-	double testPrecision;
-	int typeOfComparison; //todo: introduce comparisonTypes here!
+	const TestParameters testParameters;
 	std::vector<double> kernelResult;
-	std::vector<double> referenceValue; //@todo: must be ReferenceValues
-	bool allocatedObjects; //todo: remove
+	ReferenceValues referenceValues;
 	
-	meta::Inputparameters * parameters; //todo: remove
 	const hardware::System * system;
 	hardware::Device * device;
 	const hardware::HardwareParametersInterface * hardwareParameters;
 	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 	const hardware::OpenClCode * kernelBuilder; //todo: remove
-
-private:
-	bool temporaryFlagForKernelTesterConstructorVersion = false; //todo: remove
 };
 
-#endif /* KERNELTESTER_H_ */

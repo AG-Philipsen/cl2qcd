@@ -47,7 +47,7 @@ const Matrixsu3* createGaugefield(const int numberOfElements, const GaugefieldFi
 }
 
 GaugefieldTester::GaugefieldTester(std::string kernelName, const ParameterCollection & parameterCollection, const GaugefieldTestParameters testParams):
-	KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParams),
+	KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParams, defaultReferenceValues()),
 	numberOfElements(parameterCollection.hardwareParameters.getLatticeVolume() * NDIM)
 {
 	gaugefieldBuffer = new hardware::buffers::SU3( numberOfElements, device);

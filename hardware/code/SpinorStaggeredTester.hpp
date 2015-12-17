@@ -30,7 +30,7 @@ struct SpinorStaggeredTestParameters: public virtual TestParameters
 {
 	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn) :
 		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
-	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn, const int typeOfComparisionIn) :
+	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
 		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillTypes(SpinorFillType::one) {};
 	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};

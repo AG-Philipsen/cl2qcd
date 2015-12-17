@@ -53,7 +53,7 @@ struct SpinorTestParameters: public virtual TestParameters
 {
 	SpinorTestParameters(const LatticeExtents latticeExtendsIn) :
 		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const int typeOfComparisionIn) :
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
 		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};

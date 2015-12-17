@@ -58,18 +58,9 @@ configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
-# todo: remove the meta dependence here!
-add_library(needsMeta
- 	testUtilities.cpp
-	kernelTester.cpp
-)
-target_link_libraries( needsMeta 
-	meta
-)
-
 add_library(kernelTestUtilities
 	testUtilities.cpp
-	# kernelTester.cpp # todo: Put back in once meta dependence has been removed
+	kernelTester.cpp
 	GaugefieldTester.cpp
 	SpinorTester.cpp
 	GaugemomentumTester.cpp
@@ -80,7 +71,6 @@ target_link_libraries(kernelTestUtilities
 	${Boost_LIBRARIES}
 	host_functionality
 	hardware
-	needsMeta
 )
 
 add_unit_test_withLibraries(hardware::code::Parameters openClKernelParameters_test meta)
