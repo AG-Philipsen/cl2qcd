@@ -58,6 +58,18 @@ GaugefieldTester::GaugefieldTester(std::string kernelName, const ParameterCollec
 	code = device->getGaugefieldCode();
 }
 
+GaugefieldTester::GaugefieldTester(std::string kernelName, const ParameterCollection & parameterCollection, const GaugefieldTestParameters testParams, const ReferenceValues rV):
+	KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParams, rV),
+	numberOfElements(parameterCollection.hardwareParameters.getLatticeVolume() * NDIM)
+{
+	gaugefieldBuffer = new hardware::buffers::SU3( numberOfElements, device);
+	const Matrixsu3 * gf_host = createGaugefield(numberOfElements, testParams.fillType);
+	device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+	delete[] gf_host;
+
+	code = device->getGaugefieldCode();
+}
+
 GaugefieldTester::~GaugefieldTester()
 {
 	delete gaugefieldBuffer;

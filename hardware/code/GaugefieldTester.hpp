@@ -27,7 +27,9 @@ struct GaugefieldTestParameters : public virtual TestParameters
 {
 	GaugefieldFillType fillType;
 
-	GaugefieldTestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn):
+	GaugefieldTestParameters(const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn):
+		TestParameters(latticeExtentsIn), fillType( fillTypeIn ) {}
+	GaugefieldTestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn): //@todo: this must be removed
 		TestParameters(referenceValueIn, latticeExtentsIn), fillType( fillTypeIn ) {}
 	GaugefieldTestParameters() : TestParameters(LatticeExtents{4,4}), fillType( GaugefieldFillType::cold ) {} //@todo: is the default constructor really needed?
 };
@@ -35,6 +37,7 @@ struct GaugefieldTestParameters : public virtual TestParameters
 class GaugefieldTester : public KernelTester {
 public:
 	GaugefieldTester(std::string, const ParameterCollection &, const GaugefieldTestParameters);
+	GaugefieldTester(std::string, const ParameterCollection &, const GaugefieldTestParameters, const ReferenceValues rV);
 	~GaugefieldTester();
 
 protected:
