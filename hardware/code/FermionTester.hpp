@@ -44,15 +44,15 @@ struct FermionTestParameters : public SpinorTestParameters, GaugefieldTestParame
 	FermionTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypesIn) :
 		TestParameters(lE),
 		SpinorTestParameters(lE, SpinorFillTypes{spinorFillTypeIn}),
-		GaugefieldTestParameters(defaultReferenceValues(), lE, gaugefieldFillTypesIn) {};
+		GaugefieldTestParameters(lE, gaugefieldFillTypesIn) {};
 	FermionTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn) :
 		TestParameters(lE),
 		SpinorTestParameters(lE, SpinorFillTypes{spinorFillTypeIn}),
-		GaugefieldTestParameters(defaultReferenceValues(), lE, GaugefieldFillType::cold) {};
+		GaugefieldTestParameters(lE, GaugefieldFillType::cold) {};
 	FermionTestParameters(const LatticeExtents lE, const SpinorFillTypes spinorFillTypesIn) :
 		TestParameters(lE),
 		SpinorTestParameters(lE, spinorFillTypesIn),
-		GaugefieldTestParameters(defaultReferenceValues(), lE, GaugefieldFillType::cold) {};
+		GaugefieldTestParameters(lE, GaugefieldFillType::cold) {};
 };
 
 template< class MassParameters>

@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-# pragma once
+#pragma once
 
 #include <vector>
 
@@ -29,7 +29,6 @@
 #include "../system.hpp"
 #include "../device.hpp"
 #include "mockups.hpp"
-
 #include "latticeExtents.hpp"
 
 enum ComparisonType{difference=1, smallerThan};
@@ -44,23 +43,16 @@ static ReferenceValues defaultReferenceValues()
 
 struct TestParameters
 {
-	ReferenceValues referenceValue; //@todo: remove this from here, should be only in KernelTester directly
 	int ns;
 	int nt;
 	LatticeExtents latticeExtents;
 	ComparisonType typeOfComparison;
-	size_t numberOfValues;
 	const double testPrecision = 10e-8;
 
-	//@todo: remove the constructors with ReferenceValues in them
-	TestParameters(ReferenceValues referenceValueIn, const LatticeExtents latticeExtentsIn):
-		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference), numberOfValues(referenceValueIn.size()) {}
 	TestParameters(const LatticeExtents latticeExtentsIn):
-		referenceValue(defaultReferenceValues()), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference), numberOfValues(defaultReferenceValues().size()) {}
-	TestParameters(ReferenceValues referenceValueIn, const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn):
-		referenceValue(referenceValueIn), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(referenceValueIn.size()) {}
+		ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference) {}
 	TestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn):
-		referenceValue(defaultReferenceValues()), ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), numberOfValues(defaultReferenceValues().size()) {}
+		ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn) {}
 	TestParameters() = delete;
 };
 
