@@ -42,7 +42,8 @@ static ReferenceValues defaultReferenceValues()
 	return ReferenceValues{-1.23456};
 }
 
-struct TestParameters {
+struct TestParameters
+{
 	ReferenceValues referenceValue; //@todo: remove this from here, should be only in KernelTester directly
 	int ns;
 	int nt;
