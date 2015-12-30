@@ -18,27 +18,16 @@
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
 add_executable(su2su3extend su2su3extend.cpp)
-target_link_libraries(su2su3extend
-	optimal
-	${Boost_LIBRARIES}
-)
+target_link_libraries(su2su3extend kernelTestUtilities )
 add_test(Su2su3extend su2su3extend)
 
 add_executable(geometry geometry.cpp)
-target_link_libraries(geometry
-	optimal
-	${Boost_LIBRARIES}
-)
+target_link_libraries(geometry 	kernelTestUtilities )
 add_test(geometry geometry)
 
 add_executable(gaugefield_convert gaugefield_convert.cpp)
-target_link_libraries(gaugefield_convert
-	optimal
-	${Boost_LIBRARIES}
-)
+target_link_libraries(gaugefield_convert kernelTestUtilities)
 add_test(Gaugefield_Conversion gaugefield_convert)
-
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 add_executable(calc_staple Calc_staple_test.cpp)
 target_link_libraries(calc_staple kernelTestUtilities )
