@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../hardware/opencl_compiler.hpp"
+#include "opencl_compiler.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

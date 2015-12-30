@@ -85,6 +85,74 @@ private:
 	const int ns, nt;
 	const bool useEvenOdd;
 };
+
+struct HardwareParametersMockupForDeviceSelection : public HardwareParametersMockup
+{
+	HardwareParametersMockupForDeviceSelection(const int ns, const int nt, const int maximalNumberOfDevices, const std::vector<int> selectedDevices) :
+		HardwareParametersMockup(ns, nt), maximalNumberOfDevices(maximalNumberOfDevices), selectedDevices(selectedDevices)
+	{
+
+	}
+	virtual int getMaximalNumberOfDevices() const override
+	{
+		return maximalNumberOfDevices;
+	}
+	virtual std::vector<int> getSelectedDevices() const override
+	{
+		return selectedDevices;
+	}
+private:
+	const int maximalNumberOfDevices;
+	const std::vector<int> selectedDevices;
+};
+
+struct HardwareParametersMockupWithoutGpus : public HardwareParametersMockup
+{
+	HardwareParametersMockupWithoutGpus(const int ns, const int nt) :
+		HardwareParametersMockup(ns, nt)
+	{
+
+	}
+	virtual bool useGpu() const override
+	{
+		return false;
+	}
+	virtual bool useCpu() const override
+	{
+		return true;
+	}
+};
+
+struct HardwareParametersMockupWithoutCpus : public HardwareParametersMockup
+{
+	HardwareParametersMockupWithoutCpus(const int ns, const int nt) :
+		HardwareParametersMockup(ns, nt)
+	{
+
+	}
+	virtual bool useGpu() const override
+	{
+		return true;
+	}
+	virtual bool useCpu() const override
+	{
+		return false;
+	}
+};
+
+struct HardwareParametersMockupWithProfiling : public HardwareParametersMockup
+{
+	HardwareParametersMockupWithProfiling(const int ns, const int nt) :
+		HardwareParametersMockup(ns, nt)
+	{
+
+	}
+	virtual bool enableProfiling() const override
+	{
+		return true;
+	}
+};
+
 }
 #include "../openClCode.hpp"
 
