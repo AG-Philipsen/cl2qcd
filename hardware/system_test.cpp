@@ -36,8 +36,7 @@ BOOST_AUTO_TEST_SUITE(initialization)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		BOOST_CHECK_NO_THROW( hardware::System system( hardwareParameters, kernelParameters, kernelBuilder ) );
+		BOOST_CHECK_NO_THROW( hardware::System system( hardwareParameters, kernelParameters ) );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -56,8 +55,7 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+		hardware::System system( hardwareParameters, kernelParameters );
 		BOOST_REQUIRE(static_cast<const cl_context>(system.getContext()));
 	}
 
@@ -65,8 +63,7 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+		hardware::System system( hardwareParameters, kernelParameters );
 		atLeastOneDeviceMustExistForSanityOfSystem( &system );
 	}
 
@@ -74,8 +71,7 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+		hardware::System system( hardwareParameters, kernelParameters );
 		allDevicesMustSupportDoublePrecisionForSanityOfSystem( &system );
 	}
 
@@ -89,8 +85,7 @@ BOOST_AUTO_TEST_SUITE(devices)
 		{
 			const hardware::HardwareParametersMockupForDeviceSelection hardwareParameters(4,4, desiredNumberOfDevices, std::vector<int> {0});
 			const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-			const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-			hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+			hardware::System system( hardwareParameters, kernelParameters );
 			BOOST_REQUIRE_EQUAL( system.get_devices().size() , desiredNumberOfDevices);
 		}
 	}
@@ -99,8 +94,7 @@ BOOST_AUTO_TEST_SUITE(devices)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+		hardware::System system( hardwareParameters, kernelParameters );
 		checkThatOnlySpecifiedNumberOfDevicesIsInitialized( system.get_devices().size());
 	}
 
@@ -125,8 +119,7 @@ BOOST_AUTO_TEST_SUITE(devices)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-		hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+		hardware::System system( hardwareParameters, kernelParameters );
 		checkThatOnlySpecifiedDeviceIsInitialized( system.get_devices().size());
 	}
 
@@ -191,8 +184,7 @@ BOOST_AUTO_TEST_CASE(dump_source_if_debugging)
 	switchLogLevel("debug");
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 
 	if(logger.beDebug()) {
 		checkOnProperEnvironmentSettings();

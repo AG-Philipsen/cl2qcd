@@ -55,6 +55,16 @@ hardware::System::System(const hardware::HardwareParametersInterface & systemPar
 	initOpenCLDevices();
 }
 
+hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
+		params(nullptr), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters)
+{
+	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters(kernelParameters);
+	setDebugEnvironmentVariables();
+	initOpenCLPlatforms();
+	initOpenCLContext();
+	initOpenCLDevices();
+}
+
 void hardware::System::initOpenCLPlatforms()
 {
 	logger.debug() << "Init OpenCL platform(s)...";
@@ -219,18 +229,6 @@ hardware::System::~System()
 	devices.clear();
 
 	clReleaseContext(context);
-
-	if( temporaryFlagForSystemConstructorVersion)
-	{
-		if (hardwareParameters)
-		{
-			delete hardwareParameters;
-		}
-		if (kernelBuilder)
-		{
-			delete kernelBuilder;
-		}
-	}
 }
 
 const std::vector<hardware::Device*>& hardware::System::get_devices() const noexcept

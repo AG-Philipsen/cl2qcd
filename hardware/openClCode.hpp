@@ -36,6 +36,10 @@
 
 #include <memory>
 
+/**
+ * @todo: this must not be a virtual class at all!
+ * It will always be used with the KernelParametersInterface
+ */
 //Todo: make device arg constant
 
 namespace hardware
@@ -62,11 +66,9 @@ namespace hardware
 	};
 }
 
-#include "../meta/inputparameters.hpp"
-
 namespace hardware
 {
-	class OpenClCode_fromMetaInputparameters final : public OpenClCode
+	class OpenClCode_fromMetaInputparameters final : public OpenClCode //@todo: rename!
 	{
 	public:
 		OpenClCode_fromMetaInputparameters( const hardware::code::OpenClKernelParametersInterface & kernelParametersIn ) : kernelParameters(&kernelParametersIn)
