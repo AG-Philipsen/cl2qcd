@@ -31,8 +31,8 @@ struct SmearingTestParameters : public GaugefieldTestParameters
 	int rhoIter;
 	double rho;
 
-	SmearingTestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn, int rhoIterIn, double rhoIn) :
-		GaugefieldTestParameters(referenceValueIn,latticeExtentsIn, fillTypeIn), rhoIter(rhoIterIn), rho(rhoIn), TestParameters(latticeExtentsIn) {}
+	SmearingTestParameters(const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn, int rhoIterIn, double rhoIn) :
+		TestParameters(latticeExtentsIn), GaugefieldTestParameters(latticeExtentsIn, fillTypeIn), rhoIter(rhoIterIn), rho(rhoIn) {}
 };
 
 struct PlaquetteTester : public GaugefieldTester
@@ -128,7 +128,7 @@ void performTest2(const ReferenceValues refValuesIn, const LatticeExtents lattic
 void performTest(const ReferenceValues refValuesIn, const LatticeExtents latticeExtentsIn, const GaugefieldFillType fillType, const int rhoIter, const double rho)
 {
 	const bool useSmearing = true;
-	SmearingTestParameters testParams {refValuesIn, latticeExtentsIn, fillType, rhoIter, rho};
+	SmearingTestParameters testParams {latticeExtentsIn, fillType, rhoIter, rho};
 	hardware::HardwareParametersMockup hardwareParameters(testParams.ns,testParams.nt);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(testParams.ns,testParams.nt, testParams.rhoIter, testParams.rho, useSmearing);
 	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
