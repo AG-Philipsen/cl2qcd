@@ -27,14 +27,18 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../system.hpp"
+#include "../code/mockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace hardware;
 
-	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
+	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	for(Device * device : system.get_devices())
+	{
 		hardware::buffers::Matrix3x3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
