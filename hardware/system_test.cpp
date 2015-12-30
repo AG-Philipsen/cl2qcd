@@ -32,13 +32,6 @@
 
 BOOST_AUTO_TEST_SUITE(initialization)
 
-	BOOST_AUTO_TEST_CASE(fromMetaInputparameters)
-	{
-		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-		hardware::System system( params );
-		BOOST_REQUIRE_EQUAL(&system.get_inputparameters(), &params);
-	}
-
 	BOOST_AUTO_TEST_CASE(fromHardwareParameters)
 	{
 		const hardware::HardwareParametersMockup hardwareParameters(4,4);

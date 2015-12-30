@@ -46,19 +46,6 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
 static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
-hardware::System::System(const meta::Inputparameters& params)
-	: params(&params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr), kernelBuilder(nullptr)
-{
-	temporaryFlagForSystemConstructorVersion = true;
-	hardwareParameters = new hardware::HardwareParameters( &params );
-	kernelParameters = new hardware::code::OpenClKernelParametersImplementation{ params };
-	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters( *kernelParameters );
-	setDebugEnvironmentVariables();
-	initOpenCLPlatforms();
-	initOpenCLContext();
-	initOpenCLDevices();
-}
-
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, const hardware::OpenClCode & kernelBuilder):
 		params(nullptr), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), kernelBuilder(&kernelBuilder)
 {

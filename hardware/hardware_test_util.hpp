@@ -40,7 +40,7 @@ void broadcastMessage_fatal(const std::string message)
 
 void failTest()
 {
-	BOOST_REQUIRE_EQUAL(true, false);
+	BOOST_CHECK_EQUAL(true, false);
 }
 
 void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System * system)

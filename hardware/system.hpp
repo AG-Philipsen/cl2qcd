@@ -62,7 +62,6 @@ namespace hardware {
 		 * Create a new system representation.
 		 * You should usually only do this once per application.
 		 */
-		explicit System(const meta::Inputparameters& parameters);
 		System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, const hardware::OpenClCode & kernelBuilder);
 
 		~System();
