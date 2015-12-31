@@ -356,9 +356,9 @@ void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf, co
 
 void print_staggeredfield_eo_to_textfile(std::string outputfile, const physics::lattices::Staggeredfield_eo* sf, const hardware::System& system)
 {
-  const auto & params = system.get_inputparameters();
+  const auto & params = system.get_inputparameters();//deprecated
   su3vec * out_sf;
-  size_t NUM_ELEMENTS_SF_EO = hardware::code::get_eoprec_spinorfieldsize(params);
+  size_t NUM_ELEMENTS_SF_EO = 0;//@todo: this does not work anyway because of the fct. above! hardware::code::get_eoprec_spinorfieldsize(params);
   out_sf = new su3vec[NUM_ELEMENTS_SF_EO];
   auto sf_bufs = sf->get_buffers();
   if(sf_bufs.size() > 1){
