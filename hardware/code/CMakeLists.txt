@@ -71,7 +71,6 @@ target_link_libraries(kernelTestUtilities
 	hardware
 )
 
-add_unit_test_withLibraries(hardware::code::Parameters openClKernelParameters_test meta)
 add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities)
 
 # TODO: move 4 different test settings into executables?
