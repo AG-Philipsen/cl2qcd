@@ -63,6 +63,7 @@ namespace hardware {
 		 * You should usually only do this once per application.
 		 */
 		System(const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &);
+		System(meta::Inputparameters&); //@todo: only for compatibility, remove!
 
 		~System();
 

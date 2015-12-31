@@ -21,6 +21,8 @@
 
 #include "generalExecutable.h"
 #include "../physics/parametersPrng.hpp"
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
 
 void generalExecutable::printParametersToScreenAndFile()
 {
@@ -68,7 +70,9 @@ generalExecutable::generalExecutable(int argc, const char* argv[], std::string p
 	switchLogLevel(parameters.get_log_level());
 	printParametersToScreenAndFile();
 	//@todo: these new here are not deleted apparently!!
-	system = new hardware::System(parameters);
+	hardware::HardwareParameters hP(&parameters);
+	hardware::code::OpenClKernelParametersImplementation kP(parameters);
+	system = new hardware::System(hP, kP);
 	prngParameters = new physics::ParametersPrng_fromMetaInputparameters(&parameters);
 	prng = new physics::PRNG(*system, prngParameters);
 	initializationTimer.add();

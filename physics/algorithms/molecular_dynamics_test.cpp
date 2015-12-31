@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 	using namespace physics::algorithms;
 	{
 		const char * _params[] = {"foo", "--ntime=16"};
-		const meta::Inputparameters params(2, _params);
+		meta::Inputparameters params(2, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};

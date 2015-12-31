@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Francesca Cuteri
+ * Copyright 2015 Francesca Cuteri, christopher Pinke
  *
  * This file is part of CL2QCD.
  *

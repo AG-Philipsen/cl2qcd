@@ -156,7 +156,7 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const p
 		size_t elems = buffer->get_elements();
 		Matrixsu3 * tmp = new Matrixsu3[elems];
 		set_hot(tmp, prng, elems);
-		Device * device = buffer->get_device();
+		const Device * device = buffer->get_device();
 		device->getGaugefieldCode()->importGaugefield(buffer, tmp);
 		device->synchronize();
 		delete[] tmp;
@@ -172,7 +172,7 @@ static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers)
 		size_t elems = buffer->get_elements();
 		Matrixsu3 * tmp = new Matrixsu3[elems];
 		set_cold(tmp, elems);
-		Device * device = buffer->get_device();
+		const Device * device = buffer->get_device();
 		device->getGaugefieldCode()->importGaugefield(buffer, tmp);
 		device->synchronize();
 		delete[] tmp;

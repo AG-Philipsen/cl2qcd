@@ -53,6 +53,12 @@ hardware::System::System(const hardware::HardwareParametersInterface & systemPar
 	initOpenCLDevices();
 }
 
+hardware::System::System(meta::Inputparameters& parameters):
+		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr)
+{
+	//todo: add functionality
+}
+
 void hardware::System::initOpenCLPlatforms()
 {
 	logger.debug() << "Init OpenCL platform(s)...";
