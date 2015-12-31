@@ -20,6 +20,7 @@
 #pragma once
 
 #include "kernelTester.hpp"
+#include "gaugefield.hpp"
 
 enum GaugefieldFillType {cold = 1, nonTrivial};
 

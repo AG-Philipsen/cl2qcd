@@ -23,6 +23,7 @@
 #include "kernelTester.hpp"
 #include "gaugemomentum.hpp"
 #include "../../host_functionality/host_random.h"
+#include "prng.hpp"
 #include "SpinorTester.hpp"
 
 struct GaugemomentumTestParameters: public TestParameters

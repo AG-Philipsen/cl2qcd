@@ -53,7 +53,6 @@ BOOST_AUTO_TEST_SUITE ( BUILD )
 	{
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
 		const struct TestParameters testParams(LatticeExtents(4,4));
 		BOOST_CHECK_NO_THROW(KernelTester kernelTester("testMockup", params, kernelParameters, testParams, ReferenceValues{0} ) );
 	}
@@ -66,7 +65,6 @@ BOOST_AUTO_TEST_SUITE ( DOUBLE )
 	{
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
 		const struct TestParameters testParams(LatticeExtents(4,4));
 
 		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1} );
@@ -82,7 +80,6 @@ BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (FAILING_COMPARISON, 1)
 	{
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
 		const struct TestParameters testParams(LatticeExtents(4,4), ComparisonType::smallerThan);
 
 		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{.9});
@@ -92,7 +89,6 @@ BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (FAILING_COMPARISON, 1)
 	{
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
 		const struct TestParameters testParams(LatticeExtents(4,4), ComparisonType::smallerThan);
 
 		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1.1});
@@ -106,7 +102,6 @@ BOOST_AUTO_TEST_SUITE ( COMPLEX )
 	{
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
 		const struct TestParameters testParams(LatticeExtents(4,4));
 
 		ComplexKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1,2});
