@@ -27,12 +27,10 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 			kernelResult(rV.size(),0),
 			referenceValues(rV),
 			hardwareParameters(&hardwareParameters),
-			kernelParameters(&kernelParameters),
-			kernelBuilder(nullptr)
+			kernelParameters(&kernelParameters)
 {
 	printKernelInformation(kernelNameIn);
-	kernelBuilder = new hardware::OpenClCodeMockup( kernelParameters );
-	system = new hardware::System(hardwareParameters, kernelParameters, *kernelBuilder);
+	system = new hardware::System(hardwareParameters, kernelParameters );
 	device = system->get_devices().at(0);
 }
 
@@ -59,8 +57,6 @@ KernelTester::~KernelTester()
 
 	if(system)
 		delete system;
-	if (kernelBuilder)
-		delete kernelBuilder;
 	device = nullptr;
 }
 

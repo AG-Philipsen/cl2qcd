@@ -35,8 +35,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices())
 	{
 		hardware::buffers::Matrix3x3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);

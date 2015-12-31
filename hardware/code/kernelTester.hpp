@@ -79,6 +79,5 @@ protected:
 	hardware::Device * device;
 	const hardware::HardwareParametersInterface * hardwareParameters;
 	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
-	const hardware::OpenClCode * kernelBuilder; //todo: remove
 };
 

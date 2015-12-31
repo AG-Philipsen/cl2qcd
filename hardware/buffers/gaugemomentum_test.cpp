@@ -36,8 +36,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices())
 	{
 		Gaugemomentum dummy(system.getHardwareParameters()->getLatticeVolume(), device);
@@ -55,8 +54,7 @@ BOOST_AUTO_TEST_CASE(import_export)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices())
 	{
@@ -86,8 +84,7 @@ BOOST_AUTO_TEST_CASE(copy)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume();
 	for(Device * device : system.get_devices())
 	{

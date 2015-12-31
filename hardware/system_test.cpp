@@ -104,10 +104,9 @@ BOOST_AUTO_TEST_SUITE(devices)
 		{
 			const hardware::HardwareParametersMockupForDeviceSelection hardwareParameters(4,4, 1, std::vector<int> {desiredDevice});
 			const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-			const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
 
 			try {
-				hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+				hardware::System system( hardwareParameters, kernelParameters );
 				BOOST_REQUIRE_EQUAL( system.get_devices().size(), 1);
 			} catch(std::invalid_argument) {
 				// device might not support double-precision
@@ -131,11 +130,9 @@ BOOST_AUTO_TEST_SUITE(devices)
 	void disableSpecificDeviceTypeByCommandLine( const cl_device_type device_type, const hardware::HardwareParametersInterface & hI)
 	{
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-		const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-
 		try
 		{
-			hardware::System system( hI, kernelParameters, kernelBuilder );
+			hardware::System system( hI, kernelParameters);
 			for(hardware::Device * device : system.get_devices())
 			{
 				BOOST_REQUIRE_NE(device->get_device_type(), device_type);

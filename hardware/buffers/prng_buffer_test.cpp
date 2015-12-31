@@ -37,8 +37,7 @@ BOOST_AUTO_TEST_CASE(get_prng_buffer_size)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices())
 	{
 		int elems = hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers());
@@ -55,8 +54,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices())
 	{
 		PRNGBuffer dummy(device, hardwareParameters.useSameRandomNumbers());
@@ -74,8 +72,7 @@ BOOST_AUTO_TEST_CASE(import_export)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices())
 	{
 		PRNGBuffer buffer(device, hardwareParameters.useSameRandomNumbers());

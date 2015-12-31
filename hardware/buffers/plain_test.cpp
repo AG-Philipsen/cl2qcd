@@ -75,8 +75,7 @@ template<typename T> void test(bool requireDouble = false)
 
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	const std::vector<Device*>& devices = system.get_devices();
 	for(Device * device : devices)
 	{

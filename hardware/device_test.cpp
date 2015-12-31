@@ -42,8 +42,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 {
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	atLeastOneDeviceMustExistForSanityOfSystem( &system );
 
 	for(const hardware::Device * device : system.get_devices())
@@ -56,8 +55,7 @@ BOOST_AUTO_TEST_CASE(compile)
 {
 	const hardware::HardwareParametersMockup hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 	atLeastOneDeviceMustExistForSanityOfSystem( &system );
 
 	for(const hardware::Device * device : system.get_devices())

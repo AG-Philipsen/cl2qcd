@@ -38,22 +38,10 @@
 #include "openClCode.hpp"
 #include "code/openClKernelParameters.hpp"
 
-//todo: in the end, move this to system.hpp replacing meta/inputparameters.hpp
-#include "hardwareParameters.hpp"
-
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);
 static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
-
-hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, const hardware::OpenClCode & kernelBuilder):
-		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), kernelBuilder(&kernelBuilder)
-{
-	setDebugEnvironmentVariables();
-	initOpenCLPlatforms();
-	initOpenCLContext();
-	initOpenCLDevices();
-}
 
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
 		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters)

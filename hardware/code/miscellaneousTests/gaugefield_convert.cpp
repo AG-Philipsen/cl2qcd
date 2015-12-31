@@ -55,9 +55,7 @@ BOOST_AUTO_TEST_CASE(CPU)
 	LatticeExtents lE{4,4};
 	hardware::HardwareParametersMockup hardwareParameters(lE.ns,lE.nt);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(lE.ns,lE.nt);
-
-	hardware::OpenClCodeMockup kernelBuilder( kernelParameters );
-	hardware::System system(hardwareParameters, kernelParameters, kernelBuilder);
+	hardware::System system(hardwareParameters, kernelParameters);
 
 	test(system, 1, lE);
 	test(system, 14, lE);

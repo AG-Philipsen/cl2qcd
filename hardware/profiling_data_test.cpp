@@ -53,8 +53,7 @@ BOOST_AUTO_TEST_CASE(add_value)
 
 	const hardware::HardwareParametersMockupWithProfiling hardwareParameters(4,4);
 	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
-	const hardware::OpenClCodeMockup kernelBuilder(kernelParameters);
-	hardware::System system( hardwareParameters, kernelParameters, kernelBuilder );
+	hardware::System system( hardwareParameters, kernelParameters );
 
 	// there should always be at least one device
 	// otherwise code or system is broken
