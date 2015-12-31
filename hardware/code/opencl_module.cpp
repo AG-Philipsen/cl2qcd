@@ -210,14 +210,14 @@ static std::vector<std::string> collect_build_files()
 
 hardware::code::Opencl_Module::Opencl_Module(const hardware::code::OpenClKernelParametersInterface &kernelParameters, const hardware::Device * deviceIn):
 		kernelParameters(&kernelParameters),
-		device(device),
+		device(deviceIn),
 		basic_sources ( ClSourcePackage(collect_build_files(),
-				collect_build_options(deviceIn, kernelParameters) )  )
+				collect_build_options(device, kernelParameters) )  )
 {}
 
 hardware::code::Opencl_Module::~Opencl_Module(){}
 
-hardware::Device * hardware::code::Opencl_Module::get_device() const noexcept
+const hardware::Device * hardware::code::Opencl_Module::get_device() const noexcept
 {
 	return device;
 }

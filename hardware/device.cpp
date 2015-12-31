@@ -143,23 +143,24 @@ cl_command_queue hardware::Device::get_queue() const noexcept
 
 TmpClKernel hardware::Device::createKernel(const char * const kernel_name, std::string build_opts) const
 {
-	if(hardwareParameters->disableOpenCLCompilerOptimizations()) {
+	if(hardwareParameters->disableOpenCLCompilerOptimizations())
+	{
 		build_opts +=  " -cl-opt-disable";
 	}
 	return TmpClKernel(kernel_name, build_opts, context, get_id());
 }
 
-void hardware::Device::enqueueKernel(cl_kernel kernel)
+void hardware::Device::enqueueKernel(cl_kernel kernel) const
 {
 	enqueueKernel(kernel, get_preferred_global_thread_num());
 }
 
-void hardware::Device::enqueueKernel(cl_kernel kernel, size_t global_threads)
+void hardware::Device::enqueueKernel(cl_kernel kernel, size_t global_threads) const
 {
 	enqueue_kernel(kernel, global_threads, get_preferred_local_thread_num());
 }
 
-void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, size_t local_threads)
+void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, size_t local_threads) const
 {
 	// setup profiling if required
 	cl_event profiling_event;
@@ -213,7 +214,8 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 	}
 
 	// evaluate profiling if required
-	if(hardwareParameters->enableProfiling()) {
+	if(hardwareParameters->enableProfiling())
+	{
 		// collect the data of this kernel invocation
 		clerr = clWaitForEvents(1, &profiling_event);
 		if(clerr) {
@@ -331,7 +333,7 @@ void hardware::Device::synchronize() const
 	}
 }
 
-hardware::ProfilingData hardware::Device::getProfilingData(const cl_kernel& kernel) noexcept
+hardware::ProfilingData hardware::Device::getProfilingData(const cl_kernel& kernel) const noexcept
 {
 	return profiling_data[kernel];
 }

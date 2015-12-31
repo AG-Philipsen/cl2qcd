@@ -61,7 +61,7 @@ public:
 	 * Get OpenCL device
 	 * @return device
 	 */
-	hardware::Device * get_device() const noexcept;
+	const hardware::Device * get_device() const noexcept;
 
 	/**
 	 * Print the profiling information to a file.
@@ -141,7 +141,7 @@ private:
 	/**
 	 * The device used by this module
 	 */
-	hardware::Device * const device;
+	const hardware::Device * device;
 	
 	/**
 	 * The basic source used by all modules (children classes of this)

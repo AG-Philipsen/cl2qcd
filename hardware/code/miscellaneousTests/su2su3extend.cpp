@@ -114,7 +114,7 @@ void ExtendTester::verify()
 
 void ExtendTester::fill_buffers()
 {
-	hardware::Device * device = code->get_device();
+	const hardware::Device * device = code->get_device();
 
 	h_in = new Matrixsu2[NUM_ELEMENTS];
 	BOOST_REQUIRE(h_in);

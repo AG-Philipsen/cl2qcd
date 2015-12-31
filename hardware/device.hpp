@@ -113,17 +113,17 @@ public:
 	/**
 	 * Enqueue a kernel on the device using the default number of global threads
 	 */
-	void enqueueKernel(const cl_kernel kernel);
+	void enqueueKernel(const cl_kernel kernel) const;
 
 	/**
 	 * Enqueue a kernel on the device using the default number of local threads
 	 */
-	void enqueueKernel(const cl_kernel kernel, size_t globalThreads);
+	void enqueueKernel(const cl_kernel kernel, size_t globalThreads) const;
 
 	/**
 	 * Enqueue a kernel on the device using the default given threads specifications
 	 */
-	void enqueue_kernel(const cl_kernel kernel, size_t globalThreads, size_t localThreads);
+	void enqueue_kernel(const cl_kernel kernel, size_t globalThreads, size_t localThreads) const;
 
 	void enqueueMarker(cl_event *) const;
 
@@ -155,7 +155,7 @@ public:
 	/**
 	 * Get the profiling data for all executions of the given kernel on this device.
 	 */
-	ProfilingData getProfilingData(const cl_kernel& desiredKernel) noexcept;
+	ProfilingData getProfilingData(const cl_kernel& desiredKernel) const noexcept;
 
 	/**
 	 * @todo: Rename all these getter fcts.
@@ -214,7 +214,7 @@ private:
 	operator cl_command_queue() const noexcept;
 	cl_command_queue get_queue() const noexcept;
 
-	std::map<cl_kernel, ProfilingData> profiling_data;
+	mutable std::map<cl_kernel, ProfilingData> profiling_data;
 
 	/**
 	 * Pointers to specific code objects.
