@@ -47,7 +47,7 @@ static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, const hardware::OpenClCode & kernelBuilder):
-		params(nullptr), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), kernelBuilder(&kernelBuilder)
+		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), kernelBuilder(&kernelBuilder)
 {
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
@@ -56,7 +56,7 @@ hardware::System::System(const hardware::HardwareParametersInterface & systemPar
 }
 
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
-		params(nullptr), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters)
+		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters)
 {
 	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters(kernelParameters);
 	setDebugEnvironmentVariables();
@@ -238,7 +238,7 @@ const std::vector<hardware::Device*>& hardware::System::get_devices() const noex
 
 const meta::Inputparameters& hardware::System::get_inputparameters() const noexcept
 {
-	return *params;
+	return meta::Inputparameters(0,0); //Note: This returns reference to a temporary object, but this fct. must not be used anyway and will be removed asap
 }
 
 hardware::OpenclException::OpenclException(int err)

@@ -86,7 +86,6 @@ namespace hardware {
 		cl_platform_id get_platform() const;
 
 	private:
-		const meta::Inputparameters * params; //@todo: remove
 		std::vector<Device*> devices;
 		cl_context context;
 		cl_platform_id platform;
