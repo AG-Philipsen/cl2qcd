@@ -33,9 +33,7 @@
 
 using namespace std;
 
-static bool use_multipass_gauge_force_tlsym(hardware::Device * device);
-
-static bool use_multipass_gauge_force_tlsym(hardware::Device * device)
+static bool use_multipass_gauge_force_tlsym(const hardware::Device * device)
 {
 	return (device->get_name() == "Tahiti");
 }
@@ -583,7 +581,7 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 	throw std::runtime_error("Not implemented!");
 }
 
-hardware::code::Molecular_Dynamics::Molecular_Dynamics(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Molecular_Dynamics::Molecular_Dynamics(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device), md_update_gaugefield (0), gauge_force (0),
 	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo_0(0), fermion_force_eo_1(0), fermion_force_eo_2(0), fermion_force_eo_3(0), stout_smear_fermion_force(0),
 	  fermion_stagg_partial_force_eo(0),

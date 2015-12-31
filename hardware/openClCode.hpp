@@ -36,104 +36,74 @@
 
 #include <memory>
 
-/**
- * @todo: this must not be a virtual class at all!
- * It will always be used with the KernelParametersInterface
- */
-//Todo: make device arg constant
-
 namespace hardware
 {
 	class OpenClCode
 	{
 	public:
-		virtual ~OpenClCode(){};
-		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Gaugefield> getCode_gaugefield(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Complex> getCode_complex(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Prng> getCode_PRNG(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Spinors> getCode_Spinors(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Fermions> getCode_Fermions(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Gaugemomentum> getCode_Gaugemomentum(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Molecular_Dynamics> getCode_Molecular_Dynamics(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Correlator> getCode_Correlator(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Heatbath> getCode_Heatbath(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Kappa> getCode_Kappa(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Buffer> getCode_Buffer(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Spinors_staggered> getCode_Spinors_staggered(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Correlator_staggered> getCode_Correlator_staggered(hardware::Device *) const = 0;
-		virtual std::unique_ptr<const hardware::code::Fermions_staggered> getCode_Fermions_staggered(hardware::Device *) const = 0;
-	};
-}
-
-namespace hardware
-{
-	class OpenClCode_fromMetaInputparameters final : public OpenClCode //@todo: rename!
-	{
-	public:
-		OpenClCode_fromMetaInputparameters( const hardware::code::OpenClKernelParametersInterface & kernelParametersIn ) : kernelParameters(&kernelParametersIn)
+		OpenClCode( const hardware::code::OpenClKernelParametersInterface & kernelParametersIn ) : kernelParameters(&kernelParametersIn)
 		{};
-		~OpenClCode_fromMetaInputparameters()
+		~OpenClCode()
 		{}
-		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Real> getCode_real(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Real>( new hardware::code::Real{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Real>( new hardware::code::Real{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Gaugefield> getCode_gaugefield(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Gaugefield> getCode_gaugefield(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Gaugefield>( new hardware::code::Gaugefield{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Gaugefield>( new hardware::code::Gaugefield{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Prng> getCode_PRNG(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Prng> getCode_PRNG(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Prng>( new hardware::code::Prng{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Prng>( new hardware::code::Prng{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Complex> getCode_complex(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Complex> getCode_complex(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Complex>( new hardware::code::Complex{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Complex>( new hardware::code::Complex{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Spinors> getCode_Spinors(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Spinors> getCode_Spinors(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Spinors>( new hardware::code::Spinors{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Spinors>( new hardware::code::Spinors{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Fermions> getCode_Fermions(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Fermions> getCode_Fermions(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Fermions>( new hardware::code::Fermions{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Fermions>( new hardware::code::Fermions{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Gaugemomentum> getCode_Gaugemomentum(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Gaugemomentum> getCode_Gaugemomentum(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Gaugemomentum>( new hardware::code::Gaugemomentum{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Gaugemomentum>( new hardware::code::Gaugemomentum{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Molecular_Dynamics> getCode_Molecular_Dynamics(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Molecular_Dynamics> getCode_Molecular_Dynamics(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Molecular_Dynamics>( new hardware::code::Molecular_Dynamics{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Molecular_Dynamics>( new hardware::code::Molecular_Dynamics{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Correlator> getCode_Correlator(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Correlator> getCode_Correlator(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Correlator>( new hardware::code::Correlator{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Correlator>( new hardware::code::Correlator{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Heatbath> getCode_Heatbath(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Heatbath> getCode_Heatbath(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Heatbath>( new hardware::code::Heatbath{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Heatbath>( new hardware::code::Heatbath{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Kappa> getCode_Kappa(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Kappa> getCode_Kappa(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Kappa>( new hardware::code::Kappa{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Kappa>( new hardware::code::Kappa{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Buffer> getCode_Buffer(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Buffer> getCode_Buffer(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Buffer>( new hardware::code::Buffer{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Buffer>( new hardware::code::Buffer{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Spinors_staggered> getCode_Spinors_staggered(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Spinors_staggered> getCode_Spinors_staggered(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Spinors_staggered>( new hardware::code::Spinors_staggered{*kernelParameters,deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Spinors_staggered>( new hardware::code::Spinors_staggered{*kernelParameters,deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Correlator_staggered> getCode_Correlator_staggered(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Correlator_staggered> getCode_Correlator_staggered(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Correlator_staggered>( new hardware::code::Correlator_staggered{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Correlator_staggered>( new hardware::code::Correlator_staggered{*kernelParameters, deviceIn} ) ;
 		}
-		virtual std::unique_ptr<const hardware::code::Fermions_staggered> getCode_Fermions_staggered(hardware::Device * deviceIn) const override
+		std::unique_ptr<hardware::code::Fermions_staggered> getCode_Fermions_staggered(const hardware::Device * deviceIn) const
 		{
-			return std::unique_ptr<const hardware::code::Fermions_staggered>( new hardware::code::Fermions_staggered{*kernelParameters, deviceIn} ) ;
+			return std::unique_ptr<hardware::code::Fermions_staggered>( new hardware::code::Fermions_staggered{*kernelParameters, deviceIn} ) ;
 		}
 	private:
 		const hardware::code::OpenClKernelParametersInterface * kernelParameters;

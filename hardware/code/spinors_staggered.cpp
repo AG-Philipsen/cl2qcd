@@ -1609,7 +1609,7 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	//Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_reduction);
 }
 
-hardware::code::Spinors_staggered::Spinors_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Spinors_staggered::Spinors_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();

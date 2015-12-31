@@ -191,7 +191,7 @@ void hardware::code::Heatbath::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, overrelax_odd);
 }
 
-hardware::code::Heatbath::Heatbath(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Heatbath::Heatbath(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();

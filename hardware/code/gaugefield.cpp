@@ -531,7 +531,7 @@ void hardware::code::Gaugefield::convertGaugefieldFromSOA_device(const hardware:
 	get_device()->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
 }
 
-hardware::code::Gaugefield::Gaugefield( const hardware::code::OpenClKernelParametersInterface& kernelParameters , hardware::Device * device)
+hardware::code::Gaugefield::Gaugefield( const hardware::code::OpenClKernelParametersInterface& kernelParameters , const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device),
 	  stout_smear(0), rectangles(0), rectangles_reduction(0)
 {

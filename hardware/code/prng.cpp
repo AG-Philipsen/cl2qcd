@@ -22,7 +22,7 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const hardware::code::OpenClKernelParametersInterface& params)
+static std::string collect_build_options(const hardware::Device * device, const hardware::code::OpenClKernelParametersInterface& params)
 {
 	std::ostringstream options;
 	options.precision(16);
@@ -35,7 +35,7 @@ static std::string collect_build_options(hardware::Device * device, const hardwa
 	return options.str();
 }
 
-hardware::code::Prng::Prng(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Prng::Prng(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device)
 {
 #ifdef USE_PRNG_RANLUX

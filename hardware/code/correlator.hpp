@@ -105,7 +105,7 @@ protected:
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 public:
-	Correlator(const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device);
+	Correlator(const hardware::code::OpenClKernelParametersInterface& kernelParams , const hardware::Device * device);
 
 private:
 	/**

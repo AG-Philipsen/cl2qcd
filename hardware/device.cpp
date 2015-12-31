@@ -331,11 +331,12 @@ void hardware::Device::synchronize() const
 	}
 }
 
-hardware::ProfilingData hardware::Device::getProfilingData(const cl_kernel& kernel) noexcept {
+hardware::ProfilingData hardware::Device::getProfilingData(const cl_kernel& kernel) noexcept
+{
 	return profiling_data[kernel];
 }
 
-const hardware::code::Gaugefield * hardware::Device::getGaugefieldCode()
+const hardware::code::Gaugefield * hardware::Device::getGaugefieldCode() const
 {
 	if(!gaugefield_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -344,7 +345,7 @@ const hardware::code::Gaugefield * hardware::Device::getGaugefieldCode()
 	return gaugefield_code;
 }
 
-const hardware::code::Prng * hardware::Device::getPrngCode()
+const hardware::code::Prng * hardware::Device::getPrngCode() const
 {
 	if(!prng_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -353,7 +354,7 @@ const hardware::code::Prng * hardware::Device::getPrngCode()
 	return prng_code;
 }
 
-const hardware::code::Real * hardware::Device::getRealCode()
+const hardware::code::Real * hardware::Device::getRealCode() const
 {
 	if(!real_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -362,7 +363,7 @@ const hardware::code::Real * hardware::Device::getRealCode()
 	return real_code;
 }
 
-const hardware::code::Complex * hardware::Device::getComplexCode()
+const hardware::code::Complex * hardware::Device::getComplexCode() const
 {
 	if(!complex_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -371,7 +372,7 @@ const hardware::code::Complex * hardware::Device::getComplexCode()
 	return complex_code;
 }
 
-const hardware::code::Spinors * hardware::Device::getSpinorCode()
+const hardware::code::Spinors * hardware::Device::getSpinorCode() const
 {
 	if(!spinor_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -380,7 +381,7 @@ const hardware::code::Spinors * hardware::Device::getSpinorCode()
 	return spinor_code;
 }
 
-const hardware::code::Spinors_staggered * hardware::Device::getSpinorStaggeredCode()
+const hardware::code::Spinors_staggered * hardware::Device::getSpinorStaggeredCode() const
 {
 	if(!spinor_staggered_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -389,7 +390,7 @@ const hardware::code::Spinors_staggered * hardware::Device::getSpinorStaggeredCo
 	return spinor_staggered_code;
 }
 
-const hardware::code::Fermions * hardware::Device::getFermionCode()
+const hardware::code::Fermions * hardware::Device::getFermionCode() const
 {
 	if(!fermion_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -398,7 +399,7 @@ const hardware::code::Fermions * hardware::Device::getFermionCode()
 	return fermion_code;
 }
 
-const hardware::code::Fermions_staggered * hardware::Device::getFermionStaggeredCode()
+const hardware::code::Fermions_staggered * hardware::Device::getFermionStaggeredCode() const
 {
 	if(!fermion_staggered_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -407,7 +408,7 @@ const hardware::code::Fermions_staggered * hardware::Device::getFermionStaggered
 	return fermion_staggered_code;
 }
 
-const hardware::code::Gaugemomentum * hardware::Device::getGaugemomentumCode()
+const hardware::code::Gaugemomentum * hardware::Device::getGaugemomentumCode() const
 {
 	if(!gaugemomentum_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -416,7 +417,7 @@ const hardware::code::Gaugemomentum * hardware::Device::getGaugemomentumCode()
 	return gaugemomentum_code;
 }
 
-const hardware::code::Molecular_Dynamics * hardware::Device::getMolecularDynamicsCode()
+const hardware::code::Molecular_Dynamics * hardware::Device::getMolecularDynamicsCode() const
 {
 	if(!molecular_dynamics_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -425,7 +426,7 @@ const hardware::code::Molecular_Dynamics * hardware::Device::getMolecularDynamic
 	return molecular_dynamics_code;
 }
 
-const hardware::code::Correlator * hardware::Device::getCorrelatorCode()
+const hardware::code::Correlator * hardware::Device::getCorrelatorCode() const
 {
 	if(!correlator_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -434,7 +435,7 @@ const hardware::code::Correlator * hardware::Device::getCorrelatorCode()
 	return correlator_code;
 }
 
-const hardware::code::Correlator_staggered * hardware::Device::getCorrelatorStaggeredCode()
+const hardware::code::Correlator_staggered * hardware::Device::getCorrelatorStaggeredCode() const
 {
 	if(!correlator_staggered_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -443,7 +444,7 @@ const hardware::code::Correlator_staggered * hardware::Device::getCorrelatorStag
 	return correlator_staggered_code;
 }
 
-const hardware::code::Heatbath * hardware::Device::getHeatbathCode()
+const hardware::code::Heatbath * hardware::Device::getHeatbathCode() const
 {
 	if(!heatbath_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -452,7 +453,7 @@ const hardware::code::Heatbath * hardware::Device::getHeatbathCode()
 	return heatbath_code;
 }
 
-const hardware::code::Kappa * hardware::Device::getKappaCode()
+const hardware::code::Kappa * hardware::Device::getKappaCode() const
 {
 	if(!kappa_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -461,7 +462,7 @@ const hardware::code::Kappa * hardware::Device::getKappaCode()
 	return kappa_code;
 }
 
-const hardware::code::Buffer * hardware::Device::getBufferCode()
+const hardware::code::Buffer * hardware::Device::getBufferCode() const
 {
 	if(!buffer_code) {
 		//todo: do not use release here. real_code itself should rather be a smart pointer
@@ -583,7 +584,7 @@ static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_
 	       );
 }
 
-void hardware::Device::markMemReleased(const bool host, const size_t size)
+void hardware::Device::markMemReleased(const bool host, const size_t size) const
 {
 	logger.trace() << "Released " << size << " bytes on (" << grid_pos << ").";
 	if(host) {
@@ -596,7 +597,7 @@ void hardware::Device::markMemReleased(const bool host, const size_t size)
 	logger.trace() << "Memory usage (" << grid_pos << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }
 
-void hardware::Device::markMemAllocated(const bool host, const size_t size)
+void hardware::Device::markMemAllocated(const bool host, const size_t size) const
 {
 	logger.trace() << "Allocted " << size << " bytes on (" << grid_pos << ").";
 	if(host) {

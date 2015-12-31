@@ -165,7 +165,7 @@ void hardware::code::Correlator_staggered::print_profiling(const std::string& fi
 	}
 }
 
-hardware::code::Correlator_staggered::Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Correlator_staggered::Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device), create_volume_source_stagg_eoprec(0)
 // 	, create_point_source(0), create_timeslice_source(0), create_zslice_source(0),
 {

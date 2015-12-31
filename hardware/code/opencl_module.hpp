@@ -78,7 +78,7 @@ public:
 	ClSourcePackage get_basic_sources() const noexcept;
 
 protected:
-	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device);
+	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device);
 	~Opencl_Module();
 
 	/**

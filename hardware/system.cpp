@@ -46,7 +46,7 @@ static void setDebugEnvironmentVariables();
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
 		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters)
 {
-	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters(kernelParameters);
+	kernelBuilder = new hardware::OpenClCode(kernelParameters);
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
