@@ -32,7 +32,7 @@ add_library(hardware
 )
 
 add_library(hardwareTestUtilities
-	hardware_test_util.cpp
+	hardwareTestUtilities.cpp
 )
 
 

@@ -19,9 +19,9 @@
 
 # pragma once
 
-#include "../hardwareParameters.hpp"
+#include "hardwareParameters.hpp"
 #include "openClKernelParameters.hpp"
-#include "../hardware_test_util.hpp"
+#include "hardwareTestUtilities.hpp"
 
 namespace hardware
 {

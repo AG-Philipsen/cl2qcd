@@ -36,7 +36,6 @@
 #include "device.hpp"
 #include "transfer/transfer.hpp"
 #include "openClCode.hpp"
-#include "code/openClKernelParameters.hpp"
 
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);

@@ -27,8 +27,8 @@
 
 #include "system.hpp"
 #include "device.hpp"
-#include "hardware_test_util.hpp"
-#include "code/mockups.hpp"
+#include "hardwareTestUtilities.hpp"
+#include "interfaceMockups.hpp"
 
 void querrySomeInformationsFromDevice( const hardware::Device * device )
 {

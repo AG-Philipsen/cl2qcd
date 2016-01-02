@@ -28,7 +28,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../system.hpp"
-#include "../code/mockups.hpp"
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(get_prng_buffer_size)
 {

@@ -26,7 +26,7 @@
 
 #include "../../../meta/type_ops.hpp" //@todo: move the Matrixsu3 fcts. from here to a different place
 
-#include "../mockups.hpp"
+#include "../../interfaceMockups.hpp"
 #include "../GaugefieldTester.hpp"
 
 void test(const hardware::System& system, const int seed, const LatticeExtents lE)

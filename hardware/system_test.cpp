@@ -26,9 +26,9 @@
 
 #include "system.hpp"
 #include "device.hpp"
-#include "hardware_test_util.hpp"
+#include "hardwareTestUtilities.hpp"
 
-#include "code/mockups.hpp"
+#include "interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_SUITE(initialization)
 

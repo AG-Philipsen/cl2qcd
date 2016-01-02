@@ -26,7 +26,7 @@
 #include "testUtilities.hpp"
 #include "../system.hpp"
 #include "../device.hpp"
-#include "mockups.hpp"
+#include "../interfaceMockups.hpp"
 #include "latticeExtents.hpp"
 
 enum ComparisonType{difference=1, smallerThan};

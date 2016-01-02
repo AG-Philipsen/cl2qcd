@@ -23,7 +23,7 @@
 
 #include "../../common_header_files/types.h"
 
-#include "openClKernelParameters.hpp"
+#include "../openClKernelParameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../device.hpp"

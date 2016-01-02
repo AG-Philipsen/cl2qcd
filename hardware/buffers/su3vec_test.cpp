@@ -30,7 +30,7 @@
 #include "../system.hpp"
 #include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
-#include "../code/mockups.hpp"
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {

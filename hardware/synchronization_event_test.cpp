@@ -26,7 +26,7 @@
 
 #include "synchronization_event.hpp"
 #include "system.hpp"
-#include "code/mockups.hpp"
+#include "interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(good_case)
 {

@@ -25,7 +25,7 @@
 #include "../device.hpp"
 #include "../../meta/type_ops.hpp"
 #include <stdexcept>
-#include "../code/mockups.hpp"
+#include "../interfaceMockups.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

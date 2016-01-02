@@ -29,7 +29,7 @@
 #include "system.hpp"
 #include "device.hpp"
 #include "code/buffer.hpp"
-#include "code/mockups.hpp"
+#include "interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initial)
 {

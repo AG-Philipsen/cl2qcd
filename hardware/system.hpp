@@ -24,7 +24,7 @@
 
 #include "../meta/inputparameters.hpp"
 #include "hardwareParameters.hpp"
-#include "code/openClKernelParameters.hpp"
+#include "openClKernelParameters.hpp"
 #include "../common_header_files/types.h"
 #include "size_4.hpp"
 #include <map>

@@ -17,7 +17,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "hardware_test_util.hpp"
+#include "hardwareTestUtilities.hpp"
 #include <boost/test/unit_test.hpp>
 
 std::pair<bool, bool> checkForBoostRuntimeArguments()

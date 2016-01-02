@@ -24,7 +24,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "kernelTester.hpp"
-#include "mockups.hpp"
 
 struct DoubleKernelTester : public KernelTester
 {

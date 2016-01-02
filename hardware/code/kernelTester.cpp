@@ -20,7 +20,7 @@
 
 #include "kernelTester.hpp"
 #include <boost/test/unit_test.hpp>
-#include "../hardware_test_util.hpp"
+#include "../hardwareTestUtilities.hpp"
 
 KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersInterface& hardwareParameters,
 		const hardware::code::OpenClKernelParametersInterface& kernelParameters, const TestParameters testParams, const ReferenceValues rV) :
