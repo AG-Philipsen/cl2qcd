@@ -2,7 +2,7 @@
 
 #include "../meta/inputparameters.hpp"
 #include "../meta/util.hpp"
-#include "../hardware/code/openClKernelParameters.hpp"
+#include "../hardware/openClKernelParameters.hpp"
 
 namespace hardware {
 	namespace code {
