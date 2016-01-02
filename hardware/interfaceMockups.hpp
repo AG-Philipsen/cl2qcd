@@ -306,11 +306,11 @@ namespace hardware
 			}
 			virtual size_t getSpinorFieldSize() const override
 			{
-				return getNs() * getNs() * getNs() * getNt();
+				return getLatticeVolume();
 			}
 			virtual size_t getEoprecSpinorFieldSize() const override
 			{
-				return getNs() * getNs() * getNs() * getNt() / 2;
+				return getLatticeVolume() / 2;
 			}
 			virtual int getCorrDir() const override
 			{
@@ -359,45 +359,22 @@ namespace hardware
 			bool useRec12Value;
 		};
 
-		class OpenClKernelParametersMockupForSpinorTests : public OpenClKernelParametersInterface
+		class OpenClKernelParametersMockupForSpinorTests : public OpenClKernelParametersMockup
 		{
 		public:
 			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn) :
-				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+				OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn, const bool useEvenOddIn) :
-				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(useEvenOddIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+				OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(useEvenOddIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockupForSpinorTests()	{};
-			virtual int getNs() const override
-			{
-				return ns;
-			}
-			virtual int getNt() const override
-			{
-				return nt;
-			}
+
 			virtual size_t getPrecision() const override
 			{
 				return prec;
 			}
-			virtual bool getUseChemPotRe() const override
-			{
-				return false;
-			}
-			virtual bool getUseChemPotIm() const override
-			{
-				return false;
-			}
 			virtual bool getUseSmearing() const override
 			{
 				return false;
-			}
-			virtual double getChemPotRe() const override
-			{
-				return 0.;
-			}
-			virtual double getChemPotIm() const override
-			{
-				return 0.;
 			}
 			virtual double getRho() const override
 			{
@@ -415,133 +392,7 @@ namespace hardware
 			{
 				return useEvenOdd;
 			}
-			virtual common::action  getFermact() const override
-			{
-				return common::wilson;
-			}
-			virtual int getMetroApproxOrd() const override
-			{
-				return 15.;
-			}
-			virtual int getMdApproxOrd() const override
-			{
-				return 8.;
-			}
-			virtual double getThetaFermionSpatial() const override
-			{
-				return 0.;
-			}
-			virtual double getThetaFermionTemporal() const override
-			{
-				return 0.;
-			}
-			virtual double getBeta() const override
-			{
-				return 5.69;
-			}
-			virtual double getKappa() const override
-			{
-				return 0.125;
-			}
-			virtual int getNumSources() const override
-			{
-				return 12;
-			}
-			virtual common::sourcecontents getSourceContent() const override
-			{
-				return common::sourcecontents::one;
-			}
-			virtual common::sourcetypes getSourceType() const override
-			{
-				return common::sourcetypes::point;
-			}
-			virtual bool getUseAniso() const override
-			{
-				return false;
-			}
-			virtual size_t getSpatialLatticeVolume() const override
-			{
-				return getNs() * getNs() * getNs();
-			}
-			virtual size_t getLatticeVolume() const override
-			{
-				return getNs() * getNs() * getNs() * getNt();
-			}
-			virtual bool getUseRectangles() const override
-			{
-				return false;
-			}
-			virtual double getC0() const override
-			{
-				return 1.;
-			}
-			virtual double getC1() const override
-			{
-				return 0.;
-			}
-			virtual double getXi0() const override
-			{
-				return 0.;
-			}
-			virtual size_t getFloatSize() const override
-			{
-				return prec / 8;
-			}
-			virtual size_t getMatSize() const override
-			{
-				// TODO with rec12 this becomes 6
-				return 9;
-			}
-			virtual size_t getSpinorFieldSize() const override
-			{
-				return getLatticeVolume();
-			}
-			virtual size_t getEoprecSpinorFieldSize() const override
-			{
-				return getLatticeVolume() / 2;
-			}
-			virtual int getCorrDir() const override
-			{
-				return 3;
-			}
-			virtual bool getMeasureCorrelators() const override
-			{
-				return true;
-			}
-			virtual bool getUseMergeKernelsFermion() const override
-			{
-				return false;
-			}
-			virtual hmc_float getMuBar() const override
-			{
-				return 2* getKappa() * 0.006;
-			}
-			virtual double getMass() const override
-			{
-				return 0.1;
-			}
-			virtual bool getUseSameRndNumbers() const override
-			{
-				return false;
-			}
-			virtual uint32_t getHostSeed() const override
-			{
-				return 4815;
-			}
-			virtual bool getUseMergeKernelsSpinor() const override
-			{
-				return false;
-			}
-			virtual double getMu() const override
-			{
-				return 0.006;
-			}
-			virtual double getApproxLower() const override
-			{
-				return 1.e-5;
-			}
 		protected:
-			const int ns, nt;
 			const size_t prec;
 			const bool useEvenOdd;
 			bool useRec12Value;
