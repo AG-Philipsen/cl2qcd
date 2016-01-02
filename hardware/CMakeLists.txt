@@ -31,6 +31,11 @@ add_library(hardware
 	opencl_compiler.cpp
 )
 
+add_library(hardwareTestUtilities
+	hardware_test_util.cpp
+)
+
+
 add_modules(hardware
 	buffers
 	code

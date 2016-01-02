@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
@@ -17,17 +17,17 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "latticeExtents.hpp"
 
-struct LatticeExtents
+int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
 {
-	LatticeExtents() : ns(4), nt(4) {};
-	LatticeExtents(const int nsIn, const int ntIn): ns(nsIn), nt(ntIn) {};
-	LatticeExtents(const unsigned int nsIn, const unsigned int ntIn): ns(nsIn), nt(ntIn) {};
-	const unsigned int ns;
-	const unsigned int nt;
-};
+	return 	nsIn * nsIn * nsIn * ntIn;
+}
 
-int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept;
-int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept;
+int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn.ns, latticeExtentsIn.nt);
+}
+
+
 

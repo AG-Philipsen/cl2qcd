@@ -21,14 +21,21 @@
 
 #include "../hardwareParameters.hpp"
 #include "openClKernelParameters.hpp"
+#include "../hardware_test_util.hpp"
 
 namespace hardware
 {
 	class HardwareParametersMockup : public HardwareParametersInterface
 	{
 	public:
-		HardwareParametersMockup(const int nsIn, const int ntIn) : ns(nsIn), nt(ntIn), useEvenOdd(false) {};
-		HardwareParametersMockup(const int nsIn, const int ntIn, const bool useEvenOddIn) : ns(nsIn), nt(ntIn), useEvenOdd(useEvenOddIn) {};
+		HardwareParametersMockup(const int nsIn, const int ntIn) : ns(nsIn), nt(ntIn), useEvenOdd(false)
+		{
+			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
+		};
+		HardwareParametersMockup(const int nsIn, const int ntIn, const bool useEvenOddIn) : ns(nsIn), nt(ntIn), useEvenOdd(useEvenOddIn)
+		{
+			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
+		};
 		~HardwareParametersMockup() {};
 		virtual int getNs() const override
 		{
@@ -44,11 +51,11 @@ namespace hardware
 		}
 		virtual bool useGpu() const override
 		{
-			return false;
+			return useGpuValue;
 		}
 		virtual bool useCpu() const override
 		{
-			return true;
+			return useCpuValue;
 		}
 		virtual int getMaximalNumberOfDevices() const override
 		{
@@ -85,6 +92,12 @@ namespace hardware
 	private:
 		const int ns, nt;
 		const bool useEvenOdd;
+		bool useGpuValue, useCpuValue;
+		void setGpuAndCpuOptions(const bool value)
+		{
+			useGpuValue = value;
+			useCpuValue = !value;
+		}
 	};
 
 	struct HardwareParametersMockupForDeviceSelection : public HardwareParametersMockup
@@ -111,9 +124,8 @@ namespace hardware
 	{
 		HardwareParametersMockupWithoutGpus(const int ns, const int nt) :
 			HardwareParametersMockup(ns, nt)
-		{
+		{}
 
-		}
 		virtual bool useGpu() const override
 		{
 			return false;
@@ -128,9 +140,8 @@ namespace hardware
 	{
 		HardwareParametersMockupWithoutCpus(const int ns, const int nt) :
 			HardwareParametersMockup(ns, nt)
-		{
+		{}
 
-		}
 		virtual bool useGpu() const override
 		{
 			return true;
@@ -145,9 +156,8 @@ namespace hardware
 	{
 		HardwareParametersMockupWithProfiling(const int ns, const int nt) :
 			HardwareParametersMockup(ns, nt)
-		{
+		{}
 
-		}
 		virtual bool enableProfiling() const override
 		{
 			return true;
@@ -163,11 +173,11 @@ namespace hardware
 		{
 		public:
 			OpenClKernelParametersMockup(int nsIn, int ntIn):
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false) {};
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, bool useSmearingIn):
-				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useRectangles(false), useSmearing(useSmearingIn) {};
+				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useRectangles(false), useSmearing(useSmearingIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn):
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false) {};
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockup()	{};
 			virtual int getNs() const override
 			{
@@ -211,7 +221,7 @@ namespace hardware
 			}
 			virtual bool getUseRec12() const override
 			{
-				return false;
+				return useRec12Value;
 			}
 			virtual bool getUseEo() const override
 			{
@@ -346,15 +356,16 @@ namespace hardware
 			int ns, nt, rhoIter;
 			double rho;
 			bool useRectangles, useSmearing;
+			bool useRec12Value;
 		};
 
 		class OpenClKernelParametersMockupForSpinorTests : public OpenClKernelParametersInterface
 		{
 		public:
 			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn) :
-				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(false) {};
+				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn, const bool useEvenOddIn) :
-				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(useEvenOddIn) {};
+				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(useEvenOddIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockupForSpinorTests()	{};
 			virtual int getNs() const override
 			{
@@ -533,6 +544,7 @@ namespace hardware
 			const int ns, nt;
 			const size_t prec;
 			const bool useEvenOdd;
+			bool useRec12Value;
 		};
 
 		class OpenClKernelParametersMockupForSpinorStaggered : public OpenClKernelParametersMockupForSpinorTests

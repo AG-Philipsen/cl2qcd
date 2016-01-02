@@ -22,6 +22,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE gaugefield_convert
 #include <boost/test/unit_test.hpp>
+#include "../testUtilities.hpp"
 
 #include "../../../meta/type_ops.hpp" //@todo: move the Matrixsu3 fcts. from here to a different place
 
@@ -50,23 +51,25 @@ void test(const hardware::System& system, const int seed, const LatticeExtents l
 	}
 }
 
-BOOST_AUTO_TEST_CASE(CPU)
+BOOST_AUTO_TEST_CASE(GAUGEFIELD_CONVERT)
 {
 	LatticeExtents lE{4,4};
 	hardware::HardwareParametersMockup hardwareParameters(lE.ns,lE.nt);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(lE.ns,lE.nt);
-	hardware::System system(hardwareParameters, kernelParameters);
+	try
+	{
+		hardware::System system(hardwareParameters, kernelParameters);
+		test(system, 1, lE);
+		test(system, 14, lE);
+		test(system, 21, lE);
+	}
+	catch(hardware::OpenclException & exception)
+	{
+		handleExceptionInTest( exception );
+	}
 
-	test(system, 1, lE);
-	test(system, 14, lE);
-	test(system, 21, lE);
 }
 
-BOOST_AUTO_TEST_CASE(GPU)
-{
-	BOOST_ERROR("not implemented");
-	//@todo: This is in principle the same as for the CPU, one has to see how one switches between GPU and CPU in general first...
-}
 
 
 

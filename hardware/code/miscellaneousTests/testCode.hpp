@@ -45,7 +45,7 @@ struct TestCode : public hardware::code::Opencl_Module
 			clReleaseKernel(testKernel);
 	};
 
-	virtual void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, const int gs, const int ls) {};
+	virtual void runTestKernel(const hardware::buffers::SU3 *, const hardware::buffers::Plain<hmc_float> *, const int, const int) {};
 
 	cl_kernel testKernel;
 	cl_int err;

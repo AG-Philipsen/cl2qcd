@@ -75,49 +75,41 @@ struct ComplexTester : public KernelTester
 
 struct ComplexProductTester: public ComplexTester
 {
-	ComplexProductTester(const ParameterCollection pC, const ComplexTestParameters tP, const bool multiple_operation = false) :
+	ComplexProductTester(const ParameterCollection pC, const ComplexTestParameters tP) :
 	   ComplexTester("product", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
 	{
 		code->set_complex_to_product_device(alpha, beta, result);
-		if(multiple_operation)
-		  code->set_complex_to_product_device(alpha, result, result);
 	}
 };
 
 struct ComplexRatioTester: public ComplexTester{
-	ComplexRatioTester(const ParameterCollection pC, const ComplexTestParameters tP, const bool multiple_operation = false) :
+	ComplexRatioTester(const ParameterCollection pC, const ComplexTestParameters tP) :
 	   ComplexTester("ratio", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
 	{
 		code->set_complex_to_ratio_device(alpha, beta, result);
-		if(multiple_operation)
-		  code->set_complex_to_ratio_device(result, beta, result);
 	}
 };
 
 struct ComplexSumTester: public ComplexTester{
-	ComplexSumTester(const ParameterCollection pC, const ComplexTestParameters tP, const bool multiple_operation = false) :
+	ComplexSumTester(const ParameterCollection pC, const ComplexTestParameters tP) :
 	   ComplexTester("sum", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
 	{
 		code->set_complex_to_sum_device(alpha, beta, result);
-		if(multiple_operation)
-		  code->set_complex_to_sum_device(alpha, result, result);
 	}
 };
 
 struct ComplexDifferenceTester: public ComplexTester
 {
-	ComplexDifferenceTester(const ParameterCollection pC, const ComplexTestParameters tP, const bool multiple_operation = false) :
+	ComplexDifferenceTester(const ParameterCollection pC, const ComplexTestParameters tP) :
 	   ComplexTester("difference", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
 	{
 		code->set_complex_to_difference_device(alpha, beta, result);
-		if(multiple_operation)
-		  code->set_complex_to_difference_device(result, beta, result);
 	}
 };
 
 struct ComplexConvertTester: public ComplexTester
 {
-	ComplexConvertTester(const ParameterCollection pC, const ComplexTestParameters tP, const bool multiple_operation = false) :
+	ComplexConvertTester(const ParameterCollection pC, const ComplexTestParameters tP) :
 		ComplexTester("convert", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
 	{
 		hardware::buffers::Plain<hmc_float> gamma(1, device);

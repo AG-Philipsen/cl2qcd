@@ -18,7 +18,6 @@
  */
 
 #include "GaugefieldTester.hpp"
-
 #include "../../host_functionality/host_operations_gaugefield.h"
 
 void setGaugefield(Matrixsu3 * field, size_t elems, const GaugefieldFillType fillTypeIn)
@@ -63,5 +62,9 @@ GaugefieldTester::~GaugefieldTester()
 	delete gaugefieldBuffer;
 }
 
+int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
+}
 
 

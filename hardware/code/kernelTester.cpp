@@ -20,6 +20,7 @@
 
 #include "kernelTester.hpp"
 #include <boost/test/unit_test.hpp>
+#include "../hardware_test_util.hpp"
 
 KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersInterface& hardwareParameters,
 		const hardware::code::OpenClKernelParametersInterface& kernelParameters, const TestParameters testParams, const ReferenceValues rV) :
@@ -30,33 +31,45 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 			kernelParameters(&kernelParameters)
 {
 	printKernelInformation(kernelNameIn);
-	system = new hardware::System(hardwareParameters, kernelParameters );
-	device = system->get_devices().at(0);
+	try
+	{
+		system = new hardware::System(hardwareParameters, kernelParameters );
+		device = system->get_devices().at(0);
+	}
+	catch(hardware::OpenclException & exception)
+	{
+		handleExceptionInTest( exception );
+	}
 }
 
 #include <boost/test/floating_point_comparison.hpp>
 KernelTester::~KernelTester()
 {
-	//NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
-	for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
-	{
-		logger.info() << "compare result " << iteration;
-		if (testParameters.typeOfComparison == ComparisonType::difference)
-	    {
-				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
-				logger.info() << "Ref. Value = " << referenceValues[iteration];
-				BOOST_CHECK_CLOSE(referenceValues[iteration], kernelResult[iteration], testParameters.testPrecision);
-	    }
-		else if (testParameters.typeOfComparison == ComparisonType::smallerThan)
-	    {
-				logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
-				logger.info() << "upper Bound = " << referenceValues[iteration];
-				BOOST_CHECK_SMALL(kernelResult[iteration], referenceValues[iteration]);
-	    }
-	}
-
 	if(system)
+	{
+		//NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
+		for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
+		{
+			logger.info() << "compare result " << iteration;
+			if (testParameters.typeOfComparison == ComparisonType::difference)
+			{
+					logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+					logger.info() << "Ref. Value = " << referenceValues[iteration];
+					BOOST_CHECK_CLOSE(referenceValues[iteration], kernelResult[iteration], testParameters.testPrecision);
+			}
+			else if (testParameters.typeOfComparison == ComparisonType::smallerThan)
+			{
+					logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+					logger.info() << "upper Bound = " << referenceValues[iteration];
+					BOOST_CHECK_SMALL(kernelResult[iteration], referenceValues[iteration]);
+			}
+		}
 		delete system;
-	device = nullptr;
+		device = nullptr;
+	}
 }
 
+ReferenceValues defaultReferenceValues()
+{
+	return ReferenceValues{-1.23456};
+}

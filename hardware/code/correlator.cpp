@@ -575,8 +575,8 @@ void hardware::code::Correlator::print_profiling(const std::string& filename, in
 hardware::code::Correlator::Correlator(const hardware::code::OpenClKernelParametersInterface& kernelParameters , const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device),
 	  create_point_source(0), create_volume_source(0), create_timeslice_source(0), create_zslice_source(0),
-	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0), pbp_std(0), pbp_tm_one_end(0),
-	  correlator_avps(0)
+	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0),
+	  correlator_avps(0), pbp_std(0), pbp_tm_one_end(0)
 {
 	fill_kernels();
 }

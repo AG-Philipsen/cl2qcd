@@ -143,8 +143,3 @@ void ExtendTester::fill_buffers()
 	d_rand->load(h_rand);
 }
 
-BOOST_AUTO_TEST_CASE(GPU)
-{
-	BOOST_ERROR("not implemented");
-	//@todo: This is in principle the same as for the CPU, one has to see how one switches between GPU and CPU in general first...
-}

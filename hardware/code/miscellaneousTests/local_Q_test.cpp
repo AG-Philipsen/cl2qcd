@@ -33,7 +33,7 @@ struct LocalQTestCode : public TestCode
 		testKernel = createKernel("localQ_test") << get_device()->getGaugefieldCode()->get_sources()  << "../hardware/code/miscellaneousTests/localQ_test.cl";
 	}
 
-	virtual void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, const int gs, const int ls) override
+	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, const int gs, const int ls) override
 	{
 		err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
 		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);

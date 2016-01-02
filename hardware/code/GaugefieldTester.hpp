@@ -43,10 +43,7 @@ protected:
 	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
-static int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
-{
-	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
-}
+int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept;
 
 const Matrixsu3* createGaugefield(const int numberOfElements, const GaugefieldFillType fillTypeIn);
 

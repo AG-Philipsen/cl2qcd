@@ -122,11 +122,6 @@ BOOST_AUTO_TEST_SUITE(devices)
 		checkThatOnlySpecifiedDeviceIsInitialized( system.get_devices().size());
 	}
 
-	bool checkIfNoOpenCLDevicesWereFound( const hardware::OpenclException exception)
-	{
-		return exception.errorCode == -1;
-	}
-
 	void disableSpecificDeviceTypeByCommandLine( const cl_device_type device_type, const hardware::HardwareParametersInterface & hI)
 	{
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);

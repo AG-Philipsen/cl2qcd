@@ -21,9 +21,7 @@
 #pragma once
 
 #include <vector>
-
 #include <boost/test/unit_test.hpp>
-
 #include "../../host_functionality/logger.hpp"
 #include "testUtilities.hpp"
 #include "../system.hpp"
@@ -36,10 +34,7 @@ enum ComparisonType{difference=1, smallerThan};
 const double nonTrivialParameter = 0.123456;
 
 typedef std::vector<double> ReferenceValues;
-static ReferenceValues defaultReferenceValues()
-{
-	return ReferenceValues{-1.23456};
-}
+ReferenceValues defaultReferenceValues();
 
 struct TestParameters
 {
