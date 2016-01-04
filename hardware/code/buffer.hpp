@@ -84,7 +84,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Buffer(const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
+	Buffer(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
 private:
 	cl_kernel _copy_16_bytes;

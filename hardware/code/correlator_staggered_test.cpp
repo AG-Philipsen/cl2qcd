@@ -104,14 +104,14 @@ struct VolumeSourceTester : public CorrelatorsStaggeredTester
 			logger.info() << sqrt(var);
 		
 		//todo: introduce into testParameters
-		if(sourcecontent == common::one || sourcecontent == common::z2 )
-		{
-			SpinorStaggeredTester::typeOfComparison=1;
-		}
-		else
-		{
-			SpinorStaggeredTester::typeOfComparison=2;
-		}
+//		if(sourcecontent == common::one || sourcecontent == common::z2 )
+//		{
+//			SpinorStaggeredTester::typeOfComparison=1;
+//		}
+//		else
+//		{
+//			SpinorStaggeredTester::typeOfComparison=2;
+//		}
 	}
 };
 

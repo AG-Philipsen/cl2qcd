@@ -17,22 +17,17 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "openClCode.hpp"
+#include "latticeExtents.hpp"
 
-// use the boost test framework
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE hardware::OpenClCode
-#include <boost/test/unit_test.hpp>
-
-BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
+int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
 {
-	const char * argv []  = {"foo"};
-	const meta::Inputparameters fullParameters{1, argv};
-	const hardware::code::OpenClKernelParametersImplementation kernelParameters(fullParameters);
-	hardware::OpenClCode_fromMetaInputparameters codeBuilder( kernelParameters );
-	/**
-	 * @Todo: How to test this in a meaningful way?
-	 */
-//	BOOST_REQUIRE_EQUAL( hardwareParameters.useGpu(), fullParameters.get_use_gpu() );
-
+	return 	nsIn * nsIn * nsIn * ntIn;
 }
+
+int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn.ns, latticeExtentsIn.nt);
+}
+
+
+

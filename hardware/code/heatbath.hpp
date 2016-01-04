@@ -71,7 +71,7 @@ public:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Heatbath(const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
+	Heatbath(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
 private:
 	/**

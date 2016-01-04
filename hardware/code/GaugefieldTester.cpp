@@ -18,7 +18,6 @@
  */
 
 #include "GaugefieldTester.hpp"
-
 #include "../../host_functionality/host_operations_gaugefield.h"
 
 void setGaugefield(Matrixsu3 * field, size_t elems, const GaugefieldFillType fillTypeIn)
@@ -46,8 +45,8 @@ const Matrixsu3* createGaugefield(const int numberOfElements, const GaugefieldFi
 	return tmp;
 }
 
-GaugefieldTester::GaugefieldTester(std::string kernelName, const ParameterCollection & parameterCollection, const GaugefieldTestParameters testParams):
-	KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParams),
+GaugefieldTester::GaugefieldTester(std::string kernelName, const ParameterCollection & parameterCollection, const GaugefieldTestParameters testParams, const ReferenceValues rV):
+	KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParams, rV),
 	numberOfElements(parameterCollection.hardwareParameters.getLatticeVolume() * NDIM)
 {
 	gaugefieldBuffer = new hardware::buffers::SU3( numberOfElements, device);
@@ -63,5 +62,9 @@ GaugefieldTester::~GaugefieldTester()
 	delete gaugefieldBuffer;
 }
 
+int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
+}
 
 

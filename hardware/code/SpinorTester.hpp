@@ -29,31 +29,16 @@ typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
 typedef size_t NumberOfSpinors;
 
-static int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
-{
-	return 	calculateLatticeVolume(nsIn, ntIn);
-}
-
-static int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
-{
-	return 	calculateLatticeVolume(latticeExtendsIn.ns, latticeExtendsIn.nt);
-}
-
-static int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
-{
-	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
-}
-
-static int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
-{
-	return 	calculateSpinorfieldSize(latticeExtendsIn.ns, latticeExtendsIn.nt) / 2;
-}
+int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept;
+int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
+int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept;
+int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
 
 struct SpinorTestParameters: public virtual TestParameters
 {
 	SpinorTestParameters(const LatticeExtents latticeExtendsIn) :
 		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const int typeOfComparisionIn) :
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
 		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};

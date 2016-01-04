@@ -80,7 +80,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Prng(const hardware::code::OpenClKernelParametersInterface& kernelParams, hardware::Device * device);
+	Prng(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
 private:
 	/**

@@ -20,32 +20,15 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HARDWARE_TEST_UTIL_HPP_
-#define HARDWARE_TEST_UTIL_HPP_
+#pragma once
 
-const char * dummyRuntimeArguments[] = {"foo"};
-const int dummyNumberOfRuntimeArguments = 1;
+#include "system.hpp"
 
-void broadcastMessage_warn(const std::string message)
-{
-	logger.warn() << message;
-	BOOST_TEST_MESSAGE( message );
-}
-
-void broadcastMessage_fatal(const std::string message)
-{
-	logger.fatal() << message;
-	BOOST_TEST_MESSAGE( message );
-}
-
-void failTest()
-{
-	BOOST_REQUIRE_EQUAL(true, false);
-}
-
-void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System * system)
-{
-	BOOST_REQUIRE_GE(system->get_devices().size(), 1);
-}
-
-#endif /* HARDWARE_TEST_UTIL_HPP_ */
+void broadcastMessage_warn(const std::string message);
+void broadcastMessage_fatal(const std::string message);
+void failTest();
+void atLeastOneDeviceMustExistForSanityOfSystem(const hardware::System * system);
+bool checkIfNoOpenCLDevicesWereFound( const hardware::OpenclException exception);
+bool checkBoostRuntimeArgumentsForGpuUsage();
+bool checkBoostRuntimeArgumentsForRec12Usage();
+void handleExceptionInTest(hardware::OpenclException & exception);

@@ -24,7 +24,7 @@
 
 #include "../meta/inputparameters.hpp"
 #include "hardwareParameters.hpp"
-#include "code/openClKernelParameters.hpp"
+#include "openClKernelParameters.hpp"
 #include "../common_header_files/types.h"
 #include "size_4.hpp"
 #include <map>
@@ -62,13 +62,13 @@ namespace hardware {
 		 * Create a new system representation.
 		 * You should usually only do this once per application.
 		 */
-		explicit System(const meta::Inputparameters& parameters);
-		System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters, const hardware::OpenClCode & kernelBuilder);
+		System(const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &);
+		System(meta::Inputparameters&); //@todo: only for compatibility, remove!
 
 		~System();
 
 		const std::vector<Device*>& get_devices() const noexcept;
-		const meta::Inputparameters& get_inputparameters() const noexcept;
+		const meta::Inputparameters& get_inputparameters() const noexcept; //@todo: remove
 		const hardware::HardwareParametersInterface * getHardwareParameters() const noexcept;
 
 		// non-copyable
@@ -86,8 +86,6 @@ namespace hardware {
 		cl_platform_id get_platform() const;
 
 	private:
-
-		const meta::Inputparameters * params;
 		std::vector<Device*> devices;
 		cl_context context;
 		cl_platform_id platform;
@@ -101,7 +99,6 @@ namespace hardware {
 		const hardware::HardwareParametersInterface * hardwareParameters;
 		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 		const hardware::OpenClCode * kernelBuilder;
-		bool temporaryFlagForSystemConstructorVersion = false;
 	};
 
 	/**

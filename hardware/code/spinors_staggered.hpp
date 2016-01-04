@@ -357,7 +357,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Spinors_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device);
+	Spinors_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device);
 
 private:
 	/**

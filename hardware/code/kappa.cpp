@@ -67,7 +67,7 @@ void hardware::code::Kappa::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-hardware::code::Kappa::Kappa(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Kappa::Kappa(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();

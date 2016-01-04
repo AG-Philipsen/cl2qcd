@@ -71,21 +71,6 @@ void fillWithAscendingComplex(su3vec * sf_in, int size)
   return;
 }
 
-static void fill_with_random(su3vec * sf_in, int size, int seed)
-{
-  prng_init(seed);
-  for(int i = 0; i < size; ++i) {
-    sf_in[i].e0.re = prng_double();
-    sf_in[i].e1.re = prng_double();
-    sf_in[i].e2.re = prng_double();
-
-    sf_in[i].e0.im = prng_double();
-    sf_in[i].e1.im = prng_double();
-    sf_in[i].e2.im = prng_double();
-  }
-  return;
-}
-
 void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
 {
   int ns = hardwareParameters->getNs();

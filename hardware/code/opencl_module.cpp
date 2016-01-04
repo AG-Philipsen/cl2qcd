@@ -38,7 +38,7 @@ static void print_profile_header(const std::string& filename, int number);
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 
-static std::string collect_build_options(hardware::Device * device, const hardware::code::OpenClKernelParametersInterface &kernelParameters)
+static std::string collect_build_options(const hardware::Device * device, const hardware::code::OpenClKernelParametersInterface &kernelParameters)
 {
 	/**
 	 * @Todo: Move all the explicit lattice size fcts. to own fcts.
@@ -208,15 +208,16 @@ static std::vector<std::string> collect_build_files()
 	return out;
 }
 
-hardware::code::Opencl_Module::Opencl_Module(const hardware::code::OpenClKernelParametersInterface &kernelParameters, hardware::Device * device):
+hardware::code::Opencl_Module::Opencl_Module(const hardware::code::OpenClKernelParametersInterface &kernelParameters, const hardware::Device * deviceIn):
 		kernelParameters(&kernelParameters),
-		device(device),
-		basic_sources ( ClSourcePackage(collect_build_files(), collect_build_options(device, kernelParameters) )  )
+		device(deviceIn),
+		basic_sources ( ClSourcePackage(collect_build_files(),
+				collect_build_options(device, kernelParameters) )  )
 {}
 
 hardware::code::Opencl_Module::~Opencl_Module(){}
 
-hardware::Device * hardware::code::Opencl_Module::get_device() const noexcept
+const hardware::Device * hardware::code::Opencl_Module::get_device() const noexcept
 {
 	return device;
 }

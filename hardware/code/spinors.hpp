@@ -126,7 +126,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device);
+	Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device);
 
 private:
 	/**

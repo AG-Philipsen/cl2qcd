@@ -20,6 +20,7 @@
 #pragma once
 
 #include "kernelTester.hpp"
+#include "gaugefield.hpp"
 
 enum GaugefieldFillType {cold = 1, nonTrivial};
 
@@ -27,14 +28,13 @@ struct GaugefieldTestParameters : public virtual TestParameters
 {
 	GaugefieldFillType fillType;
 
-	GaugefieldTestParameters(std::vector<double> referenceValueIn, const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn):
-		TestParameters(referenceValueIn, latticeExtentsIn), fillType( fillTypeIn ) {}
-	GaugefieldTestParameters() : TestParameters(LatticeExtents{4,4}), fillType( GaugefieldFillType::cold ) {} //@todo: is the default constructor really needed?
+	GaugefieldTestParameters(const LatticeExtents latticeExtentsIn, GaugefieldFillType fillTypeIn):
+		TestParameters(latticeExtentsIn), fillType( fillTypeIn ) {}
 };
 
-class GaugefieldTester : public KernelTester {
-public:
-	GaugefieldTester(std::string, const ParameterCollection &, const GaugefieldTestParameters);
+struct GaugefieldTester : public KernelTester
+{
+	GaugefieldTester(std::string, const ParameterCollection &, const GaugefieldTestParameters, const ReferenceValues rV);
 	~GaugefieldTester();
 
 protected:
@@ -43,10 +43,7 @@ protected:
 	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
-static int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
-{
-	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
-}
+int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept;
 
 const Matrixsu3* createGaugefield(const int numberOfElements, const GaugefieldFillType fillTypeIn);
 

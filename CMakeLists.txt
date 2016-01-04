@@ -225,6 +225,8 @@ add_subdirectory(ranluxcl)
 # Crypto
 add_subdirectory(crypto)
 
+add_subdirectory(interfaceImplementations)
+
 option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
 if(BUILD_MICROBENCHMARKS)
 	add_subdirectory(microbenchmarks)

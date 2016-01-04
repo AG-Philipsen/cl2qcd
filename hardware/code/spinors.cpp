@@ -990,7 +990,7 @@ void hardware::code::Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::
 	convertSpinorfieldToSOA_eo_device(buf, &tmp);
 }
 
-hardware::code::Spinors::Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Spinors::Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0), saxpy_AND_squarenorm_eo(0)
 {
 	fill_kernels();

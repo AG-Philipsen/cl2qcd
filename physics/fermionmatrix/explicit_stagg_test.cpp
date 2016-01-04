@@ -28,7 +28,7 @@
 
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "../../hardware/code/test_util_staggered.h"
+#include "../test_util_staggered.h"
 #include "../../hardware/code/spinors.hpp"
 
 BOOST_AUTO_TEST_CASE(D_KS_eo)

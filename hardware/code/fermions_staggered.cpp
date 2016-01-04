@@ -261,7 +261,7 @@ void hardware::code::Fermions_staggered::print_profiling(const std::string& file
 		Opencl_Module::print_profiling(filename, D_KS_eo);
 }
 
-hardware::code::Fermions_staggered::Fermions_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device)
+hardware::code::Fermions_staggered::Fermions_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();

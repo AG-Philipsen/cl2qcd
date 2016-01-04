@@ -20,6 +20,7 @@
 #pragma once
 
 #include "SpinorTester.hpp"
+#include "prng.hpp"
 #include "../../host_functionality/host_random.h" //@todo: remove this in the end!
 
 struct PrngSpinorTestParameters : public SpinorTestParameters

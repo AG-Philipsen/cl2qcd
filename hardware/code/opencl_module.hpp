@@ -23,7 +23,7 @@
 
 #include "../../common_header_files/types.h"
 
-#include "openClKernelParameters.hpp"
+#include "../openClKernelParameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../device.hpp"
@@ -61,7 +61,7 @@ public:
 	 * Get OpenCL device
 	 * @return device
 	 */
-	hardware::Device * get_device() const noexcept;
+	const hardware::Device * get_device() const noexcept;
 
 	/**
 	 * Print the profiling information to a file.
@@ -78,7 +78,7 @@ public:
 	ClSourcePackage get_basic_sources() const noexcept;
 
 protected:
-	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& kernelParameters, hardware::Device * device);
+	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device);
 	~Opencl_Module();
 
 	/**
@@ -141,7 +141,7 @@ private:
 	/**
 	 * The device used by this module
 	 */
-	hardware::Device * const device;
+	const hardware::Device * device;
 	
 	/**
 	 * The basic source used by all modules (children classes of this)

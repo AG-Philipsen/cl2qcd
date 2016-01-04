@@ -30,15 +30,16 @@
 #include "../system.hpp"
 #include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
-
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	System system(meta::Inputparameters(2,_params));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices()) {
 
 		SU3vec dummy(system.getHardwareParameters()->getLatticeVolume(), device);
@@ -53,8 +54,9 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	System system(meta::Inputparameters(2,_params));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];
@@ -75,8 +77,9 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	System system(meta::Inputparameters(2,_params));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];

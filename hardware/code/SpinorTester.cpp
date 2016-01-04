@@ -530,5 +530,23 @@ void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * i
 	}
 
 
+int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateLatticeVolume(nsIn, ntIn);
+}
 
+int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtendsIn.ns, latticeExtendsIn.nt);
+}
+
+int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
+}
+
+int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
+{
+	return 	calculateSpinorfieldSize(latticeExtendsIn.ns, latticeExtendsIn.nt) / 2;
+}
 

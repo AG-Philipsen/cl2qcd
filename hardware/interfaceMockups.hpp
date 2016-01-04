@@ -19,160 +19,165 @@
 
 # pragma once
 
-#include "../hardwareParameters.hpp"
+#include "hardwareParameters.hpp"
+#include "openClKernelParameters.hpp"
+#include "hardwareTestUtilities.hpp"
 
 namespace hardware
 {
-class HardwareParametersMockup : public HardwareParametersInterface
-{
-public:
-	HardwareParametersMockup(const int nsIn, const int ntIn) : ns(nsIn), nt(ntIn), useEvenOdd(false) {};
-	HardwareParametersMockup(const int nsIn, const int ntIn, const bool useEvenOddIn) : ns(nsIn), nt(ntIn), useEvenOdd(useEvenOddIn) {};
-	~HardwareParametersMockup() {};
-	virtual int getNs() const override
-	{
-		return ns;
-	}
-	virtual int getNt() const override
-	{
-		return nt;
-	}
-	virtual bool disableOpenCLCompilerOptimizations() const override
-	{
-		return false;
-	}
-	virtual bool useGpu() const override
-	{
-		return false;
-	}
-	virtual bool useCpu() const override
-	{
-		return true;
-	}
-	virtual int getMaximalNumberOfDevices() const override
-	{
-		return 1;
-	}
-	virtual std::vector<int> getSelectedDevices() const override
-	{
-		return std::vector<int>{0};
-	}
-	virtual bool splitCpu() const override
-	{
-		return false;
-	}
-	virtual bool enableProfiling() const override
-	{
-		return false;
-	}
-	virtual bool useSameRandomNumbers() const override
-	{
-		return false;
-	}
-	virtual bool useEvenOddPreconditioning() const override
-	{
-		return useEvenOdd;
-	}
-	virtual int getSpatialLatticeVolume() const override
-	{
-		return getNs() * getNs() * getNs();
-	}
-	virtual int getLatticeVolume() const override
-	{
-		return getNs() * getNs() * getNs() * getNt();
-	}
-private:
-	const int ns, nt;
-	const bool useEvenOdd;
-};
-}
-#include "../openClCode.hpp"
-
-namespace hardware
-{
-	//todo: this can be removed...
-	class OpenClCodeMockup : public OpenClCode
+	class HardwareParametersMockup : public HardwareParametersInterface
 	{
 	public:
-		OpenClCodeMockup(const hardware::code::OpenClKernelParametersInterface & kernelParams) :
-			kernelParameters(& kernelParams) {};
-		~OpenClCodeMockup() {}
-		virtual std::unique_ptr<const hardware::code::Real> getCode_real(hardware::Device * deviceIn) const override
+		HardwareParametersMockup(const int nsIn, const int ntIn) : ns(nsIn), nt(ntIn), useEvenOdd(false)
 		{
-			return std::unique_ptr<const hardware::code::Real>( new hardware::code::Real{*kernelParameters, deviceIn} ) ;
+			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
+		};
+		HardwareParametersMockup(const int nsIn, const int ntIn, const bool useEvenOddIn) : ns(nsIn), nt(ntIn), useEvenOdd(useEvenOddIn)
+		{
+			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
+		};
+		~HardwareParametersMockup() {};
+		virtual int getNs() const override
+		{
+			return ns;
 		}
-		virtual std::unique_ptr<const hardware::code::Gaugefield> getCode_gaugefield(hardware::Device * deviceIn) const override
+		virtual int getNt() const override
 		{
-			return std::unique_ptr<const hardware::code::Gaugefield>( new hardware::code::Gaugefield{*kernelParameters, deviceIn} ) ;
+			return nt;
 		}
-		virtual std::unique_ptr<const hardware::code::Prng> getCode_PRNG(hardware::Device * deviceIn) const override
+		virtual bool disableOpenCLCompilerOptimizations() const override
 		{
-			return std::unique_ptr<const hardware::code::Prng>( new hardware::code::Prng{*kernelParameters, deviceIn} ) ;
+			return false;
 		}
-		virtual std::unique_ptr<const hardware::code::Complex> getCode_complex(hardware::Device * deviceIn) const override
+		virtual bool useGpu() const override
 		{
-			return std::unique_ptr<const hardware::code::Complex>( new hardware::code::Complex{*kernelParameters, deviceIn} ) ;
+			return useGpuValue;
 		}
-		virtual std::unique_ptr<const hardware::code::Spinors> getCode_Spinors(hardware::Device * deviceIn) const override
+		virtual bool useCpu() const override
 		{
-			return std::unique_ptr<const hardware::code::Spinors>( new hardware::code::Spinors{*kernelParameters, deviceIn} ) ;
+			return useCpuValue;
 		}
-		virtual std::unique_ptr<const hardware::code::Fermions> getCode_Fermions(hardware::Device * deviceIn) const override
+		virtual int getMaximalNumberOfDevices() const override
 		{
-			return std::unique_ptr<const hardware::code::Fermions>( new hardware::code::Fermions{*kernelParameters, deviceIn} ) ;
+			return 1;
 		}
-		virtual std::unique_ptr<const hardware::code::Gaugemomentum> getCode_Gaugemomentum(hardware::Device * deviceIn) const override
+		virtual std::vector<int> getSelectedDevices() const override
 		{
-			return std::unique_ptr<const hardware::code::Gaugemomentum>( new hardware::code::Gaugemomentum{*kernelParameters, deviceIn} ) ;
+			return std::vector<int>{0};
 		}
-		virtual std::unique_ptr<const hardware::code::Molecular_Dynamics> getCode_Molecular_Dynamics(hardware::Device * deviceIn) const override
+		virtual bool splitCpu() const override
 		{
-			return std::unique_ptr<const hardware::code::Molecular_Dynamics>( new hardware::code::Molecular_Dynamics{*kernelParameters, deviceIn} ) ;
+			return false;
 		}
-		virtual std::unique_ptr<const hardware::code::Correlator> getCode_Correlator(hardware::Device * deviceIn) const override
+		virtual bool enableProfiling() const override
 		{
-			return std::unique_ptr<const hardware::code::Correlator>( new hardware::code::Correlator{*kernelParameters, deviceIn} ) ;
+			return false;
 		}
-		virtual std::unique_ptr<const hardware::code::Heatbath> getCode_Heatbath(hardware::Device * deviceIn) const override
+		virtual bool useSameRandomNumbers() const override
 		{
-			return std::unique_ptr<const hardware::code::Heatbath>( new hardware::code::Heatbath{*kernelParameters, deviceIn} ) ;
+			return false;
 		}
-		virtual std::unique_ptr<const hardware::code::Kappa> getCode_Kappa(hardware::Device * deviceIn) const override
+		virtual bool useEvenOddPreconditioning() const override
 		{
-			return std::unique_ptr<const hardware::code::Kappa>( new hardware::code::Kappa{*kernelParameters, deviceIn} ) ;
+			return useEvenOdd;
 		}
-		virtual std::unique_ptr<const hardware::code::Buffer> getCode_Buffer(hardware::Device * deviceIn) const override
+		virtual int getSpatialLatticeVolume() const override
 		{
-			return std::unique_ptr<const hardware::code::Buffer>( new hardware::code::Buffer{*kernelParameters, deviceIn} ) ;
+			return getNs() * getNs() * getNs();
 		}
-		virtual std::unique_ptr<const hardware::code::Spinors_staggered> getCode_Spinors_staggered(hardware::Device * deviceIn) const override
+		virtual int getLatticeVolume() const override
 		{
-			return std::unique_ptr<const hardware::code::Spinors_staggered>( new hardware::code::Spinors_staggered{*kernelParameters,deviceIn} ) ;
-		}
-		virtual std::unique_ptr<const hardware::code::Correlator_staggered> getCode_Correlator_staggered(hardware::Device * deviceIn) const override
-		{
-			return std::unique_ptr<const hardware::code::Correlator_staggered>( new hardware::code::Correlator_staggered{*kernelParameters, deviceIn} ) ;
-		}
-		virtual std::unique_ptr<const hardware::code::Fermions_staggered> getCode_Fermions_staggered(hardware::Device * deviceIn) const override
-		{
-			return std::unique_ptr<const hardware::code::Fermions_staggered>( new hardware::code::Fermions_staggered{*kernelParameters, deviceIn} ) ;
+			return getNs() * getNs() * getNs() * getNt();
 		}
 	private:
-		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
+		const int ns, nt;
+		const bool useEvenOdd;
+		bool useGpuValue, useCpuValue;
+		void setGpuAndCpuOptions(const bool value)
+		{
+			useGpuValue = value;
+			useCpuValue = !value;
+		}
 	};
+
+	struct HardwareParametersMockupForDeviceSelection : public HardwareParametersMockup
+	{
+		HardwareParametersMockupForDeviceSelection(const int ns, const int nt, const int maximalNumberOfDevices, const std::vector<int> selectedDevices) :
+			HardwareParametersMockup(ns, nt), maximalNumberOfDevices(maximalNumberOfDevices), selectedDevices(selectedDevices)
+		{
+
+		}
+		virtual int getMaximalNumberOfDevices() const override
+		{
+			return maximalNumberOfDevices;
+		}
+		virtual std::vector<int> getSelectedDevices() const override
+		{
+			return selectedDevices;
+		}
+	private:
+		const int maximalNumberOfDevices;
+		const std::vector<int> selectedDevices;
+	};
+
+	struct HardwareParametersMockupWithoutGpus : public HardwareParametersMockup
+	{
+		HardwareParametersMockupWithoutGpus(const int ns, const int nt) :
+			HardwareParametersMockup(ns, nt)
+		{}
+
+		virtual bool useGpu() const override
+		{
+			return false;
+		}
+		virtual bool useCpu() const override
+		{
+			return true;
+		}
+	};
+
+	struct HardwareParametersMockupWithoutCpus : public HardwareParametersMockup
+	{
+		HardwareParametersMockupWithoutCpus(const int ns, const int nt) :
+			HardwareParametersMockup(ns, nt)
+		{}
+
+		virtual bool useGpu() const override
+		{
+			return true;
+		}
+		virtual bool useCpu() const override
+		{
+			return false;
+		}
+	};
+
+	struct HardwareParametersMockupWithProfiling : public HardwareParametersMockup
+	{
+		HardwareParametersMockupWithProfiling(const int ns, const int nt) :
+			HardwareParametersMockup(ns, nt)
+		{}
+
+		virtual bool enableProfiling() const override
+		{
+			return true;
+		}
+	};
+
 }
 
-namespace hardware {
+namespace hardware
+{
 	namespace code {
 		class OpenClKernelParametersMockup : public OpenClKernelParametersInterface
 		{
 		public:
 			OpenClKernelParametersMockup(int nsIn, int ntIn):
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false) {};
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, int rhoIterIn, double rhoIn, bool useSmearingIn):
-				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useRectangles(false), useSmearing(useSmearingIn) {};
+				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useRectangles(false), useSmearing(useSmearingIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn):
-				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false) {};
+				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockup()	{};
 			virtual int getNs() const override
 			{
@@ -216,7 +221,7 @@ namespace hardware {
 			}
 			virtual bool getUseRec12() const override
 			{
-				return false;
+				return useRec12Value;
 			}
 			virtual bool getUseEo() const override
 			{
@@ -301,193 +306,6 @@ namespace hardware {
 			}
 			virtual size_t getSpinorFieldSize() const override
 			{
-				return getNs() * getNs() * getNs() * getNt();
-			}
-			virtual size_t getEoprecSpinorFieldSize() const override
-			{
-				return getNs() * getNs() * getNs() * getNt() / 2;
-			}
-			virtual int getCorrDir() const override
-			{
-				return 3;
-			}
-			virtual bool getMeasureCorrelators() const override
-			{
-				return true;
-			}
-			virtual bool getUseMergeKernelsFermion() const override
-			{
-				return false;
-			}
-			virtual hmc_float getMuBar() const override
-			{
-				return 2* getKappa() * 0.006;
-			}
-			virtual double getMass() const override
-			{
-				return 0.1;
-			}
-			virtual bool getUseSameRndNumbers() const override
-			{
-				return false;
-			}
-			virtual uint32_t getHostSeed() const override
-			{
-				return 4815;
-			}
-			virtual bool getUseMergeKernelsSpinor() const override
-			{
-				return false;
-			}
-			virtual double getMu() const override
-			{
-				return 0.006;
-			}
-			virtual double getApproxLower() const override
-			{
-				return 1.e-5;
-			}
-		protected:
-			int ns, nt, rhoIter;
-			double rho;
-			bool useRectangles, useSmearing;
-		};
-
-		class OpenClKernelParametersMockupForSpinorTests : public OpenClKernelParametersInterface
-		{
-		public:
-			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn) :
-				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(false) {};
-			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn, const bool useEvenOddIn) :
-				ns(nsIn), nt(ntIn), prec(64), useEvenOdd(useEvenOddIn) {};
-			~OpenClKernelParametersMockupForSpinorTests()	{};
-			virtual int getNs() const override
-			{
-				return ns;
-			}
-			virtual int getNt() const override
-			{
-				return nt;
-			}
-			virtual size_t getPrecision() const override
-			{
-				return prec;
-			}
-			virtual bool getUseChemPotRe() const override
-			{
-				return false;
-			}
-			virtual bool getUseChemPotIm() const override
-			{
-				return false;
-			}
-			virtual bool getUseSmearing() const override
-			{
-				return false;
-			}
-			virtual double getChemPotRe() const override
-			{
-				return 0.;
-			}
-			virtual double getChemPotIm() const override
-			{
-				return 0.;
-			}
-			virtual double getRho() const override
-			{
-				return 0.;
-			}
-			virtual int getRhoIter() const override
-			{
-				return 0;
-			}
-			virtual bool getUseRec12() const override
-			{
-				return false;
-			}
-			virtual bool getUseEo() const override
-			{
-				return useEvenOdd;
-			}
-			virtual common::action  getFermact() const override
-			{
-				return common::wilson;
-			}
-			virtual int getMetroApproxOrd() const override
-			{
-				return 15.;
-			}
-			virtual int getMdApproxOrd() const override
-			{
-				return 8.;
-			}
-			virtual double getThetaFermionSpatial() const override
-			{
-				return 0.;
-			}
-			virtual double getThetaFermionTemporal() const override
-			{
-				return 0.;
-			}
-			virtual double getBeta() const override
-			{
-				return 5.69;
-			}
-			virtual double getKappa() const override
-			{
-				return 0.125;
-			}
-			virtual int getNumSources() const override
-			{
-				return 12;
-			}
-			virtual common::sourcecontents getSourceContent() const override
-			{
-				return common::sourcecontents::one;
-			}
-			virtual common::sourcetypes getSourceType() const override
-			{
-				return common::sourcetypes::point;
-			}
-			virtual bool getUseAniso() const override
-			{
-				return false;
-			}
-			virtual size_t getSpatialLatticeVolume() const override
-			{
-				return getNs() * getNs() * getNs();
-			}
-			virtual size_t getLatticeVolume() const override
-			{
-				return getNs() * getNs() * getNs() * getNt();
-			}
-			virtual bool getUseRectangles() const override
-			{
-				return false;
-			}
-			virtual double getC0() const override
-			{
-				return 1.;
-			}
-			virtual double getC1() const override
-			{
-				return 0.;
-			}
-			virtual double getXi0() const override
-			{
-				return 0.;
-			}
-			virtual size_t getFloatSize() const override
-			{
-				return prec / 8;
-			}
-			virtual size_t getMatSize() const override
-			{
-				// TODO with rec12 this becomes 6
-				return 9;
-			}
-			virtual size_t getSpinorFieldSize() const override
-			{
 				return getLatticeVolume();
 			}
 			virtual size_t getEoprecSpinorFieldSize() const override
@@ -535,9 +353,49 @@ namespace hardware {
 				return 1.e-5;
 			}
 		protected:
-			const int ns, nt;
+			int ns, nt, rhoIter;
+			double rho;
+			bool useRectangles, useSmearing;
+			bool useRec12Value;
+		};
+
+		class OpenClKernelParametersMockupForSpinorTests : public OpenClKernelParametersMockup
+		{
+		public:
+			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn) :
+				OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn, const bool useEvenOddIn) :
+				OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(useEvenOddIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+			~OpenClKernelParametersMockupForSpinorTests()	{};
+
+			virtual size_t getPrecision() const override
+			{
+				return prec;
+			}
+			virtual bool getUseSmearing() const override
+			{
+				return false;
+			}
+			virtual double getRho() const override
+			{
+				return 0.;
+			}
+			virtual int getRhoIter() const override
+			{
+				return 0;
+			}
+			virtual bool getUseRec12() const override
+			{
+				return false;
+			}
+			virtual bool getUseEo() const override
+			{
+				return useEvenOdd;
+			}
+		protected:
 			const size_t prec;
 			const bool useEvenOdd;
+			bool useRec12Value;
 		};
 
 		class OpenClKernelParametersMockupForSpinorStaggered : public OpenClKernelParametersMockupForSpinorTests
