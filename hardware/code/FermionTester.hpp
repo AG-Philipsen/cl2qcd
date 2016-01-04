@@ -29,6 +29,14 @@ struct WilsonMassParameters
 	const double kappa;
 };
 
+struct ThetaParameters
+{
+	ThetaParameters(const double thetaTIn, const double thetaSIn) : thetaT(thetaTIn), thetaS(thetaSIn){};
+	const double thetaT, thetaS;
+};
+
+typedef hmc_complex ChemicalPotentials;
+
 struct TwistedMassMassParameters : public WilsonMassParameters
 {
 	TwistedMassMassParameters(const double kappaIn, const double muIn):
