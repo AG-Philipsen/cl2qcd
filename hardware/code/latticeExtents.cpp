@@ -29,5 +29,15 @@ int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept
 	return 	calculateLatticeVolume(latticeExtentsIn.ns, latticeExtentsIn.nt);
 }
 
+int calculateSpatialLatticeVolume(const int nsIn) noexcept
+{
+	return nsIn * nsIn * nsIn;
+}
+
+int calculateSpatialLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return calculateSpatialLatticeVolume(latticeExtentsIn.ns);
+}
+
 
 

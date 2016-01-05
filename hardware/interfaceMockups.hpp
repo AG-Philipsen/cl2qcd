@@ -326,7 +326,7 @@ namespace hardware
 			}
 			virtual hmc_float getMuBar() const override
 			{
-				return 2* getKappa() * 0.006;
+				return 2* getKappa() * getMu();
 			}
 			virtual double getMass() const override
 			{
@@ -485,15 +485,9 @@ namespace hardware
 		class OpenClKernelParametersMockupForDslashEvenOdd : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:
-			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const double kappaIn, const bool needEvenOddIn) :
+			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn, const double kappaIn) :
 				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), kappa(kappaIn), thetaFermionTemporal(0.), thetaFermionSpatial(0.),
 				useChemPotIm(false), useChemPotRe(false), chemPot({0.,0.}) {}
-			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn, const double kappaIn, const double thetaTIn, const double thetaSIn) :
-				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), kappa(kappaIn), thetaFermionTemporal(thetaTIn), thetaFermionSpatial(thetaSIn),
-				useChemPotIm(false), useChemPotRe(false), chemPot({0.,0.}) {}
-			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn, const double kappaIn, hmc_complex chemPotIn) :
-				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), kappa(kappaIn), thetaFermionTemporal(0.), thetaFermionSpatial(0.),
-				useChemPotIm(true), useChemPotRe(true), chemPot(chemPotIn) {}
 			OpenClKernelParametersMockupForDslashEvenOdd(int nsIn, int ntIn, const bool needEvenOddIn, const double kappaIn, const double thetaTIn, const double thetaSIn, hmc_complex chemPotIn) :
 				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, needEvenOddIn), kappa(kappaIn), thetaFermionTemporal(thetaTIn), thetaFermionSpatial(thetaSIn),
 				useChemPotIm(true), useChemPotRe(true), chemPot(chemPotIn) {}

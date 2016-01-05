@@ -30,4 +30,6 @@ struct LatticeExtents
 
 int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept;
 int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept;
+int calculateSpatialLatticeVolume(const int nsIn) noexcept;
+int calculateSpatialLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept;
 
