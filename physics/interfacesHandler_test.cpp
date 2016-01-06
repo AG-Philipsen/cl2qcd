@@ -36,7 +36,6 @@ static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparame
     return std::unique_ptr<meta::Inputparameters>(new meta::Inputparameters(1, _params) );
 }
 
-
 BOOST_AUTO_TEST_CASE(testInterfaceHandler)
 {
     auto params = createDefaultMetaInputparameters();
@@ -54,6 +53,15 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     const physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation wilsonTwoFlavourChiralCondensateParametersImplementation{*params};
     const physics::observables::StaggeredChiralCondensateParametersImplementation staggeredChiralCondensateParametersImplementation{*params};
     const physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation wilsonTwoFlavourCorrelatorsParametersImplementation{*params};
+    const physics::algorithms::SolversParametersImplementation solversParametersImplementation{*params};
+    const physics::algorithms::MinMaxEigenvalueParametersImplementation minMaxEigenvalueParametersImplementation{*params};
+    const physics::algorithms::ForcesParametersImplementation forcesParametersImplementation{*params};
+    const physics::algorithms::InversionParametersImplementation inversionParametersImplementation{*params};
+    const physics::algorithms::IntegratorParametersImplementation integratorParametersImplementation{*params};
+    const physics::algorithms::MolecularDynamicsImplementation molecularDynamicsImplementation{*params};
+    const physics::algorithms::MetropolisParametersImplementation metropolisParametersImplementation{*params};
+    const physics::algorithms::HmcParametersImplementation hmcParametersImplementation{*params};
+    const physics::algorithms::RhmcParametersImplementation rhmcParametersImplementation{*params};
 
     BOOST_CHECK( typeid(gaugefieldParametersImplementation) == typeid(test.getInterface<physics::lattices::Gaugefield>()) );
     BOOST_CHECK( typeid(gaugemomentaParametersImplementation) == typeid(test.getInterface<physics::lattices::Gaugemomenta>()) );
@@ -74,4 +82,13 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     BOOST_CHECK( typeid(wilsonTwoFlavourChiralCondensateParametersImplementation) == typeid(test.getWilsonTwoFlavourChiralCondensateParametersInterface()) );
     BOOST_CHECK( typeid(staggeredChiralCondensateParametersImplementation) == typeid(test.getStaggeredChiralCondensateParametersInterface()) );
     BOOST_CHECK( typeid(wilsonTwoFlavourCorrelatorsParametersImplementation) == typeid(test.getWilsonTwoFlavourCorrelatorsCondensateParametersInterface()) );
+    BOOST_CHECK( typeid(solversParametersImplementation) == typeid(test.getSolversParametersInterface()) );
+    BOOST_CHECK( typeid(minMaxEigenvalueParametersImplementation) == typeid(test.getMinMaxEigenvalueParametersInterface()) );
+    BOOST_CHECK( typeid(forcesParametersImplementation) == typeid(test.getForcesParametersInterface()) );
+    BOOST_CHECK( typeid(inversionParametersImplementation) == typeid(test.getInversionParemetersInterface()) );
+    BOOST_CHECK( typeid(integratorParametersImplementation) == typeid(test.getIntegratorParametersInterface()) );
+    BOOST_CHECK( typeid(molecularDynamicsImplementation) == typeid(test.getMolecularDynamicsInterface()) );
+    BOOST_CHECK( typeid(metropolisParametersImplementation) == typeid(test.getMetropolisParametersInterface()) );
+    BOOST_CHECK( typeid(hmcParametersImplementation) == typeid(test.getHmcParametersInterface()) );
+    BOOST_CHECK( typeid(rhmcParametersImplementation) == typeid(test.getRhmcParametersInterface()) );
 }

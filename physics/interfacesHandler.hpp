@@ -1,5 +1,5 @@
 /** @file
- * PRNG PRNG unit declaration
+ * interfacesHandler declaration
  *
  * Copyright 2015 Alessandro Sciarra, Christopher Czaban
  *
@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "algorithms/algorithmsInterfaces.hpp"
 #include "fermionmatrix/fermionmatrixInterfaces.hpp"
 #include "lattices/latticesInterfaces.hpp"
 #include "observables/observablesInterfaces.hpp"
@@ -135,6 +136,19 @@ namespace physics {
             virtual const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& getWilsonTwoFlavourChiralCondensateParametersInterface() = 0;
             virtual const physics::observables::StaggeredChiralCondensateParametersInterface& getStaggeredChiralCondensateParametersInterface() = 0;
             virtual const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& getWilsonTwoFlavourCorrelatorsCondensateParametersInterface() = 0;
+
+            //NOTE: Here the interfaces for the algorithms. Since the algorithms are functions and not objects,
+            //      these getters cannot be included in the template above (getInterface).
+            virtual const physics::algorithms::SolversParametersInterface& getSolversParametersInterface() = 0;
+            virtual const physics::algorithms::MinMaxEigenvalueParametersInterface& getMinMaxEigenvalueParametersInterface() = 0;
+            virtual const physics::algorithms::ForcesParametersInterface& getForcesParametersInterface() = 0;
+            virtual const physics::algorithms::InversionParemetersInterface& getInversionParemetersInterface() = 0;
+            virtual const physics::algorithms::IntegratorParametersInterface& getIntegratorParametersInterface() = 0;
+            virtual const physics::algorithms::MolecularDynamicsInterface& getMolecularDynamicsInterface() = 0;
+            virtual const physics::algorithms::MetropolisParametersInterface& getMetropolisParametersInterface() = 0;
+            virtual const physics::algorithms::HmcParametersInterface& getHmcParametersInterface() = 0;
+            virtual const physics::algorithms::RhmcParametersInterface& getRhmcParametersInterface() = 0;
+
         private:
             virtual const physics::lattices::GaugefieldParametersInterface& getGaugefieldParametersInterface() = 0;
             virtual const physics::lattices::GaugemomentaParametersInterface& getGaugemomentaParametersInterface() = 0;
@@ -244,7 +258,16 @@ namespace physics {
                   gaugeObservablesParametersInterface{nullptr},
                   wilsonTwoFlavourChiralCondensateParametersInterface{nullptr},
                   staggeredChiralCondensateParametersInterface{nullptr},
-                  wilsonTwoFlavourCorrelatorsParametersInterface{nullptr} {}
+                  wilsonTwoFlavourCorrelatorsParametersInterface{nullptr},
+                  solversParametersInterface{nullptr},
+                  minMaxEigenvalueParametersInterface{nullptr},
+                  forcesParametersInterface{nullptr},
+                  inversionParametersInterface{nullptr},
+                  integratorParametersInterface{nullptr},
+                  molecularDynamicsParametersInterface{nullptr},
+                  metropolisParametersInterface{nullptr},
+                  hmcParametersInterface{nullptr},
+                  rhmcParametersInterface{nullptr} {}
             ~InterfacesHandlerImplementation() {}
             const physics::observables::GaugeObservablesParametersInterface& getGaugeObservablesParametersInterface() override
             {
@@ -269,6 +292,59 @@ namespace physics {
                 if(wilsonTwoFlavourCorrelatorsParametersInterface == nullptr)
                     wilsonTwoFlavourCorrelatorsParametersInterface = std::unique_ptr<const physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation>(new physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation{parameters});
                 return *wilsonTwoFlavourCorrelatorsParametersInterface;
+            }
+            const physics::algorithms::SolversParametersInterface& getSolversParametersInterface()
+            {
+                if( solversParametersInterface == nullptr)
+                    solversParametersInterface = std::unique_ptr<const physics::algorithms::SolversParametersImplementation>(new physics::algorithms::SolversParametersImplementation{parameters});
+                return *solversParametersInterface;
+            }
+            const physics::algorithms::MinMaxEigenvalueParametersInterface& getMinMaxEigenvalueParametersInterface()
+            {
+                if( minMaxEigenvalueParametersInterface == nullptr)
+                    minMaxEigenvalueParametersInterface = std::unique_ptr<const physics::algorithms::MinMaxEigenvalueParametersImplementation>(new physics::algorithms::MinMaxEigenvalueParametersImplementation{parameters});
+                return *minMaxEigenvalueParametersInterface;
+            }
+            const physics::algorithms::ForcesParametersInterface& getForcesParametersInterface()
+            {
+                if( forcesParametersInterface == nullptr)
+                    forcesParametersInterface = std::unique_ptr<const physics::algorithms::ForcesParametersImplementation>(new physics::algorithms::ForcesParametersImplementation{parameters});
+                return *forcesParametersInterface;
+            }
+            const physics::algorithms::InversionParemetersInterface& getInversionParemetersInterface()
+            {
+                if( inversionParametersInterface == nullptr)
+                    inversionParametersInterface = std::unique_ptr<const physics::algorithms::InversionParametersImplementation>(new physics::algorithms::InversionParametersImplementation{parameters});
+                return *inversionParametersInterface;
+            }
+            const physics::algorithms::IntegratorParametersInterface& getIntegratorParametersInterface()
+            {
+                if( integratorParametersInterface == nullptr)
+                    integratorParametersInterface = std::unique_ptr<const physics::algorithms::IntegratorParametersImplementation>(new physics::algorithms::IntegratorParametersImplementation{parameters});
+                return *integratorParametersInterface;
+            }
+            const physics::algorithms::MolecularDynamicsInterface& getMolecularDynamicsInterface()
+            {
+                if( molecularDynamicsParametersInterface == nullptr)
+                    molecularDynamicsParametersInterface = std::unique_ptr<const physics::algorithms::MolecularDynamicsImplementation>(new physics::algorithms::MolecularDynamicsImplementation{parameters});
+                return *molecularDynamicsParametersInterface;
+            }
+            const physics::algorithms::MetropolisParametersInterface& getMetropolisParametersInterface()
+            {
+                if( metropolisParametersInterface == nullptr)
+                    metropolisParametersInterface = std::unique_ptr<const physics::algorithms::MetropolisParametersImplementation>(new physics::algorithms::MetropolisParametersImplementation{parameters});
+                return *metropolisParametersInterface;
+            }
+            const physics::algorithms::HmcParametersInterface& getHmcParametersInterface()            {
+                if( hmcParametersInterface == nullptr)
+                     hmcParametersInterface = std::unique_ptr<const physics::algorithms::HmcParametersImplementation>(new physics::algorithms::HmcParametersImplementation{parameters});
+                return *hmcParametersInterface;
+            }
+            const physics::algorithms::RhmcParametersInterface& getRhmcParametersInterface()
+            {
+                if( rhmcParametersInterface == nullptr)
+                    rhmcParametersInterface = std::unique_ptr<const physics::algorithms::RhmcParametersImplementation>(new physics::algorithms::RhmcParametersImplementation{parameters});
+                return *rhmcParametersInterface;
             }
 
         private:
@@ -355,6 +431,15 @@ namespace physics {
             std::unique_ptr<const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface> wilsonTwoFlavourChiralCondensateParametersInterface;
             std::unique_ptr<const physics::observables::StaggeredChiralCondensateParametersInterface> staggeredChiralCondensateParametersInterface;
             std::unique_ptr<const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface> wilsonTwoFlavourCorrelatorsParametersInterface;
+            std::unique_ptr<const physics::algorithms::SolversParametersInterface> solversParametersInterface;
+            std::unique_ptr<const physics::algorithms::MinMaxEigenvalueParametersInterface> minMaxEigenvalueParametersInterface;
+            std::unique_ptr<const physics::algorithms::ForcesParametersInterface> forcesParametersInterface;
+            std::unique_ptr<const physics::algorithms::InversionParemetersInterface> inversionParametersInterface;
+            std::unique_ptr<const physics::algorithms::IntegratorParametersInterface> integratorParametersInterface;
+            std::unique_ptr<const physics::algorithms::MolecularDynamicsInterface> molecularDynamicsParametersInterface;
+            std::unique_ptr<const physics::algorithms::MetropolisParametersInterface> metropolisParametersInterface;
+            std::unique_ptr<const physics::algorithms::HmcParametersInterface> hmcParametersInterface;
+            std::unique_ptr<const physics::algorithms::RhmcParametersInterface> rhmcParametersInterface;
     };
 
 }
