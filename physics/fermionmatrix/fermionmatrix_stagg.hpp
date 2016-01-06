@@ -47,10 +47,9 @@ void DKS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lat
  */
 class Fermionmatrix_stagg_basic {
 public:
-	/**
-	 * Get if the matrix is hermitian
-	 */
-	bool is_hermitian() const noexcept;
+	bool isHermitian() const noexcept;
+	bool hasMinimumEigenvalueThreshold() const noexcept;
+	virtual hmc_float getThresholdForMinimumEigenvalue(hmc_float mass) const;
 	/**
 	 * Get the net flops performed by this function.
 	 */
@@ -58,8 +57,10 @@ public:
 	virtual ~Fermionmatrix_stagg_basic(){}
 
 protected:
-	Fermionmatrix_stagg_basic(const hardware::System& system, const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface, bool herm)
-        : fermionmatrixStaggeredParametersInterface(fermionmatrixStaggeredParametersInterface), _is_hermitian(herm), system(system) {};
+	Fermionmatrix_stagg_basic(const hardware::System& system, const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface,
+	                          bool herm, bool hasMinEigenThreshold)
+        : fermionmatrixStaggeredParametersInterface(fermionmatrixStaggeredParametersInterface), isMatrixHermitian(herm),
+          hasMatrixMinimumEigenvalueThreshold(hasMinEigenThreshold), system(system) {};
 	
 	/**
 	 * Get the system to operate on.
@@ -68,10 +69,8 @@ protected:
 	const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface;
 
 private:
-	/**
-	 * Shows if matrix is hermitian.
-	 */
-	const bool _is_hermitian;
+	const bool isMatrixHermitian;
+	const bool hasMatrixMinimumEigenvalueThreshold;
 
 	/**
 	 * The system we are operating on.
@@ -88,12 +87,14 @@ public:
 	/**
 	 * Invoke the matrix function.
 	 */
-	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass = NULL) const = 0;
+	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+	                         const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass = NULL) const = 0;
 	virtual ~Fermionmatrix_stagg_eo(){}
 
 protected:
-	Fermionmatrix_stagg_eo(const hardware::System& system, const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface, bool herm)
-        : Fermionmatrix_stagg_basic(system, fermionmatrixStaggeredParametersInterface, herm) {};
+	Fermionmatrix_stagg_eo(const hardware::System& system, const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface,
+	                       bool herm, bool hasMinEigenThreshold)
+        : Fermionmatrix_stagg_basic(system, fermionmatrixStaggeredParametersInterface, herm, hasMinEigenThreshold) {};
 };
 
 
@@ -103,7 +104,7 @@ protected:
 class D_KS_eo final : public Fermionmatrix_stagg_eo {
 public:
 	D_KS_eo(const hardware::System& system,  const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface, bool evenodd)
-        : Fermionmatrix_stagg_eo(system, fermionmatrixStaggeredParametersInterface, false), evenodd(evenodd) {};
+        : Fermionmatrix_stagg_eo(system, fermionmatrixStaggeredParametersInterface, false, false), evenodd(evenodd) {};
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass = NULL) const override;
 	cl_ulong get_flops() const override;
 private:
@@ -117,8 +118,9 @@ private:
 class MdagM_eo final : public Fermionmatrix_stagg_eo {
 public:
 	MdagM_eo(const hardware::System& system, const physics::FermionStaggeredEoParametersInterface& fermionStaggeredEoParametersInterface, bool ul=EVEN)
-        : Fermionmatrix_stagg_eo(system, fermionStaggeredEoParametersInterface, true), tmp(system, fermionStaggeredEoParametersInterface), upper_left(ul) {};
+        : Fermionmatrix_stagg_eo(system, fermionStaggeredEoParametersInterface, true, true), tmp(system, fermionStaggeredEoParametersInterface), upper_left(ul) {};
 	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass = NULL) const override;
+	hmc_float getThresholdForMinimumEigenvalue(hmc_float mass) const override;
 	cl_ulong get_flops() const override;
 	bool get_upper_left() const;
 private:

@@ -23,14 +23,24 @@
 #include "../../hardware/code/spinors_staggered.hpp"
 
 //Generic basic class
-bool physics::fermionmatrix::Fermionmatrix_stagg_basic::is_hermitian() const noexcept
+bool physics::fermionmatrix::Fermionmatrix_stagg_basic::isHermitian() const noexcept
 {
-	return _is_hermitian;
+	return isMatrixHermitian;
+}
+
+bool physics::fermionmatrix::Fermionmatrix_stagg_basic::hasMinimumEigenvalueThreshold() const noexcept
+{
+    return hasMatrixMinimumEigenvalueThreshold;
 }
 
 const hardware::System& physics::fermionmatrix::Fermionmatrix_stagg_basic::get_system() const noexcept
 {
 	return system;
+}
+
+hmc_float physics::fermionmatrix::Fermionmatrix_stagg_basic::getThresholdForMinimumEigenvalue(hmc_float mass) const
+{
+    throw Print_Error_Message("Threshold for minimum eigenvalue not existing or not implemented!");
 }
 
 //Class D_KS_eo
@@ -87,6 +97,11 @@ cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
 bool physics::fermionmatrix::MdagM_eo::get_upper_left() const
 {
 	return upper_left;
+}
+
+hmc_float physics::fermionmatrix::MdagM_eo::getThresholdForMinimumEigenvalue(hmc_float mass) const
+{
+    return mass * mass;
 }
 
 

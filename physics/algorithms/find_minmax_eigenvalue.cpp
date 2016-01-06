@@ -39,7 +39,7 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
     using namespace physics::lattices;
     using namespace physics::algorithms;
 
-    if(!(A.is_hermitian()))
+    if(!(A.isHermitian()))
         throw std::invalid_argument("Unable to deal with non-hermitian matrices in find_max_eigenvalue!");
 
     Scalar<hmc_complex> max(system);
@@ -86,7 +86,7 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
                 hmc_complex result = max.get();
                 logger.debug() << "max.im = " << result.im;
                 if((result.im) > 1.e-12) {
-                    logger.fatal() << "Power Method found complex eigenvalue!";
+                    logger.fatal() << "Power Method found complex eigenvalue! result.im = " << result.im;
                     throw solvers::SolverStuck(i, __FILE__, __LINE__);
                 }
                 //Here we are sure the eigenvalue is correctly found, then we get the duration
@@ -107,12 +107,10 @@ hmc_float physics::algorithms::find_min_eigenvalue(const physics::fermionmatrix:
                                                    const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec,
                                                    hmc_float mass, const bool conservative)
 {
-    if(conservative) {
-        hmc_float mass = system.get_inputparameters().get_mass(); //TODO: This mass should somehow be a const member (e.g. minimumEigenvalue) of A.
-        return mass * mass;
-    }
+    if(conservative)
+        return A.getThresholdForMinimumEigenvalue(mass);
 
-    if(!(A.is_hermitian()))
+    if(!(A.isHermitian()))
         throw std::invalid_argument("Unable to deal with non-hermitian matrices in find_max_eigenvalue!");
 
     hmc_float max = find_max_eigenvalue(A, gf, system, interfacesHandler, prec, mass);
@@ -130,10 +128,9 @@ void physics::algorithms::find_maxmin_eigenvalue(hmc_float& max, hmc_float& min,
 
     max = find_max_eigenvalue(A, gf, system, interfacesHandler, prec, mass);
 
-    if(conservative) {
-        hmc_float mass = system.get_inputparameters().get_mass(); //TODO: This mass should somehow be a const member (e.g. minimumEigenvalue) of A.
-        min = mass * mass;
-    } else {
+    if(conservative)
+        min = A.getThresholdForMinimumEigenvalue(mass);
+    else {
         min = find_min_knowing_max(max, A, gf, system, interfacesHandler, prec, mass);
     }
 
@@ -223,7 +220,7 @@ static std::string create_log_prefix_find(std::string name, int number) noexcept
 
     stringstream strnumber;
     strnumber.fill('0');
-    /// @todo this should be length(cgmax)
+    /// @todo this should be length(findminmax_max)
     strnumber.width(6);
     strnumber << right << number;
     stringstream outfilename;
