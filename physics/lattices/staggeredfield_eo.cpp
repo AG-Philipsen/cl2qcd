@@ -27,9 +27,8 @@
 
 static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const hardware::System& system);
 
-physics::lattices::Staggeredfield_eo::Staggeredfield_eo(const hardware::System& system)
-	: system(system), staggaredfieldEoParametersInterface(new StaggeredfieldEoParametersImplementation(system.get_inputparameters())),
-	  buffers(allocate_buffers(system))
+physics::lattices::Staggeredfield_eo::Staggeredfield_eo(const hardware::System& system, const StaggeredfieldEoParametersInterface& staggeredfieldEoParametersInterface)
+	: system(system), staggaredfieldEoParametersInterface(staggeredfieldEoParametersInterface), buffers(allocate_buffers(system))
 {
 }
 
@@ -51,8 +50,6 @@ physics::lattices::Staggeredfield_eo::~Staggeredfield_eo()
     for(auto buffer: buffers) {
 		delete buffer;
 	}
-    //TODO: remove the following delete
-    delete staggaredfieldEoParametersInterface;
 }
 
 const std::vector<const hardware::buffers::SU3vec *> physics::lattices::Staggeredfield_eo::get_buffers() const noexcept
@@ -613,5 +610,5 @@ void physics::lattices::Staggeredfield_eo::import(const su3vec * const host) con
 
 unsigned physics::lattices::Staggeredfield_eo::get_elements() const noexcept
 {
-	return staggaredfieldEoParametersInterface->getNumberOfElements();
+	return staggaredfieldEoParametersInterface.getNumberOfElements();
 }

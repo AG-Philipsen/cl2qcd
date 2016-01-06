@@ -37,22 +37,21 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 1);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 2);
 
-		physics::fermionmatrix::M_wilson(&sf2, gf, sf1);
+		physics::fermionmatrix::M_wilson(&sf2, gf, sf1, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2610.3804893063798, 0.01);
-		physics::fermionmatrix::M_wilson(&sf1, gf, sf2);
+		physics::fermionmatrix::M_wilson(&sf1, gf, sf2, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4356.332327032359, 0.01);
 	}
 
@@ -60,22 +59,21 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 2);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 1);
 
-		physics::fermionmatrix::M_wilson(&sf2, gf, sf1);
+		physics::fermionmatrix::M_wilson(&sf2, gf, sf1, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2655.7059719467552, 0.01);
-		physics::fermionmatrix::M_wilson(&sf1, gf, sf2);
+		physics::fermionmatrix::M_wilson(&sf1, gf, sf2, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4487.2227568771214, 0.01);
 	}
 }
@@ -87,22 +85,21 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 3);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 1);
 
-		physics::fermionmatrix::M_tm_plus(&sf2, gf, sf1);
+		physics::fermionmatrix::M_tm_plus(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2573.5343424130424, 0.01);
-		physics::fermionmatrix::M_tm_plus(&sf1, gf, sf2);
+		physics::fermionmatrix::M_tm_plus(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4301.7240841150415, 0.01);
 	}
 
@@ -110,22 +107,21 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 4);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 2);
 
-		physics::fermionmatrix::M_tm_plus(&sf2, gf, sf1);
+		physics::fermionmatrix::M_tm_plus(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2536.3274644928938, 0.01);
-		physics::fermionmatrix::M_tm_plus(&sf1, gf, sf2);
+		physics::fermionmatrix::M_tm_plus(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4202.4585412814668, 0.01);
 	}
 }
@@ -137,22 +133,21 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 5);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 3);
 
-		physics::fermionmatrix::M_tm_minus(&sf2, gf, sf1);
+		physics::fermionmatrix::M_tm_minus(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2580.3455858426491, 0.01);
-		physics::fermionmatrix::M_tm_minus(&sf1, gf, sf2);
+		physics::fermionmatrix::M_tm_minus(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4323.4437436445069, 0.01);
 	}
 
@@ -160,22 +155,21 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 6);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 4);
 
-		physics::fermionmatrix::M_tm_minus(&sf2, gf, sf1);
+		physics::fermionmatrix::M_tm_minus(&sf2, gf, sf1, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2648.2135270529998, 0.01);
-		physics::fermionmatrix::M_tm_minus(&sf1, gf, sf2);
+		physics::fermionmatrix::M_tm_minus(&sf1, gf, sf2, params.get_kappa(), meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4457.8676622761632, 0.01);
 	}
 }
@@ -197,9 +191,9 @@ BOOST_AUTO_TEST_CASE(M_tm_inverse_sitediagonal)
 		pseudo_randomize<Spinorfield, spinor>(&src, 5);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::fermionmatrix::M_tm_inverse_sitediagonal(&sf2, sf1);
+		physics::fermionmatrix::M_tm_inverse_sitediagonal(&sf2, sf1, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 4133.0112721801961, 0.01);
-		physics::fermionmatrix::M_tm_inverse_sitediagonal(&sf1, sf2);
+		physics::fermionmatrix::M_tm_inverse_sitediagonal(&sf1, sf2, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4133.0019729257556, 0.01);
 	}
 }
@@ -221,9 +215,9 @@ BOOST_AUTO_TEST_CASE(M_tm_sitediagnoal)
 		pseudo_randomize<Spinorfield, spinor>(&src, 7);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::fermionmatrix::M_tm_sitediagonal(&sf2, sf1);
+		physics::fermionmatrix::M_tm_sitediagonal(&sf2, sf1, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 4142.9167782423428, 0.01);
-		physics::fermionmatrix::M_tm_sitediagonal(&sf1, sf2);
+		physics::fermionmatrix::M_tm_sitediagonal(&sf1, sf2, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4142.9260998050931, 0.01);
 	}
 }
@@ -245,9 +239,9 @@ BOOST_AUTO_TEST_CASE(M_tm_inverse_sitediagonal_minus)
 		pseudo_randomize<Spinorfield, spinor>(&src, 9);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(&sf2, sf1);
+		physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(&sf2, sf1, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 4095.9297157806914, 0.01);
-		physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(&sf1, sf2);
+		physics::fermionmatrix::M_tm_inverse_sitediagonal_minus(&sf1, sf2, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4095.9204999595668, 0.01);
 	}
 }
@@ -269,9 +263,9 @@ BOOST_AUTO_TEST_CASE(M_tm_sitediagonal_minus)
 		pseudo_randomize<Spinorfield, spinor>(&src, 11);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::fermionmatrix::M_tm_sitediagonal_minus(&sf2, sf1);
+		physics::fermionmatrix::M_tm_sitediagonal_minus(&sf2, sf1, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 4099.5308263836096, 0.01);
-		physics::fermionmatrix::M_tm_sitediagonal_minus(&sf1, sf2);
+		physics::fermionmatrix::M_tm_sitediagonal_minus(&sf1, sf2, meta::get_mubar(params));
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 4099.5400503279689, 0.01);
 	}
 }
@@ -284,13 +278,12 @@ BOOST_AUTO_TEST_CASE(dslash)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -298,9 +291,9 @@ BOOST_AUTO_TEST_CASE(dslash)
 		pseudo_randomize<Spinorfield, spinor>(&src, 13);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::fermionmatrix::dslash(&sf2, gf, sf1, EVEN);
+		physics::fermionmatrix::dslash(&sf2, gf, sf1, EVEN, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 3311.2698428285048, 0.01);
-		physics::fermionmatrix::dslash(&sf1, gf, sf2, ODD);
+		physics::fermionmatrix::dslash(&sf1, gf, sf2, ODD, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 3146.1039504225546, 0.01);
 	}
 
@@ -308,13 +301,12 @@ BOOST_AUTO_TEST_CASE(dslash)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -322,9 +314,9 @@ BOOST_AUTO_TEST_CASE(dslash)
 		pseudo_randomize<Spinorfield, spinor>(&src, 28);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::fermionmatrix::dslash(&sf2, gf, sf1, EVEN);
+		physics::fermionmatrix::dslash(&sf2, gf, sf1, EVEN, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 251.84231257415126, 0.01);
-		physics::fermionmatrix::dslash(&sf1, gf, sf2, ODD);
+		physics::fermionmatrix::dslash(&sf1, gf, sf2, ODD, params.get_kappa());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), 75.926255640020059, 0.01);
 	}
 

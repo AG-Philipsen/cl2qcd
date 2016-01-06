@@ -29,6 +29,7 @@
 
 #include "../prng.hpp"
 #include "../../host_functionality/logger.hpp"
+#include "../interfacesHandler.hpp"
 
 /* Here pbp_ref_im_minmax are the minimum and maximum pbp immaginary part obtained in the reference
  * code in 100 measurements. This is done because of big fluctuations: a check of the closeness of
@@ -37,7 +38,7 @@
  *  - pbp_ref_im_minmax.im is maximum
  *  - pbp_ref_im_minmax.re is minimum
  */
-void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc_complex pbp_ref_im_minmax, bool cold, bool thetaT)
+static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc_complex pbp_ref_im_minmax, bool cold, bool thetaT)
 {
 	using namespace physics::lattices;
 
@@ -57,17 +58,18 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	options.push_back(tmp.c_str());
 	
 	meta::Inputparameters params(10, &(options[0]));
-	GaugefieldParametersImplementation gaugefieldParameters(&params);
+	//GaugefieldParametersImplementation gaugefieldParameters(&params);
 	hardware::System system(params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 	const Gaugefield *gf;
 	if(cold)
-	  gf = new Gaugefield(system, &gaugefieldParameters, prng, false);
+	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 	else //This configuration for the Ref.Code is the same as for example dks_input_5
-	  gf = new Gaugefield(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
-	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system);
+	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system, interfacesHandler);
 	
 	logger.info() << "Chiral condensate pbp = (" << std::setprecision(12) << pbp.re << ", " << pbp.im << ")";
 	if(content == "one"){

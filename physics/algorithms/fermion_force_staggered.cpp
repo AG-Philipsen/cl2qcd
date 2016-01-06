@@ -89,32 +89,30 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     logger.debug() << "\t\tcalc_fermion_force...";
 
     logger.debug() << "\t\t\tstart solver";
-    std::vector<Staggeredfield_eo *> X;
-    std::vector<Staggeredfield_eo *> Y;
+    std::vector<std::shared_ptr<Staggeredfield_eo> > X;
+    std::vector<std::shared_ptr<Staggeredfield_eo> > Y;
     for (int i = 0; i < phi.Get_order(); i++) {
-        X.push_back(new Staggeredfield_eo(system));
-        Y.push_back(new Staggeredfield_eo(system));
+        X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+        Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
-    const MdagM_eo fm(system, mass);
-    cg_m(X, phi.Get_b(), fm, gf, phi, system, params.get_force_prec());
+    const MdagM_eo fm(system, interfaceHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
+    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfaceHandler, params.get_force_prec(), mass);
     logger.debug() << "\t\t\t  end solver";
 
     //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
     //reconstruct the force. I will use a temporary Gaugemomenta to calculate the
     //partial force (on the whole lattice) that will be later added to "force"
-    const D_KS_eo Doe(system, ODD);   //with ODD it is the Doe operator
+    const D_KS_eo Doe(system, interfaceHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
     physics::lattices::Gaugemomenta tmp(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
 
     for (int i = 0; i < phi.Get_order(); i++) {
-        Doe(Y[i], gf, *X[i]);
+        Doe(Y[i].get(), gf, *X[i]);
         tmp.zero();
         fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
         fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
         physics::lattices::saxpy(force, -1. * (phi.Get_a())[i], tmp);
     }
 
-    meta::free_container(X);
-    meta::free_container(Y);
     logger.debug() << "\t\t...end calc_fermion_force!";
 }
 

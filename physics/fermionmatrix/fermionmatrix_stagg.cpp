@@ -23,20 +23,14 @@
 #include "../../hardware/code/spinors_staggered.hpp"
 
 //Generic basic class
-bool physics::fermionmatrix::Fermionmatrix_stagg_basic::is_hermitian() const noexcept
+bool physics::fermionmatrix::Fermionmatrix_stagg_basic::isHermitian() const noexcept
 {
-	return _is_hermitian;
+	return isMatrixHermitian;
 }
 
-//Even if get_mass is a pure virtual method, the base class can still have an implementation
-//of such a method that can be explicitly called with the scope resolution operator.
-//In this way, derived classes that must return the value of the mass can call this default
-//implementation, those that do not depend on the mass will throw an exception.
-//REMARK: = 0 means derived classes must provide an implementation,
-//        not that the base class can not provide an implementation.
-hmc_float physics::fermionmatrix::Fermionmatrix_stagg_basic::get_mass() const
+bool physics::fermionmatrix::Fermionmatrix_stagg_basic::hasMinimumEigenvalueThreshold() const noexcept
 {
-	return mass;
+    return hasMatrixMinimumEigenvalueThreshold;
 }
 
 const hardware::System& physics::fermionmatrix::Fermionmatrix_stagg_basic::get_system() const noexcept
@@ -44,10 +38,19 @@ const hardware::System& physics::fermionmatrix::Fermionmatrix_stagg_basic::get_s
 	return system;
 }
 
-//Class D_KS_eo
-void physics::fermionmatrix::D_KS_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const
+hmc_float physics::fermionmatrix::Fermionmatrix_stagg_basic::getThresholdForMinimumEigenvalue(hmc_float mass) const
 {
-	DKS_eo(out, gf, in, evenodd);
+    throw Print_Error_Message("Threshold for minimum eigenvalue not existing or not implemented!");
+}
+
+//Class D_KS_eo
+void physics::fermionmatrix::D_KS_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+                                                 const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass) const
+{
+    if(mass == NULL)
+        DKS_eo(out, gf, in, evenodd);
+    else
+        throw Print_Error_Message("D_KS_eo operator applied passing to it a mass value! This should not happen!");
 }
 
 cl_ulong physics::fermionmatrix::D_KS_eo::get_flops() const
@@ -59,25 +62,23 @@ cl_ulong physics::fermionmatrix::D_KS_eo::get_flops() const
 	return fermion_code->get_flop_size("D_KS_eo");
 }
 
-hmc_float physics::fermionmatrix::D_KS_eo::get_mass() const
-{
-	throw Print_Error_Message("Unable to recover right fermions mass from fermionmatrix::D_KS_eo object.", __FILE__, __LINE__);
-}
-
 //Class MdagM_eo
-void physics::fermionmatrix::MdagM_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const
+void physics::fermionmatrix::MdagM_eo::operator()(const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+                                                  const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass) const
 {
-	hmc_float mass = get_mass();
-	if(upper_left==EVEN){
-		//mass**2 - Deo*Doe
-		DKS_eo(&tmp, gf, in, ODD);
-		DKS_eo(out, gf, tmp, EVEN);
-	} else {
-		//mass**2 - Doe*Deo
-		DKS_eo(&tmp, gf, in, EVEN);
-		DKS_eo(out, gf, tmp, ODD);
-	}
-	saxpby(out, {mass*mass, 0.}, in, {-1., 0.}, *out);
+    if(mass != NULL){
+        if(upper_left==EVEN){
+            //mass**2 - Deo*Doe
+            DKS_eo(&tmp, gf, in, ODD);
+            DKS_eo(out, gf, tmp, EVEN);
+        } else {
+            //mass**2 - Doe*Deo
+            DKS_eo(&tmp, gf, in, EVEN);
+            DKS_eo(out, gf, tmp, ODD);
+        }
+        saxpby(out, {(*mass)*(*mass), 0.}, in, {-1., 0.}, *out);
+    } else
+        throw Print_Error_Message("MdagM_eo operator applied without the MANDATORY mass value! Aborting...");
 }
 
 cl_ulong physics::fermionmatrix::MdagM_eo::get_flops() const
@@ -98,8 +99,9 @@ bool physics::fermionmatrix::MdagM_eo::get_upper_left() const
 	return upper_left;
 }
 
-hmc_float physics::fermionmatrix::MdagM_eo::get_mass() const noexcept
+hmc_float physics::fermionmatrix::MdagM_eo::getThresholdForMinimumEigenvalue(hmc_float mass) const
 {
-	return Fermionmatrix_stagg_basic::get_mass();
+    return mass * mass;
 }
+
 

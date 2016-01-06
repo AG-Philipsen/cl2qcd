@@ -38,7 +38,17 @@ namespace physics {
     }
 
     namespace fermionmatrix {
-    	class Fermionmatrix;
+    	class M;
+    	class Qplus;
+    	class Qminus;
+    	class QplusQminus;
+    	class Aee;
+    	class Aee_minus;
+    	class Qplus_eo;
+    	class Qminus_eo;
+    	class QplusQminus_eo;
+    	class D_KS_eo;
+    	class MdagM_eo;
     }
 
     template<typename NOT_IMPORTANT> struct InterfaceType; //Not defined in order to prevent non specialized template instatiation!
@@ -68,9 +78,51 @@ namespace physics {
             using value = physics::lattices::RootedStaggeredfieldEoParametersInterface;
     };
     template<>
-    struct InterfaceType<physics::fermionmatrix::Fermionmatrix> {
+    struct InterfaceType<physics::fermionmatrix::M> {
             using value = physics::fermionmatrix::FermionmatrixParametersInterface;
     };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::Qplus> {
+            using value = physics::fermionmatrix::FermionmatrixParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::Qminus> {
+            using value = physics::fermionmatrix::FermionmatrixParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::QplusQminus> {
+            using value = physics::FermionParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::Aee> {
+            using value = physics::FermionEoParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::Aee_minus> {
+            using value = physics::FermionEoParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::Qplus_eo> {
+            using value = physics::FermionEoParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::Qminus_eo> {
+            using value = physics::FermionEoParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::QplusQminus_eo> {
+            using value = physics::FermionEoParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::D_KS_eo> {
+            using value = physics::fermionmatrix::FermionmatrixStaggeredParametersInterface;
+    };
+    template<>
+    struct InterfaceType<physics::fermionmatrix::MdagM_eo> {
+            using value = physics::FermionStaggeredEoParametersInterface;
+    };
+
+
 
     class InterfacesHandler {
         public:
@@ -91,6 +143,10 @@ namespace physics {
             virtual const physics::lattices::StaggeredfieldEoParametersInterface& getStaggeredfieldEoParametersInterface() = 0;
             virtual const physics::lattices::RootedStaggeredfieldEoParametersInterface& getRootedStaggeredfieldEoParametersInterface() = 0;
             virtual const physics::fermionmatrix::FermionmatrixParametersInterface& getFermionmatrixParametersInterface() = 0;
+            virtual const physics::fermionmatrix::FermionmatrixStaggeredParametersInterface& getFermionmatrixStaggeredParametersInterface() = 0;
+            virtual const physics::FermionParametersInterface& getFermionParametersInterface() = 0;
+            virtual const physics::FermionEoParametersInterface& getFermionEoParametersInterface() = 0;
+            virtual const physics::FermionStaggeredEoParametersInterface& getFermionStaggeredEoParametersInterface() = 0;
     };
 
     template<> inline const typename InterfaceType<physics::lattices::Gaugefield>::value& InterfacesHandler::getInterface<physics::lattices::Gaugefield>()
@@ -117,9 +173,49 @@ namespace physics {
     {
         return getRootedStaggeredfieldEoParametersInterface();
     }
-    template<> inline const typename InterfaceType<physics::fermionmatrix::Fermionmatrix>::value& InterfacesHandler::getInterface<physics::fermionmatrix::Fermionmatrix>()
+    template<> inline const typename InterfaceType<physics::fermionmatrix::M>::value& InterfacesHandler::getInterface<physics::fermionmatrix::M>()
     {
         return getFermionmatrixParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::Qplus>::value& InterfacesHandler::getInterface<physics::fermionmatrix::Qplus>()
+    {
+        return getFermionmatrixParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::Qminus>::value& InterfacesHandler::getInterface<physics::fermionmatrix::Qminus>()
+    {
+        return getFermionmatrixParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::QplusQminus>::value& InterfacesHandler::getInterface<physics::fermionmatrix::QplusQminus>()
+    {
+        return getFermionParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::Aee>::value& InterfacesHandler::getInterface<physics::fermionmatrix::Aee>()
+    {
+        return getFermionEoParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::Aee_minus>::value& InterfacesHandler::getInterface<physics::fermionmatrix::Aee_minus>()
+    {
+        return getFermionEoParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::Qplus_eo>::value& InterfacesHandler::getInterface<physics::fermionmatrix::Qplus_eo>()
+    {
+        return getFermionEoParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::Qminus_eo>::value& InterfacesHandler::getInterface<physics::fermionmatrix::Qminus_eo>()
+    {
+        return getFermionEoParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::QplusQminus_eo>::value& InterfacesHandler::getInterface<physics::fermionmatrix::QplusQminus_eo>()
+    {
+        return getFermionEoParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::D_KS_eo>::value& InterfacesHandler::getInterface<physics::fermionmatrix::D_KS_eo>()
+    {
+        return getFermionmatrixStaggeredParametersInterface();
+    }
+    template<> inline const typename InterfaceType<physics::fermionmatrix::MdagM_eo>::value& InterfacesHandler::getInterface<physics::fermionmatrix::MdagM_eo>()
+    {
+        return getFermionStaggeredEoParametersInterface();
     }
 
 }
@@ -141,6 +237,10 @@ namespace physics {
                   staggeredfieldEoParametersInterface{nullptr},
                   rootedStaggaredfieldEoParametersInterface{nullptr},
                   fermionmatrixParametersInterface{nullptr},
+                  fermionmatrixStaggeredParametersInterface{nullptr},
+                  fermionParametersInterface{nullptr},
+                  fermionEoParametersInterface{nullptr},
+                  fermionStaggeredEoParametersInterface{nullptr},
                   gaugeObservablesParametersInterface{nullptr},
                   wilsonTwoFlavourChiralCondensateParametersInterface{nullptr},
                   staggeredChiralCondensateParametersInterface{nullptr},
@@ -214,6 +314,30 @@ namespace physics {
                     fermionmatrixParametersInterface = std::unique_ptr<const physics::fermionmatrix::FermionmatrixParametersImplementation>(new physics::fermionmatrix::FermionmatrixParametersImplementation{parameters});
                 return *fermionmatrixParametersInterface;
             }
+            const physics::fermionmatrix::FermionmatrixStaggeredParametersInterface& getFermionmatrixStaggeredParametersInterface() override
+            {
+                if(fermionmatrixStaggeredParametersInterface == nullptr)
+                    fermionmatrixStaggeredParametersInterface = std::unique_ptr<const physics::fermionmatrix::FermionmatrixStaggeredParametersImplementation>(new physics::fermionmatrix::FermionmatrixStaggeredParametersImplementation{parameters});
+                return *fermionmatrixStaggeredParametersInterface;
+            }
+            const physics::FermionParametersInterface& getFermionParametersInterface() override
+            {
+                if(fermionParametersInterface == nullptr)
+                    fermionParametersInterface = std::unique_ptr<const physics::FermionParametersImplementation>(new physics::FermionParametersImplementation{parameters});
+                return *fermionParametersInterface;
+            }
+            const physics::FermionEoParametersInterface& getFermionEoParametersInterface() override
+            {
+                if(fermionEoParametersInterface == nullptr)
+                    fermionEoParametersInterface = std::unique_ptr<const physics::FermionEoParametersImplementation>(new physics::FermionEoParametersImplementation{parameters});
+                return *fermionEoParametersInterface;
+            }
+            const physics::FermionStaggeredEoParametersInterface& getFermionStaggeredEoParametersInterface() override
+            {
+                if(fermionStaggeredEoParametersInterface == nullptr)
+                    fermionStaggeredEoParametersInterface = std::unique_ptr<const physics::FermionStaggeredEoParametersImplementation>(new physics::FermionStaggeredEoParametersImplementation{parameters});
+                return *fermionStaggeredEoParametersInterface;
+            }
 
             const meta::Inputparameters& parameters;
             std::unique_ptr<const physics::lattices::GaugefieldParametersInterface> gaugefieldParametersInterface;
@@ -223,6 +347,10 @@ namespace physics {
             std::unique_ptr<const physics::lattices::StaggeredfieldEoParametersInterface> staggeredfieldEoParametersInterface;
             std::unique_ptr<const physics::lattices::RootedStaggeredfieldEoParametersInterface> rootedStaggaredfieldEoParametersInterface;
             std::unique_ptr<const physics::fermionmatrix::FermionmatrixParametersInterface> fermionmatrixParametersInterface;
+            std::unique_ptr<const physics::fermionmatrix::FermionmatrixStaggeredParametersInterface> fermionmatrixStaggeredParametersInterface;
+            std::unique_ptr<const physics::FermionParametersInterface> fermionParametersInterface;
+            std::unique_ptr<const physics::FermionEoParametersInterface> fermionEoParametersInterface;
+            std::unique_ptr<const physics::FermionStaggeredEoParametersInterface> fermionStaggeredEoParametersInterface;
             std::unique_ptr<const physics::observables::GaugeObservablesParametersInterface> gaugeObservablesParametersInterface;
             std::unique_ptr<const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface> wilsonTwoFlavourChiralCondensateParametersInterface;
             std::unique_ptr<const physics::observables::StaggeredChiralCondensateParametersInterface> staggeredChiralCondensateParametersInterface;

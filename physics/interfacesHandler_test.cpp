@@ -48,6 +48,8 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     const physics::lattices::StaggeredfieldEoParametersImplementation staggaredfieldEoParametersImplementation{*params};
     const physics::lattices::RootedStaggeredfieldEoParametersImplementation rootedStaggaredfieldEoParametersImplementation{*params};
     const physics::fermionmatrix::FermionmatrixParametersImplementation fermionmatrixParametersImplementation{*params};
+    const physics::FermionParametersImplementation fermionParametersImplementation{*params};
+    const physics::FermionEoParametersImplementation fermionEoParametersImplementation{*params};
     const physics::observables::GaugeObservablesParametersImplementation gaugeObservablesParametersImplementation{*params};
     const physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation wilsonTwoFlavourChiralCondensateParametersImplementation{*params};
     const physics::observables::StaggeredChiralCondensateParametersImplementation staggeredChiralCondensateParametersImplementation{*params};
@@ -59,7 +61,15 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     BOOST_CHECK( typeid(spinorfieldEoParametersImplementation) == typeid(test.getInterface<physics::lattices::Spinorfield_eo>()) );
     BOOST_CHECK( typeid(staggaredfieldEoParametersImplementation) == typeid(test.getInterface<physics::lattices::Staggeredfield_eo>()) );
     BOOST_CHECK( typeid(rootedStaggaredfieldEoParametersImplementation) == typeid(test.getInterface<physics::lattices::Rooted_Staggeredfield_eo>()) );
-    BOOST_CHECK( typeid(fermionmatrixParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Fermionmatrix>()) );
+    BOOST_CHECK( typeid(fermionmatrixParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::M>()) );
+    BOOST_CHECK( typeid(fermionmatrixParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Qplus>()) );
+    BOOST_CHECK( typeid(fermionmatrixParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Qminus>()) );
+    BOOST_CHECK( typeid(fermionParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::QplusQminus>()) );
+    BOOST_CHECK( typeid(fermionEoParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Aee>()) );
+    BOOST_CHECK( typeid(fermionEoParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Aee_minus>()) );
+    BOOST_CHECK( typeid(fermionEoParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Qplus_eo>()) );
+    BOOST_CHECK( typeid(fermionEoParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::Qminus_eo>()) );
+    BOOST_CHECK( typeid(fermionEoParametersImplementation) == typeid(test.getInterface<physics::fermionmatrix::QplusQminus_eo>()) );
     BOOST_CHECK( typeid(gaugeObservablesParametersImplementation) == typeid(test.getGaugeObservablesParametersInterface()) );
     BOOST_CHECK( typeid(wilsonTwoFlavourChiralCondensateParametersImplementation) == typeid(test.getWilsonTwoFlavourChiralCondensateParametersInterface()) );
     BOOST_CHECK( typeid(staggeredChiralCondensateParametersImplementation) == typeid(test.getStaggeredChiralCondensateParametersInterface()) );

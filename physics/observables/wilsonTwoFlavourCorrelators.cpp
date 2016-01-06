@@ -26,7 +26,9 @@
 #include "../lattices/spinorfield.hpp"
 #include "../../meta/inputparameters.hpp"
 
-//todo: refactor
+//TODO: refactor. Consider also how to handle interfaces (at the moment both the handler and the correlator interfaces are given around,
+//      but from the first one can get the second). One should do something like in the Wilson pbp class in the .cpp file (namely have as
+//      private member the interface of the correlator and as additional argument of some methods the interfacesHandler).
 //class TwoFlavourCorrelators
 //{
 //public:
@@ -133,7 +135,8 @@ static void flavour_doublet_correlators(const std::vector<physics::lattices::Spi
 
 static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results,
                                  physics::lattices::Spinorfield* corr, physics::lattices::Spinorfield* source, const hardware::System& system,
-                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler& interfacesHandler)
+                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface,
+                                 physics::InterfacesHandler& interfacesHandler)
 {
 	try_swap_in(corr);
 	try_swap_in(source);
@@ -227,7 +230,8 @@ static void calculate_correlator(const std::string& type, const std::vector<cons
 
 static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
                                                                  const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
-                                                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler & interfacesHandler)
+                                                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface,
+                                                                 physics::InterfacesHandler & interfacesHandler)
 {
 	// assert single device
 	auto first_corr = corr.at(0);
@@ -328,9 +332,11 @@ static size_t get_num_corr_entries(const physics::observables::WilsonTwoFlavourC
 }
 
 
-std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
+                                                                          const std::vector<physics::lattices::Spinorfield*>& sources,
+                                                                          const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
-    physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation parametersInterface{system.get_inputparameters()};
+    const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getWilsonTwoFlavourCorrelatorsCondensateParametersInterface();
 	if(type == "ps"  || type == "avps" ) {
 		return calculate_correlator_componentwise(type, corr, sources, system, parametersInterface, interfacesHandler);
 	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az") {
@@ -340,10 +346,11 @@ std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const 
 	}
 }
 
-void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
+void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield,
+                                                                                   std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
 {
     auto system = gaugefield->getSystem();
-    physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation parametersInterface{system->get_inputparameters()};
+    const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getWilsonTwoFlavourCorrelatorsCondensateParametersInterface();
 	auto prng = gaugefield->getPrng();
 
 	std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);

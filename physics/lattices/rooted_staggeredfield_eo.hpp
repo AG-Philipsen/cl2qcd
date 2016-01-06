@@ -43,10 +43,10 @@ class Rooted_Staggeredfield_eo : public Staggeredfield_eo, public physics::algor
         /**
          * Construct a rooted staggeredfield based on the input-files of the system
          */
-        Rooted_Staggeredfield_eo(const hardware::System&);
-        Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System&);
+        Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&);
+        Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&, const physics::algorithms::Rational_Approximation& approx);
 
-        virtual ~Rooted_Staggeredfield_eo();
+        virtual ~Rooted_Staggeredfield_eo(){}
 
         /**
          * Staggeredfield_eo cannot be copied
@@ -65,12 +65,9 @@ class Rooted_Staggeredfield_eo : public Staggeredfield_eo, public physics::algor
          *                      increased by 5% and the minimum one is set to the squared mass of the
          *                      fermions. This circumvents possible numeric errors.
          */
-        void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, bool conservative=false);
-
-    private:
-        //TODO: Remove the following pointer when an interface implementation will be passed to the constructor
-        //      because at the moment this interface is used only in the constructor of this class!
-        const RootedStaggeredfieldEoParametersInterface* rootedStaggaredfieldEoParametersInterface;
+        void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
+                                  const physics::lattices::Gaugefield& gf, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
+                                  hmc_float prec, hmc_float mass, bool conservative);
 };
 
 }

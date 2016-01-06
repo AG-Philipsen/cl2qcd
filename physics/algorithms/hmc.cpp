@@ -68,8 +68,7 @@ template<class SPINORFIELD> static hmc_observables perform_hmc_step(const physic
     }
 
     logger.trace() << "\tHMC:\tupdate gaugefield and gaugemomentum";
-    const GaugefieldParametersImplementation gaugefieldParameters { &params };
-    const Gaugefield new_u(system, &gaugefieldParameters, prng, false);
+    const Gaugefield new_u(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
     const Gaugemomenta new_p(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     // copy u->u' p->p' for the integrator
     copyData(&new_u, *gf);
@@ -130,7 +129,7 @@ template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi
     //calc init energy for spinorfield
     *spinor_energy_init = squarenorm(initial);
     //update spinorfield: det(kappa, mu)
-    md_update_spinorfield(phi, gf, initial, system, params.get_kappa(), meta::get_mubar(params));
+    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, params.get_kappa(), meta::get_mubar(params));
 }
 template<> void init_spinorfield<physics::lattices::Spinorfield_eo>(const physics::lattices::Spinorfield_eo * phi, hmc_float * const spinor_energy_init, const physics::lattices::Gaugefield& gf,
         const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
@@ -163,7 +162,7 @@ template<class SPINORFIELD> static void init_spinorfield_mp(const SPINORFIELD * 
     //calc init energy for spinorfield
     *spinor_energy_init = squarenorm(initial);
     //update spinorfield with heavy mass: det(kappa_mp, mu_mp)
-    md_update_spinorfield(phi, gf, initial, system, params.get_kappa_mp(), meta::get_mubar_mp(params));
+    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, params.get_kappa_mp(), meta::get_mubar_mp(params));
     initial.gaussian(prng);
     //calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
     *spinor_energy_init_mp = squarenorm(initial);

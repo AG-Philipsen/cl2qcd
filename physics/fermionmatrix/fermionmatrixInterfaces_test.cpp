@@ -38,3 +38,24 @@ BOOST_AUTO_TEST_CASE(testFermionmatrixParameters)
     BOOST_CHECK_EQUAL(test.getFermionicActionType(), params->get_fermact());
     BOOST_CHECK_EQUAL(test.useMergedFermionicKernels(), params->get_use_merge_kernels_fermion());
 }
+
+BOOST_AUTO_TEST_CASE(testFermionParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    physics::FermionParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
+    BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
+    BOOST_CHECK_EQUAL(test.getNumberOfElements(), std::pow(params->get_nspace(), 3.)*params->get_ntime());
+    BOOST_CHECK_EQUAL(test.getFermionicActionType(), params->get_fermact());
+    BOOST_CHECK_EQUAL(test.useMergedFermionicKernels(), params->get_use_merge_kernels_fermion());
+}
+
+BOOST_AUTO_TEST_CASE(testFermionEoParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    physics::FermionEoParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.getFermionicActionType(), params->get_fermact());
+    BOOST_CHECK_EQUAL(test.useMergedFermionicKernels(), params->get_use_merge_kernels_fermion());
+}

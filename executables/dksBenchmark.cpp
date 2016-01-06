@@ -22,8 +22,8 @@
 
 dksBenchmark::dksBenchmark(int argc, const char* argv[]) : benchmarkExecutable(argc, argv)
 {
-  staggeredfield1 = new physics::lattices::Staggeredfield_eo(*system);
-  staggeredfield2 = new physics::lattices::Staggeredfield_eo(*system);
+  staggeredfield1 = new physics::lattices::Staggeredfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Staggeredfield_eo>());
+  staggeredfield2 = new physics::lattices::Staggeredfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Staggeredfield_eo>());
 }
 
 void dksBenchmark::performBenchmarkForSpecificKernels()

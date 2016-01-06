@@ -23,14 +23,15 @@
 
 #include "../../common_header_files/types.h"
 #include <string>
-#include "../fermionmatrix/fermionmatrixInterfaces.hpp"
 
 namespace physics {
     namespace lattices {
 
         class GaugefieldParametersInterface {
             public:
-                virtual ~GaugefieldParametersInterface(){}
+                virtual ~GaugefieldParametersInterface()
+                {
+                }
                 virtual unsigned getNs() const = 0;
                 virtual unsigned getNt() const = 0;
                 virtual unsigned getPrecision() const = 0;
@@ -49,7 +50,9 @@ namespace physics {
 
         class GaugemomentaParametersInterface {
             public:
-                virtual ~GaugemomentaParametersInterface(){}
+                virtual ~GaugemomentaParametersInterface()
+                {
+                }
                 virtual unsigned getNs() const = 0;
                 virtual unsigned getNt() const = 0;
                 virtual unsigned getNumberOfElements() const = 0;
@@ -57,28 +60,36 @@ namespace physics {
 
         class SpinorfieldParametersInterface {
             public:
-                virtual ~SpinorfieldParametersInterface(){}
+                virtual ~SpinorfieldParametersInterface()
+                {
+                }
                 virtual unsigned getNs() const = 0;
                 virtual unsigned getNt() const = 0;
                 virtual unsigned getNumberOfElements() const = 0;
         };
 
         class SpinorfieldEoParametersInterface {
-        	public:
-        		virtual ~SpinorfieldEoParametersInterface(){}
+            public:
+                virtual ~SpinorfieldEoParametersInterface() = 0;
         };
+        //Pure virtual destructors must be implemented outside the class! (inline for multiple inclusion of header)
+        inline SpinorfieldEoParametersInterface::~SpinorfieldEoParametersInterface()
+        {
+        }
 
         class StaggeredfieldEoParametersInterface {
             public:
-                virtual ~StaggeredfieldEoParametersInterface(){}
-                virtual unsigned getNs() const = 0;
-                virtual unsigned getNt() const = 0;
+                virtual ~StaggeredfieldEoParametersInterface()
+                {
+                }
                 virtual unsigned getNumberOfElements() const = 0;
         };
 
-        class RootedStaggeredfieldEoParametersInterface {
+        class RootedStaggeredfieldEoParametersInterface : public StaggeredfieldEoParametersInterface {
             public:
-                virtual ~RootedStaggeredfieldEoParametersInterface(){}
+                virtual ~RootedStaggeredfieldEoParametersInterface()
+                {
+                }
                 virtual unsigned getMetropolisRationalApproximationOrder() const = 0;
                 virtual unsigned getMolecularDynamicsRationalApproximationOrder() const = 0;
         };
@@ -191,7 +202,7 @@ namespace physics {
                 const meta::Inputparameters& parameters;
         };
 
-        class SpinorfieldParametersImplementation final : public SpinorfieldParametersInterface {
+        class SpinorfieldParametersImplementation : public SpinorfieldParametersInterface {
             public:
                 SpinorfieldParametersImplementation();
                 SpinorfieldParametersImplementation(const meta::Inputparameters& paramsIn)
@@ -217,32 +228,29 @@ namespace physics {
                 const meta::Inputparameters& parameters;
         };
 
-        class SpinorfieldEoParametersImplementation final : public SpinorfieldEoParametersInterface {
-        	public:
-        		SpinorfieldEoParametersImplementation() = delete;
-        		SpinorfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
-        				: parameters(paramsIn){}
-        	private:
-				const meta::Inputparameters& parameters;
+        class SpinorfieldEoParametersImplementation : public SpinorfieldEoParametersInterface {
+            public:
+                SpinorfieldEoParametersImplementation() = delete;
+                SpinorfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
+                        : parameters(paramsIn)
+                {
+                }
+                virtual ~SpinorfieldEoParametersImplementation()
+                {
+                }
+            private:
+                const meta::Inputparameters& parameters;
         };
 
-        class StaggeredfieldEoParametersImplementation final : public StaggeredfieldEoParametersInterface {
+        class StaggeredfieldEoParametersImplementation : public StaggeredfieldEoParametersInterface {
             public:
                 StaggeredfieldEoParametersImplementation() = delete;
                 StaggeredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
                         : parameters(paramsIn)
                 {
                 }
-                ~StaggeredfieldEoParametersImplementation()
+                virtual ~StaggeredfieldEoParametersImplementation()
                 {
-                }
-                unsigned getNt() const override
-                {
-                    return parameters.get_ntime();
-                }
-                unsigned getNs() const override
-                {
-                    return parameters.get_nspace();
                 }
                 unsigned getNumberOfElements() const override
                 {
@@ -252,24 +260,20 @@ namespace physics {
                 const meta::Inputparameters& parameters;
         };
 
-        class RootedStaggeredfieldEoParametersImplementation final : public StaggeredfieldEoParametersInterface,
-                public RootedStaggeredfieldEoParametersInterface {
+        class RootedStaggeredfieldEoParametersImplementation final : public RootedStaggeredfieldEoParametersInterface,
+                private StaggeredfieldEoParametersImplementation {
             public:
                 RootedStaggeredfieldEoParametersImplementation() = delete;
                 RootedStaggeredfieldEoParametersImplementation(const meta::Inputparameters& paramsIn)
-                        : parameters(paramsIn)
+                        : StaggeredfieldEoParametersImplementation(paramsIn), parameters(paramsIn)
                 {
                 }
                 ~RootedStaggeredfieldEoParametersImplementation()
                 {
                 }
-                unsigned getNt() const override
+                unsigned getNumberOfElements() const override
                 {
-                    return parameters.get_ntime();
-                }
-                unsigned getNs() const override
-                {
-                    return parameters.get_nspace();
+                    return StaggeredfieldEoParametersImplementation::getNumberOfElements();
                 }
                 unsigned getMetropolisRationalApproximationOrder() const override
                 {
@@ -278,10 +282,6 @@ namespace physics {
                 unsigned getMolecularDynamicsRationalApproximationOrder() const override
                 {
                     return parameters.get_md_approx_ord();
-                }
-                unsigned getNumberOfElements() const override
-                {
-                    return meta::get_vol4d(parameters.get_ntime(), parameters.get_nspace());
                 }
             private:
                 const meta::Inputparameters& parameters;

@@ -47,8 +47,8 @@ void dslashBenchmark::performBenchmarkForSpecificKernels()
 
 void dslashBenchmark::enqueueSpecificKernelForBenchmarkingMultipleDevices()
 {
-  physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN);
-  physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD);
+  physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN, parameters.get_kappa());
+  physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD, parameters.get_kappa());
 }
 
 void dslashBenchmark::printProfilingDataToScreen()
