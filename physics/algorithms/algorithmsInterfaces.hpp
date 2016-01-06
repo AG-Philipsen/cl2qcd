@@ -1,8 +1,22 @@
-/*
- * algorithmsInterfaces.hpp
+/** @file
+ * algorithms interfaces declaration
  *
- *  Created on: 24 Nov 2015
- *      Author: czaban
+ * Copyright 2016 Alessandro Sciarra, Christopher Czaban
+ *
+ * This file is part of CL2QCD.
+ *
+ * CL2QCD is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CL2QCD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -12,108 +26,272 @@
 namespace physics{
 	namespace algorithms{
 
+	    class SolversParametersInterface {
+	        public:
+	            virtual ~SolversParametersInterface() {}
+	            virtual unsigned getCgMax() const = 0;
+	            virtual unsigned getIterRefresh() const = 0;
+	            virtual common::solver getSolver() const = 0;
+	            virtual unsigned getCgIterationBlockSize() const = 0;
+	            virtual unsigned getCgMinimumIterationCount() const = 0;
+	            virtual bool getCgUseAsyncCopy() const = 0;
+	            virtual bool getUseMergeKernelsSpinor() const = 0;
+	    };
+
+        class ForcesParametersInterface{
+            public:
+                virtual ~ForcesParametersInterface(){}
+                virtual common::action getFermact() const = 0;
+                virtual double getForcePreconditioning() const = 0;
+                virtual double getKappa() const = 0;
+                virtual double getKappaMp() const = 0;
+                virtual hmc_float getMubar() const = 0;
+                virtual hmc_float getMubarMp() const = 0;
+                virtual unsigned getRhoIterations() const = 0;
+                virtual common::solver getSolver() const = 0;
+                virtual bool getUseSmearing() const = 0;
+                virtual bool getUseGaugeOnly() const = 0;
+                virtual bool getUseRectangles() const = 0;
+        };
+
+        class MinMaxEigenvalueParametersInterface {
+            public:
+                virtual ~MinMaxEigenvalueParametersInterface(){}
+                virtual unsigned getFindMinMaxIterationBlockSize() const = 0;
+                virtual unsigned getFindMinMaxMaxValue() const = 0;
+        };
+
 		class InversionParemetersInterface{
-		public:
-			~InversionParemetersInterface(){}
-			virtual common::action getFermact() const = 0;
-			virtual double getKappa() const = 0;
-			virtual double getMubar() const = 0;
-			virtual common::solver getSolver() = 0;
-			virtual double getSolverPrec() = 0;
-			virtual bool getUseEo() = 0;
-			virtual bool getUseSmearing() = 0;
+            public:
+                virtual ~InversionParemetersInterface(){}
+                virtual common::action getFermact() const = 0;
+                virtual double getKappa() const = 0;
+                virtual double getMubar() const = 0;
+                virtual common::solver getSolver() const = 0;
+                virtual double getSolverPrec() const = 0;
+                virtual bool getUseEo() const = 0;
+                virtual bool getUseSmearing() const = 0;
 		};
 
 		class IntegratorParametersInterface{
-			~IntegratorParametersInterface(){}
-			virtual unsigned getIntegrationSteps() const = 0;
-			virtual common::integrator getIntegrator() const = 0;
-			virtual double getKappaMp() const = 0;
-			virtual double getLambda() const = 0;
-			virtual double getMubarMp() const = 0;
-			virtual unsigned getNumTimescales() const = 0;
-			virtual double getTau() const = 0;
-			virtual bool getUseMp() const = 0;
+            public:
+                virtual ~IntegratorParametersInterface(){}
+                virtual unsigned getIntegrationSteps(const unsigned) const = 0;
+                virtual common::integrator getIntegrator(const unsigned) const = 0;
+                virtual double getKappaMp() const = 0;
+                virtual double getLambda(const unsigned) const = 0;
+                virtual double getMubarMp() const = 0;
+                virtual unsigned getNumTimescales() const = 0;
+                virtual double getTau() const = 0;
+                virtual bool getUseMp() const = 0;
 		};
 
+        class MolecularDynamicsInterface{
+            public:
+                virtual ~MolecularDynamicsInterface(){}
+                virtual double getKappaMp() const = 0;
+                virtual double getMubarMp() const = 0;
+                virtual double getSolverPrec() const = 0;
+        };
+
 		class MetropolisParametersInterface{
-		public:
-			~MetropolisParametersInterface(){}
-			virtual double getC0() const = 0;
-			virtual double getC1() const = 0;
-			virtual common::action getFermact() const = 0;
-			virtual double getKappa() const = 0;
-			virtual double getKappaMp() const = 0;
-			virtual double getMubar() const = 0;
-			virtual double getMubarMp() const = 0;
-			virtual size_t getRectNorm() const = 0;
-			virtual common::solver getSolver() const = 0;
-			virtual double getSolverPrec() const = 0;
-			virtual bool getUseGaugeOnly() const = 0;
-			virtual bool getUseMp() const = 0;
-			virtual bool getUseRectangles() const = 0;
+            public:
+                virtual ~MetropolisParametersInterface(){}
+                virtual double getC0() const = 0;
+                virtual double getC1() const = 0;
+                virtual common::action getFermact() const = 0;
+                virtual double getKappa() const = 0;
+                virtual double getKappaMp() const = 0;
+                virtual double getMubar() const = 0;
+                virtual double getMubarMp() const = 0;
+                virtual size_t getRectanglesNormalization() const = 0;
+                virtual common::solver getSolver() const = 0;
+                virtual double getSolverPrec() const = 0;
+                virtual bool getUseGaugeOnly() const = 0;
+                virtual bool getUseMp() const = 0;
+                virtual bool getUseRectangles() const = 0;
 		};
 
 		class HmcParametersInterface{
-		public:
-			~HmcParametersInterface(){}
-			virtual double getBeta() const = 0;
-			virtual double getKappa() const = 0;
-			virtual double getKappaMp() const = 0;
-			virtual double getMubar() const = 0;
-			virtual double getMubarMp() const = 0;
-			virtual bool getUseEo() const = 0;
-			virtual bool getUseGaugeOnly() const = 0;
-			virtual bool getUseMp() const = 0;
+            public:
+                virtual ~HmcParametersInterface(){}
+                virtual double getBeta() const = 0;
+                virtual double getKappa() const = 0;
+                virtual double getKappaMp() const = 0;
+                virtual double getMubar() const = 0;
+                virtual double getMubarMp() const = 0;
+                virtual bool getUseEo() const = 0;
+                virtual bool getUseGaugeOnly() const = 0;
+                virtual bool getUseMp() const = 0;
 		};
 
 		class RhmcParametersInterface{
-		public:
-			~RhmcParametersInterface(){}
-			virtual double getBeta() const = 0;
-			virtual bool getConservative() const = 0;
-			virtual double getFindMinMaxPrec() const = 0;
-			virtual double getKappaMp()	const = 0;
-			virtual double getMass() const = 0;
-			virtual double getMubarMp() const = 0;
-			virtual bool getUseGaugeOnly() const = 0;
-			virtual bool getUseMp() const = 0;
+            public:
+                virtual ~RhmcParametersInterface(){}
+                virtual double getBeta() const = 0;
+                virtual bool getConservative() const = 0;
+                virtual double getFindMinMaxPrec() const = 0;
+                virtual double getKappaMp()	const = 0;
+                virtual double getMass() const = 0;
+                virtual double getMubarMp() const = 0;
+                virtual bool getUseGaugeOnly() const = 0;
+                virtual bool getUseMp() const = 0;
 		};
 
-		class MolecularDynamicsInterface{
-		public:
-			~MolecularDynamicsInterface(){}
-			virtual double getKappaMp() const = 0;
-			virtual double getMubarMp() const = 0;
-			virtual double getSolverPrec() const = 0;
-		};
 	}
 }
 
 
+
+#include "../../meta/inputparameters.hpp"
+#include "../../meta/util.hpp"
+
 namespace physics{
 	namespace algorithms{
 
-		class InversionParametersImplementation: public InversionParemetersInterface{
+	    class SolversParametersImplementation final : public SolversParametersInterface {
+	        public:
+	            SolversParametersImplementation() = delete;
+	            SolversParametersImplementation(const meta::Inputparameters& paramsIn)
+	                    :parameters(paramsIn)
+	            {
+	            }
+	            virtual ~SolversParametersImplementation()
+	            {
+	            }
+	            virtual unsigned getCgMax() const override
+	            {
+	                return parameters.get_cgmax();
+	            }
+	            virtual unsigned getIterRefresh() const override
+	            {
+	                return parameters.get_iter_refresh();
+	            }
+	            virtual common::solver getSolver() const override
+	            {
+	                return parameters.get_solver();
+	            }
+	            virtual unsigned getCgIterationBlockSize() const override
+	            {
+	                return parameters.get_cg_iteration_block_size();
+	            }
+	            virtual unsigned getCgMinimumIterationCount() const override
+	            {
+	                return parameters.get_cg_minimum_iteration_count();
+	            }
+	            virtual bool getCgUseAsyncCopy() const override
+	            {
+	                return parameters.get_cg_use_async_copy();
+	            }
+	            virtual bool getUseMergeKernelsSpinor() const override
+	            {
+	                return parameters.get_use_merge_kernels_spinor();
+	            }
+
+	        private:
+	            const meta::Inputparameters& parameters;
+	    };
+
+        class MinMaxEigenvalueParametersImplementation final : public MinMaxEigenvalueParametersInterface {
+            public:
+	            MinMaxEigenvalueParametersImplementation() = delete;
+	            MinMaxEigenvalueParametersImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
+                {
+                }
+                virtual ~MinMaxEigenvalueParametersImplementation()
+                {
+                }
+                virtual unsigned getFindMinMaxIterationBlockSize() const override
+                {
+                    return parameters.get_findminmax_iteration_block_size();
+                }
+                virtual unsigned getFindMinMaxMaxValue() const override
+                {
+                    return parameters.get_findminmax_max();
+                }
+
+            private:
+                const meta::Inputparameters& parameters;
+        };
+
+        class ForcesParametersImplementation final : public ForcesParametersInterface{
+            public:
+                ForcesParametersImplementation() = delete;
+                ForcesParametersImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
+                {
+                }
+                virtual ~ForcesParametersImplementation()
+                {
+                }
+                virtual common::action getFermact() const override
+                {
+                    return parameters.get_fermact();
+                }
+                virtual double getForcePreconditioning() const override
+                {
+                    return parameters.get_force_prec();
+                }
+                virtual double getKappa() const override
+                {
+                    return parameters.get_kappa();
+                }
+                virtual double getKappaMp() const override
+                {
+                    return parameters.get_kappa_mp();
+                }
+                virtual hmc_float getMubar() const override
+                {
+                    return meta::get_mubar(parameters);
+                }
+                virtual hmc_float getMubarMp() const override
+                {
+                    return meta::get_mubar_mp(parameters);
+                }
+                virtual unsigned getRhoIterations() const override
+                {
+                    return parameters.get_rho_iter();
+                }
+                virtual common::solver getSolver() const override
+                {
+                    return parameters.get_solver();
+                }
+                virtual bool getUseSmearing() const override
+                {
+                    return parameters.get_use_smearing();
+                }
+                virtual bool getUseGaugeOnly() const override
+                {
+                    return parameters.get_use_gauge_only();
+                }
+                virtual bool getUseRectangles() const override
+                {
+                    return meta::get_use_rectangles(parameters);
+                }
+
+            private:
+                const meta::Inputparameters& parameters;
+        };
+
+		class InversionParametersImplementation final : public InversionParemetersInterface{
 			public:
-				~InversionParametersImplementation()
-				{
-				}
 				InversionParametersImplementation() = delete;
 				InversionParametersImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
 				{
 				}
-				virtual common::action get_fermact() const override
+                ~InversionParametersImplementation()
+                {
+                }
+				virtual common::action getFermact() const override
 				{
 					return parameters.get_fermact();
 				}
 				virtual double getKappa() const override
 				{
-					return paramters.get_kappa();
+					return parameters.get_kappa();
 				}
 				virtual double getMubar() const override
 				{
-					return parameters.get_mubar();
+					return meta::get_mubar(parameters);
 				}
 				virtual common::solver getSolver() const override
 				{
@@ -136,31 +314,34 @@ namespace physics{
 				const meta::Inputparameters& parameters;
 		};
 
-		class IntegratorParametersImplementation: public IntegratorParametersInterface{
+		class IntegratorParametersImplementation final : public IntegratorParametersInterface{
 			public:
-				~IntegratorParametersImplementation()
-				{
-				}
-				IntegratorParametersImplementation() = delete;
+		        IntegratorParametersImplementation() = delete;
 				IntegratorParametersImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
 				{
 				}
-				virtual unsigned getIntegrationSteps() const = 0;
-				virtual common::integrator getIntegrator() const override
+				virtual ~IntegratorParametersImplementation()
 				{
-					return parameters.get_integrationsteps();
 				}
-				virtual double getKappaMp() const override
+				virtual unsigned getIntegrationSteps(const unsigned timescale) const override
 				{
-					return parameters.get_integrator();
+					return parameters.get_integrationsteps(timescale);
 				}
-				virtual double getLambda() const override
+				virtual common::integrator getIntegrator(const unsigned timescale) const override
+				{
+					return parameters.get_integrator(timescale);
+				}
+                virtual double getKappaMp() const override
 				{
 					return parameters.get_kappa_mp();
 				}
+                virtual double getLambda(const unsigned timescale) const override
+                {
+                    return parameters.get_lambda(timescale);
+                }
 				virtual double getMubarMp() const override
 				{
-					return meta::get_mubar_mp(parameters)
+					return meta::get_mubar_mp(parameters);
 				}
 				virtual unsigned getNumTimescales() const override
 				{
@@ -176,126 +357,156 @@ namespace physics{
 				}
 
 			private:
-				const meta::Inputparameters& parameters
+				const meta::Inputparameters& parameters;
 		};
 
-		class MetropolisParametersImplementation: public MetropolisParametersInterface{
+        class MolecularDynamicsImplementation final : public MolecularDynamicsInterface{
+        public:
+            MolecularDynamicsImplementation() = delete;
+            MolecularDynamicsImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
+            {
+            }
+            virtual ~MolecularDynamicsImplementation()
+            {
+            }
+            virtual double getKappaMp() const override
+            {
+                return parameters.get_kappa_mp();
+            }
+            virtual double getMubarMp() const override
+            {
+                return meta::get_mubar_mp(parameters);
+            }
+            virtual double getSolverPrec() const override
+            {
+                return parameters.get_solver_prec();
+            }
+
+        private:
+            const meta::Inputparameters& parameters;
+        };
+
+        class MetropolisParametersImplementation final : public MetropolisParametersInterface{
 		public:
-			~MetropolisParametersImplementation(){}
 			MetropolisParametersImplementation() = delete;
 			MetropolisParametersImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
 			{
 			}
-			virtual double getC0()
+            virtual ~MetropolisParametersImplementation()
+            {
+            }
+			virtual double getC0() const override
 			{
 				return meta::get_c0(parameters);
 			}
-			virtual double getC1()
+			virtual double getC1() const override
 			{
 				return meta::get_c1(parameters);
 			}
-			virtual common::action getFermact()
+			virtual common::action getFermact() const override
 			{
 				return parameters.get_fermact();
 			}
-			virtual double getKappa()
+			virtual double getKappa() const override
 			{
 				return parameters.get_kappa();
 			}
-			virtual double getKappaMp()
+			virtual double getKappaMp() const override
 			{
 				return parameters.get_kappa_mp();
 			}
-			virtual double getMubar()
+			virtual double getMubar() const override
 			{
 				return meta::get_mubar(parameters);
 			}
-			virtual double getMubarMp()
+			virtual double getMubarMp() const override
 			{
 				return meta::get_mubar_mp(parameters);
 			}
-			virtual size_t getRectNorm()
+			virtual size_t getRectanglesNormalization() const override
 			{
 				return meta::get_rect_norm(parameters);
 			}
-			virtual common::solver getSolver()
+			virtual common::solver getSolver() const override
 			{
 				return parameters.get_solver();
 			}
-			virtual double getSolverPrec()
+			virtual double getSolverPrec() const override
 			{
 				return parameters.get_solver_prec();
 			}
-			virtual bool getUseGaugeOnly()
+			virtual bool getUseGaugeOnly() const override
 			{
 				return parameters.get_use_gauge_only();
 			}
-			virtual bool getUseMp()
+			virtual bool getUseMp() const override
 			{
 				return parameters.get_use_mp();
 			}
-			virtual bool getUseRectangles()
+			virtual bool getUseRectangles() const override
 			{
-				return meta::get_use_rectangles();
+				return meta::get_use_rectangles(parameters);
 			}
-
 
 		private:
-			const meta::Inputparameters& parameters
+			const meta::Inputparameters& parameters;
 		};
 
-		class HmcParametersImplementation: public HmcParametersInterface{
-				public:
-					~HmcParametersImplementation(){}
-					HmcParametersImplementation() = delete;
-					HmcParametersImplementation(meta::Inputparameters& paramsIn): parameters(paramsIn)
-					{
-					}
-					virtual double getBeta() const override
-					{
-						return parameters.get_beta();
-					}
-					virtual double getKappa() const override
-					{
-						return parameters.get_kappa();
-					}
-					virtual double getKappaMp() const override
-					{
-						return parameters.get_kappa_mp();
-					}
-					virtual double getMubar() const override
-					{
-						return meta::get_mubar(parameters);
-					}
-					virtual double getMubarMp() const override
-					{
-						return meta::get_mubar_mp(parameters);
-					}
-					virtual bool getUseEo() const override
-					{
-						return parameters.get_use_eo();
-					}
-					virtual bool getUseGaugeOnly() const override
-					{
-						return parameters.get_use_gauge_only();
-					}
-					virtual bool getUseMp() const override
-					{
-						return parameters.get_use_mp();
-					}
+		class HmcParametersImplementation final : public HmcParametersInterface{
+            public:
+                HmcParametersImplementation() = delete;
+                HmcParametersImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
+                {
+                }
+                virtual ~HmcParametersImplementation()
+                {
+                }
+                virtual double getBeta() const override
+                {
+                    return parameters.get_beta();
+                }
+                virtual double getKappa() const override
+                {
+                    return parameters.get_kappa();
+                }
+                virtual double getKappaMp() const override
+                {
+                    return parameters.get_kappa_mp();
+                }
+                virtual double getMubar() const override
+                {
+                    return meta::get_mubar(parameters);
+                }
+                virtual double getMubarMp() const override
+                {
+                    return meta::get_mubar_mp(parameters);
+                }
+                virtual bool getUseEo() const override
+                {
+                    return parameters.get_use_eo();
+                }
+                virtual bool getUseGaugeOnly() const override
+                {
+                    return parameters.get_use_gauge_only();
+                }
+                virtual bool getUseMp() const override
+                {
+                    return parameters.get_use_mp();
+                }
 
-				private:
-					const meta::Inputparameters& parameters;
-				};
+            private:
+                const meta::Inputparameters& parameters;
+        };
 
-
-		class RhmcParametersImplementation: public RhmcParametersInterface{
+		class RhmcParametersImplementation final : public RhmcParametersInterface{
 		public:
-			~RhmcParametersImplementation(){}
 			RhmcParametersImplementation() = delete;
-			RhmcParametersImplementation(const meta::Inputparameters& paramsIn): paramsIn(parameters)
+			RhmcParametersImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn)
 			{
 			}
+            virtual ~RhmcParametersImplementation()
+            {
+            }
 			virtual double getBeta() const override
 			{
 				return parameters.get_beta();
@@ -318,7 +529,7 @@ namespace physics{
 			}
 			virtual double getMubarMp() const override
 			{
-				return meta::get_mubar_mp();
+				return meta::get_mubar_mp(parameters);
 			}
 			virtual bool getUseGaugeOnly() const override
 			{
@@ -333,27 +544,5 @@ namespace physics{
 			const meta::Inputparameters& parameters;
 		};
 
-
-		class MolecularDynamicsImplementation: public MolecularDynamicsInterface{
-		public:
-			~MolecularDynamicsImplementation(){}
-			MolecularDynamicsImplementation() = delete;
-			MolecularDynamicsImplementation(const meta::Inputparameters& paramsIn): parameters(paramsIn){}
-			virtual double getKappaMp() const override
-			{
-				return parameters.get_kappa_mp();
-			}
-			virtual double getMubarMp() const override
-			{
-				return meta::get_mubar_mp();
-			}
-			virtual double getSolverPrec() const override
-			{
-				return parameters.get_solver_prec();
-			}
-
-		private:
-			const meta::Inputparameters& parameters;
-		};
 	}
 }
