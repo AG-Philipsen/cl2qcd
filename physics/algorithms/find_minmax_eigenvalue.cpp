@@ -56,13 +56,13 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
     //Auxiliary field
     Staggeredfield_eo v2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
     //How often to check resid
-    const auto & params = system.get_inputparameters();
-    const int RESID_CHECK_FREQUENCY = params.get_findminmax_iteration_block_size();
+    const physics::algorithms::MinMaxEigenvalueParametersInterface & parametersInterface = interfacesHandler.getMinMaxEigenvalueParametersInterface();
+    const int RESID_CHECK_FREQUENCY = parametersInterface.getFindMinMaxIterationBlockSize();
 
     log_squarenorm(create_log_prefix_find_max(0) + "v1 (initial): ", v1);
     log_squarenorm(create_log_prefix_find_max(0) + "v2 (initial) [not-initialized]: ", v2);
 
-    for (int i = 0; i < params.get_findminmax_max(); i++) {
+    for (unsigned int i = 0; i < parametersInterface.getFindMinMaxMaxValue(); i++) {
         //Apply A onto v1
         A(&v2, gf, v1, &mass);
         if(i % 100 == 0)
@@ -98,8 +98,8 @@ hmc_float physics::algorithms::find_max_eigenvalue(const physics::fermionmatrix:
         copyData(&v1, v2);
     }
 
-    logger.fatal() << "Power Method failed in finding max_eig in " << params.get_findminmax_max() << " iterations. Last resid: " << resid;
-    throw solvers::SolverDidNotSolve(params.get_findminmax_max(), __FILE__, __LINE__);
+    logger.fatal() << "Power Method failed in finding max_eig in " << parametersInterface.getFindMinMaxMaxValue() << " iterations. Last resid: " << resid;
+    throw solvers::SolverDidNotSolve(parametersInterface.getFindMinMaxMaxValue(), __FILE__, __LINE__);
 
 }
 
@@ -161,13 +161,13 @@ static hmc_float find_min_knowing_max(const hmc_float max, const physics::fermio
     //Auxiliary field
     Staggeredfield_eo v2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
     //How often to check resid
-    const auto & params = system.get_inputparameters();
-    const int RESID_CHECK_FREQUENCY = params.get_findminmax_iteration_block_size();
+    const physics::algorithms::MinMaxEigenvalueParametersInterface & parametersInterface = interfacesHandler.getMinMaxEigenvalueParametersInterface();
+    const int RESID_CHECK_FREQUENCY = parametersInterface.getFindMinMaxIterationBlockSize();
 
     log_squarenorm(create_log_prefix_find_min(0) + "v1 (initial): ", v1);
     log_squarenorm(create_log_prefix_find_min(0) + "v2 (initial) [not-initialized]: ", v2);
 
-    for (int i = 0; i < params.get_findminmax_max(); i++) {
+    for (unsigned int i = 0; i < parametersInterface.getFindMinMaxMaxValue(); i++) {
         //Apply (max-A) onto v1
         A(&v2, gf, v1, &mass);
         saxpby(&v2, { max, 0. }, v1, { -1., 0. }, v2);   //Now in v2 there is (max-A)*v1
@@ -206,8 +206,8 @@ static hmc_float find_min_knowing_max(const hmc_float max, const physics::fermio
         copyData(&v1, v2);
     }
 
-    logger.fatal() << "Power Method failed in finding min_eig in " << params.get_findminmax_max() << " iterations. Last resid: " << resid;
-    throw solvers::SolverDidNotSolve(params.get_findminmax_max(), __FILE__, __LINE__);
+    logger.fatal() << "Power Method failed in finding min_eig in " << parametersInterface.getFindMinMaxMaxValue() << " iterations. Last resid: " << resid;
+    throw solvers::SolverDidNotSolve(parametersInterface.getFindMinMaxMaxValue(), __FILE__, __LINE__);
 
 }
 
