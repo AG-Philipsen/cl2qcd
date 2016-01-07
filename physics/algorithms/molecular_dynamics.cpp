@@ -89,7 +89,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
         const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler, const hmc_float mass)
 {
     logger.debug() << "\tRHMC [UP]:\tupdate SF";
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::MolecularDynamicsInterface & parametersInterface = interfacesHandler.getMolecularDynamicsInterface();
     const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 
     //Temporary fields for shifted inverter
@@ -98,7 +98,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
     for (int i = 0; i < out->Get_order(); i++)
         X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->Get_b(), orig, system, interfacesHandler, params.get_solver_prec(), mass);
+    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->Get_b(), orig, system, interfacesHandler, parametersInterface.getSolverPrec(), mass);
     logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
     physics::lattices::sax(out, { out->Get_a0(), 0. }, orig);
@@ -118,7 +118,7 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
 {
     SPINORFIELD temporarySpinorfield(system, interfacesHandler.getInterface<SPINORFIELD>());
     FERMIONMATRIX qplus(system, interfacesHandler.getInterface<FERMIONMATRIX>());
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::MolecularDynamicsInterface & parametersInterface = interfacesHandler.getMolecularDynamicsInterface();
 
     log_squarenorm("Spinorfield before update: ", orig);
 
@@ -142,7 +142,7 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         out->gamma5();
 
         FERMIONMATRIX qplusMp(system, interfacesHandler.getInterface<FERMIONMATRIX>());
-        physics::algorithms::solvers::bicgstab(out, qplusMp, gf, temporarySpinorfield, system, interfacesHandler, params.get_solver_prec(), params.get_kappa_mp(), meta::get_mubar_mp(params));
+        physics::algorithms::solvers::bicgstab(out, qplusMp, gf, temporarySpinorfield, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappaMp(), parametersInterface.getMubarMp());
     }   //try
     catch (physics::algorithms::solvers::SolverException& e) {
         logger.fatal() << e.what();
@@ -156,9 +156,9 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         tmp2.gamma5();
 
         FERMIONMATRIX_HERM fm_herm(system, interfacesHandler.getInterface<FERMIONMATRIX_HERM>());
-        physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, temporarySpinorfield, system, interfacesHandler, params.get_solver_prec(), params.get_kappa_mp(), meta::get_mubar_mp(params));
+        physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, temporarySpinorfield, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappaMp(), parametersInterface.getMubarMp());
         FERMIONMATRIX_CONJ fmConj(system, interfacesHandler.getInterface<FERMIONMATRIX_CONJ>());
-        fmConj(out, gf, tmp2, params.get_kappa_mp(), meta::get_mubar_mp(params));
+        fmConj(out, gf, tmp2, parametersInterface.getMubarMp(), parametersInterface.getMubarMp());
     }
 }
 
@@ -230,7 +230,7 @@ void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices:
 {
     const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
-    calc_gauge_force(&force, gf, system);
+    calc_gauge_force(&force, gf, interfaceHandler);
     log_squarenorm("\tHMC [UP]:\tFORCE [GAUGE]:\t", force);
 
     logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
