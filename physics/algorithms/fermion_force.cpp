@@ -38,13 +38,13 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	const auto & params = system.get_inputparameters();
+	const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	Spinorfield_eo solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	Spinorfield_eo phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
-	if(params.get_solver() == common::cg) {
+	if(parametersInterface.getSolver() == common::cg) {
 		/**
 		 * The first inversion calculates
 		 * X_even = phi = (Qplusminus_eo)^-1 psi
@@ -62,7 +62,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.cold();
 
 		const QplusQminus_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
-		cg(&solution, fm, gf, phi, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		cg(&solution, fm, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		/**
 		 * Y_even is now just
@@ -94,7 +94,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.gamma5();
 
 		const Qplus_eo qplus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
-		bicgstab(&solution, qplus, gf, phi, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, qplus, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		copyData(&phi_inv, solution);
 
@@ -116,7 +116,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 		solution.cold();
 
 		const Qminus_eo qminus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
-		bicgstab(&solution, qminus, gf, source_even, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, qminus, gf, source_even, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 	}
 	/**
 	 * At this point, one has calculated X_odd and Y_odd.
@@ -132,10 +132,10 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
 	//  this is used as a default in the force-function.
 	Spinorfield_eo tmp_1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
-	if(params.get_fermact() == common::action::wilson) {
+	if(parametersInterface.getFermact() == common::action::wilson) {
 		dslash(&tmp_1, gf, solution, ODD, kappa);
 		sax(&tmp_1, { -1., 0.}, tmp_1);
-	} else if(params.get_fermact() == common::action::twistedmass) {
+	} else if(parametersInterface.getFermact() == common::action::twistedmass) {
 		Spinorfield_eo tmp_2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		dslash(&tmp_1, gf, solution, ODD, kappa);
 		M_tm_inverse_sitediagonal_minus(&tmp_2, tmp_1, mubar);
@@ -150,10 +150,10 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	//calculate Y_odd
 	//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 	//  this is used as a default in the force-function.
-	if(params.get_fermact() == common::action::wilson) {
+	if(parametersInterface.getFermact() == common::action::wilson) {
 		dslash(&tmp_1, gf, phi_inv, ODD, kappa);
 		sax(&tmp_1, { -1., 0.}, tmp_1);
-	} else if(params.get_fermact() == common::action::twistedmass) {
+	} else if(parametersInterface.getFermact() == common::action::twistedmass) {
 		Spinorfield_eo tmp_2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		dslash(&tmp_1, gf, phi_inv, ODD, kappa);
 		M_tm_inverse_sitediagonal(&tmp_2, tmp_1, mubar);
@@ -173,14 +173,14 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 	using namespace physics::algorithms::solvers;
 	using namespace physics::fermionmatrix;
 
-	const auto & params = system.get_inputparameters();
+	const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
 
 	Spinorfield solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 	Spinorfield phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 	logger.debug() << "\t\tcalc fermion_force...";
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-	if(params.get_solver() == common::cg) {
+	if(parametersInterface.getSolver() == common::cg) {
 		/**
 		 * The first inversion calculates
 		 * X = phi = (Qplusminus)^-1 psi
@@ -199,7 +199,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const QplusQminus fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
-		cg(&solution, fm, gf, phi, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		cg(&solution, fm, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		/**
 		 * Y is now just
@@ -231,7 +231,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const Qplus q_plus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
-		bicgstab(&solution, q_plus, gf, phi, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, q_plus, gf, phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		//store this result in clmem_phi_inv
 		copyData(&phi_inv, solution);
@@ -253,7 +253,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 
 		solution.cold();
 		const Qminus q_minus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
-		bicgstab(&solution, q_minus, gf, source, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, q_minus, gf, source, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 	}
 	log_squarenorm("\tY ", phi_inv);
 	log_squarenorm("\tX ", solution);
@@ -271,7 +271,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	logger.debug() << "\t\tcalc fermion_force_detratio...";
 
-	const auto & params = system.get_inputparameters();
+	const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
 
 	/**
 	 * For detratio = det(kappa, mubar) / det(kappa2, mubar2) = det(Q_1^+Q_1^-) / det(Q_2^+Q_2^-)
@@ -285,10 +285,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	 *   - invert Q_2^+ phi, not phi for X and Y
 	 *   - one additional force term with different mass-parameters and without Y
 	 */
-	const hmc_float kappa = params.get_kappa();
-	const hmc_float mubar = meta::get_mubar(params);
-	const hmc_float kappa2 = params.get_kappa_mp();
-	const hmc_float mubar2 = meta::get_mubar_mp(params);
+	const hmc_float kappa = parametersInterface.getKappa();
+	const hmc_float mubar = parametersInterface.getMubar();
+	const hmc_float kappa2 = parametersInterface.getKappaMp();
+	const hmc_float mubar2 = parametersInterface.getMubarMp();
 
 	const Spinorfield phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 	const Spinorfield solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -300,7 +300,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	const Qplus q_plus_mp(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
 	q_plus_mp(&tmp, gf, phi_mp, kappa2, mubar2);
 
-	if(params.get_solver() == common::cg) {
+	if(parametersInterface.getSolver() == common::cg) {
 		/**
 		 * The first inversion calculates
 		 * X = phi = (Qplusminus)^-1 sf_tmp
@@ -319,7 +319,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		const QplusQminus fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
-		cg(&solution, fm, gf, tmp, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		cg(&solution, fm, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		/**
 		 * Y is now just
@@ -351,7 +351,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 		//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 		Qplus q_plus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
-		bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		copyData(&phi_inv, solution);
 
@@ -373,7 +373,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		Qminus q_minus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus>());
-		bicgstab(&solution, q_minus, gf, source, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, q_minus, gf, source, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 	}
 
 	log_squarenorm("\tY ", phi_inv);
@@ -401,7 +401,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	logger.debug() << "\t\tcalc fermion_force_detratio...";
 
-	const auto & params = system.get_inputparameters();
+	const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
 
 	/**
 	 * For detratio = det(kappa, mubar) / det(kappa2, mubar2) = det(Q_1^+Q_1^-) / det(Q_2^+Q_2^-)
@@ -415,10 +415,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	 *   - invert Q_2^+ phi, not phi for X and Y
 	 *   - one additional force term with different mass-parameters and without Y
 	 */
-	const hmc_float kappa = params.get_kappa();
-	const hmc_float mubar = get_mubar(params);
-	const hmc_float kappa2 = params.get_kappa_mp();
-	const hmc_float mubar2 = meta::get_mubar_mp(params);
+	const hmc_float kappa = parametersInterface.getKappa();
+	const hmc_float mubar = parametersInterface.getMubar();
+	const hmc_float kappa2 = parametersInterface.getKappaMp();
+	const hmc_float mubar2 = parametersInterface.getMubarMp();
 
 	const Spinorfield_eo solution(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 	const Spinorfield_eo phi_inv(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -430,7 +430,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	//the source is now Q_2^+ phi = sf_eo_tmp
 	const Qplus_eo q_plus_mp(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
 	q_plus_mp(&tmp, gf, phi_mp, kappa2, mubar2);
-	if(params.get_solver() == common::cg) {
+	if(parametersInterface.getSolver() == common::cg) {
 		/**
 		 * The first inversion calculates
 		 * X_even = phi = (Qplusminus_eo)^-1 sf_eo_tmp = (Qplusminus_eo)^-1 Q_2^+ phi
@@ -448,7 +448,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		const QplusQminus_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
-		cg(&solution, fm, gf, tmp, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		cg(&solution, fm, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		/**
 		 * Y_even is now just
@@ -479,7 +479,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.gamma5();
 
 		const Qplus_eo q_plus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
-		bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, q_plus, gf, tmp, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 
 		//store this result in clmem_phi_inv
 		copyData(&phi_inv, solution);
@@ -500,7 +500,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 		solution.cold();
 
 		Qminus_eo q_minus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
-		bicgstab(&solution, q_minus, gf, source_even, system, interfacesHandler, params.get_force_prec(), kappa, mubar);
+		bicgstab(&solution, q_minus, gf, source_even, system, interfacesHandler, parametersInterface.getForcePreconditioning(), kappa, mubar);
 	}
 	/**
 	 * At this point, one has to calculate X_odd and Y_odd.
@@ -517,12 +517,12 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	///@NOTE the following calculations could also go in a new function for convenience
 	//calculate X_odd
 	//therefore, sf_eo_tmp is used as intermediate state.
-	if(params.get_fermact() == common::action::wilson) {
-		dslash(&tmp1, gf, solution, ODD, params.get_kappa());
+	if(parametersInterface.getFermact() == common::action::wilson) {
+		dslash(&tmp1, gf, solution, ODD, parametersInterface.getKappa());
 		sax(&tmp, mone, tmp1);
-	} else if(params.get_fermact() == common::action::twistedmass) {
-		dslash(&tmp1, gf, solution, ODD, params.get_kappa());
-		M_tm_inverse_sitediagonal_minus(&tmp2, tmp1, meta::get_mubar(params));
+	} else if(parametersInterface.getFermact() == common::action::twistedmass) {
+		dslash(&tmp1, gf, solution, ODD, parametersInterface.getKappa());
+		M_tm_inverse_sitediagonal_minus(&tmp2, tmp1, parametersInterface.getMubar());
 		sax(&tmp, mone, tmp2);
 	} else {
 		throw Print_Error_Message("Selected fermion action is not implemented", __FILE__, __LINE__);
@@ -534,12 +534,12 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	//calculate Y_odd
 	//therefore, clmem_tmp_eo_1 is used as intermediate state.
-	if(params.get_fermact() == common::action::wilson) {
-		dslash(&tmp1, gf, phi_inv, ODD, params.get_kappa());
+	if(parametersInterface.getFermact() == common::action::wilson) {
+		dslash(&tmp1, gf, phi_inv, ODD, parametersInterface.getKappa());
 		sax(&tmp1, mone, tmp1);
-	} else if(params.get_fermact() == common::action::twistedmass) {
-		dslash(&tmp1, gf, phi_inv, ODD, params.get_kappa());
-		M_tm_inverse_sitediagonal(&tmp2, tmp1, meta::get_mubar(params));
+	} else if(parametersInterface.getFermact() == common::action::twistedmass) {
+		dslash(&tmp1, gf, phi_inv, ODD, parametersInterface.getKappa());
+		M_tm_inverse_sitediagonal(&tmp2, tmp1, parametersInterface.getMubar());
 		sax(&tmp1, mone, tmp2);
 	} else {
 		throw Print_Error_Message("Selected fermion action is not implemented", __FILE__, __LINE__);
@@ -559,10 +559,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 
 	//(re-) calculate X_odd (with other masses)
 	//therefore, sf_eo_tmp is used as intermediate state.
-	if(params.get_fermact() == common::action::wilson) {
+	if(parametersInterface.getFermact() == common::action::wilson) {
 		dslash(&tmp1, gf, solution, ODD, kappa2);
 		sax(&tmp, mone, tmp1);
-	} else if(params.get_fermact() == common::action::twistedmass) {
+	} else if(parametersInterface.getFermact() == common::action::twistedmass) {
 		dslash(&tmp1, gf, solution, ODD, kappa2);
 		M_tm_inverse_sitediagonal_minus(&tmp2, tmp1, mubar2);
 		sax(&tmp, mone, tmp2);
@@ -577,10 +577,10 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
 	//calculate phi_odd
 	//this works in the same way as with Y above, since -phi_even is saved in the same buffer as Y_even
 	//therefore, clmem_tmp_eo_1 is used as intermediate state.
-	if(params.get_fermact() == common::action::wilson) {
+	if(parametersInterface.getFermact() == common::action::wilson) {
 		dslash(&tmp1, gf, phi_inv, ODD, kappa2);
 		sax(&tmp1, mone, tmp1);
-	} else if(params.get_fermact() == common::action::twistedmass) {
+	} else if(parametersInterface.getFermact() == common::action::twistedmass) {
 		dslash(&tmp1, gf, phi_inv, ODD, kappa2);
 		M_tm_inverse_sitediagonal(&tmp2, tmp1, mubar2);
 		sax(&tmp1, mone, tmp2);
@@ -598,7 +598,7 @@ template<class SPINORFIELD> static void calc_fermion_forces(const physics::latti
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
 
-	const auto & params = system.get_inputparameters();
+	const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
 	// const int rho_iter = params.get_rho_iter();
@@ -607,7 +607,7 @@ template<class SPINORFIELD> static void calc_fermion_forces(const physics::latti
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
 	calc_fermion_force(force, gf, phi, system, interfacesHandler, kappa, mubar);
-	if(params.get_use_smearing() == true) {
+	if(parametersInterface.getUseSmearing() == true) {
 		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
 		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		//  gf_code->unsmear_gaugefield(hmc_code->get_new_u());
@@ -678,7 +678,7 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	using physics::lattices::Gaugefield;
 	using namespace physics::algorithms;
 
-	const auto & params = system.get_inputparameters();
+	const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
 	// const int rho_iter = params.get_rho_iter();
@@ -687,7 +687,7 @@ template<class SPINORFIELD> static void calc_detratio_forces(const physics::latt
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
 	calc_fermion_force_detratio(force, gf, phi_mp, system, interfacesHandler);
-	if(params.get_use_smearing() == true) {
+	if(parametersInterface.getUseSmearing() == true) {
 		throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
 		//  mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		//  gf_code->unsmear_gaugefield(hmc_code->get_new_u());

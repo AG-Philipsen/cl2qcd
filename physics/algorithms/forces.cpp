@@ -63,10 +63,10 @@ void physics::algorithms::gauge_force_tlsym(const physics::lattices::Gaugemoment
     gm->update_halo();
 }
 
-void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const hardware::System& system)
+void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, physics::InterfacesHandler& interfacesHandler)
 {
     gauge_force(gm, gf);
-    if(meta::get_use_rectangles(system.get_inputparameters())) {
+    if(interfacesHandler.getForcesParametersInterface().getUseRectangles()) {
         gauge_force_tlsym(gm, gf);
     }
 }
@@ -77,9 +77,9 @@ template<class SPINORFIELD> static void calc_total_force(const physics::lattices
     using namespace physics::algorithms;
 
     force->zero();
-    if(!system.get_inputparameters().get_use_gauge_only())
+    if(!interfacesHandler.getForcesParametersInterface().getUseGaugeOnly())
         calc_fermion_forces(force, gf, phi, system, interfacesHandler, kappa, mubar);
-    calc_gauge_force(force, gf, system);
+    calc_gauge_force(force, gf, interfacesHandler);
 }
 
 void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
@@ -100,8 +100,8 @@ void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta
 {
     using namespace physics::algorithms;
     force->zero();
-    if(!system.get_inputparameters().get_use_gauge_only())
+    if(!interfaceHandler.getForcesParametersInterface().getUseGaugeOnly())
         calc_fermion_forces(force, gf, phi, system, interfaceHandler, mass);
-    calc_gauge_force(force, gf, system);
+    calc_gauge_force(force, gf, interfaceHandler);
 }
 

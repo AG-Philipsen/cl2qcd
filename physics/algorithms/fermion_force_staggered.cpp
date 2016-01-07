@@ -85,7 +85,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     using namespace physics::algorithms::solvers;
     using namespace physics::fermionmatrix;
 
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::ForcesParametersInterface & parametersInterface = interfaceHandler.getForcesParametersInterface();
     logger.debug() << "\t\tcalc_fermion_force...";
 
     logger.debug() << "\t\t\tstart solver";
@@ -96,7 +96,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
         Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
     const MdagM_eo fm(system, interfaceHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfaceHandler, params.get_force_prec(), mass);
+    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfaceHandler, parametersInterface.getForcePreconditioning(), mass);
     logger.debug() << "\t\t\t  end solver";
 
     //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
@@ -124,8 +124,8 @@ void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemome
 
     calc_fermion_force(force, gf, phi, system, interfaceHandler, mass);
 
-    const auto & params = system.get_inputparameters();
-    if(params.get_use_smearing() == true) {
+    const physics::algorithms::ForcesParametersInterface & parametersInterface = interfaceHandler.getForcesParametersInterface();
+    if(parametersInterface.getUseSmearing() == true) {
         throw Print_Error_Message("Smeared Gaugefield force is not implemented.", __FILE__, __LINE__);
     }
 }
