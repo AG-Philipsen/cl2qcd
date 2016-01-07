@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
-		physics::algorithms::calc_gauge_force(&gm, gf, system);
+		physics::algorithms::calc_gauge_force(&gm, gf, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 0., 0.01);
 	}
 
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
-		physics::algorithms::calc_gauge_force(&gm, gf, system);
+		physics::algorithms::calc_gauge_force(&gm, gf, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 52723.299867438458, 0.01);
 	}
 }
