@@ -48,7 +48,7 @@ physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::Solver
                                                                                         const physics::lattices::Gaugefield& gfIn, const std::vector<hmc_float> sigmaIn,
                                                                                         const FERMIONFIELD& bIn, const hardware::System& systemIn,
                                                                                         physics::InterfacesHandler& interfacesHandlerIn, hmc_float prec, hmc_float mass)
-     : x(xIn), A(AIn), gf(gfIn), sigma(sigmaIn), b(bIn), system(systemIn), interfacesHandler(interfacesHandlerIn), solverPrecision(prec), fermionMass(mass),
+     : x(xIn), A(AIn), gf(gfIn), sigma(sigmaIn), b(bIn), system(systemIn), interfacesHandler(interfacesHandlerIn), parametersInterface(interfacesHandler.getSolversParametersInterface()), solverPrecision(prec), fermionMass(mass),
        //TODO:Remove following line
        params(system.get_inputparameters()),
        hasSystemBeSolved(false), numberOfEquations(sigmaIn.size()), iterationNumber(0), residuumValue(NAN),
@@ -81,12 +81,12 @@ physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::Solver
     }
     if(sigma.size() != x.size())
         throw std::invalid_argument("Wrong size of multi-shifted inverter parameters!");
-    if(system.get_inputparameters().get_use_merge_kernels_spinor() == true) {
+    if(parametersInterface.getUseMergeKernelsSpinor() == true) {
         single_eq_resid = std::unique_ptr<physics::lattices::Vector<hmc_float> > { new physics::lattices::Vector<hmc_float>(numberOfEquations, system) };
         single_eq_resid_host = std::unique_ptr<std::vector<hmc_float> > { new std::vector<hmc_float> };
     }
-    USE_ASYNC_COPY = params.get_cg_use_async_copy();
-    MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
+    USE_ASYNC_COPY = parametersInterface.getCgUseAsyncCopy();
+    MINIMUM_ITERATIONS = parametersInterface.getCgMinimumIterationCount();
     if(USE_ASYNC_COPY)
         logger.warn() << "Asynchroneous copying in the CG-M is currently unimplemented!";
     if(MINIMUM_ITERATIONS)
@@ -229,9 +229,9 @@ void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::c
 template<typename FERMIONFIELD, typename FERMIONMATRIX>
 void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::checkIfSingleEquationConverged(unsigned int index)
 {
-    if(iterationNumber % params.get_cg_iteration_block_size() == 0) {
-        if((!params.get_use_merge_kernels_spinor() && (squarenorm(v) < solverPrecision))
-                || (params.get_use_merge_kernels_spinor() && ((*single_eq_resid_host)[index] < solverPrecision))) {
+    if(iterationNumber % parametersInterface.getCgIterationBlockSize() == 0) {
+        if((!parametersInterface.getUseMergeKernelsSpinor() && (squarenorm(v) < solverPrecision))
+                || (parametersInterface.getUseMergeKernelsSpinor() && ((*single_eq_resid_host)[index] < solverPrecision))) {
             single_system_converged[index] = true;
             single_system_iter.push_back((uint) iterationNumber);
             logger.debug() << " ===> System number " << index << " converged after " << iterationNumber << " iterations! resid = " << tmp2.get();
@@ -333,7 +333,7 @@ std::string physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMAT
     std::string name = "CG-M";
     std::stringstream strnumber;
     strnumber.fill('0');
-    strnumber.width(std::to_string(params.get_cgmax()).length());
+    strnumber.width(std::to_string(parametersInterface.getCgMax()).length());
     strnumber << std::right << iterationNumber;
     std::stringstream logPrefix;
     logPrefix << separator_big << label << separator_small << "[" << name << "]" << separator_small << "[" << strnumber.str() << "]:" << separator_big;
@@ -388,19 +388,19 @@ const std::vector<std::shared_ptr<FERMIONFIELD> > physics::algorithms::solvers::
     }
     setInitialConditions();
     debugMakeReportOfFieldsSquarenorm();
-    while(iterationNumber < params.get_cgmax() || iterationNumber < MINIMUM_ITERATIONS){
+    while(iterationNumber < parametersInterface.getCgMax() || iterationNumber < MINIMUM_ITERATIONS){
         updateBetaScalar();
         updateAuxiliaryFieldR();
         updateAlphaScalar();
         debugCalculateSquarenormOfResultField();
         updateAuxiliaryFieldP();
         updateVectorQuantities();
-        calculateResiduumSingleEquation(params.get_use_merge_kernels_spinor());
+        calculateResiduumSingleEquation(parametersInterface.getUseMergeKernelsSpinor());
         for(uint indexEquation = 0; indexEquation < numberOfEquations; indexEquation++){
             if(hasSingleSystemConverged(indexEquation) == false){
                 updateSingleFieldOfSolution(indexEquation);
                 updateSingleFieldOfAuxiliaryFieldPs(indexEquation);
-                calculateResiduumSingleEquation(params.get_use_merge_kernels_spinor(), indexEquation);
+                calculateResiduumSingleEquation(parametersInterface.getUseMergeKernelsSpinor(), indexEquation);
                 checkIfSingleEquationConverged(indexEquation);
             }
         }
@@ -416,7 +416,7 @@ const std::vector<std::shared_ptr<FERMIONFIELD> > physics::algorithms::solvers::
         if(iterationNumber == 0) resetNoWarmupTimer();
         iterationNumber++;
     }
-    logger.fatal() << createLogPrefix() << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << residuumValue;
+    logger.fatal() << createLogPrefix() << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << residuumValue;
     throw SolverDidNotSolve(iterationNumber, __FILE__, __LINE__);
 }
 
