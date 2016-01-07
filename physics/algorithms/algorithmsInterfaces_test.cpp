@@ -162,6 +162,7 @@ BOOST_AUTO_TEST_CASE(testRhmcParameters)
     BOOST_CHECK_EQUAL(test.getMubarMp(), meta::get_mubar_mp(*params));
     BOOST_CHECK_EQUAL(test.getUseGaugeOnly(), params->get_use_gauge_only());
     BOOST_CHECK_EQUAL(test.getUseMp(), params->get_use_mp());
+    BOOST_CHECK_EQUAL(test.getUseEo(), params->get_use_eo());
 }
 
 
