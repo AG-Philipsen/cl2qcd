@@ -96,6 +96,7 @@ namespace physics {
                     const FERMIONFIELD& b;
                     const hardware::System& system;
                     physics::InterfacesHandler& interfacesHandler;
+                    const physics::algorithms::SolversParametersInterface & parametersInterface;
                     hmc_float solverPrecision;
                     hmc_float fermionMass;
                     //TODO:Remove following inputparameters object

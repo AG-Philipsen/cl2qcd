@@ -52,9 +52,9 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield 
                                            const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system,
                                            physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
-    if(params.get_solver() == common::bicgstab_save) {
+    if(parametersInterface.getSolver() == common::bicgstab_save) {
         return bicgstab_save(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
     } else {
         return bicgstab_fast(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
@@ -70,7 +70,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
     using physics::algorithms::solvers::SolverStuck;
     using physics::algorithms::solvers::SolverDidNotSolve;
 
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
     /// @todo start timer synchronized with device(s)
     klepsydra::Monotonic timer;
@@ -86,12 +86,12 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
     const Spinorfield t(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
     const Spinorfield aux(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
-    int iter = 0;
+    unsigned int iter = 0;
     log_squarenorm(create_log_prefix_bicgstab(iter) + "b: ", b);
     log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
 
-    for (iter = 0; iter < params.get_cgmax(); iter++) {
-        if(iter % params.get_iter_refresh() == 0) {
+    for (iter = 0; iter < parametersInterface.getCgMax(); iter++) {
+        if(iter % parametersInterface.getIterRefresh() == 0) {
             v.zero();
             p.zero();
 
@@ -212,7 +212,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
         }
     }
 
-    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << resid;
     throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -224,7 +224,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
     using physics::algorithms::solvers::SolverStuck;
     using physics::algorithms::solvers::SolverDidNotSolve;
 
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
     /// @todo start timer synchronized with device(s)
     klepsydra::Monotonic timer;
@@ -239,12 +239,12 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
     const Spinorfield s(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
     const Spinorfield t(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
-    int iter = 0;
+    unsigned int iter = 0;
     log_squarenorm(create_log_prefix_bicgstab(iter) + "b: ", b);
     log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
 
-    for (iter = 0; iter < params.get_cgmax(); iter++) {
-        if(iter % params.get_iter_refresh() == 0) {
+    for (iter = 0; iter < parametersInterface.getCgMax() ; iter++) {
+        if(iter % parametersInterface.getIterRefresh() == 0) {
             //initial r_n, saved in p
             f(&rn, gf, *x, kappa, mubar);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
@@ -355,7 +355,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
         rho = rho_next;
     }
 
-    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << resid;
     throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -363,9 +363,9 @@ int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_
                                            const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system,
                                            physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
-    if(params.get_solver() == common::bicgstab_save) {
+    if(parametersInterface.getSolver() == common::bicgstab_save) {
         return bicgstab_save(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
     } else {
         return bicgstab_fast(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
@@ -383,7 +383,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
     // TODO start timer synchronized with device(s)
     klepsydra::Monotonic timer;
 
-    auto & params = system.get_inputparameters();
+    const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
     const Spinorfield_eo s(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
     const Spinorfield_eo t(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -394,7 +394,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
     const Spinorfield_eo aux(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
     unsigned retests = 0;
-    int cgmax = params.get_cgmax();
+    int cgmax = parametersInterface.getCgMax();
 
     const Scalar<hmc_complex> alpha(system);
     const Scalar<hmc_complex> beta(system);
@@ -416,7 +416,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 
     // comments correspond to the bicgstab_fast version
     for (iter = 0; iter < cgmax; iter++) {
-        if(iter % params.get_iter_refresh() == 0) {
+        if(iter % parametersInterface.getIterRefresh() == 0) {
             v.zero();
             p.zero();
 
@@ -502,7 +502,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
                     const uint64_t duration = timer.getTime();
 
                     // calculate flops
-                    const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+                    const unsigned refreshs = iter / parametersInterface.getIterRefresh() + 1;
                     const size_t mf_flops = f.get_flops();
 
                     cl_ulong total_flops = 4 * get_flops<Spinorfield_eo, scalar_product>(system) + 4 * get_flops<hmc_complex, complexdivide>()
@@ -524,7 +524,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
         }
     }
 
-    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << resid;
     throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -539,7 +539,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
     // TODO start timer synchronized with device(s)
     klepsydra::Monotonic timer;
 
-    auto & params = system.get_inputparameters();
+    const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
     const Spinorfield_eo p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
     const Spinorfield_eo rn(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -561,14 +561,14 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
     minus_one.store(hmc_complex_minusone);
 
     hmc_float resid;
-    int iter = 0;
+    unsigned int iter = 0;
 
     // report source and initial solution
     log_squarenorm(create_log_prefix_bicgstab(iter) + "b (initial): ", b);
     log_squarenorm(create_log_prefix_bicgstab(iter) + "x (initial): ", *x);
 
-    for (iter = 0; iter < params.get_cgmax(); iter++) {
-        if(iter % params.get_iter_refresh() == 0) {
+    for (iter = 0; iter < parametersInterface.getCgMax(); iter++) {
+        if(iter % parametersInterface.getIterRefresh() == 0) {
             //initial r_n, saved in p
             f(&rn, gf, *x, kappa, mubar);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
@@ -605,7 +605,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
                 const uint64_t duration = timer.getTime();
 
                 // calculate flops
-                const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+                const unsigned refreshs = iter / parametersInterface.getIterRefresh() + 1;
                 const cl_ulong mf_flops = f.get_flops();
 
                 cl_ulong total_flops = get_flops<Spinorfield_eo, squarenorm>(system) + 2 * mf_flops + 4 * get_flops<Spinorfield_eo, scalar_product>(system)
@@ -684,7 +684,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
         copyData(&rho, rho_next);
     }
 
-    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+    logger.fatal() << create_log_prefix_bicgstab(iter) << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << resid;
     throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 

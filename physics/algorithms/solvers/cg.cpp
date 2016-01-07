@@ -45,7 +45,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
     using physics::algorithms::solvers::SolverStuck;
     using physics::algorithms::solvers::SolverDidNotSolve;
 
-    const auto & params = system.get_inputparameters();
+    const physics::algorithms::SolversParametersInterface & parametersInterface = interfacesHandler.getSolversParametersInterface();
 
     /// @todo start timer synchronized with device(s)
     klepsydra::Monotonic timer;
@@ -56,15 +56,15 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 
     hmc_complex rho_next;
     hmc_float resid;
-    int iter = 0;
+    unsigned int iter = 0;
 
     log_squarenorm(create_log_prefix_cg(iter) + "b: ", b);
     log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
 
     // NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-    for (iter = 0; iter < params.get_cgmax(); iter++) {
+    for (iter = 0; iter < parametersInterface.getCgMax(); iter++) {
         hmc_complex omega;
-        if(iter % params.get_iter_refresh() == 0) {
+        if(iter % parametersInterface.getIterRefresh() == 0) {
             //rn = A*inout
             f(&rn, gf, *x, kappa, mubar);
             log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
@@ -140,7 +140,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
         log_squarenorm(create_log_prefix_cg(iter) + "p: ", p);
     }
 
-    logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+    logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << resid;
     throw SolverDidNotSolve(iter, __FILE__, __LINE__);
 }
 
@@ -178,9 +178,9 @@ namespace {
     //todo: move to solvers.hpp
     class Solver {
         public:
-            Solver(const hardware::System& systemIn, const meta::Inputparameters * paramsIn, const cl_ulong mf_flopsIn, const cl_ulong mf_bwIn)
-                    : system(systemIn), resid(0.), iter(0), params(paramsIn), RESID_CHECK_FREQUENCY(params->get_cg_iteration_block_size()), USE_ASYNC_COPY(
-                            params->get_cg_use_async_copy()), MINIMUM_ITERATIONS(params->get_cg_minimum_iteration_count()), mf_flops(mf_flopsIn), mf_bw(mf_bwIn)
+            Solver(const hardware::System& systemIn, physics::InterfacesHandler & interfacesHandler, const cl_ulong mf_flopsIn, const cl_ulong mf_bwIn)
+                    : system(systemIn), resid(0.), iter(0), parametersInterface(interfacesHandler.getSolversParametersInterface()), RESID_CHECK_FREQUENCY(parametersInterface.getCgIterationBlockSize()),USE_ASYNC_COPY(
+                            parametersInterface.getCgUseAsyncCopy()), MINIMUM_ITERATIONS(parametersInterface.getCgMinimumIterationCount()), mf_flops(mf_flopsIn), mf_bw(mf_bwIn)
             {
                 if(USE_ASYNC_COPY) {
                     logger.warn() << "Asynchroneous copying in the CG is currently unimplemented!";
@@ -188,8 +188,8 @@ namespace {
                 if(MINIMUM_ITERATIONS) {
                     logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
                 }
-                maximalIterations = params->get_cgmax();
-                refreshIteration = params->get_iter_refresh();
+                maximalIterations = parametersInterface.getCgMax();
+                refreshIteration = parametersInterface.getIterRefresh();
             }
             //@todo: make these private
             const hardware::System& system;
@@ -197,7 +197,8 @@ namespace {
             int iter;
             int maximalIterations;
             int refreshIteration;
-            const meta::Inputparameters * params;
+
+            const physics::algorithms::SolversParametersInterface & parametersInterface;
             const int RESID_CHECK_FREQUENCY;
             const bool USE_ASYNC_COPY;
             const int MINIMUM_ITERATIONS;
@@ -250,7 +251,7 @@ namespace {
         const cl_ulong mf_flops = f.get_flops();
         const cl_ulong mf_bw = f.get_read_write_size();
 
-        Solver solver(system, &system.get_inputparameters(), mf_flops, mf_bw);
+        Solver solver(system, interfacesHandler, mf_flops, mf_bw);
         using namespace physics::lattices;
 
         const Spinorfield_eo p(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -303,7 +304,7 @@ namespace {
 
             //rn+1 = rn - alpha*v -> rhat
             //NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-            if(solver.params->get_use_merge_kernels_spinor()) {
+            if(solver.parametersInterface.getUseMergeKernelsSpinor()) {
                 physics::lattices::saxpy_AND_squarenorm(&rn, alpha, v, rn, rho_next);
                 log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
             } else {
@@ -371,8 +372,8 @@ namespace {
         using physics::algorithms::solvers::SolverStuck;
         using physics::algorithms::solvers::SolverDidNotSolve;
 
-        const auto & params = system.get_inputparameters();
-        const int MINIMUM_ITERATIONS = params.get_cg_minimum_iteration_count();
+        const physics::algorithms::SolversParametersInterface & parametersInterface = interfacesHandler.getSolversParametersInterface();
+        const int MINIMUM_ITERATIONS = parametersInterface.getCgMinimumIterationCount();
         if(MINIMUM_ITERATIONS) {
             logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
         }
@@ -403,8 +404,8 @@ namespace {
         log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
 
         //NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-        for (iter = 0; iter < params.get_cgmax(); iter++) {
-            if(iter % params.get_iter_refresh() == 0) {
+        for (iter = 0; iter < parametersInterface.getCgMax(); iter++) {
+            if(iter % parametersInterface.getIterRefresh() == 0) {
                 //rn = A*inout
                 f(&rn, gf, *x, kappa, mubar);
                 log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
@@ -434,7 +435,7 @@ namespace {
             log_squarenorm(create_log_prefix_cg(iter) + "x: ", *x);
 
             //switch between original version and kernel merged one
-            if(params.get_use_merge_kernels_spinor()) {
+            if(parametersInterface.getUseMergeKernelsSpinor()) {
                 //merge two calls:
                 //rn+1 = rn - alpha*v -> rhat
                 //and
@@ -469,7 +470,7 @@ namespace {
                     const uint64_t duration_noWarmup = timer_noWarmup.getTime();
 
                     // calculate flops
-                    const unsigned refreshs = iter / params.get_iter_refresh() + 1;
+                    const unsigned refreshs = iter / parametersInterface.getIterRefresh() + 1;
                     const cl_ulong mf_flops = f.get_flops();
                     logger.trace() << "mf_flops: " << mf_flops;
 
@@ -503,7 +504,7 @@ namespace {
 
         }
 
-        logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << params.get_cgmax() << " iterations. Last resid: " << resid;
+        logger.fatal() << create_log_prefix_cg(iter) << "Solver did not solve in " << parametersInterface.getCgMax() << " iterations. Last resid: " << resid;
         throw SolverDidNotSolve(iter, __FILE__, __LINE__);
     }
 
