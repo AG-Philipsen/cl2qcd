@@ -136,6 +136,7 @@ namespace physics{
                 virtual double getMubarMp() const = 0;
                 virtual bool getUseGaugeOnly() const = 0;
                 virtual bool getUseMp() const = 0;
+                virtual bool getUseEo() const = 0;
 		};
 
 	}
@@ -538,6 +539,10 @@ namespace physics{
 			virtual bool getUseMp() const override
 			{
 				return parameters.get_use_mp();
+			}
+			virtual bool getUseEo() const override
+			{
+				return parameters.get_use_eo();
 			}
 
 		private:
