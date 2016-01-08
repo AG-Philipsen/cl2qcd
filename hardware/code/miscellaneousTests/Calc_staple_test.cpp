@@ -25,6 +25,11 @@
 
 #include "testCode.hpp"
 
+const ReferenceValues calculateReferenceValue_staple(LatticeExtents lE)
+{
+	return ReferenceValues{ -11.30184821830432 * calculateLatticeVolume(lE) };
+}
+
 struct StapleTestCode : public TestCode
 {
 	StapleTestCode(const hardware::code::OpenClKernelParametersInterface & kP, hardware::Device * device):
@@ -46,8 +51,8 @@ struct StapleTestCode : public TestCode
 
 struct StapleTester : public OtherKernelTester
 {
-	StapleTester(const ParameterCollection pC, const GaugefieldTestParameters tP, const ReferenceValues rV):
-		OtherKernelTester("StapleTest", pC, tP, rV)
+	StapleTester(const ParameterCollection pC, const GaugefieldTestParameters tP):
+		OtherKernelTester("StapleTest", pC, tP, calculateReferenceValue_staple(tP.latticeExtents))
 	{
 		testCode = new StapleTestCode(pC.kernelParameters, device);
 		testCode->runTestKernel(GaugefieldTester::gaugefieldBuffer, out, gs, ls);
@@ -56,9 +61,9 @@ struct StapleTester : public OtherKernelTester
 
 BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 {
-	GaugefieldTestParameters parametersForThisTest {LatticeExtents{4,4}, GaugefieldFillType::cold};
+	GaugefieldTestParameters parametersForThisTest {LatticeExtents{4,4}, GaugefieldFillType::nonTrivial};
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns,parametersForThisTest.nt);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns,parametersForThisTest.nt);
 	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-	StapleTester tester(parameterCollection, parametersForThisTest, defaultReferenceValues());
+	StapleTester tester(parameterCollection, parametersForThisTest);
 }

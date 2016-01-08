@@ -25,6 +25,11 @@
 
 #include "testCode.hpp"
 
+const ReferenceValues calculateReferenceValue_localQ(LatticeExtents lE)
+{
+	return ReferenceValues{ 72.00012210960028 * calculateLatticeVolume(lE) };
+}
+
 struct LocalQTestCode : public TestCode
 {
 	LocalQTestCode(const hardware::code::OpenClKernelParametersInterface & kP, hardware::Device * device):
@@ -46,8 +51,8 @@ struct LocalQTestCode : public TestCode
 
 struct LocalQTester : public OtherKernelTester
 {
-	LocalQTester(const ParameterCollection pC, const GaugefieldTestParameters tP, const ReferenceValues rV):
-		OtherKernelTester("local_Q_test", pC, tP, rV)
+	LocalQTester(const ParameterCollection pC, const GaugefieldTestParameters tP):
+		OtherKernelTester("local_Q_test", pC, tP, calculateReferenceValue_localQ(tP.latticeExtents))
 	{
 		testCode = new LocalQTestCode(pC.kernelParameters, device);
 		testCode->runTestKernel(GaugefieldTester::gaugefieldBuffer, out, gs, ls);
@@ -56,9 +61,9 @@ struct LocalQTester : public OtherKernelTester
 
 BOOST_AUTO_TEST_CASE( LOCAL_Q )
 {
-	GaugefieldTestParameters parametersForThisTest {LatticeExtents{4,4}, GaugefieldFillType::cold};
+	GaugefieldTestParameters parametersForThisTest {LatticeExtents{4,4}, GaugefieldFillType::nonTrivial};
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns,parametersForThisTest.nt);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns,parametersForThisTest.nt);
 	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-	LocalQTester tester(parameterCollection, parametersForThisTest, defaultReferenceValues());
+	LocalQTester tester(parameterCollection, parametersForThisTest);
 }

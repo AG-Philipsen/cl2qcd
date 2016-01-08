@@ -51,10 +51,10 @@ struct ExtendTestCode : public TestCode
 	}
 };
 
-struct ExtendTester : public OtherKernelTester
+struct ExtendTester : public GaugefieldTester
 {
-	ExtendTester(const ParameterCollection pC, const GaugefieldTestParameters tP, const ReferenceValues rV):
-		OtherKernelTester("su2su3Extend", pC, tP, rV)
+	ExtendTester(const ParameterCollection pC, const GaugefieldTestParameters tP):
+		GaugefieldTester("su2su3Extend", pC, tP, ReferenceValues{0.})
 	{
 		for(auto device: system->get_devices())
 		{
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE( EXTEND )
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns,parametersForThisTest.nt);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns,parametersForThisTest.nt);
 	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
-	ExtendTester tester(parameterCollection, parametersForThisTest, ReferenceValues{0.});
+	ExtendTester tester(parameterCollection, parametersForThisTest);
 }
 
 void ExtendTester::verify(hmc_complex left, hmc_complex right)

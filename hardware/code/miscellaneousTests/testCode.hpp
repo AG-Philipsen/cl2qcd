@@ -37,6 +37,7 @@ struct TestCode : public hardware::code::Opencl_Module
 		Opencl_Module(kP, device)
 	{
 		testKernel = 0;
+		err = 0;
 	};
 
 	virtual ~TestCode()
@@ -56,11 +57,11 @@ struct OtherKernelTester : public GaugefieldTester
 	OtherKernelTester(const std::string kernelName, const ParameterCollection pC, const GaugefieldTestParameters tP, const ReferenceValues rV):
 		GaugefieldTester(kernelName, pC, tP, rV), testCode(0), tP(tP)
 	{
-		out = new hardware::buffers::Plain<hmc_float> (calculateGaugefieldSize(tP.latticeExtents), device);
+		out = new hardware::buffers::Plain<hmc_float> (calculateLatticeVolume(tP.latticeExtents), device);
 
 		if(device->get_device_type() == CL_DEVICE_TYPE_GPU)
 		{
-			gs = calculateGaugefieldSize(tP.latticeExtents);
+			gs = calculateLatticeVolume(tP.latticeExtents);
 			ls = 64;
 		}
 		else
@@ -71,11 +72,11 @@ struct OtherKernelTester : public GaugefieldTester
 	}
 	~OtherKernelTester()
 	{
-		hmc_float * host_out = new hmc_float[calculateGaugefieldSize(tP.latticeExtents)];
+		hmc_float * host_out = new hmc_float[calculateLatticeVolume(tP.latticeExtents)];
 		out->dump(host_out);
 
 		hmc_float result = 0;
-		for(int i = 0; i < calculateGaugefieldSize(tP.latticeExtents); i++) {
+		for(int i = 0; i < calculateLatticeVolume(tP.latticeExtents); i++) {
 			result += host_out[i];
 		}
 		kernelResult.at(0) = result;
