@@ -63,7 +63,7 @@ protected:
 	usetimer totalRuntimeOfExecutable;
 	usetimer initializationTimer;
 	usetimer performanceTimer;
-	meta::Inputparameters parameters;
+	const meta::Inputparameters parameters;
 	const physics::ParametersPrngInterface * prngParameters;
 	hardware::System * system;
 	physics::PRNG * prng;

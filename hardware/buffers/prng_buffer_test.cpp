@@ -28,16 +28,19 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../system.hpp"
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(get_prng_buffer_size)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
-		int elems = hardware::buffers::get_prng_buffer_size(device, system.get_inputparameters().get_use_same_rnd_numbers());
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
+	for(Device * device : system.get_devices())
+	{
+		int elems = hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers());
 
 		BOOST_CHECK_GT(elems, 0);
 		BOOST_CHECK_LT(elems, 1e6);
@@ -49,11 +52,13 @@ BOOST_AUTO_TEST_CASE(initialization)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
-		PRNGBuffer dummy(device, system.get_inputparameters().get_use_same_rnd_numbers());
-		BOOST_CHECK_EQUAL(dummy.get_elements(), hardware::buffers::get_prng_buffer_size(device, system.get_inputparameters().get_use_same_rnd_numbers()));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
+	for(Device * device : system.get_devices())
+	{
+		PRNGBuffer dummy(device, hardwareParameters.useSameRandomNumbers());
+		BOOST_CHECK_EQUAL(dummy.get_elements(), hardware::buffers::get_prng_buffer_size(device, hardwareParameters.useSameRandomNumbers()));
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -65,10 +70,12 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
-		PRNGBuffer buffer(device, system.get_inputparameters().get_use_same_rnd_numbers());
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
+	for(Device * device : system.get_devices())
+	{
+		PRNGBuffer buffer(device, hardwareParameters.useSameRandomNumbers());
 		int elems = buffer.get_elements();
 		PRNGBuffer::prng_state_t * in = new PRNGBuffer::prng_state_t[elems];
 		// TODO fill with random data

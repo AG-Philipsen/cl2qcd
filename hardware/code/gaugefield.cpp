@@ -23,9 +23,9 @@
 #include <cmath>
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "../buffers/3x3.hpp"
+#include "flopUtilities.hpp"
 
 using namespace std;
 
@@ -38,7 +38,7 @@ void hardware::code::Gaugefield::fill_kernels()
 	
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
-	if(meta::get_use_rectangles(get_parameters()) == true) {
+	if(kernelParameters->getUseRectangles() == true) {
 		rectangles = createKernel("rectangles") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 		rectangles_reduction = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 	}
@@ -52,7 +52,7 @@ void hardware::code::Gaugefield::fill_kernels()
 		polyakov_md_merge = createKernel("polyakov_md_merge") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	}
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
-	if(get_parameters().get_use_smearing() == true) {
+	if(kernelParameters->getUseSmearing() == true) {
 		stout_smear = createKernel("stout_smear") << basic_opencl_code << "operations_gaugemomentum.cl" << "stout_smear.cl";
 	}
 	convertGaugefieldToSOA = createKernel("convertGaugefieldToSOA") << basic_opencl_code << "gaugefield_convert.cl";
@@ -82,14 +82,14 @@ void hardware::code::Gaugefield::clear_kernels()
 	clerr = clReleaseKernel(plaquette_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(polyakov_reduction);
-	if(meta::get_use_rectangles(get_parameters()) == true) {
+	if(kernelParameters->getUseRectangles() == true) {
 		clerr = clReleaseKernel(rectangles);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(rectangles_reduction);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	if(get_parameters().get_use_smearing() == true) {
+	if(kernelParameters->getUseSmearing() == true) {
 		clerr = clReleaseKernel(stout_smear);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
@@ -364,11 +364,11 @@ void hardware::code::Gaugefield::get_work_sizes(const cl_kernel kernel, size_t *
 size_t hardware::code::Gaugefield::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(get_parameters());
-	size_t R = meta::get_mat_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
+	size_t R = kernelParameters->getMatSize();
 	//factor for complex numbers
 	int C = 2;
-	const size_t VOL4D = meta::get_vol4d(get_parameters());
+	const size_t VOL4D = kernelParameters->getLatticeVolume();
 	if (in == "polyakov") {
 		//this kernel reads NTIME*VOLSPACE=VOL4D su3matrices and writes NUM_GROUPS complex numbers
 		//query work-sizes for kernel to get num_groups
@@ -412,21 +412,21 @@ size_t hardware::code::Gaugefield::get_read_write_size(const std::string& in) co
 		return VOL4D * NDIM * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
 	if(in == "convertGaugefieldToSOA") {
-		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
+		return 2 * kernelParameters->getLatticeVolume() * NDIM * R * C * D;
 	}
 	if(in == "convertGaugefieldFromSOA") {
-		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
+		return 2 * kernelParameters->getLatticeVolume() * NDIM * R * C * D;
 	}
 	return 0;
 }
 
 uint64_t hardware::code::Gaugefield::get_flop_size(const std::string& in) const
 {
-	const size_t VOL4D = meta::get_vol4d(get_parameters());
-	const size_t VOLSPACE = meta::get_volspace(get_parameters());
+	const size_t VOL4D = kernelParameters->getLatticeVolume();
+	const size_t VOLSPACE = kernelParameters->getSpatialLatticeVolume();
 	if (in == "polyakov") {
 		//this kernel performs NTIME -1 su3matrix-multiplications, takes a complex trace and adds these real values over VOLSPACE
-		return VOLSPACE * ( (get_parameters().get_ntime() - 1) * meta::get_flop_su3_su3() + meta::get_flop_su3trace()) ;
+		return VOLSPACE * ( (kernelParameters->getNt() - 1) * getFlopSu3MatrixTimesSu3Matrix() + getFlopSu3MatrixTrace()) ;
 	}
 	if (in == "polyakov_reduction") {
 		return module_metric_not_implemented<uint64_t>();
@@ -531,8 +531,8 @@ void hardware::code::Gaugefield::convertGaugefieldFromSOA_device(const hardware:
 	get_device()->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
 }
 
-hardware::code::Gaugefield::Gaugefield(const meta::Inputparameters& params, const hardware::code::OpenClKernelParametersInterface& kernelParams , hardware::Device * device)
-	: Opencl_Module(params, device),
+hardware::code::Gaugefield::Gaugefield( const hardware::code::OpenClKernelParametersInterface& kernelParameters , const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device),
 	  stout_smear(0), rectangles(0), rectangles_reduction(0)
 {
 	fill_kernels();

@@ -18,15 +18,21 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TESTUTILITIES_HPP_
-#define _TESTUTILITIES_HPP_
+# pragma once
 
-#include <memory>
+#include <iostream>
 
-#include "../../meta/inputparameters.hpp"
-
-std::unique_ptr<meta::Inputparameters> createParameters(std::string inputfile);
-std::unique_ptr<meta::Inputparameters> createParameters(std::vector<std::string> parameterStrings);
 void printKernelInformation(std::string name);
 
-#endif // _TESTUTILITIES_HPP_
+const int ns4 = 4;
+const int nt4 = 4;
+const int ns8 = 8;
+const int nt8 = 8;
+const int ns12 = 12;
+const int nt12 = 12;
+const int ns16 = 16;
+const int nt16 = 16;
+
+double sumOfIntegers(const int start, const int end, const int increment) noexcept;
+double sumOfIntegersSquared(const int end) noexcept;
+

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Christopher Pinke
+ * Copyright 2014, 2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -17,68 +17,71 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPINORTESTER_HPP_
-#define SPINORTESTER_HPP_
+#pragma once
 
 #include "kernelTester.hpp"
-
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
 #include "spinors.hpp"
-#include "complex.hpp"
 
-enum fillType{ zero, one, zeroOne, oneZero, ascending};
+//@todo: move to common place
+//@todo: rename to FillType
+enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
+typedef std::vector<SpinorFillType> SpinorFillTypes;
+typedef std::vector<hmc_complex> ComplexNumbers;
+typedef size_t NumberOfSpinors;
 
-class SpinorTester : public KernelTester {
-public:
-	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
-	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
-	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	~SpinorTester();
-	
+int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept;
+int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
+int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept;
+int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
+
+struct SpinorTestParameters: public virtual TestParameters
+{
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn) :
+		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
+		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};
+
+	const SpinorFillTypes fillTypes;
+};
+
+struct SpinorTester : public KernelTester
+{
+	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters &, const size_t, const ReferenceValues );
 protected:
-	std::string getSpecificInputfile(std::string inputfileIn);
-	
-	bool allocatedObjects;
-
-	spinor * createSpinorfield( fillType );
-	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
-	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
-	void fill_with_one(spinor * in, int size);
-	void fill_with_zero_one(spinor * in, int size);
-	void fill_with_one_zero(spinor * in, int size);
-	void fill_with_ascending(spinor * in, int size);
-	void fill_with_one_minusone_for_gamma5_use(spinor * in, int size);
-	void fill_with_random(spinor * in, int size, int seed);
-	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
+	spinor * createSpinorfield( SpinorFillType );
+	//@todo: check if all of these fcts. are actually used
+	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
 	spinor * createSpinorfieldWithOnesAndMinusOneForGamma5Use(size_t numberOfElements);	
+	//todo: these should not be visible here, but be accessible via a fillType
+	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456); //this is used in the molecular dynamics test
 	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
 	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
-	void fill_with_one_eo(spinor * in, int size, bool eo);
+	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
+
 	hmc_float count_sf(spinor * in, int size);
-	hmc_float calc_var(hmc_float in, hmc_float mean);
 	hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
-	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
 	
-	void setMembers();
-	
-	const hardware::code::Spinors * code;
-	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
-	physics::PRNG * prng;
+	int getSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ;
+	int getEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ;
 
+	const hardware::code::Spinors * code;
 	hardware::buffers::Plain<double> * doubleBuffer;
-	
-	size_t spinorfieldElements;
-	size_t spinorfieldEvenOddElements;
-	bool useRandom;
-	bool evenOrOdd;
-	bool calcVariance;
-	hmc_complex alpha_host;
-	hmc_complex beta_host;
-	int iterations;
+	const size_t elements;
 };
 
-#endif
+struct NonEvenOddSpinorTester : public SpinorTester
+{
+	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
+		SpinorTester(kernelName, pC, tP, getSpinorfieldSize(tP.latticeExtents), rV) {};
+};
+
+struct EvenOddSpinorTester : public SpinorTester
+{
+	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
+		SpinorTester(kernelName, pC, tP, getEvenOddSpinorfieldSize(tP.latticeExtents), rV) {};
+};
+

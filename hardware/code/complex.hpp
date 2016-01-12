@@ -112,7 +112,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	Complex(const meta::Inputparameters& params, hardware::Device * device);
+	Complex(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device);
 
 private:
 	/**

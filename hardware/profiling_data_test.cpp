@@ -29,6 +29,7 @@
 #include "system.hpp"
 #include "device.hpp"
 #include "code/buffer.hpp"
+#include "interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initial)
 {
@@ -40,19 +41,19 @@ BOOST_AUTO_TEST_CASE(initial)
 }
 
 namespace hardware {
-cl_command_queue profilingDataTestCommandQueueHelper(const hardware::Device * device)
-{
-	return device->get_queue();
-}
+	cl_command_queue profilingDataTestCommandQueueHelper(const hardware::Device * device)
+	{
+		return device->get_queue();
+	}
 }
 
 BOOST_AUTO_TEST_CASE(add_value)
 {
 	using namespace hardware;
 
-	const char * _params[] = {"foo","--enable_profiling=true"};
-	meta::Inputparameters params(2, _params);
-	System system(params);
+	const hardware::HardwareParametersMockupWithProfiling hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 
 	// there should always be at least one device
 	// otherwise code or system is broken
@@ -61,12 +62,13 @@ BOOST_AUTO_TEST_CASE(add_value)
 	BOOST_REQUIRE_GE(devices.size(), 1);
 
 	// query some data
-for(const Device * device : devices) {
-
+	for(const Device * device : devices)
+	{
 		ProfilingData data;
 		ProfilingData old_data;
 		cl_event event;
-		for(size_t i = 0; i < 3; i++) {
+		for(size_t i = 0; i < 3; i++)
+		{
 			clEnqueueMarker(profilingDataTestCommandQueueHelper(device), &event);
 			clWaitForEvents(1, &event);
 			data += event;

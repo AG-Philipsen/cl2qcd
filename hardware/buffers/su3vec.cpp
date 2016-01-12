@@ -30,9 +30,9 @@
 typedef hmc_complex soa_storage_t;
 const size_t soa_storage_lanes = 3;
 
-static size_t calculate_su3vec_buffer_size(size_t elems, hardware::Device * device);
+static size_t calculate_su3vec_buffer_size(const size_t elems, const hardware::Device * device);
 
-hardware::buffers::SU3vec::SU3vec(size_t elems, hardware::Device * device)
+hardware::buffers::SU3vec::SU3vec(const size_t elems, const hardware::Device * device)
 	: Buffer(calculate_su3vec_buffer_size(elems, device), device),
 	  elems(elems),
 	  soa(check_su3vec_for_SOA(device))
@@ -40,12 +40,12 @@ hardware::buffers::SU3vec::SU3vec(size_t elems, hardware::Device * device)
 	// nothing to do
 }
 
-size_t hardware::buffers::check_su3vec_for_SOA(hardware::Device * device)
+size_t hardware::buffers::check_su3vec_for_SOA(const hardware::Device * device)
 {
 	return device->get_prefers_soa();
 }
 
-static size_t calculate_su3vec_buffer_size(size_t elems, hardware::Device * device)
+static size_t calculate_su3vec_buffer_size(const size_t elems, const hardware::Device * device)
 {
 	using namespace hardware::buffers;
 	if(check_su3vec_for_SOA(device)) {
@@ -56,7 +56,7 @@ static size_t calculate_su3vec_buffer_size(size_t elems, hardware::Device * devi
 	}
 }
 
-size_t hardware::buffers::get_su3vec_buffer_stride(size_t elems, Device * device)
+size_t hardware::buffers::get_su3vec_buffer_stride(const size_t elems, const Device * device)
 {
 	return device->recommendStride(elems, sizeof(soa_storage_t), soa_storage_lanes);
 }
@@ -71,7 +71,7 @@ bool hardware::buffers::SU3vec::is_soa() const noexcept
 	return soa;
 }
 
-void hardware::buffers::SU3vec::load(const su3vec * ptr, size_t elems, size_t offset) const
+void hardware::buffers::SU3vec::load(const su3vec * ptr, const size_t elems, const size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
@@ -84,7 +84,7 @@ void hardware::buffers::SU3vec::load(const su3vec * ptr, size_t elems, size_t of
 	}
 }
 
-void hardware::buffers::SU3vec::dump(su3vec * ptr, size_t elems, size_t offset) const
+void hardware::buffers::SU3vec::dump(su3vec * ptr, const size_t elems, const size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();

@@ -27,13 +27,16 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../system.hpp"
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices())
 	{
 		Gaugemomentum dummy(system.getHardwareParameters()->getLatticeVolume(), device);
@@ -49,9 +52,12 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
-for(Device * device : system.get_devices()) {
+	for(Device * device : system.get_devices())
+	{
 		ae* buf = new ae[elems];
 		ae* buf2 = new ae[elems];
 		Gaugemomentum dummy(elems, device);
@@ -76,10 +82,14 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume();
-for(Device * device : system.get_devices()) {
-		if(!check_Gaugemomentum_for_SOA(device)) {
+	for(Device * device : system.get_devices())
+	{
+		if(!check_Gaugemomentum_for_SOA(device))
+		{
 			ae* buf = new ae[elems];
 			ae* buf2 = new ae[elems];
 			Gaugemomentum dummy(elems, device);

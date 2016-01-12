@@ -124,12 +124,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	/**
-	 * Default constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Fermions(const meta::Inputparameters& params, hardware::Device * device);
+	Fermions(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
 private:
 	/**

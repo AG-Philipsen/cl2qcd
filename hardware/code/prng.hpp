@@ -80,10 +80,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	/**
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Prng(const meta::Inputparameters& params, hardware::Device * device);
+	Prng(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
 private:
 	/**

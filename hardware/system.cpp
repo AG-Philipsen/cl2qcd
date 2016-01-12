@@ -37,23 +37,25 @@
 #include "transfer/transfer.hpp"
 #include "openClCode.hpp"
 
-//todo: in the end, move this to system.hpp replacing meta/inputparameters.hpp
-#include "hardwareParameters.hpp"
-
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);
 static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
-hardware::System::System(const meta::Inputparameters& params)
-	: params(params), grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelBuilder(nullptr)
+hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
+		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters)
 {
-	hardwareParameters = new hardware::HardwareParameters( &params );
-	kernelBuilder = new hardware::OpenClCode_fromMetaInputparameters{ params };
+	kernelBuilder = new hardware::OpenClCode(kernelParameters);
 	setDebugEnvironmentVariables();
 	initOpenCLPlatforms();
 	initOpenCLContext();
 	initOpenCLDevices();
+}
+
+hardware::System::System(meta::Inputparameters& parameters):
+		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr)
+{
+	//todo: add functionality
 }
 
 void hardware::System::initOpenCLPlatforms()
@@ -220,15 +222,6 @@ hardware::System::~System()
 	devices.clear();
 
 	clReleaseContext(context);
-
-	if (hardwareParameters)
-	{
-		delete hardwareParameters;
-	}
-	if (kernelBuilder)
-	{
-		delete kernelBuilder;
-	}
 }
 
 const std::vector<hardware::Device*>& hardware::System::get_devices() const noexcept
@@ -238,7 +231,7 @@ const std::vector<hardware::Device*>& hardware::System::get_devices() const noex
 
 const meta::Inputparameters& hardware::System::get_inputparameters() const noexcept
 {
-	return params;
+	return meta::Inputparameters(0,0); //Note: This returns reference to a temporary object, but this fct. must not be used anyway and will be removed asap
 }
 
 hardware::OpenclException::OpenclException(int err)

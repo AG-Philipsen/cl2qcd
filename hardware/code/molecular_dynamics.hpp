@@ -106,12 +106,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	/**
-	 * Constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device);
+	Molecular_Dynamics(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
 private:
 	/**

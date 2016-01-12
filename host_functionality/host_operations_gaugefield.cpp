@@ -153,6 +153,33 @@ Matrixsu3 unit_matrixsu3()
 	return out;
 }
 
+Matrixsu3 nonTrivialSu3Matrix()
+{
+	Matrixsu3 out;
+	out.e00.re = .130189;
+	out.e00.im = .260378;
+	out.e01.re = .260378;
+	out.e01.im = .390567;
+	out.e02.re = .520756;
+	out.e02.im = .650945;
+
+	out.e10.re = .572742;
+	out.e10.im = .403041;
+	out.e11.re = .371222;
+	out.e11.im = .321726;
+	out.e12.re = -.449002;
+	out.e12.im = -.258088;
+
+	out.e20.re = 1.11022e-16;
+	out.e20.im = .651751;
+	out.e21.re = .0271563;
+	out.e21.im = -.733219;
+	out.e22.re = -.0271563;
+	out.e22.im = .190094;
+
+	return out;
+}
+
 Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters)
 {
 	Matrixsu3 tmp;

@@ -23,19 +23,17 @@
 #include "molecular_dynamics.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "fermions.hpp"
 #include "prng.hpp"
 #include "gaugemomentum.hpp"
 #include "spinors.hpp"
 #include <cmath>
+#include "flopUtilities.hpp"
 
 using namespace std;
 
-static bool use_multipass_gauge_force_tlsym(hardware::Device * device);
-
-static bool use_multipass_gauge_force_tlsym(hardware::Device * device)
+static bool use_multipass_gauge_force_tlsym(const hardware::Device * device)
 {
 	return (device->get_name() == "Tahiti");
 }
@@ -49,7 +47,7 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 	logger.debug() << "Creating Molecular_Dynamics kernels...";
 
 	//init kernels for HMC
-	if(get_parameters().get_use_eo() == true) {
+	if(kernelParameters->getUseEo() == true) {
 		fermion_force_eo_0 = createKernel("fermion_force_eo_0") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 		fermion_force_eo_1 = createKernel("fermion_force_eo_1") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 		fermion_force_eo_2 = createKernel("fermion_force_eo_2") << basic_molecular_dynamics_code  << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
@@ -59,7 +57,7 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 	fermion_force = createKernel("fermion_force") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_molecular_dynamics_code << "md_update_gaugefield.cl";
 	gauge_force = createKernel("gauge_force") << basic_molecular_dynamics_code  << "force_gauge.cl";
-	if(meta::get_use_rectangles(get_parameters()) == true) {
+	if(kernelParameters->getUseRectangles() == true) {
 		//at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
 		if(gauge_force_tlsym_tmp) {
 			gauge_force_tlsym = 0;
@@ -79,7 +77,7 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 			gauge_force_tlsym_6 = 0;
 		}
 	}
-	if(get_parameters().get_use_smearing() == true) {
+	if(kernelParameters->getUseSmearing() == true) {
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_molecular_dynamics_code << "force_fermion_stout_smear.cl";
 	}
 }
@@ -90,7 +88,7 @@ void hardware::code::Molecular_Dynamics::clear_kernels()
 
 	logger.debug() << "Clearing Molecular_Dynamics kernels.." ;
 	
-	if(get_parameters().get_use_eo() == true) {
+	if(kernelParameters->getUseEo() == true) {
 		clerr = clReleaseKernel(fermion_force_eo_3);
 		clerr = clReleaseKernel(fermion_force_eo_2);
 		clerr = clReleaseKernel(fermion_force_eo_1);
@@ -134,7 +132,7 @@ void hardware::code::Molecular_Dynamics::clear_kernels()
 		clerr = clReleaseKernel(gauge_force_tlsym_6);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	if(get_parameters().get_use_smearing() == true) {
+	if(kernelParameters->getUseSmearing() == true) {
 		clerr = clReleaseKernel(stout_smear_fermion_force);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
@@ -150,20 +148,20 @@ void hardware::code::Molecular_Dynamics::get_work_sizes(const cl_kernel kernel, 
 size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string& in) const
 {
 //Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
 	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(get_parameters());
+	size_t R = kernelParameters->getMatSize();
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = get_spinorfieldsize(get_parameters());
-	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = kernelParameters->getSpinorFieldSize();
+	size_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	//this is the number of links in the system (and of gaugemomenta)
-	size_t G = meta::get_vol4d(get_parameters()) * NDIM;
+	size_t G = kernelParameters->getLatticeVolume() * NDIM;
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
-	int A = meta::get_su3algebrasize();
+	int A = getSu3AlgebraSize();
 	if (in == "md_update_gaugefield") {
 		//this kernel reads 1 ae and 1 su3 matrix and writes 1 su3 matrix for every link
 		return (A + (1 + 1) * R * C) * D * G;
@@ -199,37 +197,37 @@ size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string
 uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in) const
 {
 	//this is the number of spinors in the system (or number of sites)
-	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	size_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	//this is the number of links in the system (and of gaugemomenta)
-	uint64_t G = meta::get_vol4d(get_parameters()) * NDIM;
+	uint64_t G = kernelParameters->getLatticeVolume() * NDIM;
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
-	uint64_t A = meta::get_su3algebrasize();
+	uint64_t A = getSu3AlgebraSize();
 	//this returns the number of entries in an su3-matrix
-	uint64_t R = meta::get_mat_size(get_parameters());
+	uint64_t R = kernelParameters->getMatSize();
 	//this is the same as in the function above
 	if (in == "md_update_gaugefield") {
 		//this kernel performs one exp(i ae) ( = 327 flops + 1 su3 mult ) and 1 su3 mult per link
-		return (meta::get_flop_su3_su3() * ( 1 + 1)  + 327 ) * G;
+		return (getFlopSu3MatrixTimesSu3Matrix() * ( 1 + 1)  + 327 ) * G;
 	}
 	if (in == "gauge_force") {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2*ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
-		return ( 4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + 1 * meta::get_flop_su3_su3() + 19  + A * ( 1 + 1 )
+		return ( 4 * (NDIM - 1) * getFlopSu3MatrixTimesSu3Matrix() + 2 * (NDIM - 1) * 18 + 1 * getFlopSu3MatrixTimesSu3Matrix() + 19  + A * ( 1 + 1 )
 		       ) * G;
 	}
 	if (in == "gauge_force_tlsym") {
 		//this kernel calculates 1 rect-staple (= 24*ND-1 su3_su3 + 6*ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
 		//24 = 6 contr. per dir, 4 mat_mat per contr.
-		return ( 24 * (NDIM - 1) * meta::get_flop_su3_su3() + 6 * (NDIM - 1) * 18 + 1 * meta::get_flop_su3_su3() + 19  + A * ( 1 + 1 )
+		return ( 24 * (NDIM - 1) * getFlopSu3MatrixTimesSu3Matrix() + 6 * (NDIM - 1) * 18 + 1 * getFlopSu3MatrixTimesSu3Matrix() + 19  + A * ( 1 + 1 )
 		       ) * G;
 	}
 	if (in == "fermion_force") {
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
 		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
-		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + meta::get_flop_su3_su3() + meta::get_flop_complex_mult() * R );
+		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + getFlopSu3MatrixTimesSu3Matrix() + getFlopComplexMult() * R );
 	}
 	if (in == "fermion_force_eo") {
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site_eo
-		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + meta::get_flop_su3_su3() + meta::get_flop_complex_mult() * R );
+		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + getFlopSu3MatrixTimesSu3Matrix() + getFlopComplexMult() * R );
 	}
 	if (in == "fermion_staggered_partial_force_eo") {
 		//this kernel performs (su3vec_times_real               (6 flops) +
@@ -239,8 +237,8 @@ uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in
 		//                      multiply_matrix3x3_by_complex   (R * get_flop_complex_mult()) +
 		//                      build_ae_from_su3               (9 flops) +
 		//                      update_ae                       (8*2 flops))  per direction per site_eo
-		return Seo * NDIM * (6 + meta::get_flop_su3vec_direct_su3vec() + meta::get_flop_su3_su3() +
-		                     18 + R * 18 + meta::get_flop_complex_mult() + 9 + 16);
+		return Seo * NDIM * (6 + getFlopSu3VecDirectSu3Vec() + getFlopSu3MatrixTimesSu3Matrix() +
+		                     18 + R * 18 + getFlopComplexMult() + 9 + 16);
 	}
 	if (in == "stout_smear_fermion_force") {
 		return module_metric_not_implemented<uint64_t>();
@@ -410,7 +408,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_device(const hardware::bu
 
 	//get kappa
 	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
+	if(kappa == ARG_DEF) kappa_tmp = kernelParameters->getKappa();
 	else kappa_tmp = kappa;
 
 	//query work-sizes for kernel
@@ -457,7 +455,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 
 	//get kappa
 	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
+	if(kappa == ARG_DEF) kappa_tmp = kernelParameters->getKappa();
 	else kappa_tmp = kappa;
 
 	if(logger.beDebug()) {
@@ -583,8 +581,8 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 	throw std::runtime_error("Not implemented!");
 }
 
-hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), md_update_gaugefield (0), gauge_force (0),
+hardware::code::Molecular_Dynamics::Molecular_Dynamics(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), md_update_gaugefield (0), gauge_force (0),
 	  gauge_force_tlsym (0), fermion_force (0), fermion_force_eo_0(0), fermion_force_eo_1(0), fermion_force_eo_2(0), fermion_force_eo_3(0), stout_smear_fermion_force(0),
 	  fermion_stagg_partial_force_eo(0),
 	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0),

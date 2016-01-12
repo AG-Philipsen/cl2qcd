@@ -1,5 +1,5 @@
 /*
-* Copyright 2014 Christopher Pinke
+* Copyright 2014, 2015 Christopher Pinke
 *
 * This file is part of CL2QCD.
 *
@@ -19,13 +19,15 @@
 
 #include "GaugemomentumTester.hpp"
 
-GaugemomentumTester::GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues, int typeOfComparision) :
-  KernelTester(kernelName, getSpecificInputfile(inputfile), numberOfValues, typeOfComparision)
+#include "flopUtilities.hpp"
+
+GaugemomentumTester::GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP):
+		KernelTester(kernelName, pC.hardwareParameters, pC.kernelParameters, tP, rV)
 {
-  numberOfAlgebraElements = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
-  numberOfGaugemomentumElements = meta::get_vol4d(*parameters) * NDIM;
-  useRandom = (parameters->get_solver() == common::cg)  ? false : true;
-  
+  numberOfAlgebraElements = calculateLatticeVolume(tP.latticeExtents) * NDIM * hardware::code::getSu3AlgebraSize();
+  numberOfGaugemomentumElements = calculateLatticeVolume(tP.latticeExtents) * NDIM;
+  useRandom = false; //@todo: remove this parameter
+
   code = device->getGaugemomentumCode();
   doubleBuffer = new hardware::buffers::Plain<double> (1, device);
   gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(numberOfGaugemomentumElements, device);
@@ -35,12 +37,6 @@ GaugemomentumTester::~GaugemomentumTester()
 {
   delete doubleBuffer;
   delete gaugemomentumBuffer;
-}
-
-
-std::string GaugemomentumTester::getSpecificInputfile(std::string inputfileIn)
-{
-  return "gaugemomentum/" + inputfileIn;
 }
 
 double * GaugemomentumTester::createGaugemomentum(int seed)

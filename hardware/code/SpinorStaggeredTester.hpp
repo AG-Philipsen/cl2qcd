@@ -23,53 +23,32 @@
 #define _HARDWARE_CODE_SPINOR_STAGGERED_TESTER_
 
 #include "kernelTester.hpp"
-
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
-#include "../../physics/lattices/staggeredfield_eo.hpp"
 #include "spinors_staggered.hpp"
-#include "complex.hpp"
+#include "SpinorTester.hpp"
 
+struct SpinorStaggeredTestParameters: public virtual TestParameters
+{
+	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn) :
+		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
+	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
+		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillTypes(SpinorFillType::one) {};
+	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};
+
+	const SpinorFillTypes fillTypes;
+};
 
 class SpinorStaggeredTester : public KernelTester {
 public:
-	SpinorStaggeredTester(std::string kernelName, std::string inputfileIn,
-			       int numberOfValues = 1, int typeOfComparision = 1);
-	//The following constructor is used only for force tests where one inherits from MolecularDynamicsTester
-	//and from this class at the same time (to avoid that system, device and parameters are created twice)
-	SpinorStaggeredTester(meta::Inputparameters * parameters, const hardware::System * system,
-			      hardware::Device * device);
-	virtual ~SpinorStaggeredTester();
-	
+	SpinorStaggeredTester(const std::string kernelName, const ParameterCollection, const SpinorStaggeredTestParameters &, const size_t, const ReferenceValues);
 protected:
 	//Methods (protected for inheritance resons)
-	void fill_with_zero(su3vec * sf_in, int size);
-	hmc_float count_sf(su3vec * in, int size);
-	hmc_float calc_var(hmc_float in, hmc_float mean);
-	hmc_float calc_var_sf(su3vec * in, int size, hmc_float sum);
+	su3vec * createSpinorfield(SpinorFillType);
+	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+
+	void fill_with_one_eo(su3vec * sf_in, int size, bool eo);
 	hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo);
-	su3vec * createSpinorfield(size_t numberOfElements, int seed = 123456);
-	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
-	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity();
-	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
-	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
-	std::string getSpecificInputfile(std::string inputfileIn);
-	
-	//Members (protected for inheritance resons)
-	const hardware::code::Spinors_staggered * code;
-	physics::PRNG * prng;
-	const physics::ParametersPrng_fromMetaInputparameters prngParameters;
-	hardware::buffers::Plain<double> * doubleBuffer;
-	size_t spinorfieldElements;
-	size_t spinorfieldEvenOddElements;
-	bool useRandom;
-	bool evenOrOdd;
-	bool calcVariance;
-	hmc_complex alpha_host;
-	hmc_complex beta_host;
-	int iterations;
-	bool allocatedObjects; //Take trace if system, device, inputparameters are allocated
 	
 	//These methods are used to produce files for the Reference Code (D'Elia et al)
 	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
@@ -77,11 +56,30 @@ protected:
 	//Utilities methods
 	std::vector<hmc_float> reals_from_su3vec(su3vec v);
 
-private:
-	su3vec * inputfield;
-	void setMembers();
+	hmc_float count_sf(su3vec * in, int size);
+	hmc_float calc_var(hmc_float in, hmc_float mean);
+	hmc_float calc_var_sf(su3vec * in, int size, hmc_float sum);
+	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
+	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
+
+	int getSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ;
+	int getEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ;
+
+	const hardware::code::Spinors_staggered * code;
+	hardware::buffers::Plain<double> * doubleBuffer;
+	const size_t elements;
 };
 
+struct NonEvenOddSpinorStaggeredTester : public SpinorStaggeredTester
+{
+	NonEvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues & rV) :
+		SpinorStaggeredTester(kernelName, pC, tP, getSpinorfieldSize(tP.latticeExtents), rV) {};
+};
 
+struct EvenOddSpinorStaggeredTester : public SpinorStaggeredTester
+{
+	EvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues & rV) :
+		SpinorStaggeredTester(kernelName, pC, tP, getEvenOddSpinorfieldSize(tP.latticeExtents), rV) {};
+};
 
 #endif // _HARDWARE_CODE_SPINOR_STAGGERED_TESTER_

@@ -19,61 +19,24 @@
 
 #include "SpinorTester.hpp"
 #include "../../host_functionality/host_geometry.h"
+#include "../../host_functionality/host_random.h" //@todo: remove this in the end!
 
-void SpinorTester::setMembers()
+SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const size_t elementsIn, const ReferenceValues rV):
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV), elements(elementsIn)
 {
-		//todo: some of these could also be put into the specific child-classes where they are actually used.
-	spinorfieldElements = hardware::code::get_spinorfieldsize(*parameters);
-	spinorfieldEvenOddElements = hardware::code::get_eoprec_spinorfieldsize(*parameters);
-	(parameters->get_solver() == common::cg) ? useRandom = false : useRandom =true;
-	(parameters->get_read_multiple_configs() ) ? evenOrOdd = true : evenOrOdd = false;
-	alpha_host = {parameters->get_beta(), parameters->get_rho()};
-	beta_host = {parameters->get_kappa(), parameters->get_mu()};
-	iterations = parameters->get_integrationsteps(0);
-	parameters->get_read_multiple_configs() ? calcVariance=false : calcVariance = true;
-}
-
-SpinorTester::SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues, int typeOfComparision):
-  KernelTester(kernelName, getSpecificInputfile(inputfileIn), numberOfValues, typeOfComparision), prngParameters( parameters )
-	{
 	code = device->getSpinorCode();
-	prng = new physics::PRNG(*system, &prngParameters);
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-	allocatedObjects = true;
-	
-	setMembers();
 }
 
-SpinorTester::SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues, int typeOfComparision, std::vector<double> expectedResult):
-  KernelTester(kernelName, parameterStrings, numberOfValues, typeOfComparision, expectedResult), prngParameters( parameters )
-	{
-	code = device->getSpinorCode();
-	prng = new physics::PRNG(*system, &prngParameters);
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-	allocatedObjects = true;
-	
-	setMembers();
-}
-
-SpinorTester::SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device):
-	KernelTester(parameters, system, device), allocatedObjects(false), prngParameters( parameters )
-{
-	setMembers();
-	code = device->getSpinorCode();
-}
-
-
-SpinorTester::~SpinorTester()
-{
-	if(allocatedObjects)
-	{
-		delete doubleBuffer;
- 		delete prng;
-	}
-	doubleBuffer = NULL;
-	prng = NULL;
-	code = NULL;
-}
+//@todo: check if these are all actually used!
+void fill_with_one(spinor * in, int size);
+void fill_with_zero_one(spinor * in, int size);
+void fill_with_one_zero(spinor * in, int size);
+void fill_with_ascending(spinor * in, int size);
+void fill_with_one_minusone_for_gamma5_use(spinor * in, int size);
+void fill_with_random(spinor * in, int size, int seed);
+void fillWithAscendingComplex(spinor * in, int size);
+void fill_with_one_eo(spinor * in, const int, const bool, const int ns, const int nt);
 
 void fill_with_zero(spinor * in, int size)
 {
@@ -94,7 +57,7 @@ void fill_with_zero(spinor * in, int size)
   return;
 }
 
-void SpinorTester::fill_with_one(spinor * in, int size)
+void fill_with_one(spinor * in, int size)
 {
   for(int i = 0; i < size; ++i) {
     in[i].e0.e0 = hmc_complex_one;
@@ -113,7 +76,7 @@ void SpinorTester::fill_with_one(spinor * in, int size)
   return;
 }
 
-void SpinorTester::fill_with_zero_one(spinor * in, int size)
+void fill_with_zero_one(spinor * in, int size)
 {
 	for(int i= 0; i < size; i++) {
 	    in[i].e0.e0 = {0., 0.};
@@ -131,7 +94,7 @@ void SpinorTester::fill_with_zero_one(spinor * in, int size)
 	}
 }
 
-void SpinorTester::fill_with_one_zero(spinor * in, int size)
+void fill_with_one_zero(spinor * in, int size)
 {
 	for(int i= 0; i < size; i++) {
 	    in[i].e0.e0 = hmc_complex_one;
@@ -149,7 +112,7 @@ void SpinorTester::fill_with_one_zero(spinor * in, int size)
 	}
 }
 
-void SpinorTester::fill_with_ascending(spinor * in, int size)
+void fill_with_ascending(spinor * in, int size)
 {
 	for(int i = 0; i < size; i++) {
 	    in[i].e0.e0 = {1., 0.};
@@ -167,7 +130,25 @@ void SpinorTester::fill_with_ascending(spinor * in, int size)
 	}
 }
 
-void SpinorTester::fill_with_one_minusone_for_gamma5_use(spinor * in, int size)
+void fillWithAscendingComplex(spinor * in, int size)
+{
+	for(int i = 0; i < size; i++) {
+	    in[i].e0.e0 = {1., 2.};
+	    in[i].e0.e1 = {3., 4.};
+	    in[i].e0.e2 = {5., 6.};
+	    in[i].e1.e0 = {7., 8.};
+	    in[i].e1.e1 = {9., 10.};
+	    in[i].e1.e2 = {11., 12.};
+	    in[i].e2.e0 = {13., 14.};
+	    in[i].e2.e1 = {15., 16.};
+	    in[i].e2.e2 = {17., 18.};
+	    in[i].e3.e0 = {19., 20.};
+	    in[i].e3.e1 = {21., 22.};
+	    in[i].e3.e2 = {23., 24.};
+	}
+}
+
+void fill_with_one_minusone_for_gamma5_use(spinor * in, int size)
 {
   for(int i = 0; i < size; ++i) {
     in[i].e0.e0 = hmc_complex_one;
@@ -186,7 +167,7 @@ void SpinorTester::fill_with_one_minusone_for_gamma5_use(spinor * in, int size)
   return;
 }
 
-void SpinorTester::fill_with_random(spinor * in, int size, int seed)
+void fill_with_random(spinor * in, int size, int seed)
 {
   prng_init(seed);
   for(int i = 0; i < size; ++i) {
@@ -219,34 +200,28 @@ void SpinorTester::fill_with_random(spinor * in, int size, int seed)
   return;
 }
 
-spinor * SpinorTester::createSpinorfield(size_t numberOfElements, int seed)
+spinor * SpinorTester::createSpinorfield(SpinorFillType fillTypeIn)
 {
   spinor * in;
-  in = new spinor[numberOfElements];
-  useRandom ? fill_with_random(in, numberOfElements, seed) : fill_with_one(in, numberOfElements);
-  BOOST_REQUIRE(in);
-  return in;
-}
-
-spinor * SpinorTester::createSpinorfield(fillType fillTypeIn)
-{
-  spinor * in;
-  in = new spinor[spinorfieldElements];
+  in = new spinor[elements];
   switch (fillTypeIn) {
-	case fillType::zero :
-		fill_with_zero(in, spinorfieldElements);
+	case SpinorFillType::zero :
+		fill_with_zero(in, elements);
 		break;
-	case fillType::one :
-		fill_with_one(in, spinorfieldElements);
+	case SpinorFillType::one :
+		fill_with_one(in, elements);
 		break;
-	case fillType::zeroOne :
-		fill_with_zero_one(in, spinorfieldElements);
+	case SpinorFillType::zeroOne :
+		fill_with_zero_one(in, elements);
 		break;
-	case fillType::oneZero :
-		fill_with_one_zero(in, spinorfieldElements);
+	case SpinorFillType::oneZero :
+		fill_with_one_zero(in, elements);
 		break;
-	case fillType::ascending :
-		fill_with_ascending(in, spinorfieldElements);
+	case SpinorFillType::ascendingReal :
+		fill_with_ascending(in, elements);
+		break;
+	case SpinorFillType::ascendingComplex :
+		fillWithAscendingComplex(in, elements);
 		break;
 	default:
 		logger.fatal() << "do not know fill type!";
@@ -255,11 +230,11 @@ spinor * SpinorTester::createSpinorfield(fillType fillTypeIn)
   return in;
 }
 
-spinor * SpinorTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity()
+spinor * SpinorTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
 {
   spinor * in;
-  in = new spinor[spinorfieldElements];
-  fill_with_one_eo(in, spinorfieldElements, evenOrOdd);
+  in = new spinor[elements];
+  fill_with_one_eo(in, elements, fillEvenSites, hardwareParameters->getNs(), hardwareParameters->getNt());
   return in;
 }
 
@@ -271,119 +246,110 @@ spinor * SpinorTester::createSpinorfieldWithOnesAndMinusOneForGamma5Use(size_t n
   return in;
 }
 
-std::string SpinorTester::getSpecificInputfile(std::string inputfileIn)
+void fill_with_one_eo(spinor * in, const int size, const bool fillEvenSites, const int ns, const int nt)
 {
-  return "spinors/" + inputfileIn;
-}
+	int x, y, z, t;
+	hmc_complex content;
+	int coord[4];
+	bool parityOfSite;
+	int nspace;
+	int global_pos;
 
-void SpinorTester::fill_with_one_eo(spinor * in, int size, bool eo)
-	{
-		int x, y, z, t;
-		hmc_complex content;
-		int coord[4];
-		bool parityOfSite;
-		int nspace;
-		int global_pos;
-		int ns, nt;
-		
-		ns = parameters->get_nspace();
-		nt = parameters->get_ntime();
+	for (x = 0; x < ns; x++) {
+		for (y = 0; y < ns; y++) {
+			for (z = 0; z < ns; z++) {
+				for (t = 0; t < nt; t++) {
+					coord[0] = t;
+					coord[1] = x;
+					coord[2] = y;
+					coord[3] = z;
+					nspace = get_nspace(coord, nt, ns);
+					global_pos = get_global_pos(nspace, t, nt, ns);
+					if (global_pos >= size)
+						break;
 
-		for (x = 0; x < ns; x++) {
-			for (y = 0; y < ns; y++) {
-				for (z = 0; z < ns; z++) {
-					for (t = 0; t < nt; t++) {
-						coord[0] = t;
-						coord[1] = x;
-						coord[2] = y;
-						coord[3] = z;
-						nspace =  get_nspace(coord, *parameters);
-						global_pos = get_global_pos(nspace, t, *parameters);
-						if (global_pos >= size)
-							break;
+					parityOfSite = (x + y + z + t) % 2 == 0;
+					content = (parityOfSite) ?
+						(fillEvenSites ? hmc_complex_one : hmc_complex_zero) :
+						(fillEvenSites ? hmc_complex_zero : hmc_complex_one);
 
-						parityOfSite = (x + y + z + t) % 2 == 0;
-						content = (parityOfSite) ?
-							(eo ? hmc_complex_one : hmc_complex_zero) :
-							(eo ? hmc_complex_zero : hmc_complex_one);
-
-						in[global_pos].e0.e0 = content;
-						in[global_pos].e0.e1 = content;
-						in[global_pos].e0.e2 = content;
-						in[global_pos].e1.e0 = content;
-						in[global_pos].e1.e1 = content;
-						in[global_pos].e1.e2 = content;
-						in[global_pos].e2.e0 = content;
-						in[global_pos].e2.e1 = content;
-						in[global_pos].e2.e2 = content;
-						in[global_pos].e3.e0 = content;
-						in[global_pos].e3.e1 = content;
-						in[global_pos].e3.e2 = content;
-					}
+					in[global_pos].e0.e0 = content;
+					in[global_pos].e0.e1 = content;
+					in[global_pos].e0.e2 = content;
+					in[global_pos].e1.e0 = content;
+					in[global_pos].e1.e1 = content;
+					in[global_pos].e1.e2 = content;
+					in[global_pos].e2.e0 = content;
+					in[global_pos].e2.e1 = content;
+					in[global_pos].e2.e2 = content;
+					in[global_pos].e3.e0 = content;
+					in[global_pos].e3.e1 = content;
+					in[global_pos].e3.e2 = content;
 				}
 			}
 		}
-		return;
 	}
+	return;
+}
 
-	hmc_float SpinorTester::count_sf(spinor * in, int size)
-	{
-		hmc_float sum = 0.;
-		for (int i = 0; i < size; i++) {
-			sum +=
-				in[i].e0.e0.re + in[i].e0.e0.im
-				+ in[i].e0.e1.re + in[i].e0.e1.im
-				+ in[i].e0.e2.re + in[i].e0.e2.im
-				+ in[i].e1.e0.re + in[i].e1.e0.im
-				+ in[i].e1.e1.re + in[i].e1.e1.im
-				+ in[i].e1.e2.re + in[i].e1.e2.im
-				+ in[i].e2.e0.re + in[i].e2.e0.im
-				+ in[i].e2.e1.re + in[i].e2.e1.im
-				+ in[i].e2.e2.re + in[i].e2.e2.im
-				+ in[i].e3.e0.re + in[i].e3.e0.im
-				+ in[i].e3.e1.re + in[i].e3.e1.im
-				+ in[i].e3.e2.re + in[i].e3.e2.im;
-		}
-		return sum;
+hmc_float SpinorTester::count_sf(spinor * in, int size)
+{
+	hmc_float sum = 0.;
+	for (int i = 0; i < size; i++) {
+		sum +=
+			in[i].e0.e0.re + in[i].e0.e0.im
+			+ in[i].e0.e1.re + in[i].e0.e1.im
+			+ in[i].e0.e2.re + in[i].e0.e2.im
+			+ in[i].e1.e0.re + in[i].e1.e0.im
+			+ in[i].e1.e1.re + in[i].e1.e1.im
+			+ in[i].e1.e2.re + in[i].e1.e2.im
+			+ in[i].e2.e0.re + in[i].e2.e0.im
+			+ in[i].e2.e1.re + in[i].e2.e1.im
+			+ in[i].e2.e2.re + in[i].e2.e2.im
+			+ in[i].e3.e0.re + in[i].e3.e0.im
+			+ in[i].e3.e1.re + in[i].e3.e1.im
+			+ in[i].e3.e2.re + in[i].e3.e2.im;
 	}
+	return sum;
+}
 
-	hmc_float SpinorTester::calc_var(hmc_float in, hmc_float mean)
-	{
-		return (in - mean) * (in - mean);
-	}
+hmc_float calc_var(hmc_float in, hmc_float mean)
+{
+	return (in - mean) * (in - mean);
+}
 
-	hmc_float SpinorTester::calc_var_sf(spinor * in, int size, hmc_float sum)
-	{
-		hmc_float var = 0.;
-		for(int k = 0; k < size; k++) {
-			var +=
-				calc_var( in[k].e0.e0.re , sum)
-				+ calc_var( in[k].e0.e0.im , sum)
-				+ calc_var( in[k].e0.e1.re , sum)
-				+ calc_var( in[k].e0.e1.im , sum)
-				+ calc_var( in[k].e0.e2.re , sum)
-				+ calc_var( in[k].e0.e2.im , sum)
-				+ calc_var( in[k].e1.e0.re , sum)
-				+ calc_var( in[k].e1.e0.im , sum)
-				+ calc_var( in[k].e1.e1.re , sum)
-				+ calc_var( in[k].e1.e1.im , sum)
-				+ calc_var( in[k].e1.e2.re , sum)
-				+ calc_var( in[k].e1.e2.im , sum)
-				+ calc_var( in[k].e2.e0.re , sum)
-				+ calc_var( in[k].e2.e0.im , sum)
-				+ calc_var( in[k].e2.e1.re , sum)
-				+ calc_var( in[k].e2.e1.im , sum)
-				+ calc_var( in[k].e2.e2.re , sum)
-				+ calc_var( in[k].e2.e2.im , sum)
-				+ calc_var( in[k].e3.e0.re , sum)
-				+ calc_var( in[k].e3.e0.im , sum)
-				+ calc_var( in[k].e3.e1.re , sum)
-				+ calc_var( in[k].e3.e1.im , sum)
-				+ calc_var( in[k].e3.e2.re , sum)
-				+ calc_var( in[k].e3.e2.im , sum);
-		}
-		return var;
+hmc_float SpinorTester::calc_var_sf(spinor * in, int size, hmc_float sum)
+{
+	hmc_float var = 0.;
+	for(int k = 0; k < size; k++) {
+		var +=
+			calc_var( in[k].e0.e0.re , sum)
+			+ calc_var( in[k].e0.e0.im , sum)
+			+ calc_var( in[k].e0.e1.re , sum)
+			+ calc_var( in[k].e0.e1.im , sum)
+			+ calc_var( in[k].e0.e2.re , sum)
+			+ calc_var( in[k].e0.e2.im , sum)
+			+ calc_var( in[k].e1.e0.re , sum)
+			+ calc_var( in[k].e1.e0.im , sum)
+			+ calc_var( in[k].e1.e1.re , sum)
+			+ calc_var( in[k].e1.e1.im , sum)
+			+ calc_var( in[k].e1.e2.re , sum)
+			+ calc_var( in[k].e1.e2.im , sum)
+			+ calc_var( in[k].e2.e0.re , sum)
+			+ calc_var( in[k].e2.e0.im , sum)
+			+ calc_var( in[k].e2.e1.re , sum)
+			+ calc_var( in[k].e2.e1.im , sum)
+			+ calc_var( in[k].e2.e2.re , sum)
+			+ calc_var( in[k].e2.e2.im , sum)
+			+ calc_var( in[k].e3.e0.re , sum)
+			+ calc_var( in[k].e3.e0.im , sum)
+			+ calc_var( in[k].e3.e1.re , sum)
+			+ calc_var( in[k].e3.e1.im , sum)
+			+ calc_var( in[k].e3.e2.re , sum)
+			+ calc_var( in[k].e3.e2.im , sum);
 	}
+	return var;
+}
 
 void SpinorTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in)
 {
@@ -456,23 +422,24 @@ void SpinorTester::fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor 
 	return;
 }
 
+//@todo: change this to take some fillType instead of bool "useRandom"
 void SpinorTester::fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed)
 {
 	spinor * sf_in1;
 	spinor * sf_in2;
-	sf_in1 = new spinor[spinorfieldEvenOddElements];
-	sf_in2 = new spinor[spinorfieldEvenOddElements];
+	sf_in1 = new spinor[elements];
+	sf_in2 = new spinor[elements];
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 	
-	if( useRandom )
+	if (false ) // original: if( useRandom )
 	{ 
-		fillTwoSpinorfieldsWithRandomNumbers(sf_in1, sf_in2, spinorfieldEvenOddElements, seed);
+		fillTwoSpinorfieldsWithRandomNumbers(sf_in1, sf_in2, elements, seed);
 	}
 	else
 	{
-		fill_with_one(sf_in1, spinorfieldEvenOddElements);
-		fill_with_one(sf_in2, spinorfieldEvenOddElements);
+		fill_with_one(sf_in1, elements);
+		fill_with_one(sf_in2, elements);
 	}
 	
 	in1->load(sf_in1);
@@ -486,12 +453,12 @@ void SpinorTester::fillTwoSpinorBuffersDependingOnParity(const hardware::buffers
 {
 	spinor * sf_in1;
 	spinor * sf_in2;
-	sf_in1 = new spinor[spinorfieldEvenOddElements];
-	sf_in2 = new spinor[spinorfieldEvenOddElements];
+	sf_in1 = new spinor[elements];
+	sf_in2 = new spinor[elements];
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 	
-	fillTwoSpinorfieldsDependingOnParity(sf_in1, sf_in2, spinorfieldEvenOddElements);
+	fillTwoSpinorfieldsDependingOnParity(sf_in1, sf_in2, elements);
 	
 	in1->load(sf_in1);
 	in2->load(sf_in2);
@@ -527,8 +494,8 @@ void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * i
 		int global_pos;
 		int ns, nt;
 		
-		ns = parameters->get_nspace();
-		nt = parameters->get_ntime();
+		ns = hardwareParameters->getNs();
+		nt = hardwareParameters->getNt();
 
 		for (x = 0; x < ns; x++) {
 			for (y = 0; y < ns; y++) {
@@ -538,8 +505,8 @@ void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * i
 						coord[1] = x;
 						coord[2] = y;
 						coord[3] = z;
-						nspace =  get_nspace(coord, *parameters);
-						global_pos = get_global_pos(nspace, t, *parameters);
+						nspace = get_nspace(coord, nt, ns);
+						global_pos = get_global_pos(nspace, t, nt, ns);
 						if (global_pos >= size)
 							break;
 
@@ -561,3 +528,25 @@ void SpinorTester::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * i
 		}
 		return;
 	}
+
+
+int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateLatticeVolume(nsIn, ntIn);
+}
+
+int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtendsIn.ns, latticeExtendsIn.nt);
+}
+
+int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+{
+	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
+}
+
+int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
+{
+	return 	calculateSpinorfieldSize(latticeExtendsIn.ns, latticeExtendsIn.nt) / 2;
+}
+

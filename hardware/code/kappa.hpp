@@ -75,12 +75,7 @@ protected:
 	 * 	It may be made private again in the future!
 	 */
 public:
-	/**
-	 * Constructor, only to be used by hardware::device
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Kappa(const meta::Inputparameters& params, hardware::Device * device);
+	Kappa(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
 private:
 	/**

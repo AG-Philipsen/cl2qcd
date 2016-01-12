@@ -29,15 +29,18 @@
 #include "../system.hpp"
 #include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
+	for(Device * device : system.get_devices())
+	{
 		Spinor dummy(system.getHardwareParameters()->getLatticeVolume(), device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
@@ -50,9 +53,12 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
-for(Device * device : system.get_devices()) {
+	for(Device * device : system.get_devices())
+	{
 		spinor* buf = new spinor[elems];
 		spinor* buf2 = new spinor[elems];
 		Spinor dummy(elems, device);
@@ -71,9 +77,12 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
-for(Device * device : system.get_devices()) {
+	for(Device * device : system.get_devices())
+	{
 		spinor* buf = new spinor[elems];
 		spinor* buf2 = new spinor[elems];
 		Spinor dummy(elems, device);

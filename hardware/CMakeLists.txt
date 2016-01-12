@@ -31,20 +31,23 @@ add_library(hardware
 	opencl_compiler.cpp
 )
 
+add_library(hardwareTestUtilities
+	hardwareTestUtilities.cpp
+)
+
+
 add_modules(hardware
 	buffers
 	code
 	transfer
 )
 
-target_link_libraries(hardware 	${OPENCL_LIBRARIES} exceptions crypto)
+target_link_libraries(hardware 	${OPENCL_LIBRARIES} exceptions crypto meta)
 
 #
 # Definition of tests
 #
 
-add_unit_test_withLibraries(hardware::Parameters hardwareParameters_test  meta)
-add_unit_test_withLibraries(hardware::OpenClCode_test openClCode_test meta hardware)
 add_unit_test_withLibraries(hardware::System system_test hardware crypto)
 add_unit_test_withLibraries(hardware::Device device_test hardware crypto)
 add_unit_test_withLibraries(hardware::ProfilingData profiling_data_test hardware crypto)

@@ -113,17 +113,17 @@ public:
 	/**
 	 * Enqueue a kernel on the device using the default number of global threads
 	 */
-	void enqueueKernel(const cl_kernel kernel);
+	void enqueueKernel(const cl_kernel kernel) const;
 
 	/**
 	 * Enqueue a kernel on the device using the default number of local threads
 	 */
-	void enqueueKernel(const cl_kernel kernel, size_t globalThreads);
+	void enqueueKernel(const cl_kernel kernel, size_t globalThreads) const;
 
 	/**
 	 * Enqueue a kernel on the device using the default given threads specifications
 	 */
-	void enqueue_kernel(const cl_kernel kernel, size_t globalThreads, size_t localThreads);
+	void enqueue_kernel(const cl_kernel kernel, size_t globalThreads, size_t localThreads) const;
 
 	void enqueueMarker(cl_event *) const;
 
@@ -155,7 +155,7 @@ public:
 	/**
 	 * Get the profiling data for all executions of the given kernel on this device.
 	 */
-	ProfilingData getProfilingData(const cl_kernel& desiredKernel) noexcept;
+	ProfilingData getProfilingData(const cl_kernel& desiredKernel) const noexcept;
 
 	/**
 	 * @todo: Rename all these getter fcts.
@@ -164,24 +164,24 @@ public:
 	/**
 	 * Get access to the specific kernels on this device.
 	 */
-	const hardware::code::Gaugefield * getGaugefieldCode();
-	const hardware::code::Prng * getPrngCode();
-	const hardware::code::Real * getRealCode();
-	const hardware::code::Complex * getComplexCode();
-	const hardware::code::Spinors * getSpinorCode();
-	const hardware::code::Spinors_staggered * getSpinorStaggeredCode();
-	const hardware::code::Fermions * getFermionCode();
-	const hardware::code::Fermions_staggered * getFermionStaggeredCode();
-	const hardware::code::Gaugemomentum * getGaugemomentumCode();
-	const hardware::code::Molecular_Dynamics * getMolecularDynamicsCode();
-	const hardware::code::Correlator * getCorrelatorCode();
-	const hardware::code::Correlator_staggered * getCorrelatorStaggeredCode();
-	const hardware::code::Heatbath * getHeatbathCode();
-	const hardware::code::Kappa * getKappaCode();
+	const hardware::code::Gaugefield * getGaugefieldCode() const;
+	const hardware::code::Prng * getPrngCode() const;
+	const hardware::code::Real * getRealCode() const;
+	const hardware::code::Complex * getComplexCode() const;
+	const hardware::code::Spinors * getSpinorCode() const;
+	const hardware::code::Spinors_staggered * getSpinorStaggeredCode() const;
+	const hardware::code::Fermions * getFermionCode() const;
+	const hardware::code::Fermions_staggered * getFermionStaggeredCode() const;
+	const hardware::code::Gaugemomentum * getGaugemomentumCode() const;
+	const hardware::code::Molecular_Dynamics * getMolecularDynamicsCode() const;
+	const hardware::code::Correlator * getCorrelatorCode() const;
+	const hardware::code::Correlator_staggered * getCorrelatorStaggeredCode() const;
+	const hardware::code::Heatbath * getHeatbathCode() const;
+	const hardware::code::Kappa * getKappaCode() const;
 	/**
-	 * TODO technicall this should only be used by stuff in the buffers package
+	 * TODO technically this should only be used by stuff in the buffers package
 	 */
-	const hardware::code::Buffer * getBufferCode();
+	const hardware::code::Buffer * getBufferCode() const;
 
 	/**
 	 *  TODO work over fct. names
@@ -203,9 +203,9 @@ public:
 	size_4 get_mem_lattice_size() const;
 
 private:
-	const cl_context context;
-	const hardware::HardwareParametersInterface * hardwareParameters;
 	const hardware::OpenClCode * openClCodeBuilder;
+	const hardware::HardwareParametersInterface * hardwareParameters;
+	const cl_context context;
 	cl_command_queue command_queue;
 
 	/**
@@ -214,27 +214,27 @@ private:
 	operator cl_command_queue() const noexcept;
 	cl_command_queue get_queue() const noexcept;
 
-	std::map<cl_kernel, ProfilingData> profiling_data;
+	mutable std::map<cl_kernel, ProfilingData> profiling_data;
 
 	/**
 	 * Pointers to specific code objects.
 	 * Initialized on demand.
 	 */
-	const hardware::code::Gaugefield * gaugefield_code;
-	const hardware::code::Prng * prng_code;
-	const hardware::code::Real * real_code;
-	const hardware::code::Complex * complex_code;
-	const hardware::code::Spinors * spinor_code;
-	const hardware::code::Spinors_staggered * spinor_staggered_code;
-	const hardware::code::Fermions * fermion_code;
-	const hardware::code::Fermions_staggered * fermion_staggered_code;
-	const hardware::code::Gaugemomentum * gaugemomentum_code;
-	const hardware::code::Molecular_Dynamics * molecular_dynamics_code;
-	const hardware::code::Correlator * correlator_code;
-	const hardware::code::Correlator_staggered * correlator_staggered_code;
-	const hardware::code::Heatbath * heatbath_code;
-	const hardware::code::Kappa * kappa_code;
-	const hardware::code::Buffer * buffer_code;
+	mutable hardware::code::Gaugefield * gaugefield_code;
+	mutable hardware::code::Prng * prng_code;
+	mutable hardware::code::Real * real_code;
+	mutable hardware::code::Complex * complex_code;
+	mutable hardware::code::Spinors * spinor_code;
+	mutable hardware::code::Spinors_staggered * spinor_staggered_code;
+	mutable hardware::code::Fermions * fermion_code;
+	mutable hardware::code::Fermions_staggered * fermion_staggered_code;
+	mutable hardware::code::Gaugemomentum * gaugemomentum_code;
+	mutable hardware::code::Molecular_Dynamics * molecular_dynamics_code;
+	mutable hardware::code::Correlator * correlator_code;
+	mutable hardware::code::Correlator_staggered * correlator_staggered_code;
+	mutable hardware::code::Heatbath * heatbath_code;
+	mutable hardware::code::Kappa * kappa_code;
+	mutable hardware::code::Buffer * buffer_code;
 
 	/**
 	 *  TODO work over member names
@@ -255,12 +255,12 @@ private:
 	const size_4 mem_lattice_size;
 
 	// memory usage tracing
-	size_t allocated_bytes;
-	size_t max_allocated_bytes;
-	size_t allocated_hostptr_bytes;
+	mutable size_t allocated_bytes;
+	mutable size_t max_allocated_bytes;
+	mutable size_t allocated_hostptr_bytes;
 
-	void markMemReleased(bool host, size_t size);
-	void markMemAllocated(bool host, size_t size);
+	void markMemReleased(bool host, size_t size) const;
+	void markMemAllocated(bool host, size_t size) const;
 };
 
 	/**

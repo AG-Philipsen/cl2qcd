@@ -27,7 +27,8 @@
 
 #include "system.hpp"
 #include "device.hpp"
-#include "hardware_test_util.hpp"
+#include "hardwareTestUtilities.hpp"
+#include "interfaceMockups.hpp"
 
 void querrySomeInformationsFromDevice( const hardware::Device * device )
 {
@@ -39,8 +40,9 @@ void querrySomeInformationsFromDevice( const hardware::Device * device )
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-	hardware::System system(params);
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	atLeastOneDeviceMustExistForSanityOfSystem( &system );
 
 	for(const hardware::Device * device : system.get_devices())
@@ -51,8 +53,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 BOOST_AUTO_TEST_CASE(compile)
 {
-	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-	hardware::System system(params);
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	atLeastOneDeviceMustExistForSanityOfSystem( &system );
 
 	for(const hardware::Device * device : system.get_devices())

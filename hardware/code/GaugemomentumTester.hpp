@@ -23,18 +23,29 @@
 #include "kernelTester.hpp"
 #include "gaugemomentum.hpp"
 #include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
+#include "prng.hpp"
+#include "SpinorTester.hpp"
 
+struct GaugemomentumTestParameters: public TestParameters
+{
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn) :
+		TestParameters(latticeExtendsIn), fillType(SpinorFillType::one)
+	{};
+
+	const SpinorFillType fillType;
+};
+
+//@todo: work over the members and remove a lot!
+//@todo: Use GaugemomentumFillType in the member fcts.!
 class GaugemomentumTester : public KernelTester
 {
 public:
-  GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues = 1, int typeOfComparision = 1);
+  GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP);
   virtual ~GaugemomentumTester();
 
 protected:
 	enum Filltype {one, zero};
-	
-	std::string getSpecificInputfile(std::string inputfileIn);
+
 	double * createGaugemomentum(int seed = 123456);
 	double * createGaugemomentumBasedOnFilltype(Filltype filltype = one);
 	void fill_with_one(double * sf_in);

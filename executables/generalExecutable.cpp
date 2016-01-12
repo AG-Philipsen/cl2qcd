@@ -20,6 +20,8 @@
 
 #include "generalExecutable.h"
 #include "../physics/parametersPrng.hpp"
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
 
 void generalExecutable::printParametersToScreenAndFile()
 {
@@ -58,19 +60,21 @@ void generalExecutable::printProfilingDataToFile()
 generalExecutable::generalExecutable(int argc, const char* argv[], std::string parameterSet)
         : parameters(argc, argv, parameterSet), prngParameters(nullptr)
 {
-    totalRuntimeOfExecutable.reset();
-    initializationTimer.reset();
-    ownName = argv[0];
-    filenameForLogfile = meta::createLogfileName(ownName);
-    filenameForProfilingData = meta::create_profiling_data_filename(parameters, ownName);
-    switchLogLevel(parameters.get_log_level());
-    printParametersToScreenAndFile();
-    //@todo: these new here are not deleted apparently!!
-    system = new hardware::System(parameters);
-    prngParameters = new physics::ParametersPrng_fromMetaInputparameters(&parameters);
-    prng = new physics::PRNG(*system, prngParameters);
-    interfacesHandler = std::unique_ptr<physics::InterfacesHandler>(new physics::InterfacesHandlerImplementation{parameters});
-    initializationTimer.add();
+	totalRuntimeOfExecutable.reset();
+	initializationTimer.reset();
+	ownName = argv[0];
+	filenameForLogfile = meta::createLogfileName(ownName);
+	filenameForProfilingData = meta::create_profiling_data_filename(parameters, ownName);
+	switchLogLevel(parameters.get_log_level());
+	printParametersToScreenAndFile();
+	//@todo: these new here are not deleted apparently!!
+	hardware::HardwareParametersImplementation hP(&parameters);
+	hardware::code::OpenClKernelParametersImplementation kP(parameters);
+	system = new hardware::System(hP, kP);
+	prngParameters = new physics::ParametersPrng_fromMetaInputparameters(&parameters);
+	prng = new physics::PRNG(*system, prngParameters);
+	interfacesHandler = std::unique_ptr<physics::InterfacesHandler>(new physics::InterfacesHandlerImplementation{parameters});
+	initializationTimer.add();
 }
 generalExecutable::~generalExecutable()
 {

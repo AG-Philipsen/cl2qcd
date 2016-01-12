@@ -18,36 +18,61 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KERNELTESTER_H_
-#define KERNELTESTER_H_
+#pragma once
 
 #include <vector>
-
 #include <boost/test/unit_test.hpp>
-
 #include "../../host_functionality/logger.hpp"
 #include "testUtilities.hpp"
 #include "../system.hpp"
 #include "../device.hpp"
+#include "../interfaceMockups.hpp"
+#include "latticeExtents.hpp"
 
-class KernelTester {
-public:
-	KernelTester(std::string kernelNameIn, std::string inputfileIn, int numberOfValuesIn = 1, int typeOfComparison = 1);
-	KernelTester(std::string kernelNameIn, std::vector<std::string> parameterStrings, int numberOfValuesIn = 1, int typeOfComparison = 1, std::vector<double> result = std::vector<double>() );
-	KernelTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	virtual ~KernelTester();
-	void setReferenceValuesToZero();
-	
-protected:
-	double testPrecision;
-	int typeOfComparison;
-	std::vector<double> kernelResult;
-	std::vector<double> referenceValue;
-	bool allocatedObjects;
-	
-	meta::Inputparameters * parameters;
-	const hardware::System * system;
-	hardware::Device * device;
+enum ComparisonType{difference=1, smallerThan};
+
+const double nonTrivialParameter = 0.123456;
+
+typedef std::vector<double> ReferenceValues;
+ReferenceValues defaultReferenceValues();
+
+struct TestParameters
+{
+	int ns;
+	int nt;
+	LatticeExtents latticeExtents;
+	ComparisonType typeOfComparison;
+	const double testPrecision = 10e-8;
+
+	TestParameters(const LatticeExtents latticeExtentsIn):
+		ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference) {}
+	TestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn):
+		ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn) {}
+	TestParameters() = delete;
 };
 
-#endif /* KERNELTESTER_H_ */
+struct ParameterCollection
+{
+	ParameterCollection(const hardware::HardwareParametersInterface & hardwareParametersIn, const hardware::code::OpenClKernelParametersInterface & kernelParametersIn):
+		hardwareParameters(hardwareParametersIn), kernelParameters(kernelParametersIn) {};
+	const hardware::HardwareParametersInterface & hardwareParameters;
+	const hardware::code::OpenClKernelParametersInterface & kernelParameters;
+};
+
+struct KernelTester
+{
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
+			const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
+	virtual ~KernelTester();
+	
+protected:
+	const TestParameters testParameters;
+	std::vector<double> kernelResult;
+	ReferenceValues referenceValues;
+	
+	const hardware::System * system;
+	hardware::Device * device;
+	const hardware::HardwareParametersInterface * hardwareParameters;
+	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
+};
+

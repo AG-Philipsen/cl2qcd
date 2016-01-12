@@ -60,7 +60,7 @@ hardware::transfer::DirectGMA::DirectGMA(hardware::Device * const from, hardware
 		throw DGMAUnsupported();
 	}
 	cl_int err;
-	transfer_queue = clCreateCommandQueue(system, from->get_id(), 0, &err);
+	transfer_queue = clCreateCommandQueue(system.getContext(), from->get_id(), 0, &err);
 	if(err) {
 		logger.error() << "Failed to create command queue for asynchroneous transfers. OpenCL Error: " << err;
 		throw Opencl_Error(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
@@ -166,7 +166,7 @@ hardware::transfer::DGMAGhostBuffer::DGMAGhostBuffer(cl_command_queue device, ha
 	}
 
 	// create the shadow buffer on the source device that is backed by the bus_addressable_buffer's memory
-	buffer = clCreateBuffer(system, CL_MEM_EXTERNAL_PHYSICAL_AMD, size, &address, &err);
+	buffer = clCreateBuffer(system.getContext(), CL_MEM_EXTERNAL_PHYSICAL_AMD, size, &address, &err);
 	if(err) {
 		logger.error() << "Failed to create ghost buffer";
 		throw Opencl_Error(err, "clCreateBuffer", __FILE__, __LINE__);
