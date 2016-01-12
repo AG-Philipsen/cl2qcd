@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(max)
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
-	hmc_float max = find_max_eigenvalue(matrix, gf, system, interfacesHandler, 1.e-5, params.get_mass());
+	hmc_float max = find_max_eigenvalue(matrix, gf, system, interfacesHandler, 1.e-5, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	
 	logger.info() << "ref_max_eig = " << std::setprecision(16) << ref_max_eig;
 	logger.info() << "    max_eig = " << std::setprecision(16) << max;
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(min)
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
-	hmc_float min = find_min_eigenvalue(matrix, gf, system, interfacesHandler, 1.e-3, params.get_mass(), false);
+	hmc_float min = find_min_eigenvalue(matrix, gf, system, interfacesHandler, 1.e-3, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	
 	logger.info() << "mass squared = " << std::setprecision(16) << params.get_mass()*params.get_mass();
 	logger.info() << " ref_min_eig = " << std::setprecision(16) << ref_min_eig;
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
 	hmc_float max,min;
-	find_maxmin_eigenvalue(max, min, matrix, gf, system, interfacesHandler, 1.e-3, params.get_mass(), false);
+	find_maxmin_eigenvalue(max, min, matrix, gf, system, interfacesHandler, 1.e-3, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	
 	logger.info() << "mass squared = " << std::setprecision(16) << params.get_mass()*params.get_mass();
 	logger.info() << " ref_max_eig = " << std::setprecision(16) << ref_max_eig;

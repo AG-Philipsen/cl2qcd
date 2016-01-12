@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 11);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 12);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2523.6197747176057, 0.01);
 	}
 
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 13);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 14);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2588.2852881545778, 0.01);
 	}
 }
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		pseudo_randomize<Spinorfield, spinor>(&src, 15);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1122.194230730885, 0.01);
 	}
 
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		pseudo_randomize<Spinorfield, spinor>(&src, 16);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1114.3019247079062, 0.01);
 	}
 }
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 21);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 22);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2539.2078579177487, 0.01);
 	}
 
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 24);
 		gm.zero();
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2658.5475465525888, 0.01);
 	}
 }
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		pseudo_randomize<Spinorfield, spinor>(&src, 25);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1105.9891302664669, 0.01);
 	}
 
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		pseudo_randomize<Spinorfield, spinor>(&src, 26);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1081.4370785519473, 0.01);
 	}
 }
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 33);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 16956.313363328729, 0.01);
 	}
 }
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion_eo)
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1324.8991304359643, 0.01);
 	}
 }
@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum)
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 37);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum(&gm, .5, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_gaugemomentum(&gm, .5, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 22735.531268100596, 0.01);
 	}
 }
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_eo)
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum(&gm, .6, gf, sf1, system, interfacesHandler);
+		physics::algorithms::md_update_gaugemomentum(&gm, .6, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 20459.049258021565, 0.01);
 	}
 }

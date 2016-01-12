@@ -56,4 +56,5 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/prngstate_brokenTag  prngstate_broke
 add_unit_test_withLibraries(physics:ParametersPrng parametersPrng_test meta )
 add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware)
 add_unit_test_withLibraries(physics::<sources> sources_test physics)
-add_unit_test_withLibraries(physics::interfacesHandler interfacesHandler_test meta)
+add_unit_test_withLibraries(physics::interfacesHandler interfacesHandler_test meta exceptions)
+add_unit_test_withLibraries(physics::additionalParameters additionalParameters_test meta exceptions)

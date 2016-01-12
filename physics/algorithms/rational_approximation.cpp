@@ -30,7 +30,7 @@
 //Rational_Coefficients class
 
 physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d)
-        : _d(d)
+        : _d(d), _a0()
 {
     //This constructor can appear unnecessary. In fact, reserving memory we avoid
     //reallocations pushing back elements in the vectors, since in this way we are
@@ -106,9 +106,9 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
     error = remez.generateApprox(d, d, y, z);
     // Find the partial fraction expansion of the approximation either
     // to the function x^{y/z} or to the function x^{-y/z}
-    hmc_float *a_tmp = new hmc_float[d];
-    hmc_float *b_tmp = new hmc_float[d];
-    hmc_float *a0_tmp = new hmc_float;
+    double *a_tmp = new hmc_float[d];
+    double *b_tmp = new hmc_float[d];
+    double *a0_tmp = new hmc_float;
     if(inv == false)
         remez.getPFE(a_tmp, b_tmp, a0_tmp);
     else
@@ -126,7 +126,7 @@ physics::algorithms::Rational_Approximation::Rational_Approximation(int d, int y
 }
 
 physics::algorithms::Rational_Approximation::Rational_Approximation(std::string filename)
-        : Rational_Coefficients(0)
+        : Rational_Coefficients(0), inv(), y(), z(), precision(), low(), high(), error()
 {
     std::fstream file;
     file.open(filename.c_str());
@@ -195,7 +195,7 @@ hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
 physics::algorithms::Rational_Coefficients
 physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
                                                                   const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                                                                  hmc_float prec, hmc_float mass, bool conservative) const
+                                                                  hmc_float prec, const physics::AdditionalParameters& additionalParameters) const
 {
     if(high != 1)
         throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
@@ -208,9 +208,7 @@ physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics:
 
     hmc_float max;
     hmc_float min;
-    find_maxmin_eigenvalue(max, min, A, gf, system, interfacesHandler, prec, mass, conservative);
-    if(conservative)
-        max *= 1.05;
+    find_maxmin_eigenvalue(max, min, A, gf, system, interfacesHandler, prec, additionalParameters);
 
     if(low > min / max)
         throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");

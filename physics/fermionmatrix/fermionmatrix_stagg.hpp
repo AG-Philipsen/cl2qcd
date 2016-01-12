@@ -23,10 +23,10 @@
 #define _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_STAGG_
 
 #include "../../hardware/code/fermions_staggered.hpp"
-
+#include "../../hardware/device.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/gaugefield.hpp"
-#include "../../hardware/device.hpp"
+#include "../additionalParameters.hpp"
 #include "fermionmatrixInterfaces.hpp"
 
 /**
@@ -88,7 +88,7 @@ public:
 	 * Invoke the matrix function.
 	 */
 	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                         const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass = NULL) const = 0;
+	                         const physics::lattices::Staggeredfield_eo& in, const physics::AdditionalParameters* additionalParameters = NULL) const = 0;
 	virtual ~Fermionmatrix_stagg_eo(){}
 
 protected:
@@ -105,7 +105,8 @@ class D_KS_eo final : public Fermionmatrix_stagg_eo {
 public:
 	D_KS_eo(const hardware::System& system,  const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface, bool evenodd)
         : Fermionmatrix_stagg_eo(system, fermionmatrixStaggeredParametersInterface, false, false), evenodd(evenodd) {};
-	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass = NULL) const override;
+	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+	                 const physics::lattices::Staggeredfield_eo& in, const physics::AdditionalParameters* additionalParameters = NULL) const override;
 	cl_ulong get_flops() const override;
 private:
 	//This variable is to switch between the Deo and Doe:
@@ -119,7 +120,8 @@ class MdagM_eo final : public Fermionmatrix_stagg_eo {
 public:
 	MdagM_eo(const hardware::System& system, const physics::FermionStaggeredEoParametersInterface& fermionStaggeredEoParametersInterface, bool ul=EVEN)
         : Fermionmatrix_stagg_eo(system, fermionStaggeredEoParametersInterface, true, true), tmp(system, fermionStaggeredEoParametersInterface), upper_left(ul) {};
-	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in, const hmc_float* mass = NULL) const override;
+	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+	                 const physics::lattices::Staggeredfield_eo& in, const physics::AdditionalParameters* additionalParameters = NULL) const override;
 	hmc_float getThresholdForMinimumEigenvalue(hmc_float mass) const override;
 	cl_ulong get_flops() const override;
 	bool get_upper_left() const;

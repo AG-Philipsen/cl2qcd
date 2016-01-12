@@ -76,6 +76,7 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 	 */
 
 	const physics::algorithms::InversionParemetersInterface & parametersInterface = interfacesHandler.getInversionParemetersInterface();
+	const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Spinorfield>();
 
 	int converged;
 
@@ -91,14 +92,14 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			copyData(&tmp, source);
 			tmp.gamma5();
 			QplusQminus f_neo(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus>());
-			converged = cg(result, f_neo, gf, tmp, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappa(), parametersInterface.getMubar());
+			converged = cg(result, f_neo, gf, tmp, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
 			copyData(&tmp, result);
 			//now, calc Qminus result_buf to obtain x = A^⁻1 b
 			Qminus qminus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
-			qminus(result, gf, tmp, parametersInterface.getKappa(), parametersInterface.getMubar());
+			qminus(result, gf, tmp, additionalParameters);
 		} else {
 			M f_neo(system, interfacesHandler.getInterface<physics::fermionmatrix::M>());
-			converged = bicgstab(result, f_neo, gf, *source, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappa(), parametersInterface.getMubar());
+			converged = bicgstab(result, f_neo, gf, *source, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
 		}
 	} else {
 		/**
@@ -138,11 +139,11 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 */
 		if(parametersInterface.getFermact() == common::action::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			dslash(&tmp1, gf, source_odd, EVEN, parametersInterface.getKappa());
+			dslash(&tmp1, gf, source_odd, EVEN, additionalParameters.getKappa());
 			saxpy(&source_even, one, source_even, tmp1);
 		} else if(parametersInterface.getFermact() == common::action::twistedmass) {
-			M_tm_inverse_sitediagonal(&tmp1, source_odd, parametersInterface.getMubar());
-			dslash(&tmp2, gf, tmp1, EVEN, parametersInterface.getKappa());
+			M_tm_inverse_sitediagonal(&tmp1, source_odd, additionalParameters.getMubar());
+			dslash(&tmp2, gf, tmp1, EVEN, additionalParameters.getKappa());
 			saxpy(&source_even, one, source_even, tmp2);
 		}
 
@@ -156,16 +157,16 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 			//the source must now be gamma5 b, to obtain the desired solution in the end
 			source_even.gamma5();
 			QplusQminus_eo f_eo(system, interfacesHandler.getInterface<physics::fermionmatrix::QplusQminus_eo>());
-			converged = cg(&result_eo, f_eo, gf, source_even, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappa(), parametersInterface.getMubar());
+			converged = cg(&result_eo, f_eo, gf, source_even, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
 			//now, calc Qminus result_buf_eo to obtain x = A^⁻1 b
 			//therefore, use source as an intermediate buffer
 			Qminus_eo qminus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qminus_eo>());
-			qminus(&source_even, gf, result_eo, parametersInterface.getKappa(), parametersInterface.getMubar());
+			qminus(&source_even, gf, result_eo, additionalParameters);
 			//save the result to result_buf
 			copyData(&result_eo, source_even);
 		} else {
 			Aee f_eo(system, interfacesHandler.getInterface<physics::fermionmatrix::Aee>());
-			converged = bicgstab(&result_eo, f_eo, gf, source_even, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappa(), parametersInterface.getMubar());
+			converged = bicgstab(&result_eo, f_eo, gf, source_even, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
 		}
 
 		//odd solution
@@ -177,13 +178,13 @@ static void invert_M_nf2_upperflavour(const physics::lattices::Spinorfield* resu
 		 */
 		if(parametersInterface.getFermact() == common::action::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			dslash(&tmp1, gf, result_eo, ODD, parametersInterface.getKappa());
+			dslash(&tmp1, gf, result_eo, ODD, additionalParameters.getKappa());
 			saxpy(&tmp1, mone, tmp1, source_odd);
 			sax(&tmp1, mone, tmp1);
 		} else if(parametersInterface.getFermact() == common::action::twistedmass) {
-			dslash(&tmp2, gf, result_eo, ODD, parametersInterface.getKappa());
-			M_tm_inverse_sitediagonal(&tmp1, tmp2, parametersInterface.getMubar());
-			M_tm_inverse_sitediagonal(&tmp2, source_odd, parametersInterface.getMubar());
+			dslash(&tmp2, gf, result_eo, ODD, additionalParameters.getKappa());
+			M_tm_inverse_sitediagonal(&tmp1, tmp2, additionalParameters.getMubar());
+			M_tm_inverse_sitediagonal(&tmp2, source_odd, additionalParameters.getMubar());
 			saxpy(&tmp1, mone, tmp1, tmp2);
 			sax(&tmp1, mone, tmp1);
 		}

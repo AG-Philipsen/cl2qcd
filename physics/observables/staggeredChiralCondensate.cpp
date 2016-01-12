@@ -79,8 +79,9 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	using namespace physics::algorithms::solvers;
 	
 	const physics::observables::StaggeredChiralCondensateParametersInterface& parametersInterface = interfacesHandler.getStaggeredChiralCondensateParametersInterface();
+	const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Staggeredfield_eo>();
 	const int number_sources = parametersInterface.getNumberOfSources();
-	const hmc_float mass = parametersInterface.getMass();
+	const hmc_float mass = additionalParameters.getMass();
 	//Result
 	hmc_complex pbp = {0.0, 0.0}; 
 	
@@ -102,14 +103,14 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  set_volume_source(&eta_o, prng); //here the content of the source is that of inputparameters
 	  
 	  //Calculate chi_e = [(M^dag*M)^{-1}]ee * (m*eta_e - Deo*eta_o)   using chi_o as temporary field
-	  Deo(&chi_o, gf, eta_o, &mass);
+	  Deo(&chi_o, gf, eta_o);
 	  saxpby(&chi_o, mass, eta_e, -1.0, chi_o);
 	  //Here the CGM as standard CG is used
 	  std::vector<hmc_float> sigma(1, 0.0); //only one shift set to 0.0
-	  cg_m(chi_e, MdagM, gf, sigma, chi_o, system, interfacesHandler, parametersInterface.getSolverPrecision(), mass);
+	  cg_m(chi_e, MdagM, gf, sigma, chi_o, system, interfacesHandler, parametersInterface.getSolverPrecision(), additionalParameters);
 	  
 	  //Calculate chi_o = 1/m * (eta_o - Doe * chi_e)
-	  Doe(&chi_o, gf, *(chi_e[0]), &mass);
+	  Doe(&chi_o, gf, *(chi_e[0]));
 	  saxpby(&chi_o, 1.0/mass, eta_o, -1.0/mass, chi_o);
 	  
 	  //Build up the trace of M^{-1}, namely pbp += (eta_e^dag_i * chi_e + eta_o^dag_i * chi_o)

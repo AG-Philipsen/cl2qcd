@@ -29,10 +29,10 @@
  */
 static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield& b, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar);
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar);
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 
 /**
  * BICGstab implementation with a different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
@@ -40,30 +40,30 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
  */
 static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield& b, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar);
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar);
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 
 static std::string create_log_prefix_solver(std::string name, int number) noexcept;
 static std::string create_log_prefix_bicgstab(int number) noexcept;
 
 int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A,
                                            const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system,
-                                           physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float kappa, hmc_float mubar)
+                                           physics::InterfacesHandler& interfacesHandler, hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
     if(parametersInterface.getSolver() == common::bicgstab_save) {
-        return bicgstab_save(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
+        return bicgstab_save(x, A, gf, b, system, interfacesHandler, prec, additionalParameters);
     } else {
-        return bicgstab_fast(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
+        return bicgstab_fast(x, A, gf, b, system, interfacesHandler, prec, additionalParameters);
     }
 }
 
 static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield& b, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar)
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     // @todo this function often contains -1 in the comment but 1 in the code...
     using physics::lattices::Spinorfield;
@@ -96,7 +96,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
             p.zero();
 
             //initial r_n
-            f(&rn, gf, *x, kappa, mubar);
+            f(&rn, gf, *x, additionalParameters);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
             saxpy(&rn, { 1., 0 }, rn, b);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
@@ -138,7 +138,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
         log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
 
         //v = A*p
-        f(&v, gf, p, kappa, mubar);
+        f(&v, gf, p, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
 
         //tmp1 = (rhat, v)
@@ -150,7 +150,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
         log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
 
         //t = A s
-        f(&t, gf, s, kappa, mubar);
+        f(&t, gf, s, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
 
         //tmp1 = (t, s)
@@ -181,7 +181,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 
         if(resid < prec) {
             //aux = A inout
-            f(&aux, gf, *x, kappa, mubar);
+            f(&aux, gf, *x, additionalParameters);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "aux: ", aux);
 
             //aux = -aux + source
@@ -218,7 +218,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield * x, const physics
 
 static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield& b, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar)
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     using physics::lattices::Spinorfield;
     using physics::algorithms::solvers::SolverStuck;
@@ -246,7 +246,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
     for (iter = 0; iter < parametersInterface.getCgMax() ; iter++) {
         if(iter % parametersInterface.getIterRefresh() == 0) {
             //initial r_n, saved in p
-            f(&rn, gf, *x, kappa, mubar);
+            f(&rn, gf, *x, additionalParameters);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
             saxpy(&p, { 1.0, 0 }, rn, b);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
@@ -293,7 +293,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
         }
 
         //v = A*p
-        f(&v, gf, p, kappa, mubar);
+        f(&v, gf, p, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
 
         //tmp1 = (rhat, v)
@@ -306,7 +306,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
         log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
 
         //t = A s
-        f(&t, gf, s, kappa, mubar);
+        f(&t, gf, s, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
 
         //tmp1 = (t, s)
@@ -361,20 +361,20 @@ static int bicgstab_fast(const physics::lattices::Spinorfield * x, const physics
 
 int physics::algorithms::solvers::bicgstab(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A,
                                            const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system,
-                                           physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float kappa, hmc_float mubar)
+                                           physics::InterfacesHandler& interfacesHandler, hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     const physics::algorithms::SolversParametersInterface& parametersInterface = interfacesHandler.getSolversParametersInterface();
 
     if(parametersInterface.getSolver() == common::bicgstab_save) {
-        return bicgstab_save(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
+        return bicgstab_save(x, A, gf, b, system, interfacesHandler, prec, additionalParameters);
     } else {
-        return bicgstab_fast(x, A, gf, b, system, interfacesHandler, prec, kappa, mubar);
+        return bicgstab_fast(x, A, gf, b, system, interfacesHandler, prec, additionalParameters);
     }
 }
 
 static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar)
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     using physics::algorithms::solvers::SolverStuck;
     using physics::algorithms::solvers::SolverDidNotSolve;
@@ -420,7 +420,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
             v.zero();
             p.zero();
 
-            f(&rn, gf, *x, kappa, mubar);
+            f(&rn, gf, *x, additionalParameters);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
             saxpy(&rn, one, rn, b);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
@@ -452,7 +452,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
         saxsbypz(&p, beta, p, tmp2, v, rn);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
 
-        f(&v, gf, p, kappa, mubar);
+        f(&v, gf, p, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
 
         scalar_product(&tmp1, rhat, v);
@@ -461,7 +461,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
         saxpy(&s, alpha, v, rn);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
 
-        f(&t, gf, s, kappa, mubar);
+        f(&t, gf, s, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
 
         scalar_product(&tmp1, t, s);
@@ -487,7 +487,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
         if(resid < prec) {
             ++retests;
 
-            f(&aux, gf, *x, kappa, mubar);
+            f(&aux, gf, *x, additionalParameters);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "aux: ", aux);
             saxpy(&aux, one, aux, b);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "aux: ", aux);
@@ -530,7 +530,7 @@ static int bicgstab_save(const physics::lattices::Spinorfield_eo * x, const phys
 
 static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf,
                          const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
-                         hmc_float prec, hmc_float kappa, hmc_float mubar)
+                         hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     using namespace physics::lattices;
     using physics::algorithms::solvers::SolverStuck;
@@ -570,7 +570,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
     for (iter = 0; iter < parametersInterface.getCgMax(); iter++) {
         if(iter % parametersInterface.getIterRefresh() == 0) {
             //initial r_n, saved in p
-            f(&rn, gf, *x, kappa, mubar);
+            f(&rn, gf, *x, additionalParameters);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "rn: ", rn);
             saxpy(&p, one, rn, b);
             log_squarenorm(create_log_prefix_bicgstab(iter) + "p: ", p);
@@ -624,7 +624,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
             return iter;
         }
         //v = A*p
-        f(&v, gf, p, kappa, mubar);
+        f(&v, gf, p, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "v: ", v);
 
         //tmp1 = (rhat, v)
@@ -636,7 +636,7 @@ static int bicgstab_fast(const physics::lattices::Spinorfield_eo * x, const phys
         log_squarenorm(create_log_prefix_bicgstab(iter) + "s: ", s);
 
         //t = A s
-        f(&t, gf, s, kappa, mubar);
+        f(&t, gf, s, additionalParameters);
         log_squarenorm(create_log_prefix_bicgstab(iter) + "t: ", t);
 
         //tmp1 = (t, s)

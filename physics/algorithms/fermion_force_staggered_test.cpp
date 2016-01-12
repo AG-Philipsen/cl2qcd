@@ -178,8 +178,8 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 	Rational_Approximation approx(8, 1,2, 1.e-5,1);
 	
 	{
-		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-		meta::Inputparameters params(3, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.125"};
+		meta::Inputparameters params(4, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
@@ -195,19 +195,19 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
 	
 		gm.zero();
-		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, 0.125);
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 2214.9003939576623452, 1.e-6);
 	
 		gm.zero();
-		physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, interfacesHandler, 0.125);
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1845.6513833002247793, 1.e-6);
 	}
 	
 	{
 		using namespace physics::lattices;
 		using namespace physics::algorithms;
-		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
-		meta::Inputparameters params(5, _params);
+		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--mass=0.125", "--chem_pot_im=0.5678"};
+		meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
@@ -223,11 +223,11 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
 	
 		gm.zero();
-		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, 0.125);
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 2315.4175592593164765, 1.e-6);
 	
 		gm.zero();
-		physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, interfacesHandler, 0.125);
+		physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1932.6440761489629949, 1.e-6);
 	}	
 }

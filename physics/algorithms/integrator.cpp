@@ -124,17 +124,18 @@ template<class SPINORFIELD> static void leapfrog_1ts(const physics::lattices::Ga
     using namespace physics::algorithms;
 
     const physics::algorithms::IntegratorParametersInterface & parametersInterface = interfaceHandler.getIntegratorParametersInterface();
+    const physics::AdditionalParameters& additionalParameters = interfaceHandler.getAdditionalParameters<SPINORFIELD>();
     const int n0 = parametersInterface.getIntegrationSteps(0);
     const hmc_float deltaTau0 = parametersInterface.getTau() / ((hmc_float) n0);
     const hmc_float deltaTau0_half = 0.5 * deltaTau0;
 
-    md_update_gaugemomentum(gm, deltaTau0_half, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum(gm, deltaTau0_half, *gf, phi, system, interfaceHandler, additionalParameters);
     for (int k = 1; k < n0; k++) {
         md_update_gaugefield(gf, *gm, deltaTau0);
-        md_update_gaugemomentum(gm, deltaTau0, *gf, phi, system, interfaceHandler);
+        md_update_gaugemomentum(gm, deltaTau0, *gf, phi, system, interfaceHandler, additionalParameters);
     }
     md_update_gaugefield(gf, *gm, deltaTau0);
-    md_update_gaugemomentum(gm, deltaTau0_half, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum(gm, deltaTau0_half, *gf, phi, system, interfaceHandler, additionalParameters);
 }
 
 template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf,
@@ -145,6 +146,7 @@ template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Ga
     //this uses 2 timescales (more is not implemented yet): timescale0 for the gauge-part, timescale1 for the fermion part
     //this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
     const physics::algorithms::IntegratorParametersInterface & parametersInterface = interfaceHandler.getIntegratorParametersInterface();
+    const physics::AdditionalParameters& additionalParameters = interfaceHandler.getAdditionalParameters<SPINORFIELD>();
     const int n0 = parametersInterface.getIntegrationSteps(0);
     const int n1 = parametersInterface.getIntegrationSteps(1);
     const hmc_float deltaTau1 = parametersInterface.getTau() / ((hmc_float) n1);
@@ -153,7 +155,7 @@ template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Ga
     const hmc_float deltaTau1_half = 0.5 * deltaTau1;
 
     //this corresponds to V_s2(deltaTau/2)
-    md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, additionalParameters);
     //now, m steps "more" are performed for the gauge-part
     //this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
     for (int l = 0; l < n0; l++) {
@@ -168,7 +170,7 @@ template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Ga
     }
     for (int k = 1; k < n1; k++) {
         //this corresponds to V_s2(deltaTau)
-        md_update_gaugemomentum_fermion(gm, deltaTau1, *gf, phi, system, interfaceHandler);
+        md_update_gaugemomentum_fermion(gm, deltaTau1, *gf, phi, system, interfaceHandler, additionalParameters);
         for (int l = 0; l < n0; l++) {
             //this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
             // where the first half_step has been carried out above already
@@ -181,7 +183,7 @@ template<class SPINORFIELD> static void leapfrog_2ts(const physics::lattices::Ga
         }
     }
     //this corresponds to the missing V_s2(deltaTau/2)
-    md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, additionalParameters);
 }
 
 template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf,
@@ -202,14 +204,13 @@ template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Ga
     const hmc_float deltaTau2_half = 0.5 * deltaTau2;
 
     //In this case one has to call the "normal" md_update_gaugemomentum_fermion with the heavier mass
-    const hmc_float kappa_tmp = parametersInterface.getKappaMp();
-    const hmc_float mubar_tmp = parametersInterface.getMubarMp();
+    const physics::AdditionalParameters& additionalParametersMp = interfaceHandler.getAdditionalParameters<SPINORFIELD>(true);
 
     md_update_gaugemomentum_detratio(gm, deltaTau2_half, *gf, phi_mp, system, interfaceHandler);
     //now, n1 steps "more" are performed for the fermion-part
     for (int l = 0; l < n1; l++) {
         if(l == 0)
-            md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, kappa_tmp, mubar_tmp);
+            md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, additionalParametersMp);
         //now, n0 steps "more" are performed for the gauge-part
         for (int j = 0; j < n0; j++) {
             if(l == 0 && j == 0)
@@ -221,9 +222,9 @@ template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Ga
                 md_update_gaugemomentum_gauge(gm, deltaTau0, *gf, system, interfaceHandler);
         }
         if(l == n1 - 1 && n2 == 1)
-            md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, kappa_tmp, mubar_tmp);
+            md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, additionalParametersMp);
         else
-            md_update_gaugemomentum_fermion(gm, deltaTau1, *gf, phi, system, interfaceHandler, kappa_tmp, mubar_tmp);
+            md_update_gaugemomentum_fermion(gm, deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
     }
     //perform n2 - 1 intermediate steps
     for (int k = 1; k < n2; k++) {
@@ -237,9 +238,9 @@ template<class SPINORFIELD> static void leapfrog_3ts(const physics::lattices::Ga
                     md_update_gaugemomentum_gauge(gm, deltaTau0, *gf, system, interfaceHandler);
             }
             if(l == n1 - 1 && k == n2 - 1)
-                md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, kappa_tmp, mubar_tmp);
+                md_update_gaugemomentum_fermion(gm, deltaTau1_half, *gf, phi, system, interfaceHandler, additionalParametersMp);
             else
-                md_update_gaugemomentum_fermion(gm, deltaTau1, *gf, phi, system, interfaceHandler, kappa_tmp, mubar_tmp);
+                md_update_gaugemomentum_fermion(gm, deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
         }
     }
     md_update_gaugemomentum_detratio(gm, deltaTau2_half, *gf, phi_mp, system, interfaceHandler);
@@ -315,6 +316,7 @@ template<class SPINORFIELD> void twomn_1ts(const physics::lattices::Gaugemomenta
     using namespace physics::algorithms;
 
     const physics::algorithms::IntegratorParametersInterface & parametersInterface = interfaceHandler.getIntegratorParametersInterface();
+    const physics::AdditionalParameters& additionalParameters = interfaceHandler.getAdditionalParameters<SPINORFIELD>();
     const int n0 = parametersInterface.getIntegrationSteps(0);
     const hmc_float deltaTau0 = parametersInterface.getTau() / ((hmc_float) n0);
     const hmc_float deltaTau0_half = 0.5 * deltaTau0;
@@ -322,18 +324,18 @@ template<class SPINORFIELD> void twomn_1ts(const physics::lattices::Gaugemomenta
     const hmc_float one_minus_2_lambda = 1. - 2. * parametersInterface.getLambda(0);
     const hmc_float one_minus_2_lambda_times_deltaTau0 = one_minus_2_lambda * deltaTau0;
 
-    md_update_gaugemomentum(gm, lambda_times_deltaTau0, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum(gm, lambda_times_deltaTau0, *gf, phi, system, interfaceHandler, additionalParameters);
     md_update_gaugefield(gf, *gm, deltaTau0_half);
-    md_update_gaugemomentum(gm, one_minus_2_lambda_times_deltaTau0, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum(gm, one_minus_2_lambda_times_deltaTau0, *gf, phi, system, interfaceHandler, additionalParameters);
     md_update_gaugefield(gf, *gm, deltaTau0_half);
 
     for (int k = 1; k < n0; k++) {
-        md_update_gaugemomentum(gm, 2. * lambda_times_deltaTau0, *gf, phi, system, interfaceHandler);
+        md_update_gaugemomentum(gm, 2. * lambda_times_deltaTau0, *gf, phi, system, interfaceHandler, additionalParameters);
         md_update_gaugefield(gf, *gm, deltaTau0_half);
-        md_update_gaugemomentum(gm, one_minus_2_lambda_times_deltaTau0, *gf, phi, system, interfaceHandler);
+        md_update_gaugemomentum(gm, one_minus_2_lambda_times_deltaTau0, *gf, phi, system, interfaceHandler, additionalParameters);
         md_update_gaugefield(gf, *gm, deltaTau0_half);
     }
-    md_update_gaugemomentum(gm, lambda_times_deltaTau0, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum(gm, lambda_times_deltaTau0, *gf, phi, system, interfaceHandler, additionalParameters);
 }
 
 template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf,
@@ -343,6 +345,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
 
     //this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
     const physics::algorithms::IntegratorParametersInterface & parametersInterface = interfaceHandler.getIntegratorParametersInterface();
+    const physics::AdditionalParameters& additionalParameters = interfaceHandler.getAdditionalParameters<SPINORFIELD>();
     const int n0 = parametersInterface.getIntegrationSteps(0);
     const int n1 = parametersInterface.getIntegrationSteps(1);
 
@@ -359,7 +362,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
     const hmc_float one_minus_2_lambda0_times_deltaTau0 = one_minus_2_lambda0 * deltaTau0;
     const hmc_float one_minus_2_lambda1_times_deltaTau1 = one_minus_2_lambda1 * deltaTau1;
 
-    md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParameters);
     //now, n0 steps "more" are performed for the gauge-part
     //this corresponds to [exp(lambda*eps T(V_gauge) ) exp( eps/2 V ) exp( (1 - 2lamdba) *eps T(V_gauge) ) exp( eps/2 V ) exp( lamdba*eps T(V_ga    uge) ) ]^m
     for (int l = 0; l < n0; l++) {
@@ -371,7 +374,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
         md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
     }
     //this corresponds to V_s2( ( 1 - 2lambda) *deltaTau)
-    md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParameters);
     //now, m steps "more" are performed for the gauge-part (again)
     for (int l = 0; l < n0; l++) {
         //the first half step has been carried out above already
@@ -387,7 +390,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
     //the last V_s2(lambda*deltaTau) can be pulled into the intermediate steps
     for (int k = 1; k < n1; k++) {
         //this corresponds to V_s2(deltaTau)
-        md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler);
+        md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParameters);
         for (int l = 0; l < n0; l++) {
             //the first half step has been carried out above already
             md_update_gaugefield(gf, *gm, deltaTau0_half);
@@ -395,7 +398,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
             md_update_gaugefield(gf, *gm, deltaTau0_half);
             md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
         }
-        md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler);
+        md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParameters);
         for (int l = 0; l < n0; l++) {
             //the first half step has been carried out above already
             md_update_gaugefield(gf, *gm, deltaTau0_half);
@@ -408,7 +411,7 @@ template<class SPINORFIELD> void twomn_2ts(const physics::lattices::Gaugemomenta
         }
     }
     //this corresponds to the missing V_s2(lambda*deltaTau)
-    md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler);
+    md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParameters);
 }
 
 template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta * const gm, const physics::lattices::Gaugefield * const gf,
@@ -438,13 +441,12 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
     const hmc_float one_minus_2_lambda2_times_deltaTau2 = one_minus_2_lambda2 * deltaTau2;
 
     //In this case one has to call the "normal" md_update_gaugemomentum_fermion with the heavier mass
-    const hmc_float kappa = parametersInterface.getKappaMp();
-    const hmc_float mubar = parametersInterface.getMubarMp();
+    const physics::AdditionalParameters& additionalParametersMp = interfaceHandler.getAdditionalParameters<SPINORFIELD>(true);
 
     md_update_gaugemomentum_detratio(gm, lambda2_times_deltaTau2, *gf, phi_mp, system, interfaceHandler);
     for (int l = 0; l < n1; l++) {
         if(l == 0)
-            md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+            md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
         for (int j = 0; j < n0; j++) {
             if(j == 0 && l == 0)
                 md_update_gaugemomentum_gauge(gm, lambda0_times_deltaTau0, *gf, system, interfaceHandler);
@@ -453,14 +455,14 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
             md_update_gaugefield(gf, *gm, deltaTau0_half);
             md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
         }
-        md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+        md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
         for (int j = 0; j < n0; j++) {
             md_update_gaugefield(gf, *gm, deltaTau0_half);
             md_update_gaugemomentum_gauge(gm, one_minus_2_lambda0_times_deltaTau0, *gf, system, interfaceHandler);
             md_update_gaugefield(gf, *gm, deltaTau0_half);
             md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
         }
-        md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+        md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
     }
     md_update_gaugemomentum_detratio(gm, one_minus_2_lambda2_times_deltaTau2, *gf, phi_mp, system, interfaceHandler);
     for (int l = 0; l < n1; l++) {
@@ -470,7 +472,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
             md_update_gaugefield(gf, *gm, deltaTau0_half);
             md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
         }
-        md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+        md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
         for (int j = 0; j < n0; j++) {
             md_update_gaugefield(gf, *gm, deltaTau0_half);
             md_update_gaugemomentum_gauge(gm, one_minus_2_lambda0_times_deltaTau0, *gf, system, interfaceHandler);
@@ -481,9 +483,9 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
                 md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
         }
         if(l == n1 - 1 && n2 == 1)
-            md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+            md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
         else
-            md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+            md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
     }
     for (int k = 1; k < n2; k++) {
         //this corresponds to V_s2(deltaTau)
@@ -495,14 +497,14 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
                 md_update_gaugefield(gf, *gm, deltaTau0_half);
                 md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
             }
-            md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+            md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
             for (int j = 0; j < n0; j++) {
                 md_update_gaugefield(gf, *gm, deltaTau0_half);
                 md_update_gaugemomentum_gauge(gm, one_minus_2_lambda0_times_deltaTau0, *gf, system, interfaceHandler);
                 md_update_gaugefield(gf, *gm, deltaTau0_half);
                 md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
             }
-            md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+            md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
         }
         md_update_gaugemomentum_detratio(gm, one_minus_2_lambda2_times_deltaTau2, *gf, phi_mp, system, interfaceHandler);
         for (int l = 0; l < n1; l++) {
@@ -512,7 +514,7 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
                 md_update_gaugefield(gf, *gm, deltaTau0_half);
                 md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
             }
-            md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+            md_update_gaugemomentum_fermion(gm, one_minus_2_lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
             for (int j = 0; j < n0; j++) {
                 md_update_gaugefield(gf, *gm, deltaTau0_half);
                 md_update_gaugemomentum_gauge(gm, one_minus_2_lambda0_times_deltaTau0, *gf, system, interfaceHandler);
@@ -523,9 +525,9 @@ template<class SPINORFIELD> void twomn_3ts(const physics::lattices::Gaugemomenta
                     md_update_gaugemomentum_gauge(gm, 2. * lambda0_times_deltaTau0, *gf, system, interfaceHandler);
             }
             if(l == n1 - 1 && k == n2 - 1)
-                md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+                md_update_gaugemomentum_fermion(gm, lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
             else
-                md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, kappa, mubar);
+                md_update_gaugemomentum_fermion(gm, 2. * lambda1_times_deltaTau1, *gf, phi, system, interfaceHandler, additionalParametersMp);
         }
     }
     md_update_gaugemomentum_detratio(gm, lambda2_times_deltaTau2, *gf, phi_mp, system, interfaceHandler);

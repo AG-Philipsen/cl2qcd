@@ -36,12 +36,11 @@ namespace physics {
     namespace algorithms {
 
         hmc_float calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system,
-                                 physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
+                                 physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
         hmc_float calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system,
-                                 physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
-        hmc_float calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi,
-                                 const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float mass, hmc_float mubar);
-                                //mubar has a meaning only in Twisted Mass formulation. Here is put only to avoid doubling of code.
+                                 physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
+        hmc_float calc_s_fermion(const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system,
+                                 physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
 
         hmc_float calc_s_fermion_mp(const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi_mp, const hardware::System& system,
                                     physics::InterfacesHandler& interfacesHandler);

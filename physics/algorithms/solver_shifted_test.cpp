@@ -52,7 +52,6 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	    physics::InterfacesHandlerImplementation interfacesHandler{*params};
 	    physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
 	    physics::PRNG prng{system, &prngParameters};
-	    hmc_float mass = params->get_mass();
 
 	    //This are some possible values of sigma
 	    hmc_float pol[5] = {0.0002065381736724, 0.00302707751065980, 0.0200732678058145,
@@ -71,7 +70,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	    //This field is NOT that of the test explicit_stagg (D_KS_eo) because here the lattice is 4^4
 	    pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 13);
 
-	    int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-23, mass);
+	    int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-23, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	    logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 
 	    //Once obtained the solution we apply each operator (matrix + sigma) onto the field
@@ -83,7 +82,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	    logger.info() << "                           sqnorm(b)=" << std::setprecision(16) << sqnorm_b;
 	    for(uint i=0; i<sigma.size(); i++){
 	        aux.push_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-	        matrix(aux[i].get(), gf, *out[i], &mass);
+	        matrix(aux[i].get(), gf, *out[i], &(interfacesHandler.getAdditionalParameters<Staggeredfield_eo>()));
 	        saxpy(aux[i].get(), {sigma[i],0.}, *out[i], *aux[i]);
 	        sqnorm_out.push_back(squarenorm(*aux[i]));
 	        logger.info() << "sqnorm((matrix + sigma[" << i << "]) * out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
@@ -139,7 +138,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	    sqnorms_ref.push_back(50.327004662008008040);
 	    sqnorms_ref.push_back(22.236536652925686042);
 	    //Now I calculate the fields out
-        int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-12, params->get_mass());
+        int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-12, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	    logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 
 	    std::vector<hmc_float> sqnorm_out;
@@ -198,7 +197,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	sqnorms_ref.push_back(215.02535309652577666);
 	sqnorms_ref.push_back(58.529059535207736076);
 	sqnorms_ref.push_back(6.2407847688851161294);
-	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, params.get_mass());
+	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 	
 	std::vector<hmc_float> sqnorm_out;
@@ -243,7 +242,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	b.set_cold();
 	//These is the sqnorm of the output of the CG algorithm from the reference code
 	hmc_float sqnorms_ref = 9.0597433493689383255;
-	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, params.get_mass());
+	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 	
 	hmc_float sqnorm_out = squarenorm(*out[0]);
@@ -256,7 +255,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
 	//These is the sqnorm of the output of the CG algorithm from the reference code
 	hmc_float sqnorms_ref = 3790.3193634090343949;
-	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, params.get_mass());
+	int iter = cg_m(out, matrix, gf, sigma, b, system, interfacesHandler, 1.e-24, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
 	logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
 	
 	hmc_float sqnorm_out = squarenorm(*out[0]);

@@ -116,12 +116,11 @@ hmc_observables physics::algorithms::perform_hmc_step(const physics::lattices::G
 }
 
 template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi, hmc_float * const spinor_energy_init, const physics::lattices::Gaugefield& gf,
-        const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+                                                         const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
     using namespace physics::algorithms;
 
-    const physics::algorithms::HmcParametersInterface & parametersInterface = interfacesHandler.getHmcParametersInterface();
-
+    const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<SPINORFIELD>();
     const SPINORFIELD initial(system, interfacesHandler.getInterface<SPINORFIELD>());
 
     //init/update spinorfield phi
@@ -129,15 +128,15 @@ template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi
     //calc init energy for spinorfield
     *spinor_energy_init = squarenorm(initial);
     //update spinorfield: det(kappa, mu)
-    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, parametersInterface.getKappa(), parametersInterface.getMubar());
+    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, additionalParameters);
 }
-template<> void init_spinorfield<physics::lattices::Spinorfield_eo>(const physics::lattices::Spinorfield_eo * phi, hmc_float * const spinor_energy_init, const physics::lattices::Gaugefield& gf,
-        const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+template<> void init_spinorfield<physics::lattices::Spinorfield_eo>(const physics::lattices::Spinorfield_eo * phi, hmc_float * const spinor_energy_init,
+                                                                    const physics::lattices::Gaugefield& gf, const physics::PRNG& prng,
+                                                                    const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
 	 using namespace physics::algorithms;
 
-	 const physics::algorithms::HmcParametersInterface & parametersInterface = interfacesHandler.getHmcParametersInterface();
-
+	 const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Spinorfield_eo>();
 	 const physics::lattices::Spinorfield_eo initial(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 	 //init/update spinorfield phi
@@ -145,16 +144,16 @@ template<> void init_spinorfield<physics::lattices::Spinorfield_eo>(const physic
 	 //calc init energy for spinorfield
 	 *spinor_energy_init = squarenorm(initial);
 	 //update spinorfield: det(kappa, mu)
-	 md_update_spinorfield(phi, gf, initial, system, interfacesHandler, parametersInterface.getKappa(), parametersInterface.getMubar());
+	 md_update_spinorfield(phi, gf, initial, system, interfacesHandler, additionalParameters);
 }
 
 template<class SPINORFIELD> static void init_spinorfield_mp(const SPINORFIELD * phi, hmc_float * const spinor_energy_init, const SPINORFIELD * phi_mp,
-        hmc_float * const spinor_energy_init_mp, const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+                                                            hmc_float * const spinor_energy_init_mp, const physics::lattices::Gaugefield& gf,
+                                                            const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
     using namespace physics::algorithms;
 
-    const physics::algorithms::HmcParametersInterface & parametersInterface = interfacesHandler.getHmcParametersInterface();
-
+    const physics::AdditionalParameters& additionalParametersMp = interfacesHandler.getAdditionalParameters<SPINORFIELD>(true);
     const SPINORFIELD initial(system, interfacesHandler.getInterface<SPINORFIELD>());
 
     //init/update spinorfield phi
@@ -162,20 +161,21 @@ template<class SPINORFIELD> static void init_spinorfield_mp(const SPINORFIELD * 
     //calc init energy for spinorfield
     *spinor_energy_init = squarenorm(initial);
     //update spinorfield with heavy mass: det(kappa_mp, mu_mp)
-    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, parametersInterface.getKappaMp(), parametersInterface.getMubarMp());
+    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, additionalParametersMp);
     initial.gaussian(prng);
     //calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
     *spinor_energy_init_mp = squarenorm(initial);
     //update detratio spinorfield: det(kappa, mu) / det(kappa_mp, mu_mp)
     md_update_spinorfield_mp(phi_mp, gf, initial, system, interfacesHandler);
 }
-template<> void init_spinorfield_mp<physics::lattices::Spinorfield_eo>(const physics::lattices::Spinorfield_eo * phi, hmc_float * const spinor_energy_init, const physics::lattices::Spinorfield_eo * phi_mp,
-        hmc_float * const spinor_energy_init_mp, const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+template<> void init_spinorfield_mp<physics::lattices::Spinorfield_eo>(const physics::lattices::Spinorfield_eo * phi, hmc_float * const spinor_energy_init,
+                                                                       const physics::lattices::Spinorfield_eo * phi_mp, hmc_float * const spinor_energy_init_mp,
+                                                                       const physics::lattices::Gaugefield& gf, const physics::PRNG& prng,
+                                                                       const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
     using namespace physics::algorithms;
 
-    const physics::algorithms::HmcParametersInterface & parametersInterface = interfacesHandler.getHmcParametersInterface();
-
+    const physics::AdditionalParameters& additionalParametersMp = interfacesHandler.getAdditionalParameters<physics::lattices::Spinorfield_eo>(true);
     const physics::lattices::Spinorfield_eo initial(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
     //init/update spinorfield phi
@@ -183,7 +183,7 @@ template<> void init_spinorfield_mp<physics::lattices::Spinorfield_eo>(const phy
     //calc init energy for spinorfield
     *spinor_energy_init = squarenorm(initial);
     //update spinorfield with heavy mass: det(kappa_mp, mu_mp)
-    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, parametersInterface.getKappaMp(), parametersInterface.getMubarMp());
+    md_update_spinorfield(phi, gf, initial, system, interfacesHandler, additionalParametersMp);
     initial.gaussian(prng);
     //calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
     *spinor_energy_init_mp = squarenorm(initial);

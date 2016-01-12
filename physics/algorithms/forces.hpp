@@ -43,11 +43,11 @@ namespace physics
         void calc_gauge_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, physics::InterfacesHandler& interfacesHandler);
 
         void calc_total_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi,
-                              const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
+                              const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
         void calc_total_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi,
-                              const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
+                              const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
         void calc_total_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi,
-                              const hardware::System& system, physics::InterfacesHandler& interfaceHandler, hmc_float mass);
+                              const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
 
     }
 }

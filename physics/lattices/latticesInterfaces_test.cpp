@@ -44,8 +44,8 @@ BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 	BOOST_CHECK_EQUAL(test.getMu(), params->get_mu());
 	BOOST_CHECK_EQUAL(test.getBeta(), params->get_beta());
 	BOOST_CHECK_EQUAL(test.getStartcondition(), params->get_startcondition());
-	BOOST_CHECK_EQUAL(test.getNamePostfix(), params->get_gauge_obs_postfix());
-	BOOST_CHECK_EQUAL(test.getNamePrefix(), params->get_gauge_obs_prefix());
+	BOOST_CHECK_EQUAL(test.getNamePostfix(), params->get_config_postfix());
+	BOOST_CHECK_EQUAL(test.getNamePrefix(), params->get_config_prefix());
 	BOOST_CHECK_EQUAL(test.getNumberOfDigitsInName(), params->get_config_number_digits());
 	BOOST_CHECK_EQUAL(test.getSmearingSteps(), params->get_rho_iter());
 	BOOST_CHECK_EQUAL(test.getSourcefileName(), params->get_sourcefile());

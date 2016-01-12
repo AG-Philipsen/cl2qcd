@@ -92,7 +92,7 @@ public:
 	/**
 	 * Invoke the matrix function.
 	 */
-	virtual void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const = 0;
+	virtual void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const = 0;
 	virtual ~Fermionmatrix() {};
 
 protected:
@@ -108,7 +108,7 @@ public:
 	/**
 	 * Invoke the matrix function.
 	 */
-	virtual void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const = 0;
+	virtual void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const = 0;
 	virtual ~Fermionmatrix_eo() {};
 
 protected:
@@ -124,7 +124,7 @@ public:
 	M(const hardware::System& system, const FermionmatrixParametersInterface& fermionmatrixParametersInterface)
         : Fermionmatrix(false, system, fermionmatrixParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 };
@@ -133,7 +133,7 @@ public:
 	Qplus(const hardware::System& system, const FermionmatrixParametersInterface& fermionmatrixParametersInterface)
         : Fermionmatrix(false, system, fermionmatrixParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 };
@@ -142,7 +142,7 @@ public:
 	Qminus(const hardware::System& system, const FermionmatrixParametersInterface& fermionmatrixParametersInterface)
         : Fermionmatrix(false, system, fermionmatrixParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 };
@@ -152,7 +152,7 @@ public:
         : Fermionmatrix(true,system, fermionParametersInterface), q_plus(system, fermionParametersInterface),
           q_minus(system, fermionParametersInterface), tmp(system, fermionParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:
@@ -169,7 +169,7 @@ public:
         : Fermionmatrix_eo(false, system, fermionEoParametersInterface),
           tmp(system, fermionEoParametersInterface), tmp2(system, fermionEoParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:
@@ -182,7 +182,7 @@ public:
         : Fermionmatrix_eo(false, system, fermionEoParametersInterface),
           tmp(system, fermionEoParametersInterface), tmp2(system, fermionEoParametersInterface) {};
 	void operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const override;
+	                const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:
@@ -195,7 +195,7 @@ public:
         : Fermionmatrix_eo(false, system, fermionEoParametersInterface),
           tmp(system, fermionEoParametersInterface), tmp2(system, fermionEoParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:
@@ -208,7 +208,7 @@ public:
         : Fermionmatrix_eo(false, system, fermionEoParametersInterface),
           tmp(system, fermionEoParametersInterface), tmp2(system, fermionEoParametersInterface) {};
 	void operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const override;
+	                const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:
@@ -222,7 +222,7 @@ public:
           aee(system, fermionEoParametersInterface),
           aee_AND_gamma5_eo(system, fermionEoParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:
@@ -236,7 +236,7 @@ public:
           aee_minus(system, fermionEoParametersInterface),
           aee_minus_AND_gamma5_eo(system, fermionEoParametersInterface) {};
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:
@@ -251,7 +251,7 @@ public:
           q_minus(system, fermionEoParametersInterface),
           tmp(system, fermionEoParametersInterface) { };
 	void operator() (const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-	                 const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const override;
+	                 const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const override;
 	cl_ulong get_flops() const override;
 	cl_ulong get_read_write_size() const override;
 private:

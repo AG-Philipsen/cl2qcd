@@ -79,31 +79,32 @@
  *            file documentation for further information.
  */
 void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler, const hmc_float mass)
+        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
+        const physics::AdditionalParameters& additionalParameters)
 {
     using physics::lattices::Staggeredfield_eo;
     using namespace physics::algorithms::solvers;
     using namespace physics::fermionmatrix;
 
-    const physics::algorithms::ForcesParametersInterface & parametersInterface = interfaceHandler.getForcesParametersInterface();
+    const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
     logger.debug() << "\t\tcalc_fermion_force...";
 
     logger.debug() << "\t\t\tstart solver";
     std::vector<std::shared_ptr<Staggeredfield_eo> > X;
     std::vector<std::shared_ptr<Staggeredfield_eo> > Y;
     for (int i = 0; i < phi.Get_order(); i++) {
-        X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-        Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfaceHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+        X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+        Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
-    const MdagM_eo fm(system, interfaceHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfaceHandler, parametersInterface.getForcePreconditioning(), mass);
+    const MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
+    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
     logger.debug() << "\t\t\t  end solver";
 
     //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
     //reconstruct the force. I will use a temporary Gaugemomenta to calculate the
     //partial force (on the whole lattice) that will be later added to "force"
-    const D_KS_eo Doe(system, interfaceHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
-    physics::lattices::Gaugemomenta tmp(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
+    const D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
+    physics::lattices::Gaugemomenta tmp(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
     for (int i = 0; i < phi.Get_order(); i++) {
         Doe(Y[i].get(), gf, *X[i]);
@@ -117,12 +118,13 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
 }
 
 void physics::algorithms::calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler, const hmc_float mass)
+        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
+        const physics::AdditionalParameters& additionalParameters)
 {
     using physics::lattices::Gaugefield;
     using namespace physics::algorithms;
 
-    calc_fermion_force(force, gf, phi, system, interfaceHandler, mass);
+    calc_fermion_force(force, gf, phi, system, interfaceHandler, additionalParameters);
 
     const physics::algorithms::ForcesParametersInterface & parametersInterface = interfaceHandler.getForcesParametersInterface();
     if(parametersInterface.getUseSmearing() == true) {

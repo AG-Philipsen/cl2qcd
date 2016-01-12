@@ -77,12 +77,16 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
 	  //For some reason, the result could not be equal to the number 0, but below the double precision
 	  //(on the Loewe this is the case). Then we check this to make the test pass (for the machine
 	  //all numbers below 1.e-16 are in practice zero).
-	  if(pbp_ref_im_minmax.re == 0) BOOST_CHECK_SMALL(pbp.im, 1.e-15); else
-					 BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.re, 1.e-8);
-	  if(pbp_ref_im_minmax.im == 0) BOOST_CHECK_SMALL(pbp.im, 1.e-15); else
-					 BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.im, 1.e-8);
+	  if(pbp_ref_im_minmax.re == 0)
+	      BOOST_CHECK_SMALL(pbp.im, 1.e-15);
+	  else
+	      BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.re, 1.e-8);
+	  if(pbp_ref_im_minmax.im == 0)
+	      BOOST_CHECK_SMALL(pbp.im, 1.e-15);
+	  else
+	      BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.im, 1.e-8);
 	}else{
-	  BOOST_CHECK_CLOSE(pbp.re, pbp_ref_re, 10); //10% is needed because rand num. are not the same in ref code
+	  BOOST_CHECK_CLOSE(pbp.re, pbp_ref_re, 25); //25% is needed because rand num. are not the same in ref code
 	  BOOST_CHECK_PREDICATE( std::less_equal<hmc_float>(), (pbp.im)(pbp_ref_im_minmax.im) );
 	  BOOST_CHECK_PREDICATE( std::greater_equal<hmc_float>(), (pbp.im)(pbp_ref_im_minmax.re) );
 	}

@@ -53,21 +53,22 @@ void physics::algorithms::md_update_gaugefield(const physics::lattices::Gaugefie
 }
 
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
-        const hmc_float kappa, const hmc_float mubar)
+                                                const physics::lattices::Spinorfield& orig, const hardware::System& system,
+                                                physics::InterfacesHandler & interfacesHandler, const physics::AdditionalParameters& additionalParameters)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF";
     physics::fermionmatrix::Qplus qplus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus>());
-    qplus(out, gf, orig, kappa, mubar);
+    qplus(out, gf, orig, additionalParameters);
     log_squarenorm("Spinorfield after update", *out);
 }
 
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler, const hmc_float kappa, const hmc_float mubar)
+                                                const physics::lattices::Spinorfield_eo& orig, const hardware::System& system,
+                                                physics::InterfacesHandler & interfacesHandler, const physics::AdditionalParameters& additionalParameters)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF";
     physics::fermionmatrix::Qplus_eo qplus(system, interfacesHandler.getInterface<physics::fermionmatrix::Qplus_eo>());
-    qplus(out, gf, orig, kappa, mubar);
+    qplus(out, gf, orig, additionalParameters);
     log_squarenorm("Spinorfield after update", *out);
 }
 
@@ -86,7 +87,8 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Spinorf
  *       appears in the perform_RHMC_step function.
  */
 void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system, physics::InterfacesHandler & interfacesHandler, const hmc_float mass)
+                                                const physics::lattices::Rooted_Staggeredfield_eo& orig, const hardware::System& system,
+                                                physics::InterfacesHandler & interfacesHandler, const physics::AdditionalParameters& additionalParameters)
 {
     logger.debug() << "\tRHMC [UP]:\tupdate SF";
     const physics::algorithms::MolecularDynamicsInterface & parametersInterface = interfacesHandler.getMolecularDynamicsInterface();
@@ -98,7 +100,7 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
     for (int i = 0; i < out->Get_order(); i++)
         X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->Get_b(), orig, system, interfacesHandler, parametersInterface.getSolverPrec(), mass);
+    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->Get_b(), orig, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
     logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
     physics::lattices::sax(out, { out->Get_a0(), 0. }, orig);
@@ -113,16 +115,18 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
  * this needs 3 fermionmatrices in order to use cg as default solver (because for the cg one needs a hermitian matrix)
  */
 template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM, class SPINORFIELD> static void md_update_spinorfield_mp(
-        const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa,
-        const hmc_float mubar)
+        const SPINORFIELD * const out, const physics::lattices::Gaugefield& gf, const SPINORFIELD& orig, const hardware::System& system,
+        physics::InterfacesHandler& interfacesHandler)
 {
     SPINORFIELD temporarySpinorfield(system, interfacesHandler.getInterface<SPINORFIELD>());
     FERMIONMATRIX qplus(system, interfacesHandler.getInterface<FERMIONMATRIX>());
     const physics::algorithms::MolecularDynamicsInterface & parametersInterface = interfacesHandler.getMolecularDynamicsInterface();
+    const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<SPINORFIELD>(false);
+    const physics::AdditionalParameters& additionalParametersMp = interfacesHandler.getAdditionalParameters<SPINORFIELD>(true);
 
     log_squarenorm("Spinorfield before update: ", orig);
 
-    qplus(&temporarySpinorfield, gf, orig, kappa, mubar);
+    qplus(&temporarySpinorfield, gf, orig, additionalParameters);
 
     /**
      * Now one needs ( Qplus )^-1 (heavy_mass) using tmp as source to get phi_mp
@@ -142,7 +146,7 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         out->gamma5();
 
         FERMIONMATRIX qplusMp(system, interfacesHandler.getInterface<FERMIONMATRIX>());
-        physics::algorithms::solvers::bicgstab(out, qplusMp, gf, temporarySpinorfield, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappaMp(), parametersInterface.getMubarMp());
+        physics::algorithms::solvers::bicgstab(out, qplusMp, gf, temporarySpinorfield, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParametersMp);
     }   //try
     catch (physics::algorithms::solvers::SolverException& e) {
         logger.fatal() << e.what();
@@ -156,77 +160,87 @@ template<class FERMIONMATRIX, class FERMIONMATRIX_CONJ, class FERMIONMATRIX_HERM
         tmp2.gamma5();
 
         FERMIONMATRIX_HERM fm_herm(system, interfacesHandler.getInterface<FERMIONMATRIX_HERM>());
-        physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, temporarySpinorfield, system, interfacesHandler, parametersInterface.getSolverPrec(), parametersInterface.getKappaMp(), parametersInterface.getMubarMp());
+        physics::algorithms::solvers::cg(&tmp2, fm_herm, gf, temporarySpinorfield, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParametersMp);
         FERMIONMATRIX_CONJ fmConj(system, interfacesHandler.getInterface<FERMIONMATRIX_CONJ>());
-        fmConj(out, gf, tmp2, parametersInterface.getMubarMp(), parametersInterface.getMubarMp());
+        fmConj(out, gf, tmp2, additionalParametersMp);
     }
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield& orig, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa, const hmc_float mubar)
+                                                   const physics::lattices::Spinorfield& orig, const hardware::System& system,
+                                                   physics::InterfacesHandler& interfacesHandler)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF_MP";
     using physics::fermionmatrix::Qplus;
     using physics::fermionmatrix::Qminus;
     using physics::fermionmatrix::QplusQminus;
 
-    ::md_update_spinorfield_mp<Qplus, Qminus, QplusQminus>(out, gf, orig, system, interfacesHandler, kappa, mubar);
+    ::md_update_spinorfield_mp<Qplus, Qminus, QplusQminus>(out, gf, orig, system, interfacesHandler);
 }
 
 void physics::algorithms::md_update_spinorfield_mp(const physics::lattices::Spinorfield_eo * const out, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield_eo& orig, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const hmc_float kappa, const hmc_float mubar)
+                                                   const physics::lattices::Spinorfield_eo& orig, const hardware::System& system,
+                                                   physics::InterfacesHandler& interfacesHandler)
 {
     logger.debug() << "\tHMC [UP]:\tupdate SF_MP";
     using physics::fermionmatrix::Qplus_eo;
     using physics::fermionmatrix::Qminus_eo;
     using physics::fermionmatrix::QplusQminus_eo;
 
-    ::md_update_spinorfield_mp<Qplus_eo, Qminus_eo, QplusQminus_eo>(out, gf, orig, system, interfacesHandler, kappa, mubar);
+    ::md_update_spinorfield_mp<Qplus_eo, Qminus_eo, QplusQminus_eo>(out, gf, orig, system, interfacesHandler);
 }
 
 template<class SPINORFIELD> static void md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar,
-        physics::InterfacesHandler& interfacesHandler)
+                                                                const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system,
+                                                                physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters)
 {
     using namespace physics::algorithms;
 
     physics::lattices::Gaugemomenta delta_p(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     delta_p.zero();
-    calc_total_force(&delta_p, gf, phi, system, interfacesHandler, kappa, mubar);
+    calc_total_force(&delta_p, gf, phi, system, interfacesHandler, additionalParameters);
 
-    logger.debug() << "\tHMC " << "[UP]:\tupdate GM [" << eps << "]";
+    logger.debug() << "\t[R]HMC " << "[UP]:\tupdate GM [" << eps << "]";
     physics::lattices::saxpy(inout, -1. * eps, delta_p);
 }
 void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler, hmc_float kappa,
-        hmc_float mubar)
+                                                  const physics::lattices::Spinorfield& phi, const hardware::System& system,
+                                                  physics::InterfacesHandler& interfaceHandler, const physics::AdditionalParameters& additionalParameters)
 {
-    ::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar, interfaceHandler);
+    ::md_update_gaugemomentum(inout, eps, gf, phi, system, interfaceHandler, additionalParameters);
 }
 void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler, hmc_float kappa,
-        hmc_float mubar)
+                                                  const physics::lattices::Spinorfield_eo& phi, const hardware::System& system,
+                                                  physics::InterfacesHandler& interfaceHandler, const physics::AdditionalParameters& additionalParameters)
 {
-    ::md_update_gaugemomentum(inout, eps, gf, phi, system, kappa, mubar, interfaceHandler);
+    ::md_update_gaugemomentum(inout, eps, gf, phi, system, interfaceHandler, additionalParameters);
+}
+
+void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf,
+                                                  const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system,
+                                                  physics::InterfacesHandler& interfaceHandler, const physics::AdditionalParameters& additionalParameters)
+{
+    ::md_update_gaugemomentum(inout, eps, gf, phi, system, interfaceHandler, additionalParameters);
 }
 
 //With staggered fermions we do not need the last argument mubar and than we do not use the template above
-void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
-        const hmc_float mass)
-{
-    using namespace physics::algorithms;
-
-    physics::lattices::Gaugemomenta delta_p(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
-    delta_p.zero();
-    calc_total_force(&delta_p, gf, phi, system, interfaceHandler, mass);
-
-    logger.debug() << "\tRHMC " << "[UP]:\tupdate GM [" << eps << "]";
-    physics::lattices::saxpy(inout, -1. * eps, delta_p);
-}
+//void physics::algorithms::md_update_gaugemomentum(const physics::lattices::Gaugemomenta * const inout, hmc_float eps, const physics::lattices::Gaugefield& gf,
+//                                                  const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system,
+//                                                  physics::InterfacesHandler& interfaceHandler, const physics::AdditionalParameters& additionalParameters)
+//{
+//    using namespace physics::algorithms;
+//
+//    physics::lattices::Gaugemomenta delta_p(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
+//    delta_p.zero();
+//    calc_total_force(&delta_p, gf, phi, system, interfaceHandler, mass);
+//
+//    logger.debug() << "\tRHMC " << "[UP]:\tupdate GM [" << eps << "]";
+//    physics::lattices::saxpy(inout, -1. * eps, delta_p);
+//}
 
 void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices::Gaugemomenta * const gm, const hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const hardware::System& system, physics::InterfacesHandler& interfaceHandler)
+                                                        const physics::lattices::Gaugefield& gf, const hardware::System& system,
+                                                        physics::InterfacesHandler& interfaceHandler)
 {
     const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
@@ -238,48 +252,61 @@ void physics::algorithms::md_update_gaugemomentum_gauge(const physics::lattices:
 }
 
 template<class SPINORFIELD> static void md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi, const hardware::System& system, hmc_float kappa, hmc_float mubar,
-        physics::InterfacesHandler& interfacesHandler)
+                                                                        const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi,
+                                                                        const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
+                                                                        const physics::AdditionalParameters& additionalParameters)
 {
     using namespace physics::algorithms;
 
     const physics::lattices::Gaugemomenta force(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
     force.zero();
-    calc_fermion_force(&force, gf, phi, system, interfacesHandler, kappa, mubar);
-    log_squarenorm("\tHMC [UP]:\tFORCE [DET]:\t", force);
-    logger.debug() << "\tHMC " << "[UP]:\tupdate GM [" << eps << "]";
+    calc_fermion_force(&force, gf, phi, system, interfacesHandler, additionalParameters);
+    log_squarenorm("\t[R]HMC [UP]:\tFORCE [DET]:\t", force);
+    logger.debug() << "\t[R]HMC " << "[UP]:\tupdate GM [" << eps << "]";
     physics::lattices::saxpy(inout, -1. * eps, force);
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system,
-        physics::InterfacesHandler& interfaceHandler, hmc_float kappa, hmc_float mubar)
+                                                          const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi,
+                                                          const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
+                                                          const physics::AdditionalParameters& additionalParameters)
 {
-    ::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, kappa, mubar, interfaceHandler);
+    ::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, interfaceHandler, additionalParameters);
 }
 void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system,
-        physics::InterfacesHandler& interfaceHandler, hmc_float kappa, hmc_float mubar)
+                                                          const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi,
+                                                          const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
+                                                          const physics::AdditionalParameters& additionalParameters)
 {
-    ::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, kappa, mubar, interfaceHandler);
+    ::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, interfaceHandler, additionalParameters);
+}
+
+void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
+                                                          const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi,
+                                                          const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
+                                                          const physics::AdditionalParameters& additionalParameters)
+{
+    ::md_update_gaugemomentum_fermion(inout, eps, gf, phi, system, interfaceHandler, additionalParameters);
 }
 
 //With staggered fermions we do not need the last argument mubar and than we do not use the template above
-void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system,
-        physics::InterfacesHandler& interfaceHandler, const hmc_float mass)
-{
-    using namespace physics::algorithms;
-
-    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
-    force.zero();
-    calc_fermion_force(&force, gf, phi, system, interfaceHandler, mass);
-    log_squarenorm("\tRHMC [UP]:\tFORCE [DET]:\t", force);
-    logger.debug() << "\tRHMC " << "[UP]:\tupdate GM [" << eps << "]";
-    physics::lattices::saxpy(inout, -1. * eps, force);
-}
+//void physics::algorithms::md_update_gaugemomentum_fermion(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
+//                                                          const physics::lattices::Gaugefield& gf, const physics::lattices::Rooted_Staggeredfield_eo& phi,
+//                                                          const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
+//                                                          const physics::AdditionalParameters& additionalParameters)
+//{
+//    using namespace physics::algorithms;
+//
+//    const physics::lattices::Gaugemomenta force(system, interfaceHandler.getInterface<physics::lattices::Gaugemomenta>());
+//    force.zero();
+//    calc_fermion_force(&force, gf, phi, system, interfaceHandler, mass);
+//    log_squarenorm("\tRHMC [UP]:\tFORCE [DET]:\t", force);
+//    logger.debug() << "\tRHMC " << "[UP]:\tupdate GM [" << eps << "]";
+//    physics::lattices::saxpy(inout, -1. * eps, force);
+//}
 
 template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+                                                                         const physics::lattices::Gaugefield& gf, const SPINORFIELD& phi_mp,
+                                                                         const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
     using namespace physics::algorithms;
 
@@ -292,14 +319,14 @@ template<class SPINORFIELD> static void md_update_gaugemomentum_detratio(const p
     physics::lattices::saxpy(inout, -1. * eps, force);
 }
 void physics::algorithms::md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi, const hardware::System& system,
-        physics::InterfacesHandler& interfaceHandler)
+                                                           const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& phi,
+                                                           const hardware::System& system, physics::InterfacesHandler& interfaceHandler)
 {
     ::md_update_gaugemomentum_detratio(inout, eps, gf, phi, system, interfaceHandler);
 }
 void physics::algorithms::md_update_gaugemomentum_detratio(const physics::lattices::Gaugemomenta * const inout, hmc_float eps,
-        const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi, const hardware::System& system,
-        physics::InterfacesHandler& interfaceHandler)
+                                                           const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& phi,
+                                                           const hardware::System& system, physics::InterfacesHandler& interfaceHandler)
 {
     ::md_update_gaugemomentum_detratio(inout, eps, gf, phi, system, interfaceHandler);
 }

@@ -34,10 +34,10 @@ int physics::algorithms::solvers::cg_m(std::vector<std::shared_ptr<physics::latt
                                        const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
                                        const physics::lattices::Gaugefield& gf, const std::vector<hmc_float> sigma,
                                        const physics::lattices::Staggeredfield_eo& b, const hardware::System& system,
-                                       physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass)
+                                       physics::InterfacesHandler& interfacesHandler, hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     physics::algorithms::solvers::SolverShifted<physics::lattices::Staggeredfield_eo, physics::fermionmatrix::Fermionmatrix_stagg_eo>
-    solverShifted(x, A, gf, sigma, b, system, interfacesHandler, prec, mass);
+    solverShifted(x, A, gf, sigma, b, system, interfacesHandler, prec, additionalParameters);
     x = solverShifted.solve();
     return solverShifted.getNumberOfIterationsDone();
 }
@@ -47,13 +47,15 @@ template<typename FERMIONFIELD, typename FERMIONMATRIX>
 physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::SolverShifted(const std::vector<std::shared_ptr<FERMIONFIELD> > xIn, const FERMIONMATRIX& AIn,
                                                                                         const physics::lattices::Gaugefield& gfIn, const std::vector<hmc_float> sigmaIn,
                                                                                         const FERMIONFIELD& bIn, const hardware::System& systemIn,
-                                                                                        physics::InterfacesHandler& interfacesHandlerIn, hmc_float prec, hmc_float mass)
-     : x(xIn), A(AIn), gf(gfIn), sigma(sigmaIn), b(bIn), system(systemIn), interfacesHandler(interfacesHandlerIn), parametersInterface(interfacesHandler.getSolversParametersInterface()), solverPrecision(prec), fermionMass(mass),
+                                                                                        physics::InterfacesHandler& interfacesHandlerIn, hmc_float prec,
+                                                                                        const physics::AdditionalParameters& additionalParametersIn)
+     : x(xIn), A(AIn), gf(gfIn), sigma(sigmaIn), b(bIn), system(systemIn), solverPrecision(prec), additionalParameters(additionalParametersIn),
        //TODO:Remove following line
        params(system.get_inputparameters()),
+       parametersInterface(interfacesHandlerIn.getSolversParametersInterface()),
        hasSystemBeSolved(false), numberOfEquations(sigmaIn.size()), iterationNumber(0), residuumValue(NAN),
-       r(FERMIONFIELD{system, interfacesHandler.getInterface<FERMIONFIELD>()}),
-       p(FERMIONFIELD{system, interfacesHandler.getInterface<FERMIONFIELD>()}),
+       r(FERMIONFIELD{system, interfacesHandlerIn.getInterface<FERMIONFIELD>()}),
+       p(FERMIONFIELD{system, interfacesHandlerIn.getInterface<FERMIONFIELD>()}),
        ps(numberOfEquations),
        zeta_prev(physics::lattices::Vector<hmc_float>{numberOfEquations, system}),
        zeta(physics::lattices::Vector<hmc_float>{numberOfEquations, system}),
@@ -69,7 +71,7 @@ physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::Solver
        beta_scalar_prev(physics::lattices::Scalar<hmc_float>{system}),
        beta_scalar(physics::lattices::Scalar<hmc_float>{system}),
        zero(physics::lattices::Scalar<hmc_float>{system}),
-       v(FERMIONFIELD(system, interfacesHandler.getInterface<FERMIONFIELD>())),
+       v(FERMIONFIELD(system, interfacesHandlerIn.getInterface<FERMIONFIELD>())),
        tmp1(physics::lattices::Scalar<hmc_float>{system}),
        tmp2(physics::lattices::Scalar<hmc_float>{system}),
        tmp3(physics::lattices::Scalar<hmc_float>{system}),
@@ -77,7 +79,7 @@ physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::Solver
        single_eq_resid_host{nullptr}
 {
     for(auto& psElement: ps){
-        psElement = std::make_shared<FERMIONFIELD>(system, interfacesHandler.getInterface<FERMIONFIELD>());
+        psElement = std::make_shared<FERMIONFIELD>(system, interfacesHandlerIn.getInterface<FERMIONFIELD>());
     }
     if(sigma.size() != x.size())
         throw std::invalid_argument("Wrong size of multi-shifted inverter parameters!");
@@ -119,7 +121,7 @@ void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::u
 {
     //v=A.p and tmp1=(r,r) and tmp3=(p,v) ---> beta_scalar=(-1)*tmp1/tmp3
     copyData(&beta_scalar_prev, beta_scalar);   //before updating beta_scalar its value is saved
-    A(&v, gf, p, &fermionMass);
+    A(&v, gf, p, &additionalParameters);
     log_squarenorm(createLogPrefix() + "v: ", v);
     scalar_product_real_part(&tmp3, p, v);
     divide(&beta_scalar, tmp1, tmp3);   //tmp1 is set from previous iteration

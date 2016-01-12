@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "additionalParameters.hpp"
 #include "algorithms/algorithmsInterfaces.hpp"
 #include "fermionmatrix/fermionmatrixInterfaces.hpp"
 #include "lattices/latticesInterfaces.hpp"
@@ -52,7 +53,9 @@ namespace physics {
     	class MdagM_eo;
     }
 
-    template<typename NOT_IMPORTANT> struct InterfaceType; //Not defined in order to prevent non specialized template instatiation!
+    //The following templates are not defined in order to prevent non specialized template instatiation!
+    template<typename NOT_IMPORTANT> struct InterfaceType;
+    template<typename NOT_IMPORTANT> struct AdditionalParametersType;
 
     template<>
     struct InterfaceType<physics::lattices::Gaugefield> {
@@ -124,11 +127,30 @@ namespace physics {
     };
 
 
+    template<>
+    struct AdditionalParametersType<physics::lattices::Spinorfield> {
+            using value = physics::WilsonAdditionalParameters;
+    };
+    template<>
+    struct AdditionalParametersType<physics::lattices::Spinorfield_eo> {
+            using value = physics::WilsonAdditionalParameters;
+    };
+    template<>
+    struct AdditionalParametersType<physics::lattices::Staggeredfield_eo> {
+            using value = physics::StaggeredAdditionalParameters;
+    };    template<>
+    struct AdditionalParametersType<physics::lattices::Rooted_Staggeredfield_eo> {
+            using value = physics::StaggeredAdditionalParameters;
+    };
+
+
 
     class InterfacesHandler {
         public:
             virtual ~InterfacesHandler() {};
-            template<class OBJECT> const typename InterfaceType<OBJECT>::value& getInterface();//Not defined in order to prevent non specialized template instatiation!
+            //The following templates are not defined in order to prevent non specialized template instatiation!
+            template<class OBJECT> const typename InterfaceType<OBJECT>::value& getInterface();
+            template<class OBJECT> const typename AdditionalParametersType<OBJECT>::value& getAdditionalParameters(bool withMassPreconditioning = false);
 
             //TODO: For the moment there is no object responsible to calculate observables, so we leave the following getters out of the above template
             //      It would be better to create objects in physics::observables and move these getters in the template above.
@@ -161,6 +183,8 @@ namespace physics {
             virtual const physics::FermionParametersInterface& getFermionParametersInterface() = 0;
             virtual const physics::FermionEoParametersInterface& getFermionEoParametersInterface() = 0;
             virtual const physics::FermionStaggeredEoParametersInterface& getFermionStaggeredEoParametersInterface() = 0;
+            virtual const physics::WilsonAdditionalParameters& getWilsonAdditionalParameters(bool) = 0;
+            virtual const physics::StaggeredAdditionalParameters& getStaggeredAdditionalParameters() = 0;
     };
 
     template<> inline const typename InterfaceType<physics::lattices::Gaugefield>::value& InterfacesHandler::getInterface<physics::lattices::Gaugefield>()
@@ -232,6 +256,23 @@ namespace physics {
         return getFermionStaggeredEoParametersInterface();
     }
 
+    template<> inline const typename AdditionalParametersType<physics::lattices::Spinorfield>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Spinorfield>(bool withMassPreconditioning)
+    {
+        return getWilsonAdditionalParameters(withMassPreconditioning);
+    }
+    template<> inline const typename AdditionalParametersType<physics::lattices::Spinorfield_eo>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Spinorfield_eo>(bool withMassPreconditioning)
+    {
+        return getWilsonAdditionalParameters(withMassPreconditioning);
+    }
+    template<> inline const typename AdditionalParametersType<physics::lattices::Staggeredfield_eo>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Staggeredfield_eo>(bool)
+    {
+        return getStaggeredAdditionalParameters();
+    }
+    template<> inline const typename AdditionalParametersType<physics::lattices::Rooted_Staggeredfield_eo>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Rooted_Staggeredfield_eo>(bool)
+    {
+        return getStaggeredAdditionalParameters();
+    }
+
 }
 
 
@@ -267,7 +308,9 @@ namespace physics {
                   molecularDynamicsParametersInterface{nullptr},
                   metropolisParametersInterface{nullptr},
                   hmcParametersInterface{nullptr},
-                  rhmcParametersInterface{nullptr} {}
+                  rhmcParametersInterface{nullptr},
+                  wilsonAdditionalParameters{nullptr},
+                  staggeredAdditionalParameters{nullptr} {}
             ~InterfacesHandlerImplementation() {}
             const physics::observables::GaugeObservablesParametersInterface& getGaugeObservablesParametersInterface() override
             {
@@ -415,6 +458,27 @@ namespace physics {
                 return *fermionStaggeredEoParametersInterface;
             }
 
+            virtual const physics::WilsonAdditionalParameters& getWilsonAdditionalParameters(bool withMassPreconditioning) override
+            {
+                if(withMassPreconditioning){
+                    if(wilsonAdditionalParametersMp == nullptr)
+                        wilsonAdditionalParametersMp = std::unique_ptr<const physics::WilsonAdditionalParameters>(new physics::WilsonAdditionalParameters{parameters, true});
+                    return *wilsonAdditionalParametersMp;
+                }else{
+                    if(wilsonAdditionalParameters == nullptr)
+                        wilsonAdditionalParameters = std::unique_ptr<const physics::WilsonAdditionalParameters>(new physics::WilsonAdditionalParameters{parameters, false});
+                    return *wilsonAdditionalParameters;
+                }
+            }
+
+            virtual const physics::StaggeredAdditionalParameters& getStaggeredAdditionalParameters() override
+            {
+                if(staggeredAdditionalParameters == nullptr)
+                    staggeredAdditionalParameters = std::unique_ptr<const physics::StaggeredAdditionalParameters>(new physics::StaggeredAdditionalParameters{parameters});
+                return *staggeredAdditionalParameters;
+            }
+
+
             const meta::Inputparameters& parameters;
             std::unique_ptr<const physics::lattices::GaugefieldParametersInterface> gaugefieldParametersInterface;
             std::unique_ptr<const physics::lattices::GaugemomentaParametersInterface> gaugemomentaParametersInterface;
@@ -440,6 +504,20 @@ namespace physics {
             std::unique_ptr<const physics::algorithms::MetropolisParametersInterface> metropolisParametersInterface;
             std::unique_ptr<const physics::algorithms::HmcParametersInterface> hmcParametersInterface;
             std::unique_ptr<const physics::algorithms::RhmcParametersInterface> rhmcParametersInterface;
+            std::unique_ptr<const physics::WilsonAdditionalParameters> wilsonAdditionalParameters;
+            std::unique_ptr<const physics::WilsonAdditionalParameters> wilsonAdditionalParametersMp;
+            std::unique_ptr<const physics::StaggeredAdditionalParameters> staggeredAdditionalParameters;
+
     };
 
+    /*
+     * NOTE: In the InterfacesHandlerImplementation we need two wilsonAdditionalParameters pointers, one without mass preconditioning and one with.
+     *       The reason for this is that each interface of the InterfacesHandler is built only the first time the corresponding getter is called.
+     *       To understand more in detail which is the problem, let us suppose to have only one WilsonAdditionalParameter pointer. This is allocated
+     *       when the getter is called for the first time and later, if the getter is called again, the pointed object does not change, but it is just
+     *       returned. But the WilsonAdditionalParameter getter has a bool argument to ask either for the mass preconditioned additional parameters
+     *       or to ask for the normal additional parameters. So if this boolean variable changes in two successive call to the getter, having only one
+     *       pointer would mean to basically ignore this bool variable.
+     *       So we must have an object to be returned when this bool is true and one when it is false.
+     */
 }

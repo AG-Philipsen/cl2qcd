@@ -49,7 +49,8 @@ namespace physics {
          *        if and only if the operator A is hermitian.
          */
         hmc_float find_max_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float mass);
+                                      const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec,
+                                      const physics::AdditionalParameters& additionalParameters);
 
         /**
          * This function returns the minimum eigenvalue of the operator A up to some specified precision.
@@ -57,8 +58,8 @@ namespace physics {
          *  @param gf The gaugefield on which A depends
          *  @param system The system it is operating on
          *  @param prec The precision up to which the minimum eigenvalue is found
-         *  @param conservative If true, the method returns the return value of the method get_mass of the
-         *                      operator A. If false, then the minimum eigenvalue is calculated.
+         *  @param conservative If true, the method returns the return value of the method getThresholdForMinimumEigenvalue
+         *                      of the operator A. If false, then the minimum eigenvalue is calculated.
          *
          *  @note The note of the function find_max_eigenvalue is still valid for this function.
          *        Here to estimate the minimum eigenvalue, the maximum one is at first found, and then
@@ -71,7 +72,7 @@ namespace physics {
          */
         hmc_float find_min_eigenvalue(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
                                       const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float prec,
-                                      hmc_float mass, const bool conservative);
+                                      const physics::AdditionalParameters& additionalParameters);
 
         /**
          * This function finds both the minimum and the maximum eigenvalue of the operator A
@@ -82,15 +83,16 @@ namespace physics {
          *  @param gf The gaugefield on which A depends
          *  @param system The system it is operating on
          *  @param prec The precision up to which the minimum eigenvalue is found
-         *  @param conservative If true, the method returns the return value of the method get_mass of the
-         *                      operator A as minimum eigenvalue. If false, then the minimum eigenvalue is calculated.
+         *  @param conservative If true, the method sets the return value of the method getThresholdForMinimumEigenvalue
+         *                      of the operator A as minimum eigenvalue. If false, then the minimum eigenvalue is calculated.
+         *                      The maximum eigenvalue is calculated and then increased vy 5%.
          *
          *  @note The note of the functions find_max_eigenvalue and find_min_eigenvalue are
          *        still valid for this function.
          */
         void find_maxmin_eigenvalue(hmc_float& max, hmc_float& min, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
                                     const physics::lattices::Gaugefield& gf, const hardware::System& system,  physics::InterfacesHandler& interfacesHandler,
-                                    hmc_float prec, hmc_float mass, const bool conservative);
+                                    hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 
     }
 

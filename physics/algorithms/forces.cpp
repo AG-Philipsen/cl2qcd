@@ -72,36 +72,45 @@ void physics::algorithms::calc_gauge_force(const physics::lattices::Gaugemomenta
 }
 
 template<class SPINORFIELD> static void calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const SPINORFIELD& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar)
+        const SPINORFIELD& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters)
 {
     using namespace physics::algorithms;
 
     force->zero();
     if(!interfacesHandler.getForcesParametersInterface().getUseGaugeOnly())
-        calc_fermion_forces(force, gf, phi, system, interfacesHandler, kappa, mubar);
+        calc_fermion_forces(force, gf, phi, system, interfacesHandler, additionalParameters);
     calc_gauge_force(force, gf, interfacesHandler);
 }
 
 void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar)
+        const physics::lattices::Spinorfield& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
+        const physics::AdditionalParameters& additionalParameters)
 {
-    ::calc_total_force(force, gf, phi, system, interfacesHandler, kappa, mubar);
+    ::calc_total_force(force, gf, phi, system, interfacesHandler, additionalParameters);
 }
 void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar)
+        const physics::lattices::Spinorfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
+        const physics::AdditionalParameters& additionalParameters)
 {
-    ::calc_total_force(force, gf, phi, system, interfacesHandler, kappa, mubar);
+    ::calc_total_force(force, gf, phi, system, interfacesHandler, additionalParameters);
+}
+
+void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
+        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
+        const physics::AdditionalParameters& additionalParameters)
+{
+    ::calc_total_force(force, gf, phi, system, interfaceHandler, additionalParameters);
 }
 
 //Here we do not need the last argument mubar and than we do not use the template above
-void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
-        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
-        const hmc_float mass)
-{
-    using namespace physics::algorithms;
-    force->zero();
-    if(!interfaceHandler.getForcesParametersInterface().getUseGaugeOnly())
-        calc_fermion_forces(force, gf, phi, system, interfaceHandler, mass);
-    calc_gauge_force(force, gf, interfaceHandler);
-}
+//void physics::algorithms::calc_total_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
+//        const physics::lattices::Rooted_Staggeredfield_eo& phi, const hardware::System& system, physics::InterfacesHandler& interfaceHandler,
+//        const hmc_float mass)
+//{
+//    using namespace physics::algorithms;
+//    force->zero();
+//    if(!interfaceHandler.getForcesParametersInterface().getUseGaugeOnly())
+//        calc_fermion_forces(force, gf, phi, system, interfaceHandler, mass);
+//    calc_gauge_force(force, gf, interfaceHandler);
+//}
 

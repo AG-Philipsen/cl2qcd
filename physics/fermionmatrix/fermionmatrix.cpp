@@ -37,15 +37,15 @@ const hardware::System& physics::fermionmatrix::Fermionmatrix_basic::get_system(
 }
 
 void physics::fermionmatrix::M::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-                                           const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const
+                                           const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	switch(fermionmatrixParametersInterface.getFermionicActionType()) {
 		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
-			M_wilson(out, gf, in, kappa);
+			M_wilson(out, gf, in, additionalParameters.getKappa());
 			break;
 		case common::action::twistedmass:
-			M_tm_plus(out, gf, in, kappa, mubar);
+			M_tm_plus(out, gf, in, additionalParameters.getKappa(), additionalParameters.getMubar());
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface.getFermionicActionType());
@@ -81,15 +81,15 @@ cl_ulong physics::fermionmatrix::M::get_read_write_size() const
 }
 
 void physics::fermionmatrix::Qplus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-                                               const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const
+                                               const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	switch(fermionmatrixParametersInterface.getFermionicActionType()) {
 		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
-			M_wilson(out, gf, in, kappa);
+			M_wilson(out, gf, in, additionalParameters.getKappa());
 			break;
 		case common::action::twistedmass:
-			M_tm_plus(out, gf, in, kappa, mubar);
+			M_tm_plus(out, gf, in, additionalParameters.getKappa(), additionalParameters.getMubar());
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface.getFermionicActionType());
@@ -137,15 +137,15 @@ cl_ulong physics::fermionmatrix::Qplus::get_read_write_size() const
 	return res;
 }
 void physics::fermionmatrix::Qminus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-                                                const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const
+                                                const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	switch(fermionmatrixParametersInterface.getFermionicActionType()) {
 		case common::action::wilson:
 			//in the pure Wilson case there is just one fermionmatrix
-			M_wilson(out, gf, in, kappa);
+			M_wilson(out, gf, in, additionalParameters.getKappa());
 			break;
 		case common::action::twistedmass:
-			M_tm_minus(out, gf, in, kappa, mubar);
+			M_tm_minus(out, gf, in, additionalParameters.getKappa(), additionalParameters.getMubar());
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface.getFermionicActionType());
@@ -193,10 +193,10 @@ cl_ulong physics::fermionmatrix::Qminus::get_read_write_size() const
 	return res;
 }
 void physics::fermionmatrix::QplusQminus::operator()(const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf,
-                                                     const physics::lattices::Spinorfield& in, hmc_float kappa, hmc_float mubar) const
+                                                     const physics::lattices::Spinorfield& in, const physics::AdditionalParameters& additionalParameters) const
 {
-	q_minus(&tmp, gf, in, kappa, mubar);
-	q_plus(out, gf, tmp, kappa, mubar);
+	q_minus(&tmp, gf, in, additionalParameters);
+	q_plus(out, gf, tmp, additionalParameters);
 }
 cl_ulong physics::fermionmatrix::QplusQminus::get_flops() const
 {
@@ -207,7 +207,7 @@ cl_ulong physics::fermionmatrix::QplusQminus::get_read_write_size() const
 	return q_minus.get_read_write_size() + q_plus.get_read_write_size();
 }
 void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-                                             const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const
+                                             const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
@@ -220,6 +220,8 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
 
+    hmc_float kappa = additionalParameters.getKappa();
+
 	switch(fermionmatrixParametersInterface.getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
@@ -227,13 +229,16 @@ void physics::fermionmatrix::Aee::operator()(const physics::lattices::Spinorfiel
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case common::action::twistedmass:
-			dslash(&tmp, gf, in, ODD, kappa);
-			M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
-			dslash(out, gf, tmp2, EVEN, kappa);
-			M_tm_sitediagonal(&tmp, in, mubar);
-			saxpy(out, {1., 0.}, *out, tmp);
-			break;
+		case common::action::twistedmass: //explicit scope to be able to declare variable in it, initializing it at the same time
+        {
+            hmc_float mubar = additionalParameters.getMubar();
+            dslash(&tmp, gf, in, ODD, kappa);
+            M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
+            dslash(out, gf, tmp2, EVEN, kappa);
+            M_tm_sitediagonal(&tmp, in, mubar);
+            saxpy(out, {1., 0.}, *out, tmp);
+            break;
+        }
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface.getFermionicActionType());
 	}
@@ -289,7 +294,7 @@ cl_ulong physics::fermionmatrix::Aee::get_read_write_size() const
 	return res;
 }
 void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-                                                           const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const
+                                                           const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
@@ -302,6 +307,8 @@ void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattic
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
 
+    hmc_float kappa = additionalParameters.getKappa();
+
 	switch(fermionmatrixParametersInterface.getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
@@ -309,13 +316,16 @@ void physics::fermionmatrix::Aee_AND_gamma5_eo::operator()(const physics::lattic
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, in);
 			break;
-		case common::action::twistedmass:
+		case common::action::twistedmass: //explicit scope to be able to declare variable in it, initializing it at the same time
+		{
+		    hmc_float mubar = additionalParameters.getMubar();
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
 			M_tm_sitediagonal(&tmp, in, mubar);
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, tmp);
 			break;
+		}
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface.getFermionicActionType());
 	}
@@ -371,7 +381,7 @@ cl_ulong physics::fermionmatrix::Aee_AND_gamma5_eo::get_read_write_size() const
 	return res;
 }
 void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-                                                   const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const
+                                                   const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
@@ -384,6 +394,8 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
 
+    hmc_float kappa = additionalParameters.getKappa();
+
 	switch(fermionmatrixParametersInterface.getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
@@ -391,13 +403,16 @@ void physics::fermionmatrix::Aee_minus::operator()(const physics::lattices::Spin
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy(out, {1., 0.}, *out, in);
 			break;
-		case common::action::twistedmass:
+		case common::action::twistedmass: //explicit scope to be able to declare variable in it, initializing it at the same time
+		{
+		    hmc_float mubar = additionalParameters.getMubar();
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal_minus(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
 			M_tm_sitediagonal_minus(&tmp, in, mubar);
 			saxpy(out, {1., 0.}, *out, tmp);
 			break;
+		}
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface.getFermionicActionType());
 	}
@@ -453,7 +468,8 @@ cl_ulong physics::fermionmatrix::Aee_minus::get_read_write_size() const
 	return res;
 }
 void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-                                                                 const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const
+                                                                 const physics::lattices::Spinorfield_eo& in,
+                                                                 const physics::AdditionalParameters& additionalParameters) const
 {
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
@@ -466,6 +482,8 @@ void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::
 
 	/** @todo The local creation of the temporary field is known to cause performance problems... */
 
+    hmc_float kappa = additionalParameters.getKappa();
+
 	switch(fermionmatrixParametersInterface.getFermionicActionType()) {
 		case common::action::wilson:
 			//in this case, the diagonal matrix is just 1 and falls away.
@@ -473,13 +491,16 @@ void physics::fermionmatrix::Aee_minus_AND_gamma5_eo::operator()(const physics::
 			dslash(out, gf, tmp, EVEN, kappa);
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, in);
 			break;
-		case common::action::twistedmass:
+		case common::action::twistedmass: //explicit scope to be able to declare variable in it, initializing it at the same time
+		{
+		    hmc_float mubar = additionalParameters.getMubar();
 			dslash(&tmp, gf, in, ODD, kappa);
 			M_tm_inverse_sitediagonal_minus(&tmp2, tmp, mubar);
 			dslash(out, gf, tmp2, EVEN, kappa);
 			M_tm_sitediagonal_minus(&tmp, in, mubar);
 			saxpy_AND_gamma5_eo(out, {1., 0.}, *out, tmp);
 			break;
+		}
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or twistedmass", fermionmatrixParametersInterface.getFermionicActionType());
 	}
@@ -535,13 +556,13 @@ cl_ulong physics::fermionmatrix::Aee_minus_AND_gamma5_eo::get_read_write_size() 
 	return res;
 }
 void physics::fermionmatrix::Qplus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-                                                  const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const
+                                                  const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	if(fermionmatrixParametersInterface.useMergedFermionicKernels() == false) {
-		aee(out, gf, in, kappa, mubar);
+		aee(out, gf, in, additionalParameters);
 		out->gamma5();
 	} else {
-		aee_AND_gamma5_eo(out, gf, in, kappa, mubar);
+		aee_AND_gamma5_eo(out, gf, in, additionalParameters);
 	}
 }
 cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
@@ -556,13 +577,13 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_flops() const
 	return res;
 }
 void physics::fermionmatrix::Qminus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-                                                   const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const
+                                                   const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const
 {
 	if(fermionmatrixParametersInterface.useMergedFermionicKernels() == false) {
-		aee_minus(out, gf, in, kappa, mubar);
+		aee_minus(out, gf, in, additionalParameters);
 		out->gamma5();
 	} else {
-		aee_minus_AND_gamma5_eo(out, gf, in, kappa, mubar);
+		aee_minus_AND_gamma5_eo(out, gf, in, additionalParameters);
 	}
 }
 cl_ulong physics::fermionmatrix::Qminus_eo::get_flops() const
@@ -599,10 +620,10 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_read_write_size() const
 	return res;
 }
 void physics::fermionmatrix::QplusQminus_eo::operator()(const physics::lattices::Spinorfield_eo * out, const physics::lattices::Gaugefield& gf,
-                                                        const physics::lattices::Spinorfield_eo& in, hmc_float kappa, hmc_float mubar) const
+                                                        const physics::lattices::Spinorfield_eo& in, const physics::AdditionalParameters& additionalParameters) const
 {
-	q_minus(&tmp, gf, in, kappa, mubar);
-	q_plus(out, gf, tmp, kappa, mubar);
+    q_minus(&tmp, gf, in, additionalParameters);
+	q_plus(out, gf, tmp, additionalParameters);
 }
 cl_ulong physics::fermionmatrix::QplusQminus_eo::get_flops() const
 {

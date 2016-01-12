@@ -30,16 +30,16 @@ namespace {
 
     int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf,
                      const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
-                     hmc_float prec, hmc_float kappa, hmc_float mubar);
+                     hmc_float prec, const physics::AdditionalParameters& additionalParameters);
     int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf,
                     const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
-                    hmc_float prec, hmc_float kappa, hmc_float mubar);
+                    hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 
 }
 
 int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& f,
                                      const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system,
-                                     physics::InterfacesHandler& interfacesHandler, hmc_float prec, hmc_float kappa, hmc_float mubar)
+                                     physics::InterfacesHandler& interfacesHandler, hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     using physics::lattices::Spinorfield;
     using physics::algorithms::solvers::SolverStuck;
@@ -66,7 +66,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
         hmc_complex omega;
         if(iter % parametersInterface.getIterRefresh() == 0) {
             //rn = A*inout
-            f(&rn, gf, *x, kappa, mubar);
+            f(&rn, gf, *x, additionalParameters);
             log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
             //rn = source - A*inout
             saxpy(&rn, { 1., 0. }, rn, b);
@@ -81,7 +81,7 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
             omega = rho_next;
         }
         //v = A pn
-        f(&v, gf, p, kappa, mubar);
+        f(&v, gf, p, additionalParameters);
         log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
 
         //alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
@@ -146,12 +146,12 @@ int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield * x, c
 
 int physics::algorithms::solvers::cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f,
                                      const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system,
-                                     physics::InterfacesHandler & interfacesHandler, hmc_float prec, hmc_float kappa, hmc_float mubar)
+                                     physics::InterfacesHandler & interfacesHandler, hmc_float prec, const physics::AdditionalParameters& additionalParameters)
 {
     if(system.get_devices().size() > 1) {
-        return cg_multidev(x, f, gf, b, system, interfacesHandler, prec, kappa, mubar);
+        return cg_multidev(x, f, gf, b, system, interfacesHandler, prec, additionalParameters);
     } else {
-        return cg_singledev(x, f, gf, b, system, interfacesHandler, prec, kappa, mubar);
+        return cg_singledev(x, f, gf, b, system, interfacesHandler, prec, additionalParameters);
     }
 }
 
@@ -246,7 +246,7 @@ namespace {
 
     int cg_singledev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf,
                      const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
-                     hmc_float prec, hmc_float kappa, hmc_float mubar)
+                     hmc_float prec, const physics::AdditionalParameters& additionalParameters)
     {
         const cl_ulong mf_flops = f.get_flops();
         const cl_ulong mf_bw = f.get_read_write_size();
@@ -279,7 +279,7 @@ namespace {
                 log_squarenorm(create_log_prefix_cg(iter) + "x (initial): ", *x);
             }
             if(iter % solver.refreshIteration == 0) {
-                f(&rn, gf, *x, kappa, mubar);   //rn = A*inout
+                f(&rn, gf, *x, additionalParameters);   //rn = A*inout
                 log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
 
                 saxpy(&rn, one, rn, b);   //rn = source - A*inout
@@ -292,7 +292,7 @@ namespace {
             } else {
                 copyData(&omega, rho_next);
             }
-            f(&v, gf, p, kappa, mubar);   //v = A pn
+            f(&v, gf, p, additionalParameters);   //v = A pn
             log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
 
             scalar_product(&rho, p, v);
@@ -366,14 +366,14 @@ namespace {
 
     int cg_multidev(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& f, const physics::lattices::Gaugefield& gf,
                     const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
-                    hmc_float prec, hmc_float kappa, hmc_float mubar)
+                    hmc_float prec, const physics::AdditionalParameters& additionalParameters)
     {
         using namespace physics::lattices;
         using physics::algorithms::solvers::SolverStuck;
         using physics::algorithms::solvers::SolverDidNotSolve;
 
         const physics::algorithms::SolversParametersInterface & parametersInterface = interfacesHandler.getSolversParametersInterface();
-        const int MINIMUM_ITERATIONS = parametersInterface.getCgMinimumIterationCount();
+        const unsigned int MINIMUM_ITERATIONS = parametersInterface.getCgMinimumIterationCount();
         if(MINIMUM_ITERATIONS) {
             logger.warn() << "Minimum iterations set to " << MINIMUM_ITERATIONS << " -- should be used *only* for inverter benchmarking!";
         }
@@ -397,7 +397,7 @@ namespace {
         hmc_complex tmp2;
 
         hmc_float resid;
-        int iter = 0;
+        unsigned int iter = 0;
 
         // report source and initial solution
         log_squarenorm(create_log_prefix_cg(iter) + "b (initial): ", b);
@@ -407,7 +407,7 @@ namespace {
         for (iter = 0; iter < parametersInterface.getCgMax(); iter++) {
             if(iter % parametersInterface.getIterRefresh() == 0) {
                 //rn = A*inout
-                f(&rn, gf, *x, kappa, mubar);
+                f(&rn, gf, *x, additionalParameters);
                 log_squarenorm(create_log_prefix_cg(iter) + "rn: ", rn);
                 //rn = source - A*inout
                 saxpy(&rn, hmc_complex_one, rn, b);
@@ -422,7 +422,7 @@ namespace {
                 omega = rho_next;
             }
             //v = A pn
-            f(&v, gf, p, kappa, mubar);
+            f(&v, gf, p, additionalParameters);
             log_squarenorm(create_log_prefix_cg(iter) + "v: ", v);
 
             //alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho

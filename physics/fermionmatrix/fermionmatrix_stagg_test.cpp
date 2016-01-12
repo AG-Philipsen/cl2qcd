@@ -74,8 +74,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
 		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		hmc_float mass = params.get_mass();
-		logger.info() << "The mass of the fermion is " << mass;
+		logger.info() << "The mass of the fermion is " << params.get_mass();
 		
 		Gaugefield gf(system, &gaugefieldParameters, prng, false);
 		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -88,9 +87,9 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 13);
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 31);
 
-		matrix1(&out, gf, sf1, &mass);
+		matrix1(&out, gf, sf1, &(interfacesHandler.getAdditionalParameters<Staggeredfield_eo>()));
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[0], 1.e-8);
-		matrix2(&out, gf, sf2, &mass);
+		matrix2(&out, gf, sf2, &(interfacesHandler.getAdditionalParameters<Staggeredfield_eo>()));
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[1], 1.e-8);
 	}
 
@@ -108,7 +107,6 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		
 		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
 		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>());
-        hmc_float mass = params.get_mass();
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
 		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
@@ -122,9 +120,9 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123);
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321);
 
-		matrix1(&out, gf, sf1, &mass);
+		matrix1(&out, gf, sf1, &(interfacesHandler.getAdditionalParameters<Staggeredfield_eo>()));
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[2], 1.e-8);
-		matrix2(&out, gf, sf2, &mass);
+		matrix2(&out, gf, sf2, &(interfacesHandler.getAdditionalParameters<Staggeredfield_eo>()));
 		BOOST_CHECK_CLOSE(squarenorm(out), refs[3], 1.e-8);
 	}
 }

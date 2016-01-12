@@ -34,10 +34,10 @@ namespace physics {
         //These methods really calculate the total fermion force and they add it to the Gaugemomenta field
         void calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
                                  const physics::lattices::Spinorfield& phi, const hardware::System& system,
-                                 physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
+                                 physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
         void calc_fermion_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
                                  const physics::lattices::Spinorfield_eo& phi, const hardware::System& system,
-                                 physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
+                                 physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
 
         void calc_detratio_forces(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
                                   const physics::lattices::Spinorfield& phi, const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
@@ -48,10 +48,10 @@ namespace physics {
         //are called from those above, that are actually unified by a template in the .cpp file)
         void calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
                                 const physics::lattices::Spinorfield& phi, const hardware::System& system,
-                                physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
+                                physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
         void calc_fermion_force(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
                                 const physics::lattices::Spinorfield_eo& phi, const hardware::System& system,
-                                physics::InterfacesHandler& interfacesHandler, hmc_float kappa, hmc_float mubar);
+                                physics::InterfacesHandler& interfacesHandler, const physics::AdditionalParameters& additionalParameters);
 
         void calc_fermion_force_detratio(const physics::lattices::Gaugemomenta * force, const physics::lattices::Gaugefield& gf,
                                          const physics::lattices::Spinorfield& phi_mp, const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
@@ -61,9 +61,9 @@ namespace physics {
         //These methods interfaces only the lower level of the code (Molecular_Dynamics class) with the upper one,
         //namely they just call the function that enqueues the kernel
         void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Spinorfield& Y, const physics::lattices::Spinorfield& X,
-                           const physics::lattices::Gaugefield& gf, hmc_float kappa);
+                           const physics::lattices::Gaugefield& gf, const physics::AdditionalParameters& additionalParameters);
         void fermion_force(const physics::lattices::Gaugemomenta * gm, const physics::lattices::Spinorfield_eo& Y, const physics::lattices::Spinorfield_eo& X,
-                           int evenodd, const physics::lattices::Gaugefield& gf, hmc_float kappa);
+                           int evenodd, const physics::lattices::Gaugefield& gf, const physics::AdditionalParameters& additionalParameters);
 
     }
 }
