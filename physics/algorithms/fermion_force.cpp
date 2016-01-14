@@ -523,7 +523,7 @@ void physics::algorithms::calc_fermion_force_detratio(const physics::lattices::G
         sax(&tmp, mone, tmp1);
     } else if(parametersInterface.getFermact() == common::action::twistedmass) {
         dslash(&tmp1, gf, solution, ODD, additionalParameters.getKappa());
-        M_tm_inverse_sitediagonal_minus(&tmp2, tmp1, parametersInterface.getMubar());
+        M_tm_inverse_sitediagonal_minus(&tmp2, tmp1, additionalParameters.getMubar());
         sax(&tmp, mone, tmp2);
     } else {
         throw Print_Error_Message("Selected fermion action is not implemented", __FILE__, __LINE__);

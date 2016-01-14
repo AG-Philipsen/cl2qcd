@@ -43,10 +43,6 @@ namespace physics{
                 virtual ~ForcesParametersInterface(){}
                 virtual common::action getFermact() const = 0;
                 virtual double getForcePreconditioning() const = 0;
-                virtual double getKappa() const = 0;
-                virtual double getKappaMp() const = 0;
-                virtual hmc_float getMubar() const = 0;
-                virtual hmc_float getMubarMp() const = 0;
                 virtual unsigned getRhoIterations() const = 0;
                 virtual common::solver getSolver() const = 0;
                 virtual bool getUseSmearing() const = 0;
@@ -65,8 +61,6 @@ namespace physics{
             public:
                 virtual ~InversionParemetersInterface(){}
                 virtual common::action getFermact() const = 0;
-                virtual double getKappa() const = 0;
-                virtual double getMubar() const = 0;
                 virtual common::solver getSolver() const = 0;
                 virtual double getSolverPrec() const = 0;
                 virtual bool getUseEo() const = 0;
@@ -78,9 +72,7 @@ namespace physics{
                 virtual ~IntegratorParametersInterface(){}
                 virtual unsigned getIntegrationSteps(const unsigned) const = 0;
                 virtual common::integrator getIntegrator(const unsigned) const = 0;
-                virtual double getKappaMp() const = 0;
                 virtual double getLambda(const unsigned) const = 0;
-                virtual double getMubarMp() const = 0;
                 virtual unsigned getNumTimescales() const = 0;
                 virtual double getTau() const = 0;
                 virtual bool getUseMp() const = 0;
@@ -89,8 +81,6 @@ namespace physics{
         class MolecularDynamicsInterface{
             public:
                 virtual ~MolecularDynamicsInterface(){}
-                virtual double getKappaMp() const = 0;
-                virtual double getMubarMp() const = 0;
                 virtual double getSolverPrec() const = 0;
         };
 
@@ -100,10 +90,6 @@ namespace physics{
                 virtual double getC0() const = 0;
                 virtual double getC1() const = 0;
                 virtual common::action getFermact() const = 0;
-                virtual double getKappa() const = 0;
-                virtual double getKappaMp() const = 0;
-                virtual double getMubar() const = 0;
-                virtual double getMubarMp() const = 0;
                 virtual size_t getRectanglesNormalization() const = 0;
                 virtual common::solver getSolver() const = 0;
                 virtual double getSolverPrec() const = 0;
@@ -116,10 +102,6 @@ namespace physics{
             public:
                 virtual ~HmcParametersInterface(){}
                 virtual double getBeta() const = 0;
-                virtual double getKappa() const = 0;
-                virtual double getKappaMp() const = 0;
-                virtual double getMubar() const = 0;
-                virtual double getMubarMp() const = 0;
                 virtual bool getUseEo() const = 0;
                 virtual bool getUseGaugeOnly() const = 0;
                 virtual bool getUseMp() const = 0;
@@ -131,9 +113,7 @@ namespace physics{
                 virtual double getBeta() const = 0;
                 virtual bool getConservative() const = 0;
                 virtual double getFindMinMaxPrec() const = 0;
-                virtual double getKappaMp()	const = 0;
                 virtual double getMass() const = 0;
-                virtual double getMubarMp() const = 0;
                 virtual bool getUseGaugeOnly() const = 0;
                 virtual bool getUseMp() const = 0;
                 virtual bool getUseEo() const = 0;
@@ -232,22 +212,6 @@ namespace physics{
                 {
                     return parameters.get_force_prec();
                 }
-                virtual double getKappa() const override
-                {
-                    return parameters.get_kappa();
-                }
-                virtual double getKappaMp() const override
-                {
-                    return parameters.get_kappa_mp();
-                }
-                virtual hmc_float getMubar() const override
-                {
-                    return meta::get_mubar(parameters);
-                }
-                virtual hmc_float getMubarMp() const override
-                {
-                    return meta::get_mubar_mp(parameters);
-                }
                 virtual unsigned getRhoIterations() const override
                 {
                     return parameters.get_rho_iter();
@@ -285,14 +249,6 @@ namespace physics{
 				virtual common::action getFermact() const override
 				{
 					return parameters.get_fermact();
-				}
-				virtual double getKappa() const override
-				{
-					return parameters.get_kappa();
-				}
-				virtual double getMubar() const override
-				{
-					return meta::get_mubar(parameters);
 				}
 				virtual common::solver getSolver() const override
 				{
@@ -332,18 +288,10 @@ namespace physics{
 				{
 					return parameters.get_integrator(timescale);
 				}
-                virtual double getKappaMp() const override
-				{
-					return parameters.get_kappa_mp();
-				}
                 virtual double getLambda(const unsigned timescale) const override
                 {
                     return parameters.get_lambda(timescale);
                 }
-				virtual double getMubarMp() const override
-				{
-					return meta::get_mubar_mp(parameters);
-				}
 				virtual unsigned getNumTimescales() const override
 				{
 					return parameters.get_num_timescales();
@@ -369,14 +317,6 @@ namespace physics{
             }
             virtual ~MolecularDynamicsImplementation()
             {
-            }
-            virtual double getKappaMp() const override
-            {
-                return parameters.get_kappa_mp();
-            }
-            virtual double getMubarMp() const override
-            {
-                return meta::get_mubar_mp(parameters);
             }
             virtual double getSolverPrec() const override
             {
@@ -407,22 +347,6 @@ namespace physics{
 			virtual common::action getFermact() const override
 			{
 				return parameters.get_fermact();
-			}
-			virtual double getKappa() const override
-			{
-				return parameters.get_kappa();
-			}
-			virtual double getKappaMp() const override
-			{
-				return parameters.get_kappa_mp();
-			}
-			virtual double getMubar() const override
-			{
-				return meta::get_mubar(parameters);
-			}
-			virtual double getMubarMp() const override
-			{
-				return meta::get_mubar_mp(parameters);
 			}
 			virtual size_t getRectanglesNormalization() const override
 			{
@@ -466,22 +390,6 @@ namespace physics{
                 {
                     return parameters.get_beta();
                 }
-                virtual double getKappa() const override
-                {
-                    return parameters.get_kappa();
-                }
-                virtual double getKappaMp() const override
-                {
-                    return parameters.get_kappa_mp();
-                }
-                virtual double getMubar() const override
-                {
-                    return meta::get_mubar(parameters);
-                }
-                virtual double getMubarMp() const override
-                {
-                    return meta::get_mubar_mp(parameters);
-                }
                 virtual bool getUseEo() const override
                 {
                     return parameters.get_use_eo();
@@ -520,17 +428,9 @@ namespace physics{
 			{
 				return parameters.get_findminmax_prec();
 			}
-			virtual double getKappaMp() const override
-			{
-				return parameters.get_kappa_mp();
-			}
 			virtual double getMass() const override
 			{
 				return parameters.get_mass();
-			}
-			virtual double getMubarMp() const override
-			{
-				return meta::get_mubar_mp(parameters);
 			}
 			virtual bool getUseGaugeOnly() const override
 			{

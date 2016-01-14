@@ -53,10 +53,6 @@ BOOST_AUTO_TEST_CASE(testForcesParameters)
 
     BOOST_CHECK_EQUAL(test.getFermact(), params->get_fermact());
     BOOST_CHECK_EQUAL(test.getForcePreconditioning(), params->get_force_prec());
-    BOOST_CHECK_EQUAL(test.getKappa(), params->get_kappa());
-    BOOST_CHECK_EQUAL(test.getKappaMp(), params->get_kappa_mp());
-    BOOST_CHECK_EQUAL(test.getMubar(), meta::get_mubar(*params));
-    BOOST_CHECK_EQUAL(test.getMubarMp(), meta::get_mubar_mp(*params));
     BOOST_CHECK_EQUAL(test.getRhoIterations(), params->get_rho_iter());
     BOOST_CHECK_EQUAL(test.getSolver(), params->get_solver());
     BOOST_CHECK_EQUAL(test.getUseGaugeOnly(), params->get_use_gauge_only());
@@ -79,8 +75,6 @@ BOOST_AUTO_TEST_CASE(testInversionParameters)
     physics::algorithms::InversionParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getFermact(), params->get_fermact());
-    BOOST_CHECK_EQUAL(test.getKappa(), params->get_kappa());
-    BOOST_CHECK_EQUAL(test.getMubar(), meta::get_mubar(*params));
     BOOST_CHECK_EQUAL(test.getSolver(), params->get_solver());
     BOOST_CHECK_EQUAL(test.getSolverPrec(), params->get_solver_prec());
     BOOST_CHECK_EQUAL(test.getUseEo(), params->get_use_eo());
@@ -97,8 +91,6 @@ BOOST_AUTO_TEST_CASE(testIntegratorParameters)
         BOOST_CHECK_EQUAL(test.getIntegrator(i), params->get_integrator(i));
         BOOST_CHECK_EQUAL(test.getLambda(i), params->get_lambda(i));
     }
-    BOOST_CHECK_EQUAL(test.getKappaMp(), params->get_kappa_mp());
-    BOOST_CHECK_EQUAL(test.getMubarMp(), meta::get_mubar_mp(*params));
     BOOST_CHECK_EQUAL(test.getNumTimescales(), params->get_num_timescales());
     BOOST_CHECK_EQUAL(test.getTau(), params->get_tau());
     BOOST_CHECK_EQUAL(test.getUseMp(), params->get_use_mp());
@@ -109,8 +101,6 @@ BOOST_AUTO_TEST_CASE(testMolecularDynamicsParameters)
     auto params = createDefaultMetaInputparameters();
     physics::algorithms::MolecularDynamicsImplementation test(*params);
 
-    BOOST_CHECK_EQUAL(test.getKappaMp(), params->get_kappa_mp());
-    BOOST_CHECK_EQUAL(test.getMubarMp(), meta::get_mubar_mp(*params));
     BOOST_CHECK_EQUAL(test.getSolverPrec(), params->get_solver_prec());
 }
 
@@ -122,10 +112,6 @@ BOOST_AUTO_TEST_CASE(testMetropolisParameters)
     BOOST_CHECK_EQUAL(test.getC0(), meta::get_c0(*params));
     BOOST_CHECK_EQUAL(test.getC1(), meta::get_c1(*params));
     BOOST_CHECK_EQUAL(test.getFermact(), params->get_fermact());
-    BOOST_CHECK_EQUAL(test.getKappa(), params->get_kappa());
-    BOOST_CHECK_EQUAL(test.getKappaMp(), params->get_kappa_mp());
-    BOOST_CHECK_EQUAL(test.getMubar(), meta::get_mubar(*params));
-    BOOST_CHECK_EQUAL(test.getMubarMp(), meta::get_mubar_mp(*params));
     BOOST_CHECK_EQUAL(test.getRectanglesNormalization(), meta::get_rect_norm(*params));
     BOOST_CHECK_EQUAL(test.getSolver(), params->get_solver());
     BOOST_CHECK_EQUAL(test.getSolverPrec(), params->get_solver_prec());
@@ -140,10 +126,6 @@ BOOST_AUTO_TEST_CASE(testHmcParameters)
     physics::algorithms::HmcParametersImplementation test(*params);
 
     BOOST_CHECK_EQUAL(test.getBeta(), params->get_beta());
-    BOOST_CHECK_EQUAL(test.getKappa(), params->get_kappa());
-    BOOST_CHECK_EQUAL(test.getKappaMp(), params->get_kappa_mp());
-    BOOST_CHECK_EQUAL(test.getMubar(), meta::get_mubar(*params));
-    BOOST_CHECK_EQUAL(test.getMubarMp(), meta::get_mubar_mp(*params));
     BOOST_CHECK_EQUAL(test.getUseEo(), params->get_use_eo());
     BOOST_CHECK_EQUAL(test.getUseGaugeOnly(), params->get_use_gauge_only());
     BOOST_CHECK_EQUAL(test.getUseMp(), params->get_use_mp());
@@ -157,9 +139,7 @@ BOOST_AUTO_TEST_CASE(testRhmcParameters)
     BOOST_CHECK_EQUAL(test.getBeta(), params->get_beta());
     BOOST_CHECK_EQUAL(test.getConservative(), params->get_conservative());
     BOOST_CHECK_EQUAL(test.getFindMinMaxPrec(), params->get_findminmax_prec());
-    BOOST_CHECK_EQUAL(test.getKappaMp(), params->get_kappa_mp());
     BOOST_CHECK_EQUAL(test.getMass(), params->get_mass());
-    BOOST_CHECK_EQUAL(test.getMubarMp(), meta::get_mubar_mp(*params));
     BOOST_CHECK_EQUAL(test.getUseGaugeOnly(), params->get_use_gauge_only());
     BOOST_CHECK_EQUAL(test.getUseMp(), params->get_use_mp());
     BOOST_CHECK_EQUAL(test.getUseEo(), params->get_use_eo());
