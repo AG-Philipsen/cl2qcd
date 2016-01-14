@@ -26,7 +26,7 @@
 
 /**
  * This function reconstructs the fermionic contribution to the force (in the RHMC). Now, here
- * it is particularly easy to get lost beacuse of minus signs. What is called force is somehow
+ * it is particularly easy to get lost because of minus signs. What is called force is somehow
  * arbitrary. For sure, instead, there is no doubts about the definition of the time derivative
  * of the momentum field conjugated to the gaugefield, it is -dS/dq. Now, if we refer to the
  * Gattringer (page 197) notation (as done in the Wilson code), we choose to call force F_\mu(n)
@@ -74,7 +74,7 @@
  * @warning Remember that this function add to the Gaugemomenta field "force" the fermionic
  *          contribution. Therefore such a field must be properly initialized.
  * 
- * @attention If an imaginary chemical potential is used, this kernel is not modified,
+ * @attention If an imaginary chemical potential is used, this function is not modified,
  *            because chem_pot_im is included in the kernel. See force_staggered_fermion_eo.cl
  *            file documentation for further information.
  */
