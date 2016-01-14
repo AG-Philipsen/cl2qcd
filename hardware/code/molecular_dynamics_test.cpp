@@ -34,13 +34,90 @@
  *   meaningful!
  */
 
+const ReferenceValues calculateReferenceValues_GaugefieldUpdate(const int latticeVolume, GaugefieldFillType fillTypeIn)
+{
+	switch( fillTypeIn )
+	{
+		case GaugefieldFillType::cold :
+		{
+			return ReferenceValues{6. * latticeVolume};
+		}
+		case GaugefieldFillType::nonTrivial:
+		{
+			return ReferenceValues{6. * latticeVolume * 1.0000016959666707};
+		}
+		default:
+		{
+			return defaultReferenceValues();
+		}
+	}
+}
+
+const ReferenceValues calculateReferenceValues_FGauge(const int latticeVolume)
+{
+	return ReferenceValues{8. * NDIM * latticeVolume};
+}
+
+const ReferenceValues calculateReferenceValues_FGaugeTlsym(const int latticeVolume, GaugefieldFillType fillTypeIn)
+{
+	switch( fillTypeIn )
+	{
+		case GaugefieldFillType::cold :
+		{
+			return ReferenceValues{8. * NDIM * latticeVolume};
+		}
+		case GaugefieldFillType::nonTrivial:
+		{
+			return ReferenceValues{8.000000000020442 * NDIM * latticeVolume};
+		}
+		default:
+		{
+			return defaultReferenceValues();
+		}
+	}
+}
+
+const ReferenceValues calculateReferenceValues_FFermion()
+{
+	return defaultReferenceValues();
+}
+
+const ReferenceValues calculateReferenceValues_FFermionEvenOdd()
+{
+	return defaultReferenceValues();
+}
+
+const ReferenceValues calculateReferenceValues_FFermionEvenOddComparator()
+{
+	return defaultReferenceValues();
+}
+
+const ReferenceValues calculateReferenceValues_FFermionStaggeredEvenOdd()
+{
+	return defaultReferenceValues();
+}
+
+struct MolecularDynamicsTestParameters : public GaugemomentumTestParameters
+{
+	MolecularDynamicsTestParameters(const LatticeExtents latticeExtendsIn, GaugefieldFillType fillTypeIn) :
+		GaugemomentumTestParameters(latticeExtendsIn), gaugeFillType(fillTypeIn) {}
+	const GaugefieldFillType gaugeFillType;
+};
+
+struct GaugeFieldUpdateTestParameters : public MolecularDynamicsTestParameters
+{
+	GaugeFieldUpdateTestParameters(const LatticeExtents latticeExtendsIn, GaugefieldFillType fillTypeIn, const hmc_float epsIn) :
+		MolecularDynamicsTestParameters(latticeExtendsIn, fillTypeIn), eps(epsIn) {}
+	const hmc_float eps;
+};
+
 struct MolecularDynamicsTester : public GaugemomentumTester
 {
-	MolecularDynamicsTester(std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
+	MolecularDynamicsTester(std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const MolecularDynamicsTestParameters tP) :
 		GaugemomentumTester(kernelName, pC, rV, tP)
 		{
 			gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(tP.latticeExtents), this->device);
-			gaugefieldBuffer->load(createGaugefield(calculateGaugefieldSize(tP.latticeExtents), GaugefieldFillType::cold)); //@todo: make adjustable
+			gaugefieldBuffer->load(createGaugefield(calculateGaugefieldSize(tP.latticeExtents), tP.gaugeFillType));
 			gaugefieldCode = device->getGaugefieldCode();
 			molecularDynamicsCode = device->getMolecularDynamicsCode();
 		}
@@ -53,12 +130,11 @@ protected:
 
 struct GaugefieldUpdateTester : public MolecularDynamicsTester
 {
-	GaugefieldUpdateTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
-		MolecularDynamicsTester("md_update_gaugefield", pC, rV, tP)
+	GaugefieldUpdateTester(const ParameterCollection pC, const GaugeFieldUpdateTestParameters tP) :
+		MolecularDynamicsTester("md_update_gaugefield", pC, calculateReferenceValues_GaugefieldUpdate(calculateLatticeVolume(tP.latticeExtents), tP.gaugeFillType), tP)
 		{
 			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
-			double epsilon = 1.; //@todo: make adjustable
-			molecularDynamicsCode->md_update_gaugefield_device(gaugemomentumBuffer, gaugefieldBuffer, epsilon);
+			molecularDynamicsCode->md_update_gaugefield_device(gaugemomentumBuffer, gaugefieldBuffer, tP.eps);
 
 			const hardware::buffers::Plain<hmc_float> plaq(1, device );
 			const hardware::buffers::Plain<hmc_float> splaq(1, device);
@@ -71,10 +147,10 @@ struct GaugefieldUpdateTester : public MolecularDynamicsTester
 
 struct FGaugeTester : public MolecularDynamicsTester
 {
-	FGaugeTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
-		MolecularDynamicsTester("f_gauge",pC, rV, tP)
+	FGaugeTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
+		MolecularDynamicsTester("f_gauge",pC, calculateReferenceValues_FGauge(calculateLatticeVolume(tP.latticeExtents)), tP)
 		{
-			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(Filltype::one) ));
 			molecularDynamicsCode->gauge_force_device( gaugefieldBuffer, gaugemomentumBuffer);
 			calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
@@ -82,10 +158,10 @@ struct FGaugeTester : public MolecularDynamicsTester
 
 struct FGaugeTlsymTester : public MolecularDynamicsTester
 {
-	FGaugeTlsymTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
-		MolecularDynamicsTester("f_gauge_tlsym", pC, rV, tP)
+	FGaugeTlsymTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
+		MolecularDynamicsTester("f_gauge_tlsym", pC, calculateReferenceValues_FGaugeTlsym(calculateLatticeVolume(tP.latticeExtents), tP.gaugeFillType), tP)
 		{
-			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(Filltype::one) ));
 			molecularDynamicsCode->gauge_force_tlsym_device( gaugefieldBuffer, gaugemomentumBuffer);
 			calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
@@ -93,9 +169,9 @@ struct FGaugeTlsymTester : public MolecularDynamicsTester
 
 struct FFermionTester : public MolecularDynamicsTester, public SpinorTester
 {
-	FFermionTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
-		MolecularDynamicsTester("f_fermion", pC, rV, tP),
-		SpinorTester("f_fermion", pC, SpinorTestParameters(tP.latticeExtents), 1, rV)
+	FFermionTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
+		MolecularDynamicsTester("f_fermion", pC, calculateReferenceValues_FFermion(), tP),
+		SpinorTester("f_fermion", pC, SpinorTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermion())
 		{
 			MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
 			const hardware::buffers::Plain<spinor> in1(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
@@ -112,11 +188,11 @@ struct FFermionTester : public MolecularDynamicsTester, public SpinorTester
 
 struct FFermionEvenOddTester : public MolecularDynamicsTester, public SpinorTester
 {
-	FFermionEvenOddTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
-		MolecularDynamicsTester("f_fermion_eo", pC, rV, tP),
-		SpinorTester("f_fermion_eo", pC, SpinorTestParameters(tP.latticeExtents), 1, rV)
+	FFermionEvenOddTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
+		MolecularDynamicsTester("f_fermion_eo", pC, calculateReferenceValues_FFermionEvenOdd(), tP),
+		SpinorTester("f_fermion_eo", pC, SpinorTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermionEvenOdd())
 		{
-			MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+			MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(one) ));
 			const hardware::buffers::Spinor in1(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 			const hardware::buffers::Spinor in2(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 			fillTwoSpinorBuffers(&in1, &in2);
@@ -130,9 +206,9 @@ struct FFermionEvenOddTester : public MolecularDynamicsTester, public SpinorTest
 
 struct FFermionEvenOddComparator : public MolecularDynamicsTester, public SpinorTester
 {
-	FFermionEvenOddComparator(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
-		MolecularDynamicsTester("f_fermion compare even-odd and non-even-odd", pC, rV, tP),
-		SpinorTester("f_fermion compare even-odd and non-even-odd", pC, SpinorTestParameters(tP.latticeExtents), 1, rV)
+	FFermionEvenOddComparator(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
+		MolecularDynamicsTester("f_fermion compare even-odd and non-even-odd", pC, calculateReferenceValues_FFermionEvenOddComparator(), tP),
+		SpinorTester("f_fermion compare even-odd and non-even-odd", pC, SpinorTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermionEvenOddComparator())
 		{
 			createBuffers(tP);
 			fillBuffers();
@@ -213,9 +289,9 @@ private:
 };
 
 struct FFermionStaggeredEvenOddTester : public MolecularDynamicsTester, public SpinorStaggeredTester{
-	FFermionStaggeredEvenOddTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
-	   MolecularDynamicsTester("f_staggered_fermion_eo", pC, rV, tP),
-	   SpinorStaggeredTester("f_staggered_fermion_eo", pC, SpinorStaggeredTestParameters(tP.latticeExtents), 1, rV )
+	FFermionStaggeredEvenOddTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
+	   MolecularDynamicsTester("f_staggered_fermion_eo", pC, calculateReferenceValues_FFermionStaggeredEvenOdd(), tP),
+	   SpinorStaggeredTester("f_staggered_fermion_eo", pC, SpinorStaggeredTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermionStaggeredEvenOdd() )
 	{
 
 		MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
@@ -241,54 +317,67 @@ logger.info() << "Produced the ref_vec_f_stagg2_eo text file with the staggered 
 		}
 };
 
-template<class TesterClass>
-void callTest(const LatticeExtents lE)
+template<typename TesterClass, typename TestParameters>
+void callTest( const LatticeExtents latticeExtentsIn, GaugefieldFillType fillType, const hmc_float epsIn)
 {
-	GaugemomentumTestParameters parametersForThisTest(lE);
+	TestParameters parametersForThisTest(latticeExtentsIn, fillType, epsIn);
+	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt); //todo: could also use latticeExtendsIn here!
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass tester(parameterCollection, parametersForThisTest);
+}
+
+template<class TesterClass>
+void callTest(const LatticeExtents lE, GaugefieldFillType fillType)
+{
+	MolecularDynamicsTestParameters parametersForThisTest(lE, fillType);
 	//todo: Work over these!
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForMolecularDynamics kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
-	TesterClass(parameterCollection, defaultReferenceValues(), parametersForThisTest);
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-void testGaugefieldUpdate(const LatticeExtents lE)
+void testGaugefieldUpdate(const LatticeExtents lE, GaugefieldFillType fillType, const hmc_float eps)
 {
-	callTest<GaugefieldUpdateTester>(lE);
+	callTest<GaugefieldUpdateTester, GaugeFieldUpdateTestParameters>(lE, fillType, eps);
 }
 
-void testFGauge(const LatticeExtents lE)
+void testFGauge(const LatticeExtents lE, GaugefieldFillType fillType)
 {
-	callTest<FGaugeTester>(lE);
+	callTest<FGaugeTester>(lE, fillType);
 }
-void testFGaugeTlsym(const LatticeExtents lE)
+void testFGaugeTlsym(const LatticeExtents lE, GaugefieldFillType fillType)
 {
-	callTest<FGaugeTlsymTester>(lE);
+	callTest<FGaugeTlsymTester>(lE, fillType);
 }
-void testNonEvenOddFermionForce(const LatticeExtents lE)
+void testNonEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType fillType)
 {
-	callTest<FFermionTester>(lE);
+	callTest<FFermionTester>(lE, fillType);
 }
-void testEvenOddFermionForce(const LatticeExtents lE)
+void testEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType fillType)
 {
-	callTest<FFermionEvenOddTester>(lE);
+	callTest<FFermionEvenOddTester>(lE, fillType);
 }
-void compareEvenOddAndNonEvenOddFermionForce(const LatticeExtents lE)
+void compareEvenOddAndNonEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType fillType)
 {
-	callTest<FFermionEvenOddComparator>(lE);
+	callTest<FFermionEvenOddComparator>(lE, fillType);
 }
-void testEvenOddStaggeredFermionForce(const LatticeExtents lE)
+void testEvenOddStaggeredFermionForce(const LatticeExtents lE, GaugefieldFillType fillType)
 {
-	callTest<FFermionStaggeredEvenOddTester>(lE);
+	callTest<FFermionStaggeredEvenOddTester>(lE, fillType);
 }
 
 BOOST_AUTO_TEST_SUITE( GF_UPDATE )
 
-	//@todo: add tests like in "gf_update_input_{1-5}"
 	//Note: test5: "THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!"
 	BOOST_AUTO_TEST_CASE(GF_UPDATE_1 )
 	{
-		testGaugefieldUpdate(LatticeExtents{ns4, nt4});
+		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, .0);
+	}
+	BOOST_AUTO_TEST_CASE(GF_UPDATE_2 )
+	{
+		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, .12);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -298,7 +387,11 @@ BOOST_AUTO_TEST_SUITE( F_GAUGE )
 	//@todo: add tests like in "f_gauge_input_{1-2}"
 	BOOST_AUTO_TEST_CASE( F_GAUGE_1 )
 	{
-		testFGauge(LatticeExtents{ns4, nt4});
+		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+	}
+	BOOST_AUTO_TEST_CASE( F_GAUGE_2 )
+	{
+		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -308,7 +401,11 @@ BOOST_AUTO_TEST_SUITE( F_GAUGE_TLSYM )
 	//@todo: add tests like in "f_gauge_tlsym_input_{1-3}"
 	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_1 )
 	{
-		testFGaugeTlsym(LatticeExtents{ns4, nt4});
+		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+	}
+	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_2 )
+	{
+		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -327,8 +424,12 @@ BOOST_AUTO_TEST_SUITE( F_FERMION )
 	//@todo: add tests like in "f_fermion_input_{1-6}"
 	BOOST_AUTO_TEST_CASE( F_FERMION_1 )
 	{
-		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4});
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
 	}
+//	BOOST_AUTO_TEST_CASE( F_FERMION_2 )
+//	{
+//		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
+//	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -337,7 +438,11 @@ BOOST_AUTO_TEST_SUITE( F_FERMION_EO )
 	//@todo: add tests like in "f_fermion_eo_input_{1-20}"
 	BOOST_AUTO_TEST_CASE( F_FERMION_EO_1 )
 	{
-		testEvenOddFermionForce(LatticeExtents{ns4, nt4});
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_2 )
+	{
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -347,7 +452,11 @@ BOOST_AUTO_TEST_SUITE( F_FERMION_COMPARE_NONEO_EO )
 	//@todo: add tests like in "f_fermion_compare_noneo_eo_input_{1-6}"
 	BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_1 )
 	{
-		compareEvenOddAndNonEvenOddFermionForce(LatticeExtents{ns4, nt4});
+		compareEvenOddAndNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_2 )
+	{
+		compareEvenOddAndNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -357,7 +466,11 @@ BOOST_AUTO_TEST_SUITE( F_STAGG_FERMION_EO )
 	//@todo: add tests like in "f_staggered_fermion_partial_eo_input_{1-32}"
 	BOOST_AUTO_TEST_CASE( F_FERMION_EO_1 )
 	{
-		testEvenOddStaggeredFermionForce(LatticeExtents{ns4, nt4});
+		testEvenOddStaggeredFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_2 )
+	{
+		testEvenOddStaggeredFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

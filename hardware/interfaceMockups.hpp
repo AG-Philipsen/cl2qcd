@@ -547,5 +547,23 @@ namespace hardware
 				return true;
 			}
 		};
+		class OpenClKernelParametersMockupForMolecularDynamics : public OpenClKernelParametersMockup
+		{
+		public:
+			OpenClKernelParametersMockupForMolecularDynamics(int nsIn, int ntIn) :
+				OpenClKernelParametersMockup(nsIn, ntIn), fermact(common::action::wilson) {}
+			OpenClKernelParametersMockupForMolecularDynamics(int nsIn, int ntIn, const bool useRectanglesIn) :
+				OpenClKernelParametersMockup(nsIn, ntIn, useRectanglesIn), fermact(common::action::wilson) {}
+			virtual common::action  getFermact() const override
+			{
+				return fermact;
+			}
+			virtual double getC1() const override
+			{
+				return 1.;
+			}
+
+			common::action fermact;
+		};
 	}
 }
