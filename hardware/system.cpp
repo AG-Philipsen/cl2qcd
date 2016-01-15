@@ -52,10 +52,20 @@ hardware::System::System(const hardware::HardwareParametersInterface & systemPar
 	initOpenCLDevices();
 }
 
+// todo: Remove when this constructor is removed
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
+
 hardware::System::System(meta::Inputparameters& parameters):
 		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr)
 {
-	//todo: add functionality
+	hardwareParameters = new hardware::HardwareParameters(&parameters) ;
+	kernelParameters = new hardware::code::OpenClKernelParametersImplementation (parameters) ;
+	kernelBuilder = new hardware::OpenClCode(*kernelParameters);
+	setDebugEnvironmentVariables();
+	initOpenCLPlatforms();
+	initOpenCLContext();
+	initOpenCLDevices();
 }
 
 void hardware::System::initOpenCLPlatforms()
