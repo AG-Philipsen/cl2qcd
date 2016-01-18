@@ -32,12 +32,8 @@
 #include <memory>
 #include "../../klepsydra/klepsydra.hpp"
 
-// template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const physics::algorithms::Rational_Approximation& approx1, const physics::algorithms::Rational_Approximation& approx2, const physics::algorithms::Rational_Approximation& approx3, const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system);
-
 template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi, hmc_float * const spinor_energy_init, const physics::lattices::Gaugefield& gf,
         const physics::PRNG& prng, const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
-//Mass preconditioning not yet implemented!
-//template <class SPINORFIELD> static void init_spinorfield_mp(const SPINORFIELD * phi, hmc_float * const spinor_energy_init, const SPINORFIELD * phi_mp, hmc_float * const spinor_energy_init_mp, const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system);
 
 template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physics::algorithms::Rational_Approximation& approx1,
         const physics::algorithms::Rational_Approximation& approx2, const physics::algorithms::Rational_Approximation& approx3,
@@ -143,26 +139,3 @@ template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi
     md_update_spinorfield(phi, gf, initial, system, interfacesHandler, additionalParameters);
 }
 
-//Mass preconditioning not yet implemented!
-/*
- template <class SPINORFIELD> static void init_spinorfield_mp(const SPINORFIELD * phi, hmc_float * const spinor_energy_init, const SPINORFIELD * phi_mp, hmc_float * const spinor_energy_init_mp, const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system)
- {
- using namespace physics::algorithms;
-
- const auto & params = system.get_inputparameters();
-
- const SPINORFIELD initial(system);
-
- //init/update spinorfield phi
- initial.gaussian(prng);
- //calc init energy for spinorfield
- *spinor_energy_init = squarenorm(initial);
- //update spinorfield with heavy mass: det(kappa_mp, mu_mp)
- md_update_spinorfield(phi, gf, initial, system, params.get_kappa_mp(), meta::get_mubar_mp(params));
- initial.gaussian(prng);
- //calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
- *spinor_energy_init_mp = squarenorm(initial);
- //update detratio spinorfield: det(kappa, mu) / det(kappa_mp, mu_mp)
- md_update_spinorfield_mp(phi_mp, gf, initial, system);
- }
- */
