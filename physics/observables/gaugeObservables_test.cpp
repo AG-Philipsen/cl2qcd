@@ -45,10 +45,10 @@ public:
   }
   ~GaugeObservablesTester()
   {
-    system = 0;
-    prng = 0;
-    gaugefield = 0;
-    parameters = 0;
+    delete system;
+    delete prng;
+    delete gaugefield;
+    delete parameters;
     delete prngParameters;
   }
 
@@ -70,7 +70,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(GaugeObservablesTester::gaugefield), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(gaugefield), referenceValue, testPrecision);
   }
 };
 
@@ -99,7 +99,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    BOOST_CHECK_CLOSE(physics::observables::measureRectangles(GaugeObservablesTester::gaugefield), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measureRectangles(gaugefield), referenceValue, testPrecision);
   }
 };
 
@@ -135,7 +135,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    hmc_complex poly =    physics::observables::measurePolyakovloop(GaugeObservablesTester::gaugefield);
+    hmc_complex poly =    physics::observables::measurePolyakovloop(gaugefield);
     BOOST_CHECK_CLOSE(poly.re, referenceValue.re, testPrecision);
     BOOST_CHECK_CLOSE(poly.im, referenceValue.im, testPrecision);
   }

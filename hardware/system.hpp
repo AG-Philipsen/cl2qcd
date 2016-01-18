@@ -99,6 +99,8 @@ namespace hardware {
 		const hardware::HardwareParametersInterface * hardwareParameters;
 		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 		const hardware::OpenClCode * kernelBuilder;
+		//Remove when dependence on meta::InputParameters has been removed from physics package, for the moment it is needed in tests in physics!!!!
+		const meta::Inputparameters& inputparameters;
 	};
 
 	/**

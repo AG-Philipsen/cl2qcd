@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 		physics::PRNG prng(system, &prngParameters);
 
 		// init from file
-		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.1);
 	}
 }
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
-	Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	BOOST_CHECK_THROW( physics::observables::measureRectangles(&gf);, std::logic_error);
 
 	const char * _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	physics::ParametersPrng_fromMetaInputparameters prngParameters2(&params2);
 	physics::PRNG prng2(system, &prngParameters2);
 
-	Gaugefield gf2(system2, &parametersTmp2, prng2, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf2(system2, &parametersTmp2, prng2, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	BOOST_CHECK_CLOSE(physics::observables::measureRectangles(&gf2), 1103.2398401620451, 0.1);
 }
 
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
 
-		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		hmc_complex pol = physics::observables::measurePolyakovloop(&gf);
 		BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
 
-		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 
 		orig_plaq = physics::observables::measurePlaquette(&gf);
 		orig_pol = physics::observables::measurePolyakovloop(&gf);

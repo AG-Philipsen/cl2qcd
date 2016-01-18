@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(rescale)
         //Operator for the test
         physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
         //This configuration for the Ref.Code is the same as for example dks_input_5
-        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 
         //Reference rescaled coefficients
         hmc_float a0_ref = 3.78396627036665123;
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(rescale)
         //Operator for the test
         physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
         //This configuration for the Ref.Code is the same as for example dks_input_5
-        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 
         //Reference rescaled coefficients conservative
         hmc_float a0_ref_cons = 3.8304052181004228927;

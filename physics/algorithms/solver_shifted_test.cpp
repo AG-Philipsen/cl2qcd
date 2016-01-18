@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
-	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	    Staggeredfield_eo b(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
         std::vector<std::shared_ptr<Staggeredfield_eo> > out;
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
-	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	    Staggeredfield_eo b(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	    std::vector<std::shared_ptr<Staggeredfield_eo> > out;
 	    for(uint i=0; i<sigma.size(); i++)
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	Staggeredfield_eo b(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
     std::vector<std::shared_ptr<Staggeredfield_eo> > out;
     for(uint i=0; i<sigma.size(); i++)
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	Staggeredfield_eo b(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
     std::vector<std::shared_ptr<Staggeredfield_eo> > out;
     for(uint i=0; i<sigma.size(); i++)

@@ -67,7 +67,7 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
 	if(cold)
 	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 	else //This configuration for the Ref.Code is the same as for example dks_input_5
-	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	
 	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system, interfacesHandler);
 	

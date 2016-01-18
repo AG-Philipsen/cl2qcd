@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		physics::PRNG prng{system, &prngParameters};
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());

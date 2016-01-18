@@ -43,7 +43,7 @@ static size_4 calculate_grid_size(size_t num_devices);
 static void setDebugEnvironmentVariables();
 
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
-		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters)
+		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), inputparameters(meta::Inputparameters{0, nullptr}) //remove the last init. as soon as the member is removed
 {
 	kernelBuilder = new hardware::OpenClCode(kernelParameters);
 	setDebugEnvironmentVariables();
@@ -57,9 +57,9 @@ hardware::System::System(const hardware::HardwareParametersInterface & systemPar
 #include "../interfaceImplementations/openClKernelParameters.hpp"
 
 hardware::System::System(meta::Inputparameters& parameters):
-		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr)
+		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr), inputparameters(parameters)
 {
-	hardwareParameters = new hardware::HardwareParameters(&parameters) ;
+	hardwareParameters = new hardware::HardwareParametersImplementation(&parameters);
 	kernelParameters = new hardware::code::OpenClKernelParametersImplementation (parameters) ;
 	kernelBuilder = new hardware::OpenClCode(*kernelParameters);
 	setDebugEnvironmentVariables();
@@ -241,7 +241,8 @@ const std::vector<hardware::Device*>& hardware::System::get_devices() const noex
 
 const meta::Inputparameters& hardware::System::get_inputparameters() const noexcept
 {
-	return meta::Inputparameters(0,0); //Note: This returns reference to a temporary object, but this fct. must not be used anyway and will be removed asap
+    return inputparameters;
+	//return meta::Inputparameters(0,0); //Note: This returns reference to a temporary object, but this fct. must not be used anyway and will be removed asap
 }
 
 hardware::OpenclException::OpenclException(int err)

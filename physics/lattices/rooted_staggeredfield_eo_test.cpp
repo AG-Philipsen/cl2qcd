@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(rescale)
 	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
 	    const GaugefieldParametersImplementation gaugefieldParameters{ &params };
-	    Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	    Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	    Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
 
 	    //Reference rescaled coefficients
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(rescale)
 	    physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	    //This configuration for the Ref.Code is the same as for example dks_input_5
 	    const GaugefieldParametersImplementation gaugefieldParameters{ &params };
-	    Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	    Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	    Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
 	    //Reference rescaled coefficients conservative
 	    hmc_float a0_ref_cons = 3.8304052181004228927;

@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE(dslash)
 		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());

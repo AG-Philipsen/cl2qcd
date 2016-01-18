@@ -126,7 +126,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
@@ -180,7 +180,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 

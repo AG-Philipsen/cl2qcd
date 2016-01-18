@@ -109,7 +109,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		FERMIONMATRIX matrix2(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -178,7 +178,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		physics::fermionmatrix::D_KS_eo matrix2(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
