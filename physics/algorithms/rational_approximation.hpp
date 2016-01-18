@@ -200,15 +200,8 @@ public:
 	 * Furthermore, it is checked that xmin is smaller of or equal to lambda_min/lambda_max:
 	 * this guarantees the output of this method to be reliable. If this check fails
 	 * another error is thrown.
-	 *  @param A The fermionic operator to calculate the eigenvalues from
-	 *  @param gf The gaugefield which A depends on
-	 *  @param system The system it is operated on
-	 *  @param prec The precision to calculate the eigenvalues up
-	 *  @param conservative If true, the maximum eigenvalue found by find_maxmin_eigenvalue is
-	 *                      increased by 5% and the minimum one is set to the squared mass of the
-	 *                      fermions. This circumvents possible numeric errors.
 	 */
-	Rational_Coefficients Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec, bool conservative=false) const;
+	Rational_Coefficients Rescale_Coefficients(const hmc_float minEigenvalue, const hmc_float maxEigenvalue) const;
 
 private:
 	bool inv;          /// if(inv) f_exact=x^(-y/z) else f_exact=x^(y/z)

@@ -194,10 +194,13 @@ hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
 }
 
 
-physics::algorithms::Rational_Coefficients physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,const hardware::System& system, hmc_float prec, bool conservative) const
+physics::algorithms::Rational_Coefficients physics::algorithms::Rational_Approximation::Rescale_Coefficients(const hmc_float minEigenvalue, const hmc_float maxEigenvalue) const
 {
 	if(high != 1)
 		throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
+
+	if(low > minEigenvalue/maxEigenvalue)
+	        throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
 
 	int ord = Get_order();
 	hmc_float exp = Get_exponent();
@@ -205,20 +208,11 @@ physics::algorithms::Rational_Coefficients physics::algorithms::Rational_Approxi
 	std::vector<hmc_float> a_new = Get_a();
 	std::vector<hmc_float> b_new = Get_b();
 
-	hmc_float max;
-	hmc_float min;
-	find_maxmin_eigenvalue(max, min, A, gf, system, prec, conservative);
-	if(conservative)
-		max *= 1.05;
-
-	if(low > min/max)
-		throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
-
-	hmc_float tmp = pow(max, exp);
+	hmc_float tmp = pow(maxEigenvalue, exp);
 	a0_new *= tmp;
 	for(int i=0; i<ord; i++){
-		a_new[i] *= (tmp*max);
-		b_new[i] *= max;
+		a_new[i] *= (tmp*maxEigenvalue);
+		b_new[i] *= maxEigenvalue;
 	}
 
 	Rational_Coefficients out(ord, a0_new, a_new, b_new);

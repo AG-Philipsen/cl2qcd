@@ -56,9 +56,15 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	const std::auto_ptr<const SPINORFIELD> phi_mp(params.get_use_mp() ? new SPINORFIELD(system) : nullptr);
 	hmc_float spinor_energy_init = 0.f;
 	hmc_float spinor_energy_init_mp = 0.f;
-	//Here the coefficients of phi have to be set to the rescaled ones on the base of approx1
+	//Here the coefficients of phi have to be set to the rescaled ones on the base of approx1, estimate eigenvalues max and min before rescaling
 	physics::fermionmatrix::MdagM_eo fm(system, ARG_DEF); //with ARG_DEF, the mass is that of params
-	phi.Rescale_Coefficients(approx1, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
+    hmc_float maxEigenvalue;
+    hmc_float minEigenvalue;
+    find_maxmin_eigenvalue(maxEigenvalue, minEigenvalue, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
+    if(params.get_conservative())
+        maxEigenvalue *= 1.05;
+    hmc_float conditionNumber=maxEigenvalue/minEigenvalue;
+	phi.Rescale_Coefficients(approx1, minEigenvalue, maxEigenvalue);
 	if(!params.get_use_gauge_only()) {
 		if(params.get_use_mp()) {
 			throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!", __FILE__, __LINE__);
@@ -78,7 +84,7 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	logger.debug() << "\tRHMC:\tcall integrator" ;
 	//Before MD the coefficients of phi have to be set to the rescaled ones on the base of approx2
-	phi.Rescale_Coefficients(approx2, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
+	phi.Rescale_Coefficients(approx2, minEigenvalue, maxEigenvalue);
 	if(params.get_use_mp()) {
 		throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!",  __FILE__, __LINE__);
 		//integrator(&new_p, &new_u, phi, *phi_mp.get(), system);
@@ -88,8 +94,11 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tRHMC [MET]:\tperform Metropolis step: ";
-	//Before Metropolis test the coeff. of phi have to be set to the rescaled ones on the base of approx3
-	phi.Rescale_Coefficients(approx3, fm, *gf, system, params.get_findminmax_prec(), params.get_conservative());
+	//Before Metropolis test the coeff. of phi have to be set to the rescaled ones on the base of approx3, but eigenvalues MUST be re-evaluated since the gaugefield changed!
+	find_maxmin_eigenvalue(maxEigenvalue, minEigenvalue, fm, new_u, system, params.get_findminmax_prec(), params.get_conservative());
+	if(params.get_conservative())
+	    maxEigenvalue *= 1.05;
+	phi.Rescale_Coefficients(approx3, minEigenvalue, maxEigenvalue);
 	//this call calculates also the HMC-Observables
 	const hmc_observables obs = metropolis(rnd_number, params.get_beta(), *gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp.get(), spinor_energy_init_mp, system);
 
@@ -102,6 +111,16 @@ template <class SPINORFIELD> static hmc_observables perform_rhmc_step(const phys
 	}
 	logger.info() << "\tRHMC:\tfinished trajectory " << iter ;
 	logger.info() << "\tRHMC:\tstep duration (ms): " << step_timer.getTime() / 1e3f;
+
+	//The optimal number of pseudofermion is calculated according to http://arxiv.org/abs/hep-lat/0608015v1
+	std::ostringstream reportOnConditionNumber;
+	reportOnConditionNumber << "\tRHMC:\tcondition number for trajectory " << iter << ": lambda_max/lambda_min = " << conditionNumber;
+	unsigned optimalNumberPseudofermions = std::floor(0.5*std::log(conditionNumber));
+	if(optimalNumberPseudofermions <= 1)
+	    reportOnConditionNumber << "  =>  multiple pseudofermions method not advantageous!";
+	else
+	    reportOnConditionNumber << "  =>  multiple pseudofermions method suggested  =>  optimal number of pseudofermion: n_opt = " << optimalNumberPseudofermions;
+	logger.info() << reportOnConditionNumber.str();
 
 	return obs;
 }

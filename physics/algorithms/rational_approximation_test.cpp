@@ -149,6 +149,12 @@ BOOST_AUTO_TEST_CASE(rescale)
 	//This configuration for the Ref.Code is the same as for example dks_input_5
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	
+	//Min and max eigenvalues for conservative and not conservative case
+	hmc_float minEigenvalue = 0.3485318319429664;
+	hmc_float maxEigenvalue = 5.2827906935473500;
+	hmc_float minEigenvalueCons = 0.321489;
+	hmc_float maxEigenvalueCons = 5.546930228224717;
+
 	//Reference rescaled coefficients
 	hmc_float a0_ref = 3.78396627036665123;
 	hmc_float a_ref[15] = {-2.722986658932525683e-07, -1.2631475639728917521e-06,
@@ -186,8 +192,8 @@ BOOST_AUTO_TEST_CASE(rescale)
 				    2.3690543226274733968, 8.1633847494467222106,
 				    62.215004455600926292};
 	
-	Rational_Coefficients coeff = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3);
-	Rational_Coefficients coeff_cons = approx.Rescale_Coefficients(matrix, gf, system, 1.e-3, true);
+	Rational_Coefficients coeff = approx.Rescale_Coefficients(minEigenvalue, maxEigenvalue);
+	Rational_Coefficients coeff_cons = approx.Rescale_Coefficients(minEigenvalueCons, maxEigenvalueCons);
 	
 	int ord = coeff.Get_order();
 	std::vector<hmc_float> a = coeff.Get_a();
