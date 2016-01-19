@@ -55,7 +55,7 @@ struct LocalQTester : public OtherKernelTester
 		OtherKernelTester("local_Q_test", pC, tP, calculateReferenceValue_localQ(tP.latticeExtents))
 	{
 		testCode = new LocalQTestCode(pC.kernelParameters, device);
-		testCode->runTestKernel(GaugefieldTester::gaugefieldBuffer, out, gs, ls);
+		testCode->runTestKernel(OtherKernelTester::gaugefieldBuffer, out, gs, ls);
 	}
 };
 

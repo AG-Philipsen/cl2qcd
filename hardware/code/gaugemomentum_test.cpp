@@ -28,10 +28,14 @@ struct SquarenormTester : public GaugemomentumTester
   SquarenormTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
     GaugemomentumTester("gaugemomenta squarenorm", pC, rV, tP)
   {
-    hardware::buffers::Gaugemomentum in(numberOfGaugemomentumElements, device);
-    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
+	GaugemomentumCreator gm(calculateAlgebraSize(tP.latticeExtents));
+    gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
+    hardware::buffers::Gaugemomentum in(calculateGaugemomentumSize(tP.latticeExtents), device);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(gm.Filltype::one) ));
     calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
   }
+private:
+    hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
 };
 
 struct SetZeroTester : public GaugemomentumTester
@@ -39,10 +43,14 @@ struct SetZeroTester : public GaugemomentumTester
   SetZeroTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
     GaugemomentumTester("set zero", pC, rV, tP)
   {
-    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
+	GaugemomentumCreator gm(calculateAlgebraSize(tP.latticeExtents));
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(gm.Filltype::one) ));
     code->set_zero_gaugemomentum(gaugemomentumBuffer);
     calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
   }
+private:
+  hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
 };
 
 struct SaxpyTester : public GaugemomentumTester
@@ -50,15 +58,19 @@ struct SaxpyTester : public GaugemomentumTester
   SaxpyTester(const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP) :
     GaugemomentumTester("saxpy", pC, rV, tP)
   {
-    hardware::buffers::Gaugemomentum out(numberOfGaugemomentumElements, device);
-    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum(123456) ));
-    code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>( createGaugemomentum(789101) ));
+	GaugemomentumCreator gm(calculateAlgebraSize(tP.latticeExtents));
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
+    hardware::buffers::Gaugemomentum out(calculateGaugemomentumSize(tP.latticeExtents), device);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(gm.Filltype::one) ));
+    code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(gm.Filltype::one) ));
     double alpha = 1.2345; //@todo: make adjustable
     doubleBuffer->load(&alpha);
 
     code->saxpy_device(gaugemomentumBuffer, &out, doubleBuffer, &out);
     calcSquarenormAndStoreAsKernelResult(&out);
   }
+private:
+  hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
 };
 
 struct GaussianTester : public GaugemomentumTester
@@ -68,6 +80,8 @@ struct GaussianTester : public GaugemomentumTester
   {
 	//@todo: This must more similar to PrngSpinorTester! I only did quick modifications.
 
+	GaugemomentumCreator gm(calculateAlgebraSize(tP.latticeExtents));
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
 	prng_init(hostSeed);
 	prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
 	auto codePrng = device->getPrngCode();
@@ -78,20 +92,21 @@ struct GaussianTester : public GaugemomentumTester
 	int iterations = 10; //todo: make more general
 	ae * gm_out;
 
+	int numberOfGaugemomentumElements = calculateGaugemomentumSize(tP.latticeExtents);
 	gm_out = new ae[numberOfGaugemomentumElements * iterations];
 	BOOST_REQUIRE(gm_out);
 
 	for (int i = 0; i< iterations; i++){
 	  code->generate_gaussian_gaugemomenta_device(gaugemomentumBuffer, prngStates);
 	  gaugemomentumBuffer->dump(&gm_out[i*numberOfGaugemomentumElements]);
-	  sum += count_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements);
+	  sum += gm.count_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements);
 	}
 	sum = sum/iterations/numberOfGaugemomentumElements/8;
 	result= sum;
 
 	  double var=0.;
 	  for (int i=0; i<iterations; i++){
-	    var += calc_var_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements, sum);
+	    var += gm.calc_var_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements, sum);
 	  }
 	  var=var/iterations/numberOfGaugemomentumElements/8;
 
@@ -99,12 +114,11 @@ struct GaussianTester : public GaugemomentumTester
 
 	kernelResult[0] = result;
   }
-protected:
-	double mean, variance;
-	const hardware::buffers::PRNGBuffer* prngStates;
 private:
+	const hardware::buffers::PRNGBuffer* prngStates;
 	uint32_t hostSeed;
 	bool useSameRandomNumbers;
+	hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
 };
 
 template<class TesterClass>

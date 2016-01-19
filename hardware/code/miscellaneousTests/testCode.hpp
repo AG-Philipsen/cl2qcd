@@ -57,6 +57,9 @@ struct OtherKernelTester : public GaugefieldTester
 	OtherKernelTester(const std::string kernelName, const ParameterCollection pC, const GaugefieldTestParameters tP, const ReferenceValues rV):
 		GaugefieldTester(kernelName, pC, tP, rV), testCode(0), tP(tP)
 	{
+		GaugefieldCreator gf;
+		gaugefieldBuffer = new hardware::buffers::SU3(gf.calculateGaugefieldSize(tP.latticeExtents), this->device);
+		gaugefieldBuffer->load(gf.createGaugefield(gf.calculateGaugefieldSize(tP.latticeExtents), tP.fillType));
 		out = new hardware::buffers::Plain<hmc_float> (calculateLatticeVolume(tP.latticeExtents), device);
 
 		if(device->get_device_type() == CL_DEVICE_TYPE_GPU)
@@ -92,6 +95,8 @@ struct OtherKernelTester : public GaugefieldTester
 	int ls, gs;
 	const GaugefieldTestParameters tP;
 	hardware::buffers::Plain<hmc_float> * out;
+//protected:
+	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
 

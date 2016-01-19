@@ -55,7 +55,7 @@ struct StapleTester : public OtherKernelTester
 		OtherKernelTester("StapleTest", pC, tP, calculateReferenceValue_staple(tP.latticeExtents))
 	{
 		testCode = new StapleTestCode(pC.kernelParameters, device);
-		testCode->runTestKernel(GaugefieldTester::gaugefieldBuffer, out, gs, ls);
+		testCode->runTestKernel(OtherKernelTester::gaugefieldBuffer, out, gs, ls);
 	}
 };
 

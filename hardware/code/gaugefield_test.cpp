@@ -43,6 +43,9 @@ struct PlaquetteTester : public GaugefieldTester
 		const hardware::buffers::Plain<hmc_float> plaq(1, device);
 		const hardware::buffers::Plain<hmc_float> splaq(1, device);
 		const hardware::buffers::Plain<hmc_float> tplaq(1, device);
+		GaugefieldCreator gf;
+		gaugefieldBuffer = new hardware::buffers::SU3(gf.calculateGaugefieldSize(testParams.latticeExtents), this->device);
+		gaugefieldBuffer->load(gf.createGaugefield(gf.calculateGaugefieldSize(testParams.latticeExtents), testParams.fillType));
 		code->plaquette_device(gaugefieldBuffer, &plaq, &tplaq, &splaq);
 
 		switch( typeOfPlaquette )
@@ -61,6 +64,8 @@ struct PlaquetteTester : public GaugefieldTester
 				break;
 		}
 	}
+protected:
+	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
 struct PolyakovloopTester : public GaugefieldTester
@@ -69,6 +74,9 @@ struct PolyakovloopTester : public GaugefieldTester
 	GaugefieldTester("polyakov", parameterCollection,  testParams, rV)
 	{
 		const hardware::buffers::Plain<hmc_complex> pol(1, device);
+		GaugefieldCreator gf;
+		gaugefieldBuffer = new hardware::buffers::SU3(gf.calculateGaugefieldSize(testParams.latticeExtents), this->device);
+		gaugefieldBuffer->load(gf.createGaugefield(gf.calculateGaugefieldSize(testParams.latticeExtents), testParams.fillType));
 		code->polyakov_device(gaugefieldBuffer, &pol);
 
 		hmc_complex kernelResult_tmp;
@@ -76,6 +84,8 @@ struct PolyakovloopTester : public GaugefieldTester
 		kernelResult[0] = kernelResult_tmp.re;
 		kernelResult[1] = kernelResult_tmp.im;
 	}
+protected:
+	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
 struct RectanglesTester : public GaugefieldTester
@@ -84,9 +94,14 @@ struct RectanglesTester : public GaugefieldTester
 		GaugefieldTester("rectangles", parameterCollection,  testParams, rV)
 	{
 		const hardware::buffers::Plain<hmc_float> rect(1, device );
+		GaugefieldCreator gf;
+		gaugefieldBuffer = new hardware::buffers::SU3(gf.calculateGaugefieldSize(testParams.latticeExtents), this->device);
+		gaugefieldBuffer->load(gf.createGaugefield(gf.calculateGaugefieldSize(testParams.latticeExtents), testParams.fillType));
 		code->rectangles_device(gaugefieldBuffer, &rect);
 		rect.dump(&kernelResult[0]);
 	}
+protected:
+	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
 struct StoutSmearTester : public GaugefieldTester
@@ -97,6 +112,9 @@ struct StoutSmearTester : public GaugefieldTester
 		const hardware::buffers::Plain<hmc_float> plaq(1, device );
 		const hardware::buffers::Plain<hmc_float> splaq(1, device);
 		const hardware::buffers::Plain<hmc_float> tplaq(1, device);
+		GaugefieldCreator gf;
+		gaugefieldBuffer = new hardware::buffers::SU3(gf.calculateGaugefieldSize(testParams.latticeExtents), this->device);
+		gaugefieldBuffer->load(gf.createGaugefield(gf.calculateGaugefieldSize(testParams.latticeExtents), testParams.fillType));
 		const hardware::buffers::SU3 out(gaugefieldBuffer->get_elements(), device);
 
 		code->stout_smear_device( gaugefieldBuffer, &out);
@@ -104,6 +122,8 @@ struct StoutSmearTester : public GaugefieldTester
 		code->plaquette_device( &out, &plaq, &tplaq, &splaq);
 		plaq.dump(&kernelResult[0]);
 	}
+protected:
+	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
 template<typename TesterClass>

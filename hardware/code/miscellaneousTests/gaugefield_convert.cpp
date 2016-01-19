@@ -31,7 +31,8 @@
 
 void test(const hardware::System& system, const int seed, const LatticeExtents lE)
 {
-	const size_t NUM_ELEMENTS = calculateGaugefieldSize(lE);
+	GaugefieldCreator gf;
+	const size_t NUM_ELEMENTS = gf.calculateGaugefieldSize(lE);
 	for(auto device: system.get_devices())
 	{
 		Matrixsu3 * const in = new Matrixsu3[NUM_ELEMENTS];

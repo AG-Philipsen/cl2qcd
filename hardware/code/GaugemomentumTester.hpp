@@ -26,6 +26,9 @@
 #include "prng.hpp"
 #include "SpinorTester.hpp"
 
+int calculateGaugemomentumSize(const LatticeExtents latticeExtentsIn) noexcept;
+int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept;
+
 struct GaugemomentumTestParameters: public TestParameters
 {
 	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn) :
@@ -35,34 +38,31 @@ struct GaugemomentumTestParameters: public TestParameters
 	const SpinorFillType fillType;
 };
 
-//@todo: work over the members and remove a lot!
-//@todo: Use GaugemomentumFillType in the member fcts.!
 class GaugemomentumTester : public KernelTester
 {
 public:
-  GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP);
-  virtual ~GaugemomentumTester();
-
+	GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP);
+	virtual ~GaugemomentumTester();
 protected:
-	enum Filltype {one, zero};
-
-	double * createGaugemomentum(int seed = 123456);
-	double * createGaugemomentumBasedOnFilltype(Filltype filltype = one);
-	void fill_with_one(double * sf_in);
-	void fill_with_zero(double * sf_in);
-	void fill_with_random(double * sf_in, int seed);
-	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index = 0);
-	double count_gm(ae * ae_in, int size);
-	double calc_var(double in, double mean);  
-	double calc_var_gm(ae * ae_in, int size, double sum);
-	
 	const hardware::code::Gaugemomentum * code;
 	hardware::buffers::Plain<double> * doubleBuffer;
-	hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
-	
-	size_t numberOfAlgebraElements;
-	size_t numberOfGaugemomentumElements;
-	bool useRandom;
+	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index = 0);
+};
+
+
+struct GaugemomentumCreator
+{
+	GaugemomentumCreator(size_t numberOfElementsIn): numberOfElements(numberOfElementsIn){};
+	enum Filltype {one, zero};
+	double * createGaugemomentumBasedOnFilltype(const Filltype filltype = one);
+	void fill_with_one(double * sf_in);
+	void fill_with_zero(double * sf_in);
+	double count_gm(ae * ae_in, int size);
+	double calc_var(double in, double mean);
+	double calc_var_gm(ae * ae_in, int size, double sum);
+
+	size_t numberOfElements;
+
 };
 
 #endif

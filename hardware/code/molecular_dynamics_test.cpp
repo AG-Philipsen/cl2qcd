@@ -116,8 +116,12 @@ struct MolecularDynamicsTester : public GaugemomentumTester
 	MolecularDynamicsTester(std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const MolecularDynamicsTestParameters tP) :
 		GaugemomentumTester(kernelName, pC, rV, tP)
 		{
-			gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(tP.latticeExtents), this->device);
-			gaugefieldBuffer->load(createGaugefield(calculateGaugefieldSize(tP.latticeExtents), tP.gaugeFillType));
+			GaugefieldCreator gf;
+			GaugemomentumCreator gm(calculateAlgebraSize(tP.latticeExtents));
+			gaugefieldBuffer = new hardware::buffers::SU3( gf.calculateGaugefieldSize(tP.latticeExtents), this->device);
+			gaugefieldBuffer->load(gf.createGaugefield(gf.calculateGaugefieldSize(tP.latticeExtents), tP.gaugeFillType));
+			gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
+			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(gm.Filltype::one) ));
 			gaugefieldCode = device->getGaugefieldCode();
 			molecularDynamicsCode = device->getMolecularDynamicsCode();
 		}
@@ -126,6 +130,7 @@ protected:
 	const hardware::code::Molecular_Dynamics * molecularDynamicsCode{nullptr};
 	const hardware::code::Gaugefield * gaugefieldCode{nullptr};
 	const hardware::buffers::SU3 * gaugefieldBuffer;
+	const hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
 };
 
 struct GaugefieldUpdateTester : public MolecularDynamicsTester
@@ -133,7 +138,6 @@ struct GaugefieldUpdateTester : public MolecularDynamicsTester
 	GaugefieldUpdateTester(const ParameterCollection pC, const GaugeFieldUpdateTestParameters tP) :
 		MolecularDynamicsTester("md_update_gaugefield", pC, calculateReferenceValues_GaugefieldUpdate(calculateLatticeVolume(tP.latticeExtents), tP.gaugeFillType), tP)
 		{
-			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
 			molecularDynamicsCode->md_update_gaugefield_device(gaugemomentumBuffer, gaugefieldBuffer, tP.eps);
 
 			const hardware::buffers::Plain<hmc_float> plaq(1, device );
@@ -150,7 +154,6 @@ struct FGaugeTester : public MolecularDynamicsTester
 	FGaugeTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
 		MolecularDynamicsTester("f_gauge",pC, calculateReferenceValues_FGauge(calculateLatticeVolume(tP.latticeExtents)), tP)
 		{
-			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(Filltype::one) ));
 			molecularDynamicsCode->gauge_force_device( gaugefieldBuffer, gaugemomentumBuffer);
 			calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
@@ -161,24 +164,22 @@ struct FGaugeTlsymTester : public MolecularDynamicsTester
 	FGaugeTlsymTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
 		MolecularDynamicsTester("f_gauge_tlsym", pC, calculateReferenceValues_FGaugeTlsym(calculateLatticeVolume(tP.latticeExtents), tP.gaugeFillType), tP)
 		{
-			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(Filltype::one) ));
 			molecularDynamicsCode->gauge_force_tlsym_device( gaugefieldBuffer, gaugemomentumBuffer);
 			calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
 };
 
-struct FFermionTester : public MolecularDynamicsTester, public SpinorTester
+struct FFermionTester : public MolecularDynamicsTester
 {
 	FFermionTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
-		MolecularDynamicsTester("f_fermion", pC, calculateReferenceValues_FFermion(), tP),
-		SpinorTester("f_fermion", pC, SpinorTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermion())
+		MolecularDynamicsTester("f_fermion", pC, calculateReferenceValues_FFermion(), tP)
 		{
-			MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+			NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
 			const hardware::buffers::Plain<spinor> in1(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 			const hardware::buffers::Plain<spinor> in2(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 
-			in1.load(SpinorTester::createSpinorfield(SpinorFillType::one) );
-			in2.load(SpinorTester::createSpinorfield(SpinorFillType::one) );
+			in1.load(sf.createSpinorfield(SpinorFillType::one) );
+			in2.load(sf.createSpinorfield(SpinorFillType::one) );
 
 			double kappa = 1; //@todo: make adjustable
 			molecularDynamicsCode->fermion_force_device( &in1, &in2, gaugefieldBuffer, gaugemomentumBuffer, kappa);
@@ -186,16 +187,15 @@ struct FFermionTester : public MolecularDynamicsTester, public SpinorTester
 		}
 };
 
-struct FFermionEvenOddTester : public MolecularDynamicsTester, public SpinorTester
+struct FFermionEvenOddTester : public MolecularDynamicsTester
 {
 	FFermionEvenOddTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
-		MolecularDynamicsTester("f_fermion_eo", pC, calculateReferenceValues_FFermionEvenOdd(), tP),
-		SpinorTester("f_fermion_eo", pC, SpinorTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermionEvenOdd())
+		MolecularDynamicsTester("f_fermion_eo", pC, calculateReferenceValues_FFermionEvenOdd(), tP)
 		{
-			MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(one) ));
-			const hardware::buffers::Spinor in1(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
-			const hardware::buffers::Spinor in2(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
-			fillTwoSpinorBuffers(&in1, &in2);
+			EvenOddSpinorfieldCreator sf(tP.latticeExtents);
+			const hardware::buffers::Spinor in1(calculateEvenOddSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
+			const hardware::buffers::Spinor in2(calculateEvenOddSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
+			sf.fillTwoSpinorBuffers(&in1, &in2);//to be changed to use SpinorFillType
 
 			double kappa = 1; //@todo: make adjustable
 			bool evenOrOdd = EVEN; //@todo: make adjustable
@@ -204,14 +204,13 @@ struct FFermionEvenOddTester : public MolecularDynamicsTester, public SpinorTest
 		}
 };
 
-struct FFermionEvenOddComparator : public MolecularDynamicsTester, public SpinorTester
+struct FFermionEvenOddComparator : public MolecularDynamicsTester
 {
 	FFermionEvenOddComparator(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
-		MolecularDynamicsTester("f_fermion compare even-odd and non-even-odd", pC, calculateReferenceValues_FFermionEvenOddComparator(), tP),
-		SpinorTester("f_fermion compare even-odd and non-even-odd", pC, SpinorTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermionEvenOddComparator())
+		MolecularDynamicsTester("f_fermion compare even-odd and non-even-odd", pC, calculateReferenceValues_FFermionEvenOddComparator(), tP)
 		{
 			createBuffers(tP);
-			fillBuffers();
+			fillBuffers(tP);
 
 			double kappa = 1; //@todo: make adjustable
 
@@ -257,8 +256,8 @@ struct FFermionEvenOddComparator : public MolecularDynamicsTester, public Spinor
 private:
 	void createBuffers(const TestParameters tP)
 	{
-		outNonEo = new const hardware::buffers::Gaugemomentum(MolecularDynamicsTester::numberOfGaugemomentumElements, MolecularDynamicsTester::device);
-		outEo = new const hardware::buffers::Gaugemomentum(MolecularDynamicsTester::numberOfGaugemomentumElements, MolecularDynamicsTester::device);
+		outNonEo = new const hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), MolecularDynamicsTester::device);
+		outEo = new const hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), MolecularDynamicsTester::device);
 		inNonEo1 = new const hardware::buffers::Plain<spinor>(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 		inNonEo2 = new const hardware::buffers::Plain<spinor>(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 		inEo1 = new const hardware::buffers::Spinor(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
@@ -266,15 +265,18 @@ private:
 		inEo3 = new const hardware::buffers::Spinor(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 		inEo4 = new const hardware::buffers::Spinor(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 	}
-	void fillBuffers()
+	void fillBuffers(const TestParameters tP)
 	{
-		MolecularDynamicsTester::code->importGaugemomentumBuffer(outNonEo, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
-		MolecularDynamicsTester::code->importGaugemomentumBuffer(outEo, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
+		GaugemomentumCreator gm(calculateAlgebraSize(tP.latticeExtents));
+		MolecularDynamicsTester::code->importGaugemomentumBuffer(outNonEo, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(gm.Filltype::one) ));
+		MolecularDynamicsTester::code->importGaugemomentumBuffer(outEo, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(gm.Filltype::one) ));
 
-		inNonEo1->load(SpinorTester::createSpinorfield(SpinorFillType::one));
-		inNonEo2->load(SpinorTester::createSpinorfield(SpinorFillType::one));
-		fillTwoSpinorBuffers(inEo1, inEo2, 123456);
-		fillTwoSpinorBuffers(inEo3, inEo4, 789101);
+		NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
+		EvenOddSpinorfieldCreator sfEo(tP.latticeExtents);
+		inNonEo1->load(sf.createSpinorfield(SpinorFillType::one));
+		inNonEo2->load(sf.createSpinorfield(SpinorFillType::one));
+		sfEo.fillTwoSpinorBuffers(inEo1, inEo2); //to be changed to use SpinorFillType
+		sfEo.fillTwoSpinorBuffers(inEo3, inEo4);
 
 	}
 
@@ -288,13 +290,12 @@ private:
 	const hardware::buffers::Spinor * inEo4;
 };
 
-struct FFermionStaggeredEvenOddTester : public MolecularDynamicsTester, public SpinorStaggeredTester{
+struct FFermionStaggeredEvenOddTester : public MolecularDynamicsTester, public SpinorStaggeredTester
+{
 	FFermionStaggeredEvenOddTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
 	   MolecularDynamicsTester("f_staggered_fermion_eo", pC, calculateReferenceValues_FFermionStaggeredEvenOdd(), tP),
 	   SpinorStaggeredTester("f_staggered_fermion_eo", pC, SpinorStaggeredTestParameters(tP.latticeExtents), 1, calculateReferenceValues_FFermionStaggeredEvenOdd() )
 	{
-
-		MolecularDynamicsTester::code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentumBasedOnFilltype(zero) ));
 		const hardware::buffers::SU3vec in1(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 		in1.load(createSpinorfield(SpinorFillType::one));
 		const hardware::buffers::SU3vec in2(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);

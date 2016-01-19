@@ -24,34 +24,35 @@
 GaugemomentumTester::GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP):
 		KernelTester(kernelName, pC.hardwareParameters, pC.kernelParameters, tP, rV)
 {
-  numberOfAlgebraElements = calculateLatticeVolume(tP.latticeExtents) * NDIM * hardware::code::getSu3AlgebraSize();
-  numberOfGaugemomentumElements = calculateLatticeVolume(tP.latticeExtents) * NDIM;
-  useRandom = false; //@todo: remove this parameter
-
   code = device->getGaugemomentumCode();
   doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-  gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(numberOfGaugemomentumElements, device);
 }
 
 GaugemomentumTester::~GaugemomentumTester()
 {
   delete doubleBuffer;
-  delete gaugemomentumBuffer;
 }
 
-double * GaugemomentumTester::createGaugemomentum(int seed)
+void GaugemomentumTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index)
 {
-  double * gm_in;
-  gm_in = new double[numberOfAlgebraElements];
-  useRandom ? fill_with_random(gm_in, seed) : fill_with_one(gm_in);
-  BOOST_REQUIRE(gm_in);
-  return gm_in;    
+  code->set_float_to_gaugemomentum_squarenorm_device(in, doubleBuffer);
+  doubleBuffer->dump(&kernelResult[index]);
 }
 
-double * GaugemomentumTester::createGaugemomentumBasedOnFilltype(Filltype filltype)
+int calculateGaugemomentumSize(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
+}
+
+int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM * hardware::code::getSu3AlgebraSize();
+}
+
+double * GaugemomentumCreator::createGaugemomentumBasedOnFilltype(const Filltype filltype)
 {
   double * gm_in;
-  gm_in = new double[numberOfAlgebraElements];
+  gm_in = new double[numberOfElements];//numberOfAlgebraElements
   switch(filltype)
 	{
 		case one:
@@ -62,41 +63,26 @@ double * GaugemomentumTester::createGaugemomentumBasedOnFilltype(Filltype fillty
 			break;
 	}
   BOOST_REQUIRE(gm_in);
-  return gm_in;    
+  return gm_in;
 }
 
-void GaugemomentumTester::fill_with_one(double * sf_in)
+void GaugemomentumCreator::fill_with_one(double * sf_in)
 {
-  for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
+  for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
     sf_in[i] = 1.;
   }
   return;
 }
 
-void GaugemomentumTester::fill_with_zero(double * sf_in)
+void GaugemomentumCreator::fill_with_zero(double * sf_in)
 {
-  for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
+  for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
     sf_in[i] = 0.;
   }
   return;
 }
 
-void GaugemomentumTester::fill_with_random(double * sf_in, int seed)
-{
-  prng_init(seed);
-  for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
-    sf_in[i] = prng_double();
-  }
-  return;
-}
-
-void GaugemomentumTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index)
-{
-  code->set_float_to_gaugemomentum_squarenorm_device(in, doubleBuffer);
-  doubleBuffer->dump(&kernelResult[index]);
-}
-
-double GaugemomentumTester::count_gm(ae * ae_in, int size)
+double GaugemomentumCreator::count_gm(ae * ae_in, int size)
 {
   double sum = 0.;
   for (int i = 0; i<size;i++){
@@ -113,21 +99,21 @@ double GaugemomentumTester::count_gm(ae * ae_in, int size)
   return sum;
 }
 
-double GaugemomentumTester::calc_var(double in, double mean){
+double GaugemomentumCreator::calc_var(double in, double mean){
   return (in - mean) * (in - mean);
 }
-  
-double GaugemomentumTester::calc_var_gm(ae * ae_in, int size, double sum){
+
+double GaugemomentumCreator::calc_var_gm(ae * ae_in, int size, double sum){
   double var = 0.;
   for(int k = 0; k<size; k++){
     var +=
-      calc_var(   ae_in[k].e0 , sum) 
-      + calc_var( ae_in[k].e1 , sum) 
+      calc_var(   ae_in[k].e0 , sum)
+      + calc_var( ae_in[k].e1 , sum)
       + calc_var( ae_in[k].e2 , sum)
-      + calc_var( ae_in[k].e3 , sum) 
-      + calc_var( ae_in[k].e4 , sum) 
-      + calc_var( ae_in[k].e5 , sum) 
-	+ calc_var( ae_in[k].e6 , sum) 
+      + calc_var( ae_in[k].e3 , sum)
+      + calc_var( ae_in[k].e4 , sum)
+      + calc_var( ae_in[k].e5 , sum)
+	+ calc_var( ae_in[k].e6 , sum)
       + calc_var( ae_in[k].e7 , sum) ;
   }
   return var;

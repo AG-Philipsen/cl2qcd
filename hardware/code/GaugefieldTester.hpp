@@ -35,16 +35,14 @@ struct GaugefieldTestParameters : public virtual TestParameters
 struct GaugefieldTester : public KernelTester
 {
 	GaugefieldTester(std::string, const ParameterCollection &, const GaugefieldTestParameters, const ReferenceValues rV);
-	~GaugefieldTester();
 
 protected:
-	const int numberOfElements;
 	const hardware::code::Gaugefield * code;
-	const hardware::buffers::SU3 * gaugefieldBuffer;
 };
 
-int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept;
-
-const Matrixsu3* createGaugefield(const int numberOfElements, const GaugefieldFillType fillTypeIn);
-
+struct GaugefieldCreator
+{
+	const Matrixsu3* createGaugefield(int numberOfElements, const GaugefieldFillType fillTypeIn);
+	int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept;
+};
 

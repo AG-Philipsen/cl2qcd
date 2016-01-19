@@ -85,8 +85,9 @@ struct FermionmatrixTester : public TesterType
 	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
 		TesterType(kernelName, parameterCollection, testParameters, rV)
 	{
-		gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), this->device);
-		const Matrixsu3 * gf_host = createGaugefield(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
+		GaugefieldCreator gf;
+		gaugefieldBuffer = new hardware::buffers::SU3(gf.calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), this->device);
+		const Matrixsu3 * gf_host = gf.createGaugefield(gf.calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
 		this->device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
 		delete[] gf_host;
 
