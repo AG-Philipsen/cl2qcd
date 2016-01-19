@@ -30,6 +30,7 @@
 #include <stdexcept>
 
 #include "../lattices/gaugefield.hpp"
+#include "../../interfaceImplementations/latticesParameters.hpp"
 
 class GaugeObservablesTester
 {

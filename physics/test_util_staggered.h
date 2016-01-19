@@ -31,12 +31,15 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
 #include "../hardware/code/spinors.hpp"
+#include "../interfaceImplementations/latticesParameters.hpp"
 #include <vector>
 
 class TestGaugefield_stagg {
 
  public:
- TestGaugefield_stagg(const hardware::System * system) : system(system), params(&system->get_inputparameters()), prngParameters( &system->get_inputparameters() ), prng(*system, &prngParameters), gf(*system, &params, prng) {
+ TestGaugefield_stagg(const hardware::System * system) : system(system), prngParameters( &system->get_inputparameters() ), params(&system->get_inputparameters()),
+                                                         prng(*system, &prngParameters), gf(*system, &params, prng)
+ {
     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
     const auto & inputfile = system->get_inputparameters();
     meta::print_info_hmc(inputfile);

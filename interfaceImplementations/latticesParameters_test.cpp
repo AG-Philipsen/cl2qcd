@@ -22,7 +22,7 @@
 #define BOOST_TEST_MODULE physics::lattice::parametersInterface
 #include <boost/test/unit_test.hpp>
 
-#include "latticesInterfaces.hpp"
+#include "latticesParameters.hpp"
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {
@@ -76,8 +76,6 @@ BOOST_AUTO_TEST_CASE(testStaggeredfieldEoParameters)
     auto params = createDefaultMetaInputparameters();
     physics::lattices::StaggeredfieldEoParametersImplementation test(*params);
 
-//    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
-//    BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
     BOOST_CHECK_EQUAL(test.getNumberOfElements(), std::pow(params->get_nspace(), 3.)*params->get_ntime());
 }
 
@@ -86,8 +84,6 @@ BOOST_AUTO_TEST_CASE(testRootedStaggeredfieldEoParameters)
     auto params = createDefaultMetaInputparameters();
     physics::lattices::RootedStaggeredfieldEoParametersImplementation test(*params);
 
-//    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
-//    BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
     BOOST_CHECK_EQUAL(test.getNumberOfElements(), std::pow(params->get_nspace(), 3.)*params->get_ntime());
     BOOST_CHECK_EQUAL(test.getMetropolisRationalApproximationOrder(), params->get_metro_approx_ord());
     BOOST_CHECK_EQUAL(test.getMolecularDynamicsRationalApproximationOrder(), params->get_md_approx_ord());

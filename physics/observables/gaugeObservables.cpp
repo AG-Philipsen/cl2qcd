@@ -30,7 +30,7 @@
 
 class gaugeObservables{
     public:
-        gaugeObservables(const physics::observables::GaugeObservablesParametersImplementation& interface)
+        gaugeObservables(const physics::observables::GaugeObservablesParametersInterface& interface)
             : gaugeObservablesParametersInterface(interface), outputToFile("") {};
         gaugeObservables() = delete;
         void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
@@ -310,6 +310,9 @@ hmc_complex gaugeObservables::measurePolyakovloop(const physics::lattices::Gauge
 
     return polyakov;
 }
+
+//TODO: Remove this include when the interface will be passed to the functions below
+#include "../../interfaceImplementations/observablesParameters.hpp"
 
 void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration)
 {

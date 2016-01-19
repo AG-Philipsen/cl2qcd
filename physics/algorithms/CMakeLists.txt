@@ -53,8 +53,6 @@ target_link_libraries(algorithms
 # Definition of tests
 #
 
-add_unit_test_withLibraries(physics::algorithms::algorithmsInterfaces algorithmsInterfaces_test meta)
-
 add_unit_test(physics::algorithms::<fermion_force> fermion_force_test)
 add_unit_test(physics::algorithms::<fermion_force_staggered> fermion_force_staggered_test)
 add_unit_test(physics::algorithms::<forces> forces_test)

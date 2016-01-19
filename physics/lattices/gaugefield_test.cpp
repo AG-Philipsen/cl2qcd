@@ -32,6 +32,7 @@
 #include <stdexcept>
 
 #include "../observables/gaugeObservables.hpp"
+#include "../../interfaceImplementations/latticesParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {

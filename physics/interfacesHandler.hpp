@@ -53,9 +53,8 @@ namespace physics {
     	class MdagM_eo;
     }
 
-    //The following templates are not defined in order to prevent non specialized template instatiation!
+    //The following templates are not defined in order to prevent non specialized template instantiation!
     template<typename NOT_IMPORTANT> struct InterfaceType;
-    template<typename NOT_IMPORTANT> struct AdditionalParametersType;
 
     template<>
     struct InterfaceType<physics::lattices::Gaugefield> {
@@ -127,33 +126,16 @@ namespace physics {
     };
 
 
-    template<>
-    struct AdditionalParametersType<physics::lattices::Spinorfield> {
-            using value = physics::WilsonAdditionalParameters;
-    };
-    template<>
-    struct AdditionalParametersType<physics::lattices::Spinorfield_eo> {
-            using value = physics::WilsonAdditionalParameters;
-    };
-    template<>
-    struct AdditionalParametersType<physics::lattices::Staggeredfield_eo> {
-            using value = physics::StaggeredAdditionalParameters;
-    };    template<>
-    struct AdditionalParametersType<physics::lattices::Rooted_Staggeredfield_eo> {
-            using value = physics::StaggeredAdditionalParameters;
-    };
-
-
 
     class InterfacesHandler {
         public:
             virtual ~InterfacesHandler() {};
             //The following templates are not defined in order to prevent non specialized template instatiation!
             template<class OBJECT> const typename InterfaceType<OBJECT>::value& getInterface();
-            template<class OBJECT> const typename AdditionalParametersType<OBJECT>::value& getAdditionalParameters(bool withMassPreconditioning = false);
+            template<class OBJECT> const physics::AdditionalParameters& getAdditionalParameters(bool withMassPreconditioning = false);
 
             //TODO: For the moment there is no object responsible to calculate observables, so we leave the following getters out of the above template
-            //      It would be better to create objects in physics::observables and move these getters in the template above.
+            //      Think about to create objects in physics::observables and move these getters in the template above.
             virtual const physics::observables::GaugeObservablesParametersInterface& getGaugeObservablesParametersInterface() = 0;
             virtual const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& getWilsonTwoFlavourChiralCondensateParametersInterface() = 0;
             virtual const physics::observables::StaggeredChiralCondensateParametersInterface& getStaggeredChiralCondensateParametersInterface() = 0;
@@ -183,8 +165,8 @@ namespace physics {
             virtual const physics::FermionParametersInterface& getFermionParametersInterface() = 0;
             virtual const physics::FermionEoParametersInterface& getFermionEoParametersInterface() = 0;
             virtual const physics::FermionStaggeredEoParametersInterface& getFermionStaggeredEoParametersInterface() = 0;
-            virtual const physics::WilsonAdditionalParameters& getWilsonAdditionalParameters(bool) = 0;
-            virtual const physics::StaggeredAdditionalParameters& getStaggeredAdditionalParameters() = 0;
+            virtual const physics::AdditionalParameters& getWilsonAdditionalParameters(bool) = 0;
+            virtual const physics::AdditionalParameters& getStaggeredAdditionalParameters() = 0;
     };
 
     template<> inline const typename InterfaceType<physics::lattices::Gaugefield>::value& InterfacesHandler::getInterface<physics::lattices::Gaugefield>()
@@ -256,19 +238,19 @@ namespace physics {
         return getFermionStaggeredEoParametersInterface();
     }
 
-    template<> inline const typename AdditionalParametersType<physics::lattices::Spinorfield>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Spinorfield>(bool withMassPreconditioning)
+    template<> inline const physics::AdditionalParameters& InterfacesHandler::getAdditionalParameters<physics::lattices::Spinorfield>(bool withMassPreconditioning)
     {
         return getWilsonAdditionalParameters(withMassPreconditioning);
     }
-    template<> inline const typename AdditionalParametersType<physics::lattices::Spinorfield_eo>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Spinorfield_eo>(bool withMassPreconditioning)
+    template<> inline const physics::AdditionalParameters& InterfacesHandler::getAdditionalParameters<physics::lattices::Spinorfield_eo>(bool withMassPreconditioning)
     {
         return getWilsonAdditionalParameters(withMassPreconditioning);
     }
-    template<> inline const typename AdditionalParametersType<physics::lattices::Staggeredfield_eo>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Staggeredfield_eo>(bool)
+    template<> inline const physics::AdditionalParameters& InterfacesHandler::getAdditionalParameters<physics::lattices::Staggeredfield_eo>(bool)
     {
         return getStaggeredAdditionalParameters();
     }
-    template<> inline const typename AdditionalParametersType<physics::lattices::Rooted_Staggeredfield_eo>::value& InterfacesHandler::getAdditionalParameters<physics::lattices::Rooted_Staggeredfield_eo>(bool)
+    template<> inline const physics::AdditionalParameters& InterfacesHandler::getAdditionalParameters<physics::lattices::Rooted_Staggeredfield_eo>(bool)
     {
         return getStaggeredAdditionalParameters();
     }
@@ -277,6 +259,11 @@ namespace physics {
 
 
 #include <memory>
+#include "../interfaceImplementations/physicsParameters.hpp"
+#include "../interfaceImplementations/algorithmsParameters.hpp"
+#include "../interfaceImplementations/latticesParameters.hpp"
+#include "../interfaceImplementations/fermionmatrixParameters.hpp"
+#include "../interfaceImplementations/observablesParameters.hpp"
 
 namespace physics {
 
@@ -310,6 +297,7 @@ namespace physics {
                   hmcParametersInterface{nullptr},
                   rhmcParametersInterface{nullptr},
                   wilsonAdditionalParameters{nullptr},
+                  wilsonAdditionalParametersMp{nullptr},
                   staggeredAdditionalParameters{nullptr} {}
             ~InterfacesHandlerImplementation() {}
             const physics::observables::GaugeObservablesParametersInterface& getGaugeObservablesParametersInterface() override
@@ -458,7 +446,7 @@ namespace physics {
                 return *fermionStaggeredEoParametersInterface;
             }
 
-            virtual const physics::WilsonAdditionalParameters& getWilsonAdditionalParameters(bool withMassPreconditioning) override
+            virtual const physics::AdditionalParameters& getWilsonAdditionalParameters(bool withMassPreconditioning) override
             {
                 if(withMassPreconditioning){
                     if(wilsonAdditionalParametersMp == nullptr)
@@ -471,7 +459,7 @@ namespace physics {
                 }
             }
 
-            virtual const physics::StaggeredAdditionalParameters& getStaggeredAdditionalParameters() override
+            virtual const physics::AdditionalParameters& getStaggeredAdditionalParameters() override
             {
                 if(staggeredAdditionalParameters == nullptr)
                     staggeredAdditionalParameters = std::unique_ptr<const physics::StaggeredAdditionalParameters>(new physics::StaggeredAdditionalParameters{parameters});
@@ -504,9 +492,9 @@ namespace physics {
             std::unique_ptr<const physics::algorithms::MetropolisParametersInterface> metropolisParametersInterface;
             std::unique_ptr<const physics::algorithms::HmcParametersInterface> hmcParametersInterface;
             std::unique_ptr<const physics::algorithms::RhmcParametersInterface> rhmcParametersInterface;
-            std::unique_ptr<const physics::WilsonAdditionalParameters> wilsonAdditionalParameters;
-            std::unique_ptr<const physics::WilsonAdditionalParameters> wilsonAdditionalParametersMp;
-            std::unique_ptr<const physics::StaggeredAdditionalParameters> staggeredAdditionalParameters;
+            std::unique_ptr<const physics::AdditionalParameters> wilsonAdditionalParameters;
+            std::unique_ptr<const physics::AdditionalParameters> wilsonAdditionalParametersMp;
+            std::unique_ptr<const physics::AdditionalParameters> staggeredAdditionalParameters;
 
     };
 

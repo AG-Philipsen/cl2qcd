@@ -22,7 +22,7 @@
 #define BOOST_TEST_MODULE physics::observables::parametersInterface
 #include <boost/test/unit_test.hpp>
 
-#include "observablesInterfaces.hpp"
+#include "observablesParameters.hpp"
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {

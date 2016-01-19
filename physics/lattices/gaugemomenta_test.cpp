@@ -33,6 +33,7 @@
 #include "../../hardware/code/gaugemomentum.hpp"
 #include "util.hpp"
 #include "../../meta/util.hpp"
+#include "../../interfaceImplementations/latticesParameters.hpp"
 
 static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed);
 
