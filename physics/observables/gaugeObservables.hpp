@@ -40,12 +40,12 @@ namespace physics{
       plaquette(plaquetteIn), temporalPlaquette(temporalPlaquetteIn), spatialPlaquette(spatialPlaquetteIn) {}
     };
     
-    void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
-    hmc_float measurePlaquette(const physics::lattices::Gaugefield * gf);
-    hmc_float measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf);
-    hmc_float measureRectangles(const physics::lattices::Gaugefield * gf);
-    Plaquettes measureAllPlaquettes(const physics::lattices::Gaugefield * gf);
-    hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gf);
+    void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration, const physics::observables::GaugeObservablesParametersInterface&);
+    hmc_float measurePlaquette(const physics::lattices::Gaugefield * gf, const physics::observables::GaugeObservablesParametersInterface&);
+    hmc_float measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf, const physics::observables::GaugeObservablesParametersInterface&);
+    hmc_float measureRectangles(const physics::lattices::Gaugefield * gf, const physics::observables::GaugeObservablesParametersInterface&);
+    Plaquettes measureAllPlaquettes(const physics::lattices::Gaugefield * gf, const physics::observables::GaugeObservablesParametersInterface&);
+    hmc_complex measurePolyakovloop(const physics::lattices::Gaugefield * gf, const physics::observables::GaugeObservablesParametersInterface&);
   }
 }
 

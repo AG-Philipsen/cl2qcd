@@ -33,6 +33,7 @@
 
 #include "../observables/gaugeObservables.hpp"
 #include "../../interfaceImplementations/latticesParameters.hpp"
+#include "../../interfaceImplementations/observablesParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -46,14 +47,15 @@ BOOST_AUTO_TEST_CASE(initialization)
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
+		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 		// init hot
 		Gaugefield gf2(system, &parametersTmp, prng, true);
 
 		// init cold
 		Gaugefield gf3(system, &parametersTmp, prng, false);
-		logger.fatal() << physics::observables::measurePlaquette(&gf3);
-		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf3), 1., 0.1);
+		logger.fatal() << physics::observables::measurePlaquette(&gf3, gaugeobservablesParameters);
+		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf3, gaugeobservablesParameters), 1., 0.1);
 	}
 
 	{
@@ -64,10 +66,11 @@ BOOST_AUTO_TEST_CASE(initialization)
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
+		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 		// init from file
 		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
-		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.1);
+		BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(&gf, gaugeobservablesParameters), 0.57107711169452713, 0.1);
 	}
 }
 
@@ -80,6 +83,7 @@ void test_save(bool hot) {
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
+	physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 	Gaugefield gf(system, &parametersTmp, prng, hot);
 	gf.save("conf.test", 0);
@@ -87,14 +91,14 @@ void test_save(bool hot) {
 	hmc_float orig_plaq, reread_plaq;
 	hmc_complex orig_pol, reread_pol;
 
-	orig_plaq = physics::observables::measurePlaquette(&gf);
-	orig_pol = physics::observables::measurePolyakovloop(&gf);
+	orig_plaq = physics::observables::measurePlaquette(&gf, gaugeobservablesParameters);
+	orig_pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 
 	//NOTE: the conversion to std::string is necessary, otherwise the compiler creates a boolean!
 	Gaugefield reread(system, &parametersTmp, prng, (std::string) "conf.test");
 	
-	reread_plaq =  physics::observables::measurePlaquette(&reread);
-	reread_pol = physics::observables::measurePolyakovloop(&reread);
+	reread_plaq =  physics::observables::measurePlaquette(&reread, gaugeobservablesParameters);
+	reread_pol = physics::observables::measurePolyakovloop(&reread, gaugeobservablesParameters);
 
 	BOOST_CHECK_EQUAL(orig_plaq, reread_plaq);
 	BOOST_CHECK_EQUAL(orig_pol, reread_pol);
@@ -116,9 +120,10 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	hardware::System system(params);
 	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
+	physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 	Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
-	BOOST_CHECK_THROW( physics::observables::measureRectangles(&gf);, std::logic_error);
+	BOOST_CHECK_THROW( physics::observables::measureRectangles(&gf, gaugeobservablesParameters);, std::logic_error);
 
 	const char * _params2[] = {"foo", "--gaugeact=tlsym", "--ntime=4"};
 	meta::Inputparameters params2(3, _params2);
@@ -128,7 +133,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	physics::PRNG prng2(system, &prngParameters2);
 
 	Gaugefield gf2(system2, &parametersTmp2, prng2, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
-	BOOST_CHECK_CLOSE(physics::observables::measureRectangles(&gf2), 1103.2398401620451, 0.1);
+	BOOST_CHECK_CLOSE(physics::observables::measureRectangles(&gf2, gaugeobservablesParameters), 1103.2398401620451, 0.1);
 }
 
 BOOST_AUTO_TEST_CASE(polyakov)
@@ -142,10 +147,11 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
+		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 		Gaugefield gf(system, &parametersTmp, prng, false);
 
-		hmc_complex pol = physics::observables::measurePolyakovloop(&gf);;
+		hmc_complex pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);;
 		BOOST_CHECK_CLOSE(pol.re, 1., 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0., 0.1);
 	}
@@ -157,9 +163,10 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
+		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
-		hmc_complex pol = physics::observables::measurePolyakovloop(&gf);
+		hmc_complex pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 		BOOST_CHECK_CLOSE(pol.re, -0.11349672123636857, 0.1);
 		BOOST_CHECK_CLOSE(pol.im, 0.22828243566855227, 0.1);
 	}
@@ -181,16 +188,17 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
+		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 		Gaugefield gf(system, &parametersTmp, prng, false);
 
-		orig_plaq = physics::observables::measurePlaquette(&gf);
-		orig_pol = physics::observables::measurePolyakovloop(&gf);
+		orig_plaq = physics::observables::measurePlaquette(&gf, gaugeobservablesParameters);
+		orig_pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 
 		gf.update_halo();
 
-		new_plaq = physics::observables::measurePlaquette(&gf);
-		new_pol = physics::observables::measurePolyakovloop(&gf);
+		new_plaq = physics::observables::measurePlaquette(&gf, gaugeobservablesParameters);
+		new_pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);
@@ -203,16 +211,17 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
+		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 		Gaugefield gf(system, &parametersTmp, prng, true);
 
-		orig_plaq = physics::observables::measurePlaquette(&gf);
-		orig_pol = physics::observables::measurePolyakovloop(&gf);
+		orig_plaq = physics::observables::measurePlaquette(&gf, gaugeobservablesParameters);
+		orig_pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 
 		gf.update_halo();
 
-		new_plaq = physics::observables::measurePlaquette(&gf);
-		new_pol = physics::observables::measurePolyakovloop(&gf);
+		new_plaq = physics::observables::measurePlaquette(&gf, gaugeobservablesParameters);
+		new_pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);
@@ -225,16 +234,17 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		hardware::System system(params);
 		physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
 		physics::PRNG prng(system, &prngParameters);
+		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
 		Gaugefield gf(system, &parametersTmp, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 
-		orig_plaq = physics::observables::measurePlaquette(&gf);
-		orig_pol = physics::observables::measurePolyakovloop(&gf);
+		orig_plaq = physics::observables::measurePlaquette(&gf, gaugeobservablesParameters);
+		orig_pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 
 		gf.update_halo();
 
-		new_plaq = physics::observables::measurePlaquette(&gf);
-		new_pol = physics::observables::measurePolyakovloop(&gf);
+		new_plaq = physics::observables::measurePlaquette(&gf, gaugeobservablesParameters);
+		new_pol = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
 
 		BOOST_CHECK_EQUAL(orig_plaq, new_plaq);
 		BOOST_CHECK_EQUAL(orig_pol, new_pol);

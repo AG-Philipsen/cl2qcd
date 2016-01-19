@@ -257,7 +257,8 @@ template<class SPINORFIELD> static hmc_observables metropolis(const hmc_float rn
 {
     using namespace physics::algorithms;
 
-    const physics::algorithms::MetropolisParametersInterface & parametersInterface = interfacesHandler.getMetropolisParametersInterface();
+    const physics::algorithms::MetropolisParametersInterface& parametersInterface = interfacesHandler.getMetropolisParametersInterface();
+    const physics::observables::GaugeObservablesParametersInterface& gaugeobservablesParameters = interfacesHandler.getGaugeObservablesParametersInterface();
 
     //Calc Hamiltonian
     print_info_debug(interfacesHandler, "[DH]:\tCalculate Hamiltonian", sqrt(-1.), false);
@@ -266,15 +267,15 @@ template<class SPINORFIELD> static hmc_observables metropolis(const hmc_float rn
     hmc_float s_new = 0.;
 
     //Gauge-Part
-    hmc_float plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
-    hmc_float plaq_new = physics::observables::measurePlaquetteWithoutNormalization(&new_u);
+    hmc_float plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf, gaugeobservablesParameters);
+    hmc_float plaq_new = physics::observables::measurePlaquetteWithoutNormalization(&new_u, gaugeobservablesParameters);
 
     hmc_float rect_new = 0.;
     hmc_float rect = 0.;
 
     if(parametersInterface.getUseRectangles() == true) {
-        rect = physics::observables::measureRectangles(&gf);
-        rect_new = physics::observables::measureRectangles(&new_u);
+        rect = physics::observables::measureRectangles(&gf, gaugeobservablesParameters);
+        rect_new = physics::observables::measureRectangles(&new_u, gaugeobservablesParameters);
         hmc_float c0 = parametersInterface.getC0();
         hmc_float c1 = parametersInterface.getC1();
         deltaH = -beta * (c0 * (plaq - plaq_new) + c1 * (rect - rect_new));
@@ -375,18 +376,18 @@ template<class SPINORFIELD> static hmc_observables metropolis(const hmc_float rn
 
     //calc gaugeobservables
     //todo: calc only of final configuration
-    auto plaqs = physics::observables::measureAllPlaquettes(&gf);
+    auto plaqs = physics::observables::measureAllPlaquettes(&gf, gaugeobservablesParameters);
     plaq = plaqs.plaquette;
     hmc_float splaq = plaqs.spatialPlaquette;
     hmc_float tplaq = plaqs.temporalPlaquette;
 
-    plaqs = physics::observables::measureAllPlaquettes(&new_u);
+    plaqs = physics::observables::measureAllPlaquettes(&new_u, gaugeobservablesParameters);
     plaq_new = plaqs.plaquette;
     hmc_float splaq_new = plaqs.spatialPlaquette;
     hmc_float tplaq_new = plaqs.temporalPlaquette;
 
-    hmc_complex poly = physics::observables::measurePolyakovloop(&gf);
-    hmc_complex poly_new = physics::observables::measurePolyakovloop(&new_u);
+    hmc_complex poly = physics::observables::measurePolyakovloop(&gf, gaugeobservablesParameters);
+    hmc_complex poly_new = physics::observables::measurePolyakovloop(&new_u, gaugeobservablesParameters);
 
     hmc_observables tmp;
     if(rnd <= compare_prob) {

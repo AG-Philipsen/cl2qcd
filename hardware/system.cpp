@@ -92,7 +92,7 @@ void hardware::System::initOpenCLPlatforms()
 	{
 		logger.info() << "Found OpenCL platform";
 	}
-	platform = platformIds.at(0);
+	platform = platformIds.at(1); //WORKAROUND FOR LOCAL MACHINE
 
 	logger.debug() << "...done";
 }

@@ -31,6 +31,7 @@
 
 #include "../lattices/gaugefield.hpp"
 #include "../../interfaceImplementations/latticesParameters.hpp"
+#include "../../interfaceImplementations/observablesParameters.hpp"
 
 class GaugeObservablesTester
 {
@@ -38,6 +39,7 @@ public:
   GaugeObservablesTester(int argc, const char** argv)
   {
     parameters = new meta::Inputparameters(argc, argv);
+    gaugeobservablesParameters = new physics::observables::GaugeObservablesParametersImplementation(*parameters);
     system = new hardware::System(*parameters);
     prngParameters = new physics::ParametersPrng_fromMetaInputparameters(parameters);
     prng = new physics::PRNG(*system, prngParameters);
@@ -51,10 +53,12 @@ public:
     delete gaugefield;
     delete parameters;
     delete prngParameters;
+    delete gaugeobservablesParameters;
   }
 
   meta::Inputparameters * parameters;
   physics::lattices::Gaugefield * gaugefield;
+  physics::observables::GaugeObservablesParametersImplementation * gaugeobservablesParameters;
 private:
   hardware::System *  system;
   physics::PRNG * prng;
@@ -71,7 +75,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(gaugefield), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(gaugefield, *gaugeobservablesParameters), referenceValue, testPrecision);
   }
 };
 
@@ -100,7 +104,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    BOOST_CHECK_CLOSE(physics::observables::measureRectangles(gaugefield), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measureRectangles(gaugefield, *gaugeobservablesParameters), referenceValue, testPrecision);
   }
 };
 
@@ -136,7 +140,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    hmc_complex poly =    physics::observables::measurePolyakovloop(gaugefield);
+    hmc_complex poly =    physics::observables::measurePolyakovloop(gaugefield, *gaugeobservablesParameters);
     BOOST_CHECK_CLOSE(poly.re, referenceValue.re, testPrecision);
     BOOST_CHECK_CLOSE(poly.im, referenceValue.im, testPrecision);
   }
@@ -164,12 +168,13 @@ BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
   const char * _params[] = {"foo", "--startcondition=cold"};
   meta::Inputparameters parameters(2, _params);
   physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
+  physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
   hardware::System system(parameters);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
-	physics::PRNG prng{system, &prngParameters};
+  physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
+  physics::PRNG prng{system, &prngParameters};
   physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 
-  auto allPlaquettes = physics::observables::measureAllPlaquettes(&gf);
+  auto allPlaquettes = physics::observables::measureAllPlaquettes(&gf,gaugeobservablesParameters);
 
   BOOST_REQUIRE_CLOSE(allPlaquettes.plaquette, 1., 1e-8);
   BOOST_REQUIRE_CLOSE(allPlaquettes.temporalPlaquette, 1., 1e-8);
@@ -182,12 +187,13 @@ BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
   const char * _params[] = {"foo", "--startcondition=cold", "--nt=4", "--ns=4"};
   meta::Inputparameters parameters(2, _params);
   physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
+  physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
   hardware::System system(parameters);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
-	physics::PRNG prng{system, &prngParameters};
+  physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
+  physics::PRNG prng{system, &prngParameters};
   physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 
-  auto plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
+  auto plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf, gaugeobservablesParameters);
 
   BOOST_REQUIRE_CLOSE(plaq, 3072., 1e-8);
 }

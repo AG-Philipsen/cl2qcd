@@ -49,10 +49,10 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 			Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 			gm.zero();
 
-			hmc_float ref = physics::observables::measurePlaquette(&gf);
+			hmc_float ref = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 			gauge_force(&gm, gf);
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			double plaq = physics::observables::measurePlaquette(&gf);
+			double plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 			BOOST_CHECK_CLOSE(plaq, ref, 0.01);
 		}
 
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 			pseudo_randomize<Gaugemomenta, ae>(&gm, 415);
 
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			double plaq = physics::observables::measurePlaquette(&gf);
+			double plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 			BOOST_CHECK_CLOSE(plaq, 0.80918156710730049, 0.01);
 		}
 	}
@@ -79,10 +79,10 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		pseudo_randomize<Gaugemomenta, ae>(&gm, 123);
 
-		double plaq = physics::observables::measurePlaquette(&gf);
+		double plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 		BOOST_CHECK_CLOSE(plaq, 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		plaq = physics::observables::measurePlaquette(&gf);
+		plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 		BOOST_REQUIRE_CLOSE(plaq, 0.32089465123266286, 0.01);
 	}
 
@@ -98,18 +98,18 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.0001);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.0001);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), 0.57107711169452713, 0.0001);
 		gauge_force(&gm, gf);
 
 		BOOST_REQUIRE_CLOSE(squarenorm(gm), 52723.299867438494, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), 0.0060440132434446334, 0.01);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), 0.0060440132434446334, 0.01);
 		gauge_force(&gm, gf);
 		BOOST_REQUIRE_CLOSE(squarenorm(gm), 82900.801546488685, 0.01);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), -0.0076685322051177783, 0.01);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), -0.0076685322051177783, 0.01);
 	}
 }
 
