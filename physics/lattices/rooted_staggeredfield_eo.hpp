@@ -63,7 +63,7 @@ public:
 	 *                      increased by 5% and the minimum one is set to the squared mass of the
 	 *                      fermions. This circumvents possible numeric errors.
 	 */
-	void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, bool conservative=false);
+	void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const hmc_float minEigenvalue, const hmc_float maxEigenvalue);
 
 };
 

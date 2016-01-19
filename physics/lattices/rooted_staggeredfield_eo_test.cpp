@@ -66,6 +66,12 @@ BOOST_AUTO_TEST_CASE(rescale)
 	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
 	Rooted_Staggeredfield_eo sf(system);
 	
+	//Min and max eigenvalues for conservative and not conservative case
+	hmc_float minEigenvalue = 0.3485318319429664;
+	hmc_float maxEigenvalue = 5.2827906935473500;
+	hmc_float minEigenvalueCons = 0.321489;
+	hmc_float maxEigenvalueCons = 5.546930228224717;
+
 	//Reference rescaled coefficients
 	hmc_float a0_ref = 3.78396627036665123;
 	hmc_float a_ref[15] = {-2.722986658932525683e-07, -1.2631475639728917521e-06,
@@ -105,12 +111,12 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	int ord = sf.Get_order();
 
-	sf.Rescale_Coefficients(approx, matrix, gf, system, 1.e-3);
+	sf.Rescale_Coefficients(approx, minEigenvalue, maxEigenvalue);
 	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref, 5.e-5);
 	std::vector<hmc_float> a = sf.Get_a();
 	std::vector<hmc_float> b = sf.Get_b();
 	
-	sf.Rescale_Coefficients(approx, matrix, gf, system, 1.e-3, true);
+	sf.Rescale_Coefficients(approx, minEigenvalueCons, maxEigenvalueCons);
 	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref_cons, 5.e-5);
 	std::vector<hmc_float> a_cons = sf.Get_a();
 	std::vector<hmc_float> b_cons = sf.Get_b();
