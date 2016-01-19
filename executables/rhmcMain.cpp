@@ -28,12 +28,6 @@
 
 int main(int argc, const char* argv[])
 {
-	logger.warn() << "***************************************************************************";
-	logger.warn() << "*  The RHMC algorithm is still under development.                         *";
-	logger.warn() << "*  Its physical correctness is being tested and the performance           *";
-	logger.warn() << "*  is not optimized at all. Take it into account if you want to use it.   *";
-	logger.warn() << "***************************************************************************";
-	sleep(1);
 	try {
 	  std::pair<int,std::vector<const char*>> new_argc_argv = meta::addOptionsToArgv(argc, argv, {"--fermact=rooted_stagg"});
 	  rhmcExecutable rhmcInstance(new_argc_argv.first, &(new_argc_argv.second[0]));
