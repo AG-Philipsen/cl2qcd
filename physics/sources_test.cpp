@@ -99,7 +99,7 @@ static void test_volume_source_stagg(std::string content)
 BOOST_AUTO_TEST_CASE(sources)
 {
 	test_sources("point", 15);
-	test_sources("volume", 2);
+    test_sources("volume", 2);
 	test_sources("timeslice", 3);
 	test_sources("zslice", 1);
 }

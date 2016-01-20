@@ -89,3 +89,15 @@ BOOST_AUTO_TEST_CASE(testFermionEoParameters)
     BOOST_CHECK_EQUAL(test.getFermionicActionType(), params->get_fermact());
     BOOST_CHECK_EQUAL(test.useMergedFermionicKernels(), params->get_use_merge_kernels_fermion());
 }
+
+BOOST_AUTO_TEST_CASE(testSourcesParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    physics::SourcesParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.placeSourcesOnHost(), params->get_place_sources_on_host());
+    BOOST_CHECK_EQUAL(test.getSourceType(), params->get_sourcetype());
+    BOOST_CHECK_EQUAL(test.getSourceT(), params->get_source_t());
+    BOOST_CHECK_EQUAL(test.getSourceZ(), params->get_source_z());
+
+}

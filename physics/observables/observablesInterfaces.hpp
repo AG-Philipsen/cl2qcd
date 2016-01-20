@@ -21,14 +21,6 @@
 
 #pragma once
 
-//#include <string>
-//#include "../../meta/inputparameters.hpp"
-//#include "../../meta/parametersBasic.hpp"
-//#include "../../meta/parametersObs.hpp"
-//#include "../../meta/parametersFermion.hpp"
-//#include "../../meta/util.hpp"
-//#include "../../meta/parametersSources.hpp"
-
 namespace physics {
     namespace observables {
 
@@ -86,7 +78,7 @@ namespace physics {
                 virtual unsigned getNs() const = 0;
                 virtual unsigned getNt() const = 0;
                 virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
-                virtual bool placeOfSourcesOnHost() const = 0;
+                virtual bool placeSourcesOnHost() const = 0;
                 virtual int getNumberOfSources() const = 0;
         };
 

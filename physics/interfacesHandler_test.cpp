@@ -62,6 +62,7 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     const physics::algorithms::MetropolisParametersImplementation metropolisParametersImplementation{*params};
     const physics::algorithms::HmcParametersImplementation hmcParametersImplementation{*params};
     const physics::algorithms::RhmcParametersImplementation rhmcParametersImplementation{*params};
+    const physics::SourcesParametersImplementation sourcesParametersImplementation{*params};
     const physics::WilsonAdditionalParameters wilsonAdditionalParameters{*params, true};
     const physics::StaggeredAdditionalParameters staggeredAdditionalParameters{*params};
 
@@ -93,6 +94,7 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     BOOST_CHECK( typeid(metropolisParametersImplementation) == typeid(test.getMetropolisParametersInterface()) );
     BOOST_CHECK( typeid(hmcParametersImplementation) == typeid(test.getHmcParametersInterface()) );
     BOOST_CHECK( typeid(rhmcParametersImplementation) == typeid(test.getRhmcParametersInterface()) );
+    BOOST_CHECK( typeid(sourcesParametersImplementation) == typeid(test.getSourcesParametersInterface()) );
     BOOST_CHECK( typeid(wilsonAdditionalParameters) == typeid(test.getAdditionalParameters<physics::lattices::Spinorfield>(true)) );
     BOOST_CHECK( typeid(wilsonAdditionalParameters) == typeid(test.getAdditionalParameters<physics::lattices::Spinorfield>(false)) );
     BOOST_CHECK( typeid(wilsonAdditionalParameters) == typeid(test.getAdditionalParameters<physics::lattices::Spinorfield_eo>(true)) );

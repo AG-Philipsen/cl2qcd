@@ -22,6 +22,7 @@
 #pragma once
 
 #include "additionalParameters.hpp"
+#include "sourcesInterface.hpp"
 #include "algorithms/algorithmsInterfaces.hpp"
 #include "fermionmatrix/fermionmatrixInterfaces.hpp"
 #include "lattices/latticesInterfaces.hpp"
@@ -152,6 +153,8 @@ namespace physics {
             virtual const physics::algorithms::MetropolisParametersInterface& getMetropolisParametersInterface() = 0;
             virtual const physics::algorithms::HmcParametersInterface& getHmcParametersInterface() = 0;
             virtual const physics::algorithms::RhmcParametersInterface& getRhmcParametersInterface() = 0;
+
+            virtual const physics::SourcesParametersInterface& getSourcesParametersInterface() = 0;
 
         private:
             virtual const physics::lattices::GaugefieldParametersInterface& getGaugefieldParametersInterface() = 0;
@@ -296,6 +299,7 @@ namespace physics {
                   metropolisParametersInterface{nullptr},
                   hmcParametersInterface{nullptr},
                   rhmcParametersInterface{nullptr},
+                  sourcesParametersInterface{nullptr},
                   wilsonAdditionalParameters{nullptr},
                   wilsonAdditionalParametersMp{nullptr},
                   staggeredAdditionalParameters{nullptr} {}
@@ -376,6 +380,13 @@ namespace physics {
                 if( rhmcParametersInterface == nullptr)
                     rhmcParametersInterface = std::unique_ptr<const physics::algorithms::RhmcParametersImplementation>(new physics::algorithms::RhmcParametersImplementation{parameters});
                 return *rhmcParametersInterface;
+            }
+
+            const physics::SourcesParametersInterface& getSourcesParametersInterface()
+            {
+                if( sourcesParametersInterface == nullptr)
+                    sourcesParametersInterface = std::unique_ptr<const physics::SourcesParametersImplementation>(new physics::SourcesParametersImplementation{parameters});
+                return *sourcesParametersInterface;
             }
 
         private:
@@ -492,6 +503,7 @@ namespace physics {
             std::unique_ptr<const physics::algorithms::MetropolisParametersInterface> metropolisParametersInterface;
             std::unique_ptr<const physics::algorithms::HmcParametersInterface> hmcParametersInterface;
             std::unique_ptr<const physics::algorithms::RhmcParametersInterface> rhmcParametersInterface;
+            std::unique_ptr<const physics::SourcesParametersInterface> sourcesParametersInterface;
             std::unique_ptr<const physics::AdditionalParameters> wilsonAdditionalParameters;
             std::unique_ptr<const physics::AdditionalParameters> wilsonAdditionalParametersMp;
             std::unique_ptr<const physics::AdditionalParameters> staggeredAdditionalParameters;

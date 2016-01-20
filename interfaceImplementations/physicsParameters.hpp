@@ -24,6 +24,7 @@
 #include "../meta/inputparameters.hpp"
 #include "../meta/util.hpp"
 #include "../physics/additionalParameters.hpp"
+#include "../physics/sourcesInterface.hpp"
 #include "../physics/fermionmatrix/fermionmatrixInterfaces.hpp"
 #include "latticesParameters.hpp"
 #include "fermionmatrixParameters.hpp"
@@ -140,6 +141,52 @@ namespace physics{
             {
                 return lattices::StaggeredfieldEoParametersImplementation::getNumberOfElements();
             }
+    };
+
+
+    class SourcesParametersImplementation final : public SourcesParametersInterface {
+        public:
+            SourcesParametersImplementation() = delete;
+            SourcesParametersImplementation(const meta::Inputparameters& parametersIn) : parameters(parametersIn)
+            {
+            }
+            ~SourcesParametersImplementation()
+            {
+            }
+            bool placeSourcesOnHost() const override
+            {
+                return parameters.get_place_sources_on_host();
+            }
+            common::sourcetypes getSourceType() const override
+            {
+                return parameters.get_sourcetype();
+            }
+            unsigned getSourceT() const override
+            {
+                return parameters.get_source_t();
+            }
+            unsigned getSourceX() const override
+            {
+                return parameters.get_source_x();
+            }
+            unsigned getSourceY() const override
+            {
+                return parameters.get_source_y();
+            }
+            unsigned getSourceZ() const override
+            {
+                return parameters.get_source_z();
+            }
+            unsigned getNt() const override
+            {
+                return parameters.get_ntime();
+            }
+            unsigned getNs() const override
+            {
+                return parameters.get_nspace();
+            }
+        private:
+            const meta::Inputparameters& parameters;
     };
 
 }

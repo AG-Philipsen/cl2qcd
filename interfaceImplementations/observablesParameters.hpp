@@ -230,7 +230,7 @@ namespace physics {
                 {
                     return meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
                 }
-                bool placeOfSourcesOnHost() const override
+                bool placeSourcesOnHost() const override
                 {
                     return parameters.get_place_sources_on_host();
                 }

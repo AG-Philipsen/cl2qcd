@@ -24,7 +24,6 @@
 #include <fstream>
 #include <cmath>
 #include "../lattices/spinorfield.hpp"
-#include "../../meta/inputparameters.hpp"
 
 //TODO: refactor. Consider also how to handle interfaces (at the moment both the handler and the correlator interfaces are given around,
 //      but from the first one can get the second). One should do something like in the Wilson pbp class in the .cpp file (namely have as
@@ -356,7 +355,7 @@ void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefie
 	std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);
 	// for the correlator calculation, all sources are needed on the device
 	const std::vector<physics::lattices::Spinorfield*> sources = physics::create_swappable_sources(*system, *prng, parametersInterface.getNumberOfSources(), interfacesHandler);
-	const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), interfacesHandler, parametersInterface.placeOfSourcesOnHost());
+	const std::vector<physics::lattices::Spinorfield*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), interfacesHandler, parametersInterface.placeSourcesOnHost());
 	swap_out(sources);
 	swap_out(result);
 	physics::algorithms::perform_inversion(&result, gaugefield, sources, *system, interfacesHandler);
