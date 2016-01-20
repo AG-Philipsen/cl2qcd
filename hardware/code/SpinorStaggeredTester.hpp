@@ -50,9 +50,6 @@ protected:
 	void fill_with_one_eo(su3vec * sf_in, int size, bool eo);
 	hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo);
 	
-	//These methods are used to produce files for the Reference Code (D'Elia et al)
-	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
-	void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf);
 	//Utilities methods
 	std::vector<hmc_float> reals_from_su3vec(su3vec v);
 
