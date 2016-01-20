@@ -97,8 +97,6 @@ namespace physics {
                     const hardware::System& system;
                     hmc_float solverPrecision;
                     const physics::AdditionalParameters& additionalParameters;
-                    //TODO:Remove following inputparameters object
-                    const meta::Inputparameters& params;
 
                     //Variable of the solver
                     const physics::algorithms::SolversParametersInterface & parametersInterface;

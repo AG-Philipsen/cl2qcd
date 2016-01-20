@@ -39,7 +39,6 @@ public:
   
 private:
   const physics::lattices::Gaugefield * gaugefield;
-  //const meta::Inputparameters * parameters;
   const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& parametersInterface;
   const hardware::System * system;
   const physics::PRNG * prng;

@@ -50,8 +50,6 @@ physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::Solver
                                                                                         physics::InterfacesHandler& interfacesHandlerIn, hmc_float prec,
                                                                                         const physics::AdditionalParameters& additionalParametersIn)
      : x(xIn), A(AIn), gf(gfIn), sigma(sigmaIn), b(bIn), system(systemIn), solverPrecision(prec), additionalParameters(additionalParametersIn),
-       //TODO:Remove following line
-       params(system.get_inputparameters()),
        parametersInterface(interfacesHandlerIn.getSolversParametersInterface()),
        hasSystemBeSolved(false), numberOfEquations(sigmaIn.size()), iterationNumber(0), residuumValue(NAN),
        r(FERMIONFIELD{system, interfacesHandlerIn.getInterface<FERMIONFIELD>()}),

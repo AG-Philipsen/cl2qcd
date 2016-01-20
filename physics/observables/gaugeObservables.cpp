@@ -25,7 +25,6 @@
 #include <cassert>
 #include <fstream>
 #include <cmath>
-#include "../../meta/inputparameters.hpp"
 #include "../../hardware/code/gaugefield.hpp"
 
 class gaugeObservables{
