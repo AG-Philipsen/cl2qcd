@@ -36,7 +36,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	 * @code
 	 * <pbp> = 1/VOL4D*N_flavour/4 * <Tr(M^{-1})>
 	 * @endcode
-	 * where the <...> is the average on the RHMC ensambles. Then, since to
+	 * where the <...> is the average on the RHMC ensembles. Then, since to
 	 * calculate directly the inverse staggered Dirac matrix M^{-1} is too costly,
 	 * noise estimators are used. This means that
 	 * @code
@@ -72,7 +72,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	 * @code
 	 * Tr(M^{-1}) \approx 1/L \sum_{i=1}^L (eta_e^dag_i * chi_e + eta_o^dag_i * chi_o)
 	 * @endcode
-	 * where L in the following is obtained from Inputparameters.
+	 * where L in the following is obtained from the parameterInterface.
 	 */
 	
 	using namespace physics::lattices;
@@ -100,7 +100,7 @@ hmc_complex physics::observables::staggered::measureChiralCondensate(const physi
 	  
 	  /***********************************************************************************************/
 	  set_volume_source(&eta_e, prng);
-	  set_volume_source(&eta_o, prng); //here the content of the source is that of inputparameters
+	  set_volume_source(&eta_o, prng);
 	  
 	  //Calculate chi_e = [(M^dag*M)^{-1}]ee * (m*eta_e - Deo*eta_o)   using chi_o as temporary field
 	  Deo(&chi_o, gf, eta_o);
