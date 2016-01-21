@@ -117,8 +117,9 @@ struct SaxpyAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelRe
 	SaxpyAndGamma5EvenOddTester(const ParameterCollection & pc, const SaxpyAndGamma5EvenOddTestParameters & tP) :
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("saxpy_AND_gamma5", pc, tP, calculateReferenceValues_saxpyAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.coefficient))
 	{
+		EvenOddSpinorfieldCreator sf(tP.SpinorTestParameters::latticeExtents);
 		const hardware::buffers::Spinor in2(elements, device);
-		in2.load(createSpinorfield(tP.fillTypes.at(1)));
+		in2.load(sf.createSpinorfield(tP.fillTypes.at(1)));
 		code->saxpy_AND_gamma5_eo_device(in, &in2, tP.coefficient, out);
 	}
 };
@@ -127,7 +128,7 @@ struct MTmSitediagonalMinusAndGamma5EvenOddTester : public FermionmatrixTesterWi
 {
 	MTmSitediagonalMinusAndGamma5EvenOddTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP) :
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_minus_AND_gamma5_eo", pc, tP,
-				calculateReferenceValues_mTmSitediagonalMinusAndGamma5EvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters) )
+				calculateReferenceValues_mTmSitediagonalMinusAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters) )
 	{
 		code->M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, out, tP.massParameters.getMubar());
 	}
@@ -137,7 +138,7 @@ struct MTmSitediagonalAndGamma5EvenOddTester : public FermionmatrixTesterWithSum
 {
 	MTmSitediagonalAndGamma5EvenOddTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP) :
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_AND_gamma5_eo", pc, tP,
-				calculateReferenceValues_mTmSitediagonalAndGamma5EvenOdd(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
+				calculateReferenceValues_mTmSitediagonalAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 	{
 		code->M_tm_sitediagonal_AND_gamma5_eo_device(in, out, tP.massParameters.getMubar());
 	}
@@ -147,7 +148,7 @@ struct DslashEvenOddAndMTmInverseSitediagonalMinusTester : public FermionmatrixT
 {
 	DslashEvenOddAndMTmInverseSitediagonalMinusTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP, const bool evenOrOdd) :
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_AND_m_tm_inverse_sitediagonal_minus", pc, tP,
-				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
+				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonalMinus(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
 	{
 		code->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, out, gaugefieldBuffer, evenOrOdd, tP.massParameters.kappa,
 				tP.massParameters.getMubar());
@@ -158,7 +159,7 @@ struct DslashEvenOddAndMTmInverseSitediagonalTester : public FermionmatrixTester
 {
 	DslashEvenOddAndMTmInverseSitediagonalTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP, const bool evenOrOdd) :
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_AND_m_tm_inverse_sitediagonal", pc, tP,
-				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
+				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonal(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
 	{
 		code->dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, out, gaugefieldBuffer, evenOrOdd, tP.massParameters.kappa,
 				tP.massParameters.getMubar());

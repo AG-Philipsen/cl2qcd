@@ -35,7 +35,7 @@ struct PrngSpinorTestParameters : public SpinorTestParameters
 struct PrngSpinorTester: public SpinorTester
 {
 	PrngSpinorTester(const std::string kernelName, const ParameterCollection parameterCollection, const PrngSpinorTestParameters & testParameters, const int numberOfElements, const ReferenceValues rV):
-				SpinorTester(kernelName, parameterCollection, testParameters, 1, rV),
+				SpinorTester(kernelName, parameterCollection, testParameters, rV),
 				numberOfElements(numberOfElements), mean(0.), variance(0.),
 				hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters),
 				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),

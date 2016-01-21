@@ -35,16 +35,16 @@ struct StaggeredFermionsCorrelatorsTestParameters : public SpinorStaggeredTestPa
 };
 
 //todo: make this virtual inheritance so that calls to device are clear
-struct CorrelatorsStaggeredTester : public SpinorStaggeredTester, PrngSpinorTester
+struct CorrelatorsStaggeredTester : public SpinorStaggeredTester2, PrngSpinorTester
 {
 	CorrelatorsStaggeredTester(const std::string kernelName, const ParameterCollection pC, const StaggeredFermionsCorrelatorsTestParameters tP, const ReferenceValues rV):
-	     SpinorStaggeredTester(kernelName, pC, tP, calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV),
+	     SpinorStaggeredTester2(kernelName, pC, tP, rV),
 	     PrngSpinorTester(kernelName, pC, PrngSpinorTestParameters(tP.latticeExtents), calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV),
 	     elements(calculateEvenOddSpinorfieldSize(tP.latticeExtents))
 	{
-		code = SpinorStaggeredTester::device->getCorrelatorStaggeredCode();
+		code = SpinorStaggeredTester2::device->getCorrelatorStaggeredCode();
 		sourcecontent = tP.sourcecontent;
-		outBuffer = new hardware::buffers::SU3vec(elements, SpinorStaggeredTester::device);
+		outBuffer = new hardware::buffers::SU3vec(elements, SpinorStaggeredTester2::device);
 		outHost = new su3vec[elements * tP.iterations];
 	}
 	
@@ -74,7 +74,7 @@ struct VolumeSourceTester : public CorrelatorsStaggeredTester
 		  code->create_volume_source_stagg_eoprec_device(outBuffer, prngStates);
 		  outBuffer->dump(&outHost[i*elements]);
 		  //Here we sum the entries to calculate the mean later
-		  sum += SpinorStaggeredTester::count_sf(&outHost[i*elements], elements);
+		  sum += count_sf(&outHost[i*elements], elements);
 		}
 		logger.info() << "result: mean";
 		//sum is the sum of iterations*spinorfieldEvenOddElements*6 real numbers
@@ -85,12 +85,12 @@ struct VolumeSourceTester : public CorrelatorsStaggeredTester
 			sum = sum/tP.iterations/elements/6;
 		}
 
-		SpinorStaggeredTester::kernelResult[0] = sum;
+		SpinorStaggeredTester2::kernelResult[0] = sum;
 		logger.info() << sum;
 
 		hmc_float var=0.;
 			for (int i=0; i<tP.iterations; i++){
-				var += SpinorStaggeredTester::calc_var_sf(&outHost[i*elements], elements, sum);
+				var += calc_var_sf(&outHost[i*elements], elements, sum);
 			}
 			//var is the sum of iterations*NUM_ELEMENTS_SF*6 square deviations
 			if(sourcecontent == common::z2){
@@ -99,7 +99,7 @@ struct VolumeSourceTester : public CorrelatorsStaggeredTester
 			}else{
 				var=var/tP.iterations/elements/6;
 			}
-			SpinorStaggeredTester::kernelResult[0] = sqrt(var);
+			SpinorStaggeredTester2::kernelResult[0] = sqrt(var);
 			logger.info() << "result: variance";
 			logger.info() << sqrt(var);
 		

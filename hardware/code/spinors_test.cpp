@@ -171,7 +171,7 @@ void performTest(const LatticeExtents latticeExtendsIn, const bool needEvenOdd )
 struct NonEvenOddLinearCombinationTester : public NonEvenOddSpinorTester
 {
 	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
-		NonEvenOddSpinorTester(kernelName, pC, tP, rV(getSpinorfieldSize(tP.latticeExtents), tP.coefficients))
+		NonEvenOddSpinorTester(kernelName, pC, tP, rV(calculateSpinorfieldSize(tP.latticeExtents), tP.coefficients))
 	{
 		loadCoefficients(tP);
 		loadSpinorfields(tP);
@@ -194,7 +194,7 @@ private:
 	{
 		for (auto coefficient : testParameters.coefficients)
 		{
-			complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, SpinorTester::device));
+			complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, device));
 			complexNums.back()->load(&coefficient);
 		}
 	}
@@ -202,8 +202,9 @@ private:
 	{
 		for( size_t number = 0; number < tP.numberOfSpinors ; number ++)
 		{
-			spinorfields.push_back(new hardware::buffers::Plain<spinor>(elements, device));
-			(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(number)));
+			NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
+			spinorfields.push_back(new hardware::buffers::Plain<spinor>(calculateSpinorfieldSize(tP.latticeExtents), device));
+			(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(sf.createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(sf.createSpinorfield(tP.fillTypes.at(number)));
 		}
 	}
 };
@@ -225,13 +226,13 @@ struct NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult : public No
 struct EvenOddLinearCombinationTester : public EvenOddSpinorTester
 {
 	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const SpinorFillTypes)):
-		EvenOddSpinorTester(kernelName, pC, tP, rV( getEvenOddSpinorfieldSize(tP.latticeExtents), tP.fillTypes))
+		EvenOddSpinorTester(kernelName, pC, tP, rV( calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.fillTypes))
 	{
 		loadCoefficients(tP);
 		loadSpinorfields(tP);
 	}
 	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
-		EvenOddSpinorTester(kernelName, pC, tP, rV( getEvenOddSpinorfieldSize(tP.latticeExtents), tP.coefficients))
+		EvenOddSpinorTester(kernelName, pC, tP, rV( calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.coefficients))
 	{
 		loadCoefficients(tP);
 		loadSpinorfields(tP);
@@ -254,7 +255,7 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorTester
 		{
 			for (auto coefficient : testParameters.coefficients)
 			{
-				complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, SpinorTester::device));
+				complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, device));
 				complexNums.back()->load(&coefficient);
 			}
 		}
@@ -262,8 +263,9 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorTester
 		{
 			for( size_t number = 0; number < tP.numberOfSpinors ; number ++)
 			{
-				spinorfields.push_back(new hardware::buffers::Spinor(elements, device));
-				(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(createSpinorfield(tP.fillTypes.at(number)));
+				EvenOddSpinorfieldCreator sf(tP.latticeExtents);
+				spinorfields.push_back(new hardware::buffers::Spinor(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device));
+				(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(sf.createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(sf.createSpinorfield(tP.fillTypes.at(number)));
 			}
 		}
 };
@@ -313,14 +315,15 @@ struct EvenOddGaussianSpinorfieldEvenOddTester: public PrngSpinorTester
 struct ConvertToEvenOddTester: public SpinorTester
 {
 	ConvertToEvenOddTester(const ParameterCollection & parameterCollection, const SpinorTestParameters tP, const bool fillEvenSitesIn):
-		SpinorTester("convert_to_eo", parameterCollection, tP, getSpinorfieldSize(tP.latticeExtents),
-				calculateReferenceValues_convert_eo(getEvenOddSpinorfieldSize(tP.latticeExtents), fillEvenSitesIn) )
+		SpinorTester("convert_to_eo", parameterCollection, tP,
+				calculateReferenceValues_convert_eo(calculateEvenOddSpinorfieldSize(tP.latticeExtents), fillEvenSitesIn) )
 		{
-			const hardware::buffers::Plain<spinor> in(getSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in2(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in3(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Plain<spinor> in(calculateSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in2(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in3(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
 
-			in.load( createSpinorfieldWithOnesAndZerosDependingOnSiteParity( fillEvenSitesIn ) );
+			NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
+			in.load( sf.createSpinorfieldWithOnesAndZerosDependingOnSiteParity( fillEvenSitesIn ) );
 			code->convert_to_eoprec_device(&in2, &in3, &in) ;
 
 			code->set_float_to_global_squarenorm_eoprec_device(&in2, doubleBuffer);
@@ -333,14 +336,15 @@ struct ConvertToEvenOddTester: public SpinorTester
 struct ConvertFromEvenOddTester: public SpinorTester
 {
 	ConvertFromEvenOddTester(const ParameterCollection & parameterCollection, const SpinorTestParameters tP):
-		SpinorTester("convert_to_eo", parameterCollection, tP, getSpinorfieldSize(tP.latticeExtents),
-				calculateReferenceValues_convertFromEvenOdd(getSpinorfieldSize(tP.latticeExtents)) )
+		SpinorTester("convert_to_eo", parameterCollection, tP,
+				calculateReferenceValues_convertFromEvenOdd(calculateSpinorfieldSize(tP.latticeExtents)) )
 		{
-			const hardware::buffers::Plain<spinor> in(getSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in2(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in3(getEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Plain<spinor> in(calculateSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in2(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in3(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
 
-			fillTwoSpinorBuffersDependingOnParity(&in2, &in3);
+			EvenOddSpinorfieldCreator sf(tP.latticeExtents);
+			sf.fillTwoSpinorBuffersDependingOnParity(&in2, &in3);
 			code->convert_from_eoprec_device(&in2, &in3, &in);
 
 			code->set_float_to_global_squarenorm_device(&in, doubleBuffer);

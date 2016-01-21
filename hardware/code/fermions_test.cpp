@@ -145,7 +145,7 @@ struct DslashEvenOddTestParameters: public WilsonTestParameters
 struct MWilsonTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>
 {
 	MWilsonTester(const ParameterCollection parameterCollection, const WilsonTestParameters & tP) :
-		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_wilson", parameterCollection, tP, calculateReferenceValues_mWilson( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters) )
+		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_wilson", parameterCollection, tP, calculateReferenceValues_mWilson( calculateSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters) )
 	{
 		code->M_wilson_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa );
 	}
@@ -153,7 +153,7 @@ struct MWilsonTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenOd
 struct MTmMinusTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>
 {
 	MTmMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
-		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_tm_minus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
+		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_tm_minus", parameterCollection, tP, calculateReferenceValues_mTmMinus( calculateSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
 		code->M_tm_minus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
@@ -161,7 +161,7 @@ struct MTmMinusTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenO
 struct MTmPlusTester : public FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>
 {
 	MTmPlusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP) :
-		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_tm_plus", parameterCollection, tP, calculateReferenceValues_mTmMinus( getSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
+		FermionmatrixTesterWithSumAsKernelResult<NonEvenOddFermionmatrixTester>("m_tm_plus", parameterCollection, tP, calculateReferenceValues_mTmMinus( calculateSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters))
 	{
 		code->M_tm_plus_device(in, out,  gaugefieldBuffer, tP.massParameters.kappa, tP.massParameters.getMubar() );
 	}
@@ -176,12 +176,13 @@ struct Gamma5Tester : public TesterType
 		sf_in = new spinor[numberOfElements];
 		in = new bufferType(numberOfElements, this->device);
 
-		in->load( TesterType::createSpinorfield(tP.SpinorTestParameters::fillTypes.at(0)) );
+		SpinorfieldCreator sf(numberOfElements);
+		in->load( sf.createSpinorfield(tP.SpinorTestParameters::fillTypes.at(0)) );
 	}
 	~Gamma5Tester()
 	{
 		in->dump(sf_in);
-		TesterType::kernelResult.at(0) = TesterType::count_sf(sf_in, numberOfElements);
+		TesterType::kernelResult.at(0) = count_sf(sf_in, numberOfElements);
 		delete sf_in;
 	}
 protected:
@@ -215,7 +216,7 @@ struct MTmSitediagonalTester: public FermionmatrixTesterWithSumAsKernelResult<Ev
 {
 	MTmSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal", parameterCollection, tP,
-				calculateReferenceValues_mTmSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
+				calculateReferenceValues_mTmSitediagonal(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
@@ -225,7 +226,7 @@ struct MTmInverseSitediagonalTester: public FermionmatrixTesterWithSumAsKernelRe
 {
 	MTmInverseSitediagonalTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_inverse_sitediagonal", parameterCollection, tP,
-				calculateReferenceValues_mTmInverseSitediagonal(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
+				calculateReferenceValues_mTmInverseSitediagonal(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_inverse_sitediagonal_device( in, out, tP.massParameters.getMubar());
 		}
@@ -234,7 +235,7 @@ struct MTmSitediagonalMinusTester: public FermionmatrixTesterWithSumAsKernelResu
 {
 	MTmSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_minus", parameterCollection, tP,
-				calculateReferenceValues_mTmSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
+				calculateReferenceValues_mTmSitediagonalMinus(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
 		}
@@ -244,7 +245,7 @@ struct MTmInverseSitediagonalMinusTester: public FermionmatrixTesterWithSumAsKer
 {
 	MTmInverseSitediagonalMinusTester(const ParameterCollection parameterCollection, const TwistedMassTestParameters & tP):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_inverse_sitediagonal", parameterCollection, tP,
-				calculateReferenceValues_mTmInverseSitediagonalMinus(getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
+				calculateReferenceValues_mTmInverseSitediagonalMinus(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
 		{
 			code->M_tm_inverse_sitediagonal_minus_device( in, out, tP.massParameters.getMubar());
 		}
@@ -254,7 +255,7 @@ struct DslashEvenOddTester: public FermionmatrixTesterWithSumAsKernelResult<Even
 {
 	DslashEvenOddTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_eo", parameterCollection, tP,
-				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
+				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
 		{
 			evenOrOddIn ?
 				code->dslash_eo_device( in, out,  gaugefieldBuffer, EVEN, tP.massParameters.kappa) :
@@ -279,7 +280,7 @@ struct DslashEvenOddInnerTester : public FermionmatrixTesterWithSumAsKernelResul
 {
 	DslashEvenOddInnerTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_eo_boundary", parameterCollection, tP,
-				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, getEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents) - calculateSpatialLatticeVolume(tP.ns), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
+				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents) - calculateSpatialLatticeVolume(tP.ns), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
 		{
 			evenOrOddIn ?
 				code->dslash_eo_inner( in, out, gaugefieldBuffer, EVEN, tP.massParameters.kappa) :

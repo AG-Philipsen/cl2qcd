@@ -26,6 +26,11 @@
 #include "spinors_staggered.hpp"
 #include "SpinorTester.hpp"
 
+//Utilities methods
+std::vector<hmc_float> reals_from_su3vec(su3vec v);
+hmc_float count_sf(su3vec * in, int size);
+hmc_float calc_var_sf(su3vec * in, int size, hmc_float sum);
+
 struct SpinorStaggeredTestParameters: public virtual TestParameters
 {
 	SpinorStaggeredTestParameters(const LatticeExtents latticeExtendsIn) :
@@ -38,48 +43,74 @@ struct SpinorStaggeredTestParameters: public virtual TestParameters
 	const SpinorFillTypes fillTypes;
 };
 
-class SpinorStaggeredTester : public KernelTester {
+//class SpinorStaggeredTester : public KernelTester {
+//public:
+//	SpinorStaggeredTester(const std::string kernelName, const ParameterCollection, const SpinorStaggeredTestParameters &, const size_t, const ReferenceValues);
+//protected:
+//	//Methods (protected for inheritance resons)
+//	su3vec * createSpinorfield(SpinorFillType);
+//	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+//	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+//
+////	void fill_with_one_eo(su3vec * sf_in, int size, bool eo);
+//	hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo);
+//
+//	//Utilities methods
+//	std::vector<hmc_float> reals_from_su3vec(su3vec v);
+//
+//	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
+//	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
+//
+//	const hardware::code::Spinors_staggered * code;
+//	hardware::buffers::Plain<double> * doubleBuffer;
+//	const size_t elements;
+//};
+
+class SpinorStaggeredTester2 : public KernelTester
+{
 public:
-	SpinorStaggeredTester(const std::string kernelName, const ParameterCollection, const SpinorStaggeredTestParameters &, const size_t, const ReferenceValues);
+	SpinorStaggeredTester2(const std::string kernelName, const ParameterCollection, const SpinorStaggeredTestParameters &, const ReferenceValues);
 protected:
-	//Methods (protected for inheritance resons)
-	su3vec * createSpinorfield(SpinorFillType);
-	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
-	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
-
-	void fill_with_one_eo(su3vec * sf_in, int size, bool eo);
-	hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo);
-	
-	//These methods are used to produce files for the Reference Code (D'Elia et al)
-	void print_staggeredfield_to_textfile(std::string outputfile, su3vec * sf);
-	void print_staggeredfield_eo_to_textfile(std::string outputfile, su3vec * sf);
-	//Utilities methods
-	std::vector<hmc_float> reals_from_su3vec(su3vec v);
-
-	hmc_float count_sf(su3vec * in, int size);
-	hmc_float calc_var(hmc_float in, hmc_float mean);
-	hmc_float calc_var_sf(su3vec * in, int size, hmc_float sum);
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
 
-	int getSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ;
-	int getEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ;
-
 	const hardware::code::Spinors_staggered * code;
 	hardware::buffers::Plain<double> * doubleBuffer;
-	const size_t elements;
+
 };
 
-struct NonEvenOddSpinorStaggeredTester : public SpinorStaggeredTester
+struct SpinorStaggeredfieldCreator
+{
+	SpinorStaggeredfieldCreator(const size_t numberOfElementsIn): numberOfElements(numberOfElementsIn) {};
+	su3vec * createSpinorfield(SpinorFillType);
+
+	size_t numberOfElements;
+};
+
+struct NonEvenOddSpinorStaggeredfieldCreator : public SpinorStaggeredfieldCreator
+{
+	NonEvenOddSpinorStaggeredfieldCreator(const LatticeExtents lE): SpinorStaggeredfieldCreator(calculateSpinorfieldSize(lE)), latticeExtents(lE){};
+	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+	LatticeExtents latticeExtents;
+};
+
+struct EvenOddSpinorStaggeredfieldCreator : public SpinorStaggeredfieldCreator
+{
+	EvenOddSpinorStaggeredfieldCreator(const LatticeExtents lE): SpinorStaggeredfieldCreator(calculateEvenOddSpinorfieldSize(lE)), latticeExtents(lE){};
+	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+	LatticeExtents latticeExtents;
+};
+
+struct NonEvenOddSpinorStaggeredTester : public SpinorStaggeredTester2
 {
 	NonEvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues & rV) :
-		SpinorStaggeredTester(kernelName, pC, tP, getSpinorfieldSize(tP.latticeExtents), rV) {};
+		SpinorStaggeredTester2(kernelName, pC, tP, rV) {};
 };
 
-struct EvenOddSpinorStaggeredTester : public SpinorStaggeredTester
+struct EvenOddSpinorStaggeredTester : public SpinorStaggeredTester2
 {
 	EvenOddSpinorStaggeredTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues & rV) :
-		SpinorStaggeredTester(kernelName, pC, tP, getEvenOddSpinorfieldSize(tP.latticeExtents), rV) {};
+		SpinorStaggeredTester2(kernelName, pC, tP, rV) {};
 };
 
 #endif // _HARDWARE_CODE_SPINOR_STAGGERED_TESTER_

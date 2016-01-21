@@ -80,12 +80,12 @@ GaugefieldTester::GaugefieldTester(std::string kernelName, const ParameterCollec
 	code = device->getGaugefieldCode();
 }
 
-int GaugefieldCreator::calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
+int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
 {
 	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
 }
 
-const Matrixsu3* GaugefieldCreator::createGaugefield(int numberOfElements, const GaugefieldFillType fillTypeIn)
+const Matrixsu3* GaugefieldCreator::createGaugefield(const GaugefieldFillType fillTypeIn)
 {
 	Matrixsu3 * tmp = new Matrixsu3[numberOfElements];
 	for(size_t i = 0; i < (size_t)numberOfElements; ++i)

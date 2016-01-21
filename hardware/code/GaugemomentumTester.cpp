@@ -49,16 +49,16 @@ int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept
 	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM * hardware::code::getSu3AlgebraSize();
 }
 
-double * GaugemomentumCreator::createGaugemomentumBasedOnFilltype(const Filltype filltype)
+double * GaugemomentumCreator::createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype)
 {
   double * gm_in;
   gm_in = new double[numberOfElements];//numberOfAlgebraElements
   switch(filltype)
 	{
-		case one:
+		case GaugeMomentumFilltype::One:
 			fill_with_one(gm_in);
 			break;
-		case zero:
+		case GaugeMomentumFilltype::Zero:
 			fill_with_zero(gm_in);
 			break;
 	}

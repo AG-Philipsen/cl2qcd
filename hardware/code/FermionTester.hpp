@@ -79,42 +79,45 @@ template< class MassParameters>
 typedef FermionMatrixTestParameters<WilsonMassParameters> WilsonTestParameters;
 typedef FermionMatrixTestParameters<TwistedMassMassParameters> TwistedMassTestParameters;
 
-template <class BufferType, class TesterType>
-struct FermionmatrixTester : public TesterType
+template <class BufferType, class CreatorType>
+struct FermionmatrixTester : public KernelTester
 {
 	FermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		TesterType(kernelName, parameterCollection, testParameters, rV)
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV)
 	{
-		GaugefieldCreator gf;
-		gaugefieldBuffer = new hardware::buffers::SU3(gf.calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), this->device);
-		const Matrixsu3 * gf_host = gf.createGaugefield(gf.calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), testParameters.GaugefieldTestParameters::fillType);
+		GaugefieldCreator gf(testParameters.latticeExtents);
+		gaugefieldBuffer = new hardware::buffers::SU3(calculateGaugefieldSize(testParameters.SpinorTestParameters::latticeExtents), this->device);
+		const Matrixsu3 * gf_host = gf.createGaugefield(testParameters.GaugefieldTestParameters::fillType);
 		this->device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
 		delete[] gf_host;
 
-		code = SpinorTester::device->getFermionCode();
+		code = this->device->getFermionCode();
 
-		in = new const BufferType(TesterType::elements, this->device);
-		out = new const BufferType(TesterType::elements, this->device);
-		out->load(TesterType::createSpinorfield(SpinorFillType::zero));
-		in->load(TesterType::createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
+		CreatorType sf(testParameters.latticeExtents);
+		elements = sf.numberOfElements;
+		in = new const BufferType(elements, this->device);
+		out = new const BufferType(elements, this->device);
+		out->load(sf.createSpinorfield(SpinorFillType::zero));
+		in->load(sf.createSpinorfield(testParameters.SpinorTestParameters::fillTypes.at(0)));
 	}
 protected:
 	const BufferType * in;
 	const BufferType * out;
 	const hardware::code::Fermions * code;
 	const hardware::buffers::SU3 * gaugefieldBuffer;
+	size_t elements;
 };
 
-struct NonEvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>
+struct NonEvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Plain<spinor>,NonEvenOddSpinorfieldCreator>
 {
 	NonEvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		FermionmatrixTester<hardware::buffers::Plain<spinor>, NonEvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV) {}
+		FermionmatrixTester<hardware::buffers::Plain<spinor>,NonEvenOddSpinorfieldCreator>(kernelName, parameterCollection, testParameters, rV) {}
 };
 
-struct EvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>
+struct EvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Spinor,EvenOddSpinorfieldCreator>
 {
 	EvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
-		FermionmatrixTester<hardware::buffers::Spinor, EvenOddSpinorTester>(kernelName, parameterCollection, testParameters, rV) {}
+		FermionmatrixTester<hardware::buffers::Spinor,EvenOddSpinorfieldCreator>(kernelName, parameterCollection, testParameters, rV) {}
 };
 
 template <typename TesterType >
@@ -127,7 +130,7 @@ struct FermionmatrixTesterWithSumAsKernelResult : public TesterType
 		spinor * sf_in;
 		sf_in = new spinor[TesterType::elements];
 		TesterType::out->dump(sf_in);
-		TesterType::kernelResult.at(0) = TesterType::count_sf(sf_in, TesterType::elements);
+		TesterType::kernelResult.at(0) = count_sf(sf_in, TesterType::elements);
 		delete sf_in;
 	}
 };

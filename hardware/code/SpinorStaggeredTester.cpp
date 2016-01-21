@@ -24,8 +24,15 @@
 #include "../../host_functionality/host_geometry.h"
 #include "../../host_functionality/host_random.h"
 
-SpinorStaggeredTester::SpinorStaggeredTester(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const size_t elementsIn, const ReferenceValues rV):
-		KernelTester(kN, pC.hardwareParameters, pC.kernelParameters, tP, rV), elements(elementsIn)
+//SpinorStaggeredTester::SpinorStaggeredTester(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const size_t elementsIn, const ReferenceValues rV):
+//		KernelTester(kN, pC.hardwareParameters, pC.kernelParameters, tP, rV), elements(elementsIn)
+//{
+//	code = device->getSpinorStaggeredCode();
+//	doubleBuffer = new hardware::buffers::Plain<double> (1,device);
+//}
+
+SpinorStaggeredTester2::SpinorStaggeredTester2(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues rV):
+		KernelTester(kN, pC.hardwareParameters, pC.kernelParameters, tP, rV)
 {
 	code = device->getSpinorStaggeredCode();
 	doubleBuffer = new hardware::buffers::Plain<double> (1,device);
@@ -71,10 +78,8 @@ void fillWithAscendingComplex(su3vec * sf_in, int size)
   return;
 }
 
-void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
+void fill_with_one_eo(su3vec * sf_in, int size, bool eo, const int ns, const int nt)
 {
-  int ns = hardwareParameters->getNs();
-  int nt = hardwareParameters->getNt();
   int x,y,z,t;
   hmc_complex content;
   int coord[4];
@@ -107,22 +112,46 @@ void SpinorStaggeredTester::fill_with_one_eo(su3vec * sf_in, int size, bool eo)
   return;
 }
 
-su3vec * SpinorStaggeredTester::createSpinorfield(SpinorFillType fillTypeIn)
+//su3vec * SpinorStaggeredTester::createSpinorfield(SpinorFillType fillTypeIn)
+//{
+//	su3vec * in;
+//  in = new su3vec[elements];
+//  switch (fillTypeIn) {
+//	case SpinorFillType::zero :
+//		fill_with_zero(in, elements);
+//		break;
+//	case SpinorFillType::one :
+//		fill_with_one(in, elements);
+//		break;
+//	case SpinorFillType::ascendingReal :
+//		fill_with_ascending(in, elements);
+//		break;
+//	case SpinorFillType::ascendingComplex :
+//		fillWithAscendingComplex(in, elements);
+//		break;
+//	default:
+//		logger.fatal() << "do not know fill type!";
+//  }
+//  BOOST_REQUIRE(in);
+//  return in;
+//}
+
+su3vec * SpinorStaggeredfieldCreator::createSpinorfield(SpinorFillType fillTypeIn)
 {
 	su3vec * in;
-  in = new su3vec[elements];
+  in = new su3vec[numberOfElements];
   switch (fillTypeIn) {
 	case SpinorFillType::zero :
-		fill_with_zero(in, elements);
+		fill_with_zero(in, numberOfElements);
 		break;
 	case SpinorFillType::one :
-		fill_with_one(in, elements);
+		fill_with_one(in, numberOfElements);
 		break;
 	case SpinorFillType::ascendingReal :
-		fill_with_ascending(in, elements);
+		fill_with_ascending(in, numberOfElements);
 		break;
 	case SpinorFillType::ascendingComplex :
-		fillWithAscendingComplex(in, elements);
+		fillWithAscendingComplex(in, numberOfElements);
 		break;
 	default:
 		logger.fatal() << "do not know fill type!";
@@ -131,36 +160,64 @@ su3vec * SpinorStaggeredTester::createSpinorfield(SpinorFillType fillTypeIn)
   return in;
 }
 
-su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
+//su3vec * SpinorStaggeredTester::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
+//{
+//  su3vec * in;
+//  in = new su3vec[elements];
+//  fill_with_one_eo(in, elements, fillEvenSites, hardwareParameters->getNs(), hardwareParameters->getNt());
+//  return in;
+//}
+
+su3vec * NonEvenOddSpinorStaggeredfieldCreator::createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
 {
   su3vec * in;
-  in = new su3vec[elements];
-  fill_with_one_eo(in, elements, fillEvenSites);
+  in = new su3vec[numberOfElements];
+  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.ns, latticeExtents.nt);
   return in;
 }
 
-su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
+//su3vec * SpinorStaggeredTester::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
+//{
+//  su3vec * in;
+//  in = new su3vec[elements];
+//  fill_with_one_eo(in, elements, fillEvenSites, hardwareParameters->getNs(), hardwareParameters->getNt());
+//  return in;
+//}
+
+su3vec * EvenOddSpinorStaggeredfieldCreator::createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites)
 {
   su3vec * in;
-  in = new su3vec[elements];
-  fill_with_one_eo(in, elements, fillEvenSites);
+  in = new su3vec[numberOfElements];
+  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.ns, latticeExtents.nt);
   return in;
 }
 
-void SpinorStaggeredTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in)
+//void SpinorStaggeredTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in)
+//{
+//  code->set_float_to_global_squarenorm_device(in, doubleBuffer);
+//  doubleBuffer->dump(&kernelResult[0]);
+//}
+//
+//void SpinorStaggeredTester::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in)
+//{
+//  code->set_float_to_global_squarenorm_eoprec_device(in, doubleBuffer);
+//  doubleBuffer->dump(&kernelResult[0]);
+//}
+
+void SpinorStaggeredTester2::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in)
 {
   code->set_float_to_global_squarenorm_device(in, doubleBuffer);
   doubleBuffer->dump(&kernelResult[0]);
 }
 
-void SpinorStaggeredTester::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in)
+void SpinorStaggeredTester2::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in)
 {
   code->set_float_to_global_squarenorm_eoprec_device(in, doubleBuffer);
   doubleBuffer->dump(&kernelResult[0]);
 }
 
 //This function sums the real and imaginary parts of all su3vec contained in sf_in
-hmc_float SpinorStaggeredTester::count_sf(su3vec * sf_in, int size)
+hmc_float count_sf(su3vec * sf_in, int size)
 {
   hmc_float sum = 0.;
   for (int i=0; i<size; i++){
@@ -175,11 +232,11 @@ hmc_float SpinorStaggeredTester::count_sf(su3vec * sf_in, int size)
 //The following two function return the sum of the square deviation (frome the mean) of the numbers
 //in sf_in. To get the variance, i.e. the mean square deviation, the result
 //must be divided by the number of numbers summed.
-hmc_float SpinorStaggeredTester::calc_var(hmc_float in, hmc_float mean){
-  return (in - mean) * (in - mean);
-}
+//hmc_float calc_var(hmc_float in, hmc_float mean){ //already defined in SpinorTester which is included here!
+//  return (in - mean) * (in - mean);
+//}
 
-hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float sum){
+hmc_float calc_var_sf(su3vec * sf_in, int size, hmc_float sum){
   hmc_float var = 0.;
   for(int k=0; k<size; k++){
     var +=
@@ -196,7 +253,20 @@ hmc_float SpinorStaggeredTester::calc_var_sf(su3vec * sf_in, int size, hmc_float
 /**
  * Function that returns a vector with the 6 real number contained in an su3vec (used in gaussian tests)
  */
-std::vector<hmc_float> SpinorStaggeredTester::reals_from_su3vec(su3vec v){
+//std::vector<hmc_float> SpinorStaggeredTester::reals_from_su3vec(su3vec v){
+//  std::vector<hmc_float> out;
+//  out.push_back(v.e0.re);
+//  out.push_back(v.e0.im);
+//  out.push_back(v.e1.re);
+//  out.push_back(v.e1.im);
+//  out.push_back(v.e2.re);
+//  out.push_back(v.e2.im);
+//  return out;
+//}
+/**
+ * Function that returns a vector with the 6 real number contained in an su3vec (used in gaussian tests)
+ */
+std::vector<hmc_float> reals_from_su3vec(su3vec v){
   std::vector<hmc_float> out;
   out.push_back(v.e0.re);
   out.push_back(v.e0.im);

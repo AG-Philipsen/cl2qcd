@@ -34,6 +34,10 @@ int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
 int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept;
 int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
 
+hmc_float count_sf(spinor * in, int size);
+hmc_float calc_var(hmc_float in, hmc_float mean);
+hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
+
 struct SpinorTestParameters: public virtual TestParameters
 {
 	SpinorTestParameters(const LatticeExtents latticeExtendsIn) :
@@ -46,42 +50,52 @@ struct SpinorTestParameters: public virtual TestParameters
 	const SpinorFillTypes fillTypes;
 };
 
-struct SpinorTester : public KernelTester
+class SpinorTester: public KernelTester
 {
-	SpinorTester(std::string kernelName, const ParameterCollection,	const SpinorTestParameters &, const size_t, const ReferenceValues );
+public:
+	SpinorTester(std::string kernelName, const ParameterCollection, const SpinorTestParameters &, const ReferenceValues );
 protected:
-	spinor * createSpinorfield( SpinorFillType );
-	//@todo: check if all of these fcts. are actually used
-	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
-	spinor * createSpinorfieldWithOnesAndMinusOneForGamma5Use(size_t numberOfElements);	
-	//todo: these should not be visible here, but be accessible via a fillType
-	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456); //this is used in the molecular dynamics test
-	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
-	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
-	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
-
-	hmc_float count_sf(spinor * in, int size);
-	hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
-	
-	int getSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateSpinorfieldSize(latticeExtendsIn); } ;
-	int getEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) const { return calculateEvenOddSpinorfieldSize(latticeExtendsIn); } ;
 
 	const hardware::code::Spinors * code;
 	hardware::buffers::Plain<double> * doubleBuffer;
-	const size_t elements;
+};
+
+struct SpinorfieldCreator
+{
+	SpinorfieldCreator(const size_t numberOfElementsIn): numberOfElements(numberOfElementsIn) {};
+	spinor * createSpinorfield(SpinorFillType);
+
+	size_t numberOfElements;
+};
+
+struct NonEvenOddSpinorfieldCreator : public SpinorfieldCreator
+{
+	NonEvenOddSpinorfieldCreator(LatticeExtents lE): SpinorfieldCreator(calculateSpinorfieldSize(lE)), latticeExtents(lE){};
+	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+	LatticeExtents latticeExtents;
+};
+
+struct EvenOddSpinorfieldCreator : public SpinorfieldCreator
+{
+	EvenOddSpinorfieldCreator(LatticeExtents lE): SpinorfieldCreator(calculateEvenOddSpinorfieldSize(lE)), latticeExtents(lE){};
+	//todo: these should not be visible here, but be accessible via a fillType
+	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2); //this is used in the molecular dynamics test
+	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
+	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
+	LatticeExtents latticeExtents;
 };
 
 struct NonEvenOddSpinorTester : public SpinorTester
 {
 	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
-		SpinorTester(kernelName, pC, tP, getSpinorfieldSize(tP.latticeExtents), rV) {};
+		SpinorTester(kernelName, pC, tP, rV) {};
 };
 
 struct EvenOddSpinorTester : public SpinorTester
 {
 	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
-		SpinorTester(kernelName, pC, tP, getEvenOddSpinorfieldSize(tP.latticeExtents), rV) {};
+		SpinorTester(kernelName, pC, tP, rV) {};
 };
 

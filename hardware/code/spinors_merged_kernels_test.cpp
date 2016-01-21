@@ -43,14 +43,15 @@ struct SaxpyAndSquarenormEvenOddTester: public EvenOddSpinorTester
 	SaxpyAndSquarenormEvenOddTester(const ParameterCollection & pC, const SaxpyAndSquarenormEvenOddTestParameters & tP):
 		EvenOddSpinorTester("saxpy_AND_squarenorm_eo", pC, tP, calculateReferenceValues_saxpyAndSquarenormEvenOdd(calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.coefficient))
 	{
-		const hardware::buffers::Spinor in(elements, device);
-		const hardware::buffers::Spinor in2(elements, device);
-		const hardware::buffers::Spinor out(elements, device);
+		const hardware::buffers::Spinor in(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+		const hardware::buffers::Spinor in2(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+		const hardware::buffers::Spinor out(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
 		const hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
 		const hardware::buffers::Plain<hmc_complex> complexNum(1, device);
 
-		in.load(createSpinorfield(tP.fillTypes.at(0)));
-		in2.load(createSpinorfield(tP.fillTypes.at(0)));
+		EvenOddSpinorfieldCreator sf(tP.latticeExtents);
+		in.load(sf.createSpinorfield(tP.fillTypes.at(0)));
+		in2.load(sf.createSpinorfield(tP.fillTypes.at(0)));
 		complexNum.load(&tP.coefficient);
 
 		code->saxpy_AND_squarenorm_eo_device(&in, &in2, &complexNum, &out, &sqnorm);

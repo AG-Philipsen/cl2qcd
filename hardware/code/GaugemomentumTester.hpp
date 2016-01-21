@@ -29,6 +29,8 @@
 int calculateGaugemomentumSize(const LatticeExtents latticeExtentsIn) noexcept;
 int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept;
 
+enum GaugeMomentumFilltype {One, Zero};
+
 struct GaugemomentumTestParameters: public TestParameters
 {
 	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn) :
@@ -52,9 +54,8 @@ protected:
 
 struct GaugemomentumCreator
 {
-	GaugemomentumCreator(size_t numberOfElementsIn): numberOfElements(numberOfElementsIn){};
-	enum Filltype {one, zero};
-	double * createGaugemomentumBasedOnFilltype(const Filltype filltype = one);
+	GaugemomentumCreator(const LatticeExtents lE): numberOfElements(calculateAlgebraSize(lE)){};
+	double * createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = One);
 	void fill_with_one(double * sf_in);
 	void fill_with_zero(double * sf_in);
 	double count_gm(ae * ae_in, int size);

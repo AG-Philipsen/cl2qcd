@@ -22,6 +22,8 @@
 #include "kernelTester.hpp"
 #include "gaugefield.hpp"
 
+int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept;
+
 enum GaugefieldFillType {cold = 1, nonTrivial};
 
 struct GaugefieldTestParameters : public virtual TestParameters
@@ -42,7 +44,9 @@ protected:
 
 struct GaugefieldCreator
 {
-	const Matrixsu3* createGaugefield(int numberOfElements, const GaugefieldFillType fillTypeIn);
-	int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept;
+	GaugefieldCreator(const LatticeExtents lE): numberOfElements(calculateGaugefieldSize(lE)){};
+	const Matrixsu3* createGaugefield(const GaugefieldFillType fillTypeIn);
+
+	size_t numberOfElements;
 };
 

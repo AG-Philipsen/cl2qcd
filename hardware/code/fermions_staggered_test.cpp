@@ -32,10 +32,10 @@ struct StaggeredFermionsTestParameters : public SpinorStaggeredTestParameters
 		TestParameters(lE), SpinorStaggeredTestParameters(lE) {};
 };
 
-struct StaggeredFermionsTester : public SpinorStaggeredTester
+struct StaggeredFermionsTester : public SpinorStaggeredTester2
 {
-	StaggeredFermionsTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters tP, const size_t elementsIn, const ReferenceValues rV):
-	SpinorStaggeredTester(kernelName, pC, tP, elementsIn, rV)
+	StaggeredFermionsTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters tP, const ReferenceValues rV):
+	SpinorStaggeredTester2(kernelName, pC, tP, rV)
     {
 		code = device->getFermionStaggeredCode();
 		gaugefieldBuffer = new hardware::buffers::SU3( calculateLatticeVolume(tP.latticeExtents), device);
@@ -53,11 +53,12 @@ struct StaggeredFermionsTester : public SpinorStaggeredTester
 struct NonEvenOddStaggeredFermionmatrixTester : public StaggeredFermionsTester
 {
 	NonEvenOddStaggeredFermionmatrixTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters tP, const ReferenceValues rV) :
-	    StaggeredFermionsTester(kernelName, pC, tP, calculateSpinorfieldSize(tP.latticeExtents), rV){
-		in = new const hardware::buffers::Plain<su3vec>(elements, device);
-		out = new const hardware::buffers::Plain<su3vec>(elements, device);
-		in->load(createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
-		out->load(createSpinorfield(SpinorFillType::one));//@todo: make adjustable
+	    StaggeredFermionsTester(kernelName, pC, tP, rV){
+		in = new const hardware::buffers::Plain<su3vec>(calculateSpinorfieldSize(tP.latticeExtents), device);
+		out = new const hardware::buffers::Plain<su3vec>(calculateSpinorfieldSize(tP.latticeExtents), device);
+		SpinorStaggeredfieldCreator ssf(calculateSpinorfieldSize(tP.latticeExtents));
+		in->load(ssf.createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
+		out->load(ssf.createSpinorfield(SpinorFillType::one));//@todo: make adjustable
 	}
 	virtual ~NonEvenOddStaggeredFermionmatrixTester(){
 		calcSquarenormAndStoreAsKernelResult(out);
@@ -81,11 +82,12 @@ struct MTester : public NonEvenOddStaggeredFermionmatrixTester
 struct EvenOddStaggeredFermionmatrixTester : public StaggeredFermionsTester
 {
 	EvenOddStaggeredFermionmatrixTester(std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters tP, const ReferenceValues rV) :
-	   StaggeredFermionsTester(kernelName, pC, tP, calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV){
-		in = new const hardware::buffers::SU3vec(elements, device);
-		out = new const hardware::buffers::SU3vec(elements, device);
-		in->load(createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
-		out->load(createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
+	   StaggeredFermionsTester(kernelName, pC, tP, rV){
+		in = new const hardware::buffers::SU3vec(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+		out = new const hardware::buffers::SU3vec(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+		SpinorStaggeredfieldCreator ssf(calculateEvenOddSpinorfieldSize(tP.latticeExtents));
+		in->load(ssf.createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
+		out->load(ssf.createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
 	}
 	~EvenOddStaggeredFermionmatrixTester(){
 		calcSquarenormEvenOddAndStoreAsKernelResult(out);

@@ -194,8 +194,9 @@ struct CorrelatorTester : public NonEvenOddSpinorTester
 
 		for( unsigned int i=0; i<tP.fillTypes.size(); i++ )
 		{
-			spinorfields.push_back( new hardware::buffers::Plain<spinor> (elements, device) );
-			auto spinorfield = SpinorTester::createSpinorfield(tP.fillTypes.at(i));
+			NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
+			spinorfields.push_back( new hardware::buffers::Plain<spinor> (sf.numberOfElements, device) );
+			auto spinorfield = sf.createSpinorfield(tP.fillTypes.at(i));
 			spinorfields.at(i)->load(spinorfield);
 			delete[] spinorfield;
 		}
