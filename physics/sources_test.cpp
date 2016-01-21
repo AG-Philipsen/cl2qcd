@@ -43,7 +43,7 @@ static void test_sources(std::string type, int num_sources)
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 
 	auto sources = create_sources(system, prng, params.get_num_sources(), interfacesHandler);
@@ -67,7 +67,7 @@ static void test_volume_source_stagg(std::string content)
 	meta::Inputparameters params(5, &(options[0]));
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{&params};
 	physics::PRNG prng{system, &prngParameters};
 
 	Staggeredfield_eo source(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());

@@ -103,7 +103,7 @@ struct PrngFileReader
 	int * hostState;
 };
 
-physics::PRNG::PRNG(const hardware::System& system, const physics::ParametersPrngInterface * parametersIn) :
+physics::PRNG::PRNG(const hardware::System& system, const physics::PrngParametersInterface * parametersIn) :
 	system(system), parameters(parametersIn)
 {
 	using hardware::buffers::PRNGBuffer;

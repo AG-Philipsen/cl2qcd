@@ -23,11 +23,11 @@
 
 namespace physics
 {
-	class ParametersPrngInterface
+	class PrngParametersInterface
 	{
 	public:
-		ParametersPrngInterface(){};
-		virtual ~ParametersPrngInterface(){};
+		PrngParametersInterface(){};
+		virtual ~PrngParametersInterface(){};
 		virtual uint32_t getHostSeed() const = 0;
 		virtual std::string getInitialPrngStateFilename() const = 0;
 		virtual bool useSameRandomNumbers() const = 0;
@@ -36,11 +36,11 @@ namespace physics
 		virtual int getNumberOfDigitsInName() const = 0;
 	};
 
-	class ParametersPrng_fromMetaInputparameters final : public ParametersPrngInterface
+	class PrngParametersImplementation final : public PrngParametersInterface
 	{
 	public:
-		ParametersPrng_fromMetaInputparameters(const meta::Inputparameters * fullParametersIn) : fullParameters(fullParametersIn) {};
-		~ParametersPrng_fromMetaInputparameters() {};
+		PrngParametersImplementation(const meta::Inputparameters * fullParametersIn) : fullParameters(fullParametersIn) {};
+		~PrngParametersImplementation() {};
 		virtual uint32_t getHostSeed() const override
 		{
 			return fullParameters->get_host_seed();

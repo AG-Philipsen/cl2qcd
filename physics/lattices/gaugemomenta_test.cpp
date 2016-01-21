@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Gaugemomenta gm(system, gaugemomentaParametersInterface);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	// fill with zeros
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Gaugemomenta gm(system, gaugemomentaParametersInterface);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	// only two very simple tests
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	meta::Inputparameters params(1, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
 	hardware::System system(params);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Gaugemomenta gauss(system, gaugemomentaParametersInterface);
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	meta::Inputparameters params(2, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
 	hardware::System system(params);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	const Gaugemomenta gm(system, gaugemomentaParametersInterface);

@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(zero)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(cold)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(sax)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo orig_sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(saxpby)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Staggeredfield_eo gaussian(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	physics::lattices::Vector<hmc_float> zeros(3, system);
@@ -406,7 +406,7 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 	
 	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE(conversion)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	for(size_t i = 0; i < 11; i++) {
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	const char * _params[] = {"foo", "--ntime=16"};
 	meta::Inputparameters params(2, _params);
 	hardware::System system(params);
-	physics::ParametersPrng_fromMetaInputparameters prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(&params);
 	physics::PRNG prng(system, &prngParameters);
 
 	const Spinorfield_eo sf(system);

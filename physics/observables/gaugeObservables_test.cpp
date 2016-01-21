@@ -41,7 +41,7 @@ public:
     parameters = new meta::Inputparameters(argc, argv);
     gaugeobservablesParameters = new physics::observables::GaugeObservablesParametersImplementation(*parameters);
     system = new hardware::System(*parameters);
-    prngParameters = new physics::ParametersPrng_fromMetaInputparameters(parameters);
+    prngParameters = new physics::PrngParametersImplementation(parameters);
     prng = new physics::PRNG(*system, prngParameters);
     gaugefieldParameters = new physics::lattices::GaugefieldParametersImplementation(parameters);
     gaugefield = new physics::lattices::Gaugefield(*system, gaugefieldParameters, *prng);
@@ -63,7 +63,7 @@ private:
   hardware::System *  system;
   physics::PRNG * prng;
   physics::lattices::GaugefieldParametersImplementation * gaugefieldParameters;
-  physics::ParametersPrng_fromMetaInputparameters * prngParameters;
+  physics::PrngParametersImplementation * prngParameters;
 };
 
 BOOST_AUTO_TEST_SUITE( PLAQUETTE  )
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
   physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
   physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
   hardware::System system(parameters);
-  physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
+  physics::PrngParametersImplementation prngParameters{&parameters};
   physics::PRNG prng{system, &prngParameters};
   physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
   physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
   physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
   hardware::System system(parameters);
-  physics::ParametersPrng_fromMetaInputparameters prngParameters{&parameters};
+  physics::PrngParametersImplementation prngParameters{&parameters};
   physics::PRNG prng{system, &prngParameters};
   physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 

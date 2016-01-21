@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE( init )
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 
-	physics::ParametersPrng_fromMetaInputparameters test(&params);
+	physics::PrngParametersImplementation test(&params);
 
 	BOOST_CHECK_EQUAL(test.getHostSeed(), params.get_host_seed());
 	BOOST_CHECK_EQUAL(test.getInitialPrngStateFilename(), params.get_initial_prng_state());

@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(rescale)
         meta::Inputparameters params(5, _params);
         hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-        physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+        physics::PrngParametersImplementation prngParameters{&params};
         physics::PRNG prng{system, &prngParameters};
 
         //Operator for the test
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(rescale)
         meta::Inputparameters params(5, _params);
         hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-        physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+        physics::PrngParametersImplementation prngParameters{&params};
         physics::PRNG prng{system, &prngParameters};
 
         //Operator for the test

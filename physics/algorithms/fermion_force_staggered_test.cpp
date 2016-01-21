@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		meta::Inputparameters params(4, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		meta::Inputparameters params(5, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 		
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		meta::Inputparameters params(4, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{&params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
