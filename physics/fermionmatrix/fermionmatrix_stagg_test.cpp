@@ -68,7 +68,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
 		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
@@ -102,7 +102,7 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
 		FERMIONMATRIX matrix1(system, interfacesHandler.getInterface<FERMIONMATRIX>(), ODD);
@@ -139,7 +139,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
 		physics::fermionmatrix::D_KS_eo matrix1(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
@@ -171,7 +171,7 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
 		physics::fermionmatrix::D_KS_eo matrix1(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
@@ -209,7 +209,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 
@@ -231,7 +231,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
 

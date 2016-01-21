@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(gamma5)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(zero)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(cold)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield gaussian(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(sax)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield orig_sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield gaussian(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE(saxsbypz)
 	meta::Inputparameters params(1, _params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
 	Spinorfield gaussian(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());

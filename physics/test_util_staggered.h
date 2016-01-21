@@ -42,7 +42,7 @@
  * 
  *  public:
  *  TestGaugefield_stagg(const hardware::System * system) : system(system), prngParameters( &system->get_inputparameters() ), params(&system->get_inputparameters()),
- *                                                          prng(*system, &prngParameters), gf(*system, &params, prng)
+ *                                                          prng(*system, &prngParameters), gf(*system, params, prng)
  *  {
  *     BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
  *     const auto & inputfile = system->get_inputparameters();

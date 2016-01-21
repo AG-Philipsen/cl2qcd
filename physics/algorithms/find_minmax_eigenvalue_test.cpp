@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(max)
 	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::PrngParametersImplementation prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(min)
 	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::PrngParametersImplementation prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::PrngParametersImplementation prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test

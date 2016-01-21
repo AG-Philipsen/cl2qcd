@@ -72,7 +72,7 @@ generalExecutable::generalExecutable(int argc, const char* argv[], std::string p
 	hardware::HardwareParametersImplementation hP(&parameters);
 	hardware::code::OpenClKernelParametersImplementation kP(parameters);
 	system = new hardware::System(hP, kP);
-	prngParameters = new physics::PrngParametersImplementation(&parameters);
+	prngParameters = new physics::PrngParametersImplementation(parameters);
 	prng = new physics::PRNG(*system, prngParameters);
 	interfacesHandler = std::unique_ptr<physics::InterfacesHandler>(new physics::InterfacesHandlerImplementation{parameters});
 	initializationTimer.add();

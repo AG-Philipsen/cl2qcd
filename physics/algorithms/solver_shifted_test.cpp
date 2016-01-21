@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 
 	    hardware::System system(*params);
 	    physics::InterfacesHandlerImplementation interfacesHandler{*params};
-	    physics::PrngParametersImplementation prngParameters{params};
+	    physics::PrngParametersImplementation prngParameters{*params};
 	    physics::PRNG prng{system, &prngParameters};
 
 	    //This are some possible values of sigma
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 
 	    hardware::System system(*params);
 	    physics::InterfacesHandlerImplementation interfacesHandler{*params};
-	    physics::PrngParametersImplementation prngParameters{params};
+	    physics::PrngParametersImplementation prngParameters{*params};
 	    physics::PRNG prng{system, &prngParameters};
 
 	    //These are some possible values of sigma
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::PrngParametersImplementation prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
 	
 	//These are some possible values of sigma
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	meta::Inputparameters params(4, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::PrngParametersImplementation prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
 
 	std::vector<hmc_float> sigma(1, 0.0);

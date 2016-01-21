@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
-		physics::PrngParametersImplementation prngParameters(&params);
+		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
 		logger.debug() << "Devices: " << system.get_devices().size();
-		physics::PrngParametersImplementation prngParameters(&params);
+		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -81,7 +81,7 @@ void test_save(bool hot) {
 	meta::Inputparameters params(1, _params);
 	const GaugefieldParametersImplementation parametersTmp{ &params };
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 	physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	meta::Inputparameters params(3, _params);
 	const GaugefieldParametersImplementation parametersTmp{ &params };
 	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(&params);
+	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 	physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	meta::Inputparameters params2(3, _params2);
 	const GaugefieldParametersImplementation parametersTmp2{ &params2 };
 	hardware::System system2(params2);
-	physics::PrngParametersImplementation prngParameters2(&params2);
+	physics::PrngParametersImplementation prngParameters2(params2);
 	physics::PRNG prng2(system, &prngParameters2);
 
 	Gaugefield gf2(system2, &parametersTmp2, prng2, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters(&params);
+		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters(&params);
+		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters(&params);
+		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(1, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters(&params);
+		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters(&params);
+		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
 

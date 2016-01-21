@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5

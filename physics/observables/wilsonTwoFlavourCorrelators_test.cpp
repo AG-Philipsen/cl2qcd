@@ -161,7 +161,7 @@ void test_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref
 	meta::Inputparameters params(3, _params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::PrngParametersImplementation prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{params};
 	const physics::PRNG prng{system, &prngParameters};
 
 	size_t num_sources = params.get_num_sources();

@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		meta::Inputparameters params(3, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(dslash)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE(dslash)
 		meta::Inputparameters params(2, _params);
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");

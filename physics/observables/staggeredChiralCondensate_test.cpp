@@ -61,7 +61,7 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
 	//GaugefieldParametersImplementation gaugefieldParameters(&params);
 	hardware::System system(params);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	physics::PrngParametersImplementation prngParameters{&params};
+	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
 	const Gaugefield *gf;
 	if(cold)

@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		{
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion_eo)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio)
 		meta::Inputparameters params(3, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -410,7 +410,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio_eo)
 		meta::Inputparameters params(3, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
@@ -459,7 +459,7 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_eo)
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");

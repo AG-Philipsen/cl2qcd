@@ -98,7 +98,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
@@ -123,7 +123,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
@@ -153,7 +153,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
@@ -177,7 +177,7 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
 		hardware::System system(params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 

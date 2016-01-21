@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		meta::Inputparameters params(length, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		const hardware::System system(params);
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
 
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		meta::Inputparameters params(4, commandLineParameters);
 		const hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
 		
@@ -122,7 +122,7 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		meta::Inputparameters params(numberOfOptions, _params);
 		const hardware::System system(params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		physics::PrngParametersImplementation prngParameters{&params};
+		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
 
