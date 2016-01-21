@@ -2,7 +2,7 @@
  * Tests of the explicit fermionmatrix implementations
  *
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Matthias Bach, Christian Schaefer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -29,6 +29,7 @@
 
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 BOOST_AUTO_TEST_CASE(M_wilson)
 {

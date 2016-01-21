@@ -27,7 +27,7 @@
 #define BOOST_TEST_MODULE physics::lattice::Staggeredfield_eo
 #include <boost/test/unit_test.hpp>
 
-#include "../interfacesHandler.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>

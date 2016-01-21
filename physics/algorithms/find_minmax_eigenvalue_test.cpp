@@ -23,7 +23,7 @@
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "../interfacesHandler.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 
 // use the boost test framework

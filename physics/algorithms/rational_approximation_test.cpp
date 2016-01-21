@@ -21,6 +21,7 @@
 
 #include "rational_approximation.hpp"
 #include "../../host_functionality/logger.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

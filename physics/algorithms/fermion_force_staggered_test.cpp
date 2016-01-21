@@ -20,7 +20,7 @@
  */
 
 #include "fermion_force_staggered.hpp"
-#include "../interfacesHandler.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

@@ -29,6 +29,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../lattices/util.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 BOOST_AUTO_TEST_CASE(gauge_force)
 {

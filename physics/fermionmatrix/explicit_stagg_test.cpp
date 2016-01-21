@@ -30,7 +30,7 @@
 #include "../../host_functionality/logger.hpp"
 #include "../test_util_staggered.h"
 #include "../../hardware/code/spinors.hpp"
-#include "../interfacesHandler.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 BOOST_AUTO_TEST_CASE(D_KS_eo)
 {

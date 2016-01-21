@@ -28,3 +28,4 @@ add_unit_test_withLibraries(physics::observables::Parameters observablesParamete
 add_unit_test_withLibraries(physics::lattices::Parameters latticesParameters_test meta)
 add_unit_test_withLibraries(physics::fermionmatrix::Parameters fermionmatrixParameters_test meta)
 add_unit_test_withLibraries(physics::algorithms::Parameters algorithmsParameters_test meta)
+add_unit_test_withLibraries(physics::interfacesHandler interfacesHandler_test meta exceptions)

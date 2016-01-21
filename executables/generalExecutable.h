@@ -54,7 +54,7 @@ protected:
 	/**
 	* Initialize meta::Inputparametes and hardware::System objects
 	 */
-	//Protected since it makes no sense to allow the user to instatiate this class
+	//Protected since it makes no sense to allow the user to instantiate this class
 	generalExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters"); 
 
 	const char* ownName;

@@ -30,7 +30,7 @@
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>
-#include "../interfacesHandler.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {

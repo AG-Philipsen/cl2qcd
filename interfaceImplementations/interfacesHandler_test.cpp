@@ -23,12 +23,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include "interfacesHandler.hpp"
-#include "lattices/gaugefield.hpp"
-#include "lattices/gaugemomenta.hpp"
-#include "lattices/spinorfield.hpp"
-#include "lattices/staggeredfield_eo.hpp"
-#include "lattices/rooted_staggeredfield_eo.hpp"
-#include "fermionmatrix/fermionmatrix.hpp"
+//#include "../physics/interfacesHandler.hpp"
+#include "../physics/lattices/gaugefield.hpp"
+#include "../physics/lattices/gaugemomenta.hpp"
+#include "../physics/lattices/spinorfield.hpp"
+#include "../physics/lattices/staggeredfield_eo.hpp"
+#include "../physics/lattices/rooted_staggeredfield_eo.hpp"
+#include "../physics/fermionmatrix/fermionmatrix.hpp"
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {

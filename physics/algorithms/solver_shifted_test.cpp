@@ -26,6 +26,7 @@
 #include "../../meta/util.hpp"
 #include "../lattices/scalar_complex.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK

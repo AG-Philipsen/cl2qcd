@@ -28,6 +28,7 @@
 #include "sources.hpp"
 #include "test_util_staggered.h"
 #include <sstream>
+#include "../interfaceImplementations/interfacesHandler.hpp"
 
 static void test_sources(std::string type, int num_sources)
 {

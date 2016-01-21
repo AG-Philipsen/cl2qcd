@@ -29,6 +29,7 @@
 
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 #include <cmath>
 
 BOOST_AUTO_TEST_CASE(initialization)

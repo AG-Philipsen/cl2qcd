@@ -23,13 +23,14 @@
 #include "fermionmatrix.hpp"
 
 #include "../lattices/util.hpp"
-#include <boost/type_traits.hpp>
-#include <boost/utility.hpp>
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::fermionmatrix::<fermionmatrix>
 #include <boost/test/unit_test.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/utility.hpp>
 
 template<class FERMIONMATRIX>
 typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatrix, FERMIONMATRIX>, void>::type

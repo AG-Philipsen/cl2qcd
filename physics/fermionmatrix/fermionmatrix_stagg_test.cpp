@@ -21,7 +21,7 @@
 
 #include "fermionmatrix_stagg.hpp"
 
-#include "../interfacesHandler.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../lattices/util.hpp"
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>

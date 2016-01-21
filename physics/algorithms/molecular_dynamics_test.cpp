@@ -31,6 +31,7 @@
 #include "../lattices/util.hpp"
 
 #include "../observables/gaugeObservables.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
 
 BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 {
