@@ -25,7 +25,7 @@
 
 #include "../hardware/system.hpp"
 #include "../hardware/buffers/prng_buffer.hpp"
-#include "parametersPrng.hpp"
+#include "prngInterface.hpp"
 
 /**
  * This package contains the actual "business" logic of the library.

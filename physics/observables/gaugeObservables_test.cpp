@@ -32,6 +32,7 @@
 #include "../lattices/gaugefield.hpp"
 #include "../../interfaceImplementations/latticesParameters.hpp"
 #include "../../interfaceImplementations/observablesParameters.hpp"
+#include "../../interfaceImplementations/physicsParameters.hpp"
 
 class GaugeObservablesTester
 {

@@ -34,6 +34,7 @@
 #include "../observables/gaugeObservables.hpp"
 #include "../../interfaceImplementations/latticesParameters.hpp"
 #include "../../interfaceImplementations/observablesParameters.hpp"
+#include "../../interfaceImplementations/physicsParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {

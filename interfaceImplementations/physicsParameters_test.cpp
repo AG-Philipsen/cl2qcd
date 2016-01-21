@@ -101,3 +101,18 @@ BOOST_AUTO_TEST_CASE(testSourcesParameters)
     BOOST_CHECK_EQUAL(test.getSourceZ(), params->get_source_z());
 
 }
+
+BOOST_AUTO_TEST_CASE(testPrngParameters)
+{
+    const char * _params[] = {"foo"};
+    meta::Inputparameters params(1, _params);
+
+    physics::PrngParametersImplementation test(params);
+
+    BOOST_CHECK_EQUAL(test.getHostSeed(), params.get_host_seed());
+    BOOST_CHECK_EQUAL(test.getInitialPrngStateFilename(), params.get_initial_prng_state());
+    BOOST_CHECK_EQUAL(test.useSameRandomNumbers(), params.get_use_same_rnd_numbers() );
+    BOOST_CHECK_EQUAL(test.getNamePostfix(), params.get_prng_postfix() );
+    BOOST_CHECK_EQUAL(test.getNamePrefix(), params.get_prng_prefix() );
+    BOOST_CHECK_EQUAL(test.getNumberOfDigitsInName(), params.get_config_number_digits() );
+}

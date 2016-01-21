@@ -25,6 +25,7 @@
 #include "../meta/util.hpp"
 #include "../physics/additionalParameters.hpp"
 #include "../physics/sourcesInterface.hpp"
+#include "../physics/prngInterface.hpp"
 #include "../physics/fermionmatrix/fermionmatrixInterfaces.hpp"
 #include "latticesParameters.hpp"
 #include "fermionmatrixParameters.hpp"
@@ -187,6 +188,40 @@ namespace physics{
             }
         private:
             const meta::Inputparameters& parameters;
+    };
+
+
+    class PrngParametersImplementation final : public PrngParametersInterface
+    {
+    public:
+        PrngParametersImplementation(const meta::Inputparameters& fullParametersIn) : fullParameters(fullParametersIn) {};
+        ~PrngParametersImplementation() {};
+        virtual uint32_t getHostSeed() const override
+        {
+            return fullParameters.get_host_seed();
+        }
+        virtual std::string getInitialPrngStateFilename() const override
+        {
+            return fullParameters.get_initial_prng_state();
+        }
+        virtual bool useSameRandomNumbers() const override
+        {
+            return fullParameters.get_use_same_rnd_numbers();
+        }
+        virtual std::string getNamePrefix() const override
+        {
+            return fullParameters.get_prng_prefix();
+        }
+        virtual std::string getNamePostfix() const override
+        {
+            return fullParameters.get_prng_postfix();
+        }
+        virtual int getNumberOfDigitsInName() const override
+        {
+            return fullParameters.get_config_number_digits();
+        }
+    private:
+        const meta::Inputparameters& fullParameters;
     };
 
 }

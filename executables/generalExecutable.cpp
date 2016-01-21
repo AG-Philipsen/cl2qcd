@@ -19,7 +19,6 @@
  */
 
 #include "generalExecutable.h"
-#include "../physics/parametersPrng.hpp"
 #include "../interfaceImplementations/hardwareParameters.hpp"
 #include "../interfaceImplementations/openClKernelParameters.hpp"
 #include "../interfaceImplementations/interfacesHandler.hpp"

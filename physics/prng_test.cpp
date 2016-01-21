@@ -27,6 +27,8 @@
 #define BOOST_TEST_MODULE physics::PRNG
 #include <boost/test/unit_test.hpp>
 
+#include "../interfaceImplementations/physicsParameters.hpp"
+
 using namespace physics;
 
 BOOST_AUTO_TEST_SUITE(build)

@@ -53,6 +53,5 @@ target_link_libraries(physics
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/prngstate_brokenTag  prngstate_brokenTag COPYONLY )
 
-add_unit_test_withLibraries(physics:ParametersPrng parametersPrng_test meta )
 add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware)
 add_unit_test_withLibraries(physics::<sources> sources_test physics)

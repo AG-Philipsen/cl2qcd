@@ -34,6 +34,7 @@
 #include "util.hpp"
 #include "../../meta/util.hpp"
 #include "../../interfaceImplementations/latticesParameters.hpp"
+#include "../../interfaceImplementations/physicsParameters.hpp"
 
 static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed);
 
