@@ -41,7 +41,6 @@ add_modules(physics
 )
 target_link_libraries(physics
 	prng
-	meta
 	hardware
 	host_functionality
 	ildg_io
