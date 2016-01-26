@@ -22,7 +22,8 @@
 
 #include "vector.hpp"
 #include "../../host_functionality/logger.hpp"
-
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 
 // use the boost test framework
@@ -37,7 +38,9 @@ BOOST_AUTO_TEST_CASE(vector_float)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+	hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Vector<hmc_float> foo(3, system);
@@ -58,7 +61,9 @@ BOOST_AUTO_TEST_CASE(vector_complex)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Vector<hmc_complex> foo(3, system);
@@ -81,7 +86,9 @@ BOOST_AUTO_TEST_CASE(vector_char)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Vector<char> foo(3, system);

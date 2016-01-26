@@ -29,9 +29,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../lattices/util.hpp"
-
 #include "../observables/gaugeObservables.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 {
@@ -41,7 +42,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -72,7 +75,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -91,7 +96,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -121,7 +128,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -141,7 +150,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -165,7 +176,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -186,7 +199,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -210,7 +225,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -230,7 +247,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -255,7 +274,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -276,7 +297,9 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -301,7 +324,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -317,7 +342,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -337,7 +364,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -360,7 +389,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion_eo)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -386,7 +417,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio)
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -409,7 +442,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -435,7 +470,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -458,7 +495,9 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_eo)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 

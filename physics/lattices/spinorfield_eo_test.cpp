@@ -30,6 +30,8 @@
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include <cmath>
 
 BOOST_AUTO_TEST_CASE(initialization)
@@ -38,7 +40,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
@@ -51,7 +55,9 @@ BOOST_AUTO_TEST_CASE(gamma5)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -74,7 +80,9 @@ BOOST_AUTO_TEST_CASE(zero)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -91,7 +99,9 @@ BOOST_AUTO_TEST_CASE(cold)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -109,7 +119,9 @@ BOOST_AUTO_TEST_CASE(gaussian)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -128,7 +140,9 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -150,7 +164,9 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -189,7 +205,9 @@ BOOST_AUTO_TEST_CASE(sax)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -219,7 +237,9 @@ BOOST_AUTO_TEST_CASE(saxpy)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -246,7 +266,9 @@ BOOST_AUTO_TEST_CASE(saxsbypz)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -279,7 +301,9 @@ BOOST_AUTO_TEST_CASE(conversion)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -315,7 +339,9 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	// simple test, squarenorm should not get changed by halo exchange
 	const char * _params[] = {"foo", "--ntime=16"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);

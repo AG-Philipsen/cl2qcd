@@ -24,7 +24,8 @@
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
-
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -40,7 +41,9 @@ BOOST_AUTO_TEST_CASE(max)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335"};
 	meta::Inputparameters params(4, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
@@ -70,7 +73,9 @@ BOOST_AUTO_TEST_CASE(min)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335"};
 	meta::Inputparameters params(4, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
@@ -103,7 +108,9 @@ BOOST_AUTO_TEST_CASE(maxmin)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567"};
 	meta::Inputparameters params(4, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};

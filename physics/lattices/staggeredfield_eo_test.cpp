@@ -28,6 +28,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>
@@ -39,7 +41,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
@@ -52,7 +56,9 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -73,7 +79,9 @@ BOOST_AUTO_TEST_CASE(zero)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -90,7 +98,9 @@ BOOST_AUTO_TEST_CASE(cold)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -107,7 +117,9 @@ BOOST_AUTO_TEST_CASE(gaussian)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -125,7 +137,9 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -164,7 +178,9 @@ BOOST_AUTO_TEST_CASE(sax)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -219,7 +235,9 @@ BOOST_AUTO_TEST_CASE(saxpy)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -267,7 +285,9 @@ BOOST_AUTO_TEST_CASE(saxpby)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -329,7 +349,9 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -360,7 +382,9 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -404,7 +428,9 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 	
 	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
@@ -416,82 +442,3 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 	logger.info() << "The squarenorm of the pseudorandomized field is " << physics::lattices::squarenorm(sf);
 }
 
-
-
-
-
-
-
-
-//To be added (so far only single GPU and only EO preconditioning)...
-#if 0
-
-BOOST_AUTO_TEST_CASE(conversion)
-{
-	using physics::lattices::Spinorfield;
-	using physics::lattices::Spinorfield_eo;
-	using physics::lattices::squarenorm;
-
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(params);
-	physics::PRNG prng(system, &prngParameters);
-
-	for(size_t i = 0; i < 11; i++) {
-		const Spinorfield orig(system);
-		orig.gaussian(prng);
-		const Spinorfield recreated(system);
-		recreated.gaussian(prng);
-		const Spinorfield_eo even(system);
-		const Spinorfield_eo odd(system);
-		even.gaussian(prng);
-		odd.gaussian(prng);
-
-		convert_to_eoprec(&even, &odd, orig);
-		log_squarenorm("even: ", even);
-		log_squarenorm("odd: ", odd);
-		log_squarenorm("orig: ", orig);
-		BOOST_CHECK_CLOSE(squarenorm(even) + squarenorm(odd), squarenorm(orig), .1);
-
-		convert_from_eoprec(&recreated, even, odd);
-		log_squarenorm("recreated: ", recreated);
-		BOOST_CHECK_CLOSE(squarenorm(recreated), squarenorm(orig), .1);
-	}
-}
-
-BOOST_AUTO_TEST_CASE(halo_update)
-{
-	using namespace physics::lattices;
-
-	hmc_float orig_squarenorm, new_squarenorm;
-
-	// simple test, squarenorm should not get changed by halo exchange
-	const char * _params[] = {"foo", "--ntime=16"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	physics::PrngParametersImplementation prngParameters(params);
-	physics::PRNG prng(system, &prngParameters);
-
-	const Spinorfield_eo sf(system);
-
-	sf.gaussian(prng);
-	orig_squarenorm = physics::lattices::squarenorm(sf);
-	sf.update_halo();
-	new_squarenorm = physics::lattices::squarenorm(sf);
-	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
-
-	sf.zero();
-	orig_squarenorm = physics::lattices::squarenorm(sf);
-	sf.update_halo();
-	new_squarenorm = physics::lattices::squarenorm(sf);
-	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
-
-	sf.cold();
-	orig_squarenorm = physics::lattices::squarenorm(sf);
-	sf.update_halo();
-	new_squarenorm = physics::lattices::squarenorm(sf);
-	BOOST_CHECK_EQUAL(orig_squarenorm, new_squarenorm);
-}
-
-#endif

@@ -30,6 +30,8 @@
 
 #include "../lattices/util.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(gauge_force)
 {
@@ -38,7 +40,9 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -55,7 +59,9 @@ BOOST_AUTO_TEST_CASE(gauge_force)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -75,7 +81,9 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 		const char * _params[] = {"foo", "--ntime=16", "--gaugeact=tlsym"};
 		meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -92,7 +100,9 @@ BOOST_AUTO_TEST_CASE(gauge_force_tlsym)
 		const char * _params[] = {"foo", "--ntime=4", "--gaugeact=tlsym"};
 		meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -112,7 +122,9 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -129,7 +141,9 @@ BOOST_AUTO_TEST_CASE(calc_gauge_force)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -149,7 +163,9 @@ BOOST_AUTO_TEST_CASE(calc_tot_force)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -172,7 +188,9 @@ BOOST_AUTO_TEST_CASE(calc_tot_force_eo)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -200,7 +218,9 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.125"};
 		meta::Inputparameters params(4, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
@@ -226,7 +246,9 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--theta_fermion_temporal=1", "--fermact=rooted_stagg", "--mass=0.125"};
 		meta::Inputparameters params(5, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
@@ -253,7 +275,9 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		                          "--use_chem_pot_im=true", "--chem_pot_im=0.5678", "--mass=0.125"};
 		meta::Inputparameters params(7, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		

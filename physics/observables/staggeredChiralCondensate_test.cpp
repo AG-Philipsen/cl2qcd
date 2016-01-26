@@ -30,6 +30,8 @@
 #include "../prng.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 /* Here pbp_ref_im_minmax are the minimum and maximum pbp immaginary part obtained in the reference
  * code in 100 measurements. This is done because of big fluctuations: a check of the closeness of
@@ -58,8 +60,9 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
 	options.push_back(tmp.c_str());
 	
 	meta::Inputparameters params(10, &(options[0]));
-	//GaugefieldParametersImplementation gaugefieldParameters(&params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};

@@ -27,6 +27,8 @@
 #include "../lattices/scalar_complex.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -49,7 +51,9 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	        params = new meta::Inputparameters(5, _params);
 	    }
 
-	    hardware::System system(*params);
+	    hardware::HardwareParametersImplementation hP(params);
+	    hardware::code::OpenClKernelParametersImplementation kP(*params);
+	    hardware::System system(hP, kP);
 	    physics::InterfacesHandlerImplementation interfacesHandler{*params};
 	    physics::PrngParametersImplementation prngParameters{*params};
 	    physics::PRNG prng{system, &prngParameters};
@@ -109,7 +113,9 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	        params = new meta::Inputparameters(5, _params);
 	    }
 
-	    hardware::System system(*params);
+        hardware::HardwareParametersImplementation hP(params);
+        hardware::code::OpenClKernelParametersImplementation kP(*params);
+        hardware::System system(hP, kP);
 	    physics::InterfacesHandlerImplementation interfacesHandler{*params};
 	    physics::PrngParametersImplementation prngParameters{*params};
 	    physics::PRNG prng{system, &prngParameters};
@@ -160,7 +166,9 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01"};
 	meta::Inputparameters params(4, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
@@ -223,7 +231,9 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	
 	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01"};
 	meta::Inputparameters params(4, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
@@ -265,102 +275,3 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	}
 }
 
-
-//This are just to play with cg_m to optimize it
-/*
-BOOST_AUTO_TEST_CASE(cgm_5)
-{
-	using namespace physics::lattices;
-	using namespace physics::algorithms::solvers;
-	using namespace physics::algorithms;
-	
-	meta::Inputparameters* params;
-	for(int i=0; i<2; i++){
-	  if(i==0){
-	    const char * _params[] = {"foo", "--nspace=24", "--ntime=24", "--fermact=rooted_stagg", "--cgmax=100000", "--cg_minimum_iteration_count=0", "--use_merge_kernels_spinor=false"};
-	    params = new meta::Inputparameters(6, _params);
-	  }else{
-	    const char * _params[] = {"foo", "--nspace=24", "--ntime=24", "--fermact=rooted_stagg", "--cgmax=100000", "--cg_minimum_iteration_count=0", "--use_merge_kernels_spinor=true"};
-	    params = new meta::Inputparameters(6, _params);
-	  }
-	  hardware::System system(*params);
-	  physics::PRNG prng(system);
-	  
-	  //These are some possible values of sigma
-	  Rational_Approximation approx(1, 1,2, 1.e-5,1);
-	  
-	  std::vector<hmc_float> sigma = approx.Get_b();
-	  physics::fermionmatrix::MdagM_eo matrix(system, 0.5);
-	  
-	  Gaugefield gf(system, &gaugefieldParameters, prng, "hot");
-	  Staggeredfield_eo b(system);
-	  std::vector<Staggeredfield_eo*> out;
-	  for(uint i=0; i<sigma.size(); i++)
-	    out.push_back(new Staggeredfield_eo(system));
-	  //This field is that of the test explicit_stagg, part 2 (D_KS_eo)
-	  pseudo_randomize<Staggeredfield_eo, su3vec>(&b, 123);
-	  
-	  int iter = cg_m(out, sigma, matrix, gf, b, system, 1);
-	  iter = cg_m(out, sigma, matrix, gf, b, system, 1.e-23);
-	  logger.info() << "CG-M algorithm converged in " << iter << " iterations.";
-	  
-	  std::vector<hmc_float> sqnorm_out;
-	  for(uint i=0; i<sigma.size(); i++){
-	    sqnorm_out.push_back(squarenorm(*out[i]));
-	    logger.info() << "sqnorm(out[" << i << "])=" << std::setprecision(16) << sqnorm_out[i];
-	  }
-	  meta::free_container(out);
-	  delete params;
-	}
-}
-
-BOOST_AUTO_TEST_CASE(cgm_6)
-{
-	using physics::fermionmatrix::DKS_eo;
-	
-	const char * _params[] = {"foo", "--nspace=16", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters parameters(4, _params);
-	switchLogLevel(parameters.get_log_level());
-	
-	hardware::System system(parameters);
-	physics::PRNG prng(system);
-// 	physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
-	physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng, "hot");
-	physics::lattices::Staggeredfield_eo sf1(system);
-	physics::lattices::Staggeredfield_eo sf2(system);
-  
-	// update gaugefield buffers once to have update links fully initialized
-	gf.update_halo();
-	logger.info() << "Gaugeobservables:";
-	print_gaugeobservables(gf, 0);
-
-	DKS_eo(&sf2, gf, sf1, EVEN);
-	DKS_eo(&sf1, gf, sf2, ODD);
-	
-	for(auto dev: system.get_devices()) {
-		dev->synchronize();
-	}
-
-	int hmc_iter = 2000;
-	logger.info() << "Perform DKS_eo (EVEN + ODD) " << hmc_iter << " times.";
-	klepsydra::Monotonic timer;
-	for(int iter = 0; iter < hmc_iter; ++iter) {
-		DKS_eo(&sf2, gf, sf1, EVEN);
-		DKS_eo(&sf1, gf, sf2, ODD);
-	}
-	for(auto dev: system.get_devices()) {
-		dev->synchronize();
-	}
-	auto elapsed_mus = timer.getTime();
-		
-	auto fermion_code = system.get_devices()[0]->get_fermion_staggered_code();
-	size_t flop_count = fermion_code->get_flop_size("D_KS_eo");
-	size_t byte_count = fermion_code->get_read_write_size("D_KS_eo");
-	double gflops = static_cast<double>(flop_count) * 2 * hmc_iter / elapsed_mus / 1e3;
-	double gbytes = static_cast<double>(byte_count) * 2 * hmc_iter / elapsed_mus / 1e3;
-	logger.info() << "D_KS performance: " << gflops << " GFLOPS";
-	logger.info() << "D_KS memory: " << gbytes << " GB/S";
-	logger.info() << "Measured TIME: " << elapsed_mus / 1.e3 << "msec";
-	
-}
-*/

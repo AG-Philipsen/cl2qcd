@@ -28,6 +28,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>
@@ -39,7 +41,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
@@ -60,7 +64,9 @@ BOOST_AUTO_TEST_CASE(rescale)
 	{
 	    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false"};
 	    meta::Inputparameters params(4, _params);
-	    hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 	    physics::InterfacesHandlerImplementation interfacesHandler{params};
 	    physics::PrngParametersImplementation prngParameters(params);
 	    physics::PRNG prng(system, &prngParameters);
@@ -111,7 +117,9 @@ BOOST_AUTO_TEST_CASE(rescale)
 	{
 	    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=true"};
 	    meta::Inputparameters params(5, _params);
-	    hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 	    physics::InterfacesHandlerImplementation interfacesHandler{params};
 	    physics::PrngParametersImplementation prngParameters(params);
 	    physics::PRNG prng(system, &prngParameters);

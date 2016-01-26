@@ -35,6 +35,8 @@
 #include "../../interfaceImplementations/latticesParameters.hpp"
 #include "../../interfaceImplementations/observablesParameters.hpp"
 #include "../../interfaceImplementations/physicsParameters.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
@@ -44,7 +46,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 		const char * _params[] = {"foo", "--ntime=8"};
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
@@ -63,7 +67,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		logger.debug() << "Devices: " << system.get_devices().size();
 		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
@@ -81,7 +87,9 @@ void test_save(bool hot) {
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	const GaugefieldParametersImplementation parametersTmp{ &params };
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 	physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
@@ -118,7 +126,9 @@ BOOST_AUTO_TEST_CASE(rectangles)
 	const char * _params[] = {"foo", "--gaugeact=wilson", "--ntime=4"};
 	meta::Inputparameters params(3, _params);
 	const GaugefieldParametersImplementation parametersTmp{ &params };
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 	physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
@@ -145,7 +155,9 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
@@ -161,7 +173,9 @@ BOOST_AUTO_TEST_CASE(polyakov)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
@@ -186,7 +200,9 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
@@ -209,7 +225,9 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		const char * _params[] = {"foo"};
 		meta::Inputparameters params(1, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);
@@ -232,7 +250,9 @@ BOOST_AUTO_TEST_CASE(halo_update)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		const GaugefieldParametersImplementation parametersTmp{ &params };
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters(params);
 		physics::PRNG prng(system, &prngParameters);
 		physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(params);

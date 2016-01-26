@@ -31,6 +31,8 @@
 #include "../test_util_staggered.h"
 #include "../../hardware/code/spinors.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(D_KS_eo)
 {
@@ -41,7 +43,9 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -75,7 +79,9 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};

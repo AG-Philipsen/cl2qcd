@@ -30,6 +30,8 @@
 #include "../../host_functionality/logger.hpp"
 #include "../lattices/util.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 void test_correlator(const char* params[], const std::vector<hmc_float>& ps_ref, const std::vector<hmc_float>& sc_ref, const std::vector<hmc_float>& vx_ref, const std::vector<hmc_float>& vy_ref, const std::vector<hmc_float>& vz_ref, const std::vector<hmc_float>& ax_ref, const std::vector<hmc_float>& ay_ref, const std::vector<hmc_float>& az_ref);
 
@@ -159,7 +161,9 @@ void test_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref
 	using namespace physics::lattices;
 
 	meta::Inputparameters params(3, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	const physics::PRNG prng{system, &prngParameters};

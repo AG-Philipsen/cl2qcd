@@ -33,33 +33,41 @@
 #include "../../interfaceImplementations/latticesParameters.hpp"
 #include "../../interfaceImplementations/observablesParameters.hpp"
 #include "../../interfaceImplementations/physicsParameters.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 class GaugeObservablesTester
 {
 public:
   GaugeObservablesTester(int argc, const char** argv)
   {
-    parameters = new meta::Inputparameters(argc, argv);
-    gaugeobservablesParameters = new physics::observables::GaugeObservablesParametersImplementation(*parameters);
-    system = new hardware::System(*parameters);
-    prngParameters = new physics::PrngParametersImplementation(*parameters);
-    prng = new physics::PRNG(*system, prngParameters);
-    gaugefieldParameters = new physics::lattices::GaugefieldParametersImplementation(parameters);
-    gaugefield = new physics::lattices::Gaugefield(*system, gaugefieldParameters, *prng);
+      parameters = new meta::Inputparameters(argc, argv);
+      gaugeobservablesParameters = new physics::observables::GaugeObservablesParametersImplementation(*parameters);
+      hP = new hardware::HardwareParametersImplementation(parameters);
+      kP = new hardware::code::OpenClKernelParametersImplementation(*parameters);
+      system = new hardware::System(*hP, *kP);
+      prngParameters = new physics::PrngParametersImplementation(*parameters);
+      prng = new physics::PRNG(*system, prngParameters);
+      gaugefieldParameters = new physics::lattices::GaugefieldParametersImplementation(parameters);
+      gaugefield = new physics::lattices::Gaugefield(*system, gaugefieldParameters, *prng);
   }
   ~GaugeObservablesTester()
   {
-    delete system;
-    delete prng;
-    delete gaugefield;
-    delete parameters;
-    delete prngParameters;
-    delete gaugeobservablesParameters;
+      delete system;
+      delete hP;
+      delete kP;
+      delete prng;
+      delete gaugefield;
+      delete parameters;
+      delete prngParameters;
+      delete gaugeobservablesParameters;
   }
 
   meta::Inputparameters * parameters;
   physics::lattices::Gaugefield * gaugefield;
   physics::observables::GaugeObservablesParametersImplementation * gaugeobservablesParameters;
+  hardware::HardwareParametersImplementation *hP;
+  hardware::code::OpenClKernelParametersImplementation *kP;
 private:
   hardware::System *  system;
   physics::PRNG * prng;
@@ -170,7 +178,9 @@ BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
   meta::Inputparameters parameters(2, _params);
   physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
   physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
-  hardware::System system(parameters);
+  hardware::HardwareParametersImplementation hP(&parameters);
+  hardware::code::OpenClKernelParametersImplementation kP(parameters);
+  hardware::System system(hP, kP);
   physics::PrngParametersImplementation prngParameters{parameters};
   physics::PRNG prng{system, &prngParameters};
   physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
@@ -189,7 +199,9 @@ BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
   meta::Inputparameters parameters(2, _params);
   physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
   physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
-  hardware::System system(parameters);
+  hardware::HardwareParametersImplementation hP(&parameters);
+  hardware::code::OpenClKernelParametersImplementation kP(parameters);
+  hardware::System system(hP, kP);
   physics::PrngParametersImplementation prngParameters{parameters};
   physics::PRNG prng{system, &prngParameters};
   physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);

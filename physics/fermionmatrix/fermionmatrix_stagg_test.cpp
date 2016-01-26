@@ -22,6 +22,8 @@
 #include "fermionmatrix_stagg.hpp"
 
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../lattices/util.hpp"
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
@@ -66,7 +68,9 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg", "--mass=1."};
 		meta::Inputparameters params(4, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -100,7 +104,9 @@ typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatri
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1."};
 		meta::Inputparameters params(4, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -137,7 +143,9 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -169,7 +177,9 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -196,57 +206,4 @@ template<> typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::F
 	}
 }
 
-
-
-
-/*
-template<class FERMIONMATRIX>
-typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatrix, FERMIONMATRIX>, void>::type
-test_fermionmatrix(const hmc_float refs[4], const int seed)
-{
-	{
-		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=16"};
-		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
-		physics::PRNG prng{system, &prngParameters};
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
-
-		Gaugefield gf(system, prng, false);
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
-
-		pseudo_randomize<Spinorfield, spinor>(&sf1, seed);
-		pseudo_randomize<Spinorfield, spinor>(&sf2, seed + 1);
-
-		matrix(&sf2, gf, sf1);
-		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[0], 0.01);
-		matrix(&sf1, gf, sf2);
-		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[1], 0.01);
-	}
-
-	{
-		using namespace physics::lattices;
-		const char * _params[] = {"foo", "--ntime=4"};
-		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{params};
-		physics::PRNG prng{system, &prngParameters};
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
-
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/tests/conf.00200");
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
-
-		pseudo_randomize<Spinorfield, spinor>(&sf1, seed + 2);
-		pseudo_randomize<Spinorfield, spinor>(&sf2, seed + 3);
-
-		matrix(&sf2, gf, sf1);
-		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[2], 0.01);
-		matrix(&sf1, gf, sf2);
-		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[3], 0.01);
-	}
-}
-*/
 

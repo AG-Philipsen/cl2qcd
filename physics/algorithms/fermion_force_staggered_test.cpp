@@ -21,6 +21,8 @@
 
 #include "fermion_force_staggered.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -35,7 +37,9 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -62,7 +66,9 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		const char * _params[] = {"foo", "--ntime=16", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(4, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
@@ -87,7 +93,9 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -115,7 +123,9 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678"};
 		meta::Inputparameters params(5, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 		
@@ -145,7 +155,9 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--chem_pot_im=0.5678", "--theta_fermion_temporal=1."};
 		meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -181,7 +193,9 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.125"};
 		meta::Inputparameters params(4, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
@@ -209,7 +223,9 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--mass=0.125", "--chem_pot_im=0.5678"};
 		meta::Inputparameters params(6, _params);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
-		hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 

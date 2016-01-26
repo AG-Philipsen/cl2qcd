@@ -27,6 +27,8 @@
 #include <boost/lexical_cast.hpp>
 
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_SUITE( BUILD )
 
@@ -34,7 +36,9 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 	{
 		meta::Inputparameters params(length, _params);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
-		const hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
 		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
@@ -56,7 +60,9 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() , version.c_str()};
 		
 		meta::Inputparameters params(4, commandLineParameters);
-		const hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
@@ -120,7 +126,9 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str(), eoOption.c_str(), startconditionOption.c_str(), sourcefileOption.c_str(), boostOptions[0].c_str()};
 
 		meta::Inputparameters params(numberOfOptions, _params);
-		const hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
 		physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};

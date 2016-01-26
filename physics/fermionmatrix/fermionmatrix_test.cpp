@@ -24,6 +24,8 @@
 
 #include "../lattices/util.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -96,7 +98,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -121,7 +125,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -151,7 +157,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -175,7 +183,9 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
 		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};

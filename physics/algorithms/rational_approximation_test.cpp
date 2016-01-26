@@ -22,6 +22,8 @@
 #include "rational_approximation.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -141,7 +143,9 @@ BOOST_AUTO_TEST_CASE(rescale)
 	{
 	    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false"};
         meta::Inputparameters params(5, _params);
-        hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         physics::PrngParametersImplementation prngParameters{params};
         physics::PRNG prng{system, &prngParameters};
@@ -182,7 +186,9 @@ BOOST_AUTO_TEST_CASE(rescale)
 	{
         const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=true"};
         meta::Inputparameters params(5, _params);
-        hardware::System system(params);
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
         physics::PrngParametersImplementation prngParameters{params};
         physics::PRNG prng{system, &prngParameters};

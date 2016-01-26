@@ -28,6 +28,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../interfaceImplementations/physicsParameters.hpp"
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
 
 using namespace physics;
 
@@ -38,7 +40,9 @@ BOOST_AUTO_TEST_SUITE(build)
 		const char * _params[] = {"foo", "--initial_prng_state=prngstate_brokenTag"};
 		meta::Inputparameters parameters(2, _params);
 		physics::PrngParametersImplementation prngParameters(parameters);
-		hardware::System system(parameters);
+	    hardware::HardwareParametersImplementation hP(&parameters);
+	    hardware::code::OpenClKernelParametersImplementation kP(parameters);
+	    hardware::System system(hP, kP);
 		BOOST_CHECK_THROW( PRNG prng(system, &prngParameters) , std::invalid_argument );
 	}
 
@@ -80,13 +84,17 @@ BOOST_AUTO_TEST_CASE(initialization)
 	const char * _params[] = {"foo", "--host_seed=13"};
 	meta::Inputparameters parameters(2, _params);
 	physics::PrngParametersImplementation prngParameters(parameters);
-	hardware::System system(parameters);
+    hardware::HardwareParametersImplementation hP(&parameters);
+    hardware::code::OpenClKernelParametersImplementation kP(parameters);
+    hardware::System system(hP, kP);
 	PRNG prng(system, &prngParameters);
 
 	const char * _params2[] = {"foo", "--host_seed=14"};
 	meta::Inputparameters parameters2(2, _params2);
 	physics::PrngParametersImplementation prngParameters2(parameters2);
-	hardware::System system2(parameters2);
+    hardware::HardwareParametersImplementation hP2(&parameters2);
+    hardware::code::OpenClKernelParametersImplementation kP2(parameters2);
+    hardware::System system2(hP2, kP2);
 	PRNG prng2(system2, &prngParameters2);
 
 	BOOST_CHECK_NE(prng.get_double(), prng2.get_double());
@@ -105,7 +113,9 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 	const char * _params[] = {"foo", "--host_seed=46"};
 	meta::Inputparameters parameters(2, _params);
 	physics::PrngParametersImplementation prngParameters(parameters);
-	hardware::System system(parameters);
+    hardware::HardwareParametersImplementation hP(&parameters);
+    hardware::code::OpenClKernelParametersImplementation kP(parameters);
+    hardware::System system(hP, kP);
 	PRNG prng(system, &prngParameters);
 	prng.store("tmp.prngstate");
 
@@ -114,7 +124,9 @@ BOOST_AUTO_TEST_CASE(store_and_resume)
 	const char * _params2[] = {"foo", "--initial_prng_state=tmp.prngstate"};
 	meta::Inputparameters parameters2(2, _params2);
 	physics::PrngParametersImplementation prngParameters2(parameters2);
-	hardware::System system2(parameters2);
+    hardware::HardwareParametersImplementation hP2(&parameters2);
+    hardware::code::OpenClKernelParametersImplementation kP2(parameters2);
+    hardware::System system2(hP2, kP2);
 	PRNG prng2(system2, &prngParameters2);
 
 	double tmp2 = prng2.get_double();

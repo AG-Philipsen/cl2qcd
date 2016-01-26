@@ -29,6 +29,8 @@
 #include "test_util_staggered.h"
 #include <sstream>
 #include "../interfaceImplementations/interfacesHandler.hpp"
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
 
 static void test_sources(std::string type, int num_sources)
 {
@@ -41,7 +43,9 @@ static void test_sources(std::string type, int num_sources)
 	std::string sourcetype_string = std::string("--sourcetype=") + type;
 	const char * _params[] = {"foo", n_sources_string.c_str(), sourcetype_string.c_str()};
 	meta::Inputparameters params(3, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};
@@ -65,7 +69,9 @@ static void test_volume_source_stagg(std::string content)
 	options.push_back(tmp.c_str());
 	
 	meta::Inputparameters params(5, &(options[0]));
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	physics::PRNG prng{system, &prngParameters};

@@ -30,6 +30,8 @@
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(M_wilson)
 {
@@ -38,7 +40,9 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -60,7 +64,9 @@ BOOST_AUTO_TEST_CASE(M_wilson)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -86,7 +92,9 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -108,7 +116,9 @@ BOOST_AUTO_TEST_CASE(M_tm_plus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -134,7 +144,9 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -156,7 +168,9 @@ BOOST_AUTO_TEST_CASE(M_tm_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -182,7 +196,9 @@ BOOST_AUTO_TEST_CASE(M_tm_inverse_sitediagonal)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -206,7 +222,9 @@ BOOST_AUTO_TEST_CASE(M_tm_sitediagnoal)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -230,7 +248,9 @@ BOOST_AUTO_TEST_CASE(M_tm_inverse_sitediagonal_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -254,7 +274,9 @@ BOOST_AUTO_TEST_CASE(M_tm_sitediagonal_minus)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16", "--fermact=twistedmass"};
 		meta::Inputparameters params(3, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 
 		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
@@ -279,7 +301,9 @@ BOOST_AUTO_TEST_CASE(dslash)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
@@ -302,7 +326,9 @@ BOOST_AUTO_TEST_CASE(dslash)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
         physics::InterfacesHandlerImplementation interfacesHandler{params};
 		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};

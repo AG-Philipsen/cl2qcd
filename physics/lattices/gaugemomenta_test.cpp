@@ -35,6 +35,8 @@
 #include "../../meta/util.hpp"
 #include "../../interfaceImplementations/latticesParameters.hpp"
 #include "../../interfaceImplementations/physicsParameters.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed);
 
@@ -45,7 +47,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Gaugemomenta gm(system, gaugemomentaParametersInterface);
@@ -60,7 +64,9 @@ BOOST_AUTO_TEST_CASE(zero)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Gaugemomenta gm(system, gaugemomentaParametersInterface);
@@ -100,7 +106,9 @@ BOOST_AUTO_TEST_CASE(gaussian)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Gaugemomenta gm(system, gaugemomentaParametersInterface);
@@ -125,7 +133,9 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Gaugemomenta gm(system, gaugemomentaParametersInterface);
@@ -170,7 +180,9 @@ BOOST_AUTO_TEST_CASE(saxpy)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
@@ -196,7 +208,9 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	const char * _params[] = {"foo", "--ntime=16"};
 	meta::Inputparameters params(2, _params);
 	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	physics::PrngParametersImplementation prngParameters(params);
 	physics::PRNG prng(system, &prngParameters);
 
