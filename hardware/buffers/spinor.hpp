@@ -25,6 +25,7 @@
 #include "buffer.hpp"
 #include "../../common_header_files/types.h"
 #include "../../common_header_files/types_fermions.h"
+#include "../code/latticeExtents.hpp"
 
 namespace hardware {
 namespace buffers {
@@ -53,6 +54,7 @@ public:
 	 * \param device The device to locate the buffer on
 	 */
 	Spinor(const size_t elems, const Device * device);
+	Spinor(const LatticeExtents lE, const Device * device);
 
 	/*
 	 * Spinor buffers cannot be copied

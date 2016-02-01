@@ -21,6 +21,7 @@
 
 #include "su3.hpp"
 #include "../device.hpp"
+#include "../code/gaugefield.hpp"
 
 #include <stdexcept>
 
@@ -29,9 +30,22 @@ const size_t soa_storage_lanes = 9;
 
 static size_t calculate_su3_buffer_size(size_t elems, const hardware::Device * device);
 
+size_t hardware::buffers::calculateGaugefieldSize(LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	latticeExtentsIn.getLatticeVolume() * NDIM;
+}
+
 hardware::buffers::SU3::SU3(const size_t elems, const hardware::Device * device)
 	: Buffer(calculate_su3_buffer_size(elems, device), device),
 	  elems(elems),
+	  soa(check_SU3_for_SOA(device))
+{
+	// nothing to do
+}
+
+hardware::buffers::SU3::SU3(const LatticeExtents lE, const hardware::Device * device)
+	: Buffer(calculate_su3_buffer_size(calculateGaugefieldSize(lE), device), device),
+	  elems(calculateGaugefieldSize(lE)),
 	  soa(check_SU3_for_SOA(device))
 {
 	// nothing to do

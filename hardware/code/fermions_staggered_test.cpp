@@ -38,7 +38,7 @@ struct StaggeredFermionsTester : public SpinorStaggeredTester2
 	SpinorStaggeredTester2(kernelName, pC, tP, rV)
     {
 		code = device->getFermionStaggeredCode();
-		gaugefieldBuffer = new hardware::buffers::SU3( calculateLatticeVolume(tP.latticeExtents), device);
+		gaugefieldBuffer = new hardware::buffers::SU3( LatticeExtents(tP.latticeExtents).getLatticeVolume() , device);
 	}
 	
 	virtual ~StaggeredFermionsTester(){
@@ -56,7 +56,7 @@ struct NonEvenOddStaggeredFermionmatrixTester : public StaggeredFermionsTester
 	    StaggeredFermionsTester(kernelName, pC, tP, rV){
 		in = new const hardware::buffers::Plain<su3vec>(calculateSpinorfieldSize(tP.latticeExtents), device);
 		out = new const hardware::buffers::Plain<su3vec>(calculateSpinorfieldSize(tP.latticeExtents), device);
-		SpinorStaggeredfieldCreator ssf(calculateSpinorfieldSize(tP.latticeExtents));
+		NonEvenOddSpinorStaggeredfieldCreator ssf(tP.latticeExtents);
 		in->load(ssf.createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
 		out->load(ssf.createSpinorfield(SpinorFillType::one));//@todo: make adjustable
 	}
@@ -83,9 +83,9 @@ struct EvenOddStaggeredFermionmatrixTester : public StaggeredFermionsTester
 {
 	EvenOddStaggeredFermionmatrixTester(std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters tP, const ReferenceValues rV) :
 	   StaggeredFermionsTester(kernelName, pC, tP, rV){
-		in = new const hardware::buffers::SU3vec(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
-		out = new const hardware::buffers::SU3vec(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
-		SpinorStaggeredfieldCreator ssf(calculateEvenOddSpinorfieldSize(tP.latticeExtents));
+		in = new const hardware::buffers::SU3vec(tP.latticeExtents, device);
+		out = new const hardware::buffers::SU3vec(tP.latticeExtents, device);
+		EvenOddSpinorStaggeredfieldCreator ssf(tP.latticeExtents);
 		in->load(ssf.createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
 		out->load(ssf.createSpinorfield(SpinorFillType::one)); //@todo: make adjustable
 	}

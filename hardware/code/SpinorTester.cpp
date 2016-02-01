@@ -77,24 +77,14 @@ void SpinorTester::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::b
   doubleBuffer->dump(&kernelResult[0]);
 }
 
-int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept
+int calculateSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept
 {
-	return 	calculateLatticeVolume(nsIn, ntIn);
-}
-
-int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
-{
-	return 	calculateLatticeVolume(latticeExtendsIn.ns, latticeExtendsIn.nt);
-}
-
-int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept
-{
-	return 	calculateSpinorfieldSize(nsIn, ntIn) / 2;
+	return 	latticeExtendsIn.getLatticeVolume();
 }
 
 int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
 {
-	return 	calculateSpinorfieldSize(latticeExtendsIn.ns, latticeExtendsIn.nt) / 2;
+	return 	calculateSpinorfieldSize(latticeExtendsIn) / 2;
 }
 
 //@todo: change this to take some fillType

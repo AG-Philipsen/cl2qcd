@@ -27,7 +27,7 @@
 
 const ReferenceValues calculateReferenceValue_localQ(LatticeExtents lE)
 {
-	return ReferenceValues{ 72.00012210960028 * calculateLatticeVolume(lE) };
+	return ReferenceValues{ 72.00012210960028 * lE.getLatticeVolume() };
 }
 
 struct LocalQTestCode : public TestCode

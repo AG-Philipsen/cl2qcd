@@ -44,7 +44,7 @@ struct CorrelatorsStaggeredTester : public SpinorStaggeredTester2, PrngSpinorTes
 	{
 		code = SpinorStaggeredTester2::device->getCorrelatorStaggeredCode();
 		sourcecontent = tP.sourcecontent;
-		outBuffer = new hardware::buffers::SU3vec(elements, SpinorStaggeredTester2::device);
+		outBuffer = new hardware::buffers::SU3vec(tP.latticeExtents, SpinorStaggeredTester2::device);
 		outHost = new su3vec[elements * tP.iterations];
 	}
 	

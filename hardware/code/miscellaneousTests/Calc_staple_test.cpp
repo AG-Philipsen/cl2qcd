@@ -27,7 +27,7 @@
 
 const ReferenceValues calculateReferenceValue_staple(LatticeExtents lE)
 {
-	return ReferenceValues{ -11.30184821830432 * calculateLatticeVolume(lE) };
+	return ReferenceValues{ -11.30184821830432 * lE.getLatticeVolume() };
 }
 
 struct StapleTestCode : public TestCode

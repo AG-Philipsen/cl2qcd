@@ -39,6 +39,14 @@ hardware::buffers::Spinor::Spinor(const size_t elems, const hardware::Device * d
 	// nothing to do
 }
 
+hardware::buffers::Spinor::Spinor(const LatticeExtents lE, const hardware::Device * device)
+	: Buffer(calculate_spinor_buffer_size(calculateEvenOddSpinorfieldSize(lE), device), device),
+	  elems(calculateEvenOddSpinorfieldSize(lE)),
+	  soa(check_Spinor_for_SOA(device))
+{
+	// nothing to do
+}
+
 size_t hardware::buffers::check_Spinor_for_SOA(const hardware::Device * device)
 {
 	return device->get_prefers_soa();

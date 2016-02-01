@@ -264,7 +264,7 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorTester
 			for( size_t number = 0; number < tP.numberOfSpinors ; number ++)
 			{
 				EvenOddSpinorfieldCreator sf(tP.latticeExtents);
-				spinorfields.push_back(new hardware::buffers::Spinor(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device));
+				spinorfields.push_back(new hardware::buffers::Spinor(tP.latticeExtents, device));
 				(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(sf.createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(sf.createSpinorfield(tP.fillTypes.at(number)));
 			}
 		}
@@ -319,8 +319,8 @@ struct ConvertToEvenOddTester: public SpinorTester
 				calculateReferenceValues_convert_eo(calculateEvenOddSpinorfieldSize(tP.latticeExtents), fillEvenSitesIn) )
 		{
 			const hardware::buffers::Plain<spinor> in(calculateSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in2(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in3(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in2(tP.latticeExtents, device);
+			const hardware::buffers::Spinor in3(tP.latticeExtents, device);
 
 			NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
 			in.load( sf.createSpinorfieldWithOnesAndZerosDependingOnSiteParity( fillEvenSitesIn ) );
@@ -340,8 +340,8 @@ struct ConvertFromEvenOddTester: public SpinorTester
 				calculateReferenceValues_convertFromEvenOdd(calculateSpinorfieldSize(tP.latticeExtents)) )
 		{
 			const hardware::buffers::Plain<spinor> in(calculateSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in2(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
-			const hardware::buffers::Spinor in3(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+			const hardware::buffers::Spinor in2(tP.latticeExtents, device);
+			const hardware::buffers::Spinor in3(tP.latticeExtents, device);
 
 			EvenOddSpinorfieldCreator sf(tP.latticeExtents);
 			sf.fillTwoSpinorBuffersDependingOnParity(&in2, &in3);

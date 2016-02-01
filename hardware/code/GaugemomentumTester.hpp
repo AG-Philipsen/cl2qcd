@@ -26,8 +26,8 @@
 #include "prng.hpp"
 #include "SpinorTester.hpp"
 
-int calculateGaugemomentumSize(const LatticeExtents latticeExtentsIn) noexcept;
-int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept;
+int calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept;
+int calculateAlgebraSize(LatticeExtents latticeExtentsIn) noexcept;
 
 enum GaugeMomentumFilltype {One, Zero};
 

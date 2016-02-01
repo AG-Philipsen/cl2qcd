@@ -26,10 +26,6 @@ struct LatticeExtents
 	LatticeExtents(const unsigned int nsIn, const unsigned int ntIn): ns(nsIn), nt(ntIn) {};
 	const unsigned int ns;
 	const unsigned int nt;
+	unsigned int getLatticeVolume();
+	unsigned int getSpatialLatticeVolume();
 };
-
-int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept;
-int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept;
-int calculateSpatialLatticeVolume(const int nsIn) noexcept;
-int calculateSpatialLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept;
-

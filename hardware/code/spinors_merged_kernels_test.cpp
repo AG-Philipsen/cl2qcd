@@ -43,9 +43,9 @@ struct SaxpyAndSquarenormEvenOddTester: public EvenOddSpinorTester
 	SaxpyAndSquarenormEvenOddTester(const ParameterCollection & pC, const SaxpyAndSquarenormEvenOddTestParameters & tP):
 		EvenOddSpinorTester("saxpy_AND_squarenorm_eo", pC, tP, calculateReferenceValues_saxpyAndSquarenormEvenOdd(calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.coefficient))
 	{
-		const hardware::buffers::Spinor in(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
-		const hardware::buffers::Spinor in2(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
-		const hardware::buffers::Spinor out(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device);
+		const hardware::buffers::Spinor in(tP.latticeExtents, device);
+		const hardware::buffers::Spinor in2(tP.latticeExtents, device);
+		const hardware::buffers::Spinor out(tP.latticeExtents, device);
 		const hardware::buffers::Plain<hmc_complex> sqnorm(1, device);
 		const hardware::buffers::Plain<hmc_complex> complexNum(1, device);
 

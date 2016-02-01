@@ -43,29 +43,6 @@ struct SpinorStaggeredTestParameters: public virtual TestParameters
 	const SpinorFillTypes fillTypes;
 };
 
-//class SpinorStaggeredTester : public KernelTester {
-//public:
-//	SpinorStaggeredTester(const std::string kernelName, const ParameterCollection, const SpinorStaggeredTestParameters &, const size_t, const ReferenceValues);
-//protected:
-//	//Methods (protected for inheritance resons)
-//	su3vec * createSpinorfield(SpinorFillType);
-//	su3vec * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
-//	su3vec * createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
-//
-////	void fill_with_one_eo(su3vec * sf_in, int size, bool eo);
-//	hmc_float count_sf_eo(su3vec * sf_in, int size, bool eo);
-//
-//	//Utilities methods
-//	std::vector<hmc_float> reals_from_su3vec(su3vec v);
-//
-//	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in);
-//	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in);
-//
-//	const hardware::code::Spinors_staggered * code;
-//	hardware::buffers::Plain<double> * doubleBuffer;
-//	const size_t elements;
-//};
-
 class SpinorStaggeredTester2 : public KernelTester
 {
 public:

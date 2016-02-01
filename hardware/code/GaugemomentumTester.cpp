@@ -39,14 +39,14 @@ void GaugemomentumTester::calcSquarenormAndStoreAsKernelResult(const hardware::b
   doubleBuffer->dump(&kernelResult[index]);
 }
 
-int calculateGaugemomentumSize(const LatticeExtents latticeExtentsIn) noexcept
+int calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept
 {
-	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM;
+	return 	latticeExtentsIn.getLatticeVolume() * NDIM;
 }
 
-int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept
+int calculateAlgebraSize(LatticeExtents latticeExtentsIn) noexcept
 {
-	return 	calculateLatticeVolume(latticeExtentsIn) * NDIM * hardware::code::getSu3AlgebraSize();
+	return 	latticeExtentsIn.getLatticeVolume() * NDIM * hardware::code::getSu3AlgebraSize();
 }
 
 double * GaugemomentumCreator::createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype)

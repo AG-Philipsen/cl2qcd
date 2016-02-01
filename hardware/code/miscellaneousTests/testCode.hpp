@@ -60,11 +60,11 @@ struct OtherKernelTester : public GaugefieldTester
 		GaugefieldCreator gf(tP.latticeExtents);
 		gaugefieldBuffer = new hardware::buffers::SU3(calculateGaugefieldSize(tP.latticeExtents), this->device);
 		gaugefieldBuffer->load(gf.createGaugefield(tP.fillType));
-		out = new hardware::buffers::Plain<hmc_float> (calculateLatticeVolume(tP.latticeExtents), device);
+		out = new hardware::buffers::Plain<hmc_float> (LatticeExtents(tP.latticeExtents).getLatticeVolume(), device);
 
 		if(device->get_device_type() == CL_DEVICE_TYPE_GPU)
 		{
-			gs = calculateLatticeVolume(tP.latticeExtents);
+			gs = LatticeExtents(tP.latticeExtents).getLatticeVolume();
 			ls = 64;
 		}
 		else
@@ -75,11 +75,11 @@ struct OtherKernelTester : public GaugefieldTester
 	}
 	~OtherKernelTester()
 	{
-		hmc_float * host_out = new hmc_float[calculateLatticeVolume(tP.latticeExtents)];
+		hmc_float * host_out = new hmc_float[LatticeExtents(tP.latticeExtents).getLatticeVolume()];
 		out->dump(host_out);
 
 		hmc_float result = 0;
-		for(int i = 0; i < calculateLatticeVolume(tP.latticeExtents); i++) {
+		for(unsigned int i = 0; i < LatticeExtents(tP.latticeExtents).getLatticeVolume(); i++) {
 			result += host_out[i];
 		}
 		kernelResult.at(0) = result;

@@ -267,7 +267,7 @@ struct DslashEvenOddBoundaryTester : public FermionmatrixTesterWithSumAsKernelRe
 {
 	DslashEvenOddBoundaryTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_eo_boundary", parameterCollection, tP,
-				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, calculateSpatialLatticeVolume(tP.ns), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
+				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, LatticeExtents(tP.latticeExtents).getSpatialLatticeVolume(), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
 		{
 			evenOrOddIn ?
 				code->dslash_eo_boundary( in, out, gaugefieldBuffer, EVEN, tP.massParameters.kappa) :
@@ -280,7 +280,7 @@ struct DslashEvenOddInnerTester : public FermionmatrixTesterWithSumAsKernelResul
 {
 	DslashEvenOddInnerTester(const ParameterCollection parameterCollection, const DslashEvenOddTestParameters & tP, const bool evenOrOddIn):
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_eo_boundary", parameterCollection, tP,
-				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents) - calculateSpatialLatticeVolume(tP.ns), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
+				calculateReferenceValuesDslashEvenOdd(tP.latticeExtents, calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents) - LatticeExtents(tP.latticeExtents).getSpatialLatticeVolume(), tP.fillTypes.at(0), tP.fillType, tP.massParameters, tP.thetaT, tP.thetaS, tP.chemPot))
 		{
 			evenOrOddIn ?
 				code->dslash_eo_inner( in, out, gaugefieldBuffer, EVEN, tP.massParameters.kappa) :

@@ -19,25 +19,12 @@
 
 #include "latticeExtents.hpp"
 
-int calculateLatticeVolume(const int nsIn, const int ntIn) noexcept
+
+unsigned int LatticeExtents::getLatticeVolume()
 {
-	return 	nsIn * nsIn * nsIn * ntIn;
+	return ns * ns * ns * nt;
 }
-
-int calculateLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept
+unsigned int LatticeExtents::getSpatialLatticeVolume()
 {
-	return 	calculateLatticeVolume(latticeExtentsIn.ns, latticeExtentsIn.nt);
+	return ns * ns * ns;
 }
-
-int calculateSpatialLatticeVolume(const int nsIn) noexcept
-{
-	return nsIn * nsIn * nsIn;
-}
-
-int calculateSpatialLatticeVolume(const LatticeExtents latticeExtentsIn) noexcept
-{
-	return calculateSpatialLatticeVolume(latticeExtentsIn.ns);
-}
-
-
-

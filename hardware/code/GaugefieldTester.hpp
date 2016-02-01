@@ -22,7 +22,7 @@
 #include "kernelTester.hpp"
 #include "gaugefield.hpp"
 
-int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept;
+int calculateGaugefieldSize(LatticeExtents latticeExtentsIn) noexcept;
 
 enum GaugefieldFillType {cold = 1, nonTrivial};
 

@@ -118,7 +118,7 @@ struct SaxpyAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelRe
 		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("saxpy_AND_gamma5", pc, tP, calculateReferenceValues_saxpyAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.coefficient))
 	{
 		EvenOddSpinorfieldCreator sf(tP.SpinorTestParameters::latticeExtents);
-		const hardware::buffers::Spinor in2(elements, device);
+		const hardware::buffers::Spinor in2(tP.SpinorTestParameters::latticeExtents, device);
 		in2.load(sf.createSpinorfield(tP.fillTypes.at(1)));
 		code->saxpy_AND_gamma5_eo_device(in, &in2, tP.coefficient, out);
 	}

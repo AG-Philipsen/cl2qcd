@@ -29,9 +29,7 @@ typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
 typedef size_t NumberOfSpinors;
 
-int calculateSpinorfieldSize(const int nsIn, const int ntIn) noexcept;
-int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
-int calculateEvenOddSpinorfieldSize(const int nsIn, const int ntIn) noexcept;
+int calculateSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept;
 int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
 
 hmc_float count_sf(spinor * in, int size);

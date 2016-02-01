@@ -32,6 +32,12 @@ const size_t soa_storage_lanes = 3;
 
 static size_t calculate_su3vec_buffer_size(const size_t elems, const hardware::Device * device);
 
+size_t hardware::buffers::calculateEvenOddSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept
+{
+	return latticeExtendsIn.getLatticeVolume() / 2;
+}
+
+
 hardware::buffers::SU3vec::SU3vec(const size_t elems, const hardware::Device * device)
 	: Buffer(calculate_su3vec_buffer_size(elems, device), device),
 	  elems(elems),
@@ -39,6 +45,16 @@ hardware::buffers::SU3vec::SU3vec(const size_t elems, const hardware::Device * d
 {
 	// nothing to do
 }
+
+
+hardware::buffers::SU3vec::SU3vec(const LatticeExtents lE, const hardware::Device * device, const int fact)
+	: Buffer(calculate_su3vec_buffer_size(calculateEvenOddSpinorfieldSize(lE)*fact, device), device),
+	  elems(calculateEvenOddSpinorfieldSize(lE)*fact),
+	  soa(check_su3vec_for_SOA(device))
+{
+	// nothing to do
+}
+
 
 size_t hardware::buffers::check_su3vec_for_SOA(const hardware::Device * device)
 {

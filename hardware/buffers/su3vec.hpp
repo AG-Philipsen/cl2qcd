@@ -26,9 +26,12 @@
 #include "buffer.hpp"
 #include "../../common_header_files/types.h"
 #include "../../common_header_files/types_fermions.h"
+#include "../code/latticeExtents.hpp"
 
 namespace hardware {
 namespace buffers {
+
+size_t calculateEvenOddSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept;
 
 /**
  * Check whether su3vec should be stored SOA style on this device
@@ -54,6 +57,7 @@ public:
 	 * \param device The device to locate the buffer on
 	 */
 	SU3vec(const size_t elems, const Device * device);
+	SU3vec(const LatticeExtents lE, const Device * device, const int fact=1);
 
 	/*
 	 * SU3vec buffers cannot be copied

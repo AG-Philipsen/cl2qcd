@@ -24,9 +24,12 @@
 
 #include "buffer.hpp"
 #include "../../common_header_files/types.h"
+#include "../code/latticeExtents.hpp"
 
 namespace hardware {
 namespace buffers {
+
+size_t calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept;
 
 /**
  * Check whether Gaugemomentum should be stored SOA style on this device
@@ -52,6 +55,7 @@ public:
 	 * \param device The device to locate the buffer on
 	 */
 	Gaugemomentum(const size_t elems, const Device * device);
+	Gaugemomentum(const LatticeExtents lE, const Device * device);
 
 	/*
 	 * Gaugemomentum buffers cannot be copied

@@ -29,8 +29,8 @@ struct SquarenormTester : public GaugemomentumTester
     GaugemomentumTester("gaugemomenta squarenorm", pC, rV, tP)
   {
 	GaugemomentumCreator gm(tP.latticeExtents);
-    gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
-    hardware::buffers::Gaugemomentum in(calculateGaugemomentumSize(tP.latticeExtents), device);
+    gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
+    hardware::buffers::Gaugemomentum in(tP.latticeExtents, device);
     code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One) ));
     calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
   }
@@ -44,7 +44,7 @@ struct SetZeroTester : public GaugemomentumTester
     GaugemomentumTester("set zero", pC, rV, tP)
   {
 	GaugemomentumCreator gm(tP.latticeExtents);
-	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
     code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One) ));
     code->set_zero_gaugemomentum(gaugemomentumBuffer);
     calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
@@ -59,8 +59,8 @@ struct SaxpyTester : public GaugemomentumTester
     GaugemomentumTester("saxpy", pC, rV, tP)
   {
 	GaugemomentumCreator gm(tP.latticeExtents);
-	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
-    hardware::buffers::Gaugemomentum out(calculateGaugemomentumSize(tP.latticeExtents), device);
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
+    hardware::buffers::Gaugemomentum out(tP.latticeExtents, device);
     code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One) ));
     code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One) ));
     double alpha = 1.2345; //@todo: make adjustable
@@ -81,7 +81,7 @@ struct GaussianTester : public GaugemomentumTester
 	//@todo: This must more similar to PrngSpinorTester! I only did quick modifications.
 
 	GaugemomentumCreator gm(tP.latticeExtents);
-	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(calculateGaugemomentumSize(tP.latticeExtents), this->device);
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
 	prng_init(hostSeed);
 	prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
 	auto codePrng = device->getPrngCode();

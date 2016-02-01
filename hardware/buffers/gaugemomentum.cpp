@@ -31,9 +31,21 @@ const size_t soa_storage_lanes = 8;
 
 static size_t calculate_gaugemomentum_buffer_size(size_t elems, const hardware::Device * device);
 
+//redundant
+size_t hardware::buffers::calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	latticeExtentsIn.getLatticeVolume() * NDIM;
+}
+
 hardware::buffers::Gaugemomentum::Gaugemomentum(const size_t elems, const hardware::Device * device)
 	: Buffer(calculate_gaugemomentum_buffer_size(elems, device), device),
 	  elems(elems),
+	  soa(check_Gaugemomentum_for_SOA(device))
+{}
+
+hardware::buffers::Gaugemomentum::Gaugemomentum(const LatticeExtents lE, const hardware::Device * device)
+	: Buffer(calculate_gaugemomentum_buffer_size(calculateGaugemomentumSize(lE), device), device),
+	  elems(calculateGaugemomentumSize(lE)),
 	  soa(check_Gaugemomentum_for_SOA(device))
 {}
 

@@ -304,7 +304,7 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorStaggeredTester
 			for( size_t number = 0; number < tP.numberOfSpinors ; number ++)
 			{
 				EvenOddSpinorStaggeredfieldCreator ssf(tP.latticeExtents);
-				spinorfields.push_back(new hardware::buffers::SU3vec(calculateEvenOddSpinorfieldSize(tP.latticeExtents), device));
+				spinorfields.push_back(new hardware::buffers::SU3vec(tP.latticeExtents, device));
 				(tP.fillTypes.size() < tP.numberOfSpinors) ? spinorfields.back()->load(ssf.createSpinorfield(tP.fillTypes.at(0))) : spinorfields.back()->load(ssf.createSpinorfield(tP.fillTypes.at(number)));
 			}
 		}
@@ -396,8 +396,8 @@ struct ConvertToEvenOddTester: public SpinorStaggeredTester2
 				calculateReferenceValues_convert_eo(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), fillEvenSitesIn))
 		{
 			const hardware::buffers::Plain<su3vec> in(calculateSpinorfieldSize(testParameters.latticeExtents), device);
-			const hardware::buffers::SU3vec in2(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), device);
-			const hardware::buffers::SU3vec in3(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), device);
+			const hardware::buffers::SU3vec in2(testParameters.latticeExtents, device);
+			const hardware::buffers::SU3vec in3(testParameters.latticeExtents, device);
 
 			NonEvenOddSpinorStaggeredfieldCreator ssf(testParameters.latticeExtents);
 			in.load(ssf.createSpinorfieldWithOnesAndZerosDependingOnSiteParity( fillEvenSitesIn ));
@@ -417,8 +417,8 @@ struct ConvertFromEvenOddTester: public SpinorStaggeredTester2
 				calculateReferenceValues_convertFromEvenOdd(calculateSpinorfieldSize(testParameters.latticeExtents)))
 		{
 			const hardware::buffers::Plain<su3vec> in(calculateSpinorfieldSize(testParameters.latticeExtents), device);
-			const hardware::buffers::SU3vec in2(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), device);
-			const hardware::buffers::SU3vec in3(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), device);
+			const hardware::buffers::SU3vec in2(testParameters.latticeExtents, device);
+			const hardware::buffers::SU3vec in3(testParameters.latticeExtents, device);
 
 			EvenOddSpinorStaggeredfieldCreator ssf(testParameters.latticeExtents);
 			in2.load(ssf.createSpinorfieldEvenOddWithOnesAndZerosDependingOnSiteParity( fillEvenSitesIn ));
@@ -665,8 +665,8 @@ struct SaxVecAndSqnormEvenOddTester: public EvenOddSpinorStaggeredTester
 		{
 			int NUM_EQS = testParameters.numEqs;
 			EvenOddSpinorStaggeredfieldCreator ssf(testParameters.latticeExtents);
-			const hardware::buffers::SU3vec in(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents)*NUM_EQS, device);
-			const hardware::buffers::SU3vec out(calculateEvenOddSpinorfieldSize(testParameters.latticeExtents)*NUM_EQS, device);
+			const hardware::buffers::SU3vec in(testParameters.latticeExtents, device, NUM_EQS);
+			const hardware::buffers::SU3vec out(testParameters.latticeExtents, device, NUM_EQS);
 			in.load(ssf.createSpinorfield(SpinorFillType::one));
 
 			hardware::buffers::Plain<hmc_float> sqnorm(NUM_EQS, device);
@@ -861,7 +861,7 @@ void testNonEvenOddGaussianSpinorfield( const LatticeExtents lE)
 
 void testEvenOddSquarenorm( const LatticeExtents lE, const SpinorFillTypes sF )
 {
-	performTest<SquarenormTester> ( lE, sF, true );
+	performTest<SquarenormEvenOddTester> ( lE, sF, true );
 }
 
 void testEvenOddScalarProductComplex( const LatticeExtents lE, const SpinorFillTypes sF )
