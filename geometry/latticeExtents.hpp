@@ -1,5 +1,6 @@
 /*
  * Copyright 2015 Christopher Pinke
+ * 			 2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -19,6 +20,42 @@
 
 #pragma once
 
+struct LatticeSpatialExtent
+{
+	LatticeSpatialExtent() : n(4) {};
+	LatticeSpatialExtent(const int nsIn): n(nsIn) {};
+	LatticeSpatialExtent(const unsigned int nsIn): n(nsIn) {};
+	const unsigned int n;
+};
+
+struct LatticeTemporalExtent
+{
+	LatticeTemporalExtent() : n(4) {};
+	LatticeTemporalExtent(const int nsIn): n(nsIn) {};
+	LatticeTemporalExtent(const unsigned int nsIn): n(nsIn) {};
+	const unsigned int n;
+};
+
+struct LatticeSymmetricExtent
+{
+	LatticeSymmetricExtent(): n(4) {};
+	LatticeSymmetricExtent(const int nIn): n(nIn) {};
+	LatticeSymmetricExtent(const unsigned int nIn): n(nIn) {};
+	const unsigned int n;
+};
+
+struct LatticeExtents2
+{
+	LatticeExtents2(LatticeSpatialExtent nsIn, LatticeTemporalExtent ntIn) : ns(nsIn.n), nt(ntIn.n)  {};
+	LatticeExtents2(LatticeSymmetricExtent nIn): ns(nIn.n), nt(nIn.n) {};
+	LatticeSpatialExtent ns;
+	LatticeTemporalExtent nt;
+	unsigned int getNs();
+	unsigned int getNt();
+	unsigned int getLatticeVolume();
+	unsigned int getSpatialLatticeVolume();
+};
+
 struct LatticeExtents
 {
 	LatticeExtents() : ns(4), nt(4) {};
@@ -26,6 +63,8 @@ struct LatticeExtents
 	LatticeExtents(const unsigned int nsIn, const unsigned int ntIn): ns(nsIn), nt(ntIn) {};
 	const unsigned int ns;
 	const unsigned int nt;
+	unsigned int getNs();
+	unsigned int getNt();
 	unsigned int getLatticeVolume();
 	unsigned int getSpatialLatticeVolume();
 };

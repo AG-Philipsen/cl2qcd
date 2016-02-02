@@ -182,6 +182,7 @@ add_library(optimal ${OPTIMAL_FILES})
 add_modules(optimal
 	meta
 	hardware
+	geometry
 	host_functionality
 	ildg_io
 	physics

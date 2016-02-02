@@ -41,6 +41,10 @@ add_library(code
 		buffer.cpp
 )
 
+add_library(latticeExtents
+		../../geometry/latticeExtents.cpp
+)
+
 target_link_libraries(code
 		buffers
 		klepsydra
@@ -58,7 +62,6 @@ add_subdirectory(miscellaneousTests)
 configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
 add_library(kernelTestUtilities
-	latticeExtents.cpp
 	testUtilities.cpp
 	kernelTester.cpp
 	GaugefieldTester.cpp
@@ -71,6 +74,7 @@ target_link_libraries(kernelTestUtilities
 	${Boost_LIBRARIES}
 	host_functionality
 	hardware
+	geometry
 )
 
 add_unit_test_withLibraries(kernelTester_test KernelTester_test kernelTestUtilities)

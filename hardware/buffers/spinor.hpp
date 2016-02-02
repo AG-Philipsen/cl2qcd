@@ -25,7 +25,7 @@
 #include "buffer.hpp"
 #include "../../common_header_files/types.h"
 #include "../../common_header_files/types_fermions.h"
-#include "../code/latticeExtents.hpp"
+#include "../../geometry/latticeExtents.hpp"
 
 namespace hardware {
 namespace buffers {

@@ -1,5 +1,6 @@
 /**
  * Copyright 2015 Christopher Pinke
+ *           2016 Francesca Cuteri
  *
  * This file is part of CL2QCD.
  *
@@ -19,11 +20,21 @@
 
 #include "latticeExtents.hpp"
 
+unsigned int LatticeExtents::getNs()
+{
+	return ns;
+}
+
+unsigned int LatticeExtents::getNt()
+{
+	return nt;
+}
 
 unsigned int LatticeExtents::getLatticeVolume()
 {
 	return ns * ns * ns * nt;
 }
+
 unsigned int LatticeExtents::getSpatialLatticeVolume()
 {
 	return ns * ns * ns;
