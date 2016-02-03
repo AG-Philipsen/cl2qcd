@@ -22,6 +22,7 @@
 #include "hardwareParameters.hpp"
 #include "openClKernelParameters.hpp"
 #include "hardwareTestUtilities.hpp"
+#include "../geometry/latticeExtents.hpp"
 
 namespace hardware
 {
@@ -33,6 +34,14 @@ namespace hardware
 			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
 		};
 		HardwareParametersMockup(const int nsIn, const int ntIn, const bool useEvenOddIn) : ns(nsIn), nt(ntIn), useEvenOdd(useEvenOddIn)
+		{
+			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
+		};
+		HardwareParametersMockup(LatticeExtents lE): ns(lE.ns), nt(lE.nt), useEvenOdd(false)
+		{
+			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
+		};
+		HardwareParametersMockup(LatticeExtents lE, const bool useEvenOddIn): ns(lE.ns), nt(lE.nt), useEvenOdd(useEvenOddIn)
 		{
 			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
 		};
@@ -178,6 +187,8 @@ namespace hardware
 				ns(nsIn), nt(ntIn), rhoIter(rhoIterIn), rho(rhoIn), useRectangles(false), useSmearing(useSmearingIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn):
 				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+			OpenClKernelParametersMockup(LatticeExtents lE):
+				ns(lE.ns), nt(lE.nt), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockup()	{};
 			virtual int getNs() const override
 			{

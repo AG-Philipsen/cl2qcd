@@ -23,9 +23,10 @@
 #include "sources.hpp"
 #include <cassert>
 #include <stdexcept>
-#include "../host_functionality/host_geometry.h"
 #include "../hardware/code/correlator.hpp"
 #include "../hardware/code/correlator_staggered.hpp"
+//#include "../host_functionality/host_geometry.h"
+#include "../geometry/index.hpp"
 
 void physics::set_point_source(const physics::lattices::Spinorfield * spinorfield, int k, const meta::Inputparameters& params)
 {
@@ -44,7 +45,8 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 	auto device = buffer->get_device();
 	int local_t = t_pos % local_lattice_size;
 
-	device->getCorrelatorCode()->create_point_source_device(buffer, k, get_source_pos_spatial(params), local_t);
+//	device->getCorrelatorCode()->create_point_source_device(buffer, k, get_source_pos_spatial(params), local_t);
+	device->getCorrelatorCode()->create_point_source_device(buffer, k, Index(params.get_source_x(), params.get_source_y(), params.get_source_z(), params.get_source_t(), LatticeExtents(params.get_nspace(), params.get_ntime())).spaceIndex, local_t);
 
 	spinorfield->update_halo();
 }

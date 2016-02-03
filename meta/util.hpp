@@ -32,7 +32,6 @@
 #include <sstream>
 #include <string.h>
 #include <utility>
-#include "../host_functionality/host_geometry.h"
 
 namespace meta {
 size_t get_volspace(const Inputparameters&);

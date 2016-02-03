@@ -18,7 +18,7 @@
  */
 
 #include "SpinorTester.hpp"
-#include "../../host_functionality/host_geometry.h"
+#include "../../geometry/index.hpp"
 
 SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const ReferenceValues rV):
 		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV)
@@ -146,9 +146,7 @@ static spinor fillSpinorWithNumber(hmc_complex content)
 void EvenOddSpinorfieldCreator::fillTwoSpinorfieldsDependingOnParity(spinor * in1, spinor * in2, int size)
 {
 		int x, y, z, t;
-		int coord[4];
 		bool parityOfSite;
-		int nspace;
 		int global_pos;
 		int ns, nt;
 
@@ -159,12 +157,7 @@ void EvenOddSpinorfieldCreator::fillTwoSpinorfieldsDependingOnParity(spinor * in
 			for (y = 0; y < ns; y++) {
 				for (z = 0; z < ns; z++) {
 					for (t = 0; t < nt; t++) {
-						coord[0] = t;
-						coord[1] = x;
-						coord[2] = y;
-						coord[3] = z;
-						nspace = get_nspace(coord, nt, ns);
-						global_pos = get_global_pos(nspace, t, nt, ns);
+						global_pos = uint(Index(x,y,z,t,latticeExtents));
 						if (global_pos >= size)
 							break;
 
@@ -311,21 +304,15 @@ void fill_with_one_eo(spinor * in, const int size, const bool fillEvenSites, con
 {
 	int x, y, z, t;
 	hmc_complex content;
-	int coord[4];
 	bool parityOfSite;
-	int nspace;
 	int global_pos;
+	LatticeExtents lE(ns,nt);
 
 	for (x = 0; x < ns; x++) {
 		for (y = 0; y < ns; y++) {
 			for (z = 0; z < ns; z++) {
 				for (t = 0; t < nt; t++) {
-					coord[0] = t;
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
-					nspace = get_nspace(coord, nt, ns);
-					global_pos = get_global_pos(nspace, t, nt, ns);
+					global_pos = uint(Index(x,y,z,t,lE));
 					if (global_pos >= size)
 						break;
 

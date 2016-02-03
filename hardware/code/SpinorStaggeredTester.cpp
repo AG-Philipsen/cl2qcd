@@ -21,8 +21,7 @@
  */
 
 #include "SpinorStaggeredTester.hpp"
-#include "../../host_functionality/host_geometry.h"
-#include "../../host_functionality/host_random.h"
+#include "../../geometry/index.hpp"
 
 SpinorStaggeredTester2::SpinorStaggeredTester2(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues rV):
 		KernelTester(kN, pC.hardwareParameters, pC.kernelParameters, tP, rV)
@@ -75,30 +74,25 @@ void fill_with_one_eo(su3vec * sf_in, int size, bool eo, const int ns, const int
 {
   int x,y,z,t;
   hmc_complex content;
-  int coord[4];
   bool parityOfSite;
-  int nspace;
   int global_pos;
+
+  LatticeExtents lE(ns,nt);
 
   for (x = 0; x<ns; x++){
     for (y = 0; y<ns; y++){
       for (z = 0; z<ns; z++){
-	for (t = 0; t<nt; t++){
-	  coord[0] = t;
-	  coord[1] = x;
-	  coord[2] = y;
-	  coord[3] = z;
-	  nspace =  get_nspace(coord, nt, ns);
-	  global_pos = get_global_pos(nspace, t, nt, ns);
-	  if (global_pos >= size)
-	    break;
-	  parityOfSite = (x + y + z + t) % 2 == 0;
-	  content = (parityOfSite) ? (eo ? hmc_complex_one : hmc_complex_zero) :
-				      (eo ? hmc_complex_zero : hmc_complex_one);
-	  sf_in[global_pos].e0 = content;
-	  sf_in[global_pos].e1 = content;
-	  sf_in[global_pos].e2 = content;
-	}
+		for (t = 0; t<nt; t++){
+		  global_pos  = uint(Index(x,y,z,t,lE));
+		  if (global_pos >= size)
+			break;
+		  parityOfSite = (x + y + z + t) % 2 == 0;
+		  content = (parityOfSite) ? (eo ? hmc_complex_one : hmc_complex_zero) :
+						  (eo ? hmc_complex_zero : hmc_complex_one);
+		  sf_in[global_pos].e0 = content;
+		  sf_in[global_pos].e1 = content;
+		  sf_in[global_pos].e2 = content;
+		}
       }
     }
   }
