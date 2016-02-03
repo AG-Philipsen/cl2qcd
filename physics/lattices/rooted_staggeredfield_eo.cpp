@@ -22,28 +22,29 @@
 #include <algorithm>    // std::max
 #include "rooted_staggeredfield_eo.hpp"
 
-physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system)
-	: Staggeredfield_eo(system), rootedStaggaredfieldEoParametersInterface(new RootedStaggaredfieldEoParametersImplementation(system.get_inputparameters())),
-	  physics::algorithms::Rational_Coefficients(std::max(rootedStaggaredfieldEoParametersInterface->getMetropolisRationalApproximationOrder(),
-	                                                      rootedStaggaredfieldEoParametersInterface->getMolecularDynamicsRationalApproximationOrder()))
+physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system,
+                                                                      const RootedStaggeredfieldEoParametersInterface& rootedStaggeredfieldEoParametersInterface)
+	: Staggeredfield_eo(system, rootedStaggeredfieldEoParametersInterface),
+	  physics::algorithms::Rational_Coefficients(std::max(rootedStaggeredfieldEoParametersInterface.getMetropolisRationalApproximationOrder(),
+	                                                      rootedStaggeredfieldEoParametersInterface.getMolecularDynamicsRationalApproximationOrder()))
 {
 }
 
-physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System& system)
-	: Staggeredfield_eo(system), rootedStaggaredfieldEoParametersInterface(new RootedStaggaredfieldEoParametersImplementation(system.get_inputparameters())),
+physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system,
+                                                                      const RootedStaggeredfieldEoParametersInterface& rootedStaggeredfieldEoParametersInterface,
+                                                                      const physics::algorithms::Rational_Approximation& approx)
+	: Staggeredfield_eo(system, rootedStaggeredfieldEoParametersInterface),
 	  physics::algorithms::Rational_Coefficients(approx.Get_order(), approx.Get_a0(), approx.Get_a(), approx.Get_b())
 {
 }
 
-physics::lattices::Rooted_Staggeredfield_eo::~Rooted_Staggeredfield_eo()
+void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx,
+                                                                       const physics::fermionmatrix::Fermionmatrix_stagg_eo& A,
+                                                                       const physics::lattices::Gaugefield& gf, const hardware::System& system,
+                                                                       physics::InterfacesHandler& interfacesHandler, hmc_float prec,
+                                                                       const physics::AdditionalParameters& additionalParameters)
 {
-    //TODO: remove the following delete
-    delete rootedStaggaredfieldEoParametersInterface;
-}
-
-void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf, const hardware::System& system, hmc_float prec, bool conservative)
-{
-	physics::algorithms::Rational_Coefficients aux = approx.Rescale_Coefficients(A, gf, system, prec, conservative);
+	physics::algorithms::Rational_Coefficients aux = approx.Rescale_Coefficients(A, gf, system, interfacesHandler, prec, additionalParameters);
 	
 	Set_coeff(aux.Get_a0(), aux.Get_a(), aux.Get_b());
 }

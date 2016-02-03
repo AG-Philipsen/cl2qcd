@@ -85,37 +85,15 @@ void physics::lattices::Gaugefield::initializeHotOrCold(bool hot)
 	trajectoryNumberAtInit = 0;
 }
 
-//move to namespace ildg_io
-static void check_plaq(const hmc_float plaquette, double plaqSourcefile)
-{
-	logger.info() << "Checking plaquette against sourcefile value...";
-	std::string msg = "Minor parameters do not match: ";
-	hmc_float float1, float2;
-	std::string testobj = msg + "plaquette";
-	float1 = plaquette;
-	float2 = plaqSourcefile;
-	if(float1 != float2) {
-		logger.warn() << testobj;
-		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
-	}
 
-	logger.info() << "...done";
-	return;
-}
 
 void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ildgfile)
 {
-	double plaqSourcefile;
-
-	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, latticeObjectParameters, trajectoryNumberAtInit, plaqSourcefile);
+	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, latticeObjectParameters, trajectoryNumberAtInit);
 
 	send_gaugefield_to_buffers(buffers, gf_host, latticeObjectParameters);
 
 	delete[] gf_host;
-
-	//todo: move this to ildgIo
-	hmc_float plaq = physics::observables::measurePlaquette(this);
-	check_plaq(plaq, plaqSourcefile);
 }
 
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system)
@@ -232,13 +210,12 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	size_t numberOfElements = latticeObjectParameters->getNumberOfElements();
 	Matrixsu3 * host_buf = new Matrixsu3[numberOfElements];
 	fetch_gaugefield_from_buffers(host_buf, buffers, latticeObjectParameters);
-	double plaq = physics::observables::measurePlaquette(this);
 
 	//http://stackoverflow.com/questions/2434196/how-to-initialize-stdvector-from-c-style-array
 	std::vector<Matrixsu3> tmp(numberOfElements);
 	tmp.assign(host_buf, host_buf + numberOfElements);
 	
-	ildgIo::writeGaugefieldToFile(outputfile, tmp, latticeObjectParameters, number, plaq);
+	ildgIo::writeGaugefieldToFile(outputfile, tmp, latticeObjectParameters, number);
 
 	delete host_buf;
 }

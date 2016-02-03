@@ -22,7 +22,7 @@
 #define BOOST_TEST_MODULE physics::fermionmatrix::parametersInterface
 #include <boost/test/unit_test.hpp>
 
-#include "fermionmatrixInterfaces.hpp"
+#include "fermionmatrixParameters.hpp"
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {

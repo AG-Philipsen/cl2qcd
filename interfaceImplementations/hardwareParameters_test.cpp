@@ -17,18 +17,18 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "hardwareParameters.hpp"
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::parameters
 #include <boost/test/unit_test.hpp>
 
+#include "hardwareParameters.hpp"
+
 BOOST_AUTO_TEST_CASE(implementByMeansOfMetaInputparameters)
 {
 	const char * argv []  = {"foo"};
 	meta::Inputparameters fullParameters{1, argv};
-	hardware::HardwareParameters hardwareParameters( &fullParameters );
+	hardware::HardwareParametersImplementation hardwareParameters( &fullParameters );
 
 	BOOST_REQUIRE_EQUAL( hardwareParameters.useGpu(), fullParameters.get_use_gpu() );
 	BOOST_REQUIRE_EQUAL( hardwareParameters.useCpu() , fullParameters.get_use_cpu() );

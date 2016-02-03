@@ -25,10 +25,9 @@
 #include <stdexcept>
 #include "../hardware/code/correlator.hpp"
 #include "../hardware/code/correlator_staggered.hpp"
-//#include "../host_functionality/host_geometry.h"
 #include "../geometry/index.hpp"
 
-void physics::set_point_source(const physics::lattices::Spinorfield * spinorfield, int k, const meta::Inputparameters& params)
+void physics::set_point_source(const physics::lattices::Spinorfield * spinorfield, int k, const physics::SourcesParametersInterface& params)
 {
 	if(k >= 12 || k < 0) {
 		throw std::invalid_argument("k must be within 0..11");
@@ -39,14 +38,13 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 	auto buffers = spinorfield->get_buffers();
 
 	// only execute on the buffer were the given position results.
-	int t_pos = params.get_source_t();
+	int t_pos = params.getSourceT();
 	unsigned local_lattice_size = buffers[0]->get_device()->get_local_lattice_size().t;
 	auto buffer = buffers[t_pos / local_lattice_size];
 	auto device = buffer->get_device();
 	int local_t = t_pos % local_lattice_size;
 
-//	device->getCorrelatorCode()->create_point_source_device(buffer, k, get_source_pos_spatial(params), local_t);
-	device->getCorrelatorCode()->create_point_source_device(buffer, k, Index(params.get_source_x(), params.get_source_y(), params.get_source_z(), params.get_source_t(), LatticeExtents(params.get_nspace(), params.get_ntime())).spaceIndex, local_t);
+	device->getCorrelatorCode()->create_point_source_device(buffer, k, Index(params.getSourceX(), params.getSourceY(), params.getSourceZ(), params.getSourceT(), LatticeExtents(params.getNs(), params.getNt())).spaceIndex, local_t);
 
 	spinorfield->update_halo();
 }
@@ -117,18 +115,18 @@ void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * ino
 	  inout->update_halo();
 }
 
-static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const meta::Inputparameters& params);
+static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const physics::SourcesParametersInterface& params);
 
-std::vector<physics::lattices::Spinorfield *> physics::create_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources)
+std::vector<physics::lattices::Spinorfield *> physics::create_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources, physics::InterfacesHandler & interfacesHandler)
 {
-	const auto & params = system.get_inputparameters();
+	const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
 
-	auto sources = lattices::create_spinorfields(system, n_sources, params.get_place_sources_on_host());
-	fill_sources(sources, prng, params);
+	auto sources = lattices::create_spinorfields(system, n_sources, interfacesHandler, sourcesParameters.placeSourcesOnHost());
+	fill_sources(sources, prng, sourcesParameters);
 	return sources;
 }
 
-static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const meta::Inputparameters& params)
+static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const physics::SourcesParametersInterface& params)
 {
 	using namespace physics;
 
@@ -136,7 +134,7 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 		auto source = sources[k];
 		try_swap_in(source);
 
-		switch(params.get_sourcetype()) {
+		switch(params.getSourceType()) {
 			case common::point:
 				logger.debug() << "start creating point-source...";
 				//CP: k has to be between 0..12 (corresponds to spin-color index)
@@ -148,11 +146,11 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 				break;
 			case common::sourcetypes::timeslice:
 				logger.debug() << "start creating timeslice-source...";
-				set_timeslice_source(source, prng, params.get_source_t());
+				set_timeslice_source(source, prng, params.getSourceT());
 				break;
 			case common::sourcetypes::zslice:
 				logger.debug() << "start creating zslice-source...";
-				set_zslice_source(source, prng, params.get_source_z());
+				set_zslice_source(source, prng, params.getSourceZ());
 				break;
 			default:
 				throw std::domain_error("no such sourcetype");
@@ -162,11 +160,11 @@ static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& so
 	}
 }
 
-std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources)
+std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources, physics::InterfacesHandler & interfacesHandler)
 {
-	const auto & params = system.get_inputparameters();
+    const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
 
-	auto sources = lattices::create_swappable_spinorfields(system, n_sources, params.get_place_sources_on_host());
-	fill_sources(sources, prng, params);
+	auto sources = lattices::create_swappable_spinorfields(system, n_sources, interfacesHandler, sourcesParameters.placeSourcesOnHost());
+	fill_sources(sources, prng, sourcesParameters);
 	return sources;
 }

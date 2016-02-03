@@ -25,12 +25,11 @@
 #include <cassert>
 #include <fstream>
 #include <cmath>
-#include "../../meta/inputparameters.hpp"
 #include "../../hardware/code/gaugefield.hpp"
 
 class gaugeObservables{
     public:
-        gaugeObservables(const physics::observables::GaugeObservablesParametersImplementation& interface)
+        gaugeObservables(const physics::observables::GaugeObservablesParametersInterface& interface)
             : gaugeObservablesParametersInterface(interface), outputToFile("") {};
         gaugeObservables() = delete;
         void measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration);
@@ -311,44 +310,44 @@ hmc_complex gaugeObservables::measurePolyakovloop(const physics::lattices::Gauge
     return polyakov;
 }
 
-void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration)
+void physics::observables::measureGaugeObservablesAndWriteToFile(const physics::lattices::Gaugefield * gf, int iteration,
+                                                                 const physics::observables::GaugeObservablesParametersInterface& parameters)
 {
-    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
-    gaugeObservables obs(temporaryInterface);
+    gaugeObservables obs(parameters);
     obs.measureGaugeObservablesAndWriteToFile(gf, iteration);
 }
 
-hmc_float physics::observables::measurePlaquette(const physics::lattices::Gaugefield * gf)
+hmc_float physics::observables::measurePlaquette(const physics::lattices::Gaugefield * gf,
+                                                 const physics::observables::GaugeObservablesParametersInterface& parameters)
 {
-    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
-    gaugeObservables obs(temporaryInterface);
+    gaugeObservables obs(parameters);
     return obs.measurePlaquettes(gf).plaquette;
 }
 
-hmc_float physics::observables::measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf)
+hmc_float physics::observables::measurePlaquetteWithoutNormalization(const physics::lattices::Gaugefield * gf,
+                                                                     const physics::observables::GaugeObservablesParametersInterface& parameters)
 {
-    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
-    gaugeObservables obs(temporaryInterface);
+    gaugeObservables obs(parameters);
     return obs.measurePlaquettes(gf, false).plaquette;
 }
 
-hmc_float physics::observables::measureRectangles(const physics::lattices::Gaugefield * gf)
+hmc_float physics::observables::measureRectangles(const physics::lattices::Gaugefield * gf,
+                                                  const physics::observables::GaugeObservablesParametersInterface& parameters)
 {
-    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
-    gaugeObservables obs(temporaryInterface);
+    gaugeObservables obs(parameters);
     return obs.measureRectangles(gf);
 }
 
-hmc_complex  physics::observables::measurePolyakovloop(const physics::lattices::Gaugefield * gf)
+hmc_complex  physics::observables::measurePolyakovloop(const physics::lattices::Gaugefield * gf,
+                                                       const physics::observables::GaugeObservablesParametersInterface& parameters)
 {
-    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
-    gaugeObservables obs(temporaryInterface);
+    gaugeObservables obs(parameters);
     return obs.measurePolyakovloop(gf);
 }
 
-physics::observables::Plaquettes  physics::observables::measureAllPlaquettes(const physics::lattices::Gaugefield * gf)
+physics::observables::Plaquettes  physics::observables::measureAllPlaquettes(const physics::lattices::Gaugefield * gf,
+                                                                             const physics::observables::GaugeObservablesParametersInterface& parameters)
 {
-    physics::observables::GaugeObservablesParametersImplementation temporaryInterface{gf->getSystem()->get_inputparameters()};
-    gaugeObservables obs(temporaryInterface);
+    gaugeObservables obs(parameters);
     return obs.measurePlaquettes(gf);
 }

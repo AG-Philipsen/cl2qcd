@@ -25,11 +25,11 @@
 
 namespace hardware
 {
-	class HardwareParameters final : public HardwareParametersInterface
+	class HardwareParametersImplementation final : public HardwareParametersInterface
 	{
 	public:
-		HardwareParameters( const meta::Inputparameters * parametersIn) : fullParameters(parametersIn) {}
-		~HardwareParameters() {};
+		HardwareParametersImplementation( const meta::Inputparameters * parametersIn) : fullParameters(parametersIn) {}
+		~HardwareParametersImplementation() {};
 		virtual int getNs() const override
 		{
 			return fullParameters->get_nspace();

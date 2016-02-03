@@ -26,18 +26,25 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
+
 BOOST_AUTO_TEST_SUITE( BUILD )
 
 	void testLogicError(const char * _params[], int length )
 	{
 		meta::Inputparameters params(length, _params);
-		physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&params);
-		const hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
-		const physics::lattices::Gaugefield gaugefield(system, &gaugefieldParameters, prng);
+		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
+
 		
-		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0) , std::logic_error);
+		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0, interfacesHandler) , std::logic_error);
 	}
 	
 	BOOST_AUTO_TEST_CASE( INV_ARGUMENT_1 )
@@ -53,13 +60,15 @@ BOOST_AUTO_TEST_SUITE( BUILD )
 		const char * commandLineParameters[] = {standardParameters[0], standardParameters[1], actionName.c_str() , version.c_str()};
 		
 		meta::Inputparameters params(4, commandLineParameters);
-		physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&params);
-		const hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
-		const physics::lattices::Gaugefield gaugefield(system, &gaugefieldParameters, prng);
+		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
 		
-		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0) , std::logic_error);
+		BOOST_REQUIRE_THROW(physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, 0, interfacesHandler) , std::logic_error);
 	}
 	
 	std::vector<std::string> actionNames = {"clover", "tlsym", "iwasaki", "dbw2", "rooted_stagg"};
@@ -117,14 +126,16 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		const char * _params[] = {"foo", "--nt=4", "--ns=4", "--kappa=0.15", "--mu=4.", "--measure_pbp=true", fermactOption.c_str(), sourceTypeOption.c_str(), sourceContentOption.c_str(),  numberOfSources_option.c_str(), pbpVersionOption.c_str(), eoOption.c_str(), startconditionOption.c_str(), sourcefileOption.c_str(), boostOptions[0].c_str()};
 
 		meta::Inputparameters params(numberOfOptions, _params);
-		physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&params);
-		const hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
 		const physics::PRNG prng{system, &prngParameters};
-		const physics::lattices::Gaugefield gaugefield(system, &gaugefieldParameters, prng);
+		const physics::lattices::Gaugefield gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng);
 
 		std::vector<double> results;
-		results = physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, "conf.test");
+		results = physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(&gaugefield, "conf.test", interfacesHandler);
 		
 		BOOST_REQUIRE_EQUAL(numberOfSources, (int) results.size() );
 

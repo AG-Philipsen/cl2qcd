@@ -25,6 +25,7 @@
 
 #include "spinorfield.hpp"
 #include "swappable.hpp"
+#include "../interfacesHandler.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -41,7 +42,7 @@ public:
 	/**
 	 * Construct a gaugefield based on the input-files of the system
 	 */
-	SwappableSpinorfield(const hardware::System&, const bool place_on_host = false);
+	SwappableSpinorfield(const hardware::System&, const physics::lattices::SpinorfieldParametersInterface & spinorfieldParametersInterface, const bool place_on_host = false);
 
 	/**
 	 * Release resources
@@ -74,7 +75,7 @@ private:
  *
  * \param n The number of spinorfields to create
  */
-std::vector<Spinorfield *> create_swappable_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false);
+std::vector<Spinorfield *> create_swappable_spinorfields(const hardware::System& system, const size_t n, physics::InterfacesHandler & interfacesHandler, const bool place_on_host = false);
 
 /**
  * Swap out the given spinorfields

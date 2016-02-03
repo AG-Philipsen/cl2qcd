@@ -30,8 +30,8 @@
 dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
   benchmarkExecutable(argc, argv)
 {
-  spinorfield1 = new physics::lattices::Spinorfield_eo(*system);
-  spinorfield2 = new physics::lattices::Spinorfield_eo(*system);
+  spinorfield1 = new physics::lattices::Spinorfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Spinorfield_eo>());
+  spinorfield2 = new physics::lattices::Spinorfield_eo(*system, interfacesHandler->getInterface<physics::lattices::Spinorfield_eo>());
 }
 
 void dslashBenchmark::performBenchmarkForSpecificKernels()
@@ -47,8 +47,8 @@ void dslashBenchmark::performBenchmarkForSpecificKernels()
 
 void dslashBenchmark::enqueueSpecificKernelForBenchmarkingMultipleDevices()
 {
-  physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN);
-  physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD);
+  physics::fermionmatrix::dslash(spinorfield2, *gaugefield, *spinorfield1, EVEN, parameters.get_kappa());
+  physics::fermionmatrix::dslash(spinorfield1, *gaugefield, *spinorfield2, ODD, parameters.get_kappa());
 }
 
 void dslashBenchmark::printProfilingDataToScreen()

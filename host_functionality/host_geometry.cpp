@@ -125,3 +125,11 @@ int get_source_pos_spatial(const meta::Inputparameters& params)
 	return get_nspace(coord, params);
 }
 
+int get_source_pos_spatial(int sourceX, int sourceY, int sourceZ, int nt, int ns)
+{
+    int coord [4];
+    coord[1] = sourceX;
+    coord[2] = sourceY;
+    coord[3] = sourceZ;
+    return get_nspace(coord, nt, ns);
+}

@@ -25,7 +25,7 @@
 
 #include "../hardware/system.hpp"
 #include "../hardware/buffers/prng_buffer.hpp"
-#include "parametersPrng.hpp"
+#include "prngInterface.hpp"
 
 /**
  * This package contains the actual "business" logic of the library.
@@ -42,7 +42,7 @@ namespace physics {
 			/**
 			 * Initialize the ranlux instance
 			 */
-			PRNG(const hardware::System& system, const physics::ParametersPrngInterface * parametersIn);
+			PRNG(const hardware::System& system, const physics::PrngParametersInterface * parametersIn);
 
 			~PRNG();
 
@@ -98,7 +98,7 @@ namespace physics {
 			 * Reference to the system this PRNG is for.
 			 */
 			const hardware::System& system;
-			const physics::ParametersPrngInterface * parameters;
+			const physics::PrngParametersInterface * parameters;
 	};
 
 	void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma, const physics::PRNG& prng);

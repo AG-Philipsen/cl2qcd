@@ -1,5 +1,7 @@
-/**
- * Copyright 2015 Christopher Pinke
+/** @file
+ * sourcesInterface.hpp
+ *
+ * Copyright 2016 Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -17,14 +19,21 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// use the boost test framework
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE physics::ParametersPrng
-#include <boost/test/unit_test.hpp>
+#pragma once
 
-#include "parametersPrng.hpp"
+namespace physics {
 
+    class SourcesParametersInterface {
+        public:
+            virtual ~SourcesParametersInterface(){}
+            virtual bool placeSourcesOnHost() const = 0;
+            virtual common::sourcetypes getSourceType() const = 0;
+            virtual unsigned getSourceT() const = 0;
+            virtual unsigned getSourceX() const = 0;
+            virtual unsigned getSourceY() const = 0;
+            virtual unsigned getSourceZ() const = 0;
+            virtual unsigned getNt() const = 0;
+            virtual unsigned getNs() const = 0;
+    };
 
-
-
-
+}

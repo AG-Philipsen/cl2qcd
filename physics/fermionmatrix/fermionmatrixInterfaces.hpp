@@ -21,9 +21,10 @@
 
 #pragma once
 
-#include "../../meta/inputparameters.hpp"
+#include "../lattices/latticesInterfaces.hpp"
 
 namespace physics {
+
     namespace fermionmatrix {
 
         class FermionmatrixParametersInterface {
@@ -33,25 +34,31 @@ namespace physics {
                 virtual bool useMergedFermionicKernels() const = 0;
         };
 
-        class FermionmatrixParametersImplementation final : public FermionmatrixParametersInterface {
+        class FermionmatrixStaggeredParametersInterface {
             public:
-                FermionmatrixParametersImplementation() = delete;
-                FermionmatrixParametersImplementation(const meta::Inputparameters& paramsIn)
-                        : parameters(paramsIn)
-                {
-                }
-                common::action getFermionicActionType() const override
-                {
-                    return parameters.get_fermact();
-                }
-                bool useMergedFermionicKernels() const override
-                {
-                    return parameters.get_use_merge_kernels_fermion();
-                }
-            private:
-                const meta::Inputparameters& parameters;
-
+                virtual ~FermionmatrixStaggeredParametersInterface() = 0;
         };
+        //Pure virtual destructors must be implemented outside the class! (inline for multiple inclusion of header)
+        inline FermionmatrixStaggeredParametersInterface::~FermionmatrixStaggeredParametersInterface(){}
 
     }
+
+    //TODO: Think to a better place where to put these interfaces
+    class FermionParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldParametersInterface {
+        public:
+            virtual ~FermionParametersInterface(){}
+    };
+
+    class FermionEoParametersInterface : public fermionmatrix::FermionmatrixParametersInterface, public lattices::SpinorfieldEoParametersInterface {
+        public:
+            virtual ~FermionEoParametersInterface(){}
+    };
+
+    class FermionStaggeredEoParametersInterface : public fermionmatrix::FermionmatrixStaggeredParametersInterface, public lattices::StaggeredfieldEoParametersInterface {
+        public:
+            virtual ~FermionStaggeredEoParametersInterface(){}
+    };
+
 }
+
+

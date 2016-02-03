@@ -30,6 +30,9 @@
 #include "../../host_functionality/logger.hpp"
 #include "../test_util_staggered.h"
 #include "../../hardware/code/spinors.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(D_KS_eo)
 {
@@ -40,15 +43,17 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--nspace=8", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Staggeredfield_eo sf1(system);
-		Staggeredfield_eo sf2(system);
-		Staggeredfield_eo out(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 13);
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 31);
@@ -74,16 +79,18 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		//This configuration for the Ref.Code is the same as for example dks_input_5
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Staggeredfield_eo sf1(system);
-		Staggeredfield_eo sf2(system);
-		Staggeredfield_eo out(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+		Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123);
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321);

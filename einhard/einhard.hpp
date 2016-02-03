@@ -354,7 +354,7 @@ public:
 	/**
 	 * Check whether the output stream is colorized.
 	 */
-	inline void getColorize( ) const {
+	inline bool getColorize( ) const {
 		return this->colorize;
 	}
 };

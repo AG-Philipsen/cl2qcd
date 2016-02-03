@@ -51,6 +51,6 @@ void gaugeobservablesExecutable::printParametersToScreenAndFile()
 
 void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
 {
-	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit() );
+	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit(), interfacesHandler->getGaugeObservablesParametersInterface());
 }
 

@@ -23,7 +23,8 @@
 #include "algebra_real.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
-
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -39,7 +40,9 @@ void test_cgm_update(int switcher)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 	
 	const int numeq = 16;
@@ -106,7 +109,9 @@ BOOST_AUTO_TEST_CASE(base_operations)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Scalar<hmc_float> left(system);
@@ -140,7 +145,9 @@ BOOST_AUTO_TEST_CASE(access_element)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
 	Vector<hmc_float> vec(6, system);

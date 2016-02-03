@@ -22,7 +22,7 @@
 #define BOOST_TEST_MODULE physics::lattice::parametersInterface
 #include <boost/test/unit_test.hpp>
 
-#include "latticesInterfaces.hpp"
+#include "latticesParameters.hpp"
 
 static std::unique_ptr<const meta::Inputparameters> createDefaultMetaInputparameters()
 {
@@ -44,8 +44,8 @@ BOOST_AUTO_TEST_CASE(testLatticeObjectParameters)
 	BOOST_CHECK_EQUAL(test.getMu(), params->get_mu());
 	BOOST_CHECK_EQUAL(test.getBeta(), params->get_beta());
 	BOOST_CHECK_EQUAL(test.getStartcondition(), params->get_startcondition());
-	BOOST_CHECK_EQUAL(test.getNamePostfix(), params->get_gauge_obs_postfix());
-	BOOST_CHECK_EQUAL(test.getNamePrefix(), params->get_gauge_obs_prefix());
+	BOOST_CHECK_EQUAL(test.getNamePostfix(), params->get_config_postfix());
+	BOOST_CHECK_EQUAL(test.getNamePrefix(), params->get_config_prefix());
 	BOOST_CHECK_EQUAL(test.getNumberOfDigitsInName(), params->get_config_number_digits());
 	BOOST_CHECK_EQUAL(test.getSmearingSteps(), params->get_rho_iter());
 	BOOST_CHECK_EQUAL(test.getSourcefileName(), params->get_sourcefile());
@@ -74,20 +74,16 @@ BOOST_AUTO_TEST_CASE(testSpinorfieldParameters)
 BOOST_AUTO_TEST_CASE(testStaggeredfieldEoParameters)
 {
     auto params = createDefaultMetaInputparameters();
-    physics::lattices::StaggaredfieldEoParametersImplementation test(*params);
+    physics::lattices::StaggeredfieldEoParametersImplementation test(*params);
 
-    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
-    BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
     BOOST_CHECK_EQUAL(test.getNumberOfElements(), std::pow(params->get_nspace(), 3.)*params->get_ntime());
 }
 
 BOOST_AUTO_TEST_CASE(testRootedStaggeredfieldEoParameters)
 {
     auto params = createDefaultMetaInputparameters();
-    physics::lattices::RootedStaggaredfieldEoParametersImplementation test(*params);
+    physics::lattices::RootedStaggeredfieldEoParametersImplementation test(*params);
 
-    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
-    BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
     BOOST_CHECK_EQUAL(test.getNumberOfElements(), std::pow(params->get_nspace(), 3.)*params->get_ntime());
     BOOST_CHECK_EQUAL(test.getMetropolisRationalApproximationOrder(), params->get_metro_approx_ord());
     BOOST_CHECK_EQUAL(test.getMolecularDynamicsRationalApproximationOrder(), params->get_md_approx_ord());

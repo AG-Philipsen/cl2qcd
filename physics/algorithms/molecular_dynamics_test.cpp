@@ -29,8 +29,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../lattices/util.hpp"
-
 #include "../observables/gaugeObservables.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 {
@@ -39,30 +41,32 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 	{
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
 		{
-			Gaugefield gf(system, &gaugefieldParameters, prng, false);
-			Gaugemomenta gm(system);
+			Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+			Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 			gm.zero();
 
-			hmc_float ref = physics::observables::measurePlaquette(&gf);
+			hmc_float ref = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 			gauge_force(&gm, gf);
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			double plaq = physics::observables::measurePlaquette(&gf);
+			double plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 			BOOST_CHECK_CLOSE(plaq, ref, 0.01);
 		}
 
 		{
-			Gaugefield gf(system, &gaugefieldParameters, prng, false);
-			Gaugemomenta gm(system);
+			Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+			Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 			pseudo_randomize<Gaugemomenta, ae>(&gm, 415);
 
 			physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-			double plaq = physics::observables::measurePlaquette(&gf);
+			double plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 			BOOST_CHECK_CLOSE(plaq, 0.80918156710730049, 0.01);
 		}
 	}
@@ -70,46 +74,50 @@ BOOST_AUTO_TEST_CASE(md_update_gaugefield)
 	{
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		pseudo_randomize<Gaugemomenta, ae>(&gm, 123);
 
-		double plaq = physics::observables::measurePlaquette(&gf);
+		double plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 		BOOST_CHECK_CLOSE(plaq, 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		plaq = physics::observables::measurePlaquette(&gf);
+		plaq = physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface());
 		BOOST_REQUIRE_CLOSE(plaq, 0.32089465123266286, 0.01);
 	}
 
 	{
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.0001);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), 0.57107711169452713, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), 0.57107711169452713, 0.0001);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), 0.57107711169452713, 0.0001);
 		gauge_force(&gm, gf);
 
 		BOOST_REQUIRE_CLOSE(squarenorm(gm), 52723.299867438494, 0.0001);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), 0.0060440132434446334, 0.01);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), 0.0060440132434446334, 0.01);
 		gauge_force(&gm, gf);
 		BOOST_REQUIRE_CLOSE(squarenorm(gm), 82900.801546488685, 0.01);
 		physics::algorithms::md_update_gaugefield(&gf, gm, .5);
-		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf), -0.0076685322051177783, 0.01);
+		BOOST_REQUIRE_CLOSE(physics::observables::measurePlaquette(&gf, interfacesHandler.getGaugeObservablesParametersInterface()), -0.0076685322051177783, 0.01);
 	}
 }
 
@@ -119,19 +127,21 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 11);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 12);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2523.6197747176057, 0.01);
 	}
 
@@ -139,20 +149,22 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 13);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 14);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2588.2852881545778, 0.01);
 	}
 }
@@ -163,20 +175,22 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 15);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1122.194230730885, 0.01);
 	}
 
@@ -184,20 +198,22 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 16);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1114.3019247079062, 0.01);
 	}
 }
@@ -208,19 +224,21 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 21);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 22);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2539.2078579177487, 0.01);
 	}
 
@@ -228,21 +246,23 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 23);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, 24);
 		gm.zero();
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 2658.5475465525888, 0.01);
 	}
 }
@@ -253,20 +273,22 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 25);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1105.9891302664669, 0.01);
 	}
 
@@ -274,20 +296,22 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 26);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system);
+		physics::algorithms::md_update_spinorfield(&sf2, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), 1081.4370785519473, 0.01);
 	}
 }
@@ -299,32 +323,36 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_gauge)
 	{
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, false);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_gauge(&gm, .5, gf, system);
+		physics::algorithms::md_update_gaugemomentum_gauge(&gm, .5, gf, system, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 0., 0.01);
 	}
 
 	{
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_gauge(&gm, .5, gf, system);
+		physics::algorithms::md_update_gaugemomentum_gauge(&gm, .5, gf, system, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 13180.824966859615, 0.01);
 	}
 }
@@ -335,19 +363,21 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield sf1(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 33);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system);
+		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 16956.313363328729, 0.01);
 	}
 }
@@ -358,22 +388,24 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_fermion_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 25);
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system);
+		physics::algorithms::md_update_gaugemomentum_fermion(&gm, .6, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1324.8991304359643, 0.01);
 	}
 }
@@ -384,19 +416,21 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield sf1(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 35);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_detratio(&gm, .4, gf, sf1, system);
+		physics::algorithms::md_update_gaugemomentum_detratio(&gm, .4, gf, sf1, system, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 2070.2139029781247, 0.01);
 	}
 }
@@ -407,22 +441,24 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_detratio_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4", "--kappa_mp=.25"};
 		meta::Inputparameters params(3, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 27);
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum_detratio(&gm, .4, gf, sf1, system);
+		physics::algorithms::md_update_gaugemomentum_detratio(&gm, .4, gf, sf1, system, interfacesHandler);
 		BOOST_CHECK_CLOSE(squarenorm(gm), 5835.9232744740457, 0.01);
 	}
 }
@@ -433,19 +469,21 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield sf1(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, 37);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum(&gm, .5, gf, sf1, system);
+		physics::algorithms::md_update_gaugemomentum(&gm, .5, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 22735.531268100596, 0.01);
 	}
 }
@@ -456,22 +494,24 @@ BOOST_AUTO_TEST_CASE(md_update_gaugemomentum_eo)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		GaugefieldParametersImplementation gaugefieldParameters( &params );
-		hardware::System system(params);
-		physics::ParametersPrng_fromMetaInputparameters prngParameters{&params};
+		physics::InterfacesHandlerImplementation interfacesHandler{params};
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+		physics::PrngParametersImplementation prngParameters{params};
 		physics::PRNG prng{system, &prngParameters};
 
-		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
-		Gaugemomenta gm(system);
+		Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, 29);
 		convert_to_eoprec(&sf1, &sf2, src);
 		gm.zero();
 
-		physics::algorithms::md_update_gaugemomentum(&gm, .6, gf, sf1, system);
+		physics::algorithms::md_update_gaugemomentum(&gm, .6, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 20459.049258021565, 0.01);
 	}
 }
