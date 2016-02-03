@@ -37,8 +37,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
 	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices()) {
 
@@ -54,14 +55,15 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
 	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];
 		su3vec* buf2 = new su3vec[elems];
-		SU3vec dummy(elems, device);
+		SU3vec dummy(lE, device);
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);
 		dummy.load(buf);
@@ -77,15 +79,16 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
 	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];
 		su3vec* buf2 = new su3vec[elems];
-		SU3vec dummy(elems, device);
-		SU3vec dummy2(elems, device);
+		SU3vec dummy(lE, device);
+		SU3vec dummy2(lE, device);
 
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);

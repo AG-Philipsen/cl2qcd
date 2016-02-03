@@ -36,8 +36,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
 	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices())
 	{
@@ -53,15 +54,16 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
 	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
 	for(Device * device : system.get_devices())
 	{
 		Matrixsu3* buf(new Matrixsu3[elems]);
 		Matrixsu3* buf2(new Matrixsu3[elems]);
-		SU3 dummy(elems, device);
+		SU3 dummy(lE, device);
 		if(dummy.is_soa()) {
 			BOOST_CHECK_THROW(dummy.load(buf), std::logic_error);
 			BOOST_CHECK_THROW(dummy.dump(buf), std::logic_error);
@@ -82,8 +84,9 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const hardware::HardwareParametersMockup hardwareParameters(4,4);
-	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
 	hardware::System system( hardwareParameters, kernelParameters );
 	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
 	for(Device * device : system.get_devices())
@@ -91,8 +94,8 @@ BOOST_AUTO_TEST_CASE(copy)
 		if(!check_SU3_for_SOA(device)) {
 			Matrixsu3* buf(new Matrixsu3[elems]);
 			Matrixsu3* buf2(new Matrixsu3[elems]);
-			SU3 dummy(elems, device);
-			SU3 dummy2(elems, device);
+			SU3 dummy(lE, device);
+			SU3 dummy2(lE, device);
 
 			fill(buf, elems, 1);
 			fill(buf2, elems, 2);
