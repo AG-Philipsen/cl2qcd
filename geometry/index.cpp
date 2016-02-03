@@ -21,13 +21,14 @@
 #include <stdexcept>
 
 Index::Index(const unsigned int xIn, const unsigned int yIn, const unsigned int zIn, const unsigned int tIn, const LatticeExtents lEIn ):
-x(xIn), y(yIn), z(zIn), t(tIn), latticeExtents(lEIn)
+t(tIn), x(xIn), y(yIn), z(zIn), latticeExtents(lEIn)
 {
-	if( x >= lEIn.ns || y >= lEIn.ns || z >= lEIn.ns || t >= lEIn.nt )
+	if( t >= lEIn.nt || x >= lEIn.ns || y >= lEIn.ns || z >= lEIn.ns )
 	{
 		throw std::invalid_argument( "Lattice indices must be smaller than lattice extents!" );
 	}
-	globalIndex = x + y * lEIn.ns + z * lEIn.ns * lEIn.ns + t * lEIn.ns * lEIn.ns * lEIn.ns;
+	spaceIndex = x + y * lEIn.ns + z * lEIn.ns * lEIn.ns; // previously get_nspace
+	globalIndex = x + y * lEIn.ns + z * lEIn.ns * lEIn.ns + t * lEIn.ns * lEIn.ns * lEIn.ns; // previously get_global_pos
 }
 
 Index::operator uint() const
@@ -88,7 +89,8 @@ const Index Index::down(const Direction dir) const
 LinkIndex::LinkIndex (const Index indexIn, const Direction dirIn):
 	Index(indexIn), dir(dirIn)
 {
-	globalIndex = dir * latticeExtents.getLatticeVolume() + Index::globalIndex;
+	globalIndex = dir + NDIM * Index::globalIndex;
+//	globalIndex = dir * latticeExtents.getLatticeVolume() + Index::globalIndex;
 }
 
 LinkIndex::operator uint() const
@@ -105,4 +107,14 @@ const LinkIndex LinkIndex::down(const Direction dirIn) const
 {
 	return LinkIndex( Index::down(dirIn), dir );
 }
+
+uint LinkIndex::get_su3_idx_ildg_format(const uint n, const uint m)
+{
+	return 2 * n + 2 * m * NC + 2 * NC * NC * globalIndex;
+}
+
+
+
+
+
 

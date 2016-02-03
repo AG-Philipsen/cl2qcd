@@ -93,13 +93,13 @@ BOOST_AUTO_TEST_SUITE(LinkIndexBuild)
 	BOOST_AUTO_TEST_CASE(linkIndex)
 	{
 		Direction dir = TDIR;
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), uint(Index(1, 2, 3, 4, latticeExtents)) + latticeExtents.getLatticeVolume() * dir );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), NDIM * uint(Index(1, 2, 3, 4, latticeExtents)) + dir );
 		dir = XDIR;
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), uint(Index(1, 2, 3, 4, latticeExtents)) + latticeExtents.getLatticeVolume() * dir );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), NDIM * uint(Index(1, 2, 3, 4, latticeExtents)) + dir );
 		dir = YDIR;
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), uint(Index(1, 2, 3, 4, latticeExtents)) + latticeExtents.getLatticeVolume() * dir );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), NDIM * uint(Index(1, 2, 3, 4, latticeExtents)) + dir );
 		dir = ZDIR;
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), uint(Index(1, 2, 3, 4, latticeExtents)) + latticeExtents.getLatticeVolume() * dir );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( Index(1, 2, 3, 4, latticeExtents), dir)), NDIM * uint(Index(1, 2, 3, 4, latticeExtents)) + dir );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -111,66 +111,66 @@ BOOST_AUTO_TEST_SUITE(LinkIndexNeighbours)
 
 	BOOST_AUTO_TEST_CASE(upX)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(XDIR)), XDIR*latticeExtents.getLatticeVolume() + (0 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(YDIR)), XDIR*latticeExtents.getLatticeVolume() + (3 + 4*3 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(ZDIR)), XDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(TDIR)), XDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(XDIR)), XDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(YDIR)), XDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(ZDIR)), XDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(TDIR)), XDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
 	}
 
 	BOOST_AUTO_TEST_CASE(upY)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(XDIR)), YDIR*latticeExtents.getLatticeVolume() + (0 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(YDIR)), YDIR*latticeExtents.getLatticeVolume() + (3 + 4*3 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(ZDIR)), YDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(TDIR)), YDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(XDIR)), YDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(YDIR)), YDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(ZDIR)), YDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(TDIR)), YDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
 	}
 
 	BOOST_AUTO_TEST_CASE(upZ)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(XDIR)), ZDIR*latticeExtents.getLatticeVolume() + (0 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(YDIR)), ZDIR*latticeExtents.getLatticeVolume() + (3 + 4*3 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(ZDIR)), ZDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(TDIR)), ZDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(XDIR)), ZDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(YDIR)), ZDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(ZDIR)), ZDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(TDIR)), ZDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
 	}
 
 	BOOST_AUTO_TEST_CASE(upT)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(XDIR)), TDIR*latticeExtents.getLatticeVolume() + (0 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(YDIR)), TDIR*latticeExtents.getLatticeVolume() + (3 + 4*3 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(ZDIR)), TDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(TDIR)), TDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(XDIR)), TDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(YDIR)), TDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(ZDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(TDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
 	}
 
 	BOOST_AUTO_TEST_CASE(downX)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(XDIR)), XDIR*latticeExtents.getLatticeVolume() + (2 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(YDIR)), XDIR*latticeExtents.getLatticeVolume() + (3 + 4*1 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(ZDIR)), XDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*0 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(TDIR)), XDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*3) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(XDIR)), XDIR + NDIM * (2 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(YDIR)), XDIR + NDIM * (3 + 4*1 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(ZDIR)), XDIR + NDIM * (3 + 4*2 + 4*4*0 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).down(TDIR)), XDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*3) );
 	}
 
 	BOOST_AUTO_TEST_CASE(downY)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(XDIR)), YDIR*latticeExtents.getLatticeVolume() + (2 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(YDIR)), YDIR*latticeExtents.getLatticeVolume() + (3 + 4*1 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(ZDIR)), YDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*0 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(TDIR)), YDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*3) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(XDIR)), YDIR + NDIM * (2 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(YDIR)), YDIR + NDIM * (3 + 4*1 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(ZDIR)), YDIR + NDIM * (3 + 4*2 + 4*4*0 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).down(TDIR)), YDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*3) );
 	}
 
 	BOOST_AUTO_TEST_CASE(downZ)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(XDIR)), ZDIR*latticeExtents.getLatticeVolume() + (2 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(YDIR)), ZDIR*latticeExtents.getLatticeVolume() + (3 + 4*1 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(ZDIR)), ZDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*0 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(TDIR)), ZDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*3) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(XDIR)), ZDIR + NDIM * (2 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(YDIR)), ZDIR + NDIM * (3 + 4*1 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(ZDIR)), ZDIR + NDIM * (3 + 4*2 + 4*4*0 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).down(TDIR)), ZDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*3) );
 	}
 
 	BOOST_AUTO_TEST_CASE(downT)
 	{
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(XDIR)), TDIR*latticeExtents.getLatticeVolume() + (2 + 4*2 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(YDIR)), TDIR*latticeExtents.getLatticeVolume() + (3 + 4*1 + 4*4*1 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(ZDIR)), TDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*0 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(TDIR)), TDIR*latticeExtents.getLatticeVolume() + (3 + 4*2 + 4*4*1 + 4*4*4*3) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(XDIR)), TDIR + NDIM * (2 + 4*2 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(YDIR)), TDIR + NDIM * (3 + 4*1 + 4*4*1 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(ZDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*0 + 4*4*4*4) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(TDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*3) );
 	}
 
 

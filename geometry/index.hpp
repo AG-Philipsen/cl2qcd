@@ -27,7 +27,9 @@ typedef unsigned int latticeCoordinate;
 typedef unsigned int latticeIndex;
 typedef unsigned int latticeSize;
 
-enum Direction {XDIR, YDIR, ZDIR, TDIR};
+//enum Direction {XDIR, YDIR, ZDIR, TDIR};
+//actually the convention was TDIR to be 0
+enum Direction {TDIR = 0, XDIR, YDIR, ZDIR};
 
 struct Index
 {
@@ -35,9 +37,9 @@ struct Index
 	operator uint() const;
 	const Index up(const Direction direction) const;
 	const Index down(const Direction direction) const;
-	latticeCoordinate x,y,z,t;
+	latticeCoordinate t,x,y,z;
 	LatticeExtents latticeExtents;
-	latticeIndex globalIndex;
+	latticeIndex globalIndex, spaceIndex;
 };
 
 struct LinkIndex : public Index
@@ -46,6 +48,7 @@ struct LinkIndex : public Index
 	operator uint() const;
 	const LinkIndex up(const Direction dirIn) const;
 	const LinkIndex down(const Direction dirIn) const;
+	uint get_su3_idx_ildg_format(const uint n, const uint m); // ADD TESTS!!
 	Direction dir;
 	latticeIndex globalIndex;
 };
