@@ -169,8 +169,7 @@ void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gau
 						hmc_complex tmp [NC][NC];
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-//								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters.getNt(), parameters.getNs() );
-								uint pos = LinkIndex(Index(x,y,z,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>(l)).get_su3_idx_ildg_format(n,m);
+	 							uint pos = LinkIndex(Index(z,y,x,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>(l)).get_su3_idx_ildg_format(n,m);
 								tmp[m][n].re = make_float_from_big_endian(&gaugefield_tmp[pos * sizeof(hmc_float)]);
 								tmp[m][n].im = make_float_from_big_endian(&gaugefield_tmp[(pos + 1) * sizeof(hmc_float)]);
 								cter++;
@@ -244,8 +243,7 @@ void ildgIo::copy_gaugefield_to_ildg_format(std::vector<char> & dest, const std:
 
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-//								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters.getNt(), parameters.getNs() );
-								uint pos = LinkIndex(Index(x,y,z,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>(l)).get_su3_idx_ildg_format(n,m);
+								uint pos = LinkIndex(Index(z,y,x,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>(l)).get_su3_idx_ildg_format(n,m);
 								make_big_endian_from_float(&dest[pos * sizeof(hmc_float)], destElem[m][n].re);
 								make_big_endian_from_float(&dest[(pos + 1) * sizeof(hmc_float)], destElem[m][n].im);
 							}
