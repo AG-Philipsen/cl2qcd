@@ -21,6 +21,7 @@
 
 #include "latticeExtents.hpp"
 #include "../common_header_files/globaldefs.h"
+#include "../hardware/size_4.hpp"
 
 typedef unsigned int uint;
 typedef unsigned int latticeCoordinate;
@@ -34,6 +35,7 @@ enum Direction {TDIR = 0, XDIR, YDIR, ZDIR};
 struct Index
 {
 	Index(const unsigned int, const unsigned int, const unsigned int, const unsigned int, const LatticeExtents);
+	Index(const size_4, const LatticeExtents);
 	operator uint() const;
 	const Index up(const Direction direction) const;
 	const Index down(const Direction direction) const;

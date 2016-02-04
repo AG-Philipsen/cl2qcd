@@ -31,6 +31,17 @@ t(tIn), x(xIn), y(yIn), z(zIn), latticeExtents(lEIn)
 	globalIndex = x + y * lEIn.ns + z * lEIn.ns * lEIn.ns + t * lEIn.ns * lEIn.ns * lEIn.ns; // previously get_global_pos
 }
 
+Index::Index(const size_4 coordIn, const LatticeExtents lEIn):
+t(coordIn.t), x(coordIn.x), y(coordIn.y), z(coordIn.z), latticeExtents(lEIn)
+{
+	if( t >= lEIn.nt || x >= lEIn.ns || y >= lEIn.ns || z >= lEIn.ns )
+	{
+		throw std::invalid_argument( "Lattice indices must be smaller than lattice extents!" );
+	}
+	spaceIndex = x + y * lEIn.ns + z * lEIn.ns * lEIn.ns; // previously get_nspace
+	globalIndex = x + y * lEIn.ns + z * lEIn.ns * lEIn.ns + t * lEIn.ns * lEIn.ns * lEIn.ns; // previously get_global_pos
+}
+
 Index::operator uint() const
 {
 	return globalIndex;
