@@ -300,16 +300,19 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
-			memcpy(mem_host, &gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], local_volume * sizeof(Matrixsu3));
+//			memcpy(mem_host, &gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], local_volume * sizeof(Matrixsu3));
+			memcpy(mem_host, &gf_host[uint(LinkIndex(Index(offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], local_volume * sizeof(Matrixsu3));
 
 			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
 			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params->getNt());
 			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume], &gf_host[get_global_link_pos(0, halo_offset,  params->getNt(), params->getNs())], halo_volume * sizeof(Matrixsu3));
+//			memcpy(&mem_host[local_volume], &gf_host[get_global_link_pos(0, halo_offset,  params->getNt(), params->getNs())], halo_volume * sizeof(Matrixsu3));
+			memcpy(&mem_host[local_volume], &gf_host[uint(LinkIndex(Index(halo_offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], halo_volume * sizeof(Matrixsu3));
 
 			halo_offset = size_4(0, 0, 0, (offset.t + params->getNt() - halo_size.t) % params->getNt());
 			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume + halo_volume], &gf_host[get_global_link_pos(0, halo_offset,  params->getNt(), params->getNs())], halo_volume * sizeof(Matrixsu3));
+//			memcpy(&mem_host[local_volume + halo_volume], &gf_host[get_global_link_pos(0, halo_offset,  params->getNt(), params->getNs())], halo_volume * sizeof(Matrixsu3));
+			memcpy(&mem_host[local_volume + halo_volume], &gf_host[uint(LinkIndex(Index(halo_offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], halo_volume * sizeof(Matrixsu3));
 
 			device->getGaugefieldCode()->importGaugefield(buffer, mem_host);
 
@@ -339,7 +342,8 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 			device->getGaugefieldCode()->exportGaugefield(mem_host, buffer);
 			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
-			memcpy(&gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], mem_host, local_volume * sizeof(Matrixsu3));
+//			memcpy(&gf_host[get_global_link_pos(0, offset, params->getNt(), params->getNs())], mem_host, local_volume * sizeof(Matrixsu3));
+			memcpy(&gf_host[uint(LinkIndex(Index(offset, LatticeExtents(params->getNs(), params->getNt())),TDIR))], mem_host, local_volume * sizeof(Matrixsu3));
 
 			delete[] mem_host;
 		}
