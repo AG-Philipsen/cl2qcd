@@ -77,11 +77,12 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vec
 	size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
 		const auto main_device = buffers[0]->get_device();
-		const size_4 grid_dims = main_device->getGridSize();
-		if(grid_dims.x != 1 || grid_dims.y != 1 || grid_dims.z != 1) {
+//		const size_4 grid_dims = main_device->getGridSize();
+		LatticeGrid lG(main_device->getGridSize());
+		if(lG.nx != 1 || lG.ny != 1 || lG.nz != 1) {
 			throw Print_Error_Message("Only the time-direction can be parallelized");
 		}
-		const unsigned GRID_SIZE = grid_dims.t;
+		const unsigned GRID_SIZE = lG.nt;
 		const unsigned HALO_SIZE = main_device->get_halo_size();
 		const unsigned VOLSPACE = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE;
@@ -215,11 +216,11 @@ template<class BUFFER> struct UpdateHaloSOAhelper {
 	UpdateHaloSOAhelper(std::vector<BUFFER*> const & buffers, const hardware::System& system, const float ELEMS_PER_SITE, const unsigned CHUNKS_PER_LANE, unsigned reqd_width)
 	{
 		const auto main_device = buffers[0]->get_device();
-		const size_4 grid_dims = main_device->getGridSize();
-		if(grid_dims.x != 1 || grid_dims.y != 1 || grid_dims.z != 1) {
+		LatticeGrid lG(main_device->getGridSize());
+		if(lG.nx != 1 || lG.ny != 1 || lG.nz != 1) {
 			throw Print_Error_Message("Only the time-direction can be parallelized");
 		}
-		grid_size = grid_dims.t;
+		grid_size = lG.nt;
 		halo_size = main_device->get_halo_size();
 		volspace = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		if(reqd_width > halo_size) {

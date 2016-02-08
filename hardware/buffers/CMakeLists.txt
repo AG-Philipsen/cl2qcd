@@ -32,6 +32,7 @@ add_library(buffers
 	halo_update.cpp
 	su3vec.cpp
 	../../geometry/latticeExtents.cpp
+	../../geometry/latticeGrid.cpp
 )
 
 target_link_libraries(buffers

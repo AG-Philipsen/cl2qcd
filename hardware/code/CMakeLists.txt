@@ -43,6 +43,7 @@ add_library(code
 
 add_library(latticeExtents
 		../../geometry/latticeExtents.cpp
+		../../geometry/latticeGrid.cpp
 )
 
 target_link_libraries(code

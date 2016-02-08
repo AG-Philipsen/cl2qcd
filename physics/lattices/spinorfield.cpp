@@ -308,8 +308,8 @@ void physics::lattices::Spinorfield::import(const spinor * const host) const
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->get_local_lattice_size();
 		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-		auto const grid_size = _device->getGridSize();
-		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
+		LatticeGrid lG(_device->getGridSize());
+		if(lG.nx != 1 || lG.ny != 1 || lG.nz != 1) {
 			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
 		}
 		for(auto const buffer: buffers) {

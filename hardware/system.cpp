@@ -36,14 +36,14 @@
 #include "device.hpp"
 #include "transfer/transfer.hpp"
 #include "openClCode.hpp"
+#include "../geometry/latticeGrid.hpp"
 
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);
-static size_4 calculate_grid_size(size_t num_devices);
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, const LatticeGrid lG, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);
 static void setDebugEnvironmentVariables();
 
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
-		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), inputparameters(meta::Inputparameters{0, nullptr}) //remove the last init. as soon as the member is removed
+		lG(LatticeGrid(0)), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), inputparameters(meta::Inputparameters{0, nullptr}) //remove the last init. as soon as the member is removed
 {
 	kernelBuilder = new hardware::OpenClCode(kernelParameters);
 	setDebugEnvironmentVariables();
@@ -57,7 +57,7 @@ hardware::System::System(const hardware::HardwareParametersInterface & systemPar
 #include "../interfaceImplementations/openClKernelParameters.hpp"
 
 hardware::System::System(meta::Inputparameters& parameters):
-		grid_size(0, 0, 0, 0), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr), inputparameters(parameters)
+		lG(LatticeGrid(0)), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr), inputparameters(parameters)
 {
 	hardwareParameters = new hardware::HardwareParametersImplementation(&parameters);
 	kernelParameters = new hardware::code::OpenClKernelParametersImplementation (parameters) ;
@@ -211,10 +211,10 @@ void hardware::System::initOpenCLDevices()
 		throw std::logic_error( "Did not find any device! Abort!");
 	}
 
-	grid_size = calculate_grid_size(device_infos.size());
-	logger.info() << "Device grid layout: " << grid_size;
+	LatticeGrid lG (device_infos.size()); //make this member
+	logger.info() << "Device grid layout: " << lG.nx << "," << lG.ny << "," << lG.nz << "," << lG.nt << ").";
 
-	devices = init_devices(device_infos, context, grid_size, *hardwareParameters, *kernelBuilder);
+	devices = init_devices(device_infos, context, lG, *hardwareParameters, *kernelBuilder);
 
 	delete[] device_ids;
 
@@ -301,32 +301,18 @@ static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::Dev
 	return filtered;
 }
 
-static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, size_4 grid_size, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder)
+static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, const LatticeGrid lG, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder)
 {
 	std::vector<hardware::Device *> devices;
 	devices.reserve(infos.size());
 
 	unsigned tpos = 0;
 	for(auto const info: infos) {
-		size_4 const grid_pos(0, 0, 0, tpos++);
-		if(grid_pos.t >= grid_size.t) {
-			throw std::logic_error("Failed to place devices on the grid.");
-		}
-		devices.push_back(new hardware::Device(context, info.get_id(), grid_pos, grid_size, openClCodeBuilder, hardwareParameters));
+		LatticeGridIndex lI( 0,0,0,tpos++, lG);
+		devices.push_back(new hardware::Device(context, info.get_id(), lI, lG, openClCodeBuilder, hardwareParameters));
 	}
 
 	return devices;
-}
-
-static size_4 calculate_grid_size(size_t num_devices)
-{
-	// for now only parallelize in t-direction
-	return size_4(1, 1, 1, num_devices);
-}
-
-size_4 hardware::System::get_grid_size()
-{
-	return grid_size;
 }
 
 hardware::Transfer * hardware::System::get_transfer(size_t from, size_t to, unsigned id) const

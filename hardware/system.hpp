@@ -26,6 +26,7 @@
 #include "hardwareParameters.hpp"
 #include "openClKernelParameters.hpp"
 #include "../common_header_files/types.h"
+#include "../geometry/latticeGrid.hpp"
 #include "size_4.hpp"
 #include <map>
 #include <memory>
@@ -77,11 +78,6 @@ namespace hardware {
 		System() = delete;
 		cl_context getContext() const;
 
-		/**
-		 * Get the size of the device grid.
-		 */
-		size_4 get_grid_size();
-
 		Transfer * get_transfer(size_t from, size_t to, unsigned id) const;
 		cl_platform_id get_platform() const;
 
@@ -89,7 +85,7 @@ namespace hardware {
 		std::vector<Device*> devices;
 		cl_context context;
 		cl_platform_id platform;
-		size_4 grid_size;
+		LatticeGrid lG;
 
 		mutable std::map<std::tuple<size_t,size_t,unsigned>,std::unique_ptr<Transfer>> transfer_links;
 

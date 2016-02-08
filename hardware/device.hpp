@@ -29,6 +29,7 @@
 #include "profiling_data.hpp"
 #include "../common_header_files/types.h"
 #include "size_4.hpp"
+#include "../geometry/latticeGrid.hpp"
 
 class MemObjectAllocationTracer;
 
@@ -91,7 +92,7 @@ public:
 	/**
 	 * Initialize an OpenCL device.
 	 */
-	Device(cl_context, cl_device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn);
+	Device(cl_context, cl_device_id, LatticeGridIndex lI, LatticeGrid lG, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn);
 
 	~Device();
 
@@ -187,13 +188,13 @@ public:
 	 *  TODO work over fct. names
 	 * Get the position of the device inside the device grid.
 	 */
-	size_4 getGridPos() const;
+	LatticeGridIndex getGridPos() const;
 
 	/**
 	 * Get the size of the device grid.
 	 * @todo: move to system!
 	 */
-	size_4 getGridSize() const;
+	LatticeGrid getGridSize() const;
 	size_4 get_local_lattice_size() const;
 	unsigned get_halo_size() const;
 
@@ -240,19 +241,19 @@ private:
 	 *  TODO work over member names
 	 * The position of the device in the device grid.
 	 */
-	const size_4 grid_pos;
+	LatticeGridIndex latticeGridIndex;
 
 	/**
 	 * The size of the device grid.
 	 */
-	const size_4 grid_size;
-	const size_4 local_lattice_size;
-	const unsigned halo_size;
+	const LatticeGrid latticeGridExtents;
+	const LocalLatticeExtents localLatticeExtents;
+	const unsigned haloSize;
 
 	/**
 	 * The size of the lattice in device memory.
 	 */
-	const size_4 mem_lattice_size;
+	const LocalLatticeMemoryExtents localLatticeMemoryExtents;
 
 	// memory usage tracing
 	mutable size_t allocated_bytes;

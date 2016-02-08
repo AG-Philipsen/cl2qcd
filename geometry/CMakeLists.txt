@@ -24,14 +24,19 @@
 add_library(geometry
 index.cpp
 latticeExtents.cpp
+latticeGrid.cpp
 index_test.cpp
+latticeGrid_test.cpp
+../host_functionality/logger.cpp
 )
 
-target_link_libraries(geometry )
+target_link_libraries(geometry einhard)
 
 #
 # Definition of tests
 #
 add_executable(index index_test.cpp)
+add_executable(latticeGrid latticeGrid_test.cpp)
 target_link_libraries(index 	${Boost_LIBRARIES} geometry )
+target_link_libraries(latticeGrid 	${Boost_LIBRARIES} geometry )
 add_test(Index index )

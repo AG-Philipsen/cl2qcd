@@ -25,11 +25,9 @@
 #include "../host_functionality/logger.hpp"
 
 static bool retrieve_device_availability(cl_device_id device_id);
-static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME);
-static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size);
 
-//todo: grid_size should not be a member of this class, but of system
-hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid_pos, size_4 grid_size, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn)
+//todo: lattice_grid_extent should not be a member of this class, but of system
+hardware::Device::Device(cl_context context, cl_device_id device_id, LatticeGridIndex lI, LatticeGrid lG, const hardware::OpenClCode & builderIn, const hardware::HardwareParametersInterface & parametersIn)
 	: DeviceInfo(device_id),
 	openClCodeBuilder( &builderIn ), hardwareParameters(&parametersIn),
 	  context(context),
@@ -49,19 +47,19 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 	  heatbath_code(nullptr),
 	  kappa_code(nullptr),
 	  buffer_code(nullptr),
-	  grid_pos(grid_pos),
-	  grid_size(grid_size),
-	  local_lattice_size(calculate_local_lattice_size(grid_size, hardwareParameters->getNs(), hardwareParameters->getNt())),
-	  halo_size(2),
-	  mem_lattice_size(calculate_mem_lattice_size(grid_size, local_lattice_size, halo_size)),
+	  latticeGridIndex(lI),
+	  latticeGridExtents(lG),
+	  localLatticeExtents(LocalLatticeExtents(lG, LatticeExtents(hardwareParameters->getNs(), hardwareParameters->getNt()))),
+	  haloSize(2),
+	  localLatticeMemoryExtents(LocalLatticeMemoryExtents(lG, localLatticeExtents, haloSize)),
 	  allocated_bytes(0),
 	  max_allocated_bytes(0),
 	  allocated_hostptr_bytes(0)
 {
 	logger.debug() << "Initializing " << get_name();
-	logger.debug() << "Device position: " << grid_pos;
-	logger.debug() << "Local lattice size: " << local_lattice_size;
-	logger.debug() << "Memory lattice size: " << mem_lattice_size;
+	logger.debug() << "Device position: " << "(" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << ")";
+	logger.debug() << "Local lattice size: " << "(" << localLatticeExtents.nx << "," << localLatticeExtents.ny << "," << localLatticeExtents.nz << "," << localLatticeExtents.nt << ")";
+	logger.debug() << "Memory lattice size: " << "(" << localLatticeMemoryExtents.nx << "," << localLatticeMemoryExtents.ny << "," << localLatticeMemoryExtents.nz << "," << localLatticeMemoryExtents.nt << ")";
 
 	bool available = retrieve_device_availability(device_id);
 	if(!available) {
@@ -75,7 +73,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, size_4 grid
 		throw OpenclException(err, "clCreateCommandQueue", __FILE__, __LINE__);
 	}
 
-	logger.trace() << "Initial memory usage (" << grid_pos << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+	logger.trace() << "Initial memory usage (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }
 
 hardware::Device::~Device()
@@ -129,7 +127,7 @@ hardware::Device::~Device()
 	clFinish(command_queue);
 	clReleaseCommandQueue(command_queue);
 
-	logger.info() << "Maximum memory used (" << grid_pos << "): " << max_allocated_bytes << " bytes";
+	logger.info() << "Maximum memory used (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << max_allocated_bytes << " bytes";
 }
 
 hardware::Device::operator cl_command_queue() const noexcept
@@ -530,65 +528,34 @@ static bool retrieve_device_availability(cl_device_id device_id)
 	return available;
 }
 
-size_4 hardware::Device::getGridPos() const
+LatticeGridIndex hardware::Device::getGridPos() const
 {
-	return grid_pos;
+	return latticeGridIndex;
 }
 
-size_4 hardware::Device::getGridSize() const
+LatticeGrid hardware::Device::getGridSize() const
 {
-	return grid_size;
-}
-
-static size_4 calculate_local_lattice_size(size_4 grid_size, const unsigned NSPACE, const unsigned NTIME)
-{
-	const size_4 local_size(NSPACE / grid_size.x, NSPACE / grid_size.y, NSPACE / grid_size.z, NTIME / grid_size.t);
-
-	if(local_size.x % 2 || local_size.y % 2 || local_size.z % 2 || local_size.t % 2) {
-		logger.warn() << "Local lattice size is odd. This is known to cause problems!";
-	}
-
-	if(local_size.x * grid_size.x != NSPACE
-	   || local_size.y * grid_size.y != NSPACE
-	   || local_size.z * grid_size.z != NSPACE
-	   || local_size.t * grid_size.t != NTIME) {
-		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
-	}
-
-	return local_size;
+	return latticeGridExtents;
 }
 
 size_4 hardware::Device::get_local_lattice_size() const
 {
-	return local_lattice_size;
+	return size_4(localLatticeExtents.nx, localLatticeExtents.ny, localLatticeExtents.nz, localLatticeExtents.nt);
 }
 
 size_4 hardware::Device::get_mem_lattice_size() const
 {
-	return mem_lattice_size;
+	return size_4(localLatticeMemoryExtents.nx, localLatticeMemoryExtents.ny, localLatticeMemoryExtents.nz, localLatticeMemoryExtents.nt);
 }
 
 unsigned hardware::Device::get_halo_size() const
 {
-	return halo_size;
-}
-
-static size_4 calculate_mem_lattice_size(size_4 grid_size, size_4 local_lattice_size, unsigned halo_size)
-{
-	if(local_lattice_size.t < halo_size) {
-		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
-	}
-	return size_4(
-	         local_lattice_size.x + (grid_size.x > 1 ? 2 * halo_size : 0),
-	         local_lattice_size.y + (grid_size.y > 1 ? 2 * halo_size : 0),
-	         local_lattice_size.z + (grid_size.z > 1 ? 2 * halo_size : 0),
-	         local_lattice_size.t + (grid_size.t > 1 ? 2 * halo_size : 0)
-	       );
+	return haloSize;
 }
 
 void hardware::Device::markMemReleased(const bool host, const size_t size) const
 {
-	logger.trace() << "Released " << size << " bytes on (" << grid_pos << ").";
+	logger.trace() << "Released " << size << " bytes on (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << ").";
 	if(host) {
 		allocated_hostptr_bytes -= size;
 	} else {
@@ -596,16 +563,16 @@ void hardware::Device::markMemReleased(const bool host, const size_t size) const
 	}
 	if(allocated_bytes > max_allocated_bytes)
 		max_allocated_bytes = allocated_bytes;
-	logger.trace() << "Memory usage (" << grid_pos << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+	logger.trace() << "Memory usage (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }
 
 void hardware::Device::markMemAllocated(const bool host, const size_t size) const
 {
-	logger.trace() << "Allocted " << size << " bytes on (" << grid_pos << ").";
+	logger.trace() << "Allocted " << size << " bytes on (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << ").";
 	if(host) {
 		allocated_hostptr_bytes += size;
 	} else {
 		allocated_bytes += size;
 	}
-	logger.trace() << "Memory usage (" << grid_pos << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+	logger.trace() << "Memory usage (" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }
