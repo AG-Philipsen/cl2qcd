@@ -587,7 +587,7 @@ hardware::code::Molecular_Dynamics::Molecular_Dynamics(const hardware::code::Ope
 	  fermion_stagg_partial_force_eo(0),
 	  gauge_force_tlsym_1 (0), gauge_force_tlsym_2 (0), gauge_force_tlsym_3 (0),
 	  gauge_force_tlsym_4 (0), gauge_force_tlsym_5 (0), gauge_force_tlsym_6 (0),
-	  gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->get_mem_lattice_size()), device) : 0)
+	  gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * get_vol4d(device->getLocalLatticeMemoryExtents()), device) : 0)
 {
 	fill_kernels();
 }

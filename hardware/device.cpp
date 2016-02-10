@@ -57,9 +57,9 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, LatticeGrid
 	  allocated_hostptr_bytes(0)
 {
 	logger.debug() << "Initializing " << get_name();
-	logger.debug() << "Device position: " << "(" << latticeGridIndex.x << "," << latticeGridIndex.y << "," << latticeGridIndex.z << "," << latticeGridIndex.t << ")";
-	logger.debug() << "Local lattice size: " << "(" << localLatticeExtents.nx << "," << localLatticeExtents.ny << "," << localLatticeExtents.nz << "," << localLatticeExtents.nt << ")";
-	logger.debug() << "Memory lattice size: " << "(" << localLatticeMemoryExtents.nx << "," << localLatticeMemoryExtents.ny << "," << localLatticeMemoryExtents.nz << "," << localLatticeMemoryExtents.nt << ")";
+	logger.debug() << "Device position: " << latticeGridIndex;
+	logger.debug() << "Local lattice size: " << localLatticeExtents;
+	logger.debug() << "Memory lattice size: " << localLatticeMemoryExtents;
 
 	bool available = retrieve_device_availability(device_id);
 	if(!available) {
@@ -538,17 +538,17 @@ LatticeGrid hardware::Device::getGridSize() const
 	return latticeGridExtents;
 }
 
-size_4 hardware::Device::get_local_lattice_size() const
+size_4 hardware::Device::getLocalLatticeExtents() const
 {
-	return size_4(localLatticeExtents.nx, localLatticeExtents.ny, localLatticeExtents.nz, localLatticeExtents.nt);
+	return size_4(localLatticeExtents.x, localLatticeExtents.y, localLatticeExtents.z, localLatticeExtents.t);
 }
 
-size_4 hardware::Device::get_mem_lattice_size() const
+size_4 hardware::Device::getLocalLatticeMemoryExtents() const
 {
-	return size_4(localLatticeMemoryExtents.nx, localLatticeMemoryExtents.ny, localLatticeMemoryExtents.nz, localLatticeMemoryExtents.nt);
+	return size_4(localLatticeMemoryExtents.x, localLatticeMemoryExtents.y, localLatticeMemoryExtents.z, localLatticeMemoryExtents.t);
 }
 
-unsigned hardware::Device::get_halo_size() const
+unsigned hardware::Device::getHaloExtent() const
 {
 	return haloSize;
 }

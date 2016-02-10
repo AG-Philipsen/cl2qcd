@@ -40,7 +40,7 @@ static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const har
 	std::vector<const SU3vec*> buffers;
 	buffers.reserve(devices.size());
 	for(auto device: devices) {
-		buffers.push_back(new SU3vec(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device));
+		buffers.push_back(new SU3vec(hardware::code::get_eoprec_spinorfieldsize(device->getLocalLatticeMemoryExtents()), device));
 	}
 	return buffers;
 }

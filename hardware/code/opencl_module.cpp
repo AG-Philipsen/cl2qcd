@@ -47,8 +47,8 @@ static std::string collect_build_options(const hardware::Device * device, const 
 	using namespace hardware::buffers;
 	using namespace hardware::code;
 
-	const size_4 local_size = device->get_local_lattice_size();
-	const size_4 mem_size = device->get_mem_lattice_size();
+	const size_4 local_size = device->getLocalLatticeExtents();
+	const size_4 mem_size = device->getLocalLatticeMemoryExtents();
 
 	std::ostringstream options;
 	options.precision(16);

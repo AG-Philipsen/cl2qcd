@@ -77,16 +77,12 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vec
 	size_t num_buffers = buffers.size();
 	if(num_buffers > 1) {
 		const auto main_device = buffers[0]->get_device();
-//		const size_4 grid_dims = main_device->getGridSize();
 		LatticeGrid lG(main_device->getGridSize());
-		if(lG.nx != 1 || lG.ny != 1 || lG.nz != 1) {
-			throw Print_Error_Message("Only the time-direction can be parallelized");
-		}
-		const unsigned GRID_SIZE = lG.nt;
-		const unsigned HALO_SIZE = main_device->get_halo_size();
+		const unsigned GRID_SIZE = lG.t;
+		const unsigned HALO_SIZE = main_device->getHaloExtent();
 		const unsigned VOLSPACE = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE;
-		const unsigned VOL4D_LOCAL = get_vol4d(main_device->get_local_lattice_size()) * ELEMS_PER_SITE;
+		const unsigned VOL4D_LOCAL = get_vol4d(main_device->getLocalLatticeExtents()) * ELEMS_PER_SITE;
 		const size_t num_buffers = buffers.size();
 
 		// host buffers for intermediate data storage (no direct device to device copy)
@@ -139,7 +135,7 @@ template<typename BUFFER> static hardware::SynchronizationEvent hardware::buffer
 	logger.debug() << "Extracting boundary. Offset: " << in_lane_offset << " - Elements per chunk: " << HALO_CHUNK_ELEMS;
 	const unsigned NUM_LANES = buffer->get_lane_count();
 	const unsigned STORAGE_TYPE_SIZE = buffer->get_storage_type_size();
-	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->get_mem_lattice_size()) * ELEMS_PER_SITE;
+	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->getLocalLatticeMemoryExtents()) * ELEMS_PER_SITE;
 
 	const size_t buffer_origin[] = { in_lane_offset * STORAGE_TYPE_SIZE, 0, 0 };
 
@@ -168,7 +164,7 @@ template<typename BUFFER> static hardware::SynchronizationEvent hardware::buffer
 	logger.debug() << "Sending Halo. Offset: " << in_lane_offset << " - Elements per chunk: " << HALO_CHUNK_ELEMS;
 	const unsigned NUM_LANES = buffer->get_lane_count();
 	const unsigned STORAGE_TYPE_SIZE = buffer->get_storage_type_size();
-	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->get_mem_lattice_size()) * ELEMS_PER_SITE;
+	const unsigned CHUNK_STRIDE = get_vol4d(buffer->get_device()->getLocalLatticeMemoryExtents()) * ELEMS_PER_SITE;
 
 	const size_t buffer_origin[] = { in_lane_offset * STORAGE_TYPE_SIZE, 0, 0 };
 
@@ -217,11 +213,8 @@ template<class BUFFER> struct UpdateHaloSOAhelper {
 	{
 		const auto main_device = buffers[0]->get_device();
 		LatticeGrid lG(main_device->getGridSize());
-		if(lG.nx != 1 || lG.ny != 1 || lG.nz != 1) {
-			throw Print_Error_Message("Only the time-direction can be parallelized");
-		}
-		grid_size = lG.nt;
-		halo_size = main_device->get_halo_size();
+		grid_size = lG.t;
+		halo_size = main_device->getHaloExtent();
 		volspace = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		if(reqd_width > halo_size) {
 			std::ostringstream tmp;
@@ -235,7 +228,7 @@ template<class BUFFER> struct UpdateHaloSOAhelper {
 		total_halo_chunk_elems = halo_size * volspace;
 		reqd_halo_elems = reqd_width * volspace * CHUNKS_PER_LANE;
 		reqd_halo_chunk_elems = reqd_width * volspace;
-		vol4d_local = get_vol4d(main_device->get_local_lattice_size()) * ELEMS_PER_SITE;
+		vol4d_local = get_vol4d(main_device->getLocalLatticeExtents()) * ELEMS_PER_SITE;
 
 		logger.trace() << "GRID_SIZE: " << grid_size;
 		logger.trace() << "HALO_SIZE: " << halo_size;

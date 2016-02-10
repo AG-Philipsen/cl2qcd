@@ -20,22 +20,22 @@
 
 #include "latticeExtents.hpp"
 
-unsigned int LatticeExtents::getNs()
+unsigned int LatticeExtents::getNs() const
 {
 	return ns;
 }
 
-unsigned int LatticeExtents::getNt()
+unsigned int LatticeExtents::getNt() const
 {
 	return nt;
 }
 
-unsigned int LatticeExtents::getLatticeVolume()
+unsigned int LatticeExtents::getLatticeVolume() const
 {
 	return ns * ns * ns * nt;
 }
 
-unsigned int LatticeExtents::getSpatialLatticeVolume()
+unsigned int LatticeExtents::getSpatialLatticeVolume() const
 {
 	return ns * ns * ns;
 }

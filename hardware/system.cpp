@@ -211,8 +211,8 @@ void hardware::System::initOpenCLDevices()
 		throw std::logic_error( "Did not find any device! Abort!");
 	}
 
-	LatticeGrid lG (device_infos.size()); //make this member
-	logger.info() << "Device grid layout: " << lG.nx << "," << lG.ny << "," << lG.nz << "," << lG.nt << ").";
+	LatticeGrid lG (device_infos.size());
+	logger.info() << "Device grid layout: " << lG;
 
 	devices = init_devices(device_infos, context, lG, *hardwareParameters, *kernelBuilder);
 

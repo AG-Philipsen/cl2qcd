@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_SUITE(IndexNeighbours)
 
 	BOOST_AUTO_TEST_CASE(upT)
 	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).up(TDIR)), 1 + 4*2 + 4*4*3 + 4*4*4*1);
+		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).up(TDIR)), 1 + 4*2 + 4*4*3 + 4*4*4*0);
 	}
 
 	BOOST_AUTO_TEST_CASE(downX)
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_SUITE(LinkIndexNeighbours)
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(XDIR)), XDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(YDIR)), XDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(ZDIR)), XDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(TDIR)), XDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, XDIR).up(TDIR)), XDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*0) );
 	}
 
 	BOOST_AUTO_TEST_CASE(upY)
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_SUITE(LinkIndexNeighbours)
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(XDIR)), YDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(YDIR)), YDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(ZDIR)), YDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(TDIR)), YDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, YDIR).up(TDIR)), YDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*0) );
 	}
 
 	BOOST_AUTO_TEST_CASE(upZ)
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_SUITE(LinkIndexNeighbours)
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(XDIR)), ZDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(YDIR)), ZDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(ZDIR)), ZDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(TDIR)), ZDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, ZDIR).up(TDIR)), ZDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*0) );
 	}
 
 	BOOST_AUTO_TEST_CASE(upT)
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_SUITE(LinkIndexNeighbours)
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(XDIR)), TDIR + NDIM * (0 + 4*2 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(YDIR)), TDIR + NDIM * (3 + 4*3 + 4*4*1 + 4*4*4*4) );
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(ZDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*2 + 4*4*4*4) );
-		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(TDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*1) );
+		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).up(TDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*0) );
 	}
 
 	BOOST_AUTO_TEST_CASE(downX)

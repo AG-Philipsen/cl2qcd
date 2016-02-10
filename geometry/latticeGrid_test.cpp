@@ -21,11 +21,13 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::Device
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 #include "latticeGrid.hpp"
 
 LatticeExtents lE(4, 8);
 LatticeGrid lG(4);
+LatticeGridIndex lGI(0,0,0,3,lG);
 LocalLatticeExtents llE(lG, lE);
 LocalLatticeMemoryExtents llME(lG, llE, 2);
 
@@ -33,10 +35,10 @@ BOOST_AUTO_TEST_SUITE(Grid)
 
 	BOOST_AUTO_TEST_CASE(init)
 	{
-		BOOST_REQUIRE_EQUAL(lG.nx, 1);
-		BOOST_REQUIRE_EQUAL(lG.ny, 1);
-		BOOST_REQUIRE_EQUAL(lG.nz, 1);
-		BOOST_REQUIRE_EQUAL(lG.nt, 4);
+		BOOST_REQUIRE_EQUAL(lG.x, 1);
+		BOOST_REQUIRE_EQUAL(lG.y, 1);
+		BOOST_REQUIRE_EQUAL(lG.z, 1);
+		BOOST_REQUIRE_EQUAL(lG.t, 4);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -45,10 +47,10 @@ BOOST_AUTO_TEST_SUITE(GridIndex)
 
 	BOOST_AUTO_TEST_CASE(exception)
 	{
-		BOOST_CHECK_THROW(LatticeGridIndex(2, 1, 1, 4, lG), std::logic_error);
-		BOOST_CHECK_THROW(LatticeGridIndex(1, 2, 1, 4, lG), std::logic_error);
-		BOOST_CHECK_THROW(LatticeGridIndex(1, 1, 2, 4, lG), std::logic_error);
-		BOOST_CHECK_THROW(LatticeGridIndex(1, 1, 1, 5, lG), std::logic_error);
+		BOOST_CHECK_THROW(LatticeGridIndex(1, 0, 0, 0, lG), std::logic_error);
+		BOOST_CHECK_THROW(LatticeGridIndex(0, 1, 0, 0, lG), std::logic_error);
+		BOOST_CHECK_THROW(LatticeGridIndex(0, 0, 1, 0, lG), std::logic_error);
+		BOOST_CHECK_THROW(LatticeGridIndex(0, 0, 0, 4, lG), std::logic_error);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -57,10 +59,10 @@ BOOST_AUTO_TEST_SUITE(LocalExtents)
 
 	BOOST_AUTO_TEST_CASE(init)
 	{
-		BOOST_REQUIRE_EQUAL(llE.nx, 4 / 1);
-		BOOST_REQUIRE_EQUAL(llE.ny, 4 / 1);
-		BOOST_REQUIRE_EQUAL(llE.nz, 4 / 1);
-		BOOST_REQUIRE_EQUAL(llE.nt, 8 / 4);
+		BOOST_REQUIRE_EQUAL(llE.x, 4 / 1);
+		BOOST_REQUIRE_EQUAL(llE.y, 4 / 1);
+		BOOST_REQUIRE_EQUAL(llE.z, 4 / 1);
+		BOOST_REQUIRE_EQUAL(llE.t, 8 / 4);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -69,9 +71,20 @@ BOOST_AUTO_TEST_SUITE(LocalMemoryExtents)
 
 BOOST_AUTO_TEST_CASE(init)
 {
-	BOOST_REQUIRE_EQUAL(llME.nx, 4);
-	BOOST_REQUIRE_EQUAL(llME.ny, 4);
-	BOOST_REQUIRE_EQUAL(llME.nz, 4);
-	BOOST_REQUIRE_EQUAL(llME.nt, 2 + 2 * 2);
+	BOOST_REQUIRE_EQUAL(llME.x, 4);
+	BOOST_REQUIRE_EQUAL(llME.y, 4);
+	BOOST_REQUIRE_EQUAL(llME.z, 4);
+	BOOST_REQUIRE_EQUAL(llME.t, 2 + 2 * 2);
+}
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(OverloadedStreamOperator)
+
+BOOST_AUTO_TEST_CASE(LatticeGridStream)
+{
+	BOOST_CHECK_NO_THROW(std::cout << lG);
+	BOOST_CHECK_NO_THROW(std::cout << lGI);
+	BOOST_CHECK_NO_THROW(std::cout << llE);
+	BOOST_CHECK_NO_THROW(std::cout << llME);
 }
 BOOST_AUTO_TEST_SUITE_END()

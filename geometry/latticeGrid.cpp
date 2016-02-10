@@ -22,46 +22,49 @@
 #include "../executables/exceptions.h"
 #include "../host_functionality/logger.hpp"
 
-LatticeGrid::LatticeGrid( const unsigned int numberOfDevices):
-nx(1), ny(1), nz(1), nt(numberOfDevices)
+FourUnsignedInt::FourUnsignedInt(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t):
+x(x), y(y), z(z), t(t)
+{}
+
+std::ostream& operator<<(std::ostream& out, const FourUnsignedInt & integers)
 {
-	if(nx != 1 || ny != 1 || nz != 1) { //by now useless, but needed later on
+	return out << '(' << integers.x << ", " << integers.y << ", " << integers.z << ", " << integers.t << ')';
+}
+
+LatticeGrid::LatticeGrid( const unsigned int numberOfDevices):
+FourUnsignedInt(1,1,1,numberOfDevices)
+{
+	if(x != 1 || y != 1 || z != 1) { //by now useless, but needed later on
 		throw Print_Error_Message("Only the time-direction can be parallelized");
 	}
 }
 
 LatticeGridIndex::LatticeGridIndex(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t, const LatticeGrid lG):
-x(x), y(y), z(z), t(t)
+FourUnsignedInt(x, y, z, t)
 {
-	if( x >= lG.nx || y >= lG.ny || z >= lG.nz || t >= lG.nt ) {
+	if( x >= lG.x || y >= lG.y || z >= lG.z || t >= lG.t ) {
 	throw std::logic_error("Failed to place devices on the grid.");
 	}
 }
 
-LocalLatticeExtents::LocalLatticeExtents( LatticeGrid lG, LatticeExtents lE ):
-		nx(lE.getNs() / lG.nx),
-		ny(lE.getNs() / lG.ny),
-		nz(lE.getNs() / lG.nz),
-		nt(lE.getNt() / lG.nt)
+LocalLatticeExtents::LocalLatticeExtents(const LatticeGrid lG, const LatticeExtents lE ):
+		FourUnsignedInt(lE.getNs() / lG.x, lE.getNs() / lG.y, lE.getNs() / lG.z, lE.getNt() / lG.t)
 {
-	if (nx % 2 || ny % 2 || nz %2 || nt % 2)
+	if (x % 2 || y % 2 || z %2 || t % 2)
 	{
 		logger.warn() << "Local lattice size is odd. This is known to cause problems!";
 	}
-	if (nx * lG.nx != lE.getNs() || ny * lG.ny != lE.getNs() || nz * lG.nz != lE.getNs() || nt * lG.nt != lE.getNt())
+	if (x * lG.x != lE.getNs() || y * lG.y != lE.getNs() || z * lG.z != lE.getNs() || t * lG.t != lE.getNt())
 	{
 		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
 	}
 
 }
 
-LocalLatticeMemoryExtents::LocalLatticeMemoryExtents( LatticeGrid lG, LocalLatticeExtents llE, unsigned int halo_size ):
-		nx(llE.nx + (lG.nx > 1 ? 2 * halo_size : 0)),
-		ny(llE.ny + (lG.ny > 1 ? 2 * halo_size : 0)),
-		nz(llE.nz + (lG.nz > 1 ? 2 * halo_size : 0)),
-		nt(llE.nt + (lG.nt > 1 ? 2 * halo_size : 0))
+LocalLatticeMemoryExtents::LocalLatticeMemoryExtents( const LatticeGrid lG, const LocalLatticeExtents llE, unsigned int halo_size ):
+		FourUnsignedInt(llE.x + (lG.x > 1 ? 2 * halo_size : 0), llE.y + (lG.y > 1 ? 2 * halo_size : 0), llE.z + (lG.z > 1 ? 2 * halo_size : 0), llE.t + (lG.t > 1 ? 2 * halo_size : 0))
 {
-	if(nt < halo_size) {
+	if(t < halo_size) {
 		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
 	}
 }

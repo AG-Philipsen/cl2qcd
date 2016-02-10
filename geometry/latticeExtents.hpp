@@ -50,10 +50,10 @@ struct LatticeExtents2
 	LatticeExtents2(LatticeSymmetricExtent nIn): ns(nIn.n), nt(nIn.n) {};
 	LatticeSpatialExtent ns;
 	LatticeTemporalExtent nt;
-	unsigned int getNs();
-	unsigned int getNt();
-	unsigned int getLatticeVolume();
-	unsigned int getSpatialLatticeVolume();
+	unsigned int getNs() const;
+	unsigned int getNt() const;
+	unsigned int getLatticeVolume() const;
+	unsigned int getSpatialLatticeVolume() const;
 };
 
 struct LatticeExtents
@@ -63,8 +63,8 @@ struct LatticeExtents
 	LatticeExtents(const unsigned int nsIn, const unsigned int ntIn): ns(nsIn), nt(ntIn) {};
 	const unsigned int ns;
 	const unsigned int nt;
-	unsigned int getNs();
-	unsigned int getNt();
-	unsigned int getLatticeVolume();
-	unsigned int getSpatialLatticeVolume();
+	unsigned int getNs() const;
+	unsigned int getNt() const;
+	unsigned int getLatticeVolume() const;
+	unsigned int getSpatialLatticeVolume() const;
 };

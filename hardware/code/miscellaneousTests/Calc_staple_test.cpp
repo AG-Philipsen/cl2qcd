@@ -25,7 +25,7 @@
 
 #include "testCode.hpp"
 
-const ReferenceValues calculateReferenceValue_staple(LatticeExtents lE)
+const ReferenceValues calculateReferenceValue_staple(const LatticeExtents lE)
 {
 	return ReferenceValues{ -11.30184821830432 * lE.getLatticeVolume() };
 }

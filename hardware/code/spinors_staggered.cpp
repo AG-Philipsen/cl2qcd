@@ -532,7 +532,7 @@ void hardware::code::Spinors_staggered::convert_from_eoprec_device(const hardwar
 {
 	using namespace hardware::buffers;
 
-	const size_4 mem_size = get_device()->get_mem_lattice_size();
+	const size_4 mem_size = get_device()->getLocalLatticeMemoryExtents();
 
 	// check buffer sizes
 	const size_t in_size = in1->get_elements();
@@ -588,7 +588,7 @@ void hardware::code::Spinors_staggered::convert_to_eoprec_device(const hardware:
 {
 	using namespace hardware::buffers;
 
-	const size_4 mem_size = get_device()->get_mem_lattice_size();
+	const size_4 mem_size = get_device()->getLocalLatticeMemoryExtents();
 
 	// check buffer sizes
 	const size_t out_size = out1->get_elements();

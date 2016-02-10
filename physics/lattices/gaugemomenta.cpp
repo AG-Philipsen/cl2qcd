@@ -48,7 +48,7 @@ static  std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(c
 	std::vector<const Gaugemomentum*> buffers;
 	buffers.reserve(devices.size());
 	for(auto device: devices) {
-		buffers.push_back(new Gaugemomentum(NDIM * get_vol4d(device->get_mem_lattice_size()), device));
+		buffers.push_back(new Gaugemomentum(NDIM * get_vol4d(device->getLocalLatticeMemoryExtents()), device));
 	}
 	return buffers;
 }
@@ -224,13 +224,8 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 		device->getGaugemomentumCode()->importGaugemomentumBuffer(buffers[0], host);
 	} else {
 		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->get_local_lattice_size();
-		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-//		auto const grid_size = _device->getGridSize();
-		LatticeGrid lG(_device->getGridSize());
-		if(lG.nx != 1 || lG.ny != 1 || lG.nz != 1) {
-			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
-		}
+		auto const local_size = _device->getLocalLatticeExtents();
+		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->getHaloExtent());
 		for(auto const buffer: buffers) {
 			auto device = buffer->get_device();
 			ae * mem_host = new ae[buffer->get_elements()];

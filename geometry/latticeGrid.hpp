@@ -21,30 +21,32 @@
 
 #include "latticeExtents.hpp"
 #include "../common_header_files/globaldefs.h"
-#include "../hardware/size_4.hpp"
+#include <ostream>
+
+struct FourUnsignedInt
+{
+	FourUnsignedInt(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t);
+	const unsigned int x, y, z, t;
+};
+std::ostream& operator<<(std::ostream& out, const FourUnsignedInt & integers);
 
 
-
-struct LatticeGrid
+struct LatticeGrid : public FourUnsignedInt
 {
 	LatticeGrid( const unsigned int numberOfDevices);
-	const unsigned nx, ny, nz, nt;
 };
 
-struct LatticeGridIndex
+struct LatticeGridIndex : public FourUnsignedInt
 {
 	LatticeGridIndex(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t, const LatticeGrid);
-	const unsigned int x,y,z,t;
 };
 
-struct LocalLatticeExtents
+struct LocalLatticeExtents : public FourUnsignedInt
 {
-	LocalLatticeExtents(LatticeGrid lG, LatticeExtents lE);
-	const unsigned int nx, ny, nz, nt;
+	LocalLatticeExtents(const LatticeGrid lG, const LatticeExtents lE);
 };
 
-struct LocalLatticeMemoryExtents
+struct LocalLatticeMemoryExtents : public FourUnsignedInt
 {
-	LocalLatticeMemoryExtents(LatticeGrid lG, LocalLatticeExtents llE, unsigned int halo_size);
-	const unsigned int nx, ny, nz, nt;
+	LocalLatticeMemoryExtents(const LatticeGrid lG, const LocalLatticeExtents llE, unsigned int halo_size);
 };

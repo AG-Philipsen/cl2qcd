@@ -80,7 +80,7 @@ GaugefieldTester::GaugefieldTester(std::string kernelName, const ParameterCollec
 	code = device->getGaugefieldCode();
 }
 
-int calculateGaugefieldSize(LatticeExtents latticeExtentsIn) noexcept
+int calculateGaugefieldSize(const LatticeExtents latticeExtentsIn) noexcept
 {
 	return 	latticeExtentsIn.getLatticeVolume() * NDIM;
 }

@@ -25,7 +25,7 @@
 
 #include "testCode.hpp"
 
-const ReferenceValues calculateReferenceValue_localQ(LatticeExtents lE)
+const ReferenceValues calculateReferenceValue_localQ(const LatticeExtents lE)
 {
 	return ReferenceValues{ 72.00012210960028 * lE.getLatticeVolume() };
 }

@@ -77,7 +77,7 @@ void SpinorTester::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::b
   doubleBuffer->dump(&kernelResult[0]);
 }
 
-int calculateSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept
+int calculateSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept
 {
 	return 	latticeExtendsIn.getLatticeVolume();
 }

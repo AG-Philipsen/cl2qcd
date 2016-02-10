@@ -51,7 +51,7 @@ static  std::vector<const hardware::buffers::Spinor *> allocate_buffers(const ha
 	std::vector<const Spinor*> buffers;
 	buffers.reserve(devices.size());
 	for(auto device: devices) {
-		buffers.push_back(new Spinor(hardware::code::get_eoprec_spinorfieldsize(device->get_mem_lattice_size()), device));
+		buffers.push_back(new Spinor(hardware::code::get_eoprec_spinorfieldsize(device->getLocalLatticeMemoryExtents()), device));
 	}
 	return buffers;
 }
@@ -597,7 +597,7 @@ void physics::lattices::Spinorfield_eo::require_halo(unsigned reqd_width) const
 {
 #ifdef LAZY_HALO_UPDATES
 	if(!reqd_width) {
-		reqd_width = buffers[0]->get_device()->get_halo_size();
+		reqd_width = buffers[0]->get_device()->getHaloExtent();
 	}
 	logger.debug() << "Halo of Spinorfield_eo " << this << " required with width " << reqd_width << ". Width of valid halo: " << valid_halo_width;
 	if(valid_halo_width < reqd_width) {
@@ -611,7 +611,7 @@ physics::lattices::Spinorfield_eoHaloUpdate physics::lattices::Spinorfield_eo::r
 {
 #ifdef LAZY_HALO_UPDATES
 	if(!reqd_width) {
-		reqd_width = buffers[0]->get_device()->get_halo_size();
+		reqd_width = buffers[0]->get_device()->getHaloExtent();
 	}
 	logger.debug() << "Async Halo of Spinorfield_eo " << this << " required with width " << reqd_width << ". Width of valid halo: " << valid_halo_width;
 	if(valid_halo_width < reqd_width) {
@@ -638,7 +638,7 @@ void physics::lattices::Spinorfield_eoHaloUpdate::finalize()
 void physics::lattices::Spinorfield_eo::mark_halo_clean(unsigned width) const
 {
 #ifdef LAZY_HALO_UPDATES
-	valid_halo_width = width ? width : buffers[0]->get_device()->get_halo_size();
+	valid_halo_width = width ? width : buffers[0]->get_device()->getHaloExtent();
 	logger.trace() << "Halo of Spinorfield_eo " << this << " marked as clean (width " << valid_halo_width << ").";
 #endif
 }

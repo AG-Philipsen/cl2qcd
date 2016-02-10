@@ -106,7 +106,7 @@ static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardwa
 	auto const devices = system.get_devices();
 	for(auto device: devices) 
 	{
-		buffers.push_back(new SU3(get_vol4d(device->get_mem_lattice_size()) * 4, device));
+		buffers.push_back(new SU3(get_vol4d(device->getLocalLatticeMemoryExtents()) * 4, device));
 	}
 	return buffers;
 }
@@ -288,12 +288,8 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 		device->synchronize();
 	} else {
 		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->get_local_lattice_size();
-		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-		auto grid_size = _device->getGridSize();
-		if(grid_size.nx != 1 || grid_size.ny != 1 || grid_size.nz != 1) {
-			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
-		}
+		auto const local_size = _device->getLocalLatticeExtents();
+		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->getHaloExtent());
 		for(auto const buffer: buffers) {
 			auto device = buffer->get_device();
 			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
@@ -327,11 +323,7 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 		device->synchronize();
 	} else {
 		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->get_local_lattice_size();
-		auto grid_size = _device->getGridSize();
-		if(grid_size.nx != 1 || grid_size.ny != 1 || grid_size.nz != 1) {
-			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
-		}
+		auto const local_size = _device->getLocalLatticeExtents();
 		for(auto const buffer: buffers) {
 			// fetch local part for each device
 			auto device = buffer->get_device();

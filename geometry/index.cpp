@@ -64,7 +64,7 @@ const Index Index::up(const Direction dir) const
 		break;
 
 	case TDIR:
-		return Index( x, y, z, (t+1)%latticeExtents.ns, latticeExtents);
+		return Index( x, y, z, (t+1)%latticeExtents.nt, latticeExtents);
 		break;
 	default:
 		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
@@ -77,19 +77,19 @@ const Index Index::down(const Direction dir) const
 	switch(dir)
 	{
 	case XDIR:
-		return Index( (x-1)%latticeExtents.ns, y, z, t, latticeExtents);
+		return Index( (latticeExtents.ns+x-1)%latticeExtents.ns, y, z, t, latticeExtents);
 		break;
 
 	case YDIR:
-		return Index( x, (y-1)%latticeExtents.ns, z, t, latticeExtents);
+		return Index( x, (latticeExtents.ns+y-1)%latticeExtents.ns, z, t, latticeExtents);
 		break;
 
 	case ZDIR:
-		return Index( x, y, (z-1)%latticeExtents.ns, t, latticeExtents);
+		return Index( x, y, (latticeExtents.ns+z-1)%latticeExtents.ns, t, latticeExtents);
 		break;
 
 	case TDIR:
-		return Index( x, y, z, (t-1)%latticeExtents.ns, latticeExtents);
+		return Index( x, y, z, (latticeExtents.nt+t-1)%latticeExtents.nt, latticeExtents);
 		break;
 	default:
 		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
