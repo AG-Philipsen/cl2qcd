@@ -59,7 +59,9 @@ struct OtherKernelTester : public GaugefieldTester
 	{
 		GaugefieldCreator gf(tP.latticeExtents);
 		gaugefieldBuffer = new hardware::buffers::SU3(calculateGaugefieldSize(tP.latticeExtents), this->device);
-		gaugefieldBuffer->load(gf.createGaugefield(tP.fillType));
+		const Matrixsu3 * gf_host = gf.createGaugefield(tP.fillType);
+        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        delete[] gf_host;
 		out = new hardware::buffers::Plain<hmc_float> (LatticeExtents(tP.latticeExtents).getLatticeVolume(), device);
 
 		if(device->get_device_type() == CL_DEVICE_TYPE_GPU)

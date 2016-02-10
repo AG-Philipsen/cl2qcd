@@ -119,7 +119,9 @@ struct MolecularDynamicsTester : public GaugemomentumTester
 			GaugefieldCreator gf(tP.latticeExtents);
 			GaugemomentumCreator gm(tP.latticeExtents);
 			gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(tP.latticeExtents), this->device);
-			gaugefieldBuffer->load(gf.createGaugefield(tP.gaugeFillType));
+			const Matrixsu3 * gf_host = gf.createGaugefield(tP.gaugeFillType);
+	        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+	        delete[] gf_host;
 			gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
 			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One) ));
 			gaugefieldCode = device->getGaugefieldCode();

@@ -45,7 +45,10 @@ struct PlaquetteTester : public GaugefieldTester
 		const hardware::buffers::Plain<hmc_float> tplaq(1, device);
 		GaugefieldCreator gf(testParams.latticeExtents);
 		gaugefieldBuffer = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
-		gaugefieldBuffer->load(gf.createGaugefield(testParams.fillType));
+		const Matrixsu3 * gf_host = gf.createGaugefield(testParams.fillType);
+        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        delete[] gf_host;
+
 		code->plaquette_device(gaugefieldBuffer, &plaq, &tplaq, &splaq);
 
 		switch( typeOfPlaquette )
@@ -76,7 +79,10 @@ struct PolyakovloopTester : public GaugefieldTester
 		const hardware::buffers::Plain<hmc_complex> pol(1, device);
 		GaugefieldCreator gf(testParams.latticeExtents);
 		gaugefieldBuffer = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
-		gaugefieldBuffer->load(gf.createGaugefield(testParams.fillType));
+		const Matrixsu3 * gf_host = gf.createGaugefield(testParams.fillType);
+        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        delete[] gf_host;
+
 		code->polyakov_device(gaugefieldBuffer, &pol);
 
 		hmc_complex kernelResult_tmp;
@@ -96,8 +102,12 @@ struct RectanglesTester : public GaugefieldTester
 		const hardware::buffers::Plain<hmc_float> rect(1, device );
 		GaugefieldCreator gf(testParams.latticeExtents);
 		gaugefieldBuffer = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
-		gaugefieldBuffer->load(gf.createGaugefield(testParams.fillType));
+		const Matrixsu3 * gf_host = gf.createGaugefield(testParams.fillType);
+        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        delete[] gf_host;
+
 		code->rectangles_device(gaugefieldBuffer, &rect);
+
 		rect.dump(&kernelResult[0]);
 	}
 protected:
@@ -114,12 +124,14 @@ struct StoutSmearTester : public GaugefieldTester
 		const hardware::buffers::Plain<hmc_float> tplaq(1, device);
 		GaugefieldCreator gf(testParams.latticeExtents);
 		gaugefieldBuffer = new hardware::buffers::SU3(testParams.latticeExtents, this->device);
-		gaugefieldBuffer->load(gf.createGaugefield(testParams.fillType));
+		const Matrixsu3 * gf_host = gf.createGaugefield(testParams.fillType);
+        device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+        delete[] gf_host;
 		const hardware::buffers::SU3 out(gaugefieldBuffer->get_elements(), device);
 
 		code->stout_smear_device( gaugefieldBuffer, &out);
-
 		code->plaquette_device( &out, &plaq, &tplaq, &splaq);
+
 		plaq.dump(&kernelResult[0]);
 	}
 protected:
