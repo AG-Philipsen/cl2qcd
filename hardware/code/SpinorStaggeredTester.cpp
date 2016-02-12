@@ -127,7 +127,7 @@ su3vec * NonEvenOddSpinorStaggeredfieldCreator::createSpinorfieldWithOnesAndZero
 {
   su3vec * in;
   in = new su3vec[numberOfElements];
-  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.ns, latticeExtents.nt);
+  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.getNs(), latticeExtents.getNt());
   return in;
 }
 
@@ -135,7 +135,7 @@ su3vec * EvenOddSpinorStaggeredfieldCreator::createSpinorfieldEvenOddWithOnesAnd
 {
   su3vec * in;
   in = new su3vec[numberOfElements];
-  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.ns, latticeExtents.nt);
+  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.getNs(), latticeExtents.getNt());
   return in;
 }
 

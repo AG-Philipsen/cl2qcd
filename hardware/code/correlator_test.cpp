@@ -54,12 +54,12 @@ ReferenceValues calculateReferenceValues_volumeSource(const LatticeExtents lE, c
 
 ReferenceValues calculateReferenceValues_zSliceSource(const LatticeExtents lE, const common::sourcecontents sC)
 {
-	return calculateReferenceValues_sources(sC, lE.ns*lE.ns*lE.nt);
+	return calculateReferenceValues_sources(sC, lE.getNs()*lE.getNs()*lE.getNt());
 }
 
 ReferenceValues calculateReferenceValues_timeSliceSource(const LatticeExtents lE, const common::sourcecontents sC)
 {
-	return calculateReferenceValues_sources(sC, lE.ns*lE.ns*lE.ns);
+	return calculateReferenceValues_sources(sC, lE.getNs()*lE.getNs()*lE.getNs());
 }
 
 ReferenceValues calculateReferenceValues_pointSource(const common::sourcecontents sC)

@@ -68,7 +68,7 @@ template<typename BUFFER> static hardware::SynchronizationEvent send_halo(hardwa
 
 }
 
-
+//todo: move to cpp!
 static unsigned lower_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
 static unsigned upper_grid_neighbour(const unsigned idx, const unsigned GRID_SIZE);
 template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vector<BUFFER*> buffers, const hardware::System& system, const float ELEMS_PER_SITE)
@@ -78,7 +78,7 @@ template <typename T, class BUFFER> void hardware::buffers::update_halo(std::vec
 	if(num_buffers > 1) {
 		const auto main_device = buffers[0]->get_device();
 		LatticeGrid lG(main_device->getGridSize());
-		const unsigned GRID_SIZE = lG.t;
+		const unsigned GRID_SIZE = lG.tExtent;
 		const unsigned HALO_SIZE = main_device->getHaloExtent();
 		const unsigned VOLSPACE = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		const unsigned HALO_ELEMS = HALO_SIZE * VOLSPACE;
@@ -213,7 +213,7 @@ template<class BUFFER> struct UpdateHaloSOAhelper {
 	{
 		const auto main_device = buffers[0]->get_device();
 		LatticeGrid lG(main_device->getGridSize());
-		grid_size = lG.t;
+		grid_size = lG.tExtent;
 		halo_size = main_device->getHaloExtent();
 		volspace = system.getHardwareParameters()->getSpatialLatticeVolume() * ELEMS_PER_SITE;
 		if(reqd_width > halo_size) {

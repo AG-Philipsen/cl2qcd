@@ -45,9 +45,9 @@ struct TestParameters
 	const double testPrecision = 10e-8;
 
 	TestParameters(const LatticeExtents latticeExtentsIn):
-		ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference) {}
+		ns(latticeExtentsIn.getNs()), nt(latticeExtentsIn.getNt()), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference) {}
 	TestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn):
-		ns(latticeExtentsIn.ns), nt(latticeExtentsIn.nt), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn) {}
+		ns(latticeExtentsIn.getNs()), nt(latticeExtentsIn.getNt()), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn) {}
 	TestParameters() = delete;
 };
 

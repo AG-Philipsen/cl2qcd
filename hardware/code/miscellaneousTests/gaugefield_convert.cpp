@@ -54,8 +54,8 @@ void test(const hardware::System& system, const int seed, const LatticeExtents l
 BOOST_AUTO_TEST_CASE(GAUGEFIELD_CONVERT)
 {
 	LatticeExtents lE{4,4};
-	hardware::HardwareParametersMockup hardwareParameters(lE.ns,lE.nt);
-	hardware::code::OpenClKernelParametersMockup kernelParameters(lE.ns,lE.nt);
+	hardware::HardwareParametersMockup hardwareParameters(lE.getNs(),lE.getNt());
+	hardware::code::OpenClKernelParametersMockup kernelParameters(lE.getNs(),lE.getNt());
 	try
 	{
 		hardware::System system(hardwareParameters, kernelParameters);

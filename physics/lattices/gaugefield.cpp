@@ -106,7 +106,7 @@ static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardwa
 	auto const devices = system.get_devices();
 	for(auto device: devices) 
 	{
-		buffers.push_back(new SU3(get_vol4d(device->getLocalLatticeMemoryExtents()) * 4, device));
+		buffers.push_back(new SU3(device->getLocalLatticeMemoryExtents().getLatticeVolume() * 4, device)); //todo: do not calculate here!
 	}
 	return buffers;
 }
@@ -289,22 +289,31 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 	} else {
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->getLocalLatticeExtents();
-		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->getHaloExtent());
+		size_4 tmp(local_size.xExtent, local_size.yExtent, local_size.zExtent, local_size.tExtent);
+		size_4 const halo_size(tmp.x, tmp.y, tmp.z, _device->getHaloExtent());
 		for(auto const buffer: buffers) {
 			auto device = buffer->get_device();
 			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
 
-			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
+//			//localLatticeExtents must be changed!
+//			//todo: put these calls into own fct.! With smart pointers?
+//			TemporalParallelizationLinkIndex tmp(device->getGridPos().t, device->getLocalLatticeExtents(),
+//					LatticeExtents(params->getNs(),params->getNt()), sizeof(Matrixsu3), device->getHaloExtent());
+//			memcpy(&mem_host[tmp.getMainPartIndex_destination()]  , &gf_host[tmp.getMainPartIndex_source()]  , tmp.getMainPartSizeInBytes());
+//			memcpy(&mem_host[tmp.getFirstHaloIndex_destination()] , &gf_host[tmp.getFirstHaloIndex_source()] , tmp.getHaloPartSizeInBytes());
+//			memcpy(&mem_host[tmp.getSecondHaloIndex_destination()], &gf_host[tmp.getSecondHaloIndex_source()], tmp.getHaloPartSizeInBytes());
+
+			size_4 offset(0, 0, 0, device->getGridPos().t.value * local_size.tExtent);
 			logger.debug() << offset;
-			const size_t local_volume = get_vol4d(local_size) * NDIM;
+			const size_t local_volume = get_vol4d(tmp) * NDIM;
 			memcpy(mem_host, &gf_host[uint(LinkIndex(Index(offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], local_volume * sizeof(Matrixsu3));
 
-			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params->getNt());
+			const size_t halo_volume = get_vol4d(tmp) * NDIM;
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.tExtent) % params->getNt());
 			logger.debug() << halo_offset;
 			memcpy(&mem_host[local_volume], &gf_host[uint(LinkIndex(Index(halo_offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], halo_volume * sizeof(Matrixsu3));
 
-			halo_offset = size_4(0, 0, 0, (offset.t + params->getNt() - halo_size.t) % params->getNt());
+			halo_offset = size_4(0, 0, 0, (offset.t + params->getNt() - tmp.t) % params->getNt());
 			logger.debug() << halo_offset;
 			memcpy(&mem_host[local_volume + halo_volume], &gf_host[uint(LinkIndex(Index(halo_offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], halo_volume * sizeof(Matrixsu3));
 
@@ -323,7 +332,8 @@ static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::
 		device->synchronize();
 	} else {
 		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->getLocalLatticeExtents();
+		auto const tmp = _device->getLocalLatticeExtents();
+		size_4 local_size(tmp.xExtent, tmp.yExtent, tmp.zExtent, tmp.tExtent);
 		for(auto const buffer: buffers) {
 			// fetch local part for each device
 			auto device = buffer->get_device();

@@ -111,9 +111,9 @@ const ReferenceValues calculateReferenceValuesDslashEvenOdd(LatticeExtents latti
 {
 	if (massParametersIn.kappa == nonTrivialParameter and spinorFillTypeIn == SpinorFillType::ascendingComplex and gaugefieldFillTypeIn == GaugefieldFillType::nonTrivial)
 	{
-		return ReferenceValues{ latticeVolumeIn * (- 72.61889049538559 * cos(M_PI*thetaS/latticeExtentsIn.ns) - 30.2680500363264 * cos(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.nt) * cosh(chemPotIn.re)
-						+ 144.307369760256 * sin(M_PI*thetaS/latticeExtentsIn.ns) + 44.84641322803201 * cosh(chemPotIn.re) * sin(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.nt)
-						- 30.2680500363264 * cos(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.nt) * sinh(chemPotIn.re) +  44.84641322803201 * sin(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.nt) * sinh(chemPotIn.re))};
+		return ReferenceValues{ latticeVolumeIn * (- 72.61889049538559 * cos(M_PI*thetaS/latticeExtentsIn.getNs()) - 30.2680500363264 * cos(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.getNt()) * cosh(chemPotIn.re)
+						+ 144.307369760256 * sin(M_PI*thetaS/latticeExtentsIn.getNs()) + 44.84641322803201 * cosh(chemPotIn.re) * sin(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.getNt())
+						- 30.2680500363264 * cos(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.getNt()) * sinh(chemPotIn.re) +  44.84641322803201 * sin(chemPotIn.im + M_PI*thetaT/latticeExtentsIn.getNt()) * sinh(chemPotIn.re))};
 	}
 	return defaultReferenceValues();
 }

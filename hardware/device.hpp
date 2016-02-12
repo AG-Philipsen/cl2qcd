@@ -195,13 +195,9 @@ public:
 	 * @todo: move to system!
 	 */
 	LatticeGrid getGridSize() const;
-	size_4 getLocalLatticeExtents() const;
+	LocalLatticeExtents getLocalLatticeExtents() const;
 	unsigned getHaloExtent() const;
-
-	/**
-	 * Get the size of the lattice in device memory.
-	 */
-	size_4 getLocalLatticeMemoryExtents() const;
+	LocalLatticeMemoryExtents getLocalLatticeMemoryExtents() const;
 
 private:
 	const hardware::OpenClCode * openClCodeBuilder;

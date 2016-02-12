@@ -37,11 +37,11 @@ namespace hardware
 		{
 			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
 		};
-		HardwareParametersMockup(LatticeExtents lE): ns(lE.ns), nt(lE.nt), useEvenOdd(false)
+		HardwareParametersMockup(LatticeExtents lE): ns(lE.getNs()), nt(lE.getNt()), useEvenOdd(false)
 		{
 			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
 		};
-		HardwareParametersMockup(LatticeExtents lE, const bool useEvenOddIn): ns(lE.ns), nt(lE.nt), useEvenOdd(useEvenOddIn)
+		HardwareParametersMockup(LatticeExtents lE, const bool useEvenOddIn): ns(lE.getNs()), nt(lE.getNt()), useEvenOdd(useEvenOddIn)
 		{
 			setGpuAndCpuOptions(checkBoostRuntimeArgumentsForGpuUsage());
 		};
@@ -188,7 +188,7 @@ namespace hardware
 			OpenClKernelParametersMockup(int nsIn, int ntIn, bool useRectanglesIn):
 				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockup(LatticeExtents lE):
-				ns(lE.ns), nt(lE.nt), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+				ns(lE.getNs()), nt(lE.getNt()), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockup()	{};
 			virtual int getNs() const override
 			{

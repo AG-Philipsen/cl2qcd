@@ -39,12 +39,12 @@ void physics::set_point_source(const physics::lattices::Spinorfield * spinorfiel
 
 	// only execute on the buffer were the given position results.
 	int t_pos = params.getSourceT();
-	unsigned local_lattice_size = buffers[0]->get_device()->getLocalLatticeExtents().t;
+	unsigned local_lattice_size = buffers[0]->get_device()->getLocalLatticeExtents().tExtent;
 	auto buffer = buffers[t_pos / local_lattice_size];
 	auto device = buffer->get_device();
 	int local_t = t_pos % local_lattice_size;
 
-	device->getCorrelatorCode()->create_point_source_device(buffer, k, Index(params.getSourceX(), params.getSourceY(), params.getSourceZ(), params.getSourceT(), LatticeExtents(params.getNs(), params.getNt())).spaceIndex, local_t);
+	device->getCorrelatorCode()->create_point_source_device(buffer, k, Index(params.getSourceX(), params.getSourceY(), params.getSourceZ(), params.getSourceT(), LatticeExtents(params.getNs(), params.getNt())).spatialIndex, local_t);
 
 	spinorfield->update_halo();
 }
@@ -71,7 +71,7 @@ void physics::set_timeslice_source(const physics::lattices::Spinorfield * spinor
 
 	auto buffers = spinorfield->get_buffers();
 
-	unsigned local_lattice_size = buffers[0]->get_device()->getLocalLatticeExtents().t;
+	unsigned local_lattice_size = buffers[0]->get_device()->getLocalLatticeExtents().tExtent;
 	unsigned t_buf = t_pos / local_lattice_size;
 	auto buffer = buffers[t_buf];
 	auto device = buffer->get_device();

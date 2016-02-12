@@ -49,7 +49,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, LatticeGrid
 	  buffer_code(nullptr),
 	  latticeGridIndex(lI),
 	  latticeGridExtents(lG),
-	  localLatticeExtents(LocalLatticeExtents(lG, LatticeExtents(hardwareParameters->getNs(), hardwareParameters->getNt()))),
+	  localLatticeExtents(LocalLatticeExtents(LatticeExtents(hardwareParameters->getNs(), hardwareParameters->getNt()), lG)),
 	  haloSize(2),
 	  localLatticeMemoryExtents(LocalLatticeMemoryExtents(lG, localLatticeExtents, haloSize)),
 	  allocated_bytes(0),
@@ -538,14 +538,14 @@ LatticeGrid hardware::Device::getGridSize() const
 	return latticeGridExtents;
 }
 
-size_4 hardware::Device::getLocalLatticeExtents() const
+LocalLatticeExtents hardware::Device::getLocalLatticeExtents() const
 {
-	return size_4(localLatticeExtents.x, localLatticeExtents.y, localLatticeExtents.z, localLatticeExtents.t);
+	return localLatticeExtents;
 }
 
-size_4 hardware::Device::getLocalLatticeMemoryExtents() const
+LocalLatticeMemoryExtents hardware::Device::getLocalLatticeMemoryExtents() const
 {
-	return size_4(localLatticeMemoryExtents.x, localLatticeMemoryExtents.y, localLatticeMemoryExtents.z, localLatticeMemoryExtents.t);
+	return localLatticeMemoryExtents;
 }
 
 unsigned hardware::Device::getHaloExtent() const

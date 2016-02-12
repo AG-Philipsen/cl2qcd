@@ -150,8 +150,8 @@ void EvenOddSpinorfieldCreator::fillTwoSpinorfieldsDependingOnParity(spinor * in
 		int global_pos;
 		int ns, nt;
 
-		ns = latticeExtents.ns;
-		nt = latticeExtents.nt;
+		ns = latticeExtents.getNs();
+		nt = latticeExtents.getNt();
 
 		for (x = 0; x < ns; x++) {
 			for (y = 0; y < ns; y++) {
@@ -184,7 +184,7 @@ spinor * NonEvenOddSpinorfieldCreator::createSpinorfieldWithOnesAndZerosDependin
 {
   spinor * in;
   in = new spinor[numberOfElements];
-  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.ns, latticeExtents.nt);
+  fill_with_one_eo(in, numberOfElements, fillEvenSites, latticeExtents.getNs(), latticeExtents.getNt());
   return in;
 }
 

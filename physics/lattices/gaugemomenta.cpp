@@ -48,7 +48,7 @@ static  std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(c
 	std::vector<const Gaugemomentum*> buffers;
 	buffers.reserve(devices.size());
 	for(auto device: devices) {
-		buffers.push_back(new Gaugemomentum(NDIM * get_vol4d(device->getLocalLatticeMemoryExtents()), device));
+		buffers.push_back(new Gaugemomentum(NDIM * (device->getLocalLatticeMemoryExtents().getLatticeVolume()), device)); //dont do calculations here!
 	}
 	return buffers;
 }
@@ -225,18 +225,18 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 	} else {
 		auto const _device = buffers.at(0)->get_device();
 		auto const local_size = _device->getLocalLatticeExtents();
-		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->getHaloExtent());
+		size_4 const halo_size(local_size.xExtent, local_size.yExtent, local_size.zExtent, _device->getHaloExtent());
 		for(auto const buffer: buffers) {
 			auto device = buffer->get_device();
 			ae * mem_host = new ae[buffer->get_elements()];
 
-			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.t);
+			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.tExtent);
 			logger.debug() << offset;
 			const size_t local_volume = get_vol4d(local_size) * NDIM;
 			memcpy(mem_host, &host[uint(LinkIndex(Index(offset, LatticeExtents(gaugemomentaParametersInterface.getNs(),gaugemomentaParametersInterface.getNt())),TDIR))], local_volume * sizeof(ae));
 
 			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % gaugemomentaParametersInterface.getNt());
+			size_4 halo_offset(0, 0, 0, (offset.t + local_size.tExtent) % gaugemomentaParametersInterface.getNt());
 			logger.debug() << halo_offset;
 			memcpy(&mem_host[local_volume], &host[uint(LinkIndex(Index(halo_offset, LatticeExtents(gaugemomentaParametersInterface.getNs(),gaugemomentaParametersInterface.getNt())),TDIR))], halo_volume * sizeof(ae));
 
