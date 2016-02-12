@@ -20,6 +20,7 @@
 #pragma once
 
 #include "latticeExtents.hpp"
+#include "index.hpp"
 
 struct LatticeGridNew : public LatticeExtents2
 {

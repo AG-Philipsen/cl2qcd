@@ -98,11 +98,7 @@ const Index Index::down(const Direction dir) const
 }
 
 LinkIndex::LinkIndex (const Index indexIn, const Direction dirIn):
-	Index(indexIn), dir(dirIn)
-{
-	globalIndex = dir + NDIM * Index::globalIndex;
-//	globalIndex = dir * latticeExtents.getLatticeVolume() + Index::globalIndex;
-}
+	Index(indexIn), direction(dirIn), globalIndex(direction + NDIM * Index::globalIndex) {}
 
 LinkIndex::operator uint() const
 {
@@ -111,18 +107,75 @@ LinkIndex::operator uint() const
 
 const LinkIndex LinkIndex::up(const Direction dirIn) const
 {
-	return LinkIndex( Index::up(dirIn), dir );
+	return LinkIndex( Index::up(dirIn), direction );
 }
 
 const LinkIndex LinkIndex::down(const Direction dirIn) const
 {
-	return LinkIndex( Index::down(dirIn), dir );
+	return LinkIndex( Index::down(dirIn), direction );
 }
 
 uint LinkIndex::get_su3_idx_ildg_format(const uint n, const uint m)
 {
 	return 2 * n + 2 * m * NC + 2 * NC * NC * globalIndex;
 }
+
+BasicLatticeIndex::BasicLatticeIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents2 lE):
+	x(x, lE.xExtent), y(y, lE.yExtent), z(z, lE.zExtent), t(t, lE.tExtent),
+	spatialIndex(x + y*lE.xExtent + z*lE.xExtent*lE.yExtent),
+	globalIndex(spatialIndex + t*lE.getSpatialLatticeVolume()) {}
+
+BasicLatticeIndex BasicLatticeIndex::up(const Direction dir) const
+{
+	LatticeExtents2 tmp(x.extent, y.extent, z.extent, t.extent);
+	switch(dir)
+	{
+	case XDIR:
+		return BasicLatticeIndex( x.up(), y, z, t, tmp); break;
+
+	case YDIR:
+		return BasicLatticeIndex( x, y.up(), z, t, tmp); break;
+
+	case ZDIR:
+		return BasicLatticeIndex( x, y, z.up(), t, tmp); break;
+
+	case TDIR:
+		return BasicLatticeIndex( x, y, z, t.up(), tmp); break;
+
+	default:
+		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
+		break;
+	}
+}
+
+BasicLatticeIndex BasicLatticeIndex::down(const Direction dir) const
+{
+	LatticeExtents2 tmp(x.extent, y.extent, z.extent, t.extent);
+	switch(dir)
+	{
+	case XDIR:
+		return BasicLatticeIndex( x.down(), y, z, t, tmp); break;
+
+	case YDIR:
+		return BasicLatticeIndex( x, y.down(), z, t, tmp); break;
+
+	case ZDIR:
+		return BasicLatticeIndex( x, y, z.down(), t, tmp); break;
+
+	case TDIR:
+		return BasicLatticeIndex( x, y, z, t.down(), tmp); break;
+
+	default:
+		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
+		break;
+	}
+}
+
+BasicLatticeIndex::operator latticeSize() const
+{
+	return globalIndex;
+}
+
 
 
 

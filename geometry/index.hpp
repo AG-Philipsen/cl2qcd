@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Francesca Cuteri
+ * Copyright 2016 Francesca Cuteri, Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -24,8 +24,7 @@
 //todo: remove!
 #include "../hardware/size_4.hpp"
 
-typedef unsigned int latticeIndex;
-
+typedef uint latticeIndex;
 
 struct Index
 {
@@ -38,14 +37,25 @@ struct Index
 	LatticeExtents latticeExtents;
 	latticeIndex globalIndex, spaceIndex;
 };
+//todo: rename to Index
+struct BasicLatticeIndex
+{
+	BasicLatticeIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents2 lE);
+	BasicLatticeIndex up(const Direction dir) const;
+	BasicLatticeIndex down(const Direction dir) const;
+	operator latticeSize() const;
+	const LatticeCoordinate x,y,z,t;
+	const latticeIndex spatialIndex, globalIndex;
+};
 
 struct LinkIndex : public Index
 {
 	LinkIndex (const Index indexIn, const Direction dirIn);
-	operator uint() const;
+	operator latticeSize() const;
 	const LinkIndex up(const Direction dirIn) const;
 	const LinkIndex down(const Direction dirIn) const;
 	uint get_su3_idx_ildg_format(const uint n, const uint m); // ADD TESTS!!
-	Direction dir;
-	latticeIndex globalIndex;
+	const Direction direction;
+	const latticeIndex globalIndex;
 };
+

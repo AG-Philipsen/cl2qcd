@@ -85,16 +85,3 @@ struct LatticeExtents
 	unsigned int getLatticeVolume() const;
 	unsigned int getSpatialLatticeVolume() const;
 };
-
-struct BasicLatticeIndex
-{
-	BasicLatticeIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents2 lE);
-	BasicLatticeIndex up(const Direction dir) const;
-	BasicLatticeIndex down(const Direction dir) const;
-	operator latticeSize() const;
-	const LatticeCoordinate x,y,z,t;
-	const latticeSize spatialIndex, globalIndex;
-};
-
-
-
