@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Francesca Cuteri
+ * Copyright 2016 Francesca Cuteri, Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -25,68 +25,6 @@
 #include "index.hpp"
 
 LatticeExtents latticeExtents(4, 5);
-
-BOOST_AUTO_TEST_SUITE(IndexBuild)
-
-	BOOST_AUTO_TEST_CASE(globalIndex)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents)), 1 + 4*2 + 4*4*3 + 4*4*4*4);
-	}
-
-	BOOST_AUTO_TEST_CASE(exception_1)
-	{
-		BOOST_CHECK_THROW(Index(5, 2, 3, 4, latticeExtents), std::invalid_argument);
-		BOOST_CHECK_THROW(Index(1, 5, 3, 4, latticeExtents), std::invalid_argument);
-		BOOST_CHECK_THROW(Index(1, 2, 5, 4, latticeExtents), std::invalid_argument);
-		BOOST_CHECK_THROW(Index(1, 2, 3, 5, latticeExtents), std::invalid_argument);
-	}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(IndexNeighbours)
-
-	BOOST_AUTO_TEST_CASE(upX)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).up(XDIR)), 2 + 4*2 + 4*4*3 + 4*4*4*4);
-	}
-
-	BOOST_AUTO_TEST_CASE(upY)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).up(YDIR)), 1 + 4*3 + 4*4*3 + 4*4*4*4);
-	}
-
-	BOOST_AUTO_TEST_CASE(upZ)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).up(ZDIR)), 1 + 4*2 + 4*4*0 + 4*4*4*4);
-	}
-
-	BOOST_AUTO_TEST_CASE(upT)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).up(TDIR)), 1 + 4*2 + 4*4*3 + 4*4*4*0);
-	}
-
-	BOOST_AUTO_TEST_CASE(downX)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).down(XDIR)), 0 + 4*2 + 4*4*3 + 4*4*4*4);
-	}
-
-	BOOST_AUTO_TEST_CASE(downY)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).down(YDIR)), 1 + 4*1 + 4*4*3 + 4*4*4*4);
-	}
-
-	BOOST_AUTO_TEST_CASE(downZ)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).down(ZDIR)), 1 + 4*2 + 4*4*2 + 4*4*4*4);
-	}
-
-	BOOST_AUTO_TEST_CASE(downT)
-	{
-		BOOST_REQUIRE_EQUAL(uint(Index(1, 2, 3, 4, latticeExtents).down(TDIR)), 1 + 4*2 + 4*4*3 + 4*4*4*3);
-	}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 
 BOOST_AUTO_TEST_SUITE(LinkIndexBuild)
 
@@ -173,31 +111,30 @@ BOOST_AUTO_TEST_SUITE(LinkIndexNeighbours)
 		BOOST_REQUIRE_EQUAL(uint(LinkIndex( index, TDIR).down(TDIR)), TDIR + NDIM * (3 + 4*2 + 4*4*1 + 4*4*4*3) );
 	}
 
-
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
+BOOST_AUTO_TEST_SUITE(INDEX)
 
 	BOOST_AUTO_TEST_CASE(SPATIAL_INDEX)
 	{
-		LatticeExtents2 lE(4,6,8,10);
-		BOOST_REQUIRE_EQUAL( BasicLatticeIndex(1,2,3,4, lE).spatialIndex, 1 + 2*4 + 3*4*6 );
+		LatticeExtents lE(4,6,8,10);
+		BOOST_REQUIRE_EQUAL( Index(1,2,3,4, lE).spatialIndex, 1 + 2*4 + 3*4*6 );
 	}
 
 	BOOST_AUTO_TEST_CASE(GLOBAL_INDEX)
 	{
-		LatticeExtents2 lE(4,6,8,10);
-		BOOST_REQUIRE_EQUAL( BasicLatticeIndex(1,2,3,4, lE).globalIndex, 1 + 2*4 + 3*4*6 + 4*4*6*8);
+		LatticeExtents lE(4,6,8,10);
+		BOOST_REQUIRE_EQUAL( Index(1,2,3,4, lE).globalIndex, 1 + 2*4 + 3*4*6 + 4*4*6*8);
 	}
 
 	uint extent = 4;
-	LatticeExtents2 tmp(extent);
+	LatticeExtents tmp(extent);
 
 	BOOST_AUTO_TEST_CASE(NEIGHBOUR_UP_X)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(i,0,0,0, tmp).up(XDIR).x, (i+1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(i,0,0,0, tmp).up(XDIR).x, (i+1)%extent );
 		}
 	}
 
@@ -205,7 +142,7 @@ BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(i,0,0,0, tmp).down(XDIR).x, (i+extent-1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(i,0,0,0, tmp).down(XDIR).x, (i+extent-1)%extent );
 		}
 	}
 
@@ -213,7 +150,7 @@ BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(0,i,0,0, tmp).up(YDIR).y, (i+1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(0,i,0,0, tmp).up(YDIR).y, (i+1)%extent );
 		}
 	}
 
@@ -221,7 +158,7 @@ BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(0,i,0,0, tmp).down(YDIR).y, (i+extent-1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(0,i,0,0, tmp).down(YDIR).y, (i+extent-1)%extent );
 		}
 	}
 
@@ -229,7 +166,7 @@ BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(0,0,i,0, tmp).up(ZDIR).z, (i+1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(0,0,i,0, tmp).up(ZDIR).z, (i+1)%extent );
 		}
 	}
 
@@ -237,7 +174,7 @@ BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(0,0,i,0, tmp).down(ZDIR).z, (i+extent-1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(0,0,i,0, tmp).down(ZDIR).z, (i+extent-1)%extent );
 		}
 	}
 
@@ -245,7 +182,7 @@ BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(0,0,0,i, tmp).up(TDIR).t, (i+1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(0,0,0,i, tmp).up(TDIR).t, (i+1)%extent );
 		}
 	}
 
@@ -253,7 +190,7 @@ BOOST_AUTO_TEST_SUITE(BASICLATTICEINDEX)
 	{
 		for (uint i = 0; i< extent; i++)
 		{
-			BOOST_REQUIRE_EQUAL( BasicLatticeIndex(0,0,0,i, tmp).down(TDIR).t, (i+extent-1)%extent );
+			BOOST_REQUIRE_EQUAL( Index(0,0,0,i, tmp).down(TDIR).t, (i+extent-1)%extent );
 		}
 	}
 

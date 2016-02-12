@@ -21,28 +21,16 @@
 
 #include "latticeExtents.hpp"
 #include "../common_header_files/globaldefs.h"
-//todo: remove!
-#include "../hardware/size_4.hpp"
+#include "../hardware/size_4.hpp" //todo: remove!
 
 typedef uint latticeIndex;
 
 struct Index
 {
-	Index(const unsigned int, const unsigned int, const unsigned int, const unsigned int, const LatticeExtents);
-	Index(const size_4, const LatticeExtents);
-	operator uint() const;
-	const Index up(const Direction direction) const;
-	const Index down(const Direction direction) const;
-	latticeCoordinate t,x,y,z; //these should be const
-	LatticeExtents latticeExtents;
-	latticeIndex globalIndex, spaceIndex;
-};
-//todo: rename to Index
-struct BasicLatticeIndex
-{
-	BasicLatticeIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents2 lE);
-	BasicLatticeIndex up(const Direction dir) const;
-	BasicLatticeIndex down(const Direction dir) const;
+	Index(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents lE);
+	Index(const size_4, const LatticeExtents); //todo: remove
+	Index up(const Direction dir) const;
+	Index down(const Direction dir) const;
 	operator latticeSize() const;
 	const LatticeCoordinate x,y,z,t;
 	const latticeIndex spatialIndex, globalIndex;
@@ -58,4 +46,3 @@ struct LinkIndex : public Index
 	const Direction direction;
 	const latticeIndex globalIndex;
 };
-

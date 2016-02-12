@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Francesca Cuteri
+ * Copyright 2016 Francesca Cuteri, Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -22,54 +22,23 @@
 #include "latticeExtents.hpp"
 #include "index.hpp"
 
-struct LatticeGridNew : public LatticeExtents2
+struct LatticeGrid : public LatticeExtents
 {
-	LatticeGridNew(const uint numberOfDevices);
+	LatticeGrid(const uint numberOfDevices, const LatticeExtents);
 };
 
-struct LatticeGridIndexNew : public BasicLatticeIndex
+struct LatticeGridIndex : public Index
 {
-	LatticeGridIndexNew(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeGridNew lG);
+	LatticeGridIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeGrid);
 };
 
-struct LocalLatticeExtentsNew: public LatticeExtents2
+struct LocalLatticeExtents: public LatticeExtents
 {
-	LocalLatticeExtentsNew(const LatticeExtents2 lE, const LatticeGridNew lG);
+	LocalLatticeExtents(const LatticeExtents, const LatticeGrid);
 };
 
-struct LocalLatticeMemoryExtentsNew: public LatticeExtents2
+struct LocalLatticeMemoryExtents: public LatticeExtents
 {
-	LocalLatticeMemoryExtentsNew(const LatticeGridNew lG, const LocalLatticeExtentsNew llE, uint halo_size);
+	LocalLatticeMemoryExtents(const LatticeGrid, const LocalLatticeExtents, uint);
 };
 
-#include "../common_header_files/globaldefs.h"
-#include <ostream>
-
-struct FourUnsignedInt
-{
-	FourUnsignedInt(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t);
-	const unsigned int x, y, z, t;
-};
-std::ostream& operator<<(std::ostream& out, const FourUnsignedInt & integers);
-
-
-//these should store the latticeExtents!
-struct LatticeGrid : public FourUnsignedInt
-{
-	LatticeGrid( const unsigned int numberOfDevices);
-};
-
-struct LatticeGridIndex : public FourUnsignedInt
-{
-	LatticeGridIndex(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t, const LatticeGrid);
-};
-
-struct LocalLatticeExtents : public FourUnsignedInt
-{
-	LocalLatticeExtents(const LatticeGrid lG, const LatticeExtents lE);
-};
-
-struct LocalLatticeMemoryExtents : public FourUnsignedInt
-{
-	LocalLatticeMemoryExtents(const LatticeGrid lG, const LocalLatticeExtents llE, unsigned int halo_size);
-};

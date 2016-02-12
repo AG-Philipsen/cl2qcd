@@ -60,9 +60,9 @@ BOOST_AUTO_TEST_SUITE(LATTICECOORDINATE)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(LATTICEEXTENTS2)
+BOOST_AUTO_TEST_SUITE(LATTICEEXTENTS)
 
-	LatticeExtents2 tmp(SpatialLatticeExtent(4), TemporalLatticeExtent(8));
+	LatticeExtents tmp(SpatialLatticeExtent(4), TemporalLatticeExtent(8));
 	latticeSize ns = 4, nt=8;
 
 	BOOST_AUTO_TEST_CASE(NS)
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_SUITE(LATTICEEXTENTS2)
 
 	BOOST_AUTO_TEST_CASE(FROMFOURNUMBERS)
 	{
-		LatticeExtents2 tmp(2,3,4,8);
+		LatticeExtents tmp(2,3,4,8);
 		BOOST_REQUIRE_EQUAL( tmp.getSpatialLatticeVolume(), 2*3*4 );
 		BOOST_REQUIRE_EQUAL( tmp.getNs(), 2 );
 	}

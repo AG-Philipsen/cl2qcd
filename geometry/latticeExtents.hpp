@@ -26,6 +26,9 @@ typedef unsigned int latticeCoordinate;
 
 enum Direction {TDIR = 0, XDIR, YDIR, ZDIR};
 
+#include <ostream>
+#include "../hardware/size_4.hpp"
+
 struct LatticeExtent
 {
 	LatticeExtent(const latticeSize value);
@@ -60,28 +63,21 @@ struct TemporalLatticeExtent : public LatticeExtent
 	TemporalLatticeExtent(SpatialLatticeExtent&) = delete;
 };
 
-struct LatticeExtents2
+struct LatticeExtents
 {
-	LatticeExtents2(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn);
-	LatticeExtents2(latticeSize nIn);
-	LatticeExtents2(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn);
-	LatticeExtents2();
+	LatticeExtents(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn);
+	LatticeExtents(latticeSize nIn);
+	LatticeExtents(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn);
+	LatticeExtents();
 	const LatticeExtent xExtent, yExtent, zExtent, tExtent;
 	latticeSize getNs() const;
 	latticeSize getNt() const;
 	latticeSize getSpatialLatticeVolume() const;
 	latticeSize getLatticeVolume() const;
+	operator size_4() const //todo: remove this!
+		{
+			return size_4(xExtent, yExtent, zExtent, tExtent);
+		}
 };
 
-struct LatticeExtents
-{
-	LatticeExtents() : ns(4), nt(4) {};
-	LatticeExtents(const int nsIn, const int ntIn): ns(nsIn), nt(ntIn) {};
-	LatticeExtents(const unsigned int nsIn, const unsigned int ntIn): ns(nsIn), nt(ntIn) {};
-	const unsigned int ns;
-	const unsigned int nt;
-	unsigned int getNs() const;
-	unsigned int getNt() const;
-	unsigned int getLatticeVolume() const;
-	unsigned int getSpatialLatticeVolume() const;
-};
+std::ostream& operator<<(std::ostream&, const LatticeExtents);

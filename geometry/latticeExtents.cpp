@@ -21,42 +21,37 @@
 #include "latticeExtents.hpp"
 #include <stdexcept>
 
-unsigned int LatticeExtents::getNs() const
-{
-	return ns;
-}
-
-unsigned int LatticeExtents::getNt() const
-{
-	return nt;
-}
-
-unsigned int LatticeExtents::getLatticeVolume() const
-{
-	return ns * ns * ns * nt;
-}
-
-unsigned int LatticeExtents::getSpatialLatticeVolume() const
-{
-	return ns * ns * ns;
-}
-
-LatticeExtents2::LatticeExtents2(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn) :
+LatticeExtents::LatticeExtents(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn) :
 	xExtent(nsIn), yExtent(nsIn), zExtent(nsIn), tExtent(ntIn)	{}
 
-LatticeExtents2::LatticeExtents2(latticeSize nIn):
+LatticeExtents::LatticeExtents(latticeSize nIn):
 	xExtent(nIn), yExtent(nIn), zExtent(nIn), tExtent(nIn)	{}
 
-LatticeExtents2::LatticeExtents2(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn):
+LatticeExtents::LatticeExtents(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn):
 	xExtent(nxIn), yExtent(nyIn), zExtent(nzIn), tExtent(ntIn)	{}
 
-LatticeExtents2::LatticeExtents2() :
+LatticeExtents::LatticeExtents() :
 	xExtent(4), yExtent(4), zExtent(4), tExtent(4)	{}
 
-latticeSize LatticeExtents2::getNs() const {return xExtent;}
-latticeSize LatticeExtents2::getNt() const {return tExtent;}
-latticeSize LatticeExtents2::getSpatialLatticeVolume() const {return xExtent * yExtent * zExtent;}
-latticeSize LatticeExtents2::getLatticeVolume() const {return getSpatialLatticeVolume() * tExtent;}
+latticeSize LatticeExtents::getNs() const
+{
+	return xExtent;
+}
+
+latticeSize LatticeExtents::getNt() const
+{
+	return tExtent;
+}
+
+latticeSize LatticeExtents::getSpatialLatticeVolume() const
+{
+	return xExtent * yExtent * zExtent;
+}
+
+latticeSize LatticeExtents::getLatticeVolume() const
+{
+	return getSpatialLatticeVolume() * tExtent;
+}
 
 LatticeExtent::LatticeExtent(const latticeSize value) : value(value)
 {
@@ -95,3 +90,7 @@ LatticeCoordinate::operator latticeSize() const
 	return value;
 }
 
+std::ostream& operator<<(std::ostream& out, const LatticeExtents in)
+{
+	return out << '(' << in.xExtent << ", " << in.yExtent << ", " << in.zExtent << ", " << in.tExtent << ')';
+}

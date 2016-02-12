@@ -22,68 +22,37 @@
 #include "../executables/exceptions.h"
 #include "../host_functionality/logger.hpp"
 
-LatticeGridNew::LatticeGridNew(const uint numberOfDevices) :
-	LatticeExtents2(LatticeExtents2(SpatialLatticeExtent(1),TemporalLatticeExtent(numberOfDevices)) ) {}
+LatticeGrid::LatticeGrid(const uint numberOfDevices, const LatticeExtents lE) :
+	LatticeExtents(LatticeExtents(SpatialLatticeExtent(1),TemporalLatticeExtent(numberOfDevices)) )
+{
+	if(xExtent != 1 || yExtent != 1 || zExtent != 1)
+	{
+		throw std::invalid_argument("Only the time-direction can be parallelized");
+	}
+	if( lE.tExtent % numberOfDevices != 0)
+	{
+		throw std::invalid_argument("Cannot distribute lattice equally on devices!");
+	}
+}
 
-LatticeGridIndexNew::LatticeGridIndexNew(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeGridNew lG) :
-	BasicLatticeIndex(x,y,z,t,lG) {}
+LatticeGridIndex::LatticeGridIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeGrid lG) :
+	Index(x,y,z,t,lG) {}
 
-LocalLatticeExtentsNew::LocalLatticeExtentsNew(const LatticeExtents2 lE, const LatticeGridNew lG) :
-	LatticeExtents2(lE.xExtent / lG.xExtent, lE.yExtent / lG.yExtent, lE.zExtent / lG.zExtent, lE.tExtent / lG.tExtent) {}
+LocalLatticeExtents::LocalLatticeExtents(const LatticeExtents lE, const LatticeGrid lG) :
+	LatticeExtents(lE.xExtent / lG.xExtent, lE.yExtent / lG.yExtent, lE.zExtent / lG.zExtent, lE.tExtent / lG.tExtent)
+{
+	if (xExtent % 2 || yExtent % 2 || zExtent %2 || tExtent % 2)
+	{
+		logger.warn() << "Local lattice size is odd. This is known to cause problems!";
+	}
+}
 
-LocalLatticeMemoryExtentsNew::LocalLatticeMemoryExtentsNew(const LatticeGridNew lG, const LocalLatticeExtentsNew llE, unsigned int halo_size) :
-	LatticeExtents2(
+LocalLatticeMemoryExtents::LocalLatticeMemoryExtents(const LatticeGrid lG, const LocalLatticeExtents llE, unsigned int halo_size) :
+	LatticeExtents(
 			llE.xExtent + (lG.xExtent > 1 ? 2 * halo_size : 0), llE.yExtent + (lG.yExtent > 1 ? 2 * halo_size : 0),
 			llE.zExtent + (lG.zExtent > 1 ? 2 * halo_size : 0), llE.tExtent + (lG.tExtent > 1 ? 2 * halo_size : 0) )
 {
 	if(llE.tExtent < halo_size) {
-		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
-	}
-}
-
-FourUnsignedInt::FourUnsignedInt(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t):
-x(x), y(y), z(z), t(t)
-{}
-
-std::ostream& operator<<(std::ostream& out, const FourUnsignedInt & integers)
-{
-	return out << '(' << integers.x << ", " << integers.y << ", " << integers.z << ", " << integers.t << ')';
-}
-
-LatticeGrid::LatticeGrid( const unsigned int numberOfDevices):
-FourUnsignedInt(1,1,1,numberOfDevices)
-{
-	if(x != 1 || y != 1 || z != 1) { //by now useless, but needed later on
-		throw Print_Error_Message("Only the time-direction can be parallelized");
-	}
-}
-
-LatticeGridIndex::LatticeGridIndex(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t, const LatticeGrid lG):
-FourUnsignedInt(x, y, z, t)
-{
-	if( x >= lG.x || y >= lG.y || z >= lG.z || t >= lG.t ) {
-	throw std::logic_error("Failed to place devices on the grid.");
-	}
-}
-
-LocalLatticeExtents::LocalLatticeExtents(const LatticeGrid lG, const LatticeExtents lE ):
-		FourUnsignedInt(lE.getNs() / lG.x, lE.getNs() / lG.y, lE.getNs() / lG.z, lE.getNt() / lG.t)
-{
-	if (x % 2 || y % 2 || z %2 || t % 2)
-	{
-		logger.warn() << "Local lattice size is odd. This is known to cause problems!";
-	}
-	if (x * lG.x != lE.getNs() || y * lG.y != lE.getNs() || z * lG.z != lE.getNs() || t * lG.t != lE.getNt())
-	{
-		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
-	}
-
-}
-
-LocalLatticeMemoryExtents::LocalLatticeMemoryExtents( const LatticeGrid lG, const LocalLatticeExtents llE, unsigned int halo_size ):
-		FourUnsignedInt(llE.x + (lG.x > 1 ? 2 * halo_size : 0), llE.y + (lG.y > 1 ? 2 * halo_size : 0), llE.z + (lG.z > 1 ? 2 * halo_size : 0), llE.t + (lG.t > 1 ? 2 * halo_size : 0))
-{
-	if(t < halo_size) {
 		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
 	}
 }
