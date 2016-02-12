@@ -36,8 +36,14 @@ target_link_libraries(geometry einhard)
 # Definition of tests
 #
 add_executable(index index_test.cpp)
-add_executable(latticeGrid latticeGrid_test.cpp)
 target_link_libraries(index 	${Boost_LIBRARIES} geometry )
-target_link_libraries(latticeGrid 	${Boost_LIBRARIES} geometry )
 add_test(Index index )
+
+add_executable(latticeExtents latticeExtents_test.cpp)
+target_link_libraries(latticeExtents 	${Boost_LIBRARIES} geometry )
+add_test(LatticeExtents latticeExtents )
+
+add_executable(latticeGrid latticeGrid_test.cpp)
+target_link_libraries(latticeGrid 	${Boost_LIBRARIES} geometry )
+
 add_test(Grid latticeGrid )

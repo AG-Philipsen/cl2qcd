@@ -43,6 +43,21 @@ BOOST_AUTO_TEST_SUITE(Grid)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(GridNew)
+
+	LatticeGridNew lG(4);
+
+	BOOST_AUTO_TEST_CASE(init)
+	{
+		BOOST_REQUIRE_EQUAL(lG.xExtent, 1);
+		BOOST_REQUIRE_EQUAL(lG.yExtent, 1);
+		BOOST_REQUIRE_EQUAL(lG.zExtent, 1);
+		BOOST_REQUIRE_EQUAL(lG.tExtent, 4);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 BOOST_AUTO_TEST_SUITE(GridIndex)
 
 	BOOST_AUTO_TEST_CASE(exception)
@@ -63,6 +78,47 @@ BOOST_AUTO_TEST_SUITE(LocalExtents)
 		BOOST_REQUIRE_EQUAL(llE.y, 4 / 1);
 		BOOST_REQUIRE_EQUAL(llE.z, 4 / 1);
 		BOOST_REQUIRE_EQUAL(llE.t, 8 / 4);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(LocalExtentsNew)
+
+	uint numberOfDevices = 4;
+	LatticeExtents2 tmp(SpatialLatticeExtent(4), TemporalLatticeExtent(8));
+	LatticeGridNew lG(numberOfDevices);
+	LocalLatticeExtentsNew llE(tmp, lG);
+
+	BOOST_AUTO_TEST_CASE(init)
+	{
+		BOOST_REQUIRE_EQUAL(llE.xExtent, 4 / 1);
+		BOOST_REQUIRE_EQUAL(llE.yExtent, 4 / 1);
+		BOOST_REQUIRE_EQUAL(llE.zExtent, 4 / 1);
+		BOOST_REQUIRE_EQUAL(llE.tExtent, 8 / numberOfDevices);
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(LocalMemoryExtentsNew)
+
+	uint numberOfDevices = 4;
+	LatticeExtents2 tmp(SpatialLatticeExtent(4), TemporalLatticeExtent(8));
+	LatticeGridNew lG(numberOfDevices);
+	LocalLatticeExtentsNew llE(tmp, lG);
+	uint haloSize = 2;
+	LocalLatticeMemoryExtentsNew lME(lG, llE, haloSize);
+
+	BOOST_AUTO_TEST_CASE(init)
+	{
+		BOOST_REQUIRE_EQUAL(lME.xExtent, llE.xExtent);
+		BOOST_REQUIRE_EQUAL(lME.yExtent, llE.yExtent);
+		BOOST_REQUIRE_EQUAL(lME.zExtent, llE.zExtent);
+		BOOST_REQUIRE_EQUAL(lME.tExtent, llE.tExtent + 2*haloSize);
+	}
+
+	BOOST_AUTO_TEST_CASE(failure)
+	{
+		BOOST_REQUIRE_THROW(LocalLatticeMemoryExtentsNew(lG, llE, 20), std::invalid_argument);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -19,6 +19,7 @@
  */
 
 #include "latticeExtents.hpp"
+#include <stdexcept>
 
 unsigned int LatticeExtents::getNs() const
 {
@@ -39,3 +40,114 @@ unsigned int LatticeExtents::getSpatialLatticeVolume() const
 {
 	return ns * ns * ns;
 }
+
+LatticeExtents2::LatticeExtents2(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn) :
+	xExtent(nsIn), yExtent(nsIn), zExtent(nsIn), tExtent(ntIn)	{}
+
+LatticeExtents2::LatticeExtents2(latticeSize nIn):
+	xExtent(nIn), yExtent(nIn), zExtent(nIn), tExtent(nIn)	{}
+
+LatticeExtents2::LatticeExtents2(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn):
+	xExtent(nxIn), yExtent(nyIn), zExtent(nzIn), tExtent(ntIn)	{}
+
+LatticeExtents2::LatticeExtents2() :
+	xExtent(4), yExtent(4), zExtent(4), tExtent(4)	{}
+
+latticeSize LatticeExtents2::getNs() const {return xExtent;}
+latticeSize LatticeExtents2::getNt() const {return tExtent;}
+latticeSize LatticeExtents2::getSpatialLatticeVolume() const {return xExtent * yExtent * zExtent;}
+latticeSize LatticeExtents2::getLatticeVolume() const {return getSpatialLatticeVolume() * tExtent;}
+
+LatticeExtent::LatticeExtent(const latticeSize value) : value(value)
+{
+	if(value == 0)
+	{
+		throw(std::invalid_argument("Must have non-zero latticeExtent!"));
+	}
+}
+
+LatticeExtent::operator latticeSize() const
+{
+	return value;
+}
+
+LatticeCoordinate::LatticeCoordinate(const latticeCoordinate valueIn, const LatticeExtent lE):
+	value(valueIn), extent(lE)
+{
+	if(value >= extent)
+	{
+		throw(std::invalid_argument("LatticeCoordinate must be smaller than LatticeExtent!"));
+	}
+}
+
+LatticeCoordinate LatticeCoordinate::up() const
+{
+	return LatticeCoordinate( (value+1)%extent, extent);
+}
+
+LatticeCoordinate LatticeCoordinate::down() const
+{
+	return LatticeCoordinate( (value-1+extent)%extent, extent);
+}
+
+LatticeCoordinate::operator latticeSize() const
+{
+	return value;
+}
+
+BasicLatticeIndex::BasicLatticeIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents2 lE):
+	x(x, lE.xExtent), y(y, lE.yExtent), z(z, lE.zExtent), t(t, lE.tExtent),
+	spatialIndex(x + y*lE.xExtent + z*lE.xExtent*lE.yExtent),
+	globalIndex(spatialIndex + t*lE.getSpatialLatticeVolume()) {}
+
+BasicLatticeIndex BasicLatticeIndex::up(const Direction dir) const
+{
+	LatticeExtents2 tmp(x.extent, y.extent, z.extent, t.extent);
+	switch(dir)
+	{
+	case XDIR:
+		return BasicLatticeIndex( x.up(), y, z, t, tmp); break;
+
+	case YDIR:
+		return BasicLatticeIndex( x, y.up(), z, t, tmp); break;
+
+	case ZDIR:
+		return BasicLatticeIndex( x, y, z.up(), t, tmp); break;
+
+	case TDIR:
+		return BasicLatticeIndex( x, y, z, t.up(), tmp); break;
+
+	default:
+		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
+		break;
+	}
+}
+
+BasicLatticeIndex BasicLatticeIndex::down(const Direction dir) const
+{
+	LatticeExtents2 tmp(x.extent, y.extent, z.extent, t.extent);
+	switch(dir)
+	{
+	case XDIR:
+		return BasicLatticeIndex( x.down(), y, z, t, tmp); break;
+
+	case YDIR:
+		return BasicLatticeIndex( x, y.down(), z, t, tmp); break;
+
+	case ZDIR:
+		return BasicLatticeIndex( x, y, z.down(), t, tmp); break;
+
+	case TDIR:
+		return BasicLatticeIndex( x, y, z, t.down(), tmp); break;
+
+	default:
+		throw std::invalid_argument( "Lattice direction must be between 0 and 3!" );
+		break;
+	}
+}
+
+BasicLatticeIndex::operator latticeSize() const
+{
+	return globalIndex;
+}
+

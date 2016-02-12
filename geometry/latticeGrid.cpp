@@ -22,6 +22,25 @@
 #include "../executables/exceptions.h"
 #include "../host_functionality/logger.hpp"
 
+LatticeGridNew::LatticeGridNew(const uint numberOfDevices) :
+	LatticeExtents2(LatticeExtents2(SpatialLatticeExtent(1),TemporalLatticeExtent(numberOfDevices)) ) {}
+
+LatticeGridIndexNew::LatticeGridIndexNew(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeGridNew lG) :
+	BasicLatticeIndex(x,y,z,t,lG) {}
+
+LocalLatticeExtentsNew::LocalLatticeExtentsNew(const LatticeExtents2 lE, const LatticeGridNew lG) :
+	LatticeExtents2(lE.xExtent / lG.xExtent, lE.yExtent / lG.yExtent, lE.zExtent / lG.zExtent, lE.tExtent / lG.tExtent) {}
+
+LocalLatticeMemoryExtentsNew::LocalLatticeMemoryExtentsNew(const LatticeGridNew lG, const LocalLatticeExtentsNew llE, unsigned int halo_size) :
+	LatticeExtents2(
+			llE.xExtent + (lG.xExtent > 1 ? 2 * halo_size : 0), llE.yExtent + (lG.yExtent > 1 ? 2 * halo_size : 0),
+			llE.zExtent + (lG.zExtent > 1 ? 2 * halo_size : 0), llE.tExtent + (lG.tExtent > 1 ? 2 * halo_size : 0) )
+{
+	if(llE.tExtent < halo_size) {
+		throw std::invalid_argument("The lattice cannot be distributed onto the given grid.");
+	}
+}
+
 FourUnsignedInt::FourUnsignedInt(const unsigned int x, const unsigned int y, const unsigned int z, const unsigned int t):
 x(x), y(y), z(z), t(t)
 {}

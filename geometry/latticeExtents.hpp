@@ -20,40 +20,57 @@
 
 #pragma once
 
-struct LatticeSpatialExtent
+typedef unsigned int uint;
+typedef unsigned int latticeSize;
+typedef unsigned int latticeCoordinate;
+
+enum Direction {TDIR = 0, XDIR, YDIR, ZDIR};
+
+struct LatticeExtent
 {
-	LatticeSpatialExtent() : n(4) {};
-	LatticeSpatialExtent(const int nsIn): n(nsIn) {};
-	LatticeSpatialExtent(const unsigned int nsIn): n(nsIn) {};
-	const unsigned int n;
+	LatticeExtent(const latticeSize value);
+	operator latticeSize() const;
+	const latticeSize value;
 };
 
-struct LatticeTemporalExtent
+struct LatticeCoordinate
 {
-	LatticeTemporalExtent() : n(4) {};
-	LatticeTemporalExtent(const int nsIn): n(nsIn) {};
-	LatticeTemporalExtent(const unsigned int nsIn): n(nsIn) {};
-	const unsigned int n;
+	LatticeCoordinate(const latticeCoordinate valueIn, const LatticeExtent lE);
+	LatticeCoordinate up() const;
+	LatticeCoordinate down() const;
+	operator latticeSize() const;
+
+	const latticeCoordinate value;
+	const LatticeExtent extent;
 };
 
-struct LatticeSymmetricExtent
+struct TemporalLatticeExtent;
+
+struct SpatialLatticeExtent : public LatticeExtent
 {
-	LatticeSymmetricExtent(): n(4) {};
-	LatticeSymmetricExtent(const int nIn): n(nIn) {};
-	LatticeSymmetricExtent(const unsigned int nIn): n(nIn) {};
-	const unsigned int n;
+	SpatialLatticeExtent(const latticeSize value) : LatticeExtent(value){}
+	SpatialLatticeExtent(const TemporalLatticeExtent&) = delete;
+	SpatialLatticeExtent(TemporalLatticeExtent&) = delete;
+};
+
+struct TemporalLatticeExtent : public LatticeExtent
+{
+	TemporalLatticeExtent(const latticeSize value) : LatticeExtent(value){}
+	TemporalLatticeExtent(const SpatialLatticeExtent&) = delete;
+	TemporalLatticeExtent(SpatialLatticeExtent&) = delete;
 };
 
 struct LatticeExtents2
 {
-	LatticeExtents2(LatticeSpatialExtent nsIn, LatticeTemporalExtent ntIn) : ns(nsIn.n), nt(ntIn.n)  {};
-	LatticeExtents2(LatticeSymmetricExtent nIn): ns(nIn.n), nt(nIn.n) {};
-	LatticeSpatialExtent ns;
-	LatticeTemporalExtent nt;
-	unsigned int getNs() const;
-	unsigned int getNt() const;
-	unsigned int getLatticeVolume() const;
-	unsigned int getSpatialLatticeVolume() const;
+	LatticeExtents2(SpatialLatticeExtent nsIn, TemporalLatticeExtent ntIn);
+	LatticeExtents2(latticeSize nIn);
+	LatticeExtents2(latticeSize nxIn, latticeSize nyIn, latticeSize nzIn, latticeSize ntIn);
+	LatticeExtents2();
+	const LatticeExtent xExtent, yExtent, zExtent, tExtent;
+	latticeSize getNs() const;
+	latticeSize getNt() const;
+	latticeSize getSpatialLatticeVolume() const;
+	latticeSize getLatticeVolume() const;
 };
 
 struct LatticeExtents
@@ -68,3 +85,16 @@ struct LatticeExtents
 	unsigned int getLatticeVolume() const;
 	unsigned int getSpatialLatticeVolume() const;
 };
+
+struct BasicLatticeIndex
+{
+	BasicLatticeIndex(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeExtents2 lE);
+	BasicLatticeIndex up(const Direction dir) const;
+	BasicLatticeIndex down(const Direction dir) const;
+	operator latticeSize() const;
+	const LatticeCoordinate x,y,z,t;
+	const latticeSize spatialIndex, globalIndex;
+};
+
+
+

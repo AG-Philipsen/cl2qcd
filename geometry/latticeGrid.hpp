@@ -20,6 +20,27 @@
 #pragma once
 
 #include "latticeExtents.hpp"
+
+struct LatticeGridNew : public LatticeExtents2
+{
+	LatticeGridNew(const uint numberOfDevices);
+};
+
+struct LatticeGridIndexNew : public BasicLatticeIndex
+{
+	LatticeGridIndexNew(const latticeCoordinate x, const latticeCoordinate y, const latticeCoordinate z, const latticeCoordinate t, const LatticeGridNew lG);
+};
+
+struct LocalLatticeExtentsNew: public LatticeExtents2
+{
+	LocalLatticeExtentsNew(const LatticeExtents2 lE, const LatticeGridNew lG);
+};
+
+struct LocalLatticeMemoryExtentsNew: public LatticeExtents2
+{
+	LocalLatticeMemoryExtentsNew(const LatticeGridNew lG, const LocalLatticeExtentsNew llE, uint halo_size);
+};
+
 #include "../common_header_files/globaldefs.h"
 #include <ostream>
 
@@ -31,6 +52,7 @@ struct FourUnsignedInt
 std::ostream& operator<<(std::ostream& out, const FourUnsignedInt & integers);
 
 
+//these should store the latticeExtents!
 struct LatticeGrid : public FourUnsignedInt
 {
 	LatticeGrid( const unsigned int numberOfDevices);
