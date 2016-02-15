@@ -43,7 +43,7 @@ static std::vector<hardware::Device*> init_devices(const std::list<hardware::Dev
 static void setDebugEnvironmentVariables();
 
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
-		lG(LatticeGrid(0)), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), inputparameters(meta::Inputparameters{0, nullptr}) //remove the last init. as soon as the member is removed
+		lG(LatticeGrid(1,LatticeExtents())), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), inputparameters(meta::Inputparameters{0, nullptr}) //remove the last init. as soon as the member is removed
 {
 	kernelBuilder = new hardware::OpenClCode(kernelParameters);
 	setDebugEnvironmentVariables();
@@ -57,7 +57,7 @@ hardware::System::System(const hardware::HardwareParametersInterface & systemPar
 #include "../interfaceImplementations/openClKernelParameters.hpp"
 
 hardware::System::System(meta::Inputparameters& parameters):
-		lG(LatticeGrid(0)), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr), inputparameters(parameters)
+		lG(LatticeGrid(1,LatticeExtents())), transfer_links(), hardwareParameters(nullptr), kernelParameters(nullptr), inputparameters(parameters)
 {
 	hardwareParameters = new hardware::HardwareParametersImplementation(&parameters);
 	kernelParameters = new hardware::code::OpenClKernelParametersImplementation (parameters) ;
@@ -211,7 +211,6 @@ void hardware::System::initOpenCLDevices()
 		throw std::logic_error( "Did not find any device! Abort!");
 	}
 
-	LatticeGrid lG (device_infos.size());
 	logger.info() << "Device grid layout: " << lG;
 
 	devices = init_devices(device_infos, context, lG, *hardwareParameters, *kernelBuilder);
