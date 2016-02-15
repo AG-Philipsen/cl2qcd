@@ -22,9 +22,10 @@
 #
 
 add_library(geometry
-index.cpp
-latticeExtents.cpp
-latticeGrid.cpp
+	latticeExtents.cpp
+	index.cpp
+	latticeGrid.cpp
+	parallelization.cpp
 )
 
 target_link_libraries(geometry einhard logger)
@@ -43,3 +44,7 @@ add_test(LatticeExtents latticeExtents )
 add_executable(latticeGrid latticeGrid_test.cpp)
 target_link_libraries(latticeGrid 	${Boost_LIBRARIES} geometry )
 add_test(Grid latticeGrid )
+
+add_executable(parallelizationTest parallelization_test.cpp)
+target_link_libraries(parallelizationTest 	${Boost_LIBRARIES} geometry )
+add_test(parallelization parallelizationTest )
