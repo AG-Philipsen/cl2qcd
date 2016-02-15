@@ -295,13 +295,11 @@ static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers
 			auto device = buffer->get_device();
 			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
 
-//			//localLatticeExtents must be changed!
 //			//todo: put these calls into own fct.! With smart pointers?
-//			TemporalParallelizationLinkIndex tmp(device->getGridPos().t, device->getLocalLatticeExtents(),
-//					LatticeExtents(params->getNs(),params->getNt()), sizeof(Matrixsu3), device->getHaloExtent());
+//			TemporalParallelizationHandler tmp(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(Matrixsu3), device->getHaloExtent());
 //			memcpy(&mem_host[tmp.getMainPartIndex_destination()]  , &gf_host[tmp.getMainPartIndex_source()]  , tmp.getMainPartSizeInBytes());
-//			memcpy(&mem_host[tmp.getFirstHaloIndex_destination()] , &gf_host[tmp.getFirstHaloIndex_source()] , tmp.getHaloPartSizeInBytes());
-//			memcpy(&mem_host[tmp.getSecondHaloIndex_destination()], &gf_host[tmp.getSecondHaloIndex_source()], tmp.getHaloPartSizeInBytes());
+//			memcpy(&mem_host[tmp.getFirstHaloIndex_destination()] , &gf_host[tmp.getFirstHaloPartIndex_source()] , tmp.getHaloPartSizeInBytes());
+//			memcpy(&mem_host[tmp.getSecondHaloIndex_destination()], &gf_host[tmp.getSecondHaloPartIndex_source()], tmp.getHaloPartSizeInBytes());
 
 			size_4 offset(0, 0, 0, device->getGridPos().t.value * local_size.tExtent);
 			logger.debug() << offset;
