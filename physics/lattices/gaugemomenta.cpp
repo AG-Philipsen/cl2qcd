@@ -27,6 +27,8 @@
 #include "../../hardware/code/gaugemomentum.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
 #include "../../geometry/index.hpp"
+#include "../../geometry/parallelization.hpp"
+
 #include <cstring>
 
 static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);
@@ -223,26 +225,15 @@ void physics::lattices::Gaugemomenta::import(const ae * const host) const
 		auto device = buffers[0]->get_device();
 		device->getGaugemomentumCode()->importGaugemomentumBuffer(buffers[0], host);
 	} else {
-		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->getLocalLatticeExtents();
-		size_4 const halo_size(local_size.xExtent, local_size.yExtent, local_size.zExtent, _device->getHaloExtent());
 		for(auto const buffer: buffers) {
 			auto device = buffer->get_device();
 			ae * mem_host = new ae[buffer->get_elements()];
 
-			size_4 offset(0, 0, 0, device->getGridPos().t * local_size.tExtent);
-			logger.debug() << offset;
-			const size_t local_volume = get_vol4d(local_size) * NDIM;
-			memcpy(mem_host, &host[uint(LinkIndex(Index(offset, LatticeExtents(gaugemomentaParametersInterface.getNs(),gaugemomentaParametersInterface.getNt())),TDIR))], local_volume * sizeof(ae));
-
-			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.tExtent) % gaugemomentaParametersInterface.getNt());
-			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume], &host[uint(LinkIndex(Index(halo_offset, LatticeExtents(gaugemomentaParametersInterface.getNs(),gaugemomentaParametersInterface.getNt())),TDIR))], halo_volume * sizeof(ae));
-
-			halo_offset = size_4(0, 0, 0, (offset.t + gaugemomentaParametersInterface.getNt() - halo_size.t) % gaugemomentaParametersInterface.getNt());
-			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume + halo_volume], &host[uint(LinkIndex(Index(halo_offset, LatticeExtents(gaugemomentaParametersInterface.getNs(),gaugemomentaParametersInterface.getNt())),TDIR))], halo_volume * sizeof(ae));
+//			//todo: put these calls into own fct.! With smart pointers?
+			TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(ae), device->getHaloExtent());
+			memcpy(&mem_host[tmp2.getMainPartIndex_destination()]  , &host[tmp2.getMainPartIndex_source()]  , tmp2.getMainPartSizeInBytes());
+			memcpy(&mem_host[tmp2.getFirstHaloIndex_destination()] , &host[tmp2.getFirstHaloPartIndex_source()] , tmp2.getHaloPartSizeInBytes());
+			memcpy(&mem_host[tmp2.getSecondHaloIndex_destination()], &host[tmp2.getSecondHaloPartIndex_source()], tmp2.getHaloPartSizeInBytes());
 
 			device->getGaugemomentumCode()->importGaugemomentumBuffer(buffer, mem_host);
 

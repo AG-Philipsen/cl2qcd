@@ -29,6 +29,7 @@
 #include "../../ildg_io/ildgIo.hpp"
 #include "../../hardware/code/gaugefield.hpp"
 #include "../../geometry/latticeGrid.hpp"
+#include "../../geometry/parallelization.hpp"
 
 static std::vector<const hardware::buffers::SU3 *> allocate_buffers(const hardware::System& system);
 static void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers);
@@ -281,45 +282,29 @@ void physics::lattices::Gaugefield::unsmear()
 	release_buffers(&unsmeared_buffers);
 }
 
-static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const physics::lattices::GaugefieldParametersInterface * params) {
+static void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host, const physics::lattices::GaugefieldParametersInterface * params) 
+{
+	logger.trace() << "importing gaugefield";
 	if(buffers.size() == 1) {
 		auto device = buffers[0]->get_device();
 		device->getGaugefieldCode()->importGaugefield(buffers[0], gf_host);
 		device->synchronize();
 	} else {
-		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->getLocalLatticeExtents();
-		size_4 tmp(local_size.xExtent, local_size.yExtent, local_size.zExtent, local_size.tExtent);
-		size_4 const halo_size(tmp.x, tmp.y, tmp.z, _device->getHaloExtent());
 		for(auto const buffer: buffers) {
 			auto device = buffer->get_device();
 			Matrixsu3 * mem_host = new Matrixsu3[buffer->get_elements()];
 
 //			//todo: put these calls into own fct.! With smart pointers?
-//			TemporalParallelizationHandler tmp(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(Matrixsu3), device->getHaloExtent());
-//			memcpy(&mem_host[tmp.getMainPartIndex_destination()]  , &gf_host[tmp.getMainPartIndex_source()]  , tmp.getMainPartSizeInBytes());
-//			memcpy(&mem_host[tmp.getFirstHaloIndex_destination()] , &gf_host[tmp.getFirstHaloPartIndex_source()] , tmp.getHaloPartSizeInBytes());
-//			memcpy(&mem_host[tmp.getSecondHaloIndex_destination()], &gf_host[tmp.getSecondHaloPartIndex_source()], tmp.getHaloPartSizeInBytes());
-
-			size_4 offset(0, 0, 0, device->getGridPos().t.value * local_size.tExtent);
-			logger.debug() << offset;
-			const size_t local_volume = get_vol4d(tmp) * NDIM;
-			memcpy(mem_host, &gf_host[uint(LinkIndex(Index(offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], local_volume * sizeof(Matrixsu3));
-
-			const size_t halo_volume = get_vol4d(tmp) * NDIM;
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.tExtent) % params->getNt());
-			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume], &gf_host[uint(LinkIndex(Index(halo_offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], halo_volume * sizeof(Matrixsu3));
-
-			halo_offset = size_4(0, 0, 0, (offset.t + params->getNt() - tmp.t) % params->getNt());
-			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume + halo_volume], &gf_host[uint(LinkIndex(Index(halo_offset,LatticeExtents(params->getNs(),params->getNt())), TDIR))], halo_volume * sizeof(Matrixsu3));
+			TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(Matrixsu3), device->getHaloExtent());
+			memcpy(&mem_host[tmp2.getMainPartIndex_destination()]  , &gf_host[tmp2.getMainPartIndex_source()]  , tmp2.getMainPartSizeInBytes());
+			memcpy(&mem_host[tmp2.getFirstHaloIndex_destination()] , &gf_host[tmp2.getFirstHaloPartIndex_source()] , tmp2.getHaloPartSizeInBytes());
+			memcpy(&mem_host[tmp2.getSecondHaloIndex_destination()], &gf_host[tmp2.getSecondHaloPartIndex_source()], tmp2.getHaloPartSizeInBytes());
 
 			device->getGaugefieldCode()->importGaugefield(buffer, mem_host);
-
 			delete[] mem_host;
 		}
 	}
+	logger.trace() << "import complete";
 }
 
 static void fetch_gaugefield_from_buffers(Matrixsu3 * const gf_host, const std::vector<const hardware::buffers::SU3 *> buffers, const physics::lattices::GaugefieldParametersInterface * params)

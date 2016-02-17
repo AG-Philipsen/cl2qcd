@@ -38,34 +38,53 @@ BOOST_AUTO_TEST_SUITE(TemporalParallelization)
 
 	size_t sizePerElement = 15;
 
-	size_t hyperVolume = ns*ns*ns*4;
+	size_t hyperVolumeLink = ns*ns*ns*4;
+	size_t hyperVolumeNonLink = ns*ns*ns;
 	size_t localExtentInSlowestDirection = nt/numberOfDevices;
 
-	TemporalParallelizationHandler tPH(lGI, lLE, sizePerElement, haloSize);
+	TemporalParallelizationHandlerLink tPHLink(lGI, lLE, sizePerElement, haloSize);
+	TemporalParallelizationHandlerNonLink tPHNonLink(lGI, lLE, sizePerElement, haloSize);
 
 	BOOST_AUTO_TEST_CASE(MAINPARTINDEX)
 	{
-		BOOST_REQUIRE_EQUAL( tPH.getMainPartIndex_destination(), 0);
+		BOOST_REQUIRE_EQUAL( tPHLink.getMainPartIndex_destination(), 0);
+		BOOST_REQUIRE_EQUAL( tPHNonLink.getMainPartIndex_destination(), 0);
 	}
 
 	BOOST_AUTO_TEST_CASE(FIRSTHALOPARTINDEX)
 	{
-		BOOST_REQUIRE_EQUAL( tPH.getFirstHaloIndex_destination(), hyperVolume*localExtentInSlowestDirection);
+		BOOST_REQUIRE_EQUAL( tPHLink.getFirstHaloIndex_destination(), hyperVolumeLink*localExtentInSlowestDirection);
+		BOOST_REQUIRE_EQUAL( tPHNonLink.getFirstHaloIndex_destination(), hyperVolumeNonLink*localExtentInSlowestDirection);
 	}
 
 	BOOST_AUTO_TEST_CASE(SECONDHALOPARTINDEX)
 	{
-		BOOST_REQUIRE_EQUAL( tPH.getSecondHaloIndex_destination(), hyperVolume*(localExtentInSlowestDirection + haloSize) );
+		BOOST_REQUIRE_EQUAL( tPHLink.getSecondHaloIndex_destination(), hyperVolumeLink*(localExtentInSlowestDirection + haloSize) );
+		BOOST_REQUIRE_EQUAL( tPHNonLink.getSecondHaloIndex_destination(), hyperVolumeNonLink*(localExtentInSlowestDirection + haloSize) );
 	}
 
 	BOOST_AUTO_TEST_CASE(MAINPARTSIZE)
 	{
-		BOOST_REQUIRE_EQUAL( tPH.getMainPartSizeInBytes(), hyperVolume*localExtentInSlowestDirection*sizePerElement );
+		BOOST_REQUIRE_EQUAL( tPHLink.getMainPartSize(), hyperVolumeLink*localExtentInSlowestDirection );
+		BOOST_REQUIRE_EQUAL( tPHNonLink.getMainPartSize(), hyperVolumeNonLink*localExtentInSlowestDirection );
 	}
 
 	BOOST_AUTO_TEST_CASE(HALOPARTSIZE)
 	{
-		BOOST_REQUIRE_EQUAL( tPH.getMainPartSizeInBytes(), hyperVolume*haloSize*sizePerElement );
+		BOOST_REQUIRE_EQUAL( tPHLink.getMainPartSize(), hyperVolumeLink*haloSize );
+		BOOST_REQUIRE_EQUAL( tPHNonLink.getMainPartSize(), hyperVolumeNonLink*haloSize );
+	}
+
+	BOOST_AUTO_TEST_CASE(MAINPARTSIZEINBYTES)
+	{
+		BOOST_REQUIRE_EQUAL( tPHLink.getMainPartSizeInBytes(), hyperVolumeLink*localExtentInSlowestDirection*sizePerElement );
+		BOOST_REQUIRE_EQUAL( tPHNonLink.getMainPartSizeInBytes(), hyperVolumeNonLink*localExtentInSlowestDirection*sizePerElement );
+	}
+
+	BOOST_AUTO_TEST_CASE(HALOPARTSIZEINBYTES)
+	{
+		BOOST_REQUIRE_EQUAL( tPHLink.getMainPartSizeInBytes(), hyperVolumeLink*haloSize*sizePerElement );
+		BOOST_REQUIRE_EQUAL( tPHNonLink.getMainPartSizeInBytes(), hyperVolumeNonLink*haloSize*sizePerElement );
 	}
 
 	BOOST_AUTO_TEST_CASE(MAINPARTINDEX_SOURCE)
@@ -73,8 +92,10 @@ BOOST_AUTO_TEST_SUITE(TemporalParallelization)
 		for(uint i = 0; i< numberOfDevices; i++)
 		{
 			LatticeGridIndex lGI(0,0,0,i, lG);
-			TemporalParallelizationHandler tPH(lGI, lLE, sizePerElement, haloSize);
-			BOOST_REQUIRE_EQUAL( tPH.getMainPartIndex_source(), i* hyperVolume*localExtentInSlowestDirection);
+			TemporalParallelizationHandlerLink tPHLink(lGI, lLE, sizePerElement, haloSize);
+			BOOST_REQUIRE_EQUAL( tPHLink.getMainPartIndex_source(), i* hyperVolumeLink*localExtentInSlowestDirection);
+			TemporalParallelizationHandlerNonLink tPHNonLink(lGI, lLE, sizePerElement, haloSize);
+			BOOST_REQUIRE_EQUAL( tPHNonLink.getMainPartIndex_source(), i* hyperVolumeNonLink*localExtentInSlowestDirection);
 		}
 	}
 
@@ -83,8 +104,10 @@ BOOST_AUTO_TEST_SUITE(TemporalParallelization)
 		for(uint i = 0; i< numberOfDevices; i++)
 		{
 			LatticeGridIndex lGI(0,0,0,i, lG);
-			TemporalParallelizationHandler tPH(lGI, lLE, sizePerElement, haloSize);
-			BOOST_REQUIRE_EQUAL( tPH.getFirstHaloPartIndex_source(), (i+1)%numberOfDevices* hyperVolume*localExtentInSlowestDirection);
+			TemporalParallelizationHandlerLink tPHLink(lGI, lLE, sizePerElement, haloSize);
+			BOOST_REQUIRE_EQUAL( tPHLink.getFirstHaloPartIndex_source(), (i+1)%numberOfDevices* hyperVolumeLink*localExtentInSlowestDirection);
+			TemporalParallelizationHandlerNonLink tPHNonLink(lGI, lLE, sizePerElement, haloSize);
+			BOOST_REQUIRE_EQUAL( tPHNonLink.getFirstHaloPartIndex_source(), (i+1)%numberOfDevices* hyperVolumeNonLink*localExtentInSlowestDirection);
 		}
 	}
 
@@ -93,8 +116,10 @@ BOOST_AUTO_TEST_SUITE(TemporalParallelization)
 		for(uint i = 0; i< numberOfDevices; i++)
 		{
 			LatticeGridIndex lGI(0,0,0,i, lG);
-			TemporalParallelizationHandler tPH(lGI, lLE, sizePerElement, haloSize);
-			BOOST_REQUIRE_EQUAL( tPH.getSecondHaloPartIndex_source(), (i-1+numberOfDevices)%numberOfDevices* hyperVolume*localExtentInSlowestDirection);
+			TemporalParallelizationHandlerLink tPHLink(lGI, lLE, sizePerElement, haloSize);
+			BOOST_REQUIRE_EQUAL( tPHLink.getSecondHaloPartIndex_source(), hyperVolumeLink*((i*localExtentInSlowestDirection-haloSize+nt)%nt));
+			TemporalParallelizationHandlerNonLink tPHNonLink(lGI, lLE, sizePerElement, haloSize);
+			BOOST_REQUIRE_EQUAL( tPHNonLink.getSecondHaloPartIndex_source(), hyperVolumeNonLink*((i*localExtentInSlowestDirection-haloSize+nt)%nt));
 		}
 	}
 
