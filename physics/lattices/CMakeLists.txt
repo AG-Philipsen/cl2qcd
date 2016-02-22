@@ -23,6 +23,7 @@
 
 add_library(gaugefield
 	gaugefield.cpp
+	../../hardware/lattices/gaugefield.cpp
 )
 
 add_library(lattices

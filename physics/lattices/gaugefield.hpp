@@ -27,6 +27,7 @@
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
 #include "latticesInterfaces.hpp"
+#include "../../hardware/lattices/gaugefield.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -119,9 +120,11 @@ namespace physics {
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
+			const GaugefieldParametersInterface * latticeObjectParameters;
+
+			hardware::lattices::Gaugefield const& gaugefield;
 			std::vector<const hardware::buffers::SU3 *> buffers;
 			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
-			const GaugefieldParametersInterface * latticeObjectParameters;
 
 			/**
 			 * Utility functions for construction.

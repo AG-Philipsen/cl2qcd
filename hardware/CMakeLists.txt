@@ -40,6 +40,7 @@ add_modules(hardware
 	buffers
 	code
 	transfer
+	lattices
 )
 
 target_link_libraries(hardware 	${OPENCL_LIBRARIES} exceptions crypto meta geometry)
