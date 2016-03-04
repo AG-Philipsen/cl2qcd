@@ -31,58 +31,34 @@
 
 #include <cstring>
 
-static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);
-static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system);
-static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system);
-
 physics::lattices::Gaugemomenta::Gaugemomenta(const hardware::System& system, const GaugemomentaParametersInterface& parametersInterface)
-	: system(system), gaugemomentaParametersInterface(parametersInterface),
-	  buffers(allocate_buffers(system))
-{
-}
-
-static  std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system)
-{
-	using hardware::buffers::Gaugemomentum;
-
-	// only use device 0 for now
-	auto devices = system.get_devices();
-	std::vector<const Gaugemomentum*> buffers;
-	buffers.reserve(devices.size());
-	for(auto device: devices) {
-		buffers.push_back(new Gaugemomentum(NDIM * (device->getLocalLatticeMemoryExtents().getLatticeVolume()), device)); //dont do calculations here!
-	}
-	return buffers;
-}
+	: system(system), gaugemomentaParametersInterface(parametersInterface), gaugemomenta(system)
+{}
 
 physics::lattices::Gaugemomenta::~Gaugemomenta()
-{
-    for(auto buffer: buffers) {
-		delete buffer;
-	}
-}
+{}
 
 const std::vector<const hardware::buffers::Gaugemomentum *> physics::lattices::Gaugemomenta::get_buffers() const noexcept
 {
-	return buffers;
+	return gaugemomenta.get_buffers();
 }
 
 void physics::lattices::Gaugemomenta::zero() const
 {
-for(auto buffer: buffers) {
+for(auto buffer: gaugemomenta.get_buffers()) {
 		buffer->get_device()->getGaugemomentumCode()->set_zero_gaugemomentum(buffer);
 	}
 }
 
 void physics::lattices::Gaugemomenta::gaussian(const physics::PRNG& prng) const
 {
-	size_t num_bufs = buffers.size();
+	size_t num_bufs = gaugemomenta.get_buffers().size();
 	auto prng_bufs = prng.get_buffers();
 	if(num_bufs != prng_bufs.size()) {
 		throw std::invalid_argument("The PRNG is using different devices than the gaugemomenta");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto buf = buffers[i];
+		auto buf = gaugemomenta.get_buffers()[i];
 		buf->get_device()->getGaugemomentumCode()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
 	}
 	update_halo();
@@ -179,38 +155,7 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Gaugemomenta::update_halo() const
 {
-	if(buffers.size() > 1) { // for a single device this will be a noop
-		// currently either all or none of the buffers must be SOA
-		if(buffers[0]->is_soa()) {
-			update_halo_soa(buffers, system);
-		} else {
-			update_halo_aos(buffers, system);
-		}
-	}
-}
-
-static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system)
-{
-	// check all buffers are non-soa
-	for(auto const buffer: buffers) {
-		if(buffer->is_soa()) {
-			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
-		}
-	}
-
-	hardware::buffers::update_halo<ae>(buffers, system, NDIM);
-}
-
-static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system)
-{
-	// check all buffers are non-soa
-	for(auto const buffer: buffers) {
-		if(!buffer->is_soa()) {
-			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
-		}
-	}
-
-	hardware::buffers::update_halo_soa<ae>(buffers, system, .5, 2 * NDIM);
+	gaugemomenta.update_halo();
 }
 
 unsigned physics::lattices::Gaugemomenta::get_elements() const noexcept
@@ -220,25 +165,5 @@ unsigned physics::lattices::Gaugemomenta::get_elements() const noexcept
 
 void physics::lattices::Gaugemomenta::import(const ae * const host) const
 {
-	logger.trace() << "importing gaugemomenta";
-	if(buffers.size() == 1) {
-		auto device = buffers[0]->get_device();
-		device->getGaugemomentumCode()->importGaugemomentumBuffer(buffers[0], host);
-	} else {
-		for(auto const buffer: buffers) {
-			auto device = buffer->get_device();
-			ae * mem_host = new ae[buffer->get_elements()];
-
-//			//todo: put these calls into own fct.! With smart pointers?
-			TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(ae), device->getHaloExtent());
-			memcpy(&mem_host[tmp2.getMainPartIndex_destination()]  , &host[tmp2.getMainPartIndex_source()]  , tmp2.getMainPartSizeInBytes());
-			memcpy(&mem_host[tmp2.getFirstHaloIndex_destination()] , &host[tmp2.getFirstHaloPartIndex_source()] , tmp2.getHaloPartSizeInBytes());
-			memcpy(&mem_host[tmp2.getSecondHaloIndex_destination()], &host[tmp2.getSecondHaloPartIndex_source()], tmp2.getHaloPartSizeInBytes());
-
-			device->getGaugemomentumCode()->importGaugemomentumBuffer(buffer, mem_host);
-
-			delete[] mem_host;
-		}
-	}
-	logger.trace() << "import complete";
+	gaugemomenta.import(host);
 }

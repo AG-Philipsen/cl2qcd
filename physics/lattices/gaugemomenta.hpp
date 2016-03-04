@@ -28,6 +28,7 @@
 #include "../prng.hpp"
 #include "scalar.hpp"
 #include "latticesInterfaces.hpp"
+#include "../../hardware/lattices/gaugemomenta.hpp"
 
 namespace physics {
 namespace lattices {
@@ -89,7 +90,7 @@ public:
 private:
 	hardware::System const& system;
 	const GaugemomentaParametersInterface& gaugemomentaParametersInterface;
-	const std::vector<const hardware::buffers::Gaugemomentum *> buffers;
+	hardware::lattices::Gaugemomenta const gaugemomenta;
 	void import(const ae * const host) const;
 
 	friend void saxpy(const Gaugemomenta* out, const hmc_float alpha, const Gaugemomenta& x, const Gaugemomenta& y);

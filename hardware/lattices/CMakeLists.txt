@@ -23,6 +23,7 @@
 
 add_library(hardware_lattices
 	gaugefield.cpp
+	gaugemomenta.cpp
 	../../geometry/latticeExtents.cpp
 	../../geometry/latticeGrid.cpp
 )
@@ -41,3 +42,4 @@ target_link_libraries(hardware_lattices
 # add_test(gaugefield Gaugefield )
 
 # add_unit_test_withLibraries(hardware::lattices::Gaugefield hardware_lattices_gaugefield_test lattices crypto)
+# add_unit_test_withLibraries(hardware::lattices::Gaugemomenta hardware_lattices_gaugemomenta_test lattices crypto)
