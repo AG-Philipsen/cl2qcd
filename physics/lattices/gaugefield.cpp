@@ -27,25 +27,20 @@
 #include "../../ildg_io/ildgIo.hpp"
 #include "../../hardware/code/gaugefield.hpp"
 
-static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const physics::PRNG& prng);
-static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
-static void set_cold(Matrixsu3 * field, size_t elems);
-static void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems);
-
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng)
-  : system(system), prng(prng),  latticeObjectParameters(parameters), gaugefield(system), buffers(gaugefield.allocate_buffers()), unsmeared_buffers()
+  : system(system), prng(prng),  latticeObjectParameters(parameters), gaugefield(system)
 {
 	initializeBasedOnParameters();
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng, bool hot)
-  : system(system), prng(prng), latticeObjectParameters(parameters), gaugefield(system), buffers(gaugefield.allocate_buffers()), unsmeared_buffers()
+  : system(system), prng(prng), latticeObjectParameters(parameters), gaugefield(system)
 {
 	initializeHotOrCold(hot);
 }
 
 physics::lattices::Gaugefield::Gaugefield(const hardware::System& system, const GaugefieldParametersInterface * parameters, const physics::PRNG& prng, std::string ildgfile)
-  : system(system), prng(prng),  latticeObjectParameters(parameters), gaugefield(system), buffers(gaugefield.allocate_buffers()), unsmeared_buffers()
+  : system(system), prng(prng),  latticeObjectParameters(parameters), gaugefield(system)
 {
 	initializeFromILDGSourcefile(ildgfile);
 }
@@ -68,10 +63,10 @@ void physics::lattices::Gaugefield::initializeBasedOnParameters()
 void physics::lattices::Gaugefield::initializeHotOrCold(bool hot)
 {
 	if(hot) {
-		set_hot(buffers, prng);
+		gaugefield.set_hot();
 		update_halo();
 	} else {
-		set_cold(buffers);
+		gaugefield.set_cold();
 	}
 	trajectoryNumberAtInit = 0;
 }
@@ -82,62 +77,13 @@ void physics::lattices::Gaugefield::initializeFromILDGSourcefile(std::string ild
 {
 	Matrixsu3 * gf_host = ildgIo::readGaugefieldFromSourcefile(ildgfile, latticeObjectParameters, trajectoryNumberAtInit);
 
-	gaugefield.send_gaugefield_to_buffers(buffers, gf_host);
+	gaugefield.send_gaugefield_to_buffers(gf_host);
 
 	delete[] gf_host;
 }
 
 physics::lattices::Gaugefield::~Gaugefield()
-{
-	gaugefield.release_buffers(&buffers);
-	gaugefield.release_buffers(&unsmeared_buffers);
-}
-
-static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, const physics::PRNG& prng)
-{
-	using hardware::Device;
-
-	for(auto buffer: buffers) 
-	{
-		size_t elems = buffer->get_elements();
-		Matrixsu3 * tmp = new Matrixsu3[elems];
-		set_hot(tmp, prng, elems);
-		const Device * device = buffer->get_device();
-		device->getGaugefieldCode()->importGaugefield(buffer, tmp);
-		device->synchronize();
-		delete[] tmp;
-	}
-}
-
-static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers)
-{
-	using hardware::Device;
-
-	for(auto buffer: buffers) 
-	{
-		size_t elems = buffer->get_elements();
-		Matrixsu3 * tmp = new Matrixsu3[elems];
-		set_cold(tmp, elems);
-		const Device * device = buffer->get_device();
-		device->getGaugefieldCode()->importGaugefield(buffer, tmp);
-		device->synchronize();
-		delete[] tmp;
-	}
-}
-
-void set_cold(Matrixsu3 * field, size_t elems)
-{
-	for(size_t i = 0; i < elems; ++i) {
-		field[i] = unit_matrixsu3();
-	}
-}
-
-void set_hot(Matrixsu3 * field, const physics::PRNG& prng, size_t elems)
-{
-	for(size_t i = 0; i < elems; ++i) {
-		field[i] = random_matrixsu3(prng);
-	}
-}
+{}
 
 std::string physics::lattices::getConfigurationName( std::string prefix, std::string postfix, int numberOfDigitsInName, int number)
 {
@@ -177,7 +123,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	logger.info() << "saving current gauge configuration to file \"" << outputfile << "\"";
 	size_t numberOfElements = latticeObjectParameters->getNumberOfElements();
 	Matrixsu3 * host_buf = new Matrixsu3[numberOfElements];
-	gaugefield.fetch_gaugefield_from_buffers(buffers, host_buf);
+	gaugefield.fetch_gaugefield_from_buffers(host_buf);
 
 	//http://stackoverflow.com/questions/2434196/how-to-initialize-stdvector-from-c-style-array
 	std::vector<Matrixsu3> tmp(numberOfElements);
@@ -190,89 +136,47 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 
 const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield::get_buffers() const noexcept
 {
-	return buffers;
+	return gaugefield.get_buffers();
 }
 
 void physics::lattices::Gaugefield::smear()
 {
-	unsmeared_buffers = gaugefield.allocate_buffers();
-
-	for(size_t i = 0; i < buffers.size(); ++i) {
-		auto buf = buffers[i];
-		auto device = buf->get_device();
-		auto gf_code = device->getGaugefieldCode(); // should be like: get_gaugefield_code( HardwareParameters_gaugefield )
-
-		hardware::buffers::copyData(unsmeared_buffers[i], buf);
-
-		int rho_iter = latticeObjectParameters->getSmearingSteps();
-		logger.debug() << "\t\tperform " << rho_iter << " steps of stout-smearing to the gaugefield...";
-
-		//one needs a temporary gf to apply the smearing to
-		const hardware::buffers::SU3 gf_tmp(buf->get_elements(), device);
-		for(int i = 0; i < rho_iter - 1; i += 2) {
-			gf_code->stout_smear_device(buf, &gf_tmp);
-			gf_code->stout_smear_device(&gf_tmp, buf);
-		}
-		//if rho_iter is odd one has to copy ones more
-		if(rho_iter % 2 == 1) {
-			gf_code->stout_smear_device(buf, &gf_tmp);
-			hardware::buffers::copyData(buf, &gf_tmp);
-		}
-	}
+	gaugefield.smear(latticeObjectParameters->getSmearingSteps());
 }
 
 void physics::lattices::Gaugefield::smear() const
 {
-  this->smear();
+	this->smear();
 }
 
 void physics::lattices::Gaugefield::unsmear() const
 {
-  this->unsmear();
+	this->unsmear();
 }
 
 void physics::lattices::Gaugefield::unsmear()
 {
-	if(unsmeared_buffers.size() == 0) {
-		logger.warn() << "Tried to unsmear gaugefield that is not smeared.";
-		return;
-	}
-
-	unsmeared_buffers = gaugefield.allocate_buffers();
-
-	for(size_t i = 0; i < buffers.size(); ++i) {
-		auto buf = buffers[i];
-		hardware::buffers::copyData(buf, unsmeared_buffers[i]);
-	}
-
-	gaugefield.release_buffers(&unsmeared_buffers);
+	gaugefield.unsmear();
 }
 
 void physics::lattices::Gaugefield::update_halo() const
 {
-	if(buffers.size() > 1) { // for a single device this will be a noop
-		// currently either all or none of the buffers must be SOA
-		if(buffers[0]->is_soa()) {
-			gaugefield.update_halo_soa(buffers, system);
-		} else {
-			gaugefield.update_halo_aos(buffers, system);
-		}
-	}
+	gaugefield.update_halo();
 }
 
 const physics::PRNG * physics::lattices::Gaugefield::getPrng() const 
 {
-  return &prng;
+	return &prng;
 }
 
 const hardware::System * physics::lattices::Gaugefield::getSystem() const
 {
-  return &system;
+	return &system;
 }
 
 const physics::lattices::GaugefieldParametersInterface * physics::lattices::Gaugefield::getParameters() const
 {
-  return latticeObjectParameters;
+	return latticeObjectParameters;
 }
 
 int physics::lattices::Gaugefield::get_trajectoryNumberAtInit() const

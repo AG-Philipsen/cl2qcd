@@ -25,6 +25,7 @@
 add_library(prng
 	prng.cpp
 	../host_functionality/host_random.cpp
+	../hardware/lattices/prng.cpp
 )
 target_link_libraries(prng
 	ranlux

@@ -23,6 +23,7 @@
 #include "../../hardware/system.hpp"
 #include "../buffers/su3.hpp"
 #include "../buffers/plain.hpp"
+#include "prng.hpp"
 
 
 namespace hardware {
@@ -38,16 +39,30 @@ public:
 	
 	Gaugefield(const hardware::System& system);
 
-	std::vector<const hardware::buffers::SU3 *> allocate_buffers() const;
-	void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers) const;
-	void send_gaugefield_to_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, const Matrixsu3 * const gf_host) const;
-	void fetch_gaugefield_from_buffers(const std::vector<const hardware::buffers::SU3 *> buffers, Matrixsu3 * const gf_host) const;
-	void update_halo_soa(std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system) const;
-	void update_halo_aos(std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system) const;
+	const std::vector<const hardware::buffers::SU3 *> get_buffers() const noexcept;
+	std::vector<const hardware::buffers::SU3 *> allocate_buffers();
+	void release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers);
+	void send_gaugefield_to_buffers(const Matrixsu3 * const gf_host);
+	void fetch_gaugefield_from_buffers( Matrixsu3 * const gf_host);
+
+	void update_halo() const;
+	
+	void set_cold() const;
+	void set_hot() const;
+
+	void smear(unsigned int smearingSteps);
+	void unsmear();
+
 private:
 	hardware::System const& system;
 	std::vector<const hardware::buffers::SU3 *> buffers;
 	std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
+
+	void update_halo_soa(std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system) const;
+	void update_halo_aos(std::vector<const hardware::buffers::SU3 *> buffers, const hardware::System& system) const;
+
+	void set_cold(Matrixsu3 * field, size_t elems) const;
+	void set_hot(Matrixsu3 * field, size_t elems) const;
 };
 
 }

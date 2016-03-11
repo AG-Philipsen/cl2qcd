@@ -24,6 +24,7 @@
 add_library(hardware_lattices
 	gaugefield.cpp
 	gaugemomenta.cpp
+	prng.cpp
 	../../geometry/latticeExtents.cpp
 	../../geometry/latticeGrid.cpp
 )

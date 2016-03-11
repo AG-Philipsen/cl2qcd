@@ -25,6 +25,7 @@
 
 #include "../hardware/system.hpp"
 #include "../hardware/buffers/prng_buffer.hpp"
+#include "../hardware/lattices/prng.hpp"
 #include "prngInterface.hpp"
 
 /**
@@ -89,21 +90,14 @@ namespace physics {
 
 			std::string getName(int = -1) const noexcept;
 		private:
-			/**
-			 * Reference to the PRNG Buffers used on each device
-			 */
-			std::vector<const hardware::buffers::PRNGBuffer*> buffers;
 
 			/**
 			 * Reference to the system this PRNG is for.
 			 */
 			const hardware::System& system;
 			const physics::PrngParametersInterface * parameters;
+			hardware::lattices::PRNG const hPrng;
 	};
-
-	void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma, const physics::PRNG& prng);
-	void gaussianNormalPair(hmc_float * z1, hmc_float * z2, const physics::PRNG& prng);
-	Matrixsu3 random_matrixsu3(const physics::PRNG& prng);
 }
 
 #endif /* _PHYSICS_PRNG_ */

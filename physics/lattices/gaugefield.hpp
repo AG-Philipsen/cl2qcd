@@ -122,9 +122,7 @@ namespace physics {
 			physics::PRNG const& prng;
 			const GaugefieldParametersInterface * latticeObjectParameters;
 
-			hardware::lattices::Gaugefield const& gaugefield;
-			std::vector<const hardware::buffers::SU3 *> buffers;
-			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
+			hardware::lattices::Gaugefield gaugefield;
 
 			/**
 			 * Utility functions for construction.
