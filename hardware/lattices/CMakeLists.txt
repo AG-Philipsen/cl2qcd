@@ -25,6 +25,7 @@ add_library(hardware_lattices
 	gaugefield.cpp
 	gaugemomenta.cpp
 	prng.cpp
+	spinorfield.cpp
 	../../geometry/latticeExtents.cpp
 	../../geometry/latticeGrid.cpp
 )
@@ -44,3 +45,5 @@ target_link_libraries(hardware_lattices
 
 # add_unit_test_withLibraries(hardware::lattices::Gaugefield hardware_lattices_gaugefield_test lattices crypto)
 # add_unit_test_withLibraries(hardware::lattices::Gaugemomenta hardware_lattices_gaugemomenta_test lattices crypto)
+# add_unit_test_withLibraries(hardware::lattices::Spinorfield hardware_lattices_spinorfield_test lattices crypto)
+# add_unit_test_withLibraries(hardware::lattices::Prng hardware_lattices_prng_test lattices crypto)

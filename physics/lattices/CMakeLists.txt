@@ -25,6 +25,7 @@ add_library(gaugefield
 	gaugefield.cpp
 	../../hardware/lattices/gaugefield.cpp
 	../../hardware/lattices/gaugemomenta.cpp
+	../../hardware/lattices/spinorfield.cpp
 	../../hardware/lattices/prng.cpp
 )
 

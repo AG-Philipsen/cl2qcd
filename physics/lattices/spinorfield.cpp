@@ -29,48 +29,22 @@
 #include "../../geometry/index.hpp"
 #include "../../geometry/parallelization.hpp"
 
-
-
-static std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host);
-
 physics::lattices::Spinorfield::Spinorfield(const hardware::System& system, const SpinorfieldParametersInterface& spinorfieldParametersInterface, const bool place_on_host)
-	: system(system), spinorfieldParametersInterface(spinorfieldParametersInterface),
-	  buffers(allocate_buffers(system, place_on_host)), place_on_host(place_on_host)
-{
-}
-
-static  std::vector<const hardware::buffers::Plain<spinor> *> allocate_buffers(const hardware::System& system, const bool place_on_host)
-{
-	using hardware::buffers::Plain;
-
-	std::vector<const Plain<spinor>*> buffers;
-	for(auto device: system.get_devices()) {
-		buffers.push_back(new Plain<spinor>(hardware::code::get_spinorfieldsize(device->getLocalLatticeMemoryExtents()), device, place_on_host));
-	}
-	return buffers;
-}
+	: system(system), spinorfieldParametersInterface(spinorfieldParametersInterface), spinorfield(system, place_on_host), place_on_host(place_on_host)
+{}
 
 physics::lattices::Spinorfield::~Spinorfield()
-{
-	clear_buffers();
-}
+{}
 
 
 void physics::lattices::Spinorfield::clear_buffers()
 {
-for(auto buffer: buffers) {
-		delete buffer;
-	}
-	buffers.clear();
+	spinorfield.clear_buffers();
 }
 
 void physics::lattices::Spinorfield::fill_buffers()
 {
-	if(buffers.size() != 0) {
-		return;
-	}
-
-	buffers = allocate_buffers(system, place_on_host);
+	spinorfield.fill_buffers();
 }
 
 std::vector<physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(const hardware::System& system, const size_t n, physics::InterfacesHandler& interfacesHandler, const bool place_on_host)
@@ -94,12 +68,12 @@ for(auto field: fields) {
 
 const std::vector<const hardware::buffers::Plain<spinor> *> physics::lattices::Spinorfield::get_buffers() const noexcept
 {
-	return buffers;
+	return spinorfield.get_buffers();
 }
 
 void physics::lattices::Spinorfield::gamma5() const
 {
-for(auto buffer: buffers) {
+for(auto buffer: spinorfield.get_buffers()) {
 		auto fermion_code = buffer->get_device()->getFermionCode();
 		fermion_code->gamma5_device(buffer);
 	}
@@ -168,7 +142,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Spinorfie
 
 void physics::lattices::Spinorfield::zero() const
 {
-for(auto buffer: buffers) {
+for(auto buffer: spinorfield.get_buffers()) {
 		auto spinor_code = buffer->get_device()->getSpinorCode();
 		spinor_code->set_zero_spinorfield_device(buffer);
 	}
@@ -176,7 +150,7 @@ for(auto buffer: buffers) {
 
 void physics::lattices::Spinorfield::cold() const
 {
-for(auto buffer: buffers) {
+for(auto buffer: get_buffers()) {
 		auto spinor_code = buffer->get_device()->getSpinorCode();
 		spinor_code->set_spinorfield_cold_device(buffer);
 	}
@@ -186,12 +160,12 @@ void physics::lattices::Spinorfield::gaussian(const physics::PRNG& prng) const
 {
 	auto prng_bufs = prng.get_buffers();
 
-	if(buffers.size() != prng_bufs.size()) {
+	if(get_buffers().size() != prng_bufs.size()) {
 		throw std::invalid_argument("PRNG does not use same devices as spinorfield");
 	}
 
-	for(size_t i = 0; i < buffers.size(); ++i) {
-		auto spin_buf = buffers[i];
+	for(size_t i = 0; i < get_buffers().size(); ++i) {
+		auto spin_buf = get_buffers()[i];
 		auto prng_buf = prng_bufs[i];
 		spin_buf->get_device()->getSpinorCode()->generate_gaussian_spinorfield_device(spin_buf, prng_buf);
 	}
@@ -297,29 +271,12 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Spinorfield::update_halo() const
 {
-	hardware::buffers::update_halo<spinor>(buffers, system);
+	spinorfield.update_halo();
 }
 
 void physics::lattices::Spinorfield::import(const spinor * const host) const
 {
-	logger.trace() << "importing spinorfield";
-	if(buffers.size() == 1) {
-		buffers[0]->load(host);
-	} else {
-		for(auto const buffer: buffers) {
-			auto device = buffer->get_device();
-
-//			//todo: put these calls into own fct.!
-			TemporalParallelizationHandlerNonLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(spinor), device->getHaloExtent());
-			buffer->load( &host[tmp2.getMainPartIndex_source()] , tmp2.getMainPartSize());
-			assert(tmp2.getFirstHaloPartIndex_source() + tmp2.getHaloPartSize() <= get_elements());
-			buffer->load( &host[tmp2.getFirstHaloPartIndex_source()] , tmp2.getHaloPartSize(), tmp2.getMainPartSize());
-			assert(tmp2.getSecondHaloPartIndex_source() + tmp2.getHaloPartSize() <= get_elements());
-			buffer->load( &host[tmp2.getSecondHaloPartIndex_source()], tmp2.getHaloPartSize(), tmp2.getMainPartSize() + tmp2.getHaloPartSize());
-
-		}
-	}
-	logger.trace() << "import complete";
+	spinorfield.import(host);
 }
 
 unsigned physics::lattices::Spinorfield::get_elements() const noexcept

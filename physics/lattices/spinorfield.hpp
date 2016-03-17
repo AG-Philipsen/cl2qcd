@@ -31,6 +31,7 @@
 #include "../../common_header_files/types_fermions.h"
 #include "latticesInterfaces.hpp"
 #include "../interfacesHandler.hpp"
+#include "../../hardware/lattices/spinorfield.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -113,7 +114,7 @@ class Spinorfield {
         hardware::System const& system;
         //TODO: turn the following pointer in a reference
         const SpinorfieldParametersInterface& spinorfieldParametersInterface;
-        std::vector<const hardware::buffers::Plain<spinor> *> buffers;
+	hardware::lattices::Spinorfield spinorfield;
         const bool place_on_host;
         void import(const spinor * const host) const;
 
