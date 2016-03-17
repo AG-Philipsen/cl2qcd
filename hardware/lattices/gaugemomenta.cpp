@@ -19,9 +19,9 @@
 
 #include "gaugemomenta.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "../../hardware/device.hpp"
-#include "../../hardware/buffers/halo_update.hpp"
-#include "../../hardware/code/gaugemomentum.hpp"
+#include "../device.hpp"
+#include "../buffers/halo_update.hpp"
+#include "../code/gaugemomentum.hpp"
 #include "../../geometry/parallelization.hpp"
 
 hardware::lattices::Gaugemomenta::Gaugemomenta(const hardware::System& system):

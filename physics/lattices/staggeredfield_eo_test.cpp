@@ -54,8 +54,8 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -77,8 +77,8 @@ BOOST_AUTO_TEST_CASE(zero)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -96,8 +96,8 @@ BOOST_AUTO_TEST_CASE(cold)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -115,8 +115,8 @@ BOOST_AUTO_TEST_CASE(gaussian)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -135,8 +135,8 @@ BOOST_AUTO_TEST_CASE(scalar_product)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE(sax)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -233,8 +233,8 @@ BOOST_AUTO_TEST_CASE(saxpy)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -283,8 +283,8 @@ BOOST_AUTO_TEST_CASE(saxpby)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -347,8 +347,8 @@ BOOST_AUTO_TEST_CASE(saxpbypz)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -380,8 +380,8 @@ BOOST_AUTO_TEST_CASE(sax_vec_and_squarenorm)
 {
 	using physics::lattices::Staggeredfield_eo;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -426,8 +426,8 @@ BOOST_AUTO_TEST_CASE(pseudorandomize)
 {
 	using physics::lattices::Staggeredfield_eo;
 	
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(2, _params);
+	const char * _params[] = {"foo", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(3, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);

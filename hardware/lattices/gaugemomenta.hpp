@@ -20,8 +20,8 @@
 #ifndef _HARDWARE_LATTICES_GAUGEMOMENTA_
 #define _HARDWARE_LATTICES_GAUGEMOMENTA_
 
-#include "../../hardware/system.hpp"
-#include "../../hardware/buffers/gaugemomentum.hpp"
+#include "../system.hpp"
+#include "../buffers/gaugemomentum.hpp"
 
 namespace hardware {
 

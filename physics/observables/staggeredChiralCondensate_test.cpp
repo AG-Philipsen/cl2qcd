@@ -46,6 +46,7 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
 
 	std::vector<const char*> options(1, "foo");
 	options.push_back("--ntime=4");
+	options.push_back("--num_dev=1");
 	options.push_back("--fermact=rooted_stagg");
 	options.push_back("--num_tastes=2");
 	options.push_back("--mass=0.1");
@@ -59,7 +60,7 @@ static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_
 	std::string tmp = "--sourcecontent=" + content;
 	options.push_back(tmp.c_str());
 	
-	meta::Inputparameters params(10, &(options[0]));
+	meta::Inputparameters params(11, &(options[0]));
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);

@@ -141,8 +141,8 @@ BOOST_AUTO_TEST_CASE(rescale)
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
 	
 	{
-	    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false"};
-        meta::Inputparameters params(5, _params);
+	    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
+        meta::Inputparameters params(6, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
         hardware::System system(hP, kP);
@@ -184,8 +184,8 @@ BOOST_AUTO_TEST_CASE(rescale)
 	}
 
 	{
-        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=true"};
-        meta::Inputparameters params(5, _params);
+        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=true", "--num_dev=1"};
+        meta::Inputparameters params(6, _params);
         hardware::HardwareParametersImplementation hP(&params);
         hardware::code::OpenClKernelParametersImplementation kP(params);
         hardware::System system(hP, kP);

@@ -20,8 +20,8 @@
 #ifndef _HARDWARE_LATTICES_PRNG_
 #define _HARDWARE_LATTICES_PRNG_
 
-#include "../../hardware/system.hpp"
-#include "../../hardware/buffers/prng_buffer.hpp"
+#include "../system.hpp"
+#include "../buffers/prng_buffer.hpp"
 
 namespace hardware {
 

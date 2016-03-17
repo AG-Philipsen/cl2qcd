@@ -21,9 +21,9 @@
 #include "../../host_functionality/logger.hpp"
 #include "../../host_functionality/host_operations_gaugefield.h"
 #include "../../host_functionality/host_random.h"
-#include "../../hardware/device.hpp"
-#include "../../hardware/buffers/halo_update.hpp"
-#include "../../hardware/code/gaugefield.hpp"
+#include "../device.hpp"
+#include "../buffers/halo_update.hpp"
+#include "../code/gaugefield.hpp"
 #include "../../geometry/parallelization.hpp"
 
 static Matrixsu3 random_matrixsu3();
@@ -75,7 +75,6 @@ void hardware::lattices::Gaugefield::send_gaugefield_to_buffers(const Matrixsu3 
 // 		device->synchronize();
 // 	} else {
 		for(auto const buffer: buffers) {
-			logger.fatal() << buffers.size();
 			auto device = buffer->get_device();
 			TemporalParallelizationHandlerLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(Matrixsu3), device->getHaloExtent());
 

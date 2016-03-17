@@ -44,11 +44,11 @@ BOOST_AUTO_TEST_CASE(cgm_1)
 	meta::Inputparameters* params;
 	for(int i=0; i<2; i++){
 	    if(i==0){
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567"};
-	        params = new meta::Inputparameters(4, _params);
-	    }else{
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--use_merge_kernels_spinor=true"};
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--num_dev=1"};
 	        params = new meta::Inputparameters(5, _params);
+	    }else{
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--use_merge_kernels_spinor=true", "--num_dev=1"};
+	        params = new meta::Inputparameters(6, _params);
 	    }
 
 	    hardware::HardwareParametersImplementation hP(params);
@@ -106,11 +106,11 @@ BOOST_AUTO_TEST_CASE(cgm_2)
 	meta::Inputparameters* params;
 	for(int i=0; i<2; i++){
 	    if(i==0){
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335"};
-	        params = new meta::Inputparameters(4, _params);
-	    }else{
-	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335", "--use_merge_kernels_spinor=true"};
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335", "--num_dev=1"};
 	        params = new meta::Inputparameters(5, _params);
+	    }else{
+	        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=1.01335", "--use_merge_kernels_spinor=true", "--num_dev=1"};
+	        params = new meta::Inputparameters(6, _params);
 	    }
 
         hardware::HardwareParametersImplementation hP(params);
@@ -164,8 +164,8 @@ BOOST_AUTO_TEST_CASE(cgm_3)
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01"};
-	meta::Inputparameters params(4, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01", "--num_dev=1"};
+	meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
@@ -229,8 +229,8 @@ BOOST_AUTO_TEST_CASE(cgm_4)
 	using namespace physics::algorithms::solvers;
 	using namespace physics::algorithms;
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01"};
-	meta::Inputparameters params(4, _params);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.01", "--num_dev=1"};
+	meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);

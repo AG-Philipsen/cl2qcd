@@ -18,8 +18,8 @@
  */
 
 #include "prng.hpp"
-#include "../host_functionality/host_random.h"
-#include "../hardware/code/prng.hpp"
+#include "../../host_functionality/host_random.h"
+#include "../code/prng.hpp"
 
 hardware::lattices::PRNG::PRNG(const hardware::System& system, uint32_t seed, bool useSameRandomNumbers) :
 	system(system)

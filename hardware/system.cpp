@@ -41,6 +41,7 @@
 static std::list<hardware::DeviceInfo> filter_cpus(const std::list<hardware::DeviceInfo>& devices);
 static std::vector<hardware::Device*> init_devices(const std::list<hardware::DeviceInfo>& infos, cl_context context, const LatticeGrid lG, const hardware::HardwareParametersInterface & hardwareParameters, const hardware::OpenClCode & openClCodeBuilder);
 static void setDebugEnvironmentVariables();
+static unsigned int checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface & hardwareParameters);
 
 hardware::System::System(const hardware::HardwareParametersInterface & systemParameters, const hardware::code::OpenClKernelParametersInterface & kernelParameters):
 		lG(LatticeGrid(1,LatticeExtents())), transfer_links(), hardwareParameters(&systemParameters), kernelParameters(&kernelParameters), inputparameters(meta::Inputparameters{0, nullptr}) //remove the last init. as soon as the member is removed
@@ -150,7 +151,7 @@ void hardware::System::initOpenCLDevices()
 	std::list<DeviceInfo> device_infos;
 	if(selection.empty()) {
 		// use all (or up to max)
-		size_t max_devices = hardwareParameters->getMaximalNumberOfDevices();
+		size_t max_devices = checkMaximalNumberOfDevices(num_devices, *hardwareParameters);
 		for(cl_uint i = 0; i < num_devices && (!max_devices || device_infos.size() < max_devices); ++i) {
 			DeviceInfo dev(device_ids[i]);
 #ifdef _USEDOUBLEPREC_
@@ -348,6 +349,13 @@ static void setDebugEnvironmentVariables()
 	if( logger.beDebug() ) {
 		makeCompilerDumbCompileResults();
 	}
+}
+
+static unsigned int checkMaximalNumberOfDevices(cl_uint num_devices, const hardware::HardwareParametersInterface & hardwareParameters)
+{ //here a halo_size of 2 is assumed
+	size_t max_devices = ((!hardwareParameters.getMaximalNumberOfDevices())? num_devices : hardwareParameters.getMaximalNumberOfDevices());
+	size_t max_devices_checked_against_halo_size = ((max_devices <= (unsigned)hardwareParameters.getNt()/2) ? max_devices : hardwareParameters.getNt()/2);
+	return max_devices_checked_against_halo_size;
 }
 
 const hardware::HardwareParametersInterface * hardware::System::getHardwareParameters() const noexcept

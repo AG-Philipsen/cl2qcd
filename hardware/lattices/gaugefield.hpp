@@ -20,7 +20,7 @@
 #ifndef _HARDWARE_LATTICES_GAUGEFIELD_
 #define _HARDWARE_LATTICES_GAUGEFIELD_
 
-#include "../../hardware/system.hpp"
+#include "../system.hpp"
 #include "../buffers/su3.hpp"
 #include "../buffers/plain.hpp"
 #include "prng.hpp"
