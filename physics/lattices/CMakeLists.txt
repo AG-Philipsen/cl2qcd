@@ -23,10 +23,14 @@
 
 add_library(gaugefield
 	gaugefield.cpp
-	../../hardware/lattices/gaugefield.cpp
-	../../hardware/lattices/gaugemomenta.cpp
-	../../hardware/lattices/spinorfield.cpp
-	../../hardware/lattices/prng.cpp
+# 	../../hardware/lattices/gaugefield.cpp
+# 	../../hardware/lattices/gaugemomenta.cpp
+# 	../../hardware/lattices/spinorfield.cpp
+# 	../../hardware/lattices/prng.cpp
+)
+
+target_link_libraries(gaugefield
+	hardware_lattices
 )
 
 add_library(lattices
@@ -40,8 +44,8 @@ add_library(lattices
 	rooted_staggeredfield_eo.cpp
 )
 target_link_libraries(lattices
-	gaugefield
 	hardware
+	gaugefield
 	ildg_io
 	host_functionality
 	prng

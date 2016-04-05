@@ -22,18 +22,17 @@
 #
 
 add_library(hardware_lattices
+	prng.cpp
 	gaugefield.cpp
 	gaugemomenta.cpp
-	prng.cpp
 	spinorfield.cpp
-	../../geometry/latticeExtents.cpp
-	../../geometry/latticeGrid.cpp
 )
 
 target_link_libraries(hardware_lattices
 	hardware
 	code
 	buffers
+	host_functionality
 )
 
 #

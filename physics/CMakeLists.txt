@@ -24,11 +24,12 @@
 
 add_library(prng
 	prng.cpp
-	../host_functionality/host_random.cpp
-	../hardware/lattices/prng.cpp
+# 	../hardware/lattices/prng.cpp
 )
 target_link_libraries(prng
 	ranlux
+	hardware
+	host_functionality
 )
 
 add_library(physics
@@ -41,8 +42,8 @@ add_modules(physics
 	observables
 )
 target_link_libraries(physics
-	prng
 	hardware
+	prng
 	host_functionality
 	ildg_io
 )
