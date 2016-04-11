@@ -251,7 +251,7 @@ template<class TesterClass>
 void callTest(const hmc_float alpha, const hmc_float beta)
 {
 	RealTestParameters parametersForThisTest(alpha, beta);
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);

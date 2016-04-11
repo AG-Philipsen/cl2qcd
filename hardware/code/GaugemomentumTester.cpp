@@ -49,40 +49,72 @@ int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept
 	return 	latticeExtentsIn.getLatticeVolume() * NDIM * hardware::code::getSu3AlgebraSize();
 }
 
-double * GaugemomentumCreator::createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype)
+ae * GaugemomentumCreator::createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype)
 {
-  double * gm_in;
-  gm_in = new double[numberOfElements];//numberOfAlgebraElements
-  switch(filltype)
+	ae * gm_in;
+	gm_in = new ae[numberOfElements];
+	switch(filltype)
 	{
-		case GaugeMomentumFilltype::One:
-			fill_with_one(gm_in);
-			break;
-		case GaugeMomentumFilltype::Zero:
-			fill_with_zero(gm_in);
-			break;
+	case GaugeMomentumFilltype::One:
+		fill_with_one(gm_in);
+		break;
+	case GaugeMomentumFilltype::Zero:
+		fill_with_zero(gm_in);
+		break;
+	case GaugeMomentumFilltype::Ascending:
+		fill_with_ascending(gm_in);
+		break;
 	}
-  BOOST_REQUIRE(gm_in);
-  return gm_in;
+	  BOOST_REQUIRE(gm_in);
+	  return gm_in;
 }
 
-void GaugemomentumCreator::fill_with_one(double * sf_in)
+void GaugemomentumCreator::fill_with_ascending(ae * ae_in)
 {
   for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
-    sf_in[i] = 1.;
+    ae_in[i].e0 = 1.;
+    ae_in[i].e1 = 2.;
+    ae_in[i].e2 = 3.;
+    ae_in[i].e3 = 4.;
+    ae_in[i].e4 = 5.;
+    ae_in[i].e5 = 6.;
+    ae_in[i].e6 = 7.;
+    ae_in[i].e7 = 8.;
   }
   return;
 }
 
-void GaugemomentumCreator::fill_with_zero(double * sf_in)
+void GaugemomentumCreator::fill_with_zero(ae * ae_in)
 {
   for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
-    sf_in[i] = 0.;
+    ae_in[i].e0 = 0.;
+    ae_in[i].e1 = 0.;
+    ae_in[i].e2 = 0.;
+    ae_in[i].e3 = 0.;
+    ae_in[i].e4 = 0.;
+    ae_in[i].e5 = 0.;
+    ae_in[i].e6 = 0.;
+    ae_in[i].e7 = 0.;
   }
   return;
 }
 
-double GaugemomentumCreator::count_gm(ae * ae_in, int size)
+void GaugemomentumCreator::fill_with_one(ae * ae_in)
+{
+  for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
+    ae_in[i].e0 = 1.;
+    ae_in[i].e1 = 1.;
+    ae_in[i].e2 = 1.;
+    ae_in[i].e3 = 1.;
+    ae_in[i].e4 = 1.;
+    ae_in[i].e5 = 1.;
+    ae_in[i].e6 = 1.;
+    ae_in[i].e7 = 1.;
+  }
+  return;
+}
+
+double count_gm(ae * ae_in, int size)
 {
   double sum = 0.;
   for (int i = 0; i<size;i++){
@@ -99,11 +131,7 @@ double GaugemomentumCreator::count_gm(ae * ae_in, int size)
   return sum;
 }
 
-double GaugemomentumCreator::calc_var(double in, double mean){
-  return (in - mean) * (in - mean);
-}
-
-double GaugemomentumCreator::calc_var_gm(ae * ae_in, int size, double sum){
+double calc_var_gm(ae * ae_in, int size, double sum){
   double var = 0.;
   for(int k = 0; k<size; k++){
     var +=
