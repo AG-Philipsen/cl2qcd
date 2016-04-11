@@ -26,18 +26,27 @@
 #include "prng.hpp"
 #include "SpinorTester.hpp"
 
+enum GaugeMomentumFilltype {One, Zero, Ascending};
+
 int calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept;
 int calculateAlgebraSize(LatticeExtents latticeExtentsIn) noexcept;
 
-enum GaugeMomentumFilltype {One, Zero};
+double count_gm(ae * ae_in, int size);
+double calc_var_gm(ae * ae_in, int size, double sum);
 
 struct GaugemomentumTestParameters: public TestParameters
 {
 	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn) :
-		TestParameters(latticeExtendsIn), fillType(SpinorFillType::one)
-	{};
+		TestParameters(latticeExtendsIn), fillType(GaugeMomentumFilltype::One), coefficient(1.) {};
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn):
+		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillType(GaugeMomentumFilltype::One), coefficient(1.) {};
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn) :
+		TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(1.) {};
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn, const double c) :
+		TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(c) {};
 
-	const SpinorFillType fillType;
+	const GaugeMomentumFilltype fillType;
+	const double coefficient;
 };
 
 class GaugemomentumTester : public KernelTester
@@ -55,12 +64,10 @@ protected:
 struct GaugemomentumCreator
 {
 	GaugemomentumCreator(const LatticeExtents lE): numberOfElements(calculateAlgebraSize(lE)){};
-	double * createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = One);
-	void fill_with_one(double * sf_in);
-	void fill_with_zero(double * sf_in);
-	double count_gm(ae * ae_in, int size);
-	double calc_var(double in, double mean);
-	double calc_var_gm(ae * ae_in, int size, double sum);
+	ae * createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = One);
+	void fill_with_one(ae * in);
+	void fill_with_zero(ae * in);
+	void fill_with_ascending(ae * in);
 
 	size_t numberOfElements;
 

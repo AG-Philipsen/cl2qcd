@@ -28,10 +28,39 @@
 struct ComplexTestParameters : public TestParameters
 {
 	ComplexTestParameters(const LatticeExtents lE, const hmc_complex alphaIn, const hmc_complex betaIn):
-		TestParameters(lE), alpha(alphaIn), beta(betaIn), gamma(1.) {}
+	TestParameters(lE), alpha(alphaIn), beta(betaIn), gamma(1.) {};
+	ComplexTestParameters(const hmc_complex alphaIn, const hmc_complex betaIn):
+	TestParameters(LatticeExtents{ns4,nt4}), alpha(alphaIn), beta(betaIn), gamma(1.) {};
+	ComplexTestParameters(const hmc_float gammaIn):
+	TestParameters(LatticeExtents{ns4,nt4}), alpha({1.,1.}), beta({1.,1.}), gamma(gammaIn) {};
 	hmc_complex alpha, beta;
 	hmc_float gamma;
 };
+
+ReferenceValues calculateReferenceValues_product(const hmc_complex alpha, const hmc_complex beta)
+{
+	return ReferenceValues{alpha.re * beta.re - alpha.im * beta.im, alpha.im * beta.re + alpha.re * beta.im};
+}
+
+ReferenceValues calculateReferenceValues_ratio(const hmc_complex alpha, const hmc_complex beta)
+{
+	return ReferenceValues{(alpha.re * beta.re + alpha.im * beta.im) / (beta.re * beta.re + beta.im * beta.im), (alpha.im * beta.re - alpha.re * beta.im) / (beta.re * beta.re + beta.im * beta.im)};
+}
+
+ReferenceValues calculateReferenceValues_sum(const hmc_complex alpha, const hmc_complex beta)
+{
+	return ReferenceValues{alpha.re + beta.re, alpha.im + beta.im};
+}
+
+ReferenceValues calculateReferenceValues_difference(const hmc_complex alpha, const hmc_complex beta)
+{
+	return ReferenceValues{alpha.re - beta.re, alpha.im - beta.im};
+}
+
+ReferenceValues calculateReferenceValues_convert(const hmc_float gamma)
+{
+	return ReferenceValues{gamma, 0.};
+}
 
 struct ComplexTester : public KernelTester
 {
@@ -68,15 +97,10 @@ struct ComplexTester : public KernelTester
 	hardware::buffers::Plain<hmc_complex> *result;
 };
 
-/**
- * @todo: What is the purpose of "mulitple_operation"?
- * If this is meaningful, it must be covered in the tests!
- */
-
 struct ComplexProductTester: public ComplexTester
 {
 	ComplexProductTester(const ParameterCollection pC, const ComplexTestParameters tP) :
-	   ComplexTester("product", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
+	ComplexTester("product", pC, tP, calculateReferenceValues_product(tP.alpha, tP.beta))
 	{
 		code->set_complex_to_product_device(alpha, beta, result);
 	}
@@ -84,7 +108,7 @@ struct ComplexProductTester: public ComplexTester
 
 struct ComplexRatioTester: public ComplexTester{
 	ComplexRatioTester(const ParameterCollection pC, const ComplexTestParameters tP) :
-	   ComplexTester("ratio", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
+	ComplexTester("ratio", pC, tP, calculateReferenceValues_ratio(tP.alpha, tP.beta) )
 	{
 		code->set_complex_to_ratio_device(alpha, beta, result);
 	}
@@ -92,7 +116,7 @@ struct ComplexRatioTester: public ComplexTester{
 
 struct ComplexSumTester: public ComplexTester{
 	ComplexSumTester(const ParameterCollection pC, const ComplexTestParameters tP) :
-	   ComplexTester("sum", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
+	ComplexTester("sum", pC, tP, calculateReferenceValues_sum(tP.alpha, tP.beta) )
 	{
 		code->set_complex_to_sum_device(alpha, beta, result);
 	}
@@ -101,7 +125,7 @@ struct ComplexSumTester: public ComplexTester{
 struct ComplexDifferenceTester: public ComplexTester
 {
 	ComplexDifferenceTester(const ParameterCollection pC, const ComplexTestParameters tP) :
-	   ComplexTester("difference", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
+	ComplexTester("difference", pC, tP, calculateReferenceValues_difference(tP.alpha, tP.beta) )
 	{
 		code->set_complex_to_difference_device(alpha, beta, result);
 	}
@@ -110,7 +134,7 @@ struct ComplexDifferenceTester: public ComplexTester
 struct ComplexConvertTester: public ComplexTester
 {
 	ComplexConvertTester(const ParameterCollection pC, const ComplexTestParameters tP) :
-		ComplexTester("convert", pC, tP, ReferenceValues{nonTrivialParameter, nonTrivialParameter} )
+	ComplexTester("convert", pC, tP, calculateReferenceValues_convert(tP.gamma) )
 	{
 		hardware::buffers::Plain<hmc_float> gamma(1, device);
 		hmc_float tmp = tP.gamma;
@@ -120,90 +144,92 @@ struct ComplexConvertTester: public ComplexTester
 };
 
 template<class TesterClass>
-void callTest(const LatticeExtents lE)
+void callTest(const hmc_float gamma)
 {
-	ComplexTestParameters parametersForThisTest(lE, {1.,0.}, {1.,0.}); //@todo: make adjustable
+	ComplexTestParameters parametersForThisTest(gamma);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
 	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-void testProduct(const LatticeExtents lE)
+
+template<class TesterClass>
+void callTest(const hmc_complex alpha, const hmc_complex beta)
 {
-	callTest<ComplexProductTester>(lE);
+	ComplexTestParameters parametersForThisTest(alpha, beta);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-void testRatio(const LatticeExtents lE)
+void testProduct(const hmc_complex alpha, const hmc_complex beta)
 {
-	callTest<ComplexRatioTester>(lE);
+	callTest<ComplexProductTester>(alpha, beta);
 }
 
-void testSum(const LatticeExtents lE)
+void testRatio(const hmc_complex alpha, const hmc_complex beta)
 {
-	callTest<ComplexSumTester>(lE);
+	callTest<ComplexRatioTester>(alpha, beta);
 }
 
-void testDifference(const LatticeExtents lE)
+void testSum(const hmc_complex alpha, const hmc_complex beta)
 {
-	callTest<ComplexDifferenceTester>(lE);
+	callTest<ComplexSumTester>(alpha, beta);
 }
 
-void testConvert(const LatticeExtents lE)
+void testDifference(const hmc_complex alpha, const hmc_complex beta)
 {
-	callTest<ComplexConvertTester>(lE);
+	callTest<ComplexDifferenceTester>(alpha, beta);
 }
 
-/**
- * @todo: most of the tests should be covered with one test only...
- */
+void testConvert(const hmc_float gamma)
+{
+	callTest<ComplexConvertTester>(gamma);
+}
 
 BOOST_AUTO_TEST_SUITE(PRODUCT)
 
-	//@todo: add more tests like in "product_input_{1-12}"
 	BOOST_AUTO_TEST_CASE( PRODUCT_1 )
 	{
-		testProduct(LatticeExtents{ns4, nt4});
+		testProduct({-nonTrivialParameter, nonTrivialParameter}, {nonTrivialParameter, nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(RATIO)
 
-	//@todo: add more tests like in "ratio_input_{1-8}"
 	BOOST_AUTO_TEST_CASE( RATIO_1 )
 	{
-		testRatio(LatticeExtents{ns4, nt4});
+		testRatio({nonTrivialParameter, nonTrivialParameter}, {-nonTrivialParameter, nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SUM)
 
-	//@todo: add more tests like in "sum_input_{1-6}"
-	BOOST_AUTO_TEST_CASE( RATIO_1 )
+	BOOST_AUTO_TEST_CASE( SUM_1 )
 	{
-		testSum(LatticeExtents{ns4, nt4});
+		testSum({nonTrivialParameter, nonTrivialParameter}, {nonTrivialParameter, nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(DIFFERENCE)
 
-	//@todo: add more tests like in "difference_input_{1-6}"
-	BOOST_AUTO_TEST_CASE( RATIO_1 )
+	BOOST_AUTO_TEST_CASE( DIFFERENCE_1 )
 	{
-		testSum(LatticeExtents{ns4, nt4});
+		testDifference({nonTrivialParameter, nonTrivialParameter}, {nonTrivialParameter, nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CONVERT)
 
-	//@todo: add more tests like in "convert_input_1,2"
 	BOOST_AUTO_TEST_CASE( CONVERT_1 )
 	{
-	    testConvert(LatticeExtents{ns4,nt4});
+		testConvert(nonTrivialParameter);
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()
