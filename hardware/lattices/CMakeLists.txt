@@ -27,6 +27,7 @@ add_library(hardware_lattices
 	gaugemomenta.cpp
 	spinorfield.cpp
 	spinorfield_eo.cpp
+	staggeredfield_eo.cpp
 )
 
 target_link_libraries(hardware_lattices

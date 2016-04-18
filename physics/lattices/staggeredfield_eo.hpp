@@ -23,6 +23,7 @@
 #define _PHYSICS_LATTICES_STAGGEREDFIELD_EO_
 
 #include "../../hardware/system.hpp"
+#include "../../hardware/lattices/staggeredfield_eo.hpp"
 #include "../../hardware/buffers/su3vec.hpp"
 #include "../prng.hpp"
 #include "scalar.hpp"
@@ -96,7 +97,7 @@ public:
 private:
 	hardware::System const& system;
 	const StaggeredfieldEoParametersInterface& staggaredfieldEoParametersInterface;
-	const std::vector<const hardware::buffers::SU3vec *> buffers;
+	hardware::lattices::Staggeredfield_eo staggeredFieldEo;
 	void import(const su3vec * const host) const;
 
 	friend hmc_complex scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
