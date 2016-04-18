@@ -25,36 +25,18 @@
 #include "../../hardware/buffers/halo_update.hpp"
 #include "../../hardware/code/spinors.hpp" //For hardware::code::get_eoprec_spinorfieldsize()
 
-static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const hardware::System& system);
-
 physics::lattices::Staggeredfield_eo::Staggeredfield_eo(const hardware::System& system, const StaggeredfieldEoParametersInterface& staggeredfieldEoParametersInterface)
-	: system(system), staggaredfieldEoParametersInterface(staggeredfieldEoParametersInterface), buffers(allocate_buffers(system))
+	: system(system), staggaredfieldEoParametersInterface(staggeredfieldEoParametersInterface), staggeredFieldEo(system)
 {
-}
-
-static std::vector<const hardware::buffers::SU3vec *> allocate_buffers(const hardware::System& system)
-{
-	using hardware::buffers::SU3vec;
-
-	auto devices = system.get_devices();
-	std::vector<const SU3vec*> buffers;
-	buffers.reserve(devices.size());
-	for(auto device: devices) {
-		buffers.push_back(new SU3vec(hardware::code::get_eoprec_spinorfieldsize(device->getLocalLatticeMemoryExtents()), device));
-	}
-	return buffers;
 }
 
 physics::lattices::Staggeredfield_eo::~Staggeredfield_eo()
 {
-    for(auto buffer: buffers) {
-		delete buffer;
-	}
 }
 
 const std::vector<const hardware::buffers::SU3vec *> physics::lattices::Staggeredfield_eo::get_buffers() const noexcept
 {
-	return buffers;
+	return staggeredFieldEo.get_buffers();
 }
 
 hmc_complex physics::lattices::scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right)
@@ -147,7 +129,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Staggered
 
 void physics::lattices::Staggeredfield_eo::set_zero() const
 {
-for(auto buffer: buffers) {
+for(auto buffer: staggeredFieldEo.get_buffers()) {
 		auto spinor_code = buffer->get_device()->getSpinorStaggeredCode();
 		spinor_code->set_zero_spinorfield_eoprec_device(buffer);
 	}
@@ -155,7 +137,7 @@ for(auto buffer: buffers) {
 
 void physics::lattices::Staggeredfield_eo::set_cold() const
 {
-for(auto buffer: buffers) {
+for(auto buffer: staggeredFieldEo.get_buffers()) {
 		auto spinor_code = buffer->get_device()->getSpinorStaggeredCode();
 		spinor_code->set_cold_spinorfield_eoprec_device(buffer);
 	}
@@ -165,12 +147,12 @@ void physics::lattices::Staggeredfield_eo::set_gaussian(const physics::PRNG& prn
 {
 	auto prng_bufs = prng.get_buffers();
 
-	if(buffers.size() != prng_bufs.size()) {
+	if(staggeredFieldEo.get_buffers().size() != prng_bufs.size()) {
 		throw std::invalid_argument("PRNG does not use same devices as spinorfield");
 	}
 
-	for(size_t i = 0; i < buffers.size(); ++i) {
-		auto spin_buf = buffers[i];
+	for(size_t i = 0; i < staggeredFieldEo.get_buffers().size(); ++i) {
+		auto spin_buf = staggeredFieldEo.get_buffers()[i];
 		auto prng_buf = prng_bufs[i];
 		spin_buf->get_device()->getSpinorStaggeredCode()->set_gaussian_spinorfield_eoprec_device(spin_buf, prng_buf);
 	}
@@ -592,20 +574,12 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Staggeredfield_eo::update_halo() const
 {
-	throw Print_Error_Message("Halo update is not implemented, yet.", __FILE__, __LINE__);
+	staggeredFieldEo.update_halo();
 }
 
 void physics::lattices::Staggeredfield_eo::import(const su3vec * const host) const
 {
-	logger.trace() << "importing staggeredfield_eo";
-	if(buffers.size() == 1) {
-		buffers[0]->load(host);
-	}
-	else
-	{
-		throw Print_Error_Message("Import not implemented for multi device staggeredfield_eo!", __FILE__, __LINE__);
-	}
-	logger.trace() << "import complete";
+	staggeredFieldEo.import(host);
 }
 
 unsigned physics::lattices::Staggeredfield_eo::get_elements() const noexcept
