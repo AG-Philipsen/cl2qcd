@@ -87,8 +87,8 @@ int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexc
 	return 	calculateSpinorfieldSize(latticeExtendsIn) / 2;
 }
 
-//@todo: change this to take some fillType
-void EvenOddSpinorfieldCreator::fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2)
+//@todo: should this take the same fillType for both spinors?
+void EvenOddSpinorfieldCreator::fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const SpinorFillType fillTypeIn1, const hardware::buffers::Spinor * in2, const SpinorFillType fillTypeIn2)
 {
 	spinor * sf_in1;
 	spinor * sf_in2;
@@ -97,11 +97,8 @@ void EvenOddSpinorfieldCreator::fillTwoSpinorBuffers(const hardware::buffers::Sp
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 
-	fill_with_one(sf_in1, numberOfElements);
-	fill_with_one(sf_in2, numberOfElements);
-
-	in1->load(sf_in1);
-	in2->load(sf_in2);
+	in1->load(SpinorfieldCreator::createSpinorfield(fillTypeIn1));
+	in2->load(SpinorfieldCreator::createSpinorfield(fillTypeIn2));
 
 	delete sf_in1;
 	delete sf_in2;

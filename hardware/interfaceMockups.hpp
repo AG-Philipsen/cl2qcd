@@ -189,6 +189,8 @@ namespace hardware
 				ns(nsIn), nt(ntIn), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockup(LatticeExtents lE):
 				ns(lE.getNs()), nt(lE.getNt()), rhoIter(0), rho(0.), useRectangles(true), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+			OpenClKernelParametersMockup(LatticeExtents lE, bool useRectanglesIn):
+				ns(lE.getNs()), nt(lE.getNt()), rhoIter(0), rho(0.), useRectangles(useRectanglesIn), useSmearing(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockup()	{};
 			virtual int getNs() const override
 			{
@@ -239,6 +241,10 @@ namespace hardware
 				return false;
 			}
 			virtual common::action  getFermact() const override
+			{
+				return common::action::wilson;
+			}
+			virtual common::action  getGaugeact() const override
 			{
 				return common::action::wilson;
 			}
@@ -561,20 +567,28 @@ namespace hardware
 		class OpenClKernelParametersMockupForMolecularDynamics : public OpenClKernelParametersMockup
 		{
 		public:
-			OpenClKernelParametersMockupForMolecularDynamics(int nsIn, int ntIn) :
-				OpenClKernelParametersMockup(nsIn, ntIn), fermact(common::action::wilson) {}
-			OpenClKernelParametersMockupForMolecularDynamics(int nsIn, int ntIn, const bool useRectanglesIn) :
-				OpenClKernelParametersMockup(nsIn, ntIn, useRectanglesIn), fermact(common::action::wilson) {}
-			virtual common::action  getFermact() const override
+			OpenClKernelParametersMockupForMolecularDynamics(LatticeExtents lE):
+				OpenClKernelParametersMockup(lE), gaugeact(common::action::wilson), useEvenOdd(false) {}
+			OpenClKernelParametersMockupForMolecularDynamics(LatticeExtents lE, const bool useEvenOddIn):
+				OpenClKernelParametersMockup(lE), gaugeact(common::action::wilson), useEvenOdd(useEvenOddIn) {}
+			OpenClKernelParametersMockupForMolecularDynamics(LatticeExtents lE, const common::action actionIn ) :
+				OpenClKernelParametersMockup(lE), gaugeact(actionIn), useEvenOdd(false) {}
+			virtual common::action  getGaugeact() const override
 			{
-				return fermact;
+				return gaugeact;
 			}
 			virtual double getC1() const override
 			{
 				return 1.;
 			}
+			virtual bool getUseEo() const override
+			{
+				return useEvenOdd;
+			}
 
-			common::action fermact;
+		protected:
+			common::action gaugeact;
+			const bool useEvenOdd;
 		};
 	}
 }

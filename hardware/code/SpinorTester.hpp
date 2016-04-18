@@ -79,7 +79,7 @@ struct EvenOddSpinorfieldCreator : public SpinorfieldCreator
 {
 	EvenOddSpinorfieldCreator(LatticeExtents lE): SpinorfieldCreator(calculateEvenOddSpinorfieldSize(lE)), latticeExtents(lE){};
 	//todo: these should not be visible here, but be accessible via a fillType
-	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2); //this is used in the molecular dynamics test
+	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const SpinorFillType fillTypeIn1, const hardware::buffers::Spinor * in2, const SpinorFillType fillTypeIn2);
 	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
 	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
 	LatticeExtents latticeExtents;

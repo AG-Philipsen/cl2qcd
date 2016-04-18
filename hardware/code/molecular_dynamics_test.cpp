@@ -24,6 +24,7 @@
 #include "GaugemomentumTester.hpp"
 #include "GaugefieldTester.hpp"
 #include "SpinorTester.hpp"
+#include "FermionTester.hpp"
 #include "SpinorStaggeredTester.hpp"
 #include "molecular_dynamics.hpp"
 
@@ -34,17 +35,25 @@
  *   meaningful!
  */
 
-const ReferenceValues calculateReferenceValues_GaugefieldUpdate(const int latticeVolume, GaugefieldFillType fillTypeIn)
+const ReferenceValues calculateReferenceValues_GaugefieldUpdate(const int latticeVolume, GaugefieldFillType fillTypeIn, const GaugeMomentumFilltype gmFillTypeIn)
 {
 	switch( fillTypeIn )
 	{
 		case GaugefieldFillType::cold :
 		{
-			return ReferenceValues{6. * latticeVolume};
+			if ( gmFillTypeIn == GaugeMomentumFilltype::One )
+				return ReferenceValues{6. * latticeVolume};
+			else if( gmFillTypeIn == GaugeMomentumFilltype::Ascending )
+				return ReferenceValues{6. * latticeVolume};
+			else return defaultReferenceValues();
 		}
 		case GaugefieldFillType::nonTrivial:
 		{
-			return ReferenceValues{6. * latticeVolume * 1.0000016959666707};
+			if ( gmFillTypeIn == GaugeMomentumFilltype::One )
+				return ReferenceValues{6. * latticeVolume * 1.0000016959666707};
+			else if( gmFillTypeIn == GaugeMomentumFilltype::Ascending )
+				return ReferenceValues{6. * latticeVolume * 1.0000016959666707};
+			else return defaultReferenceValues();
 		}
 		default:
 		{
@@ -53,22 +62,25 @@ const ReferenceValues calculateReferenceValues_GaugefieldUpdate(const int lattic
 	}
 }
 
-const ReferenceValues calculateReferenceValues_FGauge(const int latticeVolume)
-{
-	return ReferenceValues{8. * NDIM * latticeVolume};
-}
-
-const ReferenceValues calculateReferenceValues_FGaugeTlsym(const int latticeVolume, GaugefieldFillType fillTypeIn)
+const ReferenceValues calculateReferenceValues_FGaugeTlsym(const int latticeVolume, const GaugefieldFillType fillTypeIn, const GaugeMomentumFilltype gmFillTypeIn)
 {
 	switch( fillTypeIn )
 	{
 		case GaugefieldFillType::cold :
 		{
-			return ReferenceValues{8. * NDIM * latticeVolume};
+			if ( gmFillTypeIn == GaugeMomentumFilltype::One )
+				return ReferenceValues{8.000000000000002 * NDIM * latticeVolume};
+			else if( gmFillTypeIn == GaugeMomentumFilltype::Ascending )
+				return ReferenceValues{204. * NDIM * latticeVolume};
+			else return defaultReferenceValues();
 		}
 		case GaugefieldFillType::nonTrivial:
 		{
-			return ReferenceValues{8.000000000020442 * NDIM * latticeVolume};
+			if ( gmFillTypeIn == GaugeMomentumFilltype::One )
+				return ReferenceValues{8.00000000003022 * NDIM * latticeVolume};
+			else if( gmFillTypeIn == GaugeMomentumFilltype::Ascending )
+				return ReferenceValues{204.0000000001127 * NDIM * latticeVolume};
+			else return defaultReferenceValues();
 		}
 		default:
 		{
@@ -77,13 +89,146 @@ const ReferenceValues calculateReferenceValues_FGaugeTlsym(const int latticeVolu
 	}
 }
 
-const ReferenceValues calculateReferenceValues_FFermion()
+const ReferenceValues calculateReferenceValues_FGauge(const int latticeVolume, const GaugefieldFillType fillTypeIn, const GaugeMomentumFilltype gmFillTypeIn)
 {
+	switch( fillTypeIn )
+	{
+		case GaugefieldFillType::cold :
+		{
+			if ( gmFillTypeIn == GaugeMomentumFilltype::One )
+				return ReferenceValues{8.000000000000002 * NDIM * latticeVolume};
+			else if( gmFillTypeIn == GaugeMomentumFilltype::Ascending )
+				return ReferenceValues{204. * NDIM * latticeVolume};
+			else return defaultReferenceValues();
+		}
+		case GaugefieldFillType::nonTrivial:
+		{
+			if ( gmFillTypeIn == GaugeMomentumFilltype::One )
+				return ReferenceValues{8.000000000008056 * NDIM * latticeVolume};
+			else if( gmFillTypeIn == GaugeMomentumFilltype::Ascending )
+				return ReferenceValues{204.0000000000302 * NDIM * latticeVolume};
+			else return defaultReferenceValues();
+		}
+		default:
+		{
+			return defaultReferenceValues();
+		}
+	}
+}
+
+const ReferenceValues calculateReferenceValues_FFermion(const int latticeVolume, const GaugefieldFillType gfFillType, const GaugeMomentumFilltype gmFillType, const SpinorFillType sfFillType, const WilsonMassParameters massParameters)
+{
+	if ( massParameters.kappa == nonTrivialParameter )
+	{
+		if ( gfFillType == GaugefieldFillType::cold )
+		{
+			if ( gmFillType == GaugeMomentumFilltype::One )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 55.117979451392 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 3649859.391025437 * latticeVolume};
+				}
+			}
+			else if ( gmFillType == GaugeMomentumFilltype::Ascending )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 775.9085074513919 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 3646130.956279331 * latticeVolume};
+				}
+			}
+		}
+		else if ( gfFillType == GaugefieldFillType::nonTrivial )
+		{
+			if ( gmFillType == GaugeMomentumFilltype::One )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 49.40336833056013 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 13927166.27677378 * latticeVolume};
+				}
+			}
+			else if ( gmFillType == GaugeMomentumFilltype::Ascending )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 817.7260398734077 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 14033225.67056308 * latticeVolume};
+				}
+			}
+		}
+	}
 	return defaultReferenceValues();
 }
 
-const ReferenceValues calculateReferenceValues_FFermionEvenOdd()
+const ReferenceValues calculateReferenceValues_FFermionEvenOdd(const int latticeVolume, const GaugefieldFillType gfFillType, const GaugeMomentumFilltype gmFillType, const SpinorFillType sfFillType, const WilsonMassParameters massParameters)
 {
+	if ( massParameters.kappa == nonTrivialParameter )
+	{
+		if ( gfFillType == GaugefieldFillType::cold )
+		{
+			if ( gmFillType == GaugeMomentumFilltype::One )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 31.853606862848 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 912111.817738284 * latticeVolume};
+				}
+			}
+			else if ( gmFillType == GaugeMomentumFilltype::Ascending )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 784.248870862848 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 910639.6003652319 * latticeVolume};
+				}
+			}
+		}
+		else if ( gfFillType == GaugefieldFillType::nonTrivial )
+		{
+			if ( gmFillType == GaugeMomentumFilltype::One )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 14.5516997834285 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 703035.267661178 * latticeVolume};
+				}
+			}
+			else if ( gmFillType == GaugeMomentumFilltype::Ascending )
+			{
+				if ( sfFillType == SpinorFillType::one )
+				{
+					return ReferenceValues{ 659.8724328639853 * latticeVolume};
+				}
+				else if ( sfFillType == SpinorFillType::ascendingComplex )
+				{
+					return ReferenceValues{ 717002.8024541244 * latticeVolume};
+				}
+			}
+		}
+	}
 	return defaultReferenceValues();
 }
 
@@ -100,14 +245,22 @@ const ReferenceValues calculateReferenceValues_FFermionStaggeredEvenOdd()
 struct MolecularDynamicsTestParameters : public GaugemomentumTestParameters
 {
 	MolecularDynamicsTestParameters(const LatticeExtents latticeExtendsIn, GaugefieldFillType fillTypeIn) :
-		GaugemomentumTestParameters(latticeExtendsIn), gaugeFillType(fillTypeIn) {}
+		GaugemomentumTestParameters(latticeExtendsIn), gaugeFillType(fillTypeIn), gmFillType(GaugeMomentumFilltype::Zero), spinorFillType(SpinorFillType::one), massParameters(1.) {}
+	MolecularDynamicsTestParameters(const LatticeExtents latticeExtendsIn, GaugefieldFillType fillTypeIn, GaugeMomentumFilltype gmFillTypeIn) :
+		GaugemomentumTestParameters(latticeExtendsIn), gaugeFillType(fillTypeIn), gmFillType(gmFillTypeIn), spinorFillType(SpinorFillType::one), massParameters(1.) {}
+	MolecularDynamicsTestParameters(const LatticeExtents latticeExtendsIn, GaugefieldFillType gfFillTypeIn, GaugeMomentumFilltype gmFillTypeIn, SpinorFillType sfFillTypeIn, WilsonMassParameters kappaIn) :
+		GaugemomentumTestParameters(latticeExtendsIn, gmFillTypeIn), gaugeFillType(gfFillTypeIn), gmFillType(gmFillTypeIn), spinorFillType(sfFillTypeIn), massParameters(kappaIn) {}
 	const GaugefieldFillType gaugeFillType;
+	const GaugeMomentumFilltype gmFillType;
+	const SpinorFillType spinorFillType;
+	WilsonMassParameters massParameters;
+
 };
 
 struct GaugeFieldUpdateTestParameters : public MolecularDynamicsTestParameters
 {
-	GaugeFieldUpdateTestParameters(const LatticeExtents latticeExtendsIn, GaugefieldFillType fillTypeIn, const hmc_float epsIn) :
-		MolecularDynamicsTestParameters(latticeExtendsIn, fillTypeIn), eps(epsIn) {}
+	GaugeFieldUpdateTestParameters(const LatticeExtents latticeExtendsIn, GaugefieldFillType fillTypeIn, GaugeMomentumFilltype gmFillType, const hmc_float epsIn) :
+		MolecularDynamicsTestParameters(latticeExtendsIn, fillTypeIn, gmFillType), eps(epsIn) {}
 	const hmc_float eps;
 };
 
@@ -121,7 +274,7 @@ struct MolecularDynamicsTester : public GaugemomentumTester
 			gaugefieldBuffer = new hardware::buffers::SU3( calculateGaugefieldSize(tP.latticeExtents), this->device);
 			gaugefieldBuffer->load(gf.createGaugefield(tP.gaugeFillType));
 			gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
-			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One) ));
+			code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(tP.gmFillType) ));
 			gaugefieldCode = device->getGaugefieldCode();
 			molecularDynamicsCode = device->getMolecularDynamicsCode();
 		}
@@ -136,7 +289,7 @@ protected:
 struct GaugefieldUpdateTester : public MolecularDynamicsTester
 {
 	GaugefieldUpdateTester(const ParameterCollection pC, const GaugeFieldUpdateTestParameters tP) :
-		MolecularDynamicsTester("md_update_gaugefield", pC, calculateReferenceValues_GaugefieldUpdate(LatticeExtents(tP.latticeExtents).getLatticeVolume(), tP.gaugeFillType), tP)
+		MolecularDynamicsTester("md_update_gaugefield", pC, calculateReferenceValues_GaugefieldUpdate(LatticeExtents(tP.latticeExtents).getLatticeVolume(), tP.gaugeFillType, tP.gmFillType), tP)
 		{
 			molecularDynamicsCode->md_update_gaugefield_device(gaugemomentumBuffer, gaugefieldBuffer, tP.eps);
 
@@ -152,7 +305,7 @@ struct GaugefieldUpdateTester : public MolecularDynamicsTester
 struct FGaugeTester : public MolecularDynamicsTester
 {
 	FGaugeTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
-		MolecularDynamicsTester("f_gauge",pC, calculateReferenceValues_FGauge(LatticeExtents(tP.latticeExtents).getLatticeVolume()), tP)
+		MolecularDynamicsTester("f_gauge",pC, calculateReferenceValues_FGauge(LatticeExtents(tP.latticeExtents).getLatticeVolume(), tP.gaugeFillType, tP.gmFillType), tP)
 		{
 			molecularDynamicsCode->gauge_force_device( gaugefieldBuffer, gaugemomentumBuffer);
 			calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
@@ -162,8 +315,9 @@ struct FGaugeTester : public MolecularDynamicsTester
 struct FGaugeTlsymTester : public MolecularDynamicsTester
 {
 	FGaugeTlsymTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
-		MolecularDynamicsTester("f_gauge_tlsym", pC, calculateReferenceValues_FGaugeTlsym(LatticeExtents(tP.latticeExtents).getLatticeVolume(), tP.gaugeFillType), tP)
+		MolecularDynamicsTester("f_gauge_tlsym", pC, calculateReferenceValues_FGaugeTlsym(LatticeExtents(tP.latticeExtents).getLatticeVolume(), tP.gaugeFillType, tP.gmFillType), tP)
 		{
+			//action has to be set to the correct one and ref value has to be rescaled taking into account c0,c1
 			molecularDynamicsCode->gauge_force_tlsym_device( gaugefieldBuffer, gaugemomentumBuffer);
 			calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
@@ -172,17 +326,16 @@ struct FGaugeTlsymTester : public MolecularDynamicsTester
 struct FFermionTester : public MolecularDynamicsTester
 {
 	FFermionTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
-		MolecularDynamicsTester("f_fermion", pC, calculateReferenceValues_FFermion(), tP)
+		MolecularDynamicsTester("f_fermion", pC, calculateReferenceValues_FFermion(tP.latticeExtents.getLatticeVolume(), tP.gaugeFillType, tP.gmFillType, tP.spinorFillType, tP.massParameters), tP)
 		{
 			NonEvenOddSpinorfieldCreator sf(tP.latticeExtents);
 			const hardware::buffers::Plain<spinor> in1(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 			const hardware::buffers::Plain<spinor> in2(calculateSpinorfieldSize(tP.latticeExtents), MolecularDynamicsTester::device);
 
-			in1.load(sf.createSpinorfield(SpinorFillType::one) );
-			in2.load(sf.createSpinorfield(SpinorFillType::one) );
+			in1.load(sf.createSpinorfield(tP.spinorFillType) );
+			in2.load(sf.createSpinorfield(tP.spinorFillType) );
 
-			double kappa = 1; //@todo: make adjustable
-			molecularDynamicsCode->fermion_force_device( &in1, &in2, gaugefieldBuffer, gaugemomentumBuffer, kappa);
+			molecularDynamicsCode->fermion_force_device( &in1, &in2, gaugefieldBuffer, gaugemomentumBuffer, tP.massParameters.kappa);
 			MolecularDynamicsTester::calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
 };
@@ -190,16 +343,15 @@ struct FFermionTester : public MolecularDynamicsTester
 struct FFermionEvenOddTester : public MolecularDynamicsTester
 {
 	FFermionEvenOddTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
-		MolecularDynamicsTester("f_fermion_eo", pC, calculateReferenceValues_FFermionEvenOdd(), tP)
+		MolecularDynamicsTester("f_fermion_eo", pC, calculateReferenceValues_FFermionEvenOdd(tP.latticeExtents.getLatticeVolume(), tP.gaugeFillType, tP.gmFillType, tP.spinorFillType, tP.massParameters), tP)
 		{
 			EvenOddSpinorfieldCreator sf(tP.latticeExtents);
 			const hardware::buffers::Spinor in1(tP.latticeExtents, MolecularDynamicsTester::device);
 			const hardware::buffers::Spinor in2(tP.latticeExtents, MolecularDynamicsTester::device);
-			sf.fillTwoSpinorBuffers(&in1, &in2);//to be changed to use SpinorFillType
+			sf.fillTwoSpinorBuffers(&in1, tP.spinorFillType, &in2, tP.spinorFillType);//should the same SpinorFillType be used for both spinors?
 
-			double kappa = 1; //@todo: make adjustable
 			bool evenOrOdd = EVEN; //@todo: make adjustable
-			molecularDynamicsCode->fermion_force_eo_device( &in1, &in2, gaugefieldBuffer, gaugemomentumBuffer, evenOrOdd,  kappa);
+			molecularDynamicsCode->fermion_force_eo_device( &in1, &in2, gaugefieldBuffer, gaugemomentumBuffer, evenOrOdd,  tP.massParameters.kappa);
 			MolecularDynamicsTester::calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
 };
@@ -275,8 +427,8 @@ private:
 		EvenOddSpinorfieldCreator sfEo(tP.latticeExtents);
 		inNonEo1->load(sf.createSpinorfield(SpinorFillType::one));
 		inNonEo2->load(sf.createSpinorfield(SpinorFillType::one));
-		sfEo.fillTwoSpinorBuffers(inEo1, inEo2); //to be changed to use SpinorFillType
-		sfEo.fillTwoSpinorBuffers(inEo3, inEo4);
+		sfEo.fillTwoSpinorBuffers(inEo1, SpinorFillType::one, inEo2, SpinorFillType::one); //to be changed to use SpinorFillType
+		sfEo.fillTwoSpinorBuffers(inEo3, SpinorFillType::one, inEo4, SpinorFillType::one);
 
 	}
 
@@ -320,10 +472,10 @@ logger.info() << "Produced the ref_vec_f_stagg2_eo text file with the staggered 
 };
 
 template<typename TesterClass, typename TestParameters>
-void callTest( const LatticeExtents latticeExtentsIn, GaugefieldFillType fillType, const hmc_float epsIn)
+void callTest( const LatticeExtents latticeExtentsIn, GaugefieldFillType fillType, GaugeMomentumFilltype gmFillType, const hmc_float epsIn)
 {
-	TestParameters parametersForThisTest(latticeExtentsIn, fillType, epsIn);
-	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt); //todo: could also use latticeExtendsIn here!
+	TestParameters parametersForThisTest(latticeExtentsIn, fillType, gmFillType, epsIn);
+	hardware::code::OpenClKernelParametersMockup kernelParameters(latticeExtentsIn);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass tester(parameterCollection, parametersForThisTest);
@@ -335,31 +487,64 @@ void callTest(const LatticeExtents lE, GaugefieldFillType fillType)
 	MolecularDynamicsTestParameters parametersForThisTest(lE, fillType);
 	//todo: Work over these!
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-	hardware::code::OpenClKernelParametersMockupForMolecularDynamics kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForMolecularDynamics kernelParameters(lE, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-void testGaugefieldUpdate(const LatticeExtents lE, GaugefieldFillType fillType, const hmc_float eps)
+template<class TesterClass>
+void callTest(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType)
 {
-	callTest<GaugefieldUpdateTester, GaugeFieldUpdateTestParameters>(lE, fillType, eps);
+	MolecularDynamicsTestParameters parametersForThisTest(lE, gfFillType, gmFillType);
+	//todo: Work over these!
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForMolecularDynamics kernelParameters(lE, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-void testFGauge(const LatticeExtents lE, GaugefieldFillType fillType)
+template<class TesterClass>
+void callTest(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType, SpinorFillType sfFillType, WilsonMassParameters kappa )
 {
-	callTest<FGaugeTester>(lE, fillType);
+	MolecularDynamicsTestParameters parametersForThisTest(lE, gfFillType, gmFillType, sfFillType, kappa);
+	//todo: Work over these!
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForMolecularDynamics kernelParameters(lE, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
-void testFGaugeTlsym(const LatticeExtents lE, GaugefieldFillType fillType)
+
+template<class TesterClass>
+void callTest(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType, SpinorFillType sfFillType, WilsonMassParameters kappa, const bool needEvenOdd)
 {
-	callTest<FGaugeTlsymTester>(lE, fillType);
+	MolecularDynamicsTestParameters parametersForThisTest(lE, gfFillType, gmFillType, sfFillType, kappa);
+	//todo: Work over these!
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForMolecularDynamics kernelParameters(lE, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
-void testNonEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType fillType)
+
+void testGaugefieldUpdate(const LatticeExtents lE, const GaugefieldFillType fillType, const GaugeMomentumFilltype gmFillType, const hmc_float eps)
 {
-	callTest<FFermionTester>(lE, fillType);
+	callTest<GaugefieldUpdateTester, GaugeFieldUpdateTestParameters>(lE, fillType, gmFillType, eps);
 }
-void testEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType fillType)
+
+void testFGauge(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType)
 {
-	callTest<FFermionEvenOddTester>(lE, fillType);
+	callTest<FGaugeTester>(lE, gfFillType, gmFillType);
+}
+void testFGaugeTlsym(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType)
+{
+	callTest<FGaugeTlsymTester>(lE, gfFillType, gmFillType);
+}
+void testNonEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType, SpinorFillType sfFillType, WilsonMassParameters kappa )
+{
+	callTest<FFermionTester>(lE, gfFillType, gmFillType, sfFillType, kappa );
+}
+void testEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType fillType, GaugeMomentumFilltype gmFillType, SpinorFillType sfFillType, WilsonMassParameters kappa )
+{
+	callTest<FFermionEvenOddTester>(lE, fillType, gmFillType, sfFillType, kappa );
 }
 void compareEvenOddAndNonEvenOddFermionForce(const LatticeExtents lE, GaugefieldFillType fillType)
 {
@@ -375,39 +560,63 @@ BOOST_AUTO_TEST_SUITE( GF_UPDATE )
 	//Note: test5: "THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!"
 	BOOST_AUTO_TEST_CASE(GF_UPDATE_1 )
 	{
-		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, .0);
+		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One, .0);
 	}
 	BOOST_AUTO_TEST_CASE(GF_UPDATE_2 )
 	{
-		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, .12);
+		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One, .12);
+	}
+	BOOST_AUTO_TEST_CASE(GF_UPDATE_3 )
+	{
+		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending, .0);
+	}
+	BOOST_AUTO_TEST_CASE(GF_UPDATE_4 )
+	{
+		testGaugefieldUpdate(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending, .12);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_GAUGE )
 
-	//@todo: add tests like in "f_gauge_input_{1-2}"
 	BOOST_AUTO_TEST_CASE( F_GAUGE_1 )
 	{
-		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One);
 	}
 	BOOST_AUTO_TEST_CASE( F_GAUGE_2 )
 	{
-		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
+		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::Ascending);
+	}
+
+	BOOST_AUTO_TEST_CASE( F_GAUGE_3 )
+	{
+		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::One);
+	}
+	BOOST_AUTO_TEST_CASE( F_GAUGE_4 )
+	{
+		testFGauge(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_GAUGE_TLSYM )
 
-	//@todo: add tests like in "f_gauge_tlsym_input_{1-3}"
 	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_1 )
 	{
-		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One);
 	}
 	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_2 )
 	{
-		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
+		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::Ascending);
+	}
+
+	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_3 )
+	{
+		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::One);
+	}
+	BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_4 )
+	{
+		testFGaugeTlsym(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -423,15 +632,38 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_FERMION )
 
-	//@todo: add tests like in "f_fermion_input_{1-6}"
 	BOOST_AUTO_TEST_CASE( F_FERMION_1 )
 	{
-		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
 	}
-//	BOOST_AUTO_TEST_CASE( F_FERMION_2 )
-//	{
-//		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
-//	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_2 )
+	{
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_3 )
+	{
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::Ascending, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_4 )
+	{
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::Ascending, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_5 )
+	{
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::One, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_6 )
+	{
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::One, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_7 )
+	{
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_8 )
+	{
+		testNonEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter} );
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -440,11 +672,35 @@ BOOST_AUTO_TEST_SUITE( F_FERMION_EO )
 	//@todo: add tests like in "f_fermion_eo_input_{1-20}"
 	BOOST_AUTO_TEST_CASE( F_FERMION_EO_1 )
 	{
-		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold);
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
 	}
 	BOOST_AUTO_TEST_CASE( F_FERMION_EO_2 )
 	{
-		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial);
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::One, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter});
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_3 )
+	{
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::Ascending, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_4 )
+	{
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::cold, GaugeMomentumFilltype::Ascending, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter});
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_5 )
+	{
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::One, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_6 )
+	{
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::One, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter});
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_7 )
+	{
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending, SpinorFillType::one, WilsonMassParameters{nonTrivialParameter} );
+	}
+	BOOST_AUTO_TEST_CASE( F_FERMION_EO_8 )
+	{
+		testEvenOddFermionForce(LatticeExtents{ns4, nt4}, GaugefieldFillType::nonTrivial, GaugeMomentumFilltype::Ascending, SpinorFillType::ascendingComplex, WilsonMassParameters{nonTrivialParameter});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

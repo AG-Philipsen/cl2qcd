@@ -37,6 +37,7 @@ namespace hardware {
 			virtual bool getUseRec12() const = 0;
 			virtual bool getUseEo() const = 0;
 			virtual common::action getFermact() const = 0;
+			virtual common::action getGaugeact() const = 0;
 			virtual int getMetroApproxOrd() const = 0;
 			virtual int getMdApproxOrd() const = 0;
 			virtual double getThetaFermionSpatial() const = 0;

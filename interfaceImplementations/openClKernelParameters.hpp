@@ -63,6 +63,10 @@ namespace hardware {
 			{
 				return fullParameters->get_fermact();
 			}
+			virtual common::action  getGaugeact() const override
+			{
+				return fullParameters->get_gaugeact();
+			}
 			virtual int getMetroApproxOrd() const override
 			{
 				return fullParameters->get_metro_approx_ord();
