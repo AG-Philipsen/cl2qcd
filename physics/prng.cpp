@@ -84,12 +84,12 @@ PrngStateContent readLine_prngState( std::ifstream & file )
 
 struct PrngFileReader
 {
-	PrngFileReader( std::string filename, const uint numberOfExpectedBuffers )
+	PrngFileReader( std::string filename, const unsigned int numberOfExpectedBuffers )
 	{
 		std::ifstream file(filename.c_str(), std::ios_base::binary);
 		readFirstLine_checkForTag( file, filename );
 		hostState = readSecondLine_extractHostSeed( file );
-		for( uint currentBuffer = 0; currentBuffer < numberOfExpectedBuffers; currentBuffer ++)
+		for( unsigned int currentBuffer = 0; currentBuffer < numberOfExpectedBuffers; currentBuffer ++)
 		{
 			prngStates.push_back( readLine_prngState( file ) );
 		}
@@ -129,7 +129,7 @@ physics::PRNG::PRNG(const hardware::System& system) :
 		PrngFileReader fileContent( params.get_initial_prng_state(), buffers.size() );
 
 		prng_set(fileContent.hostState);
-		for( uint currentBufferIndex = 0; currentBufferIndex < buffers.size(); currentBufferIndex ++ )
+		for( unsigned int currentBufferIndex = 0; currentBufferIndex < buffers.size(); currentBufferIndex ++ )
 		{
 			size_t buffer_bytes = fileContent.prngStates.at(currentBufferIndex).bufferBytes;
 			if(buffer_bytes != buffers.at(currentBufferIndex)->get_bytes()) {

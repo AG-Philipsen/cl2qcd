@@ -60,7 +60,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
     }
 
     if(squarenorm(b)==0){
-        for(uint i=0; i<sigma.size(); i++)
+        for(unsigned int i=0; i<sigma.size(); i++)
             x[i]->set_zero();
         return 0;
     }
@@ -86,7 +86,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
     Vector<hmc_float> alpha_vec(Neqs, system);
     Vector<hmc_float> shift(Neqs, system);                   //This is to store constants sigma
     std::vector<bool> single_system_converged(Neqs, false);  //This is to stop calculation on single system
-    std::vector<uint> single_system_iter;                    //This is to calculate performance properly
+    std::vector<unsigned int> single_system_iter;            //This is to calculate performance properly
 
     //Auxiliary scalars
     const Scalar<hmc_float> alpha_scalar_prev(system);       //This is alpha_scalar at the step iter-1
@@ -160,7 +160,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
         scalar_product_real_part(&tmp2, r, r);
         if(logger.beDebug()){
             //Calculate squarenorm of the output field
-            for(uint i=0; i<x.size(); i++)
+            for(unsigned int i=0; i<x.size(); i++)
             xsq[i] = squarenorm(*x[i]);
         }
         //Update alpha_scalar: alpha_scalar = tmp2/tmp1
@@ -207,7 +207,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
                     if((!params.get_use_merge_kernels_spinor() && (squarenorm(v) < prec)) ||
                     (params.get_use_merge_kernels_spinor() && ((*single_eq_resid_host)[k] < prec))){
                         single_system_converged[k] = true;
-                        single_system_iter.push_back((uint)iter);
+                        single_system_iter.push_back((unsigned int)iter);
                         logger.debug() << " ===> System number " << k << " converged after " << iter << " iterations! resid = " << tmp2.get();
                     }
                 }
@@ -224,7 +224,7 @@ int physics::algorithms::solvers::cg_m(const std::vector<physics::lattices::Stag
         log_squarenorm_aux(create_log_prefix_cgm(iter) + "ps", ps, report_num);
 
         //Check whether the algorithm converged
-        if(single_system_iter.size() == (uint)Neqs) {
+        if(single_system_iter.size() == (unsigned int)Neqs) {
             //Calculate resid:
             resid = tmp2.get();
             logger.debug() << create_log_prefix_cgm(iter) << "resid: " << resid;
@@ -328,7 +328,7 @@ static void compare_sqnorm(const std::vector<hmc_float> a, const std::vector<phy
 {
 	hmc_float tmp;
 	logger.debug() << "===============================================";
-	for(uint i=0; i<x.size(); i++){
+	for(unsigned int i=0; i<x.size(); i++){
 		tmp = squarenorm(*x[i]);
 		logger.debug() << ((i<10) ? " " : "") << "delta_sqnorm[field_" << i << "]: " << std::scientific << std::setprecision(16) << tmp-a[i];		  
 	}
