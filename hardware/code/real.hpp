@@ -152,7 +152,7 @@ public:
 	 * @todo Think how avoid this second parameter
 	 */
 	virtual size_t get_read_write_size_update(const std::string& in, const int numeq) const;
-	virtual uint64_t get_read_write_size(const std::string& in) const override;
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 protected:
 	/**
