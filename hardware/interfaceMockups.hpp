@@ -579,7 +579,7 @@ namespace hardware
 			}
 			virtual double getC1() const override
 			{
-				return 1.;
+				return -0.083333333;
 			}
 			virtual bool getUseEo() const override
 			{
@@ -589,6 +589,26 @@ namespace hardware
 		protected:
 			common::action gaugeact;
 			const bool useEvenOdd;
+		};
+
+		class OpenClKernelParametersMockupForMolecularDynamicsStaggered : public OpenClKernelParametersMockupForMolecularDynamics
+		{
+		public:
+			OpenClKernelParametersMockupForMolecularDynamicsStaggered(LatticeExtents lE) :
+				OpenClKernelParametersMockupForMolecularDynamics(lE), fermact(common::action::rooted_stagg)
+			{
+					fermact = common::action::rooted_stagg;
+			};
+			virtual common::action getFermact() const override
+			{
+				return fermact;
+			}
+			virtual bool getUseEo() const override
+			{
+				return true;
+			}
+		protected:
+			common::action fermact;
 		};
 	}
 }
