@@ -33,7 +33,6 @@ namespace lattices {
 class Gaugefield 
 {
 public:
-	friend hardware::Device;
 
 	virtual ~Gaugefield();
 	

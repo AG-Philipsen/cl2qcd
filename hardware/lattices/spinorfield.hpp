@@ -33,7 +33,6 @@ namespace lattices {
 class Spinorfield
 {
 public:
-	friend hardware::Device;
 
 	Spinorfield(const hardware::System&, const bool place_on_host = false);
 

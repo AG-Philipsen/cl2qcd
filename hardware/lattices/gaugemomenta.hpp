@@ -30,7 +30,6 @@ namespace lattices {
 class Gaugemomenta
 {
 public:
-	friend hardware::Device;
 
 	virtual ~Gaugemomenta();
 	
