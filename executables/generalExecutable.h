@@ -40,6 +40,8 @@
 #include "../physics/prng.hpp"
 #include "../physics/observables/gaugeObservables.hpp"
 #include "../physics/interfacesHandler.hpp"
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
 
 class generalExecutable
 {
@@ -65,6 +67,8 @@ protected:
 	usetimer performanceTimer;
 	const meta::Inputparameters parameters;
 	const physics::PrngParametersInterface * prngParameters;
+	const hardware::HardwareParametersImplementation * hP;
+	const hardware::code::OpenClKernelParametersImplementation * kP;
 	hardware::System * system;
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
