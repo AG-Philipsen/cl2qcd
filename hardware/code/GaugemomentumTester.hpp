@@ -36,10 +36,8 @@ double calc_var_gm(ae * ae_in, int size, double sum);
 
 struct GaugemomentumTestParameters: public TestParameters
 {
-	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn) :
-		TestParameters(latticeExtendsIn), fillType(GaugeMomentumFilltype::One), coefficient(1.) {};
-	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn):
-		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillType(GaugeMomentumFilltype::One), coefficient(1.) {};
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const double testPrecisionIn = 10e-8) :
+		TestParameters(latticeExtendsIn, testPrecisionIn), fillType(GaugeMomentumFilltype::One), coefficient(1.) {};
 	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn) :
 		TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(1.) {};
 	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn, const double c) :
@@ -53,6 +51,7 @@ class GaugemomentumTester : public KernelTester
 {
 public:
 	GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP);
+	GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const RefValues rV, const GaugemomentumTestParameters tP);
 	virtual ~GaugemomentumTester();
 protected:
 	const hardware::code::Gaugemomentum * code;

@@ -27,6 +27,12 @@ GaugemomentumTester::GaugemomentumTester(const std::string kernelName, const Par
   code = device->getGaugemomentumCode();
   doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 }
+GaugemomentumTester::GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const RefValues rV, const GaugemomentumTestParameters tP):
+		KernelTester(kernelName, pC.hardwareParameters, pC.kernelParameters, tP, rV)
+{
+  code = device->getGaugemomentumCode();
+  doubleBuffer = new hardware::buffers::Plain<double> (1, device);
+}
 
 GaugemomentumTester::~GaugemomentumTester()
 {
