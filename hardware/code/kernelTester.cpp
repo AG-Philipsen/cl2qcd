@@ -21,6 +21,7 @@
 #include "kernelTester.hpp"
 #include <boost/test/unit_test.hpp>
 #include "../hardwareTestUtilities.hpp"
+using boost::any_cast;
 
 KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersInterface& hardwareParameters,
 		const hardware::code::OpenClKernelParametersInterface& kernelParameters, const TestParameters testParams, const ReferenceValues rV) :
@@ -42,28 +43,89 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 	}
 }
 
+KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersInterface& hardwareParameters,
+		const hardware::code::OpenClKernelParametersInterface& kernelParameters, const TestParameters testParams, const RefValues rV) :
+			testParameters(testParams),
+			kernelResult(rV.size(),0),
+			refValues(rV),
+			hardwareParameters(&hardwareParameters),
+			kernelParameters(&kernelParameters)
+{
+	printKernelInformation(kernelNameIn);
+	try
+	{
+		system = new hardware::System(hardwareParameters, kernelParameters );
+		device = system->get_devices().at(0);
+	}
+	catch(hardware::OpenclException & exception)
+	{
+		handleExceptionInTest( exception );
+	}
+}
+
 #include <boost/test/floating_point_comparison.hpp>
 KernelTester::~KernelTester()
 {
 	if(system)
 	{
+		logger.warn() << refValues.size();
 		//NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
-		for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
+		if (referenceValues.size() != 0)
 		{
-			logger.info() << "compare result " << iteration;
-			if (testParameters.typeOfComparison == ComparisonType::difference)
+			for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
 			{
-					logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
-					logger.info() << "Ref. Value = " << referenceValues[iteration];
-					BOOST_CHECK_CLOSE(referenceValues[iteration], kernelResult[iteration], testParameters.testPrecision);
-			}
-			else if (testParameters.typeOfComparison == ComparisonType::smallerThan)
-			{
-					logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
-					logger.info() << "upper Bound = " << referenceValues[iteration];
-					BOOST_CHECK_SMALL(kernelResult[iteration], referenceValues[iteration]);
+				logger.info() << "compare result " << iteration;
+				if (testParameters.typeOfComparison == ComparisonType::smallerThan)
+				{
+						logger.fatal() << "CHECKING SMALLER THAN";
+						logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+						logger.info() << "upper Bound = " << referenceValues[iteration];
+						BOOST_CHECK_SMALL(kernelResult[iteration], referenceValues[iteration]);
+				}
+				else if (testParameters.typeOfComparison == ComparisonType::difference)
+				{
+						logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+						logger.info() << "Ref. Value = " << referenceValues[iteration];
+						BOOST_CHECK_CLOSE(referenceValues[iteration], kernelResult[iteration], testParameters.testPrecision);
+				}
 			}
 		}
+		else if ( refValues.size() != 0)
+		{
+			for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
+			{
+				logger.info() << "compare result " << iteration;
+				if( refValues[iteration].type() == typeid(int) )
+				{
+					logger.info() << "CHECKING EQUAL TO";
+					logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+					logger.info() << "Ref. Value = " << any_cast<int>(refValues[iteration]);
+					BOOST_CHECK_EQUAL(any_cast<int>(refValues[iteration]), kernelResult[iteration]);
+				}
+				else if( refValues[iteration].type() == typeid(double) )
+				{
+					if (any_cast<double>(refValues[iteration]) == 0.)
+					{
+						logger.info() << "CHECKING SMALLER THAN";
+						logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+						logger.info() << "upper Bound = " << 1e-3;
+						BOOST_CHECK_SMALL(kernelResult[iteration], 1e-3);
+					}
+					else
+					{
+						logger.info() << "CHECKING CLOSER TO";
+						logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
+						logger.info() << "Ref. Value = " << any_cast<double>(refValues[iteration]);
+						BOOST_CHECK_CLOSE(any_cast<double>(refValues[iteration]), kernelResult[iteration], testParameters.testPrecision);
+					}
+				}
+				else
+					throw Print_Error_Message("unexpected type in RefValues vector");
+			}
+		}
+		else
+			throw Print_Error_Message("both refValues and referenceValues vectors empty ");
+
 		delete system;
 		device = nullptr;
 	}

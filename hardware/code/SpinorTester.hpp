@@ -52,6 +52,7 @@ class SpinorTester: public KernelTester
 {
 public:
 	SpinorTester(std::string kernelName, const ParameterCollection, const SpinorTestParameters &, const ReferenceValues );
+	SpinorTester(std::string kernelName, const ParameterCollection, const SpinorTestParameters &, const RefValues );
 protected:
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
@@ -89,11 +90,15 @@ struct NonEvenOddSpinorTester : public SpinorTester
 {
 	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
 		SpinorTester(kernelName, pC, tP, rV) {};
+	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const RefValues & rV) :
+		SpinorTester(kernelName, pC, tP, rV) {};
 };
 
 struct EvenOddSpinorTester : public SpinorTester
 {
 	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
+		SpinorTester(kernelName, pC, tP, rV) {};
+	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const RefValues & rV) :
 		SpinorTester(kernelName, pC, tP, rV) {};
 };
 

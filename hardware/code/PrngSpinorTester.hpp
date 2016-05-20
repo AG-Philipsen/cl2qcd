@@ -46,6 +46,18 @@ struct PrngSpinorTester: public SpinorTester
 		auto codePrng = device->getPrngCode();
 		codePrng->initialize(prngStates, hostSeed);
 	}
+	PrngSpinorTester(const std::string kernelName, const ParameterCollection parameterCollection, const PrngSpinorTestParameters & testParameters, const int numberOfElements, const RefValues rV):
+				SpinorTester(kernelName, parameterCollection, testParameters, rV),
+				numberOfElements(numberOfElements), mean(0.), variance(0.),
+				hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters),
+				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
+				useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
+	{
+		prng_init(hostSeed);
+		prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
+		auto codePrng = device->getPrngCode();
+		codePrng->initialize(prngStates, hostSeed);
+	}
 
 	~PrngSpinorTester()
 	{

@@ -34,6 +34,7 @@ enum ComparisonType{difference=1, smallerThan};
 const double nonTrivialParameter = 0.123456;
 
 typedef std::vector<double> ReferenceValues;
+typedef std::vector<boost::any> RefValues;
 ReferenceValues defaultReferenceValues();
 
 struct TestParameters
@@ -44,10 +45,10 @@ struct TestParameters
 	ComparisonType typeOfComparison;
 	const double testPrecision = 10e-8;
 
-	TestParameters(const LatticeExtents latticeExtentsIn):
-		ns(latticeExtentsIn.getNs()), nt(latticeExtentsIn.getNt()), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference) {}
-	TestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn):
-		ns(latticeExtentsIn.getNs()), nt(latticeExtentsIn.getNt()), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn) {}
+	TestParameters(const LatticeExtents latticeExtentsIn, const double testPrecisionIn = 10e-8):
+		ns(latticeExtentsIn.getNs()), nt(latticeExtentsIn.getNt()), latticeExtents(latticeExtentsIn), typeOfComparison(ComparisonType::difference), testPrecision(testPrecisionIn) {}
+	TestParameters(const LatticeExtents latticeExtentsIn, const ComparisonType typeOfComparisonIn, const double testPrecisionIn = 10e-8):
+		ns(latticeExtentsIn.getNs()), nt(latticeExtentsIn.getNt()), latticeExtents(latticeExtentsIn),typeOfComparison(typeOfComparisonIn), testPrecision(testPrecisionIn) {}
 	TestParameters() = delete;
 };
 
@@ -63,12 +64,15 @@ struct KernelTester
 {
 	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
 			const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const ReferenceValues);
+	KernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface&,
+			const hardware::code::OpenClKernelParametersInterface&, struct TestParameters, const RefValues);
 	virtual ~KernelTester();
 	
 protected:
 	const TestParameters testParameters;
 	std::vector<double> kernelResult;
 	ReferenceValues referenceValues;
+	RefValues refValues;
 	
 	const hardware::System * system;
 	hardware::Device * device;
