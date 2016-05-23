@@ -26,12 +26,6 @@ SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection par
 	code = device->getSpinorCode();
 	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
 }
-SpinorTester::SpinorTester(std::string kernelName, const ParameterCollection parameterCollection, const SpinorTestParameters & testParameters, const RefValues rV):
-		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV)
-{
-	code = device->getSpinorCode();
-	doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-}
 
 void fill_with_zero(spinor * in, int size);
 void fill_with_one(spinor * in, int size);

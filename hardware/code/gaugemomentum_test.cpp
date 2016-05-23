@@ -23,38 +23,38 @@
 
 #include "GaugemomentumTester.hpp"
 
-RefValues calculateReferenceValues_squarenorm(const LatticeExtents lE , const GaugeMomentumFilltype fillTypesIn)
+ReferenceValues calculateReferenceValues_squarenorm(const LatticeExtents lE , const GaugeMomentumFilltype fillTypesIn)
 {
 	switch( fillTypesIn )
 	{
 		case GaugeMomentumFilltype::One :
 		{
-			return RefValues{lE.getLatticeVolume() * NDIM * 8.};
+			return ReferenceValues{lE.getLatticeVolume() * NDIM * 8.};
 		}
 		case GaugeMomentumFilltype::Ascending:
 		{
-			return RefValues{lE.getLatticeVolume() * NDIM * sumOfIntegersSquared(8)};
+			return ReferenceValues{lE.getLatticeVolume() * NDIM * sumOfIntegersSquared(8)};
 		}
 		default:
 		{
-			return RefValues{defaultReferenceValues()};
+			return defaultReferenceValues();
 		}
 	}
 }
 
-RefValues calculateReferenceValues_set_zero()
+ReferenceValues calculateReferenceValues_set_zero()
 {
-	return RefValues{0.};
+	return ReferenceValues{0.};
 }
 
-RefValues calculateReferenceValues_saxpy(const LatticeExtents lE , double alphaIn)
+ReferenceValues calculateReferenceValues_saxpy(const LatticeExtents lE , double alphaIn)
 {
-	return RefValues{(1. + alphaIn) * (1. + alphaIn) * lE.getLatticeVolume() * NDIM * sumOfIntegersSquared(8)};
+	return ReferenceValues{(1. + alphaIn) * (1. + alphaIn) * lE.getLatticeVolume() * NDIM * sumOfIntegersSquared(8)};
 }
 
-RefValues calculateReferenceValues_gaussian()
+ReferenceValues calculateReferenceValues_gaussian()
 {
-	return RefValues{ 0., 1.};
+	return ReferenceValues{ 0., 1.};
 }
 
 struct SquarenormTester : public GaugemomentumTester

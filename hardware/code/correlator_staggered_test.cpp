@@ -35,16 +35,16 @@ struct StaggeredFermionsCorrelatorsTestParameters : public SpinorStaggeredTestPa
 };
 
 //todo: make this virtual inheritance so that calls to device are clear
-struct CorrelatorsStaggeredTester : public SpinorStaggeredTester2, PrngSpinorTester
+struct CorrelatorsStaggeredTester : public SpinorStaggeredTester, PrngSpinorTester
 {
 	CorrelatorsStaggeredTester(const std::string kernelName, const ParameterCollection pC, const StaggeredFermionsCorrelatorsTestParameters tP, const ReferenceValues rV):
-	     SpinorStaggeredTester2(kernelName, pC, tP, rV),
-	     PrngSpinorTester(kernelName, pC, PrngSpinorTestParameters(tP.latticeExtents), calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV),
+	     SpinorStaggeredTester(kernelName, pC, tP, rV),
+	     PrngSpinorTester(kernelName, pC, PrngSpinorTestParameters(tP.latticeExtents, tP.iterations), calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV),
 	     elements(calculateEvenOddSpinorfieldSize(tP.latticeExtents))
 	{
-		code = SpinorStaggeredTester2::device->getCorrelatorStaggeredCode();
+		code = SpinorStaggeredTester::device->getCorrelatorStaggeredCode();
 		sourcecontent = tP.sourcecontent;
-		outBuffer = new hardware::buffers::SU3vec(tP.latticeExtents, SpinorStaggeredTester2::device);
+		outBuffer = new hardware::buffers::SU3vec(tP.latticeExtents, SpinorStaggeredTester::device);
 		outHost = new su3vec[elements * tP.iterations];
 	}
 	
@@ -85,7 +85,7 @@ struct VolumeSourceTester : public CorrelatorsStaggeredTester
 			sum = sum/tP.iterations/elements/6;
 		}
 
-		SpinorStaggeredTester2::kernelResult[0] = sum;
+		SpinorStaggeredTester::kernelResult[0] = sum;
 		logger.info() << sum;
 
 		hmc_float var=0.;
@@ -99,7 +99,7 @@ struct VolumeSourceTester : public CorrelatorsStaggeredTester
 			}else{
 				var=var/tP.iterations/elements/6;
 			}
-			SpinorStaggeredTester2::kernelResult[0] = sqrt(var);
+			SpinorStaggeredTester::kernelResult[0] = sqrt(var);
 			logger.info() << "result: variance";
 			logger.info() << sqrt(var);
 		
@@ -119,8 +119,8 @@ void testVolumeSource(const LatticeExtents lE)
 {
 	StaggeredFermionsCorrelatorsTestParameters parametersForThisTest(lE);
 	//todo: Work over these!
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-	hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
+	hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(parametersForThisTest.latticeExtents, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	VolumeSourceTester(parameterCollection, parametersForThisTest);
 }

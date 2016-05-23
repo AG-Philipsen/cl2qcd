@@ -23,7 +23,7 @@
 #include "SpinorStaggeredTester.hpp"
 #include "../../geometry/index.hpp"
 
-SpinorStaggeredTester2::SpinorStaggeredTester2(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues rV):
+SpinorStaggeredTester::SpinorStaggeredTester(std::string kN, const ParameterCollection pC, const SpinorStaggeredTestParameters & tP, const ReferenceValues rV):
 		KernelTester(kN, pC.hardwareParameters, pC.kernelParameters, tP, rV)
 {
 	code = device->getSpinorStaggeredCode();
@@ -139,13 +139,13 @@ su3vec * EvenOddSpinorStaggeredfieldCreator::createSpinorfieldEvenOddWithOnesAnd
   return in;
 }
 
-void SpinorStaggeredTester2::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in)
+void SpinorStaggeredTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<su3vec> * in)
 {
   code->set_float_to_global_squarenorm_device(in, doubleBuffer);
   doubleBuffer->dump(&kernelResult[0]);
 }
 
-void SpinorStaggeredTester2::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in)
+void SpinorStaggeredTester::calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::SU3vec * in)
 {
   code->set_float_to_global_squarenorm_eoprec_device(in, doubleBuffer);
   doubleBuffer->dump(&kernelResult[0]);

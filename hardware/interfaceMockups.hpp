@@ -383,6 +383,10 @@ namespace hardware
 				OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			OpenClKernelParametersMockupForSpinorTests(const int nsIn, const int ntIn, const bool useEvenOddIn) :
 				OpenClKernelParametersMockup(nsIn, ntIn, false), prec(64), useEvenOdd(useEvenOddIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+			OpenClKernelParametersMockupForSpinorTests(const LatticeExtents lE) :
+				OpenClKernelParametersMockup(lE, false), prec(64), useEvenOdd(false), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
+			OpenClKernelParametersMockupForSpinorTests(const LatticeExtents lE, const bool useEvenOddIn) :
+				OpenClKernelParametersMockup(lE, false), prec(64), useEvenOdd(useEvenOddIn), useRec12Value(checkBoostRuntimeArgumentsForRec12Usage()) {};
 			~OpenClKernelParametersMockupForSpinorTests()	{};
 
 			virtual size_t getPrecision() const override
@@ -418,13 +422,13 @@ namespace hardware
 		class OpenClKernelParametersMockupForSpinorStaggered : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:
-			OpenClKernelParametersMockupForSpinorStaggered(const int nsIn, const int ntIn) :
-				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn), fermact(common::action::rooted_stagg)
+			OpenClKernelParametersMockupForSpinorStaggered(const LatticeExtents lE) :
+				OpenClKernelParametersMockupForSpinorTests(lE), fermact(common::action::rooted_stagg)
 		{
 				fermact = common::action::rooted_stagg;
 		};
-			OpenClKernelParametersMockupForSpinorStaggered(const int nsIn, const int ntIn, const bool useEvenOddIn) :
-				OpenClKernelParametersMockupForSpinorTests(nsIn, ntIn, useEvenOddIn), fermact(common::action::rooted_stagg)
+			OpenClKernelParametersMockupForSpinorStaggered(const LatticeExtents lE, const bool useEvenOddIn) :
+				OpenClKernelParametersMockupForSpinorTests(lE, useEvenOddIn), fermact(common::action::rooted_stagg)
 		{
 				fermact = common::action::rooted_stagg;
 		};

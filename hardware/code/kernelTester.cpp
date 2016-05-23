@@ -27,26 +27,6 @@ KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwarePa
 		const hardware::code::OpenClKernelParametersInterface& kernelParameters, const TestParameters testParams, const ReferenceValues rV) :
 			testParameters(testParams),
 			kernelResult(rV.size(),0),
-			referenceValues(rV),
-			hardwareParameters(&hardwareParameters),
-			kernelParameters(&kernelParameters)
-{
-	printKernelInformation(kernelNameIn);
-	try
-	{
-		system = new hardware::System(hardwareParameters, kernelParameters );
-		device = system->get_devices().at(0);
-	}
-	catch(hardware::OpenclException & exception)
-	{
-		handleExceptionInTest( exception );
-	}
-}
-
-KernelTester::KernelTester (std::string kernelNameIn, const hardware::HardwareParametersInterface& hardwareParameters,
-		const hardware::code::OpenClKernelParametersInterface& kernelParameters, const TestParameters testParams, const RefValues rV) :
-			testParameters(testParams),
-			kernelResult(rV.size(),0),
 			refValues(rV),
 			hardwareParameters(&hardwareParameters),
 			kernelParameters(&kernelParameters)
@@ -68,30 +48,6 @@ KernelTester::~KernelTester()
 {
 	if(system)
 	{
-		logger.warn() << refValues.size();
-		//NOTE: Using "require" in boost throws an exception here, which should not happen in a destructor.
-		if (referenceValues.size() != 0)
-		{
-			for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
-			{
-				logger.info() << "compare result " << iteration;
-				if (testParameters.typeOfComparison == ComparisonType::smallerThan)
-				{
-						logger.fatal() << "CHECKING SMALLER THAN";
-						logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
-						logger.info() << "upper Bound = " << referenceValues[iteration];
-						BOOST_CHECK_SMALL(kernelResult[iteration], referenceValues[iteration]);
-				}
-				else if (testParameters.typeOfComparison == ComparisonType::difference)
-				{
-						logger.info() << std::setprecision(12) << "    Result = " << kernelResult[iteration];
-						logger.info() << "Ref. Value = " << referenceValues[iteration];
-						BOOST_CHECK_CLOSE(referenceValues[iteration], kernelResult[iteration], testParameters.testPrecision);
-				}
-			}
-		}
-		else if ( refValues.size() != 0)
-		{
 			for (int iteration = 0; iteration < (int) kernelResult.size(); iteration ++)
 			{
 				logger.info() << "compare result " << iteration;
@@ -122,9 +78,6 @@ KernelTester::~KernelTester()
 				else
 					throw Print_Error_Message("unexpected type in RefValues vector");
 			}
-		}
-		else
-			throw Print_Error_Message("both refValues and referenceValues vectors empty ");
 
 		delete system;
 		device = nullptr;

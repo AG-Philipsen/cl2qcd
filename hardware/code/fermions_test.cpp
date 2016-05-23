@@ -294,8 +294,8 @@ void callTest( const LatticeExtents latticeExtentsIn, const SpinorFillType spino
 		const MassParameters massParametersIn, const bool needEvenOdd)
 {
 	TestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, gaugefieldFillTypeIn, massParametersIn);
-	KernelParameterMockup kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd); //todo: could also use latticeExtendsIn here!
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
+	KernelParameterMockup kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, needEvenOdd); //todo: could also use latticeExtendsIn here!
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass tester(parameterCollection, parametersForThisTest);
 }
@@ -304,8 +304,8 @@ template<class TesterClass>
 void callTest(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const TwistedMassMassParameters massParameters, const bool needEvenOdd)
 {
 	TwistedMassTestParameters parametersForThisTest(latticeExtentsIn, spinorFillTypeIn, massParameters);
-	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, needEvenOdd);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass tester(parameterCollection, parametersForThisTest);
 }
@@ -314,8 +314,8 @@ template<class TesterClass>
 void callTest(const LatticeExtents latticeExtentsIn, const SpinorFillType spinorFillTypeIn, const bool needEvenOdd)
 {
 	FermionTestParameters parametersForThisTest(latticeExtentsIn, SpinorFillTypes{spinorFillTypeIn} );
-	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.SpinorTestParameters::ns, parametersForThisTest.SpinorTestParameters::nt, needEvenOdd);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents, needEvenOdd);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, needEvenOdd);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass tester(parameterCollection, parametersForThisTest);
 }

@@ -92,7 +92,7 @@ const ReferenceValues calculateReferenceValues_saxsbypz(const int latticeVolume,
 
 const ReferenceValues calculateReferenceValues_gaussian()
 {
-	return ReferenceValues{ 1e-3, .5};
+	return ReferenceValues{ 0., 0.707106781};
 }
 
 const ReferenceValues calculateReferenceValues_convert_eo(const int latticeVolume, const bool fillEvenSites)
@@ -109,10 +109,10 @@ const ReferenceValues calculateReferenceValues_convertFromEvenOdd(const int latt
 struct LinearCombinationTestParameters : public SpinorTestParameters
 {
 	LinearCombinationTestParameters(const LatticeExtents lE, const SpinorFillTypes sF) :
-		TestParameters(lE), SpinorTestParameters(lE, sF), coefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
+		TestParameters(lE), SpinorTestParameters(lE, sF), complexCoefficients(ComplexNumbers{{1.,0.}}), numberOfSpinors(1) {};
 	LinearCombinationTestParameters(const LatticeExtents lE, const SpinorFillTypes sF, const ComplexNumbers cN, const size_t numberOfSpinorsIn) :
-		TestParameters(lE), SpinorTestParameters(lE, sF), coefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
-	const ComplexNumbers coefficients;
+		TestParameters(lE), SpinorTestParameters(lE, sF), complexCoefficients(cN), numberOfSpinors(numberOfSpinorsIn) {};
+	const ComplexNumbers complexCoefficients;
 	const NumberOfSpinors numberOfSpinors;
 };
 
@@ -145,8 +145,8 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn,
 template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn )
 {
 	SpinorTestParameters parametersForThisTest(latticeExtendsIn);
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest, fillEvenSitesIn);
 }
@@ -154,16 +154,16 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn,
 template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn)
 {
 	SpinorTestParameters parametersForThisTest(latticeExtendsIn);
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }
 
 template<typename TesterClass, typename ParametersClass>
-void performTest(const LatticeExtents latticeExtendsIn, const bool needEvenOdd )
+void performTest(const LatticeExtents latticeExtendsIn, const int iterations, const bool needEvenOdd )
 {
-	ParametersClass parametersForThisTest(latticeExtendsIn);
+	ParametersClass parametersForThisTest(latticeExtendsIn, iterations);
 	callTest<TesterClass, PrngSpinorTestParameters>(parametersForThisTest, needEvenOdd);
 }
 
@@ -171,7 +171,7 @@ void performTest(const LatticeExtents latticeExtendsIn, const bool needEvenOdd )
 struct NonEvenOddLinearCombinationTester : public NonEvenOddSpinorTester
 {
 	NonEvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
-		NonEvenOddSpinorTester(kernelName, pC, tP, rV(calculateSpinorfieldSize(tP.latticeExtents), tP.coefficients))
+		NonEvenOddSpinorTester(kernelName, pC, tP, rV(calculateSpinorfieldSize(tP.latticeExtents), tP.complexCoefficients))
 	{
 		loadCoefficients(tP);
 		loadSpinorfields(tP);
@@ -192,7 +192,7 @@ protected:
 private:
 	void loadCoefficients(const LinearCombinationTestParameters & testParameters)
 	{
-		for (auto coefficient : testParameters.coefficients)
+		for (auto coefficient : testParameters.complexCoefficients)
 		{
 			complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, device));
 			complexNums.back()->load(&coefficient);
@@ -232,7 +232,7 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorTester
 		loadSpinorfields(tP);
 	}
 	EvenOddLinearCombinationTester(const std::string kernelName, const ParameterCollection pC, const LinearCombinationTestParameters tP, const ReferenceValues (*rV) (const int, const ComplexNumbers)):
-		EvenOddSpinorTester(kernelName, pC, tP, rV( calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.coefficients))
+		EvenOddSpinorTester(kernelName, pC, tP, rV( calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.complexCoefficients))
 	{
 		loadCoefficients(tP);
 		loadSpinorfields(tP);
@@ -253,7 +253,7 @@ struct EvenOddLinearCombinationTester : public EvenOddSpinorTester
 	private:
 		void loadCoefficients(const LinearCombinationTestParameters & testParameters)
 		{
-			for (auto coefficient : testParameters.coefficients)
+			for (auto coefficient : testParameters.complexCoefficients)
 			{
 				complexNums.push_back(new hardware::buffers::Plain<hmc_complex>(1, device));
 				complexNums.back()->load(&coefficient);
@@ -478,7 +478,7 @@ struct SaxpyArgTester: public NonEvenOddLinearCombinationTesterWithSquarenormAsK
 	SaxpyArgTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
 		NonEvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxpy_arg", parameterCollection, testParameters, calculateReferenceValues_saxpy)
 		{
-			code->saxpy_device(spinorfields.at(0), spinorfields.at(1), testParameters.coefficients.at(0), getOutSpinor());
+			code->saxpy_device(spinorfields.at(0), spinorfields.at(1), testParameters.complexCoefficients.at(0), getOutSpinor());
 		}
 };
 
@@ -496,7 +496,7 @@ struct SaxpyArgEvenOddTester: public EvenOddLinearCombinationTesterWithSquarenor
 	SaxpyArgEvenOddTester(const ParameterCollection & parameterCollection, const LinearCombinationTestParameters testParameters):
 		EvenOddLinearCombinationTesterWithSquarenormAsKernelResult("saxpy_arg_eo", parameterCollection, testParameters, calculateReferenceValues_saxpy)
 		{
-			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(0), testParameters.coefficients.at(0), getOutSpinor());
+			code->saxpy_eoprec_device(spinorfields.at(0), spinorfields.at(0), testParameters.complexCoefficients.at(0), getOutSpinor());
 		}
 };
 
@@ -545,14 +545,14 @@ void testEvenOddSaxpyArg(const LatticeExtents lE, const ComplexNumbers cN)
 	performTest<SaxpyArgEvenOddTester> (lE, cN, 3, true);
 }
 
-void testNonEvenOddGaussianSpinorfield( const LatticeExtents lE)
+void testNonEvenOddGaussianSpinorfield( const LatticeExtents lE, const int iterations)
 {
-	performTest<NonEvenGaussianSpinorfieldTester, PrngSpinorTestParameters>(lE, false);
+	performTest<NonEvenGaussianSpinorfieldTester, PrngSpinorTestParameters>(lE, iterations, false);
 }
 
-void testEvenOddGaussianSpinorfield( const LatticeExtents lE)
+void testEvenOddGaussianSpinorfield( const LatticeExtents lE, const int iterations)
 {
-	performTest<EvenOddGaussianSpinorfieldEvenOddTester, PrngSpinorTestParameters>(lE, true);
+	performTest<EvenOddGaussianSpinorfieldEvenOddTester, PrngSpinorTestParameters>(lE, iterations, true);
 }
 
 void testConvertToEvenOdd(const LatticeExtents lE, const bool fillEvenSites)
@@ -1037,14 +1037,14 @@ BOOST_AUTO_TEST_SUITE(GAUSSIAN)
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_NONEO )
 	{
-		testNonEvenOddGaussianSpinorfield( LatticeExtents{ns8, nt4} );
+		testNonEvenOddGaussianSpinorfield( LatticeExtents{ns8, nt4}, 1000 );
 	}
 
 	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(GAUSSIAN_EO, 1)
 
 	BOOST_AUTO_TEST_CASE( GAUSSIAN_EO )
 	{
-		testEvenOddGaussianSpinorfield(LatticeExtents{ns12, nt4});
+		testEvenOddGaussianSpinorfield(LatticeExtents{ns12, nt4}, 1000);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

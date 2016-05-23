@@ -27,6 +27,7 @@
 enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
 typedef std::vector<SpinorFillType> SpinorFillTypes;
 typedef std::vector<hmc_complex> ComplexNumbers;
+typedef std::vector<hmc_float> RealNumbers;
 typedef size_t NumberOfSpinors;
 
 int calculateSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept;
@@ -40,8 +41,6 @@ struct SpinorTestParameters: public virtual TestParameters
 {
 	SpinorTestParameters(const LatticeExtents latticeExtendsIn) :
 		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
-	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const ComparisonType typeOfComparisionIn) :
-		TestParameters(latticeExtendsIn, typeOfComparisionIn), fillTypes(SpinorFillType::one) {};
 	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
 		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};
 
@@ -52,7 +51,6 @@ class SpinorTester: public KernelTester
 {
 public:
 	SpinorTester(std::string kernelName, const ParameterCollection, const SpinorTestParameters &, const ReferenceValues );
-	SpinorTester(std::string kernelName, const ParameterCollection, const SpinorTestParameters &, const RefValues );
 protected:
 	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
 	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
@@ -90,15 +88,11 @@ struct NonEvenOddSpinorTester : public SpinorTester
 {
 	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
 		SpinorTester(kernelName, pC, tP, rV) {};
-	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const RefValues & rV) :
-		SpinorTester(kernelName, pC, tP, rV) {};
 };
 
 struct EvenOddSpinorTester : public SpinorTester
 {
 	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
-		SpinorTester(kernelName, pC, tP, rV) {};
-	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const RefValues & rV) :
 		SpinorTester(kernelName, pC, tP, rV) {};
 };
 

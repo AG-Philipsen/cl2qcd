@@ -51,7 +51,6 @@ class GaugemomentumTester : public KernelTester
 {
 public:
 	GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP);
-	GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const RefValues rV, const GaugemomentumTestParameters tP);
 	virtual ~GaugemomentumTester();
 protected:
 	const hardware::code::Gaugemomentum * code;

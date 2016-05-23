@@ -32,10 +32,10 @@ struct StaggeredFermionsTestParameters : public SpinorStaggeredTestParameters
 		TestParameters(lE), SpinorStaggeredTestParameters(lE) {};
 };
 
-struct StaggeredFermionsTester : public SpinorStaggeredTester2
+struct StaggeredFermionsTester : public SpinorStaggeredTester
 {
 	StaggeredFermionsTester(const std::string kernelName, const ParameterCollection pC, const SpinorStaggeredTestParameters tP, const ReferenceValues rV):
-	SpinorStaggeredTester2(kernelName, pC, tP, rV)
+	SpinorStaggeredTester(kernelName, pC, tP, rV)
     {
 		code = device->getFermionStaggeredCode();
 		gaugefieldBuffer = new hardware::buffers::SU3( LatticeExtents(tP.latticeExtents).getLatticeVolume() , device);
@@ -114,8 +114,8 @@ void callTest(const LatticeExtents lE)
 {
 	StaggeredFermionsTestParameters parametersForThisTest(lE);
 	//todo: Work over these!
-	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
-	hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
+	hardware::code::OpenClKernelParametersMockupForSpinorStaggered kernelParameters(parametersForThisTest.latticeExtents, true);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }

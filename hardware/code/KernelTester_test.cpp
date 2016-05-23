@@ -79,18 +79,18 @@ BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (FAILING_COMPARISON, 1)
 	{
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const struct TestParameters testParams(LatticeExtents(4,4), ComparisonType::smallerThan);
+		const struct TestParameters testParams(LatticeExtents(4,4));
 
-		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{.9});
+		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{0.});
 	}
 
 	BOOST_AUTO_TEST_CASE( SUCCEEDING_COMPARISON )
 	{
 		const hardware::HardwareParametersMockup params(4,4);
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
-		const struct TestParameters testParams(LatticeExtents(4,4), ComparisonType::smallerThan);
+		const struct TestParameters testParams(LatticeExtents(4,4));
 
-		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1.1});
+		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_SUITE ( COMPLEX )
 		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
 		const struct TestParameters testParams(LatticeExtents(4,4));
 
-		ComplexKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1,2});
+		ComplexKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1.,2.});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

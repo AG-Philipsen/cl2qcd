@@ -25,28 +25,14 @@
 
 struct PrngSpinorTestParameters : public SpinorTestParameters
 {
-	PrngSpinorTestParameters(const LatticeExtents lE) :
-		TestParameters(lE, ComparisonType::smallerThan), SpinorTestParameters(lE, ComparisonType::smallerThan), iterations(100) {};
 	PrngSpinorTestParameters(const LatticeExtents lE, const int iterationsIn) :
-		TestParameters(lE, ComparisonType::smallerThan), SpinorTestParameters(lE, ComparisonType::smallerThan), iterations(iterationsIn) {};
+		TestParameters(lE, 10e-2), SpinorTestParameters(lE), iterations(iterationsIn) {}; // In calling the TestParameters ctor, the testPrecision is set to 10e-2, so as related tests can pass with a reasonable number of iterations!
 	const unsigned int iterations;
 };
 
 struct PrngSpinorTester: public SpinorTester
 {
 	PrngSpinorTester(const std::string kernelName, const ParameterCollection parameterCollection, const PrngSpinorTestParameters & testParameters, const int numberOfElements, const ReferenceValues rV):
-				SpinorTester(kernelName, parameterCollection, testParameters, rV),
-				numberOfElements(numberOfElements), mean(0.), variance(0.),
-				hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters),
-				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
-				useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
-	{
-		prng_init(hostSeed);
-		prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
-		auto codePrng = device->getPrngCode();
-		codePrng->initialize(prngStates, hostSeed);
-	}
-	PrngSpinorTester(const std::string kernelName, const ParameterCollection parameterCollection, const PrngSpinorTestParameters & testParameters, const int numberOfElements, const RefValues rV):
 				SpinorTester(kernelName, parameterCollection, testParameters, rV),
 				numberOfElements(numberOfElements), mean(0.), variance(0.),
 				hostOutput(std::vector<spinor> (numberOfElements * testParameters.iterations)),	testParameters(testParameters),
