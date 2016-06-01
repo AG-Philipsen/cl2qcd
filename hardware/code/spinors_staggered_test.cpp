@@ -24,8 +24,8 @@
 #define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS_STAGGERED
 
 #include "SpinorStaggeredTester.hpp"
-#include "Kolmogorov_Smirnov.h"
-#include "Normal_RNG_tests.h"
+//#include "Kolmogorov_Smirnov.h"
+//#include "Normal_RNG_tests.h"
 #include "PrngSpinorTester.hpp"
 
 #include "../../host_functionality/logger.hpp"
@@ -162,14 +162,6 @@ struct SaxVecAndSqnormEvenOddTestParameters: public SpinorStaggeredTestParameter
 		const int numEqs;
 };
 
-struct GaussianTestParameters: public SpinorStaggeredTestParameters
-{
-	GaussianTestParameters(const LatticeExtents latticeExtentsIn, const int iterationsIn) :
-		TestParameters(latticeExtentsIn, 10e-3), SpinorStaggeredTestParameters(latticeExtentsIn),	iterations(iterationsIn){};// In calling the TestParameters ctor, the testPrecision is set to 10e-3, so as related tests can pass with a reasonable number of iterations!
-
-	const unsigned int iterations;
-};
-
 template<typename TesterClass, typename ParameterClass> void callTest(const ParameterClass parametersForThisTest, const bool needEvenOdd)
 {
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, needEvenOdd);
@@ -210,8 +202,8 @@ template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn,
 
 template<typename TesterClass> void performTest(const LatticeExtents latticeExtendsIn, const int iterations, const bool needEvenOdd )
 {
-	GaussianTestParameters parametersForThisTest(latticeExtendsIn, iterations);
-	callTest<TesterClass, GaussianTestParameters>(parametersForThisTest, needEvenOdd);
+	PrngSpinorStaggeredTestParameters parametersForThisTest(latticeExtendsIn, iterations);
+	callTest<TesterClass, PrngSpinorStaggeredTestParameters>(parametersForThisTest, needEvenOdd);
 }
 
 template<typename TesterClass> void performTest(LatticeExtents latticeExtendsIn, const bool fillEvenSitesIn )
@@ -713,107 +705,10 @@ struct SaxVecAndSqnormEvenOddTester: public EvenOddSpinorStaggeredTester
 		}
 };
 
-struct PrngTester: public SpinorStaggeredTester
+struct NonEvenOddGaussianStaggeredSpinorfieldTester: public PrngSpinorStaggeredTester
 {
-	PrngTester(const std::string kernelName, const ParameterCollection parameterCollection, const GaussianTestParameters & testParameters, const ReferenceValues & referenceValues):
-		SpinorStaggeredTester(kernelName, parameterCollection, testParameters, referenceValues),
-				hostSeed( parameterCollection.kernelParameters.getHostSeed() ),
-				useSameRandomNumbers(parameterCollection.hardwareParameters.useSameRandomNumbers())
-	{
-		prng_init(hostSeed);
-		prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
-		auto codePrng = device->getPrngCode();
-		codePrng->initialize(prngStates, hostSeed);
-	}
-	~PrngTester()
-	{
-		delete prngStates;
-	}
-protected:
-	const hardware::buffers::PRNGBuffer* prngStates;
-private:
-	uint32_t hostSeed;
-	bool useSameRandomNumbers;
-};
-
-class GaussianTester: public PrngTester{
-public:
-	GaussianTester(std::string kernelName, const ParameterCollection & parameterCollection, const GaussianTestParameters & testParameters, const int numberOfElements):
-		PrngTester(kernelName, parameterCollection, testParameters, calculateReferenceValues_gaussian()),
-		numberOfElements(numberOfElements), mean(0.), variance(0.),
-		hostOutput(std::vector<su3vec>(numberOfElements * testParameters.iterations)), testParameters(testParameters){}
-
-	~GaussianTester()
-	{
-		calculateMean();
-		calculateVariance();
-		KolmogorovSmirnov();
-
-		kernelResult[0] = mean;
-		kernelResult[1] = sqrt(variance);
-	}
-	double normalize(double valueIn)
-	{
-		return valueIn/= testParameters.iterations * numberOfElements * 6;
-	}
-
-	void calculateMean()
-	{
-		for (unsigned int i = 0; i < testParameters.iterations; i++) {
-				if(i%100==0) logger.info() << "Run kernel for the " << i << "th time";
-			mean += count_sf(&hostOutput[i * numberOfElements], numberOfElements);
-		}
-		mean = normalize(mean);
-	}
-
-	void calculateVariance()
-	{
-		for (unsigned int i = 0; i < testParameters.iterations; i++) {
-			variance += calc_var_sf(&hostOutput[i * numberOfElements], numberOfElements, mean);
-		}
-		variance = normalize(variance);
-	}
-
-	void KolmogorovSmirnov()
-	{
-		vector<vector<hmc_float>> samples;
-		vector<hmc_float> tmp;
-		vector<hmc_float> tmp2;
-		for(unsigned int i=0; i<testParameters.iterations; i++){
-		  vector<hmc_float> tmp;
-		  for(int j=0; j<numberOfElements; j++){
-		    tmp2=reals_from_su3vec(hostOutput[i*numberOfElements+j]);
-		    tmp.insert(tmp.end(),tmp2.begin(),tmp2.end());
-		    tmp2.clear();
-		  }
-		  samples.push_back(tmp);
-		  tmp.clear();
-		}
-		logger.info() << "Running Kolmogorov_Smirnov test (it should take half a minute)...";
-		logger.info() << "Kolmogorov_Smirnov frequency (of K+): " << std::setprecision(16) << Kolmogorov_Smirnov(samples,0.,sqrt(0.5)) << " ---> It should be close 0.98";
-
-		//Let us use the same sets of samples to make the mean test to 1,2 and 3 sigma
-		//Note that in the test BOOST_CHECK is used.
-		mean_test_multiple_set(samples,2.,0.,sqrt(0.5));
-		mean_test_multiple_set(samples,3.,0.,sqrt(0.5));
-		mean_test_multiple_set(samples,4.,0.,sqrt(0.5));
-		//Let us use the same sets of samples to make the variance test to 1,2 and 3 sigma
-		//Note that in the test BOOST_CHECK is used.
-		variance_test_multiple_set(samples,2.,sqrt(0.5));
-		variance_test_multiple_set(samples,3.,sqrt(0.5));
-		variance_test_multiple_set(samples,4.,sqrt(0.5));
-	}
-	protected:
-		const int numberOfElements;
-		double mean, variance;
-		std::vector<su3vec> hostOutput;
-		const GaussianTestParameters & testParameters;
-};
-
-struct NonEvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
-{
-	NonEvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
-		GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, calculateSpinorfieldSize(testParameters.latticeExtents)) {}
+	NonEvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const PrngSpinorStaggeredTestParameters testParameters):
+		PrngSpinorStaggeredTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, calculateSpinorfieldSize(testParameters.latticeExtents), calculateReferenceValues_gaussian()) {}
 	~NonEvenOddGaussianStaggeredSpinorfieldTester()
 	{
 		const hardware::buffers::Plain<su3vec> outSpinor(numberOfElements, device);
@@ -824,10 +719,10 @@ struct NonEvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
 	}
 };
 
-struct EvenOddGaussianStaggeredSpinorfieldTester: public GaussianTester
+struct EvenOddGaussianStaggeredSpinorfieldTester: public PrngSpinorStaggeredTester
 {
-	EvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const GaussianTestParameters testParameters):
-		GaussianTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, calculateEvenOddSpinorfieldSize(testParameters.latticeExtents)) {}
+	EvenOddGaussianStaggeredSpinorfieldTester(const ParameterCollection & parameterCollection, const PrngSpinorStaggeredTestParameters testParameters):
+		PrngSpinorStaggeredTester("generate_gaussian_staggeredspinorfield", parameterCollection, testParameters, calculateEvenOddSpinorfieldSize(testParameters.latticeExtents), calculateReferenceValues_gaussian()) {}
 	~EvenOddGaussianStaggeredSpinorfieldTester()
 	{
 		const hardware::buffers::SU3vec outSpinor(numberOfElements, device);

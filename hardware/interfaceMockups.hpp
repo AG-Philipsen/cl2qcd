@@ -482,6 +482,26 @@ namespace hardware
 			const common::sourcetypes sT;
 		};
 
+		struct OpenClKernelParametersMockupForStaggeredSourceTests : public OpenClKernelParametersMockupForSpinorStaggered
+		{
+			OpenClKernelParametersMockupForStaggeredSourceTests(const LatticeExtents lE, const common::sourcecontents sC) :
+				OpenClKernelParametersMockupForSpinorStaggered(lE, true), sC(sC) {};
+
+			virtual common::sourcecontents getSourceContent() const override
+			{
+				return sC;
+			}
+			virtual common::sourcetypes getSourceType() const override
+			{
+				return common::sourcetypes::volume;
+			}
+			virtual bool getMeasureCorrelators() const override
+			{
+				return false;
+			}
+			const common::sourcecontents sC;
+		};
+
 		class OpenClKernelParametersMockupForTwistedMass : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:
