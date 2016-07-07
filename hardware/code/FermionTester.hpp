@@ -20,6 +20,7 @@
 # pragma once
 
 #include "SpinorTester.hpp"
+#include "SpinorStaggeredTester.hpp"
 #include "GaugefieldTester.hpp"
 #include "fermions.hpp"
 
@@ -36,6 +37,7 @@ struct ThetaParameters
 };
 
 typedef hmc_complex ChemicalPotentials;
+typedef hmc_float ImaginaryChemicalPotential;
 
 struct TwistedMassMassParameters : public WilsonMassParameters
 {
@@ -61,6 +63,32 @@ struct FermionTestParameters : public SpinorTestParameters, GaugefieldTestParame
 		TestParameters(lE),
 		SpinorTestParameters(lE, spinorFillTypesIn),
 		GaugefieldTestParameters(lE, GaugefieldFillType::cold) {};
+};
+
+struct StaggeredFermionsTestParameters : public SpinorStaggeredTestParameters
+{
+	StaggeredFermionsTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const WilsonMassParameters massParametersIn, const ThetaParameters thetaParametersIn = {0.,0.}):
+		TestParameters(lE), SpinorStaggeredTestParameters(lE), gaugefieldFillType(gaugefieldFillTypeIn), spinorFillType(spinorFillTypeIn), massParameters(massParametersIn), thetaParameters(thetaParametersIn) {};
+	StaggeredFermionsTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const ThetaParameters thetaParametersIn = {0.,0.}):
+		TestParameters(lE), SpinorStaggeredTestParameters(lE), gaugefieldFillType(gaugefieldFillTypeIn), spinorFillType(spinorFillTypeIn), massParameters(0.), thetaParameters(thetaParametersIn) {};
+	StaggeredFermionsTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn):
+		TestParameters(lE), SpinorStaggeredTestParameters(lE), gaugefieldFillType(gaugefieldFillTypeIn), spinorFillType(spinorFillTypeIn), massParameters(0.), thetaParameters({0.,0.}) {};
+
+	const GaugefieldFillType gaugefieldFillType;
+	const SpinorFillType spinorFillType;
+	const WilsonMassParameters massParameters;
+	const ThetaParameters thetaParameters;
+
+};
+
+struct EvenOddStaggeredFermionsTestParameters : public StaggeredFermionsTestParameters
+{
+	EvenOddStaggeredFermionsTestParameters(const LatticeExtents lE, const SpinorFillType spinorFillTypeIn, const GaugefieldFillType gaugefieldFillTypeIn, const bool evenOrOddIn, const ThetaParameters thetaParametersIn = {0.,0.}, const ImaginaryChemicalPotential chemicalPotentialIn = 0.):
+		TestParameters(lE), StaggeredFermionsTestParameters(lE, spinorFillTypeIn, gaugefieldFillTypeIn, thetaParametersIn),
+		evenOrOdd(evenOrOddIn), chemicalPotential(chemicalPotentialIn){}
+
+	const bool evenOrOdd;
+	const ImaginaryChemicalPotential chemicalPotential;
 };
 
 template< class MassParameters>
@@ -108,6 +136,35 @@ protected:
 	size_t elements;
 };
 
+template <class BufferType, class CreatorType>
+struct StaggeredFermionmatrixTester : public KernelTester
+{
+	StaggeredFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const StaggeredFermionsTestParameters testParameters, const ReferenceValues rV) :
+		KernelTester(kernelName, parameterCollection.hardwareParameters, parameterCollection.kernelParameters, testParameters, rV)
+	{
+		GaugefieldCreator gf(testParameters.latticeExtents);
+		gaugefieldBuffer = new hardware::buffers::SU3(calculateGaugefieldSize(testParameters.latticeExtents), this->device);
+		const Matrixsu3 * gf_host = gf.createGaugefield(testParameters.gaugefieldFillType);
+		this->device->getGaugefieldCode()->importGaugefield(gaugefieldBuffer, gf_host);
+		delete[] gf_host;
+
+		code = this->device->getFermionStaggeredCode();
+
+		CreatorType sf(testParameters.latticeExtents);
+		elements = sf.numberOfElements;
+		in = new const BufferType(elements, this->device);
+		out = new const BufferType(elements, this->device);
+		out->load(sf.createSpinorfield(SpinorFillType::zero));
+		in->load(sf.createSpinorfield(testParameters.spinorFillType));
+	}
+protected:
+	const BufferType * in;
+	const BufferType * out;
+	const hardware::code::Fermions_staggered * code;
+	const hardware::buffers::SU3 * gaugefieldBuffer;
+	size_t elements;
+};
+
 struct NonEvenOddFermionmatrixTester : public FermionmatrixTester<hardware::buffers::Plain<spinor>,NonEvenOddSpinorfieldCreator>
 {
 	NonEvenOddFermionmatrixTester(std::string kernelName, const ParameterCollection parameterCollection, const FermionTestParameters testParameters, const ReferenceValues rV) :
@@ -131,6 +188,21 @@ struct FermionmatrixTesterWithSumAsKernelResult : public TesterType
 		sf_in = new spinor[TesterType::elements];
 		TesterType::out->dump(sf_in);
 		TesterType::kernelResult.at(0) = count_sf(sf_in, TesterType::elements);
+		delete sf_in;
+	}
+};
+
+template <typename TesterType >
+struct StaggeredFermionmatrixTesterWithSumAsKernelResult : public TesterType
+{
+	StaggeredFermionmatrixTesterWithSumAsKernelResult( const std::string kernelName, const ParameterCollection parameterCollection, const StaggeredFermionsTestParameters testParameters, const ReferenceValues rV) :
+		TesterType(kernelName, parameterCollection, testParameters, rV) {}
+	~StaggeredFermionmatrixTesterWithSumAsKernelResult()
+	{
+		su3vec * sf_in;
+		sf_in = new su3vec[TesterType::elements];
+		TesterType::out->dump(sf_in);
+		TesterType::kernelResult.at(0) = squareNorm(sf_in, TesterType::elements);
 		delete sf_in;
 	}
 };

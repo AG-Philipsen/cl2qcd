@@ -164,6 +164,18 @@ hmc_float count_sf(su3vec * sf_in, int size)
   return sum;
 }
 
+hmc_float squareNorm(su3vec * sf_in, int size)
+{
+  hmc_float sum = 0.;
+  for (int i=0; i<size; i++){
+    sum +=
+        sf_in[i].e0.re * sf_in[i].e0.re + sf_in[i].e0.im * sf_in[i].e0.im
+      + sf_in[i].e1.re * sf_in[i].e1.re + sf_in[i].e1.im * sf_in[i].e1.im
+      + sf_in[i].e2.re * sf_in[i].e2.re + sf_in[i].e2.im * sf_in[i].e2.im;
+  }
+  return sum;
+}
+
 hmc_float calc_var_sf(su3vec * sf_in, int size, hmc_float sum){
   hmc_float var = 0.;
   for(int k=0; k<size; k++){

@@ -29,6 +29,7 @@
 //Utilities methods
 std::vector<hmc_float> reals_from_su3vec(su3vec v);
 hmc_float count_sf(su3vec * in, int size);
+hmc_float squareNorm(su3vec * in, int size);
 hmc_float calc_var_sf(su3vec * in, int size, hmc_float sum);
 
 struct SpinorStaggeredTestParameters: public virtual TestParameters

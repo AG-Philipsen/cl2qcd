@@ -568,6 +568,51 @@ namespace hardware
 			bool useChemPotIm, useChemPotRe;
 			hmc_complex chemPot;
 		};
+
+		class OpenClKernelParametersMockupForFermionsStaggeredTests : public OpenClKernelParametersMockupForSpinorStaggered
+		{
+		public:
+			OpenClKernelParametersMockupForFermionsStaggeredTests(LatticeExtents lE, const double massIn, const bool useEvenOddIn, const double thetaTIn , const double thetaSIn , const double ImChemPot = 0.):
+				OpenClKernelParametersMockupForSpinorStaggered(lE,useEvenOddIn), mass(massIn), useEvenOdd(useEvenOddIn), thetaFermionTemporal(thetaTIn), thetaFermionSpatial(thetaSIn), useChemPotIm(true), imaginaryChemicalPotential(ImChemPot) {}
+			OpenClKernelParametersMockupForFermionsStaggeredTests(LatticeExtents lE, const bool useEvenOddIn, const double thetaTIn , const double thetaSIn, const double ImChemPot ):
+				OpenClKernelParametersMockupForSpinorStaggered(lE,useEvenOddIn), mass(0.), useEvenOdd(useEvenOddIn), thetaFermionTemporal(thetaTIn), thetaFermionSpatial(thetaSIn), useChemPotIm(true), imaginaryChemicalPotential(ImChemPot) {}
+			OpenClKernelParametersMockupForFermionsStaggeredTests(LatticeExtents lE, const bool useEvenOddIn):
+				OpenClKernelParametersMockupForSpinorStaggered(lE,useEvenOddIn), mass(0.), useEvenOdd(useEvenOddIn), thetaFermionTemporal(0.), thetaFermionSpatial(0.), useChemPotIm(false), imaginaryChemicalPotential(0.) {}
+
+			virtual double getMass() const override
+			{
+				return mass;
+			}
+			virtual double getThetaFermionTemporal() const override
+			{
+				return thetaFermionTemporal;
+			}
+			virtual double getThetaFermionSpatial() const override
+			{
+				return thetaFermionSpatial;
+			}
+			virtual bool getUseEo() const override
+			{
+				return useEvenOdd;
+			}
+			virtual double getChemPotIm() const override
+			{
+				return imaginaryChemicalPotential;
+			}
+			virtual bool getUseChemPotIm() const override
+			{
+				return useChemPotIm;
+			}
+
+		protected:
+			const double mass;
+			const bool useEvenOdd;
+			const double thetaFermionTemporal;
+			const double thetaFermionSpatial;
+			bool useChemPotIm;
+			const double imaginaryChemicalPotential;
+		};
+
 		class OpenClKernelParametersMockupForMergedFermionKernels : public OpenClKernelParametersMockupForSpinorTests
 		{
 		public:
