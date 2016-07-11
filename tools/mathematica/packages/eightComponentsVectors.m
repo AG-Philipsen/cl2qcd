@@ -18,7 +18,8 @@ algebraElement::usage =
 	 algebra su(3) times a 3x3-matrix."
 
 aeFromSu3::usage = 
-	"aeFromSu3 takes an SU(3) matrix and builds an algebra element out of it."
+	"aeFromSu3 takes an SU(3) matrix and builds an algebra element out of it
+	(see build_ae_from_su3 in operations_matrix_su3.cl)."
 
 Begin["Private`"]
 Needs["GellMannMatrices`"]

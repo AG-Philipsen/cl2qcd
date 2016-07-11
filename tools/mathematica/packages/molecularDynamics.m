@@ -25,7 +25,19 @@ ForceGaugeTlsym::usage =
 LinkByDiracTrace::usage = 
  	""
 
+LinkByDiracTraceEvenOrOdd::usage = 
+ 	""
+
 ForceFermionWilson::usage = 
+ 	""
+
+ForceFermionWilsonEvenOrOdd::usage = 
+ 	""
+
+ForceFermionStaggeredEven::usage = 
+ 	""
+
+ForceFermionStaggeredOdd::usage = 
  	""
 
 Begin["Private`"]
@@ -57,12 +69,36 @@ LinkByDiracTrace[k_,s_,u_,g_,bc_]:=
 	LinkByDiracTrace
 	]
 
+LinkByDiracTraceEvenOrOdd[k_,s_,u_,g_,bc_]:=
+	Module[ {LinkByDiracTraceEvenOrOdd = 2*k*bc*(u.ConjugateTranspose[
+								mat3x3FromKroneckerProductOf3ComponentsVectors[extractFirstThreeComponentsOfWilsonSpinor[g5ss[s,-g]],extractFirstThreeComponentsOfWilsonSpinor[ss[s,-g]],extractSecondThreeComponentsOfWilsonSpinor[g5ss[s,-g]],extractSecondThreeComponentsOfWilsonSpinor[ss[s,-g]]]])},
+	LinkByDiracTraceEvenOrOdd
+	]
+
 ForceFermionWilson[gm_, k_, s_, u_, bc_] :=
  	Module[ {ForceFermionWilson = squareNorm[gm + algebraElement[LinkByDiracTrace[k,s,u,Gamma4[cold3x3mat],bc]]]
                                   + squareNorm[gm + algebraElement[LinkByDiracTrace[k,s,u,Gamma1[cold3x3mat],bc]]]
                                   + squareNorm[gm + algebraElement[LinkByDiracTrace[k,s,u,Gamma2[cold3x3mat],bc]]]
                                   + squareNorm[gm + algebraElement[LinkByDiracTrace[k,s,u,Gamma3[cold3x3mat],bc]]]},
   	ForceFermionWilson
+  	]
+
+ForceFermionWilsonEvenOrOdd[gm_, k_, s_, u_, bc_] :=
+ 	Module[ {ForceFermionWilsonEvenOrOdd = squareNorm[gm + algebraElement[LinkByDiracTraceEvenOrOdd[k,s,u,Gamma4[cold3x3mat],bc]]]
+                                  + squareNorm[gm + algebraElement[LinkByDiracTraceEvenOrOdd[k,s,u,Gamma1[cold3x3mat],bc]]]
+                                  + squareNorm[gm + algebraElement[LinkByDiracTraceEvenOrOdd[k,s,u,Gamma2[cold3x3mat],bc]]]
+                                  + squareNorm[gm + algebraElement[LinkByDiracTraceEvenOrOdd[k,s,u,Gamma3[cold3x3mat],bc]]]},
+  	ForceFermionWilsonEvenOrOdd
+  	]
+
+ForceFermionStaggeredEven[gm_, u_, eta_,s_] :=
+ 	Module[ {ForceFermionStaggeredEven = squareNorm[gm + aeFromSu3[-I*tracelessAntihermitianPart[u.KroneckerProduct[(eta*s),ConjugateTranspose[s]]]]]},
+  	ForceFermionStaggeredEven
+  	]
+
+ForceFermionStaggeredOdd[gm_, u_, eta_,s_] :=
+ 	Module[ {ForceFermionStaggeredEven = squareNorm[gm - aeFromSu3[-I*tracelessAntihermitianPart[u.KroneckerProduct[(eta*s),ConjugateTranspose[s]]]]]},
+  	ForceFermionStaggeredEven
   	]
 
 End[]
