@@ -14,6 +14,12 @@ su3vecAscendingReal::usage =
 su3vecAscendingComplex::usage =
 	"su3vecAscendingComplex gives a zero 3-components vector filled with ascending complex numbers."
 
+extractFirstThreeComponentsOfWilsonSpinor::usage =
+	"extractFirstThreeComponentsOfWilsonSpinor build a 3-components vector using the first 3 entries of a 12 components one."
+
+extractSecondThreeComponentsOfWilsonSpinor::usage =
+	"extractFirstThreeComponentsOfWilsonSpinor build a 3-components vector using the second 3 entries of a 12 components one."
+
 countSSf::usage = 
 	"countSSf[s] takes an su3vec as argument and compute the sum of all its (real+imaginary) components."
 
@@ -41,6 +47,16 @@ su3vecAscendingComplex:=
 	su3vecAscendingComplex
 	]
 
+extractFirstThreeComponentsOfWilsonSpinor[spinor_]:=
+	Module[{extractFirstThreeComponentsOfWilsonSpinor={spinor[[1]],spinor[[2]],spinor[[3]]}},
+	extractFirstThreeComponentsOfWilsonSpinor
+	]
+
+extractSecondThreeComponentsOfWilsonSpinor[spinor_]:=
+	Module[{extractSecondThreeComponentsOfWilsonSpinor={spinor[[4]],spinor[[5]],spinor[[6]]}},
+	extractSecondThreeComponentsOfWilsonSpinor
+	]
+
 countSSf[s_]:=
 	Module[{countSf= Re[s[[1]]] + Im[s[[1]]] + Re[s[[2]]] + Im[s[[2]]] + Re[s[[3]]] + Im[s[[3]]]},
 	countSf
@@ -49,3 +65,6 @@ countSSf[s_]:=
 End[]
 
 EndPackage[]
+
+
+

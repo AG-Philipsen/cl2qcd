@@ -18,6 +18,9 @@ countSf::usage =
 gamma5TimesSpinor::usage = 
 	"gamma5TimesSpinor takes a spinor and applies Gamma5[Idty] to it."
 
+idtyPlusGenericGammaTimesSpinor::usage = 
+	"idtyPlusGenericGammaTimesSpinor takes a spinor and performs the operation (1 pm gamma_mu).spinor."
+
 SaxpyAndGamma5EvenOdd::usage = 
 	"SaxpyAndGamma5EvenOdd takes two spinors applies Gamma5[Idty] to the first and adds the result to the second."
 
@@ -53,6 +56,11 @@ countSf[s_]:=
 gamma5TimesSpinor[s_]:=
 	Module[{gamma5TimesSpinor=Gamma5[IdentityMatrix[3]].s},
 	gamma5TimesSpinor
+	]
+
+idtyPlusGenericGammaTimesSpinor[s_,g_]:=
+	Module[{idtyPlusGenericGammaTimesSpinor=(UnitMatrix[IdentityMatrix[3]]+g).s},
+	idtyPlusGenericGammaTimesSpinor
 	]
 
 SaxpyAndGamma5EvenOdd[s1_, s2_, a_]:=

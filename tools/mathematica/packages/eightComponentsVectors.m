@@ -21,6 +21,7 @@ aeFromSu3::usage =
 	"aeFromSu3 takes an SU(3) matrix and builds an algebra element out of it."
 
 Begin["Private`"]
+Needs["GellMannMatrices`"]
 
 gaugeMomZero:=
 	Module[ {gaugeMomZero={0., 0., 0., 0., 0., 0., 0., 0.}},

@@ -18,7 +18,13 @@ tracelessAntihermitianPart::usage =
 	"tracelessAntihermitianPart takes a 3-by-3 matrix as argument and computes its traceless
 	 anti-hermitian part which is another 3-by-3 matrix."
 
+mat3x3FromKroneckerProductOf3ComponentsVectors::usage=
+	"mat3x3FromKroneckerProductOf3ComponentsVectors calculates the Dirac-Trace of the matrix resulting
+	from multiplying U*V^dagger =  u*v^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors
+	(using spinprojection) see tr_v_times_u_dagger in operations_su3vec.cl"
+
 Begin["Private`"]
+Needs["TwelveComponentsVectors`"]
 
 cold3x3mat:=
 	Module[ {coldSU3mat=IdentityMatrix[3]},
@@ -53,6 +59,12 @@ tracelessAntihermitianPart[u_]:=
 	Module[{tracelessAntihermitianPart= (1/2)*(u - ConjugateTranspose[u]) -
 										(1/6)*Tr[u - ConjugateTranspose[u]]*IdentityMatrix[3]},
 	tracelessAntihermitianPart
+	]
+
+mat3x3FromKroneckerProductOf3ComponentsVectors[s1_,s2_,s3_,s4_]:=
+	Module[{mat3x3FromKroneckerProductOf3ComponentsVectors=KroneckerProduct[s1, ConjugateTranspose[s2]]
+															+ KroneckerProduct[s3, ConjugateTranspose[s4]]},
+	mat3x3FromKroneckerProductOf3ComponentsVectors
 	]
 
 End[]
