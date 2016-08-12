@@ -24,7 +24,6 @@ mat3x3FromKroneckerProductOf3ComponentsVectors::usage=
 	(using spinprojection) see tr_v_times_u_dagger in operations_su3vec.cl"
 
 Begin["Private`"]
-Needs["TwelveComponentsVectors`"]
 
 cold3x3mat:=
 	Module[ {coldSU3mat=IdentityMatrix[3]},

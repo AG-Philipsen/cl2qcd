@@ -15,10 +15,10 @@ gaugeMomAscending::usage =
 algebraElement::usage =
 	"algebraElement takes an SU(3) matrix as argument and computes the algebra element
 	 Tr[i * T_k * (in - in^\\dag)], i.e. calculates the trace of I times a generator of the
-	 algebra su(3) times a 3x3-matrix."
+	 algebra su(3) times a 3x3-matrix (see tr_lambda_u in operations_gaugemomentum.cl)."
 
 aeFromSu3::usage = 
-	"aeFromSu3 takes an SU(3) matrix and builds an algebra element out of it
+	"aeFromSu3 takes a 3-by-3 matrix and builds an algebra element out of it
 	(see build_ae_from_su3 in operations_matrix_su3.cl)."
 
 Begin["Private`"]

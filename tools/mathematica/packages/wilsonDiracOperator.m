@@ -1,11 +1,11 @@
 (* ::Package:: *)
 
 SetOptions[SelectedNotebook[], PrintPrecision -> 16]
+Get["gammaMatricesTensorColorIdentity.m",Path->{NotebookDirectory[]}]
 Get["real.m",Path->{NotebookDirectory[]}]
 Get["threeBythreeMatrices.m",Path->{NotebookDirectory[]}]
 Get["twelveComponentsVectors.m",Path->{NotebookDirectory[]}]
 Get["vectors.m",Path->{NotebookDirectory[]}]
-Get["gammaMatricesTensorColorIdentity.m",Path->{NotebookDirectory[]}]
 
 
 (*Fermionmatrices for a specific site,for constant gauge- and \

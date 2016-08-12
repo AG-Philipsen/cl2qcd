@@ -6,6 +6,9 @@ SetOptions[SelectedNotebook[], PrintPrecision -> 16]
 Get[FileNameJoin[{ParentDirectory[ParentDirectory[ParentDirectory[NotebookDirectory[]]]], "packages/molecularDynamics.m"}], Path -> {NotebookDirectory[]}]
 
 
+FileNameJoin[{ParentDirectory[ParentDirectory[ParentDirectory[NotebookDirectory[]]]], "packages/molecularDynamics.m"}]
+
+
 (* FGauge *)
 ForceGauge[5.69,cold3x3mat,gaugeMomOne]
 ForceGauge[5.69,nonTrivial3x3mat,gaugeMomOne]
