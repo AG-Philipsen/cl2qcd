@@ -372,7 +372,6 @@ struct FGaugeTester : public MolecularDynamicsTester
 	FGaugeTester(const ParameterCollection pC, const MolecularDynamicsTestParameters tP) :
 		MolecularDynamicsTester("f_gauge",pC, calculateReferenceValues_FGauge(LatticeExtents(tP.latticeExtents).getLatticeVolume(), tP.gaugeFillType, tP.gmFillType), tP)
 		{
-		logger.fatal() << kernelParameters->getGaugeact();
 			molecularDynamicsCode->gauge_force_device( gaugefieldBuffer, gaugemomentumBuffer);
 			calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
 		}
@@ -561,11 +560,21 @@ void callTest(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomen
 }
 
 template<class TesterClass>
-void callTest(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType, SpinorFillType sfFillType, const bool evenOrOdd, WilsonMassParameters kappa = 1.)
+void callTest(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType, SpinorFillType sfFillType, const bool evenOrOdd, WilsonMassParameters kappa)
 {
 	EvenOddMolecularDynamicsTestParameters parametersForThisTest(lE, gfFillType, gmFillType, sfFillType, kappa, evenOrOdd);
 	hardware::HardwareParametersMockup hardwareParameters(lE, true);
 	hardware::code::OpenClKernelParametersMockupForMolecularDynamics kernelParameters(lE, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
+}
+
+template<class TesterClass>
+void callTest(const LatticeExtents lE, GaugefieldFillType gfFillType, GaugeMomentumFilltype gmFillType, SpinorFillType sfFillType, const bool evenOrOdd)
+{
+	EvenOddMolecularDynamicsTestParameters parametersForThisTest(lE, gfFillType, gmFillType, sfFillType, evenOrOdd);
+	hardware::HardwareParametersMockup hardwareParameters(lE, true);
+	hardware::code::OpenClKernelParametersMockupForMolecularDynamicsStaggered kernelParameters(lE);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	TesterClass(parameterCollection, parametersForThisTest);
 }
