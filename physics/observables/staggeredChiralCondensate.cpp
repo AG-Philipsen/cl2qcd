@@ -144,7 +144,7 @@ void physics::observables::staggered::measureChiralCondensateAndWriteToFile(cons
     std::string configurationName = gf.getName(iteration);
     //TODO: improve this!
     std::string filenameForChiralCondensateData = parametersInterface.getPbpFilename(configurationName);
-    logger.info () << "Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
+    logger.info () << "  Write chiral condensate data to file \"" << filenameForChiralCondensateData << "\" ...";
     outputToFile.open(filenameForChiralCondensateData.c_str(), std::ios_base::app);
     if(!outputToFile.is_open()) {
         throw File_Exception(filenameForChiralCondensateData);
@@ -159,5 +159,6 @@ void physics::observables::staggered::measureChiralCondensateAndWriteToFile(cons
     }
     outputToFile << std::endl;
     outputToFile.close();  
+    logger.info () << "  ...done!";
 }
 

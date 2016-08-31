@@ -84,6 +84,7 @@ physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::Solver
     if(parametersInterface.getUseMergeKernelsSpinor() == true) {
         single_eq_resid = std::unique_ptr<physics::lattices::Vector<hmc_float> > { new physics::lattices::Vector<hmc_float>(numberOfEquations, system) };
         single_eq_resid_host = std::unique_ptr<std::vector<hmc_float> > { new std::vector<hmc_float> };
+
     }
     USE_ASYNC_COPY = parametersInterface.getCgUseAsyncCopy();
     MINIMUM_ITERATIONS = parametersInterface.getCgMinimumIterationCount();
@@ -114,6 +115,7 @@ void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::s
     alpha_scalar.store(0.0);                // alpha_scalar = 0. The same as beta_scalar above.
 }
 
+//<<<<<<< HEAD
 template<typename FERMIONFIELD, typename FERMIONMATRIX>
 void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::updateBetaScalar()
 {
@@ -182,6 +184,7 @@ void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::c
             if(std::isnan(squarenorm(*x[k]))){
                 logger.fatal() << createLogPrefix() << "NAN occurred in x[" << k << "] squarenorm!";
                 throw SolverStuck(iterationNumber, __FILE__, __LINE__);
+
             }
             if(std::isnan(squarenorm(*ps[k]))){
                 logger.fatal() << createLogPrefix() << "NAN occurred in ps[" << k << "] squarenorm!";

@@ -58,7 +58,14 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     hmc_float spinor_energy_init_mp = 0.f;
     //Here the coefficients of phi have to be set to the rescaled ones on the base of approx1
     physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-    phi.Rescale_Coefficients(approx1, fm, *gf, system, interfacesHandler, parametersInterface.getFindMinMaxPrec(), additionalParameters);
+    hmc_float maxEigenvalue;
+    hmc_float minEigenvalue;
+    find_maxmin_eigenvalue(maxEigenvalue, minEigenvalue, fm, *gf, system, interfacesHandler, parametersInterface.getFindMinMaxPrec(), additionalParameters);
+    if(parametersInterface.getConservative())
+        maxEigenvalue *= 1.05;
+    hmc_float conditionNumber=maxEigenvalue/minEigenvalue;
+	phi.Rescale_Coefficients(approx1, minEigenvalue, maxEigenvalue);
+
     if(!parametersInterface.getUseGaugeOnly()) {
         if(parametersInterface.getUseMp()) {
             throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!", __FILE__, __LINE__);
@@ -78,7 +85,7 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     //here, clmem_phi is inverted several times and stored in clmem_phi_inv
     logger.debug() << "\tRHMC:\tcall integrator";
     //Before MD the coefficients of phi have to be set to the rescaled ones on the base of approx2
-    phi.Rescale_Coefficients(approx2, fm, *gf, system, interfacesHandler, parametersInterface.getFindMinMaxPrec(), additionalParameters);
+    phi.Rescale_Coefficients(approx2, minEigenvalue, maxEigenvalue);
     if(parametersInterface.getUseMp()) {
         throw Print_Error_Message("Mass preconditioning not implemented for staggered fermions!", __FILE__, __LINE__);
         //integrator(&new_p, &new_u, phi, *phi_mp.get(), system);
@@ -89,7 +96,10 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     //metropolis step: afterwards, the updated config is again in gaugefield and p
     logger.debug() << "\tRHMC [MET]:\tperform Metropolis step: ";
     //Before Metropolis test the coeff. of phi have to be set to the rescaled ones on the base of approx3
-    phi.Rescale_Coefficients(approx3, fm, *gf, system, interfacesHandler, parametersInterface.getFindMinMaxPrec(), additionalParameters);
+    find_maxmin_eigenvalue(maxEigenvalue, minEigenvalue, fm, new_u, system, interfacesHandler, parametersInterface.getFindMinMaxPrec(), additionalParameters);
+	if(parametersInterface.getConservative())
+	    maxEigenvalue *= 1.05;
+	phi.Rescale_Coefficients(approx3, minEigenvalue, maxEigenvalue);
     //this call calculates also the HMC-Observables
     const hmc_observables obs = metropolis(rnd_number, parametersInterface.getBeta(), *gf, new_u, p, new_p, phi, spinor_energy_init,
                                            phi_mp.get(), spinor_energy_init_mp, system, interfacesHandler);
@@ -103,6 +113,16 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
     }
     logger.info() << "\tRHMC:\tfinished trajectory " << iter;
     logger.info() << "\tRHMC:\tstep duration (ms): " << step_timer.getTime() / 1e3f;
+
+	//The optimal number of pseudofermion is calculated according to http://arxiv.org/abs/hep-lat/0608015v1
+	std::ostringstream reportOnConditionNumber;
+	reportOnConditionNumber << "\tRHMC:\tcondition number for trajectory " << iter << ": lambda_max/lambda_min = " << conditionNumber;
+	unsigned optimalNumberPseudofermions = std::floor(0.5*std::log(conditionNumber));
+	if(optimalNumberPseudofermions <= 1)
+	    reportOnConditionNumber << "  =>  multiple pseudofermions method not advantageous!";
+	else
+	    reportOnConditionNumber << "  =>  multiple pseudofermions method suggested  =>  optimal number of pseudofermion: n_opt = " << optimalNumberPseudofermions;
+	logger.info() << reportOnConditionNumber.str();
 
     return obs;
 }

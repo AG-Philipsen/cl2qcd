@@ -140,91 +140,84 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
 	
-	{
-	    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
-        meta::Inputparameters params(6, _params);
-        hardware::HardwareParametersImplementation hP(&params);
-        hardware::code::OpenClKernelParametersImplementation kP(params);
-        hardware::System system(hP, kP);
-        physics::InterfacesHandlerImplementation interfacesHandler{params};
-        physics::PrngParametersImplementation prngParameters{params};
-        physics::PRNG prng{system, &prngParameters};
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
+	meta::Inputparameters params(6, _params);
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+	hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
+	physics::PrngParametersImplementation prngParameters{params};
+	physics::PRNG prng{system, &prngParameters};
+	
+	//Operator for the test
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
+	//This configuration for the Ref.Code is the same as for example dks_input_5
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+	
+	//Min and max eigenvalues for conservative and not conservative case
+	hmc_float minEigenvalue = 0.3485318319429664;
+	hmc_float maxEigenvalue = 5.2827906935473500;
+	hmc_float minEigenvalueCons = 0.321489;
+	hmc_float maxEigenvalueCons = 5.546930228224717;
 
-        //Operator for the test
-        physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-        //This configuration for the Ref.Code is the same as for example dks_input_5
-        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
-
-        //Reference rescaled coefficients
-        hmc_float a0_ref = 3.78396627036665123;
-        hmc_float a_ref[15] = {-2.722986658932525683e-07, -1.2631475639728917521e-06, -4.360435755914117958e-06, -1.4160691433260296987e-05,
-                               -4.5207926211912900696e-05, -0.00014352921651252466598, -0.00045497933178524781715, -0.0014431546521933168083,
-                               -0.0045926953908840342788, -0.014747783330565073998,-0.048456946841957317107, -0.16880046472141346792,
-                               -0.68431552061715394952, -4.2198332136416603078, -117.03837887995429412};
-        hmc_float b_ref[15] = {9.2907369101588763806e-06, 5.0627210699159516975e-05, 0.00016198783558680096995, 0.00044474583457844121164,
-                               0.0011563267279465730842, 0.0029447969579766914219, 0.007440491639209977949, 0.018751086281155571189,
-                               0.047271072978110562079, 0.11959352757092110708, 0.30563294009891067704, 0.80189441104810432748,
-                               2.2562393220051499831, 7.7746421837770229857, 59.252309299420609534};
-
-        Rational_Coefficients coeff = approx.Rescale_Coefficients(matrix, gf, system, interfacesHandler, 1.e-3, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
-
-        int ord = coeff.Get_order();
-        std::vector<hmc_float> a = coeff.Get_a();
-        std::vector<hmc_float> b = coeff.Get_b();
-
-        //Test result: note that the precision is not so high since
-        //the reference code uses a slightly different method to calculate
-        //maximum and minimum eigenvalues (I tuned a bit the ref.code adapting the number
-        //of loop iterations in finding the max and min eigenvalues, but not too much)
-        BOOST_CHECK_CLOSE(coeff.Get_a0(), a0_ref, 5.e-5);
-        for(int i=0; i<ord; i++){
-            BOOST_CHECK_CLOSE(a[i], a_ref[i], 5.e-5);
-            BOOST_CHECK_CLOSE(b[i], b_ref[i], 5.e-5);
-        }
-	}
-
-	{
-        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=true", "--num_dev=1"};
-        meta::Inputparameters params(6, _params);
-        hardware::HardwareParametersImplementation hP(&params);
-        hardware::code::OpenClKernelParametersImplementation kP(params);
-        hardware::System system(hP, kP);
-        physics::InterfacesHandlerImplementation interfacesHandler{params};
-        physics::PrngParametersImplementation prngParameters{params};
-        physics::PRNG prng{system, &prngParameters};
-
-        //Operator for the test
-        physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-        //This configuration for the Ref.Code is the same as for example dks_input_5
-        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
-
-        //Reference rescaled coefficients conservative
-        hmc_float a0_ref_cons = 3.8304052181004228927;
-        hmc_float a_ref_cons[15] = {-2.8942286130576286221e-07, -1.3425838169907005556e-06, -4.6346528686679587346e-06, -1.5051222595004849162e-05,
-                -4.8050941840019680289e-05, -0.00015255541700051565286, -0.00048359186633654911497, -0.0015339111096058541221,
-                -0.0048815187425726713766, -0.015675235262161982264, -0.051504285410779379606, -0.17941591204330820108,
-                -0.72735044574402074602, -4.4852081772741634325, -124.39863554566063897};
-        hmc_float b_ref_cons[15] = {9.7552862512145591676e-06, 5.3158639325027219212e-05, 0.00017008744523117717558, 0.00046698372446689161283,
-                0.0012141446195419417376, 0.003092040766471044512, 0.007812526228236587808, 0.019688665814428581158,
-                0.04963469020409881638, 0.12557336479641045823, 0.32091499816392937694, 0.84199021010590602287,
-                2.3690543226274733968, 8.1633847494467222106, 62.215004455600926292};
-
-        Rational_Coefficients coeff_cons = approx.Rescale_Coefficients(matrix, gf, system, interfacesHandler, 1.e-3, interfacesHandler.getAdditionalParameters<Staggeredfield_eo>());
-
-        int ord = coeff_cons.Get_order();
-
-        std::vector<hmc_float> a_cons = coeff_cons.Get_a();
-        std::vector<hmc_float> b_cons = coeff_cons.Get_b();
-
-        //Test result: note that the precision is not so high since
-        //the reference code uses a slightly different method to calculate
-        //maximum and minimum eigenvalues (I tuned a bit the ref.code adapting the number
-        //of loop iterations in finding the max and min eigenvalues, but not too much)
-        BOOST_CHECK_CLOSE(coeff_cons.Get_a0(), a0_ref_cons, 5.e-5);
-        for(int i=0; i<ord; i++){
-            BOOST_CHECK_CLOSE(a_cons[i], a_ref_cons[i], 2.e-4);
-            BOOST_CHECK_CLOSE(b_cons[i], b_ref_cons[i], 2.e-4);
-        }
+	//Reference rescaled coefficients
+	hmc_float a0_ref = 3.78396627036665123;
+	hmc_float a_ref[15] = {-2.722986658932525683e-07, -1.2631475639728917521e-06,
+	                       -4.360435755914117958e-06, -1.4160691433260296987e-05,
+			       -4.5207926211912900696e-05, -0.00014352921651252466598,
+			       -0.00045497933178524781715, -0.0014431546521933168083,
+			       -0.0045926953908840342788, -0.014747783330565073998,
+			       -0.048456946841957317107, -0.16880046472141346792,
+			       -0.68431552061715394952, -4.2198332136416603078,
+			       -117.03837887995429412};
+	hmc_float b_ref[15] = {9.2907369101588763806e-06, 5.0627210699159516975e-05,
+	                       0.00016198783558680096995, 0.00044474583457844121164,
+			       0.0011563267279465730842, 0.0029447969579766914219,
+			       0.007440491639209977949, 0.018751086281155571189,
+			       0.047271072978110562079, 0.11959352757092110708,
+			       0.30563294009891067704, 0.80189441104810432748,
+			       2.2562393220051499831, 7.7746421837770229857,
+			       59.252309299420609534};
+	//Reference rescaled coefficients conservative
+	hmc_float a0_ref_cons = 3.8304052181004228927;
+	hmc_float a_ref_cons[15] = {-2.8942286130576286221e-07, -1.3425838169907005556e-06,
+				    -4.6346528686679587346e-06, -1.5051222595004849162e-05,
+				    -4.8050941840019680289e-05, -0.00015255541700051565286,
+				    -0.00048359186633654911497, -0.0015339111096058541221,
+				    -0.0048815187425726713766, -0.015675235262161982264,
+				    -0.051504285410779379606, -0.17941591204330820108,
+				    -0.72735044574402074602, -4.4852081772741634325,
+				    -124.39863554566063897};
+	hmc_float b_ref_cons[15] = {9.7552862512145591676e-06, 5.3158639325027219212e-05,
+				    0.00017008744523117717558, 0.00046698372446689161283,
+				    0.0012141446195419417376, 0.003092040766471044512,
+				    0.007812526228236587808, 0.019688665814428581158,
+				    0.04963469020409881638, 0.12557336479641045823,
+				    0.32091499816392937694, 0.84199021010590602287,
+				    2.3690543226274733968, 8.1633847494467222106,
+				    62.215004455600926292};
+	
+	Rational_Coefficients coeff = approx.Rescale_Coefficients(minEigenvalue, maxEigenvalue);
+	Rational_Coefficients coeff_cons = approx.Rescale_Coefficients(minEigenvalueCons, maxEigenvalueCons);
+	
+	int ord = coeff.Get_order();
+	std::vector<hmc_float> a = coeff.Get_a();
+	std::vector<hmc_float> b = coeff.Get_b();
+	
+	std::vector<hmc_float> a_cons = coeff_cons.Get_a();
+	std::vector<hmc_float> b_cons = coeff_cons.Get_b();
+	
+	//Test result: note that the precision is not so high since
+	//the reference code uses a slightly different method to calculate
+	//maximum and minimum eigenvalues (I tuned a bit the ref.code adapting the number
+	//of loop iterations in finding the max and min eigenvalues, but not too much)
+	BOOST_CHECK_CLOSE(coeff.Get_a0(), a0_ref, 5.e-5);
+	BOOST_CHECK_CLOSE(coeff_cons.Get_a0(), a0_ref_cons, 5.e-5);
+	for(int i=0; i<ord; i++){
+		BOOST_CHECK_CLOSE(a[i], a_ref[i], 5.e-5);
+		BOOST_CHECK_CLOSE(b[i], b_ref[i], 5.e-5);
+		BOOST_CHECK_CLOSE(a_cons[i], a_ref_cons[i], 2.e-4);
+		BOOST_CHECK_CLOSE(b_cons[i], b_ref_cons[i], 2.e-4);
 	}
 	
 	logger.info() << "Test done!";

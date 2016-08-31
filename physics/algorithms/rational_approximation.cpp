@@ -54,7 +54,7 @@ physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d, c
 
 int physics::algorithms::Rational_Coefficients::Get_order() const
 {
-    return _d;
+	return _d;
 }
 
 hmc_float physics::algorithms::Rational_Coefficients::Get_a0() const
@@ -192,36 +192,29 @@ hmc_float physics::algorithms::Rational_Approximation::Get_exponent() const
         return ((hmc_float) y) / z;
 }
 
-physics::algorithms::Rational_Coefficients
-physics::algorithms::Rational_Approximation::Rescale_Coefficients(const physics::fermionmatrix::Fermionmatrix_stagg_eo& A, const physics::lattices::Gaugefield& gf,
-                                                                  const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
-                                                                  hmc_float prec, const physics::AdditionalParameters& additionalParameters) const
+physics::algorithms::Rational_Coefficients physics::algorithms::Rational_Approximation::Rescale_Coefficients(const hmc_float minEigenvalue, const hmc_float maxEigenvalue) const
 {
-    if(high != 1)
-        throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
+	if(high != 1)
+		throw std::invalid_argument("Upper bound different from 1 in rescale_coefficients!");
 
-    int ord = Get_order();
-    hmc_float exp = Get_exponent();
-    hmc_float a0_new = Get_a0();
-    std::vector<hmc_float> a_new = Get_a();
-    std::vector<hmc_float> b_new = Get_b();
+	if(low > minEigenvalue/maxEigenvalue)
+	        throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
 
-    hmc_float max;
-    hmc_float min;
-    find_maxmin_eigenvalue(max, min, A, gf, system, interfacesHandler, prec, additionalParameters);
+	int ord = Get_order();
+	hmc_float exp = Get_exponent();
+	hmc_float a0_new = Get_a0();
+	std::vector<hmc_float> a_new = Get_a();
+	std::vector<hmc_float> b_new = Get_b();
 
-    if(low > min / max)
-        throw Print_Error_Message("Rational_Approximation does not respect lower_bound <= min/max");
+	hmc_float tmp = pow(maxEigenvalue, exp);
+	a0_new *= tmp;
+	for(int i=0; i<ord; i++){
+		a_new[i] *= (tmp*maxEigenvalue);
+		b_new[i] *= maxEigenvalue;
+	}
 
-    hmc_float tmp = pow(max, exp);
-    a0_new *= tmp;
-    for (int i = 0; i < ord; i++) {
-        a_new[i] *= (tmp * max);
-        b_new[i] *= max;
-    }
-
-    Rational_Coefficients out(ord, a0_new, a_new, b_new);
-    return out;
+	Rational_Coefficients out(ord, a0_new, a_new, b_new);
+	return out;
 }
 
 namespace physics {
