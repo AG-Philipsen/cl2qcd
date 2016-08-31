@@ -123,22 +123,29 @@ void testVolumeSource(const LatticeExtents lE, const common::sourcecontents sC, 
 }
 
 
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME, 4)
-
 BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_1 )
 	{
 		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::one, 500);
 	}
+
+	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_2, 2)
+
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_2 )
 	{
 		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z4, 1000);
 	}
+
+	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_3, 2)
+
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_3 )
 	{
 		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::gaussian, 2000);
 	}
+
+	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_4, 2)
+
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_4 )
 	{
 		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z2, 1000);
