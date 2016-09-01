@@ -111,7 +111,6 @@ void testMeasurement(std::vector<double> referenceValues, int numberOfSources, s
 		std::vector<std::string> boostOptions;
 		if (numberOfParametersFromBoost > 1)
 		  {
-		    BOOST_REQUIRE_EQUAL(numberOfParametersFromBoost, 2);
 		    for (int i = 1; i < numberOfParametersFromBoost; i++)
 		      {
 			boostOptions.push_back( boost::unit_test::framework::master_test_suite().argv[i]);

@@ -83,9 +83,7 @@ void hardware::lattices::Spinorfield::import(const spinor * const host) const
 //			//todo: put these calls into own fct.!
 			TemporalParallelizationHandlerNonLink tmp2(device->getGridPos(), device->getLocalLatticeExtents(), sizeof(spinor), device->getHaloExtent());
 			buffer->load( &host[tmp2.getMainPartIndex_source()] , tmp2.getMainPartSize());
-			assert(tmp2.getFirstHaloPartIndex_source() + tmp2.getHaloPartSize() <= get_elements());
 			buffer->load( &host[tmp2.getFirstHaloPartIndex_source()] , tmp2.getHaloPartSize(), tmp2.getMainPartSize());
-			assert(tmp2.getSecondHaloPartIndex_source() + tmp2.getHaloPartSize() <= get_elements());
 			buffer->load( &host[tmp2.getSecondHaloPartIndex_source()], tmp2.getHaloPartSize(), tmp2.getMainPartSize() + tmp2.getHaloPartSize());
 
 		}
