@@ -34,14 +34,19 @@ size_t meta::get_volspace(const int ns)
 
 size_t meta::get_vol4d(const Inputparameters& params)
 {
-	return get_volspace(params) * params.get_ntime();
+	return meta::get_vol4d(params.get_ntime(), params.get_nspace());
 }
+size_t meta::get_vol4d(const int nt, const int ns)
+{
+    return meta::get_volspace(ns) * nt;
+}
+
 bool meta::get_use_rectangles(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
-		case meta::action::tlsym:
-		case meta::action::iwasaki:
-		case meta::action::dbw2:
+		case common::action::tlsym:
+		case common::action::iwasaki:
+		case common::action::dbw2:
 			return true;
 		default:
 			return false;
@@ -87,40 +92,12 @@ size_t meta::get_poly_norm(const Inputparameters& params)
 	return get_volspace(params);
 }
 
-//Flops calculation tools
-size_t meta::get_flop_complex_mult() noexcept {
-	return 6;
-}
-size_t meta::get_flop_su3_su3() noexcept {
-	return (get_flop_complex_mult() * NC + (NC - 1) * 2) * NC * NC;
-}
-size_t meta::get_flop_su3trace() noexcept {
-	return (NC - 1) * 2;
-}
-size_t meta::get_flop_su3_su3vec() noexcept {
-	//  1 entry: NC * complex mults and NC-1 complex adds
-	//  NC entries total
-	return (get_flop_complex_mult() * NC + (NC - 1) * 2) * NC;
-}
-size_t meta::get_flop_su3vec_su3vec() noexcept {
-	// NC * complex_mult + (NC -1) complex adds
-	return NC * get_flop_complex_mult() + (NC - 1) * 2;
-}
-size_t meta::get_flop_su3vec_direct_su3vec() noexcept {
-	// NC*NC complex_mult
-	return NC * NC * get_flop_complex_mult();
-}
-
-
-size_t meta::get_su3algebrasize() noexcept {
-	return NC * NC - 1;
-}
 double meta::get_c0(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
-		case meta::action::tlsym:
-		case meta::action::iwasaki:
-		case meta::action::dbw2:
+		case common::action::tlsym:
+		case common::action::iwasaki:
+		case common::action::dbw2:
 			return 1. - 8. * get_c1(params);
 		default:
 			return 1.;
@@ -129,11 +106,11 @@ double meta::get_c0(const Inputparameters& params)
 double meta::get_c1(const Inputparameters& params)
 {
 	switch(params.get_gaugeact()) {
-		case meta::action::tlsym:
+		case common::action::tlsym:
 			return -0.083333333;
-		case meta::action::iwasaki:
+		case common::action::iwasaki:
 			return -0.331;
-		case meta::action::dbw2:
+		case common::action::dbw2:
 			return -1.4069;
 		default:
 			return 0.;
@@ -146,23 +123,6 @@ double meta::get_xi_0(const Inputparameters& params)
 	double eta = (1.002503 * aniso * aniso * aniso + .39100 * aniso * aniso + 1.47130 * aniso - 0.19231) /
 	             (aniso * aniso * aniso + 0.26287 * aniso * aniso + 1.59008 * aniso - 0.18224);
 	return aniso / (1. + (1. - 1. / aniso) * eta / 6. * (1 - 0.55055 * 2 * NC / beta) / (1 - 0.77810 * 2 * NC / beta) * 2 * NC / beta );
-}
-size_t meta::get_flop_spinor_spinor() noexcept {
-	//  NDIM * NC * complex_mult + ( NDIM * NC -1 ) complex adds
-	return NDIM * NC * get_flop_complex_mult() + (NDIM * NC - 1) * 2;
-}
-size_t meta::get_flop_spinor_sqnorm() noexcept {
-	// NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
-	// The 0.5 factor arises from the fact that the result is real and then there is no
-	// imaginary part to be calculated.
-	return NDIM * NC * get_flop_complex_mult() * 0.5 + (NC * NDIM - 1);
-}
-
-size_t meta::get_flop_su3vec_sqnorm() noexcept {
-	// NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
-	// The 0.5 factor arises from the fact that the result is real and then there is no
-	// imaginary part to be calculated.
-	return NC * get_flop_complex_mult() * 0.5 + (NC - 1);
 }
 
 std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept {
@@ -178,13 +138,13 @@ std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters,
 		return parameters.get_ferm_obs_corr_prefix() +  parameters.get_ferm_obs_corr_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_ferm_obs_corr_prefix() + conf_name + parameters.get_ferm_obs_corr_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_ferm_obs_corr_prefix() + "conf.hot" +   parameters.get_ferm_obs_corr_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_ferm_obs_corr_prefix() + "conf.cold" + parameters.get_ferm_obs_corr_postfix() ;
 				break;
 			default:
@@ -198,13 +158,13 @@ std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std
 		return parameters.get_gauge_obs_prefix() +  parameters.get_gauge_obs_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_gauge_obs_prefix() + conf_name + parameters.get_gauge_obs_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_gauge_obs_prefix() + "conf.hot" +   parameters.get_gauge_obs_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_gauge_obs_prefix() + "conf.cold" + parameters.get_gauge_obs_postfix() ;
 				break;
 			default:
@@ -218,13 +178,13 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
 		return parameters.get_hmc_obs_prefix() +  parameters.get_hmc_obs_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_hmc_obs_prefix() + conf_name + parameters.get_hmc_obs_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_hmc_obs_prefix() + "conf.hot" +   parameters.get_hmc_obs_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_hmc_obs_prefix() + "conf.cold" + parameters.get_hmc_obs_postfix() ;
 				break;
 			default:
@@ -238,39 +198,19 @@ std::string meta::get_rhmc_obs_file_name(const Inputparameters& parameters, std:
 		return parameters.get_rhmc_obs_prefix() +  parameters.get_rhmc_obs_postfix();
 	} else {
 		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
+			case common::start_from_source :
 				return  parameters.get_rhmc_obs_prefix() + conf_name + parameters.get_rhmc_obs_postfix();
 				break;
-			case meta::Inputparameters::hot_start :
+			case common::hot_start :
 				return  parameters.get_rhmc_obs_prefix() + "conf.hot" +   parameters.get_rhmc_obs_postfix() ;
 				break;
-			case meta::Inputparameters::cold_start :
+			case common::cold_start :
 				return  parameters.get_rhmc_obs_prefix() + "conf.cold" + parameters.get_rhmc_obs_postfix() ;
 				break;
 			default:
 				throw std::invalid_argument("Unknown start condition selected. Don't know how to generate proper observable file name.");
 		}
 	}
-}
-
-std::string meta::create_configuration_name(const Inputparameters& parameters, int number) noexcept {
-	using namespace std;
-	std::stringstream strnumber;
-	strnumber.fill('0');
-	strnumber.width(parameters.get_config_number_digits());
-	strnumber << right << number;
-	stringstream outfilename;
-	outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
-	string outputfile = outfilename.str();
-	return outputfile;
-}
-
-std::string meta::create_configuration_name(const Inputparameters& parameters) noexcept {
-	using namespace std;
-	stringstream outfilename;
-	outfilename << parameters.get_config_prefix() << "save" << parameters.get_config_postfix();
-	string outputfile = outfilename.str();
-	return outputfile;
 }
 
 std::string meta::create_prng_name(const Inputparameters& parameters, int number) noexcept {

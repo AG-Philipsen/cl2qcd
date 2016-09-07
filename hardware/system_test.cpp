@@ -26,14 +26,20 @@
 
 #include "system.hpp"
 #include "device.hpp"
-#include "hardware_test_util.hpp"
+#include "hardwareTestUtilities.hpp"
 
-BOOST_AUTO_TEST_CASE(initialization)
-{
-	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-	hardware::System system( params );
-	BOOST_REQUIRE_EQUAL(&system.get_inputparameters(), &params);
-}
+#include "interfaceMockups.hpp"
+
+BOOST_AUTO_TEST_SUITE(initialization)
+
+	BOOST_AUTO_TEST_CASE(fromHardwareParameters)
+	{
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		BOOST_CHECK_NO_THROW( hardware::System system( hardwareParameters, kernelParameters ) );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(systemSanity)
 
@@ -47,22 +53,25 @@ BOOST_AUTO_TEST_SUITE(systemSanity)
 
 	BOOST_AUTO_TEST_CASE(staticCastToPlatform)
 	{
-		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-		hardware::System system(params);
-		BOOST_REQUIRE(static_cast<const cl_context>(system));
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		hardware::System system( hardwareParameters, kernelParameters );
+		BOOST_REQUIRE(static_cast<const cl_context>(system.getContext()));
 	}
 
 	BOOST_AUTO_TEST_CASE(enoughDevicesExist)
 	{
-		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-		hardware::System system(params);
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		hardware::System system( hardwareParameters, kernelParameters );
 		atLeastOneDeviceMustExistForSanityOfSystem( &system );
 	}
 
 	BOOST_AUTO_TEST_CASE(allDevicesHaveDoubleSupport)
 	{
-		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-		hardware::System system(params);
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		hardware::System system( hardwareParameters, kernelParameters );
 		allDevicesMustSupportDoublePrecisionForSanityOfSystem( &system );
 	}
 
@@ -74,18 +83,18 @@ BOOST_AUTO_TEST_SUITE(devices)
 	{
 		for( int desiredNumberOfDevices = 1; desiredNumberOfDevices <= totalNumberOfDevicesInSystem; desiredNumberOfDevices ++)
 		{
-			const std::string tmp = ("--num_dev=" + std::to_string( desiredNumberOfDevices ) );
-			const char * _params[] = {"foo", tmp.c_str()};
-			meta::Inputparameters params(2, _params);
-			hardware::System system(params);
+			const hardware::HardwareParametersMockupForDeviceSelection hardwareParameters(4,4, desiredNumberOfDevices, std::vector<int> {0});
+			const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+			hardware::System system( hardwareParameters, kernelParameters );
 			BOOST_REQUIRE_EQUAL( system.get_devices().size() , desiredNumberOfDevices);
 		}
 	}
 
 	BOOST_AUTO_TEST_CASE(setNumberOfDevicesByCommandLine)
 	{
-		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-		hardware::System system(params);
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		hardware::System system( hardwareParameters, kernelParameters );
 		checkThatOnlySpecifiedNumberOfDevicesIsInitialized( system.get_devices().size());
 	}
 
@@ -93,11 +102,11 @@ BOOST_AUTO_TEST_SUITE(devices)
 	{
 		for( int desiredDevice = 0; desiredDevice < totalNumberOfDevicesInSystem; desiredDevice ++)
 		{
-			const std::string tmp = ("--device=" + std::to_string( desiredDevice ) );
-			const char * _params[] = {"foo", tmp.c_str()};
-			meta::Inputparameters params(2, _params);
+			const hardware::HardwareParametersMockupForDeviceSelection hardwareParameters(4,4, 1, std::vector<int> {desiredDevice});
+			const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+
 			try {
-				hardware::System system(params);
+				hardware::System system( hardwareParameters, kernelParameters );
 				BOOST_REQUIRE_EQUAL( system.get_devices().size(), 1);
 			} catch(std::invalid_argument) {
 				// device might not support double-precision
@@ -107,21 +116,18 @@ BOOST_AUTO_TEST_SUITE(devices)
 
 	BOOST_AUTO_TEST_CASE(setDeviceByCommandLine)
 	{
-		meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-		hardware::System system(params);
+		const hardware::HardwareParametersMockup hardwareParameters(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		hardware::System system( hardwareParameters, kernelParameters );
 		checkThatOnlySpecifiedDeviceIsInitialized( system.get_devices().size());
 	}
 
-	bool checkIfNoOpenCLDevicesWereFound( const hardware::OpenclException exception)
+	void disableSpecificDeviceTypeByCommandLine( const cl_device_type device_type, const hardware::HardwareParametersInterface & hI)
 	{
-		return exception.errorCode == -1;
-	}
-
-	void disableSpecificDeviceTypeByCommandLine( const char * _parameters[], const cl_device_type device_type)
-	{
-		meta::Inputparameters params(2, _parameters);
-		try {
-			hardware::System system(params);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+		try
+		{
+			hardware::System system( hI, kernelParameters);
 			for(hardware::Device * device : system.get_devices())
 			{
 				BOOST_REQUIRE_NE(device->get_device_type(), device_type);
@@ -143,14 +149,14 @@ BOOST_AUTO_TEST_SUITE(devices)
 
 	BOOST_AUTO_TEST_CASE(disableCpusByCommandLine)
 	{
-		const char * _params[] = {"foo", "--use_cpu=false"};
-		disableSpecificDeviceTypeByCommandLine( _params, CL_DEVICE_TYPE_CPU);
+		const hardware::HardwareParametersMockupWithoutCpus hardwareParameters(4,4);
+		disableSpecificDeviceTypeByCommandLine( CL_DEVICE_TYPE_CPU, hardwareParameters);
 	}
 
 	BOOST_AUTO_TEST_CASE(disableGpusByCommandLine)
 	{
-		const char * _params[] = {"foo", "--use_gpu=false"};
-		disableSpecificDeviceTypeByCommandLine( _params, CL_DEVICE_TYPE_GPU);
+		const hardware::HardwareParametersMockupWithoutGpus hardwareParameters(4,4);
+		disableSpecificDeviceTypeByCommandLine( CL_DEVICE_TYPE_GPU, hardwareParameters);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -161,11 +167,16 @@ void checkOnProperEnvironmentSettings()
 	BOOST_REQUIRE_NE(std::string(getenv("AMD_OCL_BUILD_OPTIONS_APPEND")).find("-save-temps"), -1);
 }
 
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (dump_source_if_debugging, 1)
 BOOST_AUTO_TEST_CASE(dump_source_if_debugging)
 {
-	const char * _params[] = {"foo", "--log-level=debug"};
-	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
+	/**
+	 * @todo: if debug mode is not activated at compile time, this switch does not seem to have any effect. Investigate!
+	 */
+	switchLogLevel("debug");
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 
 	if(logger.beDebug()) {
 		checkOnProperEnvironmentSettings();

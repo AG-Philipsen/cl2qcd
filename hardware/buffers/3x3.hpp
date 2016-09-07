@@ -31,18 +31,18 @@ namespace buffers {
 /**
  * Check whether Matrix3x3 should be stored SOA style on this device
  */
-size_t check_Matrix3x3_for_SOA(hardware::Device * device);
+size_t check_Matrix3x3_for_SOA(const hardware::Device * device);
 
 /**
  * Get the stride for an Matrix3x3 buffer of the given number of elements on the given device
  */
-size_t get_Matrix3x3_buffer_stride(size_t elems, Device * device);
+size_t get_Matrix3x3_buffer_stride(const size_t elems, const Device * device);
 
 /*
  * A buffer storing Matrix3x3s on the device
  */
-class Matrix3x3 : public Buffer {
-
+class Matrix3x3 : public Buffer
+{
 public:
 	/**
 	 * Allocate a buffer with the default number of
@@ -51,7 +51,7 @@ public:
 	 * \param elems The size of the buffer in elements
 	 * \param device The device to locate the buffer on
 	 */
-	Matrix3x3(size_t elems, Device * device);
+	Matrix3x3(const size_t elems, const Device * device);
 
 	/*
 	 * Matrix3x3 buffers cannot be copied

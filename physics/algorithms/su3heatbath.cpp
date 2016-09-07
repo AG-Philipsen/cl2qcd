@@ -34,7 +34,7 @@ void physics::algorithms::su3heatbath(physics::lattices::Gaugefield& gf, physics
 	// run su3heatbath
 	auto gf_dev = gf.get_buffers()[0];
 	auto prng_dev = prng.get_buffers()[0];
-	auto code = gf_dev->get_device()->get_heatbath_code();
+	auto code = gf_dev->get_device()->getHeatbathCode();
 
 	code->run_heatbath(gf_dev, prng_dev);
 
@@ -51,7 +51,7 @@ void physics::algorithms::overrelax(physics::lattices::Gaugefield& gf, physics::
 
 	auto gf_dev = gf.get_buffers()[0];
 	auto prng_dev = prng.get_buffers()[0];
-	auto code = gf_dev->get_device()->get_heatbath_code();
+	auto code = gf_dev->get_device()->getHeatbathCode();
 
 	for(int i = 0; i < steps; ++i)
 		code->run_overrelax(gf_dev, prng_dev);

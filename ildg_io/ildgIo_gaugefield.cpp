@@ -21,7 +21,6 @@
 #include "ildgIo_gaugefield.hpp"
 
 #include "../host_functionality/logger.hpp"
-#include "../host_functionality/host_geometry.h"
 #include "../meta/util.hpp"
 #include "../meta/version.hpp"
 
@@ -170,21 +169,12 @@ void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gau
 						hmc_complex tmp [NC][NC];
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters.getNt(), parameters.getNs() );
+	 							uint pos = LinkIndex(Index(z,y,x,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>(l)).get_su3_idx_ildg_format(n,m);
 								tmp[m][n].re = make_float_from_big_endian(&gaugefield_tmp[pos * sizeof(hmc_float)]);
 								tmp[m][n].im = make_float_from_big_endian(&gaugefield_tmp[(pos + 1) * sizeof(hmc_float)]);
 								cter++;
 							}
 						}
-						//store su3matrix tmp in our format
-						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
-						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
-						int coord[4];
-						coord[0] = t;
-						coord[1] = z;
-						coord[2] = y;
-						coord[3] = x;
-						int spacepos = get_nspace(coord, parameters.getNt(), parameters.getNs());
 
 						//copy hmc_su3matrix to Matrixsu3 format
 						Matrixsu3 destElem;
@@ -198,7 +188,10 @@ void ildgIo::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gau
 						destElem.e21 = tmp[2][1];
 						destElem.e22 = tmp[2][2];
 
-						gaugefield[get_global_link_pos((l + 1) % NDIM, spacepos, t, parameters.getNt(), parameters.getNs() )] = destElem;
+						//store su3matrix tmp in our format
+						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
+						gaugefield[uint(LinkIndex(Index(z,y,x,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>((l + 1) % NDIM)))] = destElem;
 					}
 				}
 			}
@@ -233,17 +226,11 @@ void ildgIo::copy_gaugefield_to_ildg_format(std::vector<char> & dest, const std:
 			for (size_t y = 0; y < NSPACE; y++) {
 				for (size_t z = 0; z < NSPACE; z++) {
 					for (int l = 0; l < NDIM; l++) {
-						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
-						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
-						int coord[4];
-						coord[0] = t;
-						coord[1] = z;
-						coord[2] = y;
-						coord[3] = x;
-						int spacepos = get_nspace(coord, parameters.getNt(), parameters.getNs() );
 						hmc_complex destElem [NC][NC];
 
-						Matrixsu3 srcElem = source_in[get_global_link_pos((l + 1) % NDIM, spacepos, t, parameters.getNt(), parameters.getNs() )];
+						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
+						Matrixsu3 srcElem = source_in[uint(LinkIndex(Index(z,y,x,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>((l + 1) % NDIM)))];
 						destElem[0][0] = srcElem.e00;
 						destElem[0][1] = srcElem.e01;
 						destElem[0][2] = srcElem.e02;
@@ -256,7 +243,7 @@ void ildgIo::copy_gaugefield_to_ildg_format(std::vector<char> & dest, const std:
 
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters.getNt(), parameters.getNs() );
+								uint pos = LinkIndex(Index(z,y,x,t,LatticeExtents(parameters.getNs(),parameters.getNt())),static_cast<Direction>(l)).get_su3_idx_ildg_format(n,m);
 								make_big_endian_from_float(&dest[pos * sizeof(hmc_float)], destElem[m][n].re);
 								make_big_endian_from_float(&dest[(pos + 1) * sizeof(hmc_float)], destElem[m][n].im);
 							}

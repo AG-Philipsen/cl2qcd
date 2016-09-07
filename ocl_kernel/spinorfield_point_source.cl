@@ -21,7 +21,31 @@
 __kernel void create_point_source(__global spinor * const restrict b, int i, int spacepos, int timepos)
 {
 	int id = get_global_id(0);
+	int global_size = get_global_size(0);
+	
+	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
+	  for(int y = 0; y<NSPACE; y++) {
+	  	for(int z = 0; z<NSPACE; z++) {
+	      for (int t = 0; t < NTIME_LOCAL; t++){
+			uint3 coord;
+	      	coord.x = id_tmp;
+	      	coord.y = y;
+	      	coord.z = z;
+	      	int posSpace = get_nspace(coord);
+	      
+			put_spinor_to_field(set_spinor_zero(), b, posSpace, t);  
+	      }
+	    }
+	  }
+	}
+
 	if(id == 0) {
+		if (SOURCE_CONTENT != 1) //"1" is "one" 
+		{
+			printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
+			return;
+		}
+	
 		//LZ: note that the conversion from m to kappa works as
 		//   M(m) * phi = eta <=> 1/(2kappa) * M(k) * phi = eta
 		//thus we can keep everything as in the orginal basis and only have

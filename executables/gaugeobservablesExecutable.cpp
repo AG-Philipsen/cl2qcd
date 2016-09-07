@@ -24,7 +24,7 @@
 
 gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv, "gaugeobservables")
 {
-	if ( parameters.get_startcondition() != meta::ParametersConfig::startcondition::start_from_source )
+	if ( parameters.get_startcondition() != common::startcondition::start_from_source )
 	{
 		throw std::logic_error("Invalid startcondition specified for gaugeobservables executable! Must be continue!");
 	}
@@ -51,6 +51,6 @@ void gaugeobservablesExecutable::printParametersToScreenAndFile()
 
 void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
 {
-	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit() );
+	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit(), interfacesHandler->getGaugeObservablesParametersInterface());
 }
 

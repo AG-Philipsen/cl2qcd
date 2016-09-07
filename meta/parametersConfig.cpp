@@ -60,7 +60,7 @@ int meta::ParametersConfig::get_ntime() const noexcept
 	return ntime;
 }
 
-meta::ParametersConfig::startcondition meta::ParametersConfig::get_startcondition() const noexcept
+common::startcondition meta::ParametersConfig::get_startcondition() const noexcept
 {
 	return _startcondition;
 }
@@ -139,7 +139,7 @@ meta::ParametersConfig::ParametersConfig()
 {
 	options.add_options()
 	("prec", po::value<size_t>(&precision)->default_value(sizeof(double) * 8))
-	("device,d", po::value<std::vector<int>>(&selected_devices), "ID of a divice to use. Can be specified multiple times.")
+	("device,d", po::value<std::vector<int>>(&selected_devices), "ID of a device to use. Can be specified multiple times.")
 	("num_dev", po::value<int>(&device_count)->default_value(0), "Maximum number of devices to use.")
 	("use_gpu", po::value<bool>(&use_gpu)->default_value(true), "Use GPUs")
 	("use_cpu", po::value<bool>(&use_cpu)->default_value(true), "Use CPUs")

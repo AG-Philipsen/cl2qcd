@@ -19,7 +19,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gaugeObservables.h"
+#include "gaugeObservables.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::gaugeObservables
@@ -30,30 +30,49 @@
 #include <stdexcept>
 
 #include "../lattices/gaugefield.hpp"
+#include "../../interfaceImplementations/latticesParameters.hpp"
+#include "../../interfaceImplementations/observablesParameters.hpp"
+#include "../../interfaceImplementations/physicsParameters.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 class GaugeObservablesTester
 {
 public:
   GaugeObservablesTester(int argc, const char** argv)
   {
-    parameters = new meta::Inputparameters(argc, argv);
-    system = new hardware::System(*parameters);
-    prng = new physics::PRNG(*system);
-    gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+      parameters = new meta::Inputparameters(argc, argv);
+      gaugeobservablesParameters = new physics::observables::GaugeObservablesParametersImplementation(*parameters);
+      hP = new hardware::HardwareParametersImplementation(parameters);
+      kP = new hardware::code::OpenClKernelParametersImplementation(*parameters);
+      system = new hardware::System(*hP, *kP);
+      prngParameters = new physics::PrngParametersImplementation(*parameters);
+      prng = new physics::PRNG(*system, prngParameters);
+      gaugefieldParameters = new physics::lattices::GaugefieldParametersImplementation(parameters);
+      gaugefield = new physics::lattices::Gaugefield(*system, gaugefieldParameters, *prng);
   }
   ~GaugeObservablesTester()
   {
-    system = 0;
-    prng = 0;
-    gaugefield = 0;
-    parameters = 0;
+      delete system;
+      delete hP;
+      delete kP;
+      delete prng;
+      delete gaugefield;
+      delete parameters;
+      delete prngParameters;
+      delete gaugeobservablesParameters;
   }
 
   meta::Inputparameters * parameters;
   physics::lattices::Gaugefield * gaugefield;
+  physics::observables::GaugeObservablesParametersImplementation * gaugeobservablesParameters;
+  hardware::HardwareParametersImplementation *hP;
+  hardware::code::OpenClKernelParametersImplementation *kP;
 private:
   hardware::System *  system;
   physics::PRNG * prng;
+  physics::lattices::GaugefieldParametersImplementation * gaugefieldParameters;
+  physics::PrngParametersImplementation * prngParameters;
 };
 
 BOOST_AUTO_TEST_SUITE( PLAQUETTE  )
@@ -65,7 +84,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(GaugeObservablesTester::gaugefield), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measurePlaquette(gaugefield, *gaugeobservablesParameters), referenceValue, testPrecision);
   }
 };
 
@@ -94,7 +113,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    BOOST_CHECK_CLOSE(physics::observables::measureRectangles(GaugeObservablesTester::gaugefield), referenceValue, testPrecision);
+    BOOST_CHECK_CLOSE(physics::observables::measureRectangles(gaugefield, *gaugeobservablesParameters), referenceValue, testPrecision);
   }
 };
 
@@ -130,7 +149,7 @@ public:
     GaugeObservablesTester(argc, argv)
   {
     double testPrecision = 1e-8;
-    hmc_complex poly =    physics::observables::measurePolyakovloop(GaugeObservablesTester::gaugefield);
+    hmc_complex poly =    physics::observables::measurePolyakovloop(gaugefield, *gaugeobservablesParameters);
     BOOST_CHECK_CLOSE(poly.re, referenceValue.re, testPrecision);
     BOOST_CHECK_CLOSE(poly.im, referenceValue.im, testPrecision);
   }
@@ -157,11 +176,16 @@ BOOST_AUTO_TEST_CASE( ALL_PLAQUETTES_1 )
 {
   const char * _params[] = {"foo", "--startcondition=cold"};
   meta::Inputparameters parameters(2, _params);
-  hardware::System system(parameters);
-  physics::PRNG prng(system);
-  physics::lattices::Gaugefield gf(system, prng);
+  physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
+  physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
+  hardware::HardwareParametersImplementation hP(&parameters);
+  hardware::code::OpenClKernelParametersImplementation kP(parameters);
+  hardware::System system(hP, kP);
+  physics::PrngParametersImplementation prngParameters{parameters};
+  physics::PRNG prng{system, &prngParameters};
+  physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 
-  auto allPlaquettes = physics::observables::measureAllPlaquettes(&gf);
+  auto allPlaquettes = physics::observables::measureAllPlaquettes(&gf,gaugeobservablesParameters);
 
   BOOST_REQUIRE_CLOSE(allPlaquettes.plaquette, 1., 1e-8);
   BOOST_REQUIRE_CLOSE(allPlaquettes.temporalPlaquette, 1., 1e-8);
@@ -173,11 +197,16 @@ BOOST_AUTO_TEST_CASE( PLAQUETTES_WITHOUT_NORMALIZATION )
 {
   const char * _params[] = {"foo", "--startcondition=cold", "--nt=4", "--ns=4"};
   meta::Inputparameters parameters(2, _params);
-  hardware::System system(parameters);
-  physics::PRNG prng(system);
-  physics::lattices::Gaugefield gf(system, prng);
+  physics::lattices::GaugefieldParametersImplementation gaugefieldParameters(&parameters);
+  physics::observables::GaugeObservablesParametersImplementation gaugeobservablesParameters(parameters);
+  hardware::HardwareParametersImplementation hP(&parameters);
+  hardware::code::OpenClKernelParametersImplementation kP(parameters);
+  hardware::System system(hP, kP);
+  physics::PrngParametersImplementation prngParameters{parameters};
+  physics::PRNG prng{system, &prngParameters};
+  physics::lattices::Gaugefield gf(system, &gaugefieldParameters, prng);
 
-  auto plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf);
+  auto plaq = physics::observables::measurePlaquetteWithoutNormalization(&gf, gaugeobservablesParameters);
 
   BOOST_REQUIRE_CLOSE(plaq, 3072., 1e-8);
 }

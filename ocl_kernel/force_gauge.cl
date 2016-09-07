@@ -53,7 +53,7 @@
  *            Tr[i * T_k * (U*V - V^\dag*U^\dag)] that is multiplied ONLY by @f$ -\beta/3 @f$.
  *            We are then apparently coeherent with the Gottlieb and Toussaint result.
  *            Actually, this is not true because the gaugemomenta part of the action calculated
- *            in physics/algorithms/metropolis.cpp (in the Wilson case) is exactely that
+ *            in physics/algorithms/metropolis.cpp (in the Wilson case) is exactly that
  *            in eq.(8.35) of Gattringer book: as explained in the note above, there can be
  *            an overall factor in the force calculation that has to be balanced by an
  *            appropriate choice of the time interval (i.e. the parameter "tau" of Inputparameters),
@@ -64,7 +64,7 @@
  *            the Gottlieb-Toussaint paper and this factors compensation has been avoided (the
  *            gaugemomenta part of the action calculated in physics/algorithms/metropolis.cpp
  *            is different from the Wilson case by a factor 0.5). The force calculated in the
- *            code is exactely "the right one", namely that which can be analitically derived
+ *            code is exactly "the right one", namely that which can be analitically derived
  *            from the action. If the eq. of motion should be integrated for a time interval Dt,
  *            then tau must be Dt.
  *            

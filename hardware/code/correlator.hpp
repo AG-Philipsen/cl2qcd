@@ -104,13 +104,10 @@ protected:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-private:
-	/**
-	 * Default constructor, does nothing but make sure some pointer point to 0.
-	 *
-	 */
-	Correlator(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Correlator(const hardware::code::OpenClKernelParametersInterface& kernelParams , const hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

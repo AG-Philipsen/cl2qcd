@@ -18,46 +18,30 @@
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
 
 add_executable(su2su3extend su2su3extend.cpp)
-target_link_libraries(su2su3extend
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Su2su3extend su2su3extend)
-
-add_executable(geometry geometry.cpp)
-target_link_libraries(geometry
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(geometry geometry)
+target_link_libraries(su2su3extend kernelTestUtilities )
+add_test(Su2su3extend_CPU su2su3extend --use_gpu=false)
+add_test(Su2su3extend_GPU su2su3extend --use_gpu=true)
 
 add_executable(gaugefield_convert gaugefield_convert.cpp)
-target_link_libraries(gaugefield_convert
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Gaugefield_Conversion gaugefield_convert)
+target_link_libraries(gaugefield_convert kernelTestUtilities)
+add_test(Gaugefield_Conversion_CPU gaugefield_convert --use_gpu=false )
+add_test(Gaugefield_Conversion_GPU gaugefield_convert --use_gpu=true )
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
+#@todo: these tests contain only dummy test and need to be worked on
+add_executable(hardware_code_geometry geometry.cpp)
+target_link_libraries(hardware_code_geometry 	kernelTestUtilities )
+add_test(geometry hardware_code_geometry)
 
 add_executable(calc_staple Calc_staple_test.cpp)
-target_link_libraries(calc_staple
-	optimal
-	${Boost_LIBRARIES}
-)
-
-add_test(Calc_staple_1_CPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=false)
-add_test(Calc_staple_1_CPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=true)
-add_test(Calc_staple_1_GPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=false)
-add_test(Calc_staple_1_GPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=true)
-
+target_link_libraries(calc_staple kernelTestUtilities )
+add_test(Calc_staple_1_CPU       calc_staple --use_gpu=false --use_rec12=false)
+add_test(Calc_staple_1_CPU_REC12 calc_staple --use_gpu=false --use_rec12=true)
+add_test(Calc_staple_1_GPU       calc_staple --use_gpu=true  --use_rec12=false)
+add_test(Calc_staple_1_GPU_REC12 calc_staple --use_gpu=true  --use_rec12=true)
 
 add_executable(localQ local_Q_test.cpp)
-target_link_libraries(localQ
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(LocalQ_1_CPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=false --use_rec12=false)
-add_test(LocalQ_1_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=false --use_rec12=true)
-add_test(LocalQ_1_GPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=false)
-add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=true)
+target_link_libraries(localQ kernelTestUtilities)
+add_test(LocalQ_1_CPU       localQ --use_gpu=false --use_rec12=false)
+add_test(LocalQ_1_CPU_REC12 localQ --use_gpu=false --use_rec12=true)
+add_test(LocalQ_1_GPU       localQ --use_gpu=true  --use_rec12=false)
+add_test(LocalQ_1_GPU_REC12 localQ --use_gpu=true  --use_rec12=true)

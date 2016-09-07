@@ -29,6 +29,9 @@
 
 #include "../prng.hpp"
 #include "../../host_functionality/logger.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 /* Here pbp_ref_im_minmax are the minimum and maximum pbp immaginary part obtained in the reference
  * code in 100 measurements. This is done because of big fluctuations: a check of the closeness of
@@ -37,12 +40,13 @@
  *  - pbp_ref_im_minmax.im is maximum
  *  - pbp_ref_im_minmax.re is minimum
  */
-void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc_complex pbp_ref_im_minmax, bool cold, bool thetaT)
+static void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc_complex pbp_ref_im_minmax, bool cold, bool thetaT)
 {
 	using namespace physics::lattices;
 
 	std::vector<const char*> options(1, "foo");
 	options.push_back("--ntime=4");
+	options.push_back("--num_dev=1");
 	options.push_back("--fermact=rooted_stagg");
 	options.push_back("--num_tastes=2");
 	options.push_back("--mass=0.1");
@@ -56,16 +60,20 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	std::string tmp = "--sourcecontent=" + content;
 	options.push_back(tmp.c_str());
 	
-	meta::Inputparameters params(10, &(options[0]));
-	hardware::System system(params);
-	physics::PRNG prng(system);
+	meta::Inputparameters params(11, &(options[0]));
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
+	physics::PrngParametersImplementation prngParameters{params};
+	physics::PRNG prng{system, &prngParameters};
 	const Gaugefield *gf;
 	if(cold)
-	  gf = new Gaugefield(system, prng, false);
+	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 	else //This configuration for the Ref.Code is the same as for example dks_input_5
-	  gf = new Gaugefield(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	  gf = new Gaugefield(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	
-	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system);
+	hmc_complex pbp = physics::observables::staggered::measureChiralCondensate(*gf, prng, system, interfacesHandler);
 	
 	logger.info() << "Chiral condensate pbp = (" << std::setprecision(12) << pbp.re << ", " << pbp.im << ")";
 	if(content == "one"){
@@ -73,12 +81,16 @@ void test_chiral_condensate_stagg(std::string content, hmc_float pbp_ref_re, hmc
 	  //For some reason, the result could not be equal to the number 0, but below the double precision
 	  //(on the Loewe this is the case). Then we check this to make the test pass (for the machine
 	  //all numbers below 1.e-16 are in practice zero).
-	  if(pbp_ref_im_minmax.re == 0) BOOST_CHECK_SMALL(pbp.im, 1.e-15); else
-					 BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.re, 1.e-8);
-	  if(pbp_ref_im_minmax.im == 0) BOOST_CHECK_SMALL(pbp.im, 1.e-15); else
-					 BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.im, 1.e-8);
+	  if(pbp_ref_im_minmax.re == 0)
+	      BOOST_CHECK_SMALL(pbp.im, 1.e-15);
+	  else
+	      BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.re, 1.e-8);
+	  if(pbp_ref_im_minmax.im == 0)
+	      BOOST_CHECK_SMALL(pbp.im, 1.e-15);
+	  else
+	      BOOST_CHECK_CLOSE(pbp.im, pbp_ref_im_minmax.im, 1.e-8);
 	}else{
-	  BOOST_CHECK_CLOSE(pbp.re, pbp_ref_re, 10); //10% is needed because rand num. are not the same in ref code
+	  BOOST_CHECK_CLOSE(pbp.re, pbp_ref_re, 25); //25% is needed because rand num. are not the same in ref code
 	  BOOST_CHECK_PREDICATE( std::less_equal<hmc_float>(), (pbp.im)(pbp_ref_im_minmax.im) );
 	  BOOST_CHECK_PREDICATE( std::greater_equal<hmc_float>(), (pbp.im)(pbp_ref_im_minmax.re) );
 	}

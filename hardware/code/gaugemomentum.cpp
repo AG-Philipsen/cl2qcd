@@ -23,18 +23,18 @@
 #include "gaugemomentum.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <fstream>
 #include <cmath>
 #include "fermions.hpp"
+#include "flopUtilities.hpp"
 #include "spinors.hpp"
 #include "prng.hpp"
 
 using namespace std;
 
-hardware::code::Gaugemomentum::Gaugemomentum(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Gaugemomentum::Gaugemomentum(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();
 }
@@ -48,11 +48,11 @@ void hardware::code::Gaugemomentum::fill_kernels()
 {
 	basic_gaugemomentum_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_hmc.h" << "operations_gaugemomentum.cl";
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 	
 	logger.debug() << "Creating Gaugemomentum kernels...";
 
-	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "gaugemomentum_squarenorm_reduction.cl";
+	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "gaugemomentum_squarenorm_reduction.cl";
 
 	_set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_gaugemomentum_code <<  "gaugemomentum_zero.cl";
 	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_gaugemomentum_code << prng_code << "gaugemomentum_gaussian.cl";
@@ -97,8 +97,8 @@ void hardware::code::Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_
 
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == generate_gaussian_gaugemomenta) {
-		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
-			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers());
 		}
 	} else if(kernel == gaugemomentum_squarenorm) {
 		if(*ls != 1) { 
@@ -113,12 +113,12 @@ void hardware::code::Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_
 size_t hardware::code::Gaugemomentum::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
 	//this is the number of links in the system (and of gaugemomenta)
-	size_t G = meta::get_vol4d(get_parameters()) * NDIM;
+	size_t G = kernelParameters->getLatticeVolume() * NDIM;
 	//this is the same as in the function above
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
-	int A = meta::get_su3algebrasize();
+	int A = getSu3AlgebraSize();
 	if (in == "generate_gaussian_gaugemomenta") {
 		//this kernel writes 1 ae
 		return (A) * D * G;
@@ -147,9 +147,9 @@ size_t hardware::code::Gaugemomentum::get_read_write_size(const std::string& in)
 uint64_t hardware::code::Gaugemomentum::get_flop_size(const std::string& in) const
 {
 	//this is the number of links in the system (and of gaugemomenta)
-	uint64_t G = meta::get_vol4d(get_parameters()) * NDIM;
+	uint64_t G = kernelParameters->getLatticeVolume() * NDIM;
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
-	uint64_t A = meta::get_su3algebrasize();
+	uint64_t A = getSu3AlgebraSize();
 	if (in == "generate_gaussian_gaugemomenta") {
 		//this kernel performs 0 multiplications per site
 		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
@@ -343,7 +343,7 @@ void hardware::code::Gaugemomentum::saxpy_device(const hardware::buffers::Gaugem
 
 void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data) const
 {
-	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->get_mem_lattice_size()) * NDIM;
+	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->getLocalLatticeMemoryExtents()) * NDIM;
 	if(dest->get_elements() != REQUIRED_BUFFER_SIZE) {
 		throw std::invalid_argument("Destination buffer is not of proper size");
 	}
@@ -368,7 +368,7 @@ void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::bu
 
 void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf) const
 {
-	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->get_mem_lattice_size()) * NDIM;
+	size_t const REQUIRED_BUFFER_SIZE = get_vol4d(get_device()->getLocalLatticeMemoryExtents()) * NDIM;
 	if(buf->get_elements() != REQUIRED_BUFFER_SIZE) {
 		throw std::invalid_argument("Source buffer is not of proper size");
 	}

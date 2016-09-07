@@ -79,7 +79,7 @@ public:
 	 *                      Allows to avoid memory limits if many buffers are required
 	 * \param any additional flags required for this buffer
 	 */
-	Buffer(size_t bytes, Device * device, bool place_on_host = false, cl_mem_flags extra_flags = 0);
+	Buffer(const size_t bytes, const Device * device, const bool place_on_host = false, const cl_mem_flags extra_flags = 0);
 
 	virtual ~Buffer();
 
@@ -111,7 +111,7 @@ public:
 	/**
 	 * Get the device this buffer is located on
 	 */
-	hardware::Device * get_device() const noexcept;
+	const hardware::Device * get_device() const noexcept;
 
 	/**
 	 * Set all bytes of this buffer to zero.
@@ -144,7 +144,7 @@ private:
 	/**
 	 * The OpenCL device the buffer is located on.
 	 */
-	Device * device;
+	const Device * device;
 
 	/**
 	 * Utility function to get the data from another buffer. Should only be used using
@@ -165,7 +165,7 @@ protected:
 	 * \param offset Offset into the buffer, at which to store the bytes
 	 * \throws out_of_range if bytes + offset exceeds the buffer size
 	 */
-	void load(const void* src, size_t bytes = 0, size_t offset = 0) const;
+	void load(const void* src, size_t bytes = 0, const size_t offset = 0) const;
 
 	/**
 	 * Utility function for creation of custom dump functions.
@@ -177,7 +177,7 @@ protected:
 	 * \param offset Offset into the buffer, at which to store the bytes
 	 * \throws out_of_range if bytes + offset exceeds the buffer size
 	 */
-	void dump(void* dest, size_t bytes = 0, size_t offset = 0) const;
+	void dump(void* dest, size_t bytes = 0, const size_t offset = 0) const;
 
 	void load_rect(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
 

@@ -43,8 +43,10 @@ public:
 	/**
 	 * Construct a rooted staggeredfield based on the input-files of the system
 	 */
-	Rooted_Staggeredfield_eo(const hardware::System&);
-	Rooted_Staggeredfield_eo(const physics::algorithms::Rational_Approximation& approx, const hardware::System&);
+	Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&);
+	Rooted_Staggeredfield_eo(const hardware::System&, const RootedStaggeredfieldEoParametersInterface&, const physics::algorithms::Rational_Approximation& approx);
+
+	virtual ~Rooted_Staggeredfield_eo(){}
 
 	/**
 	 * Staggeredfield_eo cannot be copied
@@ -64,7 +66,6 @@ public:
 	 *                      fermions. This circumvents possible numeric errors.
 	 */
 	void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const hmc_float minEigenvalue, const hmc_float maxEigenvalue);
-
 };
 
 }

@@ -22,20 +22,20 @@
 #include "fermions_staggered.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "spinors_staggered.hpp"
 #include "spinors.hpp"
 
 #include <cassert>
 #include <cmath>
+#include "flopUtilities.hpp"
 
 using namespace std;
 
 void hardware::code::Fermions_staggered::fill_kernels()
 {
 	sources = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.h"  << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "types_fermions.h" << "operations_su3vec.cl" << "operations_staggered.cl";
-	if(get_parameters().get_use_eo()) {
+	if(kernelParameters->getUseEo()) {
 		sources = sources << "spinorfield_staggered_eo.cl";;
 	} else {
 		sources = sources << "spinorfield_staggered.cl";
@@ -43,8 +43,8 @@ void hardware::code::Fermions_staggered::fill_kernels()
 
 	logger.debug() << "Creating Fermions_staggered kernels...";
 
-	if(get_parameters().get_fermact() == meta::action::rooted_stagg) {
-	      if(get_parameters().get_use_eo()){
+	if(kernelParameters->getFermact() == common::action::rooted_stagg) {
+	      if(kernelParameters->getUseEo()){
 			M_staggered = 0;
 			D_KS_eo = createKernel("D_KS_eo") << sources << "fermionmatrix_staggered_eo_DKS_local.cl" << "fermionmatrix_staggered_eo_DKS.cl";
 	      } else {
@@ -62,7 +62,7 @@ void hardware::code::Fermions_staggered::clear_kernels()
 	
 	logger.debug() << "Clearing Fermions_staggered kernels...";
 
-	if(get_parameters().get_use_eo()){
+	if(kernelParameters->getUseEo()){
 		clerr = clReleaseKernel(D_KS_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	} else {
@@ -89,7 +89,7 @@ void hardware::code::Fermions_staggered::M_staggered_device(const hardware::buff
 {
 	//get mass
 	hmc_float mass_tmp;
-	if(mass == ARG_DEF) mass_tmp = get_parameters().get_mass();
+	if(mass == ARG_DEF) mass_tmp = kernelParameters->getMass();
 	else mass_tmp = mass;
 
 	//query work-sizes for kernel
@@ -144,12 +144,12 @@ void hardware::code::Fermions_staggered::D_KS_eo_device(const hardware::buffers:
 size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
 	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(get_parameters());
+	size_t R = kernelParameters->getMatSize();
 	//this is the number of su3vec in the system (or number of sites)
-	size_t S = get_spinorfieldsize(get_parameters());
-	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = kernelParameters->getSpinorFieldSize();
+	size_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	//factor for complex numbers
 	int C = 2;
 	//NOTE: 1 spinor has NC = 3 complex entries
@@ -223,7 +223,7 @@ size_t hardware::code::Fermions_staggered::get_read_write_size(const std::string
  */
 static int flop_dslash_staggered_per_site()
 {
-	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2) + NC * 2 + 4 * NC * 2;
+	return NDIM * (2 * hardware::code::getFlopSu3MatrixTimesSu3Vec() + NC * 2) + NC * 2 + 4 * NC * 2;
 }
 
 /**
@@ -232,13 +232,13 @@ static int flop_dslash_staggered_per_site()
  */
 static int flop_dks_staggered_per_site()
 {
-	return NDIM * (2 * meta::get_flop_su3_su3vec() + NC * 2) + 3 * NC * 2;
+	return NDIM * (2 * hardware::code::getFlopSu3MatrixTimesSu3Vec() + NC * 2) + 3 * NC * 2;
 }
 
 uint64_t hardware::code::Fermions_staggered::get_flop_size(const std::string& in) const
 {
-	size_t S = get_spinorfieldsize(get_parameters());
-	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	size_t S = kernelParameters->getSpinorFieldSize();
+	size_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	if (in == "M_staggered") {
 		//this kernel performs one dslash on each site. To do that it also calculates
 		//the staggered phases and the BC but we do not count this flop (see explanation above)
@@ -261,8 +261,8 @@ void hardware::code::Fermions_staggered::print_profiling(const std::string& file
 		Opencl_Module::print_profiling(filename, D_KS_eo);
 }
 
-hardware::code::Fermions_staggered::Fermions_staggered(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Fermions_staggered::Fermions_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();
 }

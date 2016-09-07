@@ -26,10 +26,9 @@
 namespace meta {
 class ParametersSolver {
 public:
-	enum solver { cg = 1, bicgstab, bicgstab_save };
 
-	solver get_solver() const noexcept;
-	solver get_solver_mp() const noexcept;
+	common::solver get_solver() const noexcept;
+	common::solver get_solver_mp() const noexcept;
 	double get_solver_prec() const noexcept;
 	double get_force_prec() const noexcept;
 	int get_iter_refresh() const noexcept;
@@ -63,8 +62,8 @@ protected:
 	po::options_description & getOptions();
 
 	//at the moment, only 2 solvers are implemented..
-	solver _solver;
-	solver _solver_mp;
+	common::solver _solver;
+	common::solver _solver_mp;
 };
 
 }

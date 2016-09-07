@@ -21,29 +21,30 @@
 
 #include "prng_buffer.hpp"
 
-#include "../device.hpp"
-#include "../../meta/util.hpp"
-
 hardware::buffers::PRNGBuffer::PRNGBuffer(size_t elems, Device * device)
-	: Buffer(elems * sizeof(prng_state_t), device), elems(elems)
-{
-	// already inited
-}
+	: hardware::buffers::Buffer{elems * sizeof(prng_state_t), device}, elems(elems) {}
 
-hardware::buffers::PRNGBuffer::PRNGBuffer(Device * device, const meta::Inputparameters& params)
-	: PRNGBuffer(get_prng_buffer_size(device, params), device)
-{
-	// already inited
-}
+hardware::buffers::PRNGBuffer::PRNGBuffer(Device * device, const bool useSameRandomNumbers)
+	: hardware::buffers::PRNGBuffer::PRNGBuffer{get_prng_buffer_size(device, useSameRandomNumbers), device} {}
 
 size_t hardware::buffers::PRNGBuffer::get_elements() const noexcept
 {
 	return elems;
 }
 
-size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const meta::Inputparameters& params)
+void hardware::buffers::PRNGBuffer::load(const prng_state_t * array) const
 {
-	if(params.get_use_same_rnd_numbers()) {
+	Buffer::load(array);
+}
+
+void hardware::buffers::PRNGBuffer::dump(prng_state_t * array) const
+{
+	Buffer::dump(array);
+}
+
+size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, const bool useSameRandomNumbers)
+{
+	if(useSameRandomNumbers) {
 		return 1.;
 	} else {
 #ifdef USE_PRNG_RANLUX
@@ -60,12 +61,3 @@ size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device, 
 	}
 }
 
-void hardware::buffers::PRNGBuffer::load(const prng_state_t * array) const
-{
-	Buffer::load(array);
-}
-
-void hardware::buffers::PRNGBuffer::dump(prng_state_t * array) const
-{
-	Buffer::dump(array);
-}

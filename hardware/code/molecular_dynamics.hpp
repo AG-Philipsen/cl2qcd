@@ -101,14 +101,14 @@ protected:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
-private:
 	/**
-	 * Constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
 	 */
-	Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Molecular_Dynamics(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

@@ -35,31 +35,31 @@ using namespace meta;
 /**
  * Get the action describe by the given string.
  */
-static meta::action get_action(std::string);
+static common::action get_action(std::string);
 /**
  * Get the integrator describe by the given string.
  */
-static Inputparameters::integrator get_integrator(std::string);
+static common::integrator get_integrator(std::string);
 /**
  * Get the startcondition describe by the given string.
  */
-static Inputparameters::startcondition get_startcondition(std::string);
+static common::startcondition get_startcondition(std::string);
 /**
  * Get the solver describe by the given string.
  */
-static Inputparameters::solver get_solver(std::string);
+static common::solver get_solver(std::string);
 /**
  * Get the sourcetype given in string
  */
-static Inputparameters::sourcetypes get_sourcetype(std::string s);
+static common::sourcetypes get_sourcetype(std::string s);
 /**
  * Get the pbp_version given in string.
  */
-static Inputparameters::pbp_version get_pbp_version(std::string s);
+static common::pbp_version get_pbp_version(std::string s);
 /**
  * Get the sourcecontent given in string.
  */
-static Inputparameters::sourcecontents get_sourcecontent(std::string s);
+static common::sourcecontents get_sourcecontent(std::string s);
 /**
  * Adds all alternative option names to the ConfigFileNormlizer instance
  */
@@ -190,19 +190,19 @@ Inputparameters::Inputparameters(int argc, const char** argv, std::string parame
 	}
 }
 
-static meta::action get_action(std::string s)
+static common::action get_action(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, meta::action> m;
-	m["wilson"] = meta::action::wilson;
-	m["clover"] = meta::action::clover;
-	m["twistedmass"] = meta::action::twistedmass;
-	m["tlsym"] = meta::action::tlsym;
-	m["iwasaki"] = meta::action::iwasaki;
-	m["dbw2"] = meta::action::dbw2;
-	m["rooted_stagg"] = meta::action::rooted_stagg;
+	std::map<std::string, common::action> m;
+	m["wilson"] = common::action::wilson;
+	m["clover"] = common::action::clover;
+	m["twistedmass"] = common::action::twistedmass;
+	m["tlsym"] = common::action::tlsym;
+	m["iwasaki"] = common::action::iwasaki;
+	m["dbw2"] = common::action::dbw2;
+	m["rooted_stagg"] = common::action::rooted_stagg;
 
-	meta::action a = m[s];
+	common::action a = m[s];
 	if(a) { // map returns 0 if element is not found
 		return a;
 	} else {
@@ -210,15 +210,15 @@ static meta::action get_action(std::string s)
 		throw Inputparameters::parse_aborted();
 	}
 }
-static Inputparameters::integrator get_integrator(std::string s)
+static common::integrator get_integrator(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::integrator> m;
-	m["leapfrog"] = Inputparameters::leapfrog;
-	m["twomn"] = Inputparameters::twomn;
-	m["2mn"] = Inputparameters::twomn;
+	std::map<std::string, common::integrator> m;
+	m["leapfrog"] = common::leapfrog;
+	m["twomn"] = common::twomn;
+	m["2mn"] = common::twomn;
 
-	Inputparameters::integrator a = m[s];
+	common::integrator a = m[s];
 	if(a) {
 		return a;
 	} else {
@@ -226,19 +226,19 @@ static Inputparameters::integrator get_integrator(std::string s)
 		throw Inputparameters::parse_aborted();
 	}
 }
-static Inputparameters::startcondition get_startcondition(std::string s)
+static common::startcondition get_startcondition(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::startcondition> m;
-	m["cold_start"] = Inputparameters::cold_start;
-	m["cold"] = Inputparameters::cold_start;
-	m["hot_start"] = Inputparameters::hot_start;
-	m["hot"] = Inputparameters::hot_start;
-	m["start_from_source"] = Inputparameters::start_from_source;
-	m["source"] = Inputparameters::start_from_source;
-	m["continue"] = Inputparameters::start_from_source;
+	std::map<std::string, common::startcondition> m;
+	m["cold_start"] = common::cold_start;
+	m["cold"] = common::cold_start;
+	m["hot_start"] = common::hot_start;
+	m["hot"] = common::hot_start;
+	m["start_from_source"] = common::start_from_source;
+	m["source"] = common::start_from_source;
+	m["continue"] = common::start_from_source;
 
-	Inputparameters::startcondition a = m[s];
+	common::startcondition a = m[s];
 	if(a) {
 		return a;
 	} else {
@@ -246,14 +246,14 @@ static Inputparameters::startcondition get_startcondition(std::string s)
 		throw Inputparameters::parse_aborted();
 	}
 }
-static Inputparameters::solver get_solver(std::string s)
+static common::solver get_solver(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::solver> m;
-	m["cg"] = Inputparameters::cg;
-	m["bicgstab"] = Inputparameters::bicgstab;
-	m["bicgstab_save"] = Inputparameters::bicgstab_save;
-	Inputparameters::solver a = m[s];
+	std::map<std::string, common::solver> m;
+	m["cg"] = common::cg;
+	m["bicgstab"] = common::bicgstab;
+	m["bicgstab_save"] = common::bicgstab_save;
+	common::solver a = m[s];
 	if(a) {
 		return a;
 	} else {
@@ -261,16 +261,16 @@ static Inputparameters::solver get_solver(std::string s)
 		throw Inputparameters::parse_aborted();
 	}
 }
-static Inputparameters::sourcetypes get_sourcetype(std::string s)
+static common::sourcetypes get_sourcetype(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::sourcetypes> m;
-	m["point"] = Inputparameters::point;
-	m["volume"] = Inputparameters::volume;
-	m["timeslice"] = Inputparameters::timeslice;
-	m["zslice"] = Inputparameters::zslice;
+	std::map<std::string, common::sourcetypes> m;
+	m["point"] = common::point;
+	m["volume"] = common::volume;
+	m["timeslice"] = common::timeslice;
+	m["zslice"] = common::zslice;
 
-	Inputparameters::sourcetypes a = m[s];
+	common::sourcetypes a = m[s];
 	if(a) { // map returns 0 if element is not found
 		return a;
 	} else {
@@ -278,16 +278,16 @@ static Inputparameters::sourcetypes get_sourcetype(std::string s)
 		throw Inputparameters::parse_aborted();
 	}
 }
-static Inputparameters::sourcecontents get_sourcecontent(std::string s)
+static common::sourcecontents get_sourcecontent(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::sourcecontents> m;
-	m["one"] = Inputparameters::one;
-	m["z4"] = Inputparameters::z4;
-	m["gaussian"] = Inputparameters::gaussian;
-	m["z2"] = Inputparameters::z2;
+	std::map<std::string, common::sourcecontents> m;
+	m["one"] = common::one;
+	m["z4"] = common::z4;
+	m["gaussian"] = common::gaussian;
+	m["z2"] = common::z2;
 
-	Inputparameters::sourcecontents a = m[s];
+	common::sourcecontents a = m[s];
 	if(a) { // map returns 0 if element is not found
 		return a;
 	} else {
@@ -295,14 +295,14 @@ static Inputparameters::sourcecontents get_sourcecontent(std::string s)
 		throw Inputparameters::parse_aborted();
 	}
 }
-static Inputparameters::pbp_version get_pbp_version(std::string s)
+static common::pbp_version get_pbp_version(std::string s)
 {
 	boost::algorithm::to_lower(s);
-	std::map<std::string, Inputparameters::pbp_version> m;
-	m["std"] = Inputparameters::std;
-	m["tm_one_end_trick"] = Inputparameters::tm_one_end_trick;
+	std::map<std::string, common::pbp_version> m;
+	m["std"] = common::std;
+	m["tm_one_end_trick"] = common::tm_one_end_trick;
 
-	Inputparameters::pbp_version a = m[s];
+	common::pbp_version a = m[s];
 	if(a) { // map returns 0 if element is not found
 		return a;
 	} else {

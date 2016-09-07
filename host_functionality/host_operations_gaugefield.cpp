@@ -153,29 +153,31 @@ Matrixsu3 unit_matrixsu3()
 	return out;
 }
 
-Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters)
+Matrixsu3 nonTrivialSu3Matrix()
 {
-	Matrixsu3 tmp;
-	size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
-	tmp = in[link_pos];
-	return tmp;
-}
+	Matrixsu3 out;
+	out.e00.re = .130189;
+	out.e00.im = .260378;
+	out.e01.re = .260378;
+	out.e01.im = .390567;
+	out.e02.re = .520756;
+	out.e02.im = .650945;
 
-void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters)
-{
-	size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
-	field[link_pos] = in;
-}
+	out.e10.re = .572742;
+	out.e10.im = .403041;
+	out.e11.re = .371222;
+	out.e11.im = .321726;
+	out.e12.re = -.449002;
+	out.e12.im = -.258088;
 
-Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const meta::Inputparameters& parameters)
-{
-	Matrixsu3 res, prod;
-	res = unit_matrixsu3();
-	for(int t = 0; t < parameters.get_ntime(); t++) {
-		prod = get_matrixsu3(field, n, t, TDIR, parameters);
-		res = multiply_matrixsu3(res, prod);
-	}
-	return res;
+	out.e20.re = 1.11022e-16;
+	out.e20.im = .651751;
+	out.e21.re = .0271563;
+	out.e21.im = -.733219;
+	out.e22.re = -.0271563;
+	out.e22.im = .190094;
+
+	return out;
 }
 
 //CP: I introduced explicit calculations of the neighbors because this does not rely on any geometric conventions!
@@ -189,23 +191,19 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	coord[YDIR] = coord_in[YDIR];
 	coord[ZDIR] = coord_in[ZDIR];
 	//spatial index
-	int n;
 
 	const size_t NTIME = parameters.get_ntime();
 	const size_t NSPACE = parameters.get_nspace();
 	//u_mu(x)
-	n = get_nspace(coord_in, parameters);
-	res = get_matrixsu3(field, n, coord[TDIR], mu, parameters);
+	res = field[uint(LinkIndex(Index(coord[1], coord[2], coord[3], coord[TDIR], LatticeExtents(parameters.get_nspace(),parameters.get_ntime())),static_cast<Direction>(mu)))];
 	//u_nu(x+mu)
 	if(mu == TDIR) {
 		coord[mu] = (coord_in[mu] + 1) % NTIME;
-		n = get_nspace(coord, parameters);
-		tmp = get_matrixsu3(field, n, coord[mu], nu, parameters);
+		tmp = field[uint(LinkIndex(Index(coord[1], coord[2], coord[3], coord[mu], LatticeExtents(parameters.get_nspace(),parameters.get_ntime())),static_cast<Direction>(nu)))];
 		coord[mu] = coord_in[mu];
 	} else {
 		coord[mu] = (coord_in[mu] + 1) % NSPACE;
-		int newn = get_nspace(coord, parameters);
-		tmp = get_matrixsu3(field, newn, coord[TDIR], nu, parameters);
+		tmp = field[uint(LinkIndex(Index(coord[1], coord[2], coord[3], coord[TDIR], LatticeExtents(parameters.get_nspace(),parameters.get_ntime())),static_cast<Direction>(nu)))];
 		coord[mu] = coord_in[mu];
 	}
 	//accumulate_su3matrix_prod(&prod, &tmp);
@@ -213,20 +211,17 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	//adjoint(u_mu(x+nu))
 	if(nu == TDIR) {
 		coord[nu] = (coord_in[nu] + 1) % NTIME;
-		n = get_nspace(coord, parameters);
-		tmp = get_matrixsu3(field, n, coord[nu], mu, parameters);
+		tmp = field[uint(LinkIndex(Index(coord[1], coord[2], coord[3], coord[nu], LatticeExtents(parameters.get_nspace(),parameters.get_ntime())),static_cast<Direction>(mu)))];
 		coord[nu] = coord_in[nu];
 	} else {
 		coord[nu] = (coord_in[nu] + 1) % NSPACE;
-		int newn = get_nspace(coord, parameters);
-		tmp = get_matrixsu3(field, newn, coord[TDIR], mu, parameters);
+		tmp = field[uint(LinkIndex(Index(coord[1], coord[2], coord[3], coord_in[TDIR], LatticeExtents(parameters.get_nspace(),parameters.get_ntime())),static_cast<Direction>(mu)))];
 		coord[nu] = coord_in[nu];
 	}
 	res = multiply_matrixsu3_dagger(res, tmp);
 
 	//adjoint(u_nu(x))
-	n = get_nspace(coord_in, parameters);
-	tmp = get_matrixsu3(field, n, coord[TDIR], nu, parameters);
+	tmp = field[uint(LinkIndex(Index(coord[1], coord[2], coord[3], coord[TDIR], LatticeExtents(parameters.get_nspace(),parameters.get_ntime())),static_cast<Direction>(nu)))];
 	res = multiply_matrixsu3_dagger(res, tmp);
 
 	return res;

@@ -30,18 +30,20 @@
 #include "../system.hpp"
 #include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
-
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	System system(meta::Inputparameters(2,_params));
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
 	for(Device * device : system.get_devices()) {
 
-		SU3vec dummy(meta::get_vol4d(system.get_inputparameters()), device);
+		SU3vec dummy(system.getHardwareParameters()->getLatticeVolume(), device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -53,13 +55,15 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	System system(meta::Inputparameters(2,_params));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];
 		su3vec* buf2 = new su3vec[elems];
-		SU3vec dummy(elems, device);
+		SU3vec dummy(lE, device);
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);
 		dummy.load(buf);
@@ -75,14 +79,16 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	const char * _params[] = {"foo", "--fermact=rooted_stagg"};
-	System system(meta::Inputparameters(2,_params));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
 	for(Device * device : system.get_devices()) {
 		su3vec* buf = new su3vec[elems];
 		su3vec* buf2 = new su3vec[elems];
-		SU3vec dummy(elems, device);
-		SU3vec dummy2(elems, device);
+		SU3vec dummy(lE, device);
+		SU3vec dummy2(lE, device);
 
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);

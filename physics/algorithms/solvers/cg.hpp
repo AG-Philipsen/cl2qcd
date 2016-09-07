@@ -24,31 +24,36 @@
 #define _PHYSICS_ALGORITHMS_SOLVERS_CG_
 
 #include "solvers.hpp"
+#include "../../interfacesHandler.hpp"
 
 namespace physics {
-namespace algorithms {
-namespace solvers {
+    namespace algorithms {
+        namespace solvers {
 
-/**
- * Solve the linear system A * x = b for x using the CG algorithm
- *
- * \return The number of iterations performed
- * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
- * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
- */
-int cg(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& b, const hardware::System& system, hmc_float prec);
+            /**
+             * Solve the linear system A * x = b for x using the CG algorithm
+             *
+             * \return The number of iterations performed
+             * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
+             * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
+             */
+            int cg(const physics::lattices::Spinorfield * x, const physics::fermionmatrix::Fermionmatrix& A, const physics::lattices::Gaugefield& gf,
+                   const physics::lattices::Spinorfield& b, const hardware::System& system, physics::InterfacesHandler& interfacesHandler,
+                   hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 
-/**
- * Solve the linear system A * x = b for x using the CG algorithm for even-odd preconditioned b and x
- *
- * \return The number of iterations performed
- * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
- * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
- */
-int cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield_eo& b, const hardware::System& system, hmc_float prec);
+            /**
+             * Solve the linear system A * x = b for x using the CG algorithm for even-odd preconditioned b and x
+             *
+             * \return The number of iterations performed
+             * \exception SolverStuck if the solver gets stuck. Contains information on performed iterations
+             * \exception SolverDidNotSolve if the solver did not solve (hit iteration limit).
+             */
+            int cg(const physics::lattices::Spinorfield_eo * x, const physics::fermionmatrix::Fermionmatrix_eo& A, const physics::lattices::Gaugefield& gf,
+                   const physics::lattices::Spinorfield_eo& b, const hardware::System& system, physics::InterfacesHandler & interfacesHandler,
+                   hmc_float prec, const physics::AdditionalParameters& additionalParameters);
 
-}
-}
+        }
+    }
 }
 
 #endif

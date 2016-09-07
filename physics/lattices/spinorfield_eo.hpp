@@ -1,4 +1,4 @@
-/** @file
+ /** @file
  * Declaration of the physics::lattices::Spinorfield_eo class
  *
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
@@ -29,6 +29,9 @@
 #include "spinorfield.hpp"
 #include "scalar.hpp"
 #include "../../common_header_files/types_fermions.h"
+#include "latticesInterfaces.hpp"
+#include "../../hardware/lattices/spinorfield_eo.hpp"
+
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -37,19 +40,17 @@
 namespace physics {
 namespace lattices {
 
-class Spinorfield_eoHaloUpdate;
-
 /**
  * Representation of a gaugefield.
  */
 class Spinorfield_eo {
-	friend Spinorfield_eoHaloUpdate;
+	friend hardware::lattices::Spinorfield_eoHaloUpdate;
 
 public:
 	/**
 	 * Construct a gaugefield based on the input-files of the system
 	 */
-	Spinorfield_eo(const hardware::System&);
+	Spinorfield_eo(const hardware::System&, const SpinorfieldEoParametersInterface& spinorfieldEoParametersInterface);
 
 	/**
 	 * Release resources
@@ -114,7 +115,7 @@ public:
 	 *
 	 * \param width Only require the the given width of the halo to be up to date, use 0 to indicate the full halo is required.
 	 */
-	Spinorfield_eoHaloUpdate require_halo_async(unsigned width = 0) const;
+	hardware::lattices::Spinorfield_eoHaloUpdate require_halo_async(unsigned width = 0) const;
 
 	/**
 	 * Mark the halo as up to date.
@@ -131,16 +132,8 @@ public:
 
 private:
 	hardware::System const& system;
-	const std::vector<const hardware::buffers::Spinor *> buffers;
-
-	/**
-	 * Unconditionally update the halo.
-	 *
-	 * \param widh Up to which thickness to update the halo. Use 0 to indicate the full halo shall be updated.
-	 */
-	void update_halo(unsigned width = 0) const;
-	Spinorfield_eoHaloUpdate update_halo_async(unsigned width = 0) const;
-	void update_halo_finalize(unsigned width = 0) const;
+	hardware::lattices::Spinorfield_eo spinorfieldEo;
+	const SpinorfieldEoParametersInterface& spinorfieldEoParametersInterface;
 #ifdef LAZY_HALO_UPDATES
 	mutable unsigned valid_halo_width;
 #endif
@@ -279,32 +272,6 @@ void saxpy_AND_gamma5_eo(const Spinorfield_eo* out, const hmc_complex alpha, con
  */
 void log_squarenorm(const std::string& msg, const physics::lattices::Spinorfield_eo& x);
 
-class Spinorfield_eoHaloUpdate {
-		friend Spinorfield_eo;
-	public:
-		/**
-		 * Complete the halo update.
-		 *
-		 * Access the the halo data happens synchroneous to the default queue of each buffer.
-		 * Therefore commands using the default queue of this buffer can safely operate the halo elements if queued after this call.
-		 *
-		 * Note that depending on the exact transfer methods this might cause data transfer between devices.
-		 */
-		void finalize();
-	private:
-		/**
-		 * Construct the handler object. Only done by Spinorfield_eo.
-		 *
-		 * \param target The Spinorfield_eo on which the update is performed.
-		 * \param reqd_halo_width Width of the updated halo segment.
-		 *        0 indicates that update is finished / has alredy been completed and makes finish() a NOOP.
-		 */
-		Spinorfield_eoHaloUpdate(Spinorfield_eo const & target, unsigned const & reqd_halo_width = 0)
-		 : target(target), reqd_halo_width(reqd_halo_width) {  };
-
-		Spinorfield_eo const & target;
-		unsigned reqd_halo_width;
-};
 
 }
 }

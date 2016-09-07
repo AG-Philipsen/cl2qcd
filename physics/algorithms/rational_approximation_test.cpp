@@ -21,6 +21,9 @@
 
 #include "rational_approximation.hpp"
 #include "../../host_functionality/logger.hpp"
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -114,10 +117,8 @@ BOOST_AUTO_TEST_CASE(coefficients)
 	//of polynomials. To develop the following test we deduced the partial fractions
 	//expansion with the Apart function of Mathematica.
 	hmc_float A = 0.2801782460422457;
-	hmc_float res[5] = {0.0194661374678695, 0.03561358805557574, 0.0821572765515051,
-	                                        0.21113622523593300, 0.7946025292155642};
-	hmc_float pol[5] = {0.0002065381736724, 0.00302707751065980, 0.0200732678058145,
-	                                        0.12517586269872370, 1.0029328743375700};
+	hmc_float res[5] = {0.0194661374678695, 0.03561358805557574, 0.0821572765515051, 0.21113622523593300, 0.7946025292155642};
+	hmc_float pol[5] = {0.0002065381736724, 0.00302707751065980, 0.0200732678058145, 0.12517586269872370, 1.0029328743375700};
 	hmc_float delta = 5.3847952988591471e-05;
 	std::vector<hmc_float> a, b;
 	Rational_Approximation approx(5,1,2,0.001,1);
@@ -139,15 +140,19 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(3, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
+	meta::Inputparameters params(6, _params);
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+	hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
+	physics::PrngParametersImplementation prngParameters{params};
+	physics::PRNG prng{system, &prngParameters};
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
 	
 	//Min and max eigenvalues for conservative and not conservative case
 	hmc_float minEigenvalue = 0.3485318319429664;

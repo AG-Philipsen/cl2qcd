@@ -1,5 +1,5 @@
 /*
-* Copyright 2014 Christopher Pinke
+* Copyright 2014, 2015 Christopher Pinke
 *
 * This file is part of CL2QCD.
 *
@@ -19,79 +19,18 @@
 
 #include "GaugemomentumTester.hpp"
 
-GaugemomentumTester::GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues, int typeOfComparision) :
-  KernelTester(kernelName, getSpecificInputfile(inputfile), numberOfValues, typeOfComparision)
+#include "flopUtilities.hpp"
+
+GaugemomentumTester::GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP):
+		KernelTester(kernelName, pC.hardwareParameters, pC.kernelParameters, tP, rV)
 {
-  numberOfAlgebraElements = meta::get_vol4d(*parameters) * NDIM * meta::get_su3algebrasize();
-  numberOfGaugemomentumElements = meta::get_vol4d(*parameters) * NDIM;
-  useRandom = (parameters->get_solver() == meta::Inputparameters::cg)  ? false : true;
-  
-  code = device->get_gaugemomentum_code();
+  code = device->getGaugemomentumCode();
   doubleBuffer = new hardware::buffers::Plain<double> (1, device);
-  gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(numberOfGaugemomentumElements, device);
 }
 
 GaugemomentumTester::~GaugemomentumTester()
 {
   delete doubleBuffer;
-  delete gaugemomentumBuffer;
-}
-
-
-std::string GaugemomentumTester::getSpecificInputfile(std::string inputfileIn)
-{
-  return "gaugemomentum/" + inputfileIn;
-}
-
-double * GaugemomentumTester::createGaugemomentum(int seed)
-{
-  double * gm_in;
-  gm_in = new double[numberOfAlgebraElements];
-  useRandom ? fill_with_random(gm_in, seed) : fill_with_one(gm_in);
-  BOOST_REQUIRE(gm_in);
-  return gm_in;    
-}
-
-double * GaugemomentumTester::createGaugemomentumBasedOnFilltype(Filltype filltype)
-{
-  double * gm_in;
-  gm_in = new double[numberOfAlgebraElements];
-  switch(filltype)
-	{
-		case one:
-			fill_with_one(gm_in);
-			break;
-		case zero:
-			fill_with_zero(gm_in);
-			break;
-	}
-  BOOST_REQUIRE(gm_in);
-  return gm_in;    
-}
-
-void GaugemomentumTester::fill_with_one(double * sf_in)
-{
-  for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
-    sf_in[i] = 1.;
-  }
-  return;
-}
-
-void GaugemomentumTester::fill_with_zero(double * sf_in)
-{
-  for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
-    sf_in[i] = 0.;
-  }
-  return;
-}
-
-void GaugemomentumTester::fill_with_random(double * sf_in, int seed)
-{
-  prng_init(seed);
-  for(int i = 0; i < (int) numberOfAlgebraElements; ++i) {
-    sf_in[i] = prng_double();
-  }
-  return;
 }
 
 void GaugemomentumTester::calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index)
@@ -100,7 +39,82 @@ void GaugemomentumTester::calcSquarenormAndStoreAsKernelResult(const hardware::b
   doubleBuffer->dump(&kernelResult[index]);
 }
 
-double GaugemomentumTester::count_gm(ae * ae_in, int size)
+int calculateGaugemomentumSize(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	latticeExtentsIn.getLatticeVolume() * NDIM;
+}
+
+int calculateAlgebraSize(const LatticeExtents latticeExtentsIn) noexcept
+{
+	return 	latticeExtentsIn.getLatticeVolume() * NDIM * hardware::code::getSu3AlgebraSize();
+}
+
+ae * GaugemomentumCreator::createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype)
+{
+	ae * gm_in;
+	gm_in = new ae[numberOfElements];
+	switch(filltype)
+	{
+	case GaugeMomentumFilltype::One:
+		fill_with_one(gm_in);
+		break;
+	case GaugeMomentumFilltype::Zero:
+		fill_with_zero(gm_in);
+		break;
+	case GaugeMomentumFilltype::Ascending:
+		fill_with_ascending(gm_in);
+		break;
+	}
+	  BOOST_REQUIRE(gm_in);
+	  return gm_in;
+}
+
+void GaugemomentumCreator::fill_with_ascending(ae * ae_in)
+{
+  for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
+    ae_in[i].e0 = 1.;
+    ae_in[i].e1 = 2.;
+    ae_in[i].e2 = 3.;
+    ae_in[i].e3 = 4.;
+    ae_in[i].e4 = 5.;
+    ae_in[i].e5 = 6.;
+    ae_in[i].e6 = 7.;
+    ae_in[i].e7 = 8.;
+  }
+  return;
+}
+
+void GaugemomentumCreator::fill_with_zero(ae * ae_in)
+{
+  for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
+    ae_in[i].e0 = 0.;
+    ae_in[i].e1 = 0.;
+    ae_in[i].e2 = 0.;
+    ae_in[i].e3 = 0.;
+    ae_in[i].e4 = 0.;
+    ae_in[i].e5 = 0.;
+    ae_in[i].e6 = 0.;
+    ae_in[i].e7 = 0.;
+  }
+  return;
+}
+
+void GaugemomentumCreator::fill_with_one(ae * ae_in)
+{
+  for(int i = 0; i < (int) numberOfElements; ++i) {//numberOfAlgebraElements
+    ae_in[i].e0 = 1.;
+    ae_in[i].e1 = 1.;
+    ae_in[i].e2 = 1.;
+    ae_in[i].e3 = 1.;
+    ae_in[i].e4 = 1.;
+    ae_in[i].e5 = 1.;
+    ae_in[i].e6 = 1.;
+    ae_in[i].e7 = 1.;
+  }
+  return;
+}
+
+double count_gm(ae * ae_in, int size)
 {
   double sum = 0.;
   for (int i = 0; i<size;i++){
@@ -117,21 +131,17 @@ double GaugemomentumTester::count_gm(ae * ae_in, int size)
   return sum;
 }
 
-double GaugemomentumTester::calc_var(double in, double mean){
-  return (in - mean) * (in - mean);
-}
-  
-double GaugemomentumTester::calc_var_gm(ae * ae_in, int size, double sum){
+double calc_var_gm(ae * ae_in, int size, double sum){
   double var = 0.;
   for(int k = 0; k<size; k++){
     var +=
-      calc_var(   ae_in[k].e0 , sum) 
-      + calc_var( ae_in[k].e1 , sum) 
+      calc_var(   ae_in[k].e0 , sum)
+      + calc_var( ae_in[k].e1 , sum)
       + calc_var( ae_in[k].e2 , sum)
-      + calc_var( ae_in[k].e3 , sum) 
-      + calc_var( ae_in[k].e4 , sum) 
-      + calc_var( ae_in[k].e5 , sum) 
-	+ calc_var( ae_in[k].e6 , sum) 
+      + calc_var( ae_in[k].e3 , sum)
+      + calc_var( ae_in[k].e4 , sum)
+      + calc_var( ae_in[k].e5 , sum)
+	+ calc_var( ae_in[k].e6 , sum)
       + calc_var( ae_in[k].e7 , sum) ;
   }
   return var;

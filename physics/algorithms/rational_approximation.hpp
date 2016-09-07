@@ -69,7 +69,8 @@ public:
 	Rational_Coefficients& operator=(const Rational_Coefficients&) = delete;
 	Rational_Coefficients(const Rational_Coefficients&) = delete;
 	Rational_Coefficients() = delete;
-	
+    virtual ~Rational_Coefficients(){}
+
 	/**
 	 * This method returns the order of the approximation
 	 */
@@ -217,13 +218,5 @@ private:
 
 }
 }
-
-
-
-
-
-
-
-
 
 #endif // _PHYSICS_ALGORITHMS_RATIONAL_APPROX_

@@ -26,17 +26,18 @@
 
 #include "synchronization_event.hpp"
 #include "system.hpp"
+#include "interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(good_case)
 {
 	using hardware::SynchronizationEvent;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 
 	cl_int err;
-	cl_event event = clCreateUserEvent(system, &err);
+	cl_event event = clCreateUserEvent(system.getContext(), &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	SynchronizationEvent se1(event);
@@ -80,12 +81,12 @@ BOOST_AUTO_TEST_CASE(error_case)
 {
 	using hardware::SynchronizationEvent;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 
 	cl_int err;
-	cl_event event = clCreateUserEvent(system, &err);
+	cl_event event = clCreateUserEvent(system.getContext(), &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	SynchronizationEvent se1(event);

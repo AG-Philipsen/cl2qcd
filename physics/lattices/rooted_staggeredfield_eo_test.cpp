@@ -27,6 +27,9 @@
 #define BOOST_TEST_MODULE physics::lattice::Rooted_Staggeredfield_eo
 #include <boost/test/unit_test.hpp>
 
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>
@@ -38,12 +41,15 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Rooted_Staggeredfield_eo sf(system);
+	Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
 	physics::algorithms::Rational_Approximation approx(3,1,4,1e-5,1);
-	Rooted_Staggeredfield_eo sf2(approx, system);
+	Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 	
 }
 
@@ -55,16 +61,21 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(3, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
+	meta::Inputparameters params(6, _params);
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+	hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
+	physics::PrngParametersImplementation prngParameters(params);
+	physics::PRNG prng(system, &prngParameters);
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-	Rooted_Staggeredfield_eo sf(system);
+	const GaugefieldParametersImplementation gaugefieldParameters{ &params };
+	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+	Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
 	
 	//Min and max eigenvalues for conservative and not conservative case
 	hmc_float minEigenvalue = 0.3485318319429664;

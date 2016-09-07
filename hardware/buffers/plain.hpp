@@ -48,7 +48,7 @@ public:
 	 * \param place_on_host Request the buffer to remain on the host
 	 *                      Allows to avoid memory limits if many buffers are required
 	 */
-	Plain(size_t elems, Device * device, bool place_on_host = false, cl_mem_flags additional_flags = 0)
+	Plain(const size_t elems, const Device * device, bool place_on_host = false, cl_mem_flags additional_flags = 0)
 		: Buffer(elems * sizeof(T), device, place_on_host, additional_flags), elements(elems) { };
 
 	/**

@@ -23,35 +23,52 @@
 #include "kernelTester.hpp"
 #include "gaugemomentum.hpp"
 #include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
+#include "prng.hpp"
+#include "SpinorTester.hpp"
+
+enum GaugeMomentumFilltype {One, Zero, Ascending};
+
+int calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept;
+int calculateAlgebraSize(LatticeExtents latticeExtentsIn) noexcept;
+
+double count_gm(ae * ae_in, int size);
+double calc_var_gm(ae * ae_in, int size, double sum);
+
+struct GaugemomentumTestParameters: public TestParameters
+{
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const double testPrecisionIn = 10e-8) :
+		TestParameters(latticeExtendsIn, testPrecisionIn), fillType(GaugeMomentumFilltype::One), coefficient(1.) {};
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn) :
+		TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(1.) {};
+	GaugemomentumTestParameters(const LatticeExtents latticeExtendsIn, const GaugeMomentumFilltype fillTypesIn, const double c) :
+		TestParameters(latticeExtendsIn), fillType(fillTypesIn), coefficient(c) {};
+
+	const GaugeMomentumFilltype fillType;
+	const double coefficient;
+};
 
 class GaugemomentumTester : public KernelTester
 {
 public:
-  GaugemomentumTester(std::string kernelName, std::string inputfile, int numberOfValues = 1, int typeOfComparision = 1);
-  virtual ~GaugemomentumTester();
-
+	GaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const ReferenceValues rV, const GaugemomentumTestParameters tP);
+	virtual ~GaugemomentumTester();
 protected:
-	enum Filltype {one, zero};
-	
-	std::string getSpecificInputfile(std::string inputfileIn);
-	double * createGaugemomentum(int seed = 123456);
-	double * createGaugemomentumBasedOnFilltype(Filltype filltype = one);
-	void fill_with_one(double * sf_in);
-	void fill_with_zero(double * sf_in);
-	void fill_with_random(double * sf_in, int seed);
-	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index = 0);
-	double count_gm(ae * ae_in, int size);
-	double calc_var(double in, double mean);  
-	double calc_var_gm(ae * ae_in, int size, double sum);
-	
 	const hardware::code::Gaugemomentum * code;
 	hardware::buffers::Plain<double> * doubleBuffer;
-	hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
-	
-	size_t numberOfAlgebraElements;
-	size_t numberOfGaugemomentumElements;
-	bool useRandom;
+	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Gaugemomentum * in, int index = 0);
+};
+
+
+struct GaugemomentumCreator
+{
+	GaugemomentumCreator(const LatticeExtents lE): numberOfElements(calculateAlgebraSize(lE)){};
+	ae * createGaugemomentumBasedOnFilltype(const GaugeMomentumFilltype filltype = One);
+	void fill_with_one(ae * in);
+	void fill_with_zero(ae * in);
+	void fill_with_ascending(ae * in);
+
+	size_t numberOfElements;
+
 };
 
 #endif

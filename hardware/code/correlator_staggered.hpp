@@ -80,12 +80,14 @@ protected:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-private:
 	/**
-	 * Default constructor, does nothing but make sure some pointers point to 0.
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
 	 */
-	Correlator_staggered(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParams , const hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */
@@ -100,13 +102,6 @@ private:
 	///////////////////////////////////
 	//Type of source
 	cl_kernel create_volume_source_stagg_eoprec;
-	//cl_kernel create_point_source_stagg_eoprec;
-	//cl_kernel create_timeslice_source_stagg_eoprec;
-	//cl_kernel create_zslice_source_stagg_eoprec;
-
-	//Observables
-	//chiral condensate --> probably the calculation is done enqueuing already existing kernels!!
-	//cl_kernel pbp_std;
 
 	ClSourcePackage basic_correlator_code;
 };

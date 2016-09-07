@@ -32,9 +32,9 @@ void memObjectReleased(cl_mem, void * user_data);
 struct MemObjectAllocationTracer {
 	size_t bytes;
 	bool host;
-	hardware::Device * device;
+	const hardware::Device * device;
 
-	MemObjectAllocationTracer(size_t bytes, bool host, hardware::Device * device)
+	MemObjectAllocationTracer(size_t bytes, bool host, const hardware::Device * device)
 	 : bytes(bytes), host(host), device(device) {
 		device->markMemAllocated(host, bytes);
 	 };
@@ -45,7 +45,7 @@ struct MemObjectAllocationTracer {
 };
 
 
-hardware::buffers::Buffer::Buffer(size_t bytes, hardware::Device * device, bool place_on_host, cl_mem_flags extra_flags)
+hardware::buffers::Buffer::Buffer(const size_t bytes, const hardware::Device * device, const bool place_on_host, const cl_mem_flags extra_flags)
 	: bytes(bytes), cl_buffer(allocateBuffer(bytes, device->context, place_on_host, extra_flags)), device(device)
 {
 	// notify device about allocation
@@ -60,7 +60,7 @@ hardware::buffers::Buffer::~Buffer()
 	clReleaseMemObject(cl_buffer);
 }
 
-static cl_mem allocateBuffer(size_t bytes, cl_context context, const bool place_on_host, const cl_mem_flags extra_flags)
+static cl_mem allocateBuffer(const size_t bytes, const cl_context context, const bool place_on_host, const cl_mem_flags extra_flags)
 {
 	cl_int err;
 	const cl_mem_flags mem_flags = (place_on_host ? CL_MEM_ALLOC_HOST_PTR : 0) | extra_flags;
@@ -81,7 +81,7 @@ size_t hardware::buffers::Buffer::get_bytes() const noexcept
 	return bytes;
 }
 
-void hardware::buffers::Buffer::load(const void * array, size_t bytes, size_t offset) const
+void hardware::buffers::Buffer::load(const void * array, size_t bytes, const size_t offset) const
 {
 	if(bytes == 0) {
 		bytes = this->bytes;
@@ -98,7 +98,7 @@ void hardware::buffers::Buffer::load(const void * array, size_t bytes, size_t of
 	}
 }
 
-void hardware::buffers::Buffer::dump(void * array, size_t bytes, size_t offset) const
+void hardware::buffers::Buffer::dump(void * array, size_t bytes, const size_t offset) const
 {
 	if(bytes == 0) {
 		bytes = this->bytes;
@@ -214,7 +214,7 @@ const cl_mem* hardware::buffers::Buffer::get_cl_buffer() const noexcept
 	return &cl_buffer;
 }
 
-hardware::Device * hardware::buffers::Buffer::get_device() const noexcept
+const hardware::Device * hardware::buffers::Buffer::get_device() const noexcept
 {
 	return device;
 }
@@ -231,7 +231,7 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 		const std::string dev_name = device->get_name();
 		if(this->bytes == 16 && (dev_name == "Cypress" || dev_name == "Cayman")) {
 			logger.debug() << "Using an OpenCL kernel to copy 16 bytes on " << dev_name << '.';
-			device->get_buffer_code()->copy_16_bytes(this, orig);
+			device->getBufferCode()->copy_16_bytes(this, orig);
 		} else {
 			logger.debug() << "Using default OpenCL buffer copy method for " << this->bytes << " bytes on " << dev_name << '.';
 			int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, 0, 0, this->bytes, 0, nullptr, nullptr);
@@ -273,7 +273,7 @@ void hardware::buffers::Buffer::clear() const
 		}
 	}
 #else
-	device->get_buffer_code()->clear(this);
+	device->getBufferCode()->clear(this);
 #endif
 }
 

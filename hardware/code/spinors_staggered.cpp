@@ -22,9 +22,10 @@
 #include "spinors_staggered.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <cassert>
+
+#include "flopUtilities.hpp"
 #include "gaugefield.hpp"
 #include "prng.hpp"
 #include "spinors.hpp"
@@ -33,28 +34,28 @@ using namespace std;
 
 void hardware::code::Spinors_staggered::fill_kernels()
 {
-	if(get_parameters().get_fermact() != meta::action::rooted_stagg){
+	if(kernelParameters->getFermact() != common::action::rooted_stagg){
 		throw Print_Error_Message("Fermions_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
 	}
   
 	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.h"  << "types_fermions.h" << "operations_su3vec.cl";
-	if(get_parameters().get_use_eo()) {
+	if(kernelParameters->getUseEo()) {
 		basic_fermion_code = basic_fermion_code << "spinorfield_staggered_eo.cl";;
 	} else {
 		basic_fermion_code = basic_fermion_code << "spinorfield_staggered.cl";
 	}
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 	
 	logger.debug() << "Creating Spinors_staggered kernels...";
 	
 	//Reductions are really small kernels, so few needed options loaded by hands
-	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_staggered_squarenorm_reduction.cl";
-	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_staggered_scalar_product_reduction.cl";
-	scalar_product_real_reduction_stagg = createKernel("scalar_product_real_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_staggered_scalar_product_reduction.cl";
+	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_staggered_squarenorm_reduction.cl";
+	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_staggered_scalar_product_reduction.cl";
+	scalar_product_real_reduction_stagg = createKernel("scalar_product_real_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_staggered_scalar_product_reduction.cl";
 
 	//In staggered formulation either eo or non-eo kernels are built!!
-	if(get_parameters().get_use_eo()){
+	if(kernelParameters->getUseEo()){
         scalar_product_stagg = 0;
         set_zero_spinorfield_stagg = 0;
         set_cold_spinorfield_stagg = 0;
@@ -158,7 +159,7 @@ void hardware::code::Spinors_staggered::clear_kernels()
 	clerr = clReleaseKernel(scalar_product_real_reduction_stagg);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	
-	if(get_parameters().get_use_eo()){
+	if(kernelParameters->getUseEo()){
 		//Functionalities to convert eo from/to non eo
 		clerr = clReleaseKernel(convert_from_eoprec_stagg);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -257,8 +258,8 @@ void hardware::code::Spinors_staggered::get_work_sizes(const cl_kernel kernel, s
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == set_gaussian_spinorfield_stagg
 	   || kernel == set_gaussian_spinorfield_stagg_eoprec) {
-		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
-			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers());
 			logger.trace() << "I changed gs without changing neither ls nor num_groups (in Spinors_staggered::get_work_sizes)!!!";
 		}
 	}
@@ -478,7 +479,7 @@ void hardware::code::Spinors_staggered::set_gaussian_spinorfield_device(const ha
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_device(in, &force_tmp);
+		get_device()->getSpinorStaggeredCode()->set_float_to_global_squarenorm_device(in, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
 		if(resid != resid) {
@@ -531,7 +532,7 @@ void hardware::code::Spinors_staggered::convert_from_eoprec_device(const hardwar
 {
 	using namespace hardware::buffers;
 
-	const size_4 mem_size = get_device()->get_mem_lattice_size();
+	const size_4 mem_size = get_device()->getLocalLatticeMemoryExtents();
 
 	// check buffer sizes
 	const size_t in_size = in1->get_elements();
@@ -587,7 +588,7 @@ void hardware::code::Spinors_staggered::convert_to_eoprec_device(const hardware:
 {
 	using namespace hardware::buffers;
 
-	const size_4 mem_size = get_device()->get_mem_lattice_size();
+	const size_4 mem_size = get_device()->getLocalLatticeMemoryExtents();
 
 	// check buffer sizes
 	const size_t out_size = out1->get_elements();
@@ -1203,7 +1204,7 @@ void hardware::code::Spinors_staggered::set_gaussian_spinorfield_eoprec_device(c
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		get_device()->get_spinor_staggered_code()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
+		get_device()->getSpinorStaggeredCode()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
 		if(resid != resid) {
@@ -1234,8 +1235,8 @@ void hardware::code::Spinors_staggered::sax_vectorized_squarenorm_reduction(cons
 
 void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_device(const hardware::buffers::SU3vec * x, const hardware::buffers::Plain<hmc_float> * alpha, const int numeqs, const hardware::buffers::Plain<hmc_float> * out) const
 {
-	if(numeqs > std::max(get_parameters().get_metro_approx_ord(), get_parameters().get_md_approx_ord())){
-	  throw Invalid_Parameters("In sax_vectorized_and_squarenorm_eoprec_device numeqs to big!!", "numeqs < " + to_string(std::max(get_parameters().get_metro_approx_ord(), get_parameters().get_md_approx_ord())), numeqs);
+	if(numeqs > std::max(kernelParameters->getMetroApproxOrd(), kernelParameters->getMdApproxOrd())){
+	  throw Invalid_Parameters("In sax_vectorized_and_squarenorm_eoprec_device numeqs to big!!", "numeqs < " + to_string(std::max(kernelParameters->getMetroApproxOrd(), kernelParameters->getMdApproxOrd())), numeqs);
 	}
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1273,9 +1274,9 @@ void hardware::code::Spinors_staggered::sax_vectorized_and_squarenorm_eoprec_dev
 size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(get_parameters());
-	size_t S = get_spinorfieldsize(get_parameters());
-	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
+	size_t S = kernelParameters->getSpinorFieldSize();
+	size_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	//factor for complex numbers
 	int C = 2;
 	//NOTE: 1 spinor has NC*NSPIN = 3*1 = 3 complex entries
@@ -1427,8 +1428,8 @@ size_t hardware::code::Spinors_staggered::get_read_write_size(const std::string&
 
 uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in) const
 {
-	uint64_t S = get_spinorfieldsize(get_parameters());
-	uint64_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	uint64_t S = kernelParameters->getSpinorFieldSize();
+	uint64_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	//this is the same as in the function above
 	if (in == "global_squarenorm_staggered") {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
@@ -1436,7 +1437,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//to add the first 2 numbers, then the third, then the fourth and so on, performing S-1
 		//additions. This is not what is done in the code but it is a good estimation because
 		//we know for sure that the code will be a bit faster (it is somehow a boundary estimate)
-		return S * meta::get_flop_su3vec_sqnorm() + (S - 1) * 2;
+		return S * getFlopSu3VecSquareNorm() + (S - 1) * 2;
 	}
 	if (in == "global_squarenorm_reduction") {
 		//This if should not be entered since the sum of the site squarenorms
@@ -1449,7 +1450,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 		//to add the first 2 numbers, then the third, then the fourth and so on, performing S-1
 		//additions. This is not what is done in the code but it is a good estimation because
 		//we know for sure that the code will be a bit faster (it is somehow a boundary estimate)
-		return S * meta::get_flop_su3vec_su3vec() + (S - 1) * 2;
+		return S * getFlopSu3VecTimesSu3Vec() + (S - 1) * 2;
 	}
 	if (in == "scalar_product_reduction" || in == "scalar_product_real_reduction") {
 		//This if should not be entered since the sum of the site squarenorms
@@ -1471,15 +1472,15 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "sax_staggered") {
 		//this kernel performs on each site su3vec_times_complex
-		return S * (NC * (meta::get_flop_complex_mult()));
+		return S * (NC * (getFlopComplexMult()));
 	}
 	if (in == "saxpy_staggered") {
 		//this kernel performs on each site su3vec_times_complex and su3vec_acc
-		return S * (NC * (meta::get_flop_complex_mult() + 2));
+		return S * (NC * (getFlopComplexMult() + 2));
 	}
 	if (in == "saxpbypz_staggered") {
 		//this kernel performs on each 2*site su3vec_times_complex and 2*su3vec_acc
-		return S * (NC * 2 * ( meta::get_flop_complex_mult() + 2));
+		return S * (NC * 2 * ( getFlopComplexMult() + 2));
 	}
 	if(in == "convert_staggered_field_to_SoA_eo") {
 		//this kernel does not perform any flop, he just copies memory
@@ -1499,15 +1500,15 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "global_squarenorm_staggered_eoprec") {
 		//this kernel performs su3vec_squarenorm on each site (eo) and then adds Seo-1 complex numbers
-		return Seo * meta::get_flop_su3vec_sqnorm() + (Seo - 1) * 2;
+		return Seo * getFlopSu3VecSquareNorm() + (Seo - 1) * 2;
 	}
 	if (in == "scalar_product_staggered_eoprec") {
 		//this kernel performs su3vec*su3vec on each site (eo) and then adds Seo-1 complex numbers
-		return Seo *  meta::get_flop_su3vec_su3vec() + (Seo - 1) * 2;
+		return Seo *  getFlopSu3VecTimesSu3Vec() + (Seo - 1) * 2;
 	}
 	if (in == "scalar_product_real_part_staggered_eoprec") {
 		//this kernel performs su3vec*su3vec (only real part!) on each site (eo) and adds Seo-1 real num.
-		return Seo *  meta::get_flop_su3vec_su3vec() / 2 + (Seo - 1);
+		return Seo *  getFlopSu3VecTimesSu3Vec() / 2 + (Seo - 1);
 	}
 	if (in == "set_zero_spinorfield_stagg_eoprec") {
 		//this kernel does not do any flop
@@ -1519,7 +1520,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "sax_cplx_staggered_eoprec" || in == "sax_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_complex
-		return Seo * (NC * (meta::get_flop_complex_mult()));
+		return Seo * (NC * (getFlopComplexMult()));
 	}
 	if (in == "sax_real_staggered_eoprec" || in == "sax_real_arg_staggered_eoprec" 
 	                                      || in == "sax_real_vec_staggered_eoprec" ) {
@@ -1528,7 +1529,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "saxpy_cplx_staggered_eoprec" || in == "saxpy_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) su3vec_times_complex and su3vec_acc
-		return Seo * (NC * (meta::get_flop_complex_mult() + 2));
+		return Seo * (NC * (getFlopComplexMult() + 2));
 	}
 	if (in == "saxpy_real_staggered_eoprec" || in == "saxpy_real_arg_staggered_eoprec"
 	                                        || in == "saxpy_real_vec_staggered_eoprec") {
@@ -1537,7 +1538,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "saxpby_cplx_staggered_eoprec" || in == "saxpby_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) 2*su3vec_times_complex and 1*su3vec_acc
-		return Seo * (NC * (2 * meta::get_flop_complex_mult() + 2));
+		return Seo * (NC * (2 * getFlopComplexMult() + 2));
 	}
 	if (in == "saxpby_real_staggered_eoprec" || in == "saxpby_real_arg_staggered_eoprec"
 	                                         || in == "saxpby_real_vec_staggered_eoprec") {
@@ -1546,7 +1547,7 @@ uint64_t hardware::code::Spinors_staggered::get_flop_size(const std::string& in)
 	}
 	if (in == "saxpbypz_cplx_staggered_eoprec" || in == "saxpbypz_cplx_arg_staggered_eoprec") {
 		//this kernel performs on each site (eo) 2*su3vec_times_complex and 2*su3vec_acc
-		return Seo * (NC * 2 * (meta::get_flop_complex_mult() + 2));
+		return Seo * (NC * 2 * (getFlopComplexMult() + 2));
 	}
 	if (in == "set_gaussian_spinorfield_stagg_eoprec") {
 		//this kernel performs NC multiplications per site
@@ -1608,8 +1609,8 @@ void hardware::code::Spinors_staggered::print_profiling(const std::string& filen
 	//Opencl_Module::print_profiling(filename, sax_vectorized_and_squarenorm_reduction);
 }
 
-hardware::code::Spinors_staggered::Spinors_staggered(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Spinors_staggered::Spinors_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();
 }

@@ -27,16 +27,23 @@
 #define BOOST_TEST_MODULE physics::lattice::SwappableSpinorfield
 #include <boost/test/unit_test.hpp>
 
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
+
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace physics::lattices;
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	SwappableSpinorfield sf(system);
+	SwappableSpinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 }
 
 BOOST_AUTO_TEST_CASE(swap)
@@ -45,10 +52,13 @@ BOOST_AUTO_TEST_CASE(swap)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	SwappableSpinorfield sf(system);
+	SwappableSpinorfield sf(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 	BOOST_REQUIRE_LT(0, sf.get_buffers().size());
 
 	sf.swap_out();

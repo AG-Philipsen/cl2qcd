@@ -70,14 +70,14 @@ protected:
 	};
 
 
-private:
 	/**
-	 * Constructor, only to be used by hardware::device
-	 *
-	 * @param[in] params points to an instance of inputparameters
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
 	 */
-	Kappa(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Kappa(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

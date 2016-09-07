@@ -118,7 +118,7 @@ void rhmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 void rhmcExecutable::generateAccordingToSpecificAlgorithm()
 {
 	const double randomNumber = prng->get_double();
-	observables = physics::algorithms::perform_rhmc_step(*approx_hb, *approx_md, *approx_met, gaugefield, iteration, randomNumber, *prng, *system);
+	observables = physics::algorithms::perform_rhmc_step(*approx_hb, *approx_md, *approx_met, gaugefield, iteration, randomNumber, *prng, *system, *interfacesHandler);
 	acceptanceRate += observables.accept;
 }
 
@@ -128,7 +128,7 @@ void rhmcExecutable::performOnlineMeasurements()
 		std::string gaugeout_name = meta::get_rhmc_obs_file_name(parameters, "");
 		printRhmcObservables(gaugeout_name);
 		if (parameters.get_measure_pbp()) {
-			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration);
+			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration, *interfacesHandler);
 		}
 	}
 }
@@ -176,8 +176,8 @@ void rhmcExecutable::printRhmcObservablesToScreen()
 
 void rhmcExecutable::checkRhmcParameters(const meta::Inputparameters& p)
 {
-    if(p.get_fermact() != meta::action::rooted_stagg)
-        throw Invalid_Parameters("Fermion action not suitable for RHMC!", meta::action::rooted_stagg, p.get_fermact());
+    if(p.get_fermact() != common::action::rooted_stagg)
+        throw Invalid_Parameters("Fermion action not suitable for RHMC!", common::action::rooted_stagg, p.get_fermact());
     if(!p.get_use_eo())
         throw Invalid_Parameters("RHMC available only WITH eo-prec!", "use_eo=1", p.get_use_eo());
     if(p.get_use_mp())
