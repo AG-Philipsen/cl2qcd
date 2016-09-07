@@ -24,7 +24,7 @@
 
 add_library(prng
 	prng.cpp
-# 	../hardware/lattices/prng.cpp
+	utilities.cpp
 )
 target_link_libraries(prng
 	ranlux
@@ -56,3 +56,4 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/prngstate_brokenTag  prngstate_broke
 
 add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware)
 add_unit_test_withLibraries(physics::<sources> sources_test physics)
+add_unit_test_withLibraries(physics::<utilities> utilities_test physics)

@@ -203,7 +203,7 @@ void physics::PRNG::store(const std::string filename) const
 
 std::string physics::PRNG::getName(int number) const noexcept
 {
-	return physics::getConfigurationName( parameters->getNamePrefix(), parameters->getNamePostfix(), parameters->getNumberOfDigitsInName(), number);
+	return physics::buildCheckpointName( parameters->getNamePrefix(), parameters->getNamePostfix(), parameters->getNumberOfDigitsInName(), number);
 }
 
 void physics::PRNG::save()
