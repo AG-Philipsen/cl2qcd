@@ -99,7 +99,7 @@ std::string physics::lattices::getConfigurationName( std::string prefix, std::st
 		middle << std::right << number;
 	}
 	std::stringstream outfilename;
-	outfilename << prefix << middle << postfix;
+	outfilename << prefix << middle.str() << postfix;
 	return outfilename.str();
 }
 
