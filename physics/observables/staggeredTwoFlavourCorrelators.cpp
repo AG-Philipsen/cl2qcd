@@ -22,5 +22,32 @@
  */
 
 
+ /*Right now this file was just created for reasons of clarity, the full content will follow soon*/
 
- /*Right now this file was just created for reasons of clarity, the content will follow soon*/
+#include "staggeredTwoFlavourCorrelators.hpp"
+
+#include <fstream>
+#include <cmath>
+#include "../lattices/staggeredfield_eo.hpp"
+
+#include "../sources.hpp"
+#include "../algorithms/inversion.hpp"
+
+#include <cassert>
+#include <fstream>
+#include "../../meta/util.hpp"
+#include "../lattices/util.hpp"
+#include "../lattices/swappable.hpp"
+#include "../../hardware/device.hpp"
+#include "../../hardware/code/correlator.hpp"
+#include "../interfacesHandler.hpp"
+
+static void calculate_correlator()
+{
+
+	throw Print_Error_Message("method implementation is in process but not yet finished!");
+
+}
+
+
+

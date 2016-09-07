@@ -23,6 +23,7 @@
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 #include "../physics/observables/wilsonTwoFlavourCorrelators.hpp"
 #include "../physics/observables/staggeredChiralCondensate.hpp"
+#include "../physics/observables/staggeredTwoFlavourCorrelators.hpp"
 
 inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv, "inverter")
 {
@@ -58,7 +59,7 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
             physics::observables::staggered::measureChiralCondensateAndWriteToFile(*gaugefield, gaugefield->get_trajectoryNumberAtInit(), *interfacesHandler);
         }
         if (parameters.get_measure_correlators()) {
-            logger.warn() << "Correlators not yet implemented in the staggered case! Required measurement will not be done!";
+        	physics::observables::staggered::measureTwoFlavourCorrelatorsOnGaugefield(gaugefield, currentConfigurationName, *interfacesHandler);
         }
     } else {
         if (parameters.get_measure_correlators()) {

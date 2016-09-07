@@ -29,9 +29,6 @@
 #include "../prng.hpp"
 #include "scalar.hpp"
 #include "../../common_header_files/types_fermions.h"
-#include "latticesInterfaces.hpp"
-#include "../interfacesHandler.hpp"
-#include "../../hardware/lattices/spinorfield.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -46,84 +43,83 @@ template <class Lattice, typename Basetype> void pseudo_randomize(const Lattice*
  * Representation of a gaugefield.
  */
 class Spinorfield {
-    public:
-        /**
-         * Construct a gaugefield based on the input-files of the system
-         */
-        Spinorfield(const hardware::System&, const SpinorfieldParametersInterface&,const bool place_on_host = false);
 
-        /**
-         * Release resources
-         */
-        virtual ~Spinorfield();
+public:
+	/**
+	 * Construct a gaugefield based on the input-files of the system
+	 */
+	Spinorfield(const hardware::System&, const bool place_on_host = false);
 
-        /*
-         * Spinorfields cannot be copied
-         */
-        Spinorfield& operator=(const Spinorfield&) = delete;
-        Spinorfield(const Spinorfield&) = delete;
-        Spinorfield() = delete;
+	/**
+	 * Release resources
+	 */
+	virtual ~Spinorfield();
 
-        /**
-         * Get the buffers containing the gaugefield state on the devices.
-         */
-        const std::vector<const hardware::buffers::Plain<spinor> *> get_buffers() const noexcept;
+	/*
+	 * Spinorfields cannot be copied
+	 */
+	Spinorfield& operator=(const Spinorfield&) = delete;
+	Spinorfield(const Spinorfield&) = delete;
+	Spinorfield() = delete;
 
-        /**
-         * Apply Gamma5 to the Spinorfield
-         */
-        void gamma5() const;
+	/**
+	 * Get the buffers containing the gaugefield state on the devices.
+	 */
+	const std::vector<const hardware::buffers::Plain<spinor> *> get_buffers() const noexcept;
 
-        /**
-         * Set Spinorfield to zero
-         */
-        void zero() const;
+	/**
+	 * Apply Gamma5 to the Spinorfield
+	 */
+	void gamma5() const;
 
-        /**
-         * Set Spinorfield to zero
-         */
-        void cold() const;
+	/**
+	 * Set Spinorfield to zero
+	 */
+	void zero() const;
 
-        /**
-         * Set Spinorfield to be gaussian.
-         */
-        void gaussian(const physics::PRNG& prng) const;
+	/**
+	 * Set Spinorfield to zero
+	 */
+	void cold() const;
 
-        /**
-         * Update the halos of the spinorfield buffers.
-         */
-        void update_halo() const;
+	/**
+	 * Set Spinorfield to be gaussian.
+	 */
+	void gaussian(const physics::PRNG& prng) const;
 
-        /**
-         * Get the number of elements.
-         */
-        unsigned get_elements() const noexcept;
+	/**
+	 * Update the halos of the spinorfield buffers.
+	 */
+	void update_halo() const;
 
-    protected:
-        /**
-         * Allow (re-)creation of buffers by children
-         */
-        void fill_buffers();
+	/**
+	 * Get the number of elements.
+	 */
+	unsigned get_elements() const noexcept;
 
-        /**
-         * Allow destruction of buffers by children
-         */
-        void clear_buffers();
+protected:
+	/**
+	 * Allow (re-)creation of buffers by children
+	 */
+	void fill_buffers();
 
-    private:
-        hardware::System const& system;
-        //TODO: turn the following pointer in a reference
-        const SpinorfieldParametersInterface& spinorfieldParametersInterface;
-	hardware::lattices::Spinorfield spinorfield;
-        const bool place_on_host;
-        void import(const spinor * const host) const;
+	/**
+	 * Allow destruction of buffers by children
+	 */
+	void clear_buffers();
 
-        friend hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
-        friend hmc_float squarenorm(const Spinorfield& field);
-        friend void saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y);
-        friend void sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x);
-        friend void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z);
-        friend void pseudo_randomize<Spinorfield, spinor>(const Spinorfield* to, int seed);
+private:
+	hardware::System const& system;
+	std::vector<const hardware::buffers::Plain<spinor> *> buffers;
+	const bool place_on_host;
+	void import(const spinor * const host) const;
+
+	friend hmc_complex scalar_product(const Spinorfield& left, const Spinorfield& right);
+	friend hmc_float squarenorm(const Spinorfield& field);
+	friend void saxpy(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const Spinorfield& y);
+	friend void sax(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x);
+	friend void saxsbypz(const Spinorfield* out, const hmc_complex alpha, const Spinorfield& x, const hmc_complex beta, const Spinorfield& y, const Spinorfield& z);
+	friend void pseudo_randomize<Spinorfield, spinor>(const Spinorfield* to, int seed);
 };
 
 /**
@@ -131,7 +127,8 @@ class Spinorfield {
  *
  * \param n The number of spinorfields to create
  */
-std::vector<Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n, physics::InterfacesHandler& interfacesHandler, const bool place_on_host = false);
+std::vector<Spinorfield *> create_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host = false)
+;
 
 /**
  * Release the given spinorfields

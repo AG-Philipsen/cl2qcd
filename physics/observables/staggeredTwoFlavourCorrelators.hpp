@@ -30,6 +30,8 @@
 
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
+#include "observablesInterfaces.hpp"
+#include "../interfacesHandler.hpp"
 
 namespace physics{
 
@@ -37,9 +39,9 @@ namespace physics{
 
 		namespace staggered{
 
-		  std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Staggeredfield_eo*>& corr, const std::vector<physics::lattices::Staggeredfield_eo*>& sources, const hardware::System& system);
+		  std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Staggeredfield_eo*>& corr, const std::vector<physics::lattices::Staggeredfield_eo*>& sources, const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
 
-			void measureTwoFlavourCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName);
+			void measureTwoFlavourCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler);
     }
   }
 }
