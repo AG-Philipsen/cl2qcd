@@ -82,5 +82,14 @@ namespace physics {
                 virtual int getNumberOfSources() const = 0;
         };
 
+        class StaggerdTwoFlavourCorrelatorsParametersInterface {
+			public:
+				virtual ~StaggeredTwoFlavourCorrelatorsParametersInterface(){}
+				virtual unsigned getNs() const = 0;
+				virtual unsigned getNt() const = 0;
+				virtual int getNumberOfSources() const = 0;
+        };
+
+
     }
 }

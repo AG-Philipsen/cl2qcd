@@ -99,7 +99,7 @@ void physics::set_zslice_source(const physics::lattices::Spinorfield * spinorfie
 	spinorfield->update_halo();
 }
 
-//Steggered source
+//Staggered source
 void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * inout, const PRNG& prng)
 {
 	auto buffers = inout->get_buffers();
@@ -114,6 +114,34 @@ void physics::set_volume_source(const physics::lattices::Staggeredfield_eo * ino
 	if(buffers.size()!=1)
 	  inout->update_halo();
 }
+
+void physics::set_point_source(const physics::lattices::Staggeredfield_eo * staggeredfield_eo, int k, const physics::SourcesParametersInterface& params)
+{
+	if(k > 2 || k < 0) {
+		throw std::invalid_argument("k must be within 0..2");
+	}
+
+	staggeredfield_eo->zero();
+
+	auto buffers = staggeredfield_eo->get_buffers();
+
+	// only execute on the buffer were the given position results.
+	int t_pos = params.getSourceT();
+	unsigned local_lattice_size = buffers[0]->get_device()->getLocalLatticeExtents().tExtent;
+	auto buffer = buffers[t_pos / local_lattice_size];
+	auto device = buffer->get_device();
+	int local_t = t_pos % local_lattice_size;
+
+	device->getCorrelatorCode()->create_point_source_device(buffer, k, Index(params.getSourceX(), params.getSourceY(), params.getSourceZ(), params.getSourceT(), LatticeExtents(params.getNs(), params.getNt())).spatialIndex, local_t);
+
+	staggeredfield_eo->update_halo();
+}
+
+
+
+
+
+
 
 static void fill_sources(const std::vector<physics::lattices::Spinorfield *>& sources, const physics::PRNG& prng, const physics::SourcesParametersInterface& params);
 

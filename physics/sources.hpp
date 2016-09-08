@@ -51,7 +51,7 @@ namespace physics {
 	void set_zslice_source(const physics::lattices::Spinorfield *, const PRNG& prng, int z);
 	//Staggered sources
 	void set_volume_source(const physics::lattices::Staggeredfield_eo *, const PRNG& prng);
-
+	void set_point_source(const physics::lattices::Staggeredfield_eo *, int k, const physics::SourcesParametersInterface& params);
 }
 
 #endif /* _PHYSICS_SOURCES_ */

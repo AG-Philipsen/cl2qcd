@@ -34,7 +34,6 @@
 #include "../algorithms/inversion.hpp"
 
 #include <cassert>
-#include <fstream>
 #include "../../meta/util.hpp"
 #include "../lattices/util.hpp"
 #include "../lattices/swappable.hpp"
@@ -42,7 +41,20 @@
 #include "../../hardware/code/correlator.hpp"
 #include "../interfacesHandler.hpp"
 
-static void calculate_correlator()
+static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results, physics::lattices::Staggeredfield_eo* corr,
+        physics::lattices::Staggerdfield_eo* source, const hardware::System& system,
+        const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler& interfacesHandler)
+{
+
+	throw Print_Error_Message("method implementation is in process but not yet finished!");
+
+}
+
+static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results,
+                                 physics::lattices::Staggeredfield_eo* corr1, physics::lattices::Staggeredfield_eo* source1,
+                                 physics::lattices::Staggeredfield_eo* corr2, physics::lattices::Staggeredfield_eo* source2,
+                                 physics::lattices::Staggeredfield_eo* corr3, physics::lattices::Staggeredfield_eo* source3,
+                                 const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& params)
 {
 
 	throw Print_Error_Message("method implementation is in process but not yet finished!");
@@ -50,4 +62,14 @@ static void calculate_correlator()
 }
 
 
+
+
+
+
+void physics::observables::staggered::measureTwoFlavourCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
+{
+
+	throw Print_Error_Message("method implementation is in process but not yet finished!");
+
+}
 

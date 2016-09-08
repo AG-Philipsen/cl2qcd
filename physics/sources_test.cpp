@@ -103,6 +103,13 @@ static void test_volume_source_stagg(std::string content)
 
 }
 
+
+static void test_point_source_stagg(std::string content)
+{
+	using namespace physics::lattices;
+	throw Print_Error_Message("method implementation is in process but not yet finished!");
+}
+
 BOOST_AUTO_TEST_CASE(sources)
 {
 	test_sources("point", 15);

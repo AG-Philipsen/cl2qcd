@@ -22,7 +22,7 @@
  */
 
 
-/*Right now this file was just created for reasons of general clarity, the content will follow soon*/
+/*Right now this file was just created for reasons of general clarity, the full content will follow soon*/
 
 #ifndef STAGGEREDTWOFLAVOURCORRELATORS_HPP_
 #define STAGGEREDTWOFLAVOURCORRELATORS_HPP_
