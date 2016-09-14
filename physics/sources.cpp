@@ -196,3 +196,12 @@ std::vector<physics::lattices::Spinorfield *> physics::create_swappable_sources(
 	fill_sources(sources, prng, sourcesParameters);
 	return sources;
 }
+
+/*std::vector<physics::lattices::Staggeredfield_eo *> physics::create_swappable_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources, physics::InterfacesHandler & interfacesHandler)
+{
+    const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
+
+	auto sources = lattices::create_swappable_staggeredfields_eo(system, n_sources, interfacesHandler, sourcesParameters.placeSourcesOnHost());
+	fill_sources(sources, prng, sourcesParameters);
+	return sources;
+}*/

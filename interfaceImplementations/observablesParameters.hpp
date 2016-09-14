@@ -243,5 +243,59 @@ namespace physics {
                 const meta::Inputparameters& parameters;
         };
 
+        class StaggeredTwoFlavourCorrelatorsParametersImplementation final: public StaggeredTwoFlavourCorrelatorsParametersInterface {
+                    public:
+						StaggeredTwoFlavourCorrelatorsParametersImplementation() = delete;
+						StaggeredTwoFlavourCorrelatorsParametersImplementation(const meta::Inputparameters& parametersIn)
+                                : parameters(parametersIn)
+                        {
+                        }
+                        ~StaggeredTwoFlavourCorrelatorsParametersImplementation()
+                        {
+                        }
+                        bool printToScreen() const override
+                        {
+                            return parameters.get_print_to_screen();
+                        }
+                        void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const override
+                        {
+                            if(of == nullptr)
+                                meta::print_info_flavour_doublet_correlators(parameters);
+                            else
+                                meta::print_info_flavour_doublet_correlators(of, parameters);
+                        }
+                        unsigned getCorrelatorDirection() const override
+                        {
+                            return parameters.get_corr_dir();
+                        }
+                        common::sourcetypes getSourceType() const override
+                        {
+                            return parameters.get_sourcetype();
+                        }
+                        unsigned getNs() const override
+                        {
+                            return parameters.get_nspace();
+                        }
+                        unsigned getNt() const override
+                        {
+                            return parameters.get_ntime();
+                        }
+                        std::string getCorrelatorFilename(std::string currentConfigurationName) const override
+                        {
+                            return meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
+                        }
+                        bool placeSourcesOnHost() const override
+                        {
+                            return parameters.get_place_sources_on_host();
+                        }
+                        int getNumberOfSources() const override
+                        {
+                            return parameters.get_num_sources();
+                        }
+
+                    private:
+                        const meta::Inputparameters& parameters;
+                };
+
     }
 }
