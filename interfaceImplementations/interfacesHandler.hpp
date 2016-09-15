@@ -51,6 +51,7 @@ namespace physics {
                   wilsonTwoFlavourChiralCondensateParametersInterface{nullptr},
                   staggeredChiralCondensateParametersInterface{nullptr},
                   wilsonTwoFlavourCorrelatorsParametersInterface{nullptr},
+                  staggeredTwoFlavourCorrelatorsParametersInterface{nullptr},
                   solversParametersInterface{nullptr},
                   minMaxEigenvalueParametersInterface{nullptr},
                   forcesParametersInterface{nullptr},
@@ -83,11 +84,17 @@ namespace physics {
                     staggeredChiralCondensateParametersInterface = std::unique_ptr<const physics::observables::StaggeredChiralCondensateParametersImplementation>(new physics::observables::StaggeredChiralCondensateParametersImplementation{parameters});
                 return *staggeredChiralCondensateParametersInterface;
             }
-            const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& getWilsonTwoFlavourCorrelatorsCondensateParametersInterface() override
+            const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& getWilsonTwoFlavourCorrelatorsParametersInterface() override
             {
                 if(wilsonTwoFlavourCorrelatorsParametersInterface == nullptr)
                     wilsonTwoFlavourCorrelatorsParametersInterface = std::unique_ptr<const physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation>(new physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation{parameters});
                 return *wilsonTwoFlavourCorrelatorsParametersInterface;
+            }
+            const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& getStaggeredTwoFlavourCorrelatorsParametersInterface() override
+            {
+                if(staggeredTwoFlavourCorrelatorsParametersInterface == nullptr)
+                    staggeredTwoFlavourCorrelatorsParametersInterface = std::unique_ptr<const physics::observables::StaggeredTwoFlavourCorrelatorsParametersImplementation>(new physics::observables::StaggeredTwoFlavourCorrelatorsParametersImplementation{parameters});
+                return *staggeredTwoFlavourCorrelatorsParametersInterface;
             }
             const physics::algorithms::SolversParametersInterface& getSolversParametersInterface()
             {
@@ -255,6 +262,7 @@ namespace physics {
             std::unique_ptr<const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface> wilsonTwoFlavourChiralCondensateParametersInterface;
             std::unique_ptr<const physics::observables::StaggeredChiralCondensateParametersInterface> staggeredChiralCondensateParametersInterface;
             std::unique_ptr<const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface> wilsonTwoFlavourCorrelatorsParametersInterface;
+            std::unique_ptr<const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface> staggeredTwoFlavourCorrelatorsParametersInterface;
             std::unique_ptr<const physics::algorithms::SolversParametersInterface> solversParametersInterface;
             std::unique_ptr<const physics::algorithms::MinMaxEigenvalueParametersInterface> minMaxEigenvalueParametersInterface;
             std::unique_ptr<const physics::algorithms::ForcesParametersInterface> forcesParametersInterface;

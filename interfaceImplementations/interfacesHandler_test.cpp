@@ -54,6 +54,7 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     const physics::observables::WilsonTwoFlavourChiralCondensateParametersImplementation wilsonTwoFlavourChiralCondensateParametersImplementation{*params};
     const physics::observables::StaggeredChiralCondensateParametersImplementation staggeredChiralCondensateParametersImplementation{*params};
     const physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation wilsonTwoFlavourCorrelatorsParametersImplementation{*params};
+    const physics::observables::StaggeredTwoFlavourCorrelatorsParametersImplementation staggeredTwoFlavourCorrelatorsParametersImplementation{*params};
     const physics::algorithms::SolversParametersImplementation solversParametersImplementation{*params};
     const physics::algorithms::MinMaxEigenvalueParametersImplementation minMaxEigenvalueParametersImplementation{*params};
     const physics::algorithms::ForcesParametersImplementation forcesParametersImplementation{*params};
@@ -85,7 +86,8 @@ BOOST_AUTO_TEST_CASE(testInterfaceHandler)
     BOOST_CHECK( typeid(gaugeObservablesParametersImplementation) == typeid(test.getGaugeObservablesParametersInterface()) );
     BOOST_CHECK( typeid(wilsonTwoFlavourChiralCondensateParametersImplementation) == typeid(test.getWilsonTwoFlavourChiralCondensateParametersInterface()) );
     BOOST_CHECK( typeid(staggeredChiralCondensateParametersImplementation) == typeid(test.getStaggeredChiralCondensateParametersInterface()) );
-    BOOST_CHECK( typeid(wilsonTwoFlavourCorrelatorsParametersImplementation) == typeid(test.getWilsonTwoFlavourCorrelatorsCondensateParametersInterface()) );
+    BOOST_CHECK( typeid(wilsonTwoFlavourCorrelatorsParametersImplementation) == typeid(test.getWilsonTwoFlavourCorrelatorsParametersInterface()) );
+    BOOST_CHECK( typeid(staggeredTwoFlavourCorrelatorsParametersImplementation) == typeid(test.getStaggeredTwoFlavourCorrelatorsParametersInterface()) );
     BOOST_CHECK( typeid(solversParametersImplementation) == typeid(test.getSolversParametersInterface()) );
     BOOST_CHECK( typeid(minMaxEigenvalueParametersImplementation) == typeid(test.getMinMaxEigenvalueParametersInterface()) );
     BOOST_CHECK( typeid(forcesParametersImplementation) == typeid(test.getForcesParametersInterface()) );
