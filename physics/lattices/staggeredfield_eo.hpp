@@ -108,14 +108,12 @@ private:
 };
 
 /**
- * Create n spinorfields.
- *
- * \param n The number of spinorfields to create
+ * Create n Staggeredfield_eo
  */
 std::vector<Staggeredfield_eo *> create_staggeredfields_eo(const hardware::System& system, const size_t n, physics::InterfacesHandler& interfacesHandler);
 
 /**
- * Release the given spinorfields
+ * Release the given Staggeredfield_eo
  */
 void release_staggeredfields_eo(const std::vector<Staggeredfield_eo *> fields);
 
