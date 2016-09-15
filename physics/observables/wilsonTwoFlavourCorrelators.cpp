@@ -335,7 +335,7 @@ std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const 
                                                                           const std::vector<physics::lattices::Spinorfield*>& sources,
                                                                           const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
-    const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getWilsonTwoFlavourCorrelatorsCondensateParametersInterface();
+    const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getWilsonTwoFlavourCorrelatorsParametersInterface();
 	if(type == "ps"  || type == "avps" ) {
 		return calculate_correlator_componentwise(type, corr, sources, system, parametersInterface, interfacesHandler);
 	} else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az") {
@@ -345,11 +345,12 @@ std::vector<hmc_float> physics::observables::wilson::calculate_correlator(const 
 	}
 }
 
-void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield,
-                                                                                   std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
+void physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield * gaugefield,
+                                                                                                   std::string currentConfigurationName,
+                                                                                                   physics::InterfacesHandler & interfacesHandler)
 {
     auto system = gaugefield->getSystem();
-    const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getWilsonTwoFlavourCorrelatorsCondensateParametersInterface();
+    const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getWilsonTwoFlavourCorrelatorsParametersInterface();
 	auto prng = gaugefield->getPrng();
 
 	std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);

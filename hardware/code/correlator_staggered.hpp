@@ -44,6 +44,8 @@ public:
 
 	virtual ~Correlator_staggered();
 
+	void create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const;
+
 	void create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const;
 
 	/**

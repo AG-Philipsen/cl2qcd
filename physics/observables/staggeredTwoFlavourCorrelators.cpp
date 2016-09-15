@@ -36,250 +36,58 @@
 #include <cassert>
 #include "../../meta/util.hpp"
 #include "../lattices/util.hpp"
-#include "../lattices/swappable.hpp"
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/correlator.hpp"
 #include "../interfacesHandler.hpp"
 
-static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results, physics::lattices::Staggeredfield_eo* corr,
-        physics::lattices::Staggerdfield_eo* source, const hardware::System& system,
-        const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler& interfacesHandler);
-
-
-static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results,
-                                 physics::lattices::Staggeredfield_eo* corr1, physics::lattices::Staggeredfield_eo* source1,
-                                 physics::lattices::Staggeredfield_eo* corr2, physics::lattices::Staggeredfield_eo* source2,
-                                 physics::lattices::Staggeredfield_eo* corr3, physics::lattices::Staggeredfield_eo* source3,
-                                 physics::lattices::Staggeredfield_eo* corr4, physics::lattices::Staggeredfield_eo* source4,
-                                 const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& params);
-
-
-static void flavour_doublet_correlators(const std::vector<physics::lattices::Staggeredfield_eo*>& result, const std::vector<physics::lattices::Staggeredfield_eo*>& sources,
-                                        std::string corr_fn, const hardware::System& system,
-                                        const physics::observables::StaggerdTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler & interfacesHandler)
+static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_float> correlator)
 {
-	using namespace std;
+    //Open, write (like in Wilson) and CLOSE!!
+    throw Print_Error_Message("Function writeCorrelatorToFile not implemented yet!");
+}
 
-	ofstream of(corr_fn.c_str(), ios_base::app);
-	if(!of.is_open()) {
-	  throw File_Exception(corr_fn);
-	}
+static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const size_t n_sources)
+{
+    /*
+     * 1) Create the sources using the function
+     *         physics::create_staggered_sources
+     *    which I added for you and tested. The test fails since the point source kernel is missing!
+     *
+     * 2) For loop on the number of sources and for each source
+     *     - Create what is needed to call CG-M used as a standard CG
+     *     - Call to CG-M to invert the source. The calculation that has been done here has to reflect the
+     *       calculation we did together with the even odd decomposed field. I think here you will have to
+     *       to treat the even and/or the odd part only, depending on which lattice site the source was. If
+     *       you do not know, come by and we see.
+     *
+     * 3) Return the proper object
+     */
+    throw Print_Error_Message("Function createAndInvertSources not implemented yet!");
+}
 
-	auto result_ps = physics::observables::staggered::calculate_correlator("ps", result, sources, system, interfacesHandler);
+std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCorrelator(const std::vector<physics::lattices::Staggeredfield_eo*>& invertedSources,
+                                                                                        const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+{
+    //Like calculate_correlator_componentwise in Wilson!
+    throw Print_Error_Message("Function calculatePseudoscalarCorrelator not implemented yet!");
+}
 
-	if(parametersInterface.printToScreen())
-			parametersInterface.printInformationOfFlavourDoubletCorrelator();
-
-		parametersInterface.printInformationOfFlavourDoubletCorrelator(&of);
-
-		//the pseudo-scalar (J=0, P=1)
-		logger.info() << "pseudo scalar correlator:" ;
-		for(size_t j = 0; j < result_ps.size(); j++) {
-			logger.info() << j << "\t" << scientific << setprecision(14) << result_ps[j];
-			of << scientific << setprecision(14) << "0 1\t" << j << "\t" << result_ps[j] << endl;
-		}
-
-		static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results,
-		                                 physics::lattices::Staggeredfield_eo* corr, physics::lattices::Staggeredfield_eo* source, const hardware::System& system,
-		                                 const physics::observables::StaggerdTwoFlavourCorrelatorsParametersInterface& parametersInterface,
-		                                 physics::InterfacesHandler& interfacesHandler)
-		{
-			try_swap_in(corr);
-			try_swap_in(source);
-
-			// assert single device
-			auto corr_bufs = corr->get_buffers();
-			auto source_bufs = source->get_buffers();
-
-			size_t num_bufs = results.size();
-			if(num_bufs != source_bufs.size() || num_bufs != corr_bufs.size()) {
-				throw std::invalid_argument("The arguments are using different devices.");
-			}
-
-			// the ps_z kernel needs to have the source windowed...
-			if(num_bufs > 1 && parametersInterface.getSourceType() != common::sourcetypes::point && type == "ps" && parametersInterface.getCorrelatorDirection() == 3) {
-				physics::lattices::Staggeredfield_eo window(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
-				auto window_bufs = window.get_buffers();
-				for(size_t i_window = 0; i_window < num_bufs; ++i_window) {
-					fill_window(&window, *source, i_window);
-					for(size_t i = 0; i < num_bufs; ++i) {
-						auto code = results[i]->get_device()->getCorrelatorCode();
-						code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], window_bufs[i]);
-					}
-				}
-			} else {
-				for(size_t i = 0; i < num_bufs; ++i) {
-					auto code = results[i]->get_device()->getCorrelatorCode();
-					if(parametersInterface.getSourceType() == common::sourcetypes::point) {
-						code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i]);
-					} else {
-						code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], source_bufs[i]);
-					}
-				}
-			}
-
-			try_swap_out(corr);
-			try_swap_out(source);
-		}
-
-
-
-		static void calculate_correlator(const std::string& type, const std::vector<const hardware::buffers::Plain<hmc_float>*>& results,
-										physics::lattices::Staggeredfield_eo* corr1, physics::lattices::Staggeredfield_eo* source1,
-										physics::lattices::Staggeredfield_eo* corr2, physics::lattices::Staggeredfield_eo* source2,
-										physics::lattices::Staggeredfield_eo* corr3, physics::lattices::Staggeredfield_eo* source3,
-										physics::lattices::Staggeredfield_eo* corr4, physics::lattices::Staggeredfield_eo* source4,
-										const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& params)
-		{
-			// assert single device
-			try_swap_in(corr1);
-			try_swap_in(source1);
-			auto corr1_bufs = corr1->get_buffers();
-			auto source1_bufs = source1->get_buffers();
-			try_swap_in(corr2);
-			try_swap_in(source2);
-			auto corr2_bufs = corr2->get_buffers();
-			auto source2_bufs = source2->get_buffers();
-			try_swap_in(corr3);
-			try_swap_in(source3);
-			auto corr3_bufs = corr3->get_buffers();
-			auto source3_bufs = source3->get_buffers();
-			try_swap_in(corr4);
-			try_swap_in(source4);
-			auto corr4_bufs = corr4->get_buffers();
-			auto source4_bufs = source4->get_buffers();
-
-			size_t num_bufs = results.size();
-			if(num_bufs != source1_bufs.size() || num_bufs != corr1_bufs.size()
-			   || num_bufs != source2_bufs.size() || num_bufs != corr2_bufs.size()
-			   || num_bufs != source3_bufs.size() || num_bufs != corr3_bufs.size()
-			   || num_bufs != source4_bufs.size() || num_bufs != corr4_bufs.size() ) {
-				throw std::invalid_argument("The arguments are using different devices.");
-			}
-
-			for(size_t i = 0; i < num_bufs; ++i) {
-		        auto code = results[i]->get_device()->getCorrelatorCode();
-				if(parametersInterface.getSourceType() == common::sourcetypes::point) {
-					code->correlator(code->get_correlator_kernel(type), results[i], corr1_bufs[i], corr2_bufs[i], corr3_bufs[i], corr4_bufs[i]);
-				} else {
-					code->correlator(code->get_correlator_kernel(type), results[i], corr1_bufs[i], source1_bufs[i], corr2_bufs[i], source2_bufs[i], corr3_bufs[i], source3_bufs[i], corr4_bufs[i], source4_bufs[i]);
-				}
-			}
-
-			try_swap_out(corr1);
-			try_swap_out(source1);
-			try_swap_out(corr2);
-			try_swap_out(source2);
-			try_swap_out(corr3);
-			try_swap_out(source3);
-			try_swap_out(corr4);
-			try_swap_out(source4);
-		}
-
-
-
-
-		static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
-		                                                                 const std::vector<physics::lattices::Staggeredfield_eo*>& sources, const hardware::System& system,
-		                                                                 const physics::observables::StaggerdTwoFlavourCorrelatorsParametersInterface& parametersInterface,
-		                                                                 physics::InterfacesHandler & interfacesHandler)
-		{
-			// assert single device
-			auto first_corr = corr.at(0);
-			try_swap_in(first_corr);
-			auto first_field_buffers = first_corr->get_buffers();
-			const size_t num_buffers = first_field_buffers.size();
-			const size_t num_corr_entries = get_num_corr_entries(parametersInterface);
-
-			// for each source
-			if(corr.size() != sources.size()) {
-				throw std::invalid_argument("Correlated and source fields need to be of the same size.");
-			}
-
-			std::vector<const hardware::buffers::Plain<hmc_float>*> results(num_buffers);
-			for(size_t i = 0; i < num_buffers; ++i) {
-				auto device = first_field_buffers[i]->get_device();
-				results[i] = new hardware::buffers::Plain<hmc_float>(num_corr_entries, device);
-				results[i]->clear();
-			}
-
-			for(size_t i = 0; i < corr.size(); i++) {
-				calculate_correlator(type, results, corr.at(i), sources.at(i), system, parametersInterface, interfacesHandler);
-			}
-
-			std::vector<hmc_float> host_result(num_corr_entries);
-			for(size_t i = 0; i < num_corr_entries; ++i) {
-				host_result[i] = 0.;
-			}
-			for(auto result: results) {
-				std::vector<hmc_float> out(num_corr_entries);
-				result->dump(out.data());
-				for(size_t i = 0; i < num_corr_entries; ++i) {
-					logger.trace() << out[i];
-					host_result[i] += out[i];
-				}
-				delete result;
-			}
-			return host_result;
-		}
-
-
-
-		static size_t get_num_corr_entries(const physics::observables::StaggerdTwoFlavourCorrelatorsParametersInterface& parametersInterface)
-		{
-		    switch (parametersInterface.getCorrelatorDirection()) {
-		        case 0 :
-		            return parametersInterface.getNt();
-		        case 3 :
-		            return parametersInterface.getNs();
-		        default :
-		            std::stringstream errmsg;
-		            errmsg << "Correlator direction " << parametersInterface.getCorrelatorDirection() << " has not been implemented.";
-		            throw Print_Error_Message(errmsg.str());
-		    }
-		}
-
-
-
-		std::vector<hmc_float> physics::observables::staggered::calculate_correlator(const std::string& type, const std::vector<physics::lattices::Staggeredfield_eo*>& corr,
-		                                                                          const std::vector<physics::lattices::Staggeredfield_eo*>& sources,
-		                                                                          const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
-		{
-		    const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsCondensateParametersInterface();
-			if(type == "ps" ) {  // || type == "avps"
-				return calculate_correlator_componentwise(type, corr, sources, system, parametersInterface, interfacesHandler);
-			}
-			/*else if (type == "sc" || type == "vx" || type == "vy" || type == "vz" || type == "ax" || type == "ay" || type == "az") {
-				return calculate_correlator_colorwise(type, corr, sources, parametersInterface);
-			} {
-				throw Print_Error_Message("Correlator calculation has not been implemented for " + type, __FILE__, __LINE__);
-			}*/
-		}
-
-
-
-
-
-void physics::observables::staggered::measureTwoFlavourCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler)
+void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield * gaugefield,
+                                                                                                    std::string currentConfigurationName,
+                                                                                                    physics::InterfacesHandler & interfacesHandler)
 {
 
-	auto system = gaugefield->getSystem();
-	    const physics::observables::StaggerdTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsCondensateParametersInterface();
-		auto prng = gaugefield->getPrng();
+    auto system = gaugefield->getSystem();
+    const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsParametersInterface();
+    auto prng = gaugefield->getPrng();
 
-		std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);
-		// for the correlator calculation, all sources are needed on the device
-		const std::vector<physics::lattices::Staggeredfield_eo*> sources = physics::create_swappable_sources(*system, *prng, parametersInterface.getNumberOfSources(), interfacesHandler);
-		const std::vector<physics::lattices::Staggeredfield_eo*> result = physics::lattices::create_swappable_spinorfields(*system, sources.size(), interfacesHandler, parametersInterface.placeSourcesOnHost());
-		swap_out(sources);
-		swap_out(result);
-		physics::algorithms::perform_inversion(&result, gaugefield, sources, *system, interfacesHandler);
-		logger.info() << "Finished inversion. Starting measurements.";
-		swap_in(sources);
-		swap_in(result);
-		flavour_doublet_correlators(result, sources, filenameForCorrelatorData, *system, parametersInterface, interfacesHandler);
-		release_spinorfields(result);
-		release_spinorfields(sources);
+    std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);
 
+    /*
+     * Here we will call some functions to get the job done:
+     *  - Create and invert sources -> static
+     *  - Calculate the pseudoscalar correlator -> this will be in the hpp as well to be tested
+     *  - Write result to file -> static
+     */
 }
 

@@ -59,11 +59,11 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
             physics::observables::staggered::measureChiralCondensateAndWriteToFile(*gaugefield, gaugefield->get_trajectoryNumberAtInit(), *interfacesHandler);
         }
         if (parameters.get_measure_correlators()) {
-        	physics::observables::staggered::measureTwoFlavourCorrelatorsOnGaugefield(gaugefield, currentConfigurationName, *interfacesHandler);
+        	physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(gaugefield, currentConfigurationName, *interfacesHandler);
         }
     } else {
         if (parameters.get_measure_correlators()) {
-            physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(gaugefield, currentConfigurationName, *interfacesHandler);
+            physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefieldAndWriteToFile(gaugefield, currentConfigurationName, *interfacesHandler);
         }
         if (parameters.get_measure_pbp()) {
             physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName, *interfacesHandler);

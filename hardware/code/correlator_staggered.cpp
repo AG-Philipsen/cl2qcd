@@ -89,6 +89,11 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 	return;
 }
 
+void hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const
+{
+    throw Print_Error_Message("Method hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device not implemented yet!", __FILE__, __LINE__);
+}
+
 void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const
 {
 	//query work-sizes for kernel
