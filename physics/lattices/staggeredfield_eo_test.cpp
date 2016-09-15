@@ -50,6 +50,24 @@ BOOST_AUTO_TEST_CASE(initialization)
 	Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 }
 
+BOOST_AUTO_TEST_CASE(fields)
+{
+    using namespace physics::lattices;
+
+    const char * _params[] = {"foo"};
+    meta::Inputparameters params(1, _params);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+
+    auto fields = create_staggeredfields_eo(system, 2, interfacesHandler);
+
+    BOOST_CHECK_EQUAL(fields.size(), 2u);
+
+    release_staggeredfields_eo(fields);
+}
+
 BOOST_AUTO_TEST_CASE(squarenorm)
 {
 	using physics::lattices::Staggeredfield_eo;
