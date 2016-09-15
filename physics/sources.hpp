@@ -33,10 +33,14 @@ namespace physics {
 
 	/**
 	 * Create sources as specified by the input parameters of the system.
-	 * \param n_sources Number of sources to create
+	 * TODO: Turn these two function into a template and figure out how to treat the
+	 *       place_on_host parameter that the Spinorfield has and that Staggeredfield_eo
+	 *       has not for the moment!
 	 */
 	std::vector<lattices::Spinorfield *> create_sources(const hardware::System& system, const PRNG& prng, const size_t n_sources,
 	                                                    physics::InterfacesHandler & interfacesHandler);
+	std::vector<physics::lattices::Staggeredfield_eo *> create_staggered_sources(const hardware::System& system, const PRNG& prng,
+	                                                                             const size_t numberOfSources, physics::InterfacesHandler & interfacesHandler);
 
 	/**
 	 * Create a set of spinorfields that can be swapped.
