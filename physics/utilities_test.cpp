@@ -1,5 +1,8 @@
-/**
- * Copyright 2015 Christopher Pinke
+/** @file
+ * Tests for functions working with sources.
+ *
+ * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
  *
@@ -16,13 +19,17 @@
  * You should have received a copy of the GNU General Public License
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <string>
 
-# pragma once
+// use the boost test framework
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE physics
+#include <boost/test/unit_test.hpp>
 
-namespace physics
+#include "utilities.hpp"
+
+BOOST_AUTO_TEST_CASE(utilities)
 {
-	std::string buildCheckpointName( std::string prefix, std::string postfix, int numberOfDigitsInName, int number);
+	BOOST_REQUIRE_EQUAL(physics::buildCheckpointName( "conf.", "", 5, 1000),"conf.01000");
+	BOOST_REQUIRE_EQUAL(physics::buildCheckpointName( "conf.", "postfix", 6, 1000),"conf.001000postfix");
+	BOOST_REQUIRE_EQUAL(physics::buildCheckpointName( "conf.", "", 6, -1),"conf.save");
 }
-
-
