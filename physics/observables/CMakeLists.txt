@@ -29,6 +29,7 @@ add_library(observables
 	wilsonTwoFlavourChiralCondensate.cpp
 	wilsonTwoFlavourCorrelators.cpp
 	staggeredChiralCondensate.cpp
+	staggeredTwoFlavourCorrelators.cpp
 )
 
 target_link_libraries(observables

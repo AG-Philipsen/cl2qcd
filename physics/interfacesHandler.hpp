@@ -141,7 +141,8 @@ namespace physics {
             virtual const physics::observables::GaugeObservablesParametersInterface& getGaugeObservablesParametersInterface() = 0;
             virtual const physics::observables::WilsonTwoFlavourChiralCondensateParametersInterface& getWilsonTwoFlavourChiralCondensateParametersInterface() = 0;
             virtual const physics::observables::StaggeredChiralCondensateParametersInterface& getStaggeredChiralCondensateParametersInterface() = 0;
-            virtual const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& getWilsonTwoFlavourCorrelatorsCondensateParametersInterface() = 0;
+            virtual const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& getWilsonTwoFlavourCorrelatorsParametersInterface() = 0;
+            virtual const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& getStaggeredTwoFlavourCorrelatorsParametersInterface() = 0;
 
             //NOTE: Here the interfaces for the algorithms. Since the algorithms are functions and not objects,
             //      these getters cannot be included in the template above (getInterface).

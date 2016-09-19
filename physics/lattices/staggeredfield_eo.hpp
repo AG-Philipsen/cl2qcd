@@ -30,6 +30,7 @@
 #include "vector.hpp"
 #include "../../common_header_files/types_fermions.h"
 #include "latticesInterfaces.hpp"
+#include "../interfacesHandler.hpp"
 //This is to make the template pseudo_randomize friend of this class
 #include "util.hpp"
 
@@ -106,6 +107,15 @@ private:
 	friend void pseudo_randomize<Staggeredfield_eo, su3vec>(const Staggeredfield_eo* to, int seed);
 };
 
+/**
+ * Create n Staggeredfield_eo
+ */
+std::vector<Staggeredfield_eo *> create_staggeredfields_eo(const hardware::System& system, const size_t n, physics::InterfacesHandler& interfacesHandler);
+
+/**
+ * Release the given Staggeredfield_eo
+ */
+void release_staggeredfields_eo(const std::vector<Staggeredfield_eo *> fields);
 
 /**
  * Calculate the scalar product of two staggeredfields.

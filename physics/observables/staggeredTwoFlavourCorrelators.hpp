@@ -34,16 +34,16 @@
 #include "../interfacesHandler.hpp"
 
 namespace physics{
-
 	namespace observables{
-
 		namespace staggered{
 
-		  std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Staggeredfield_eo*>& corr, const std::vector<physics::lattices::Staggeredfield_eo*>& sources, const hardware::System& system, physics::InterfacesHandler& interfacesHandler);
+		    std::vector<hmc_float> calculatePseudoscalarCorrelator(const std::vector<physics::lattices::Staggeredfield_eo*>&,
+		                                                           const hardware::System&, physics::InterfacesHandler&);
 
-			void measureTwoFlavourCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName, physics::InterfacesHandler & interfacesHandler);
-    }
-  }
+		    void measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield*, std::string, physics::InterfacesHandler&);
+
+		}
+	}
 }
 
 #endif /* STAGGEREDTWOFLAVOURCORRELATORS_HPP_ */

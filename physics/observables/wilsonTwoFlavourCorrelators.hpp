@@ -34,7 +34,7 @@ namespace physics {
             std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
                                                         const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
                                                         physics::InterfacesHandler& interfacesHandler);
-            void measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName,
+            void measureTwoFlavourDoubletCorrelatorsOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName,
                                                                  physics::InterfacesHandler & interfacesHandler);
 
         }
