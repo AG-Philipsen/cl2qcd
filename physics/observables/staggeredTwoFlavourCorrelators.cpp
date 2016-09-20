@@ -28,17 +28,17 @@
 
 #include <fstream>
 #include <cmath>
-#include "../lattices/staggeredfield_eo.hpp"
+#include <cassert>
 
+#include "../lattices/staggeredfield_eo.hpp"
 #include "../sources.hpp"
 #include "../algorithms/inversion.hpp"
-
-#include <cassert>
 #include "../../meta/util.hpp"
 #include "../lattices/util.hpp"
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/correlator.hpp"
 #include "../interfacesHandler.hpp"
+#include "../algorithms/solver_shifted.hpp"
 
 static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_float> correlator)
 {
@@ -46,8 +46,55 @@ static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_fl
     throw Print_Error_Message("Function writeCorrelatorToFile not implemented yet!");
 }
 
-static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const size_t n_sources)
+static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const size_t numberOfSources,
+																				 physics::InterfacesHandler & interfacesHandler)
 {
+
+
+//------------------------------------------------------------------------------------------------------------------------
+
+	// step 1):
+
+
+//	const? std::vector<physics::lattices::Staggeredfield_eo *>  sources;
+//	sources = physics::create_staggered_sources(system, prng, numberOfSources, interfacesHandler);
+
+
+	// step 2):
+
+//	unsigned int numbersOfIterations[numberOfSources];
+//	int sigma = *nullptr ;										//no shift, use cg_m as cg
+//	double prec = (somenumber) ; 								//Precision of cg_m
+//	physics::lattices::Staggeredfield_eo& b;
+//	const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Staggeredfield_eo>();
+
+	/* A= Fermionmatrix
+	 * to do: include the matrix needed in fermionmatrix_stagg.hpp
+	 *
+	 * x=Source(Staggeredfield)
+	 *
+	 * b=Sink (Staggeredfield)
+	 *
+	 * gf=Gaugefields
+	 * physics::lattices::Gaugefield::unsmear() = gf; ??
+	 *
+	 * system = hardware::system  ... initOpenClxxxx   ??
+	 *	....	extern int system (const char *__command) __wur;
+	 *			__END_NAMESPACE_STD
+	 *
+	 *
+	 */
+
+
+//	for (unsigned int interationsNumb = 0; iterationsNumb < numberOfSources; ++iterationsNumb)
+//	{
+//		std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > x = sources[iterationsNumb];
+//		numbersOfIterations[iterationsNumb] = physics::algorithms::solvers::cg_m( x, A, gf, sigma, b, system, interfacesHandler, prec, additionalParameters);
+//
+//	}
+
+//-----------------------------------------------------------------------------------------------------------------------
+
     /*
      * 1) Create the sources using the function
      *         physics::create_staggered_sources
@@ -62,6 +109,9 @@ static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources
      *
      * 3) Return the proper object
      */
+
+
+
     throw Print_Error_Message("Function createAndInvertSources not implemented yet!");
 }
 
@@ -82,6 +132,18 @@ void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldA
     auto prng = gaugefield->getPrng();
 
     std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);
+
+    /* static std::vector<physics::lattices::Staggeredfield_eo*> invertedSources;
+     * invertedSources = createAndInvertSources(system, prng, numberOfSources, interfacesHandler);
+     *
+     * std::vector<hmc_float> correlator;
+     * correlator = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, system, interfacesHandler);
+     *
+     * const std::string filename = {'PS-staggered_Pion Correlator Measurement Data'}
+     * writeCorrelatorToFile(filename, correlator);
+     */
+
+
 
     /*
      * Here we will call some functions to get the job done:
