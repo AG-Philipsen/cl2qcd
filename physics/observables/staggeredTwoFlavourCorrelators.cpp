@@ -59,6 +59,12 @@ static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources
 //	const? std::vector<physics::lattices::Staggeredfield_eo *>  sources;
 //	sources = physics::create_staggered_sources(system, prng, numberOfSources, interfacesHandler);
 
+    // step 1b)
+
+    // Ask the InterfaceHandler for the sourceInterface
+    //    const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
+    // to decide whether the point source is on a even or odd site
+
 
 	// step 2):
 
