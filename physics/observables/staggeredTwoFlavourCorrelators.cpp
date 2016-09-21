@@ -49,57 +49,104 @@ static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_fl
 static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const size_t numberOfSources,
 																				 physics::InterfacesHandler & interfacesHandler)
 {
+	// step 1a)
+	// creating the sources
 
-
-//------------------------------------------------------------------------------------------------------------------------
-
-	// step 1):
-
-
-//	const? std::vector<physics::lattices::Staggeredfield_eo *>  sources;
-//	sources = physics::create_staggered_sources(system, prng, numberOfSources, interfacesHandler);
+	const std::vector<physics::lattices::Staggeredfield_eo *>  sources = physics::create_staggered_sources(system, prng, numberOfSources, interfacesHandler);
 
     // step 1b)
-
     // Ask the InterfaceHandler for the sourceInterface
-    //    const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
-    // to decide whether the point source is on a even or odd site
+	// to decide whether the point source is on a even or odd site
+
+    const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
+
+    const int tpos = SourcesParametersInterface.getSourceT(sources);
+    const int xpos = SourcesParametersInterface.getSourceX(sources);
+    const int ypos = SourcesParametersInterface.getSourceY(sources);
+    const int zpos = SourcesParametersInterface.getSourceZ(sources);
+
+    bool sourceOnEvenSite;
+    if((tpos+xpos+ypos+zpos)%2 == 0)
+    {
+    	sourceOnEvenSite = TRUE;
+    }
+    else
+    {
+    	sourceOnEvenSite = FALSE;
+    }
+
+    // step 2):
+    // invert every single source
+
+    const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Staggeredfield_eo>();
+    const hmc_float mass = additionalParameters.getMass();
+    std::vector<hmc_float> sigma(1, 0.0);
+
+    for (unsigned int interationsNumb = 0; iterationsNumb < numberOfSources; ++iterationsNumb)
+    {
+
+    	const std::vector<physics::lattices::Staggeredfield_eo *>  source = sources[iterationsNumb];
 
 
-	// step 2):
+    	if (sourceOnEvenSite == TRUE)
+    	{
+			// Case Even
+			// upper_left =  EVEN
+    		// creator of MdagM even or odd unclear
 
-//	unsigned int numbersOfIterations[numberOfSources];
-//	int sigma = *nullptr ;										//no shift, use cg_m as cg
-//	double prec = (somenumber) ; 								//Precision of cg_m
-//	physics::lattices::Staggeredfield_eo& b;
-//	const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Staggeredfield_eo>();
+			// calculate phi_e = ((MdagM)_ee)^-1 * S_e
+			physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), upper_left);
+			std::vector<std::shared_ptr<Staggeredfield_eo> > phi_e; //This is the type to be used in the inverter
+			cg_m(phi_e, MdagM, gf, sigma, source, system, interfacesHandler, parametersInterface.getSolverPrecision(), additionalParameters);
 
-	/* A= Fermionmatrix
-	 * to do: include the matrix needed in fermionmatrix_stagg.hpp
-	 *
-	 * x=Source(Staggeredfield)
-	 *
-	 * b=Sink (Staggeredfield)
-	 *
-	 * gf=Gaugefields
-	 * physics::lattices::Gaugefield::unsmear() = gf; ??
-	 *
-	 * system = hardware::system  ... initOpenClxxxx   ??
-	 *	....	extern int system (const char *__command) __wur;
-	 *			__END_NAMESPACE_STD
-	 *
-	 *
-	 */
+			// calculate chi_e = m * phi_e
+			Staggeredfield_eo chi_e(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+			physics::lattices::sax(&chi_e, mass, phi_e);
+
+			// calculate chi_o = - D_oe * phi_e
+			Staggeredfield_eo chi_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+			physics::fermionmatrix::D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
+			Doe(&chi_o, gf, phi_e);
+			physics::lattices::sax(&chi_o, -1.0 , chi_o);
+
+			// overwrite inverted source for output
+			sources[iterationsNumb]=chi_o;
+    	}
+    	else
+    	{
+			// Case Odd:
+			// upper_left = ODD
+    		// creator of MdagM even or odd unclear
+
+			// calculate phi_o = ((MdagM)_oo)^-1 * S_o
+			physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), upper_left);
+			std::vector<std::shared_ptr<Staggeredfield_eo> > phi_o; //This is the type to be used in the inverter
+			cg_m(phi_o, MdagM, gf, sigma, source, system, interfacesHandler, parametersInterface.getSolverPrecision(), additionalParameters);
+
+			// calculate chi_e = -D_eo * phi_o
+			Staggeredfield_eo chi_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+			physics::lattices::sax(&chi_o, mass, phi_o);
+
+			// calculate chi_o = m * phi_o
+			Staggeredfield_eo chi_e(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+			physics::fermionmatrix::D_KS_eo Deo(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
+			Deo(&chi_e, gf, phi_o);
+			physics::lattices::sax(&chi_e, -1.0 , chi_e);
+
+			// overwrite inverted source for output
+			sources[iterationsNumb]=chi_e;
+    	}
+
+    }
 
 
-//	for (unsigned int interationsNumb = 0; iterationsNumb < numberOfSources; ++iterationsNumb)
-//	{
-//		std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > x = sources[iterationsNumb];
-//		numbersOfIterations[iterationsNumb] = physics::algorithms::solvers::cg_m( x, A, gf, sigma, b, system, interfacesHandler, prec, additionalParameters);
-//
-//	}
+    // throw Print_Error_Message("Function createAndInvertSources not implemented yet!");
+
+}
 
 //-----------------------------------------------------------------------------------------------------------------------
+
+// List of Tasks:
 
     /*
      * 1) Create the sources using the function
@@ -116,10 +163,8 @@ static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources
      * 3) Return the proper object
      */
 
+//------------------------------------------------------------------------------------------------------------------------
 
-
-    throw Print_Error_Message("Function createAndInvertSources not implemented yet!");
-}
 
 std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCorrelator(const std::vector<physics::lattices::Staggeredfield_eo*>& invertedSources,
                                                                                         const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
