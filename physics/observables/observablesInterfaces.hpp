@@ -86,6 +86,7 @@ namespace physics {
 			public:
 				virtual ~StaggeredTwoFlavourCorrelatorsParametersInterface(){}
 				virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
+				virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
 //				virtual unsigned getNs() const = 0;
 //				virtual unsigned getNt() const = 0;
 //				virtual int getNumberOfSources() const = 0;

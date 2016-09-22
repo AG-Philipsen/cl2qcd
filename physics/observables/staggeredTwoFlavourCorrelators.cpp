@@ -42,8 +42,114 @@
 
 static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_float> correlator)
 {
-    //Open, write (like in Wilson) and CLOSE!!
-    throw Print_Error_Message("Function writeCorrelatorToFile not implemented yet!");
+	//Open, write (like in Wilson) and CLOSE!!
+
+	//How does ParameterInterface know that we are in StaggeredTwoFlavourCorrelatorsParametersInterface ??
+	//parametersInterface.printInformationOfFlavourDoubletCorrelator(&of);
+
+
+
+	using namespace std;
+
+	ofstream of;
+	of.open (filename.c_str(), ios_base::app);
+	if(!of.is_open())
+	{
+		throw File_Exception(filename);
+	}
+
+	if(parametersInterface.printToScreen())
+		parametersInterface.printInformationOfFlavourDoubletCorrelator();
+
+	parametersInterface.printInformationOfFlavourDoubletCorrelator(&of);
+
+	logger.info() << "staggered pseudoscalar pion correlator:" ;
+	for(size_t j = 0; j < correlator.size(); j++)
+	{
+		logger.info() << j << "\t" << scientific << setprecision(14) << correlator[j];
+		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << correlator[j] << endl;
+	}
+
+	of << endl;
+	of.close();
+
+
+	// Wilson code:
+	/*
+	 * static void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources,
+                                        std::string corr_fn, const hardware::System& system,
+                                        const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler & interfacesHandler)
+		{
+			using namespace std;
+
+			ofstream of(corr_fn.c_str(), ios_base::app);
+			if(!of.is_open()) {
+			  throw File_Exception(corr_fn);
+			}
+
+			auto result_ps = physics::observables::wilson::calculate_correlator("ps", result, sources, system, interfacesHandler);
+			auto result_sc = physics::observables::wilson::calculate_correlator("sc", result, sources, system, interfacesHandler);
+			auto result_vx = physics::observables::wilson::calculate_correlator("vx", result, sources, system, interfacesHandler);
+			auto result_vy = physics::observables::wilson::calculate_correlator("vy", result, sources, system, interfacesHandler);
+			auto result_vz = physics::observables::wilson::calculate_correlator("vz", result, sources, system, interfacesHandler);
+			auto result_ax = physics::observables::wilson::calculate_correlator("ax", result, sources, system, interfacesHandler);
+			auto result_ay = physics::observables::wilson::calculate_correlator("ay", result, sources, system, interfacesHandler);
+			auto result_az = physics::observables::wilson::calculate_correlator("az", result, sources, system, interfacesHandler);
+
+			if(parametersInterface.printToScreen())
+				parametersInterface.printInformationOfFlavourDoubletCorrelator();
+
+			parametersInterface.printInformationOfFlavourDoubletCorrelator(&of);
+
+			// @todo One could also implement to write all results on screen if wanted
+			//the pseudo-scalar (J=0, P=1)
+			logger.info() << "pseudo scalar correlator:" ;
+			for(size_t j = 0; j < result_ps.size(); j++) {
+				logger.info() << j << "\t" << scientific << setprecision(14) << result_ps[j];
+				of << scientific << setprecision(14) << "0 1\t" << j << "\t" << result_ps[j] << endl;
+			}
+
+			//the scalar (J=0, P=0)
+			for(size_t j = 0; j < result_sc.size(); j++) {
+				of << scientific << setprecision(14) << "0 0\t" << j << "\t" << result_sc[j] << endl;
+			}
+
+			//the vector (J=1, P=1)
+			if(result_vx.size() != result_vy.size() || result_vx.size() != result_vz.size()) {
+				throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
+			}
+			for(size_t j = 0; j < result_vx.size(); j++) {
+				of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (result_vx[j] + result_vy[j] + result_vz[j]) / 3. << "\t" << result_vx[j] << "\t" << result_vy[j] << "\t" << result_vz[j] << endl;
+			}
+
+			//the axial vector (J=1, P=0)
+			if(result_ax.size() != result_ay.size() || result_ax.size() != result_az.size()) {
+				throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
+			}
+			for(size_t j = 0; j < result_ax.size(); j++) {
+				of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (result_ax[j] + result_ay[j] + result_az[j]) / 3. << "\t" << result_ax[j] << "\t" << result_ay[j] << "\t" << result_az[j] << endl;
+			}
+
+			//the avps correlator
+			if (parametersInterface.getCorrelatorDirection() == 0)
+			  {
+				auto result_avps = physics::observables::wilson::calculate_correlator("avps", result, sources, system, interfacesHandler);
+				for(size_t j = 0; j < result_avps.size(); j++) {
+				  of << scientific << setprecision(14) << "1 0 0 1\t" << j << "\t" << result_avps[j] << endl;
+				}
+			  }
+			of << endl;
+		}
+	 *
+	 *
+	 *
+	 */
+
+
+
+
+
+    //throw Print_Error_Message("Function writeCorrelatorToFile not implemented yet!");
 }
 
 static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const size_t numberOfSources,
@@ -170,6 +276,79 @@ std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCor
                                                                                         const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
     //Like calculate_correlator_componentwise in Wilson!
+
+	/*
+	 * auto code = results[i]->get_device()->getCorrelatorCode();
+	 *  code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], window_bufs[i]);
+	 *
+	 *
+	 *
+	 * Unclear where function correlator is defined since eclipse gives an syntax error msg for the auto code ... line
+	 *
+	 */
+
+
+
+
+
+
+
+
+	/* Wilson code: (just for overview)
+	 *
+	 * static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
+                                                                 const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
+                                                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface,
+                                                                 physics::InterfacesHandler & interfacesHandler)
+		{
+			// assert single device
+			auto first_corr = corr.at(0);
+			try_swap_in(first_corr);
+			auto first_field_buffers = first_corr->get_buffers();
+			const size_t num_buffers = first_field_buffers.size();
+			const size_t num_corr_entries = get_num_corr_entries(parametersInterface);
+
+			// for each source
+			if(corr.size() != sources.size()) {
+				throw std::invalid_argument("Correlated and source fields need to be of the same size.");
+			}
+
+			std::vector<const hardware::buffers::Plain<hmc_float>*> results(num_buffers);
+			for(size_t i = 0; i < num_buffers; ++i) {
+				auto device = first_field_buffers[i]->get_device();
+				results[i] = new hardware::buffers::Plain<hmc_float>(num_corr_entries, device);
+				results[i]->clear();
+			}
+
+			for(size_t i = 0; i < corr.size(); i++) {
+				calculate_correlator(type, results, corr.at(i), sources.at(i), system, parametersInterface, interfacesHandler);
+			}
+
+			std::vector<hmc_float> host_result(num_corr_entries);
+			for(size_t i = 0; i < num_corr_entries; ++i) {
+				host_result[i] = 0.;
+			}
+			for(auto result: results) {
+				std::vector<hmc_float> out(num_corr_entries);
+				result->dump(out.data());
+				for(size_t i = 0; i < num_corr_entries; ++i) {
+					logger.trace() << out[i];
+					host_result[i] += out[i];
+				}
+				delete result;
+			}
+			return host_result;
+		}
+	 *
+	 *
+	 *
+	 *
+	 *
+	 */
+
+
+
+
     throw Print_Error_Message("Function calculatePseudoscalarCorrelator not implemented yet!");
 }
 
