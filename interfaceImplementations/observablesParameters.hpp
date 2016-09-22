@@ -253,17 +253,17 @@ namespace physics {
                 ~StaggeredTwoFlavourCorrelatorsParametersImplementation()
                 {
                 }
-//                bool printToScreen() const override
-//                {
-//                    return parameters.get_print_to_screen();
-//                }
-//                void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const override
-//                {
-//                    if(of == nullptr)
-//                        meta::print_info_flavour_doublet_correlators(parameters);
-//                    else
-//                        meta::print_info_flavour_doublet_correlators(of, parameters);
-//                }
+                bool printToScreen() const override
+                {
+                    return parameters.get_print_to_screen();
+                }
+                void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const override
+                {
+                    if(of == nullptr)
+                        meta::print_info_flavour_doublet_correlators(parameters);
+                    else
+                        meta::print_info_flavour_doublet_correlators(of, parameters);
+                }
 //                unsigned getCorrelatorDirection() const override
 //                {
 //                    return parameters.get_corr_dir();
@@ -284,14 +284,18 @@ namespace physics {
                 {
                     return meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
                 }
+                hmc_float getSolverPrecision() const override
+                {
+                    return parameters.get_solver_prec();
+                }
 //                bool placeSourcesOnHost() const override
 //                {
 //                    return parameters.get_place_sources_on_host();
 //                }
-//                int getNumberOfSources() const override
-//                {
-//                    return parameters.get_num_sources();
-//                }
+                int getNumberOfSources() const override
+                {
+                    return parameters.get_num_sources();
+                }
 
             private:
                 const meta::Inputparameters& parameters;
