@@ -40,16 +40,11 @@
 #include "../interfacesHandler.hpp"
 #include "../algorithms/solver_shifted.hpp"
 
-static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_float> correlator)
+static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_float> correlator,
+                                  const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface)
 {
-	//Open, write (like in Wilson) and CLOSE!!
-
-	//How does ParameterInterface know that we are in StaggeredTwoFlavourCorrelatorsParametersInterface ??
-	//parametersInterface.printInformationOfFlavourDoubletCorrelator(&of);
-
-
-
-	using namespace std;
+    //TODO: Remove this use namespace!!
+    using namespace std;
 
 	ofstream of;
 	of.open (filename.c_str(), ios_base::app);
@@ -73,87 +68,11 @@ static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_fl
 	of << endl;
 	of.close();
 
-
-	// Wilson code:
-	/*
-	 * static void flavour_doublet_correlators(const std::vector<physics::lattices::Spinorfield*>& result, const std::vector<physics::lattices::Spinorfield*>& sources,
-                                        std::string corr_fn, const hardware::System& system,
-                                        const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface, physics::InterfacesHandler & interfacesHandler)
-		{
-			using namespace std;
-
-			ofstream of(corr_fn.c_str(), ios_base::app);
-			if(!of.is_open()) {
-			  throw File_Exception(corr_fn);
-			}
-
-			auto result_ps = physics::observables::wilson::calculate_correlator("ps", result, sources, system, interfacesHandler);
-			auto result_sc = physics::observables::wilson::calculate_correlator("sc", result, sources, system, interfacesHandler);
-			auto result_vx = physics::observables::wilson::calculate_correlator("vx", result, sources, system, interfacesHandler);
-			auto result_vy = physics::observables::wilson::calculate_correlator("vy", result, sources, system, interfacesHandler);
-			auto result_vz = physics::observables::wilson::calculate_correlator("vz", result, sources, system, interfacesHandler);
-			auto result_ax = physics::observables::wilson::calculate_correlator("ax", result, sources, system, interfacesHandler);
-			auto result_ay = physics::observables::wilson::calculate_correlator("ay", result, sources, system, interfacesHandler);
-			auto result_az = physics::observables::wilson::calculate_correlator("az", result, sources, system, interfacesHandler);
-
-			if(parametersInterface.printToScreen())
-				parametersInterface.printInformationOfFlavourDoubletCorrelator();
-
-			parametersInterface.printInformationOfFlavourDoubletCorrelator(&of);
-
-			// @todo One could also implement to write all results on screen if wanted
-			//the pseudo-scalar (J=0, P=1)
-			logger.info() << "pseudo scalar correlator:" ;
-			for(size_t j = 0; j < result_ps.size(); j++) {
-				logger.info() << j << "\t" << scientific << setprecision(14) << result_ps[j];
-				of << scientific << setprecision(14) << "0 1\t" << j << "\t" << result_ps[j] << endl;
-			}
-
-			//the scalar (J=0, P=0)
-			for(size_t j = 0; j < result_sc.size(); j++) {
-				of << scientific << setprecision(14) << "0 0\t" << j << "\t" << result_sc[j] << endl;
-			}
-
-			//the vector (J=1, P=1)
-			if(result_vx.size() != result_vy.size() || result_vx.size() != result_vz.size()) {
-				throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
-			}
-			for(size_t j = 0; j < result_vx.size(); j++) {
-				of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (result_vx[j] + result_vy[j] + result_vz[j]) / 3. << "\t" << result_vx[j] << "\t" << result_vy[j] << "\t" << result_vz[j] << endl;
-			}
-
-			//the axial vector (J=1, P=0)
-			if(result_ax.size() != result_ay.size() || result_ax.size() != result_az.size()) {
-				throw Print_Error_Message("Internal error: Vector correlators are not of equal length");
-			}
-			for(size_t j = 0; j < result_ax.size(); j++) {
-				of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (result_ax[j] + result_ay[j] + result_az[j]) / 3. << "\t" << result_ax[j] << "\t" << result_ay[j] << "\t" << result_az[j] << endl;
-			}
-
-			//the avps correlator
-			if (parametersInterface.getCorrelatorDirection() == 0)
-			  {
-				auto result_avps = physics::observables::wilson::calculate_correlator("avps", result, sources, system, interfacesHandler);
-				for(size_t j = 0; j < result_avps.size(); j++) {
-				  of << scientific << setprecision(14) << "1 0 0 1\t" << j << "\t" << result_avps[j] << endl;
-				}
-			  }
-			of << endl;
-		}
-	 *
-	 *
-	 *
-	 */
-
-
-
-
-
-    //throw Print_Error_Message("Function writeCorrelatorToFile not implemented yet!");
 }
 
-static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const size_t numberOfSources,
-																				 physics::InterfacesHandler & interfacesHandler)
+static std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >
+createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const physics::lattices::Gaugefield& gaugefield,
+                       const int numberOfSources, physics::InterfacesHandler& interfacesHandler)
 {
 	// step 1a)
 	// creating the sources
@@ -166,115 +85,105 @@ static std::vector<physics::lattices::Staggeredfield_eo*> createAndInvertSources
 
     const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
 
-    const int tpos = SourcesParametersInterface.getSourceT(sources);
-    const int xpos = SourcesParametersInterface.getSourceX(sources);
-    const int ypos = SourcesParametersInterface.getSourceY(sources);
-    const int zpos = SourcesParametersInterface.getSourceZ(sources);
+    const int tpos = sourcesParameters.getSourceT();
+    const int xpos = sourcesParameters.getSourceX();
+    const int ypos = sourcesParameters.getSourceY();
+    const int zpos = sourcesParameters.getSourceZ();
 
-    bool sourceOnEvenSite;
-    if((tpos+xpos+ypos+zpos)%2 == 0)
-    {
-    	sourceOnEvenSite = TRUE;
-    }
-    else
-    {
-    	sourceOnEvenSite = FALSE;
-    }
+    const bool sourceOnEvenSite = ((tpos+xpos+ypos+zpos)%2 == 0) ? true : false;
 
     // step 2):
     // invert every single source
 
+    std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesEvenParts;
+    std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOddParts;
     const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<physics::lattices::Staggeredfield_eo>();
+    const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& staggeredTwoFlavourCorrelatorsParametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsParametersInterface();
     const hmc_float mass = additionalParameters.getMass();
     std::vector<hmc_float> sigma(1, 0.0);
 
-    for (unsigned int interationsNumb = 0; iterationsNumb < numberOfSources; ++iterationsNumb)
+    for (int iterationNumber = 0; iterationNumber < numberOfSources; ++iterationNumber)
     {
-
-    	const std::vector<physics::lattices::Staggeredfield_eo *>  source = sources[iterationsNumb];
-
-
-    	if (sourceOnEvenSite == TRUE)
+    	if(sourceOnEvenSite)
     	{
-			// Case Even
-			// upper_left =  EVEN
-    		// creator of MdagM even or odd unclear
+    	    bool upper_left =  EVEN;
 
 			// calculate phi_e = ((MdagM)_ee)^-1 * S_e
 			physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), upper_left);
-			std::vector<std::shared_ptr<Staggeredfield_eo> > phi_e; //This is the type to be used in the inverter
-			cg_m(phi_e, MdagM, gf, sigma, source, system, interfacesHandler, parametersInterface.getSolverPrecision(), additionalParameters);
+			std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > phi_e; //This is the type to be used in the CG-M
+			phi_e.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+			physics::algorithms::solvers::cg_m(phi_e, MdagM, gaugefield, sigma, *(sources[iterationNumber]), system, interfacesHandler, staggeredTwoFlavourCorrelatorsParametersInterface.getSolverPrecision(), additionalParameters);
 
 			// calculate chi_e = m * phi_e
-			Staggeredfield_eo chi_e(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
-			physics::lattices::sax(&chi_e, mass, phi_e);
+			physics::lattices::Staggeredfield_eo* chi_e = new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+			physics::lattices::sax(chi_e, mass, *(phi_e[0]));
 
 			// calculate chi_o = - D_oe * phi_e
-			Staggeredfield_eo chi_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+			physics::lattices::Staggeredfield_eo* chi_o = new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 			physics::fermionmatrix::D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);
-			Doe(&chi_o, gf, phi_e);
-			physics::lattices::sax(&chi_o, -1.0 , chi_o);
+			Doe(chi_o, gaugefield, *(phi_e[0]));
+			physics::lattices::sax(chi_o, -1.0 , *chi_o);
 
-			// overwrite inverted source for output
-			sources[iterationsNumb]=chi_o;
+            // set inverted sources for output
+            invertedSourcesEvenParts.push_back(chi_e);
+            invertedSourcesOddParts.push_back(chi_o);
     	}
     	else
     	{
-			// Case Odd:
-			// upper_left = ODD
-    		// creator of MdagM even or odd unclear
+    	    bool upper_left = ODD;
 
 			// calculate phi_o = ((MdagM)_oo)^-1 * S_o
-			physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), upper_left);
-			std::vector<std::shared_ptr<Staggeredfield_eo> > phi_o; //This is the type to be used in the inverter
-			cg_m(phi_o, MdagM, gf, sigma, source, system, interfacesHandler, parametersInterface.getSolverPrecision(), additionalParameters);
+    	    physics::fermionmatrix::MdagM_eo MdagM(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>(), upper_left);
+    	    std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > phi_o; //This is the type to be used in the CG-M
+    	    phi_o.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+    	    physics::algorithms::solvers::cg_m(phi_o, MdagM, gaugefield, sigma, *(sources[iterationNumber]), system, interfacesHandler, staggeredTwoFlavourCorrelatorsParametersInterface.getSolverPrecision(), additionalParameters);
 
-			// calculate chi_e = -D_eo * phi_o
-			Staggeredfield_eo chi_o(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
-			physics::lattices::sax(&chi_o, mass, phi_o);
+    	    // calculate chi_e = -D_eo * phi_o
+    	    physics::lattices::Staggeredfield_eo* chi_e = new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+            physics::fermionmatrix::D_KS_eo Deo(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
+            Deo(chi_e, gaugefield, *(phi_o[0]));
+            physics::lattices::sax(chi_e, -1.0 , *chi_e);
 
 			// calculate chi_o = m * phi_o
-			Staggeredfield_eo chi_e(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
-			physics::fermionmatrix::D_KS_eo Deo(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), EVEN);
-			Deo(&chi_e, gf, phi_o);
-			physics::lattices::sax(&chi_e, -1.0 , chi_e);
+            physics::lattices::Staggeredfield_eo* chi_o = new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
+            physics::lattices::sax(chi_o, mass, *(phi_o[0]));
 
-			// overwrite inverted source for output
-			sources[iterationsNumb]=chi_e;
+            // set inverted sources for output
+            invertedSourcesEvenParts.push_back(chi_e);
+            invertedSourcesOddParts.push_back(chi_o);
     	}
 
     }
 
+    if((int)invertedSourcesEvenParts.size() != numberOfSources || (int)invertedSourcesOddParts.size() != numberOfSources)
+        throw Print_Error_Message("Something went really wrong in \"createAndInvertSources\" since the number of inverted sources does not match the number of sources!");
 
-    // throw Print_Error_Message("Function createAndInvertSources not implemented yet!");
+
+    physics::lattices::release_staggeredfields_eo(sources);
+    return std::make_pair(invertedSourcesEvenParts, invertedSourcesOddParts);
 
 }
 
-//-----------------------------------------------------------------------------------------------------------------------
-
-// List of Tasks:
-
-    /*
-     * 1) Create the sources using the function
-     *         physics::create_staggered_sources
-     *    which I added for you and tested. The test fails since the point source kernel is missing!
-     *
-     * 2) For loop on the number of sources and for each source
-     *     - Create what is needed to call CG-M used as a standard CG
-     *     - Call to CG-M to invert the source. The calculation that has been done here has to reflect the
-     *       calculation we did together with the even odd decomposed field. I think here you will have to
-     *       to treat the even and/or the odd part only, depending on which lattice site the source was. If
-     *       you do not know, come by and we see.
-     *
-     * 3) Return the proper object
-     */
-
-//------------------------------------------------------------------------------------------------------------------------
-
-
-std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCorrelator(const std::vector<physics::lattices::Staggeredfield_eo*>& invertedSources,
-                                                                                        const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCorrelator(
+        const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >& invertedSources,
+        const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
+
+    const std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOnEvenSites = invertedSources.first;
+    const std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOnOddSites = invertedSources.second;
+
+    //Test on single device
+    //    if(invertedSourcesOnEvenSites.at(0)->get_buffers().size() != 1)
+
+    //Allocate result (and not results) as const hardware::buffers::Plain<hmc_float>*
+
+    //for loop with calculate correlator inside
+
+    //Create host_result, dump the data from device directly into it without loop and sum (+=)
+
+
+
+
     //Like calculate_correlator_componentwise in Wilson!
 
 	/*
@@ -352,28 +261,30 @@ std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCor
     throw Print_Error_Message("Function calculatePseudoscalarCorrelator not implemented yet!");
 }
 
-void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield * gaugefield,
+void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield& gaugefield,
                                                                                                     std::string currentConfigurationName,
                                                                                                     physics::InterfacesHandler & interfacesHandler)
 {
 
-    auto system = gaugefield->getSystem();
+    auto system = gaugefield.getSystem();
     const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsParametersInterface();
-    auto prng = gaugefield->getPrng();
+    auto prng = gaugefield.getPrng();
+
+    /*
+     * TODO: Make test on correlator direction and throw if not t-dir.
+     */
 
     std::string filenameForCorrelatorData = parametersInterface.getCorrelatorFilename(currentConfigurationName);
 
-    /* static std::vector<physics::lattices::Staggeredfield_eo*> invertedSources;
-     * invertedSources = createAndInvertSources(system, prng, numberOfSources, interfacesHandler);
-     *
-     * std::vector<hmc_float> correlator;
-     * correlator = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, system, interfacesHandler);
-     *
-     * const std::string filename = {'PS-staggered_Pion Correlator Measurement Data'}
-     * writeCorrelatorToFile(filename, correlator);
-     */
+    std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> > invertedSources;
+    invertedSources = createAndInvertSources(*system, *prng, gaugefield, parametersInterface.getNumberOfSources(), interfacesHandler);
 
+    std::vector<hmc_float> correlator;// = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, system, interfacesHandler);
 
+    writeCorrelatorToFile(filenameForCorrelatorData, correlator, parametersInterface);
+
+    physics::lattices::release_staggeredfields_eo(invertedSources.first);
+    physics::lattices::release_staggeredfields_eo(invertedSources.second);
 
     /*
      * Here we will call some functions to get the job done:

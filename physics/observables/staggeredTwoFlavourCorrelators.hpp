@@ -37,10 +37,10 @@ namespace physics{
 	namespace observables{
 		namespace staggered{
 
-		    std::vector<hmc_float> calculatePseudoscalarCorrelator(const std::vector<physics::lattices::Staggeredfield_eo*>&,
+		    std::vector<hmc_float> calculatePseudoscalarCorrelator(const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >&,
 		                                                           const hardware::System&, physics::InterfacesHandler&);
 
-		    void measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield*, std::string, physics::InterfacesHandler&);
+		    void measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield&, std::string, physics::InterfacesHandler&);
 
 		}
 	}
