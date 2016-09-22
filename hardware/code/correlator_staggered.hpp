@@ -25,6 +25,7 @@
 
 #include "opencl_module.hpp"
 
+#include "../buffers/plain.hpp"
 #include "../buffers/su3vec.hpp"
 #include "../buffers/prng_buffer.hpp"
 #include "../../common_header_files/types_fermions.h"
@@ -47,6 +48,12 @@ public:
 	void create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const;
 
 	void create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const;
+
+    /**
+     * Calculate the correlator on the device.
+     * TODO: In future, if different correlators are added, think whether to do as in Wilson, overloading, or in a different way!
+     */
+    void pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * in) const;
 
 	/**
 	 * Print the profiling information to a file.

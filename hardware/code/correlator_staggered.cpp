@@ -121,6 +121,11 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 	}
 }
 
+void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * in) const
+{
+    throw Print_Error_Message("Method hardware::code::Correlator_staggered::pseudoScalarCorrelator not implemented yet!", __FILE__, __LINE__);
+}
+
 size_t hardware::code::Correlator_staggered::get_read_write_size(const std::string& in) const
 {
 	//this is the same as in the function above
