@@ -172,6 +172,8 @@ std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCor
         const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
 	//Like calculate_correlator_componentwise in Wilson!
+	//Until now, system not used in this function!
+
 
 	const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& staggeredTwoFlavourCorrelatorsParametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsParametersInterface();
     const std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOnEvenSites = invertedSources.first;
