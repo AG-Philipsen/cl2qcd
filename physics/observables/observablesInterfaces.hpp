@@ -88,9 +88,9 @@ namespace physics {
 				virtual bool printToScreen() const = 0;
 				virtual void printInformationOfFlavourDoubletCorrelator(std::ostream* of = nullptr) const = 0;
 //                virtual unsigned getCorrelatorDirection() const = 0;
-//                virtual common::sourcetypes getSourceType() const = 0;
+                virtual common::sourcetypes getSourceType() const = 0;
 //                virtual unsigned getNs() const = 0;
-//                virtual unsigned getNt() const = 0;
+                virtual unsigned getNt() const = 0;
 				virtual std::string getCorrelatorFilename(std::string currentConfigurationName) const = 0;
 				virtual hmc_float getSolverPrecision() const = 0;
 //                virtual bool placeSourcesOnHost() const = 0;

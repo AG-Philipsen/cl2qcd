@@ -39,6 +39,7 @@
 #include "../../hardware/code/correlator.hpp"
 #include "../interfacesHandler.hpp"
 #include "../algorithms/solver_shifted.hpp"
+#include "../../hardware/code/correlator_staggered.hpp"
 
 static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_float> correlator,
                                   const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface)
@@ -164,106 +165,100 @@ createAndInvertSources(const hardware::System& system, const physics::PRNG& prng
 
 }
 
+
+
 std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCorrelator(
         const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >& invertedSources,
         const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
 {
+	//Like calculate_correlator_componentwise in Wilson!
 
+	const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& staggeredTwoFlavourCorrelatorsParametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsParametersInterface();
     const std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOnEvenSites = invertedSources.first;
     const std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOnOddSites = invertedSources.second;
 
+    if(invertedSourcesOnEvenSites.size()!=invertedSourcesOnOddSites.size())
+    {
+    	throw Print_Error_Message("# of invertedSourcesOnEvenSites is unequal to # of invertedSourcesOnOddSites, big mistake in invert sources");
+    }
+
+    auto firstInvertedevenSource = invertedSourcesOnEvenSites.at(0);
+    auto evenSiteBuffers = firstInvertedevenSource->get_buffers();
+
+    auto firstInvertedOddSource = invertedSourcesOnOddSites.at(0);
+    auto oddSiteBuffers = firstInvertedOddSource->get_buffers();
+
     //Test on single device
-    //    if(invertedSourcesOnEvenSites.at(0)->get_buffers().size() != 1)
+	if(evenSiteBuffers.size() != 1)
+	{
+		throw Print_Error_Message("Multiple GPU calculation not available in staggered case");
+	}
 
-    //Allocate result (and not results) as const hardware::buffers::Plain<hmc_float>*
+	if(oddSiteBuffers.size() != 1)
+	{
+			throw Print_Error_Message("Multiple GPU calculation not available in staggered case");
+	}
 
-    //for loop with calculate correlator inside
+	static size_t numberOfCorrelatorEntries = staggeredTwoFlavourCorrelatorsParametersInterface.getNt();
 
-    //Create host_result, dump the data from device directly into it without loop and sum (+=)
+	//Allocate result (and not results) as const hardware::buffers::Plain<hmc_float>*
+	const hardware::buffers::Plain<hmc_float>* correlatorResult;
 
+	const hardware::Device *device = evenSiteBuffers->get_device();
+	correlatorResult = new hardware::buffers::Plain<hmc_float>(numberOfCorrelatorEntries, device);
+	correlatorResult->clear();
 
+//	if(correlatorResult.getSourceType() != common::sourcetypes::point)
+//	{
+//		throw Print_Error_Message("staggered correlator calculation only for pointsources implemented");
+//	}
 
+	//for loop with calculate correlator inside
 
-    //Like calculate_correlator_componentwise in Wilson!
-
-	/*
-	 * auto code = results[i]->get_device()->getCorrelatorCode();
-	 *  code->correlator(code->get_correlator_kernel(type), results[i], corr_bufs[i], window_bufs[i]);
-	 *
-	 *
-	 *
-	 * Unclear where function correlator is defined since eclipse gives an syntax error msg for the auto code ... line
-	 *
-	 */
-
-
-
-
-
-
-
-
-	/* Wilson code: (just for overview)
-	 *
-	 * static std::vector<hmc_float> calculate_correlator_componentwise(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
-                                                                 const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
-                                                                 const physics::observables::WilsonTwoFlavourCorrelatorsParametersInterface& parametersInterface,
-                                                                 physics::InterfacesHandler & interfacesHandler)
-		{
-			// assert single device
-			auto first_corr = corr.at(0);
-			try_swap_in(first_corr);
-			auto first_field_buffers = first_corr->get_buffers();
-			const size_t num_buffers = first_field_buffers.size();
-			const size_t num_corr_entries = get_num_corr_entries(parametersInterface);
-
-			// for each source
-			if(corr.size() != sources.size()) {
-				throw std::invalid_argument("Correlated and source fields need to be of the same size.");
-			}
-
-			std::vector<const hardware::buffers::Plain<hmc_float>*> results(num_buffers);
-			for(size_t i = 0; i < num_buffers; ++i) {
-				auto device = first_field_buffers[i]->get_device();
-				results[i] = new hardware::buffers::Plain<hmc_float>(num_corr_entries, device);
-				results[i]->clear();
-			}
-
-			for(size_t i = 0; i < corr.size(); i++) {
-				calculate_correlator(type, results, corr.at(i), sources.at(i), system, parametersInterface, interfacesHandler);
-			}
-
-			std::vector<hmc_float> host_result(num_corr_entries);
-			for(size_t i = 0; i < num_corr_entries; ++i) {
-				host_result[i] = 0.;
-			}
-			for(auto result: results) {
-				std::vector<hmc_float> out(num_corr_entries);
-				result->dump(out.data());
-				for(size_t i = 0; i < num_corr_entries; ++i) {
-					logger.trace() << out[i];
-					host_result[i] += out[i];
-				}
-				delete result;
-			}
-			return host_result;
-		}
-	 *
-	 *
-	 *
-	 *
-	 *
-	 */
+	//const std::string& type = "ps";  //other pions not implemented yet.
 
 
+	for(size_t i = 0; i < invertedSourcesOnEvenSites.size(); i++)
+	{
 
+		auto evenSiteinvertedSource = invertedSourcesOnEvenSites.at(i);
+		auto evenSiteinvertedSourceBuffer = evenSiteinvertedSource->get_buffers();
+		auto oddSiteinvertedSource = invertedSourcesOnOddSites.at(i);
+		auto oddSiteinvertedSourceBuffer = oddSiteinvertedSource->get_buffers();
 
-    throw Print_Error_Message("Function calculatePseudoscalarCorrelator not implemented yet!");
+		auto code = correlatorResult->get_device()->getCorrelatorStaggeredCode();
+		//hardware::code::Correlator_staggered::pseudoScalarCorrelator
+		code->pseudoScalarCorrelator(correlatorResult, evenSiteinvertedSourceBuffer[i]);
+		code->pseudoScalarCorrelator(correlatorResult, oddSiteinvertedSourceBuffer[i]);
+
+	}
+
+	//Create host_result, dump the data from device directly into it without loop and sum (+=)
+	// Tim : I think the loop over the number of correlator entries is needed, but not the loop over the number of buffers...
+
+	std::vector<hmc_float> host_correlatorResult(numberOfCorrelatorEntries);
+	for(size_t i = 0; i < numberOfCorrelatorEntries; ++i)
+	{
+		host_correlatorResult[i] = 0.;
+	}
+
+	auto result = correlatorResult;
+	std::vector<hmc_float> out(numberOfCorrelatorEntries);
+	result->dump(out.data());
+	for(size_t i = 0; i < numberOfCorrelatorEntries; ++i)
+	{
+		logger.trace() << out[i];
+		host_correlatorResult[i] += out[i];
+	}
+	delete result;
+	return host_correlatorResult;
+
+    //throw Print_Error_Message("Function calculatePseudoscalarCorrelator not implemented yet!");
 }
 
-void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield& gaugefield,
-                                                                                                    std::string currentConfigurationName,
-                                                                                                    physics::InterfacesHandler & interfacesHandler)
+void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(
+		const physics::lattices::Gaugefield& gaugefield,std::string currentConfigurationName,
+		physics::InterfacesHandler & interfacesHandler)
 {
 
     auto system = gaugefield.getSystem();
@@ -279,7 +274,7 @@ void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldA
     std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> > invertedSources;
     invertedSources = createAndInvertSources(*system, *prng, gaugefield, parametersInterface.getNumberOfSources(), interfacesHandler);
 
-    std::vector<hmc_float> correlator;// = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, system, interfacesHandler);
+    std::vector<hmc_float> correlator = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, *system, interfacesHandler);
 
     writeCorrelatorToFile(filenameForCorrelatorData, correlator, parametersInterface);
 

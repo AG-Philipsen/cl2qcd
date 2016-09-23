@@ -268,18 +268,18 @@ namespace physics {
 //                {
 //                    return parameters.get_corr_dir();
 //                }
-//                common::sourcetypes getSourceType() const override
-//                {
-//                    return parameters.get_sourcetype();
-//                }
+                common::sourcetypes getSourceType() const override
+                  {
+                     return parameters.get_sourcetype();
+                  }
 //                unsigned getNs() const override
 //                {
 //                    return parameters.get_nspace();
 //                }
-//                unsigned getNt() const override
-//                {
-//                    return parameters.get_ntime();
-//                }
+                unsigned getNt() const override
+                {
+                    return parameters.get_ntime();
+                }
                 std::string getCorrelatorFilename(std::string currentConfigurationName) const override
                 {
                     return meta::get_ferm_obs_corr_file_name(parameters, currentConfigurationName);
