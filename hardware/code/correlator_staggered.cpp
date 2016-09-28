@@ -124,7 +124,26 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * in) const
 {
     throw Print_Error_Message("Method hardware::code::Correlator_staggered::pseudoScalarCorrelator not implemented yet!", __FILE__, __LINE__);
-}
+
+    //	void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source) const
+    //	{
+    //		int clerr;
+    //		//query work-sizes for kernel
+    //		size_t ls2, gs2;
+    //		cl_uint num_groups;
+    //		this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
+    //		//set arguments
+    //		clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), correlator->get_cl_buffer());
+    //		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    //		clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), in->get_cl_buffer());
+    //		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    //		if(source) {
+    //			clerr = clSetKernelArg(correlator_kernel, 2, sizeof(cl_mem), source->get_cl_buffer());
+    //			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+    //		}
+    //
+    //		get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
+    //	}
 
 size_t hardware::code::Correlator_staggered::get_read_write_size(const std::string& in) const
 {
