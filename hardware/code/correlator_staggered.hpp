@@ -109,8 +109,14 @@ private:
 	////////////////////////////////////
 	//kernels
 	///////////////////////////////////
-	//Type of source
+	//Types of source
+
+	cl_kernel create_point_source_stagg_eoprec;
 	cl_kernel create_volume_source_stagg_eoprec;
+
+	//Observables
+	//scalar correlators
+	cl_kernel correlator_staggered_ps;
 
 	ClSourcePackage basic_correlator_code;
 };

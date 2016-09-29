@@ -17,6 +17,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 /*
  * Use the function get_n_eoprec(int spacepos, int timepos) that is in operations_geometry.cl
  * in order to get the eo_superindex to be used in put_su3vec_to_field_eo (see spinorfield_staggered_eo.cl file)
@@ -26,71 +27,49 @@
 
 __kernel void create_point_source_stagg_eoprec(__global staggeredStorageType * const restrict inout, int i, int spacepos, int timepos)
 {
-	int id = get_global_id(0);
-	if(id == 0) {
-		//LZ: Note that in the kappa-format the source has norm^2 = 1/(2*kappa)
-		//we assume everything on the device to be in kappa-normalization
-		//going back is achieved by multiplying all fields by sqrt(2*kappa)
-		hmc_float tmp = 1.;
-		int color     = spinor_color(i);
-		int spin      = spinor_spin(i, color);
-		int pos       = n;
 
-		spinor site = set_spinor_zero();
+	const su3vec val;
+	val.e0 = 0. ;
+	val.e1 = 0. ;
+	val.e2 = 0. ;
+	
+	for(int x = 0; x < NSPACE; x++) 
+	{
+  		for(int y = 0; y < NSPACE; y++) 
+  		{
+  			for(int z = 0; z < NSPACE; z++) 
+  			{
+  				uint3 coord;
+			    coord.x = x;
+			    coord.y = y;
+			    coord.z = z;
+			    int iterSpacepos = get_nspace(coord);
+			      	
+     			for (int iterTimepos = 0; iterTimepos < NTIME_LOCAL; t++)
+     			{
+			      	uint iterIdx = get_n_eoprec(iterSpacepos, iterTimepos);
+      				put_su3vec_to_field_eo(inout, iterIdx, val);
+      			}
+      		}
+      	}
+    }
 
-		switch (color) {
-
-			case 0:
-				switch (spin) {
-					case 0:
-						site.e0.e0.re = tmp;
-						break;
-					case 1:
-						site.e1.e0.re = tmp;
-						break;
-					case 2:
-						site.e2.e0.re = tmp;
-						break;
-					case 3:
-						site.e3.e0.re = tmp;
-						break;
-				}
-				break;
-			case 1:
-				switch (spin) {
-					case 0:
-						site.e0.e1.re = tmp;
-						break;
-					case 1:
-						site.e1.e1.re = tmp;
-						break;
-					case 2:
-						site.e2.e1.re = tmp;
-						break;
-					case 3:
-						site.e3.e1.re = tmp;
-						break;
-				}
-				break;
-			case 2:
-				switch (spin) {
-					case 0:
-						site.e0.e2.re = tmp;
-						break;
-					case 1:
-						site.e1.e2.re = tmp;
-						break;
-					case 2:
-						site.e2.e2.re = tmp;
-						break;
-					case 3:
-						site.e3.e2.re = tmp;
-						break;
-				}
-				break;
-		}
-
-		putSpinor_eo(out, pos, tmp);
+	uint idx = get_n_eoprec(spacepos, timepos);
+	hmc_float tmp = 1.;
+	switch (i) 
+	{
+		case 0:
+			val.e0 = tmp;
+			break;
+		case 1:
+			val.e1 = tmp;
+			break;
+		case 2:
+			val.e2 = tmp;
+			break;
 	}
+	
+	put_su3vec_to_field_eo(inout, idx, val);
+	
 	return;
 }

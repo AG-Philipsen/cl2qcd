@@ -1,6 +1,5 @@
 /*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright 2016, Alessandro Sciarra, Tim Breitenfelder
  *
  * This file is part of CL2QCD.
  *
@@ -22,13 +21,24 @@
  @file fermion-observables
 */
 
-hmc_float calculate_ps_correlator(const spinor in)
-{
-	return spinor_squarenorm(in);
-}
+// Correlator is given by:
+// C(t)= - 64 * (-1)^t sum_{vec{x}} sum_{c,d} |[D^(-1)_f (vec{x}|0)]_{c,d}|^2
+// We drop the factor of (-1)^t since it can be neglected for the statistical evaluation 
 
-// //this is the pseudoscalar pion correlator in t-direction from pointsources
-__kernel void correlator_ps(__global hmc_float * const restrict out, __global const spinor * const restrict phi)
+
+// Squarenormcalculation:
+//
+//hmc_float spinor_staggered_squarenorm(su3vec in)
+//
+// consider to use this function instead:
+// global_squarenorm_staggered_eoprec( __global const staggeredStorageType * const restrict x,
+//									  __global hmc_float * const restrict result, __local hmc_float * const restrict result_local )
+
+
+
+// this is the pseudoscalar pion correlator in t-direction from pointsources
+
+__kernel void staggeredPseudoscalarCorrelator(__global hmc_float * const restrict out, __global const staggeredStorageType * const restrict phi)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -38,23 +48,36 @@ __kernel void correlator_ps(__global hmc_float * const restrict out, __global co
 	int group_id = get_group_id (0);
 
 	//suppose that there are NTIME threads (one for each entry of the correlator)
+	
 	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
-		hmc_float correlator = 0.;
+		hmc_float summedSquarenorms = 0.;
 		uint3 coord;
 		int t = id_tmp;
-		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
-			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
-				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
+		
+		for(coord.x = 0; coord.x < NSPACE; coord.x++) 
+		{
+			for(coord.y = 0; coord.y < NSPACE; coord.y++) 
+			{
+				for(coord.z = 0; coord.z < NSPACE; coord.z++) 
+				{
 					int nspace = get_nspace(coord);
-					spinor tmp = phi[get_pos(nspace, t)];
+					su3vec tmp = phi[get_n_eoprec(nspace, t)];
 					
-					correlator += calculate_ps_correlator(tmp);
+					// taking squarenorm:
+					summedSquarenorms += spinor_staggered_squarenorm(tmp);
 				}
 			}
 		}
-		hmc_float fac = NSPACE * NSPACE * NSPACE;
+		
+		//consider taking into account an normalization factor like in wilson case:
+		
+		//hmc_float fac = NSPACE * NSPACE * NSPACE;
 		//this line needs to be modified!
-		 out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		//out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
+		
+		out[NTIME_OFFSET + id_tmp]= -64 summedSquarenorms;
+		
+		
 	}
 
 

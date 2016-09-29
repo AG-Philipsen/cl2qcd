@@ -84,6 +84,15 @@ int get_staggered_phase(const int n, const int dir)
 	}
 }
 
+
+// staggered squarenorm like in wilson spinor case
+
+hmc_float spinor_staggered_squarenorm(su3vec in)
+{
+	hmc_float res = su3vec_squarenorm(in);
+	return res;
+}
+
 /**
  * This function returns the staggered phase modified in order to include in it
  * the boundary conditions, as in the Wilson code. This means that all staggered

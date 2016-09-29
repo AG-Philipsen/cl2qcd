@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #include "correlator_staggered.hpp"
+#include "correlator_staggered.hpp"
 
 #include "../../host_functionality/logger.hpp"
 #include "../device.hpp"
@@ -46,7 +46,9 @@ void hardware::code::Correlator_staggered::fill_kernels()
 	logger.debug() << "Creating Correlator_staggered kernels...";
 
 	if(kernelParameters->getSourceType() == common::point)
-		throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
+		// Tim: delete this throw here when point source implemented
+		//throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
+		create_point_source_stagg_eoprec = createKernel("create_point_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_point_source.cl";
 	else if (kernelParameters->getSourceType() == common::volume)
 		create_volume_source_stagg_eoprec = createKernel("create_volume_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_volume_source.cl";
 	else if (kernelParameters->getSourceType() == common::timeslice)
@@ -91,7 +93,36 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 
 void hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const
 {
-    throw Print_Error_Message("Method hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device not implemented yet!", __FILE__, __LINE__);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_point_source_stagg_eoprec, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(create_point_source_stagg_eoprec, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_point_source_stagg_eoprec, 1, sizeof(int), &i);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_point_source_stagg_eoprec, 2, sizeof(int), &spacepos);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_point_source_stagg_eoprec, 3, sizeof(int), &timepos);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( create_point_source_stagg_eoprec, gs2, ls2);
+
+//	if(logger.beDebug()) {
+//		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+//		hmc_float sqn;
+//		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+//		sqn_tmp.dump(&sqn);
+//		logger.debug() <<  "\t|source|^2:\t" << sqn;
+//		if(sqn != sqn) {
+//			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+//		}
+
+	//throw Print_Error_Message("Method hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device not implemented yet!", __FILE__, __LINE__);
 }
 
 void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const
@@ -123,26 +154,23 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 
 void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * in) const
 {
-    throw Print_Error_Message("Method hardware::code::Correlator_staggered::pseudoScalarCorrelator not implemented yet!", __FILE__, __LINE__);
+    //throw Print_Error_Message("Method hardware::code::Correlator_staggered::pseudoScalarCorrelator not implemented yet!", __FILE__, __LINE__);
 
-    //The kernel is not passed to this method and which kernel is enqueued is hard-coded here,
-    //i.e. you work on the private member of the class that represent the pseudoscalar correlator.
+	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
 
-    //	void hardware::code::Correlator::correlator(const cl_kernel correlator_kernel, const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source) const
-    //	{
-    //		int clerr;
-    //		//query work-sizes for kernel
-    //		size_t ls2, gs2;
-    //		cl_uint num_groups;
-    //		this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
-    //		//set arguments
-    //		clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), correlator->get_cl_buffer());
-    //		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-    //		clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), in->get_cl_buffer());
-    //		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-    //
-    //		get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
-    //	}
+//	correlator_kernel needs to be specified in hpp
+
+	this->get_work_sizes(correlator_staggered_ps, &ls2, &gs2, &num_groups);
+	//set arguments
+	clerr = clSetKernelArg(correlator_staggered_ps, 0, sizeof(cl_mem), correlator->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(correlator_staggered_ps, 1, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(correlator_staggered_ps , gs2, ls2);
 }
 
 size_t hardware::code::Correlator_staggered::get_read_write_size(const std::string& in) const
