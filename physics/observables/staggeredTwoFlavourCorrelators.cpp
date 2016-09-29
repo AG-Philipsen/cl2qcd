@@ -36,7 +36,6 @@
 #include "../../meta/util.hpp"
 #include "../lattices/util.hpp"
 #include "../../hardware/device.hpp"
-#include "../../hardware/code/correlator.hpp"
 #include "../interfacesHandler.hpp"
 #include "../algorithms/solver_shifted.hpp"
 #include "../../hardware/code/correlator_staggered.hpp"
@@ -44,11 +43,8 @@
 static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_float> correlator,
                                   const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& parametersInterface)
 {
-    //TODO: Remove this use namespace!!
-    using namespace std;
-
-	ofstream of;
-	of.open (filename.c_str(), ios_base::app);
+	std::ofstream of;
+	of.open (filename.c_str(), std::ios_base::app);
 	if(!of.is_open())
 	{
 		throw File_Exception(filename);
@@ -62,28 +58,19 @@ static void writeCorrelatorToFile(const std::string filename, std::vector<hmc_fl
 	logger.info() << "staggered pseudoscalar pion correlator:" ;
 	for(size_t j = 0; j < correlator.size(); j++)
 	{
-		logger.info() << j << "\t" << scientific << setprecision(14) << correlator[j];
-		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << correlator[j] << endl;
+		logger.info() << j << "\t" << std::scientific << std::setprecision(14) << correlator[j];
+		of << std::scientific << std::setprecision(14) << "0 1\t" << j << "\t" << correlator[j] << std::endl;
 	}
 
-	of << endl;
+	of << std::endl;
 	of.close();
-
 }
 
 static std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >
 createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const physics::lattices::Gaugefield& gaugefield,
                        const int numberOfSources, physics::InterfacesHandler& interfacesHandler)
 {
-	// step 1a)
-	// creating the sources
-
 	const std::vector<physics::lattices::Staggeredfield_eo *>  sources = physics::create_staggered_sources(system, prng, numberOfSources, interfacesHandler);
-
-    // step 1b)
-    // Ask the InterfaceHandler for the sourceInterface
-	// to decide whether the point source is on a even or odd site
-
     const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
 
     const int tpos = sourcesParameters.getSourceT();
@@ -92,9 +79,6 @@ createAndInvertSources(const hardware::System& system, const physics::PRNG& prng
     const int zpos = sourcesParameters.getSourceZ();
 
     const bool sourceOnEvenSite = ((tpos+xpos+ypos+zpos)%2 == 0) ? true : false;
-
-    // step 2):
-    // invert every single source
 
     std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesEvenParts;
     std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOddParts;
@@ -159,29 +143,23 @@ createAndInvertSources(const hardware::System& system, const physics::PRNG& prng
     if((int)invertedSourcesEvenParts.size() != numberOfSources || (int)invertedSourcesOddParts.size() != numberOfSources)
         throw Print_Error_Message("Something went really wrong in \"createAndInvertSources\" since the number of inverted sources does not match the number of sources!");
 
-
     physics::lattices::release_staggeredfields_eo(sources);
     return std::make_pair(invertedSourcesEvenParts, invertedSourcesOddParts);
 
 }
 
-
-
 std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCorrelator(
         const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >& invertedSources,
-        const hardware::System& system, physics::InterfacesHandler& interfacesHandler)
+        physics::InterfacesHandler& interfacesHandler)
 {
-	//Like calculate_correlator_componentwise in Wilson!
-	//Until now, system not used in this function!
-
-
-	const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface& staggeredTwoFlavourCorrelatorsParametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsParametersInterface();
+	const physics::observables::StaggeredTwoFlavourCorrelatorsParametersInterface&
+	staggeredTwoFlavourCorrelatorsParametersInterface = interfacesHandler.getStaggeredTwoFlavourCorrelatorsParametersInterface();
     const std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOnEvenSites = invertedSources.first;
     const std::vector<physics::lattices::Staggeredfield_eo*> invertedSourcesOnOddSites = invertedSources.second;
 
     if(invertedSourcesOnEvenSites.size()!=invertedSourcesOnOddSites.size())
     {
-    	throw Print_Error_Message("# of invertedSourcesOnEvenSites is unequal to # of invertedSourcesOnOddSites, big mistake in invert sources");
+    	throw Print_Error_Message("# of invertedSourcesOnEvenSites is unequal to # of invertedSourcesOnOddSites, maybe a bug in invert sources...");
     }
 
     auto firstInvertedevenSource = invertedSourcesOnEvenSites.at(0);
@@ -190,72 +168,43 @@ std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCor
     auto firstInvertedOddSource = invertedSourcesOnOddSites.at(0);
     auto oddSiteBuffers = firstInvertedOddSource->get_buffers();
 
-    //Test on single device
-	if(evenSiteBuffers.size() != 1)
+    //Test on single device and assume this from now on (e.g. use first and only entry of evenSiteBuffers)!
+	if( (evenSiteBuffers.size() != 1) || (oddSiteBuffers.size() != 1) )
 	{
-		throw Print_Error_Message("Multiple GPU calculation not available in staggered case");
+		throw Print_Error_Message("Multiple device calculation not available in staggered case");
 	}
 
-	if(oddSiteBuffers.size() != 1)
+	//TODO: Think about if this if is necessary
+	if( evenSiteBuffers[0]->get_device() != oddSiteBuffers[0]->get_device())
 	{
-			throw Print_Error_Message("Multiple GPU calculation not available in staggered case");
+	    throw Print_Error_Message("Even and odd sources seem to be stored on different devices! Aborting!");
 	}
 
-	static size_t numberOfCorrelatorEntries = staggeredTwoFlavourCorrelatorsParametersInterface.getNt();
-
-	//Allocate result (and not results) as const hardware::buffers::Plain<hmc_float>*
+	const size_t numberOfCorrelatorEntries = staggeredTwoFlavourCorrelatorsParametersInterface.getNt();
 	const hardware::buffers::Plain<hmc_float>* correlatorResult;
-
-	const hardware::Device *device = evenSiteBuffers->get_device();
+	const hardware::Device* device = evenSiteBuffers[0]->get_device();
 	correlatorResult = new hardware::buffers::Plain<hmc_float>(numberOfCorrelatorEntries, device);
 	correlatorResult->clear();
 
-//	if(correlatorResult.getSourceType() != common::sourcetypes::point)
-//	{
-//		throw Print_Error_Message("staggered correlator calculation only for pointsources implemented");
-//	}
-
-	//for loop with calculate correlator inside
-
-	//const std::string& type = "ps";  //other pions not implemented yet.
-
+	if(staggeredTwoFlavourCorrelatorsParametersInterface.getSourceType() != common::sourcetypes::point)
+	{
+		throw Print_Error_Message("Staggered pseudoscalar correlator calculation implemented only for point sources!");
+	}
 
 	for(size_t i = 0; i < invertedSourcesOnEvenSites.size(); i++)
 	{
-
-		auto evenSiteinvertedSource = invertedSourcesOnEvenSites.at(i);
-		auto evenSiteinvertedSourceBuffer = evenSiteinvertedSource->get_buffers();
-		auto oddSiteinvertedSource = invertedSourcesOnOddSites.at(i);
-		auto oddSiteinvertedSourceBuffer = oddSiteinvertedSource->get_buffers();
-
+		auto evenSiteinvertedSourceBuffer = invertedSourcesOnEvenSites.at(i)->get_buffers();
+		auto oddSiteinvertedSourceBuffer = invertedSourcesOnOddSites.at(i)->get_buffers();
 		auto code = correlatorResult->get_device()->getCorrelatorStaggeredCode();
-		//hardware::code::Correlator_staggered::pseudoScalarCorrelator
 		code->pseudoScalarCorrelator(correlatorResult, evenSiteinvertedSourceBuffer[i]);
 		code->pseudoScalarCorrelator(correlatorResult, oddSiteinvertedSourceBuffer[i]);
-
 	}
 
-	//Create host_result, dump the data from device directly into it without loop and sum (+=)
-	// Tim : I think the loop over the number of correlator entries is needed, but not the loop over the number of buffers...
-
-	std::vector<hmc_float> host_correlatorResult(numberOfCorrelatorEntries);
-	for(size_t i = 0; i < numberOfCorrelatorEntries; ++i)
-	{
-		host_correlatorResult[i] = 0.;
-	}
-
-	auto result = correlatorResult;
-	std::vector<hmc_float> out(numberOfCorrelatorEntries);
-	result->dump(out.data());
-	for(size_t i = 0; i < numberOfCorrelatorEntries; ++i)
-	{
-		logger.trace() << out[i];
-		host_correlatorResult[i] += out[i];
-	}
-	delete result;
-	return host_correlatorResult;
-
-    //throw Print_Error_Message("Function calculatePseudoscalarCorrelator not implemented yet!");
+	//Get final result from the device
+	std::vector<hmc_float> hostCorrelatorResult(numberOfCorrelatorEntries);
+	correlatorResult->dump(hostCorrelatorResult.data());
+	delete correlatorResult;
+	return hostCorrelatorResult;
 }
 
 void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(
@@ -276,18 +225,11 @@ void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldA
     std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> > invertedSources;
     invertedSources = createAndInvertSources(*system, *prng, gaugefield, parametersInterface.getNumberOfSources(), interfacesHandler);
 
-    std::vector<hmc_float> correlator = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, *system, interfacesHandler);
+    std::vector<hmc_float> correlator = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, interfacesHandler);
 
     writeCorrelatorToFile(filenameForCorrelatorData, correlator, parametersInterface);
 
     physics::lattices::release_staggeredfields_eo(invertedSources.first);
     physics::lattices::release_staggeredfields_eo(invertedSources.second);
-
-    /*
-     * Here we will call some functions to get the job done:
-     *  - Create and invert sources -> static
-     *  - Calculate the pseudoscalar correlator -> this will be in the hpp as well to be tested
-     *  - Write result to file -> static
-     */
 }
 
