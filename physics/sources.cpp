@@ -177,8 +177,6 @@ void physics::set_point_source(const physics::lattices::Staggeredfield_eo * sour
 		throw std::invalid_argument("k must be within 0..2");
 	}
 
-	source->set_zero();
-
 	auto buffers = source->get_buffers();
 
 	// only execute on the buffer where the given position results (with single device it is trivial but it works!).

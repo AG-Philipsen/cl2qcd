@@ -542,18 +542,14 @@ uint64_t hardware::code::Correlator::get_flop_size(const std::string& in) const
 void hardware::code::Correlator::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
-	if(create_point_source) {
+	if(create_point_source)
 		Opencl_Module::print_profiling(filename, create_point_source);
-	}
-	if(create_volume_source) {
+	if(create_volume_source)
 		Opencl_Module::print_profiling(filename, create_volume_source);
-	}
-	if(create_timeslice_source) {
+	if(create_timeslice_source)
 		Opencl_Module::print_profiling(filename, create_timeslice_source);
-	}
-	if(create_zslice_source) {
+	if(create_zslice_source)
 		Opencl_Module::print_profiling(filename, create_zslice_source);
-	}
 	if(correlator_ps)
 		Opencl_Module::print_profiling(filename, correlator_ps);
 	if(correlator_sc)

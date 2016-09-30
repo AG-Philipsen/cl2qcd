@@ -18,22 +18,12 @@
  */
 
 
-/*
- * Use the function get_n_eoprec(int spacepos, int timepos) that is in operations_geometry.cl
- * in order to get the eo_superindex to be used in put_su3vec_to_field_eo (see spinorfield_staggered_eo.cl file)
-*/
-
-
-
 __kernel void create_point_source_stagg_eoprec(__global staggeredStorageType * const restrict inout, int i, int spacepos, int timepos)
 {
-
-	const su3vec val;
-	val.e0 = 0. ;
-	val.e1 = 0. ;
-	val.e2 = 0. ;
-	
-	for(int x = 0; x < NSPACE; x++) 
+	int id = get_global_id(0);
+    int global_size = get_global_size(0);
+    
+    for(int x = id; x < NSPACE; x += global_size)
 	{
   		for(int y = 0; y < NSPACE; y++) 
   		{
@@ -45,31 +35,33 @@ __kernel void create_point_source_stagg_eoprec(__global staggeredStorageType * c
 			    coord.z = z;
 			    int iterSpacepos = get_nspace(coord);
 			      	
-     			for (int iterTimepos = 0; iterTimepos < NTIME_LOCAL; t++)
+     			for (int t = 0; t < NTIME_LOCAL; t++)
      			{
-			      	uint iterIdx = get_n_eoprec(iterSpacepos, iterTimepos);
-      				put_su3vec_to_field_eo(inout, iterIdx, val);
+			      	uint iterIdx = get_n_eoprec(iterSpacepos, t);
+      				put_su3vec_to_field_eo(inout, iterIdx, set_su3vec_zero());
       			}
       		}
       	}
     }
 
-	uint idx = get_n_eoprec(spacepos, timepos);
-	hmc_float tmp = 1.;
-	switch (i) 
-	{
-		case 0:
-			val.e0 = tmp;
-			break;
-		case 1:
-			val.e1 = tmp;
-			break;
-		case 2:
-			val.e2 = tmp;
-			break;
-	}
-	
-	put_su3vec_to_field_eo(inout, idx, val);
+    if(id == 0) {
+        //No default case in switch since it is checked before enqueuing the kernel that i=0,1,2 
+        uint idx = get_n_eoprec(spacepos, timepos);
+        hmc_float tmp = 1.;
+        switch (i) 
+        {
+            case 0:
+                val.e0 = tmp;
+                break;
+            case 1:
+                val.e1 = tmp;
+                break;
+            case 2:
+                val.e2 = tmp;
+                break;
+        }
+        put_su3vec_to_field_eo(inout, idx, val);
+    }
 	
 	return;
 }

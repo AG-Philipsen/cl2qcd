@@ -78,7 +78,7 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 	string kernelname = get_kernel_name(kernel);
 	if( kernelname.find("correlator") == 0 ) {
 		if(get_device()->get_device_type() == CL_DEVICE_TYPE_GPU) {
-			*ls = kernelParameters->getNs();
+			*ls = kernelParameters->getNs(); //TODO: Doesn't a huge Ns break the code since ls has a maximum depending on the device?!
 			*gs = *ls;
 			*num_groups = 1;
 		} else {
@@ -93,7 +93,9 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 
 void hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const
 {
-	//query work-sizes for kernel
+	//TODO: Make check on "i" and throw if not 0,1,2
+
+    //query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(create_point_source_stagg_eoprec, &ls2, &gs2, &num_groups);
@@ -152,22 +154,18 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 	}
 }
 
-void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * in) const
+void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * source) const
 {
-    //throw Print_Error_Message("Method hardware::code::Correlator_staggered::pseudoScalarCorrelator not implemented yet!", __FILE__, __LINE__);
-
 	int clerr;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 
-//	correlator_kernel needs to be specified in hpp
-
 	this->get_work_sizes(correlator_staggered_ps, &ls2, &gs2, &num_groups);
 	//set arguments
 	clerr = clSetKernelArg(correlator_staggered_ps, 0, sizeof(cl_mem), correlator->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_staggered_ps, 1, sizeof(cl_mem), in->get_cl_buffer());
+	clerr = clSetKernelArg(correlator_staggered_ps, 1, sizeof(cl_mem), source->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(correlator_staggered_ps , gs2, ls2);
@@ -217,9 +215,8 @@ uint64_t hardware::code::Correlator_staggered::get_flop_size(const std::string& 
 void hardware::code::Correlator_staggered::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
-	if(create_volume_source_stagg_eoprec) {
+	if(create_volume_source_stagg_eoprec)
 		Opencl_Module::print_profiling(filename, create_volume_source_stagg_eoprec);
-	}
 }
 
 hardware::code::Correlator_staggered::Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
