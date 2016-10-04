@@ -45,6 +45,8 @@ void hardware::code::Correlator_staggered::fill_kernels()
 
 	logger.debug() << "Creating Correlator_staggered kernels...";
 
+	correlator_staggered_ps = createKernel("correlator_staggered_ps") << basic_correlator_code << prng_code << "correlator_staggered_ps.cl";
+
 	if(kernelParameters->getSourceType() == common::point)
 		// Tim: delete this throw here when point source implemented
 		//throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
@@ -68,6 +70,16 @@ void hardware::code::Correlator_staggered::clear_kernels()
 		clerr = clReleaseKernel(create_volume_source_stagg_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
+
+	if(create_point_source_stagg_eoprec) {
+			clerr = clReleaseKernel(create_point_source_stagg_eoprec);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
+
+	if(correlator_staggered_ps) {
+			clerr = clReleaseKernel(correlator_staggered_ps);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
 }
 
 void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -93,8 +105,8 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 
 void hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const
 {
-	//TODO: Make check on "i" and throw if not 0,1,2
-
+	//Make check on "i" and throw if not 0,1,2
+	if(i < 0 || i > 2) throw Print_Error_Message("staggered Spinor Index i must be between 0 and 2!");
     //query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -114,17 +126,16 @@ void hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_devi
 
 	get_device()->enqueue_kernel( create_point_source_stagg_eoprec, gs2, ls2);
 
-//	if(logger.beDebug()) {
-//		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
-//		hmc_float sqn;
-//		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
-//		sqn_tmp.dump(&sqn);
-//		logger.debug() <<  "\t|source|^2:\t" << sqn;
-//		if(sqn != sqn) {
-//			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
-//		}
-
-	//throw Print_Error_Message("Method hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device not implemented yet!", __FILE__, __LINE__);
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+		hmc_float sqn;
+		get_device()->getSpinorStaggeredCode()->set_float_to_global_squarenorm_eoprec_device(inout, &sqn_tmp);
+		sqn_tmp.dump(&sqn);
+		logger.debug() <<  "\t|source|^2:\t" << sqn;
+		if(sqn != sqn) {
+			throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
 }
 
 void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const
@@ -173,8 +184,6 @@ void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware
 
 size_t hardware::code::Correlator_staggered::get_read_write_size(const std::string& in) const
 {
-	//this is the same as in the function above
-	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	if (in == "create_point_source_stagg_eoprec") {
 		return module_metric_not_implemented<size_t>();
 	}
@@ -188,6 +197,23 @@ size_t hardware::code::Correlator_staggered::get_read_write_size(const std::stri
 		return module_metric_not_implemented<size_t>();
 	}
 	
+	//Depending on the compile-options, one has different sizes...
+	const size_t D = kernelParameters->getFloatSize();
+	//this returns the number of entries in an su3-matrix
+	const size_t S = kernelParameters->getSpinorFieldSize();
+	//factor for complex numbers
+	const int C = 2;
+	//NOTE: one staggered spinor has NC = 3 complex entries
+
+	if (in == "correlator_staggered_ps" ) {
+			//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+			int size_buffer = 0;
+			int num_sources = kernelParameters->getNumSources();
+			if(kernelParameters->getCorrDir() == 0) size_buffer = kernelParameters->getNt();
+			if(kernelParameters->getCorrDir() == 3) throw Print_Error_Message("staggered correlator calculation in z-direction not implemented yet! Aborting...");
+			return num_sources * S * D * 3 * C + size_buffer * D;
+	}
+
 	logger.warn() << "No if entered in get_read_write_size(), in = " << in << ". Returning 0 bytes...";
 	return 0;
 }
@@ -207,6 +233,9 @@ uint64_t hardware::code::Correlator_staggered::get_flop_size(const std::string& 
 	if (in == "create_zslice_source_stagg_eoprec") {
 		return module_metric_not_implemented<uint64_t>();
 	}
+	if (in == "correlator_staggered_ps" ) {
+		return module_metric_not_implemented<uint64_t>();
+	}
 
 	logger.warn() << "No if entered in get_flop_size(), in = " << in << ". Returning 0 flop...";
 	return 0;
@@ -217,11 +246,20 @@ void hardware::code::Correlator_staggered::print_profiling(const std::string& fi
 	Opencl_Module::print_profiling(filename, number);
 	if(create_volume_source_stagg_eoprec)
 		Opencl_Module::print_profiling(filename, create_volume_source_stagg_eoprec);
+
+	Opencl_Module::print_profiling(filename, number);
+	if(correlator_staggered_ps)
+		Opencl_Module::print_profiling(filename, correlator_staggered_ps);
+
+	Opencl_Module::print_profiling(filename, number);
+		if(create_point_source_stagg_eoprec)
+			Opencl_Module::print_profiling(filename, create_point_source_stagg_eoprec);
+
 }
 
-hardware::code::Correlator_staggered::Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
-	: Opencl_Module(kernelParameters, device), create_volume_source_stagg_eoprec(0)
-// 	, create_point_source(0), create_timeslice_source(0), create_zslice_source(0),
+hardware::code::Correlator_staggered::Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters , const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), create_point_source_stagg_eoprec(0), create_volume_source_stagg_eoprec(0), correlator_staggered_ps(0)
+
 {
 	fill_kernels();
 }
