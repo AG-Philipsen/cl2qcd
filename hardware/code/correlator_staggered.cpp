@@ -1,6 +1,9 @@
-/*
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+/* staggeredTwoFlavourCorrelators.cpp
+ *
+ *@file
+ * Implementation of the staggered two flavour correlator calculation.
+ *
+ * Copyright 2016 Alessandro Sciarra, Tim Breitenfelder
  *
  * This file is part of CL2QCD.
  *
@@ -17,6 +20,7 @@
  * You should have received a copy of the GNU General Public License
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "correlator_staggered.hpp"
 

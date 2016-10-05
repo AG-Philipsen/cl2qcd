@@ -75,7 +75,7 @@ __kernel void staggeredPseudoscalarCorrelator(__global hmc_float * const restric
 		//this line needs to be modified!
 		//out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 		
-		out[NTIME_OFFSET + id_tmp]= -64 summedSquarenorms;
+		out[NTIME_OFFSET + id_tmp]= -64 * summedSquarenorms;
 		
 		
 	}

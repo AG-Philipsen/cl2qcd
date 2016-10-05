@@ -29,9 +29,10 @@
 
 struct StaggeredFermionsSourceTestParameters : public PrngSpinorStaggeredTestParameters
 {
-	StaggeredFermionsSourceTestParameters(const LatticeExtents lE, common::sourcecontents sC, const int iterations):
-		TestParameters(lE, 10e-2), PrngSpinorStaggeredTestParameters(lE, iterations, false), sourcecontent(sC) {}; // In calling the TestParameters ctor, the testPrecision is reduced, so as related tests can pass with a reasonable number of iterations!
-	common::sourcecontents sourcecontent;
+	StaggeredFermionsSourceTestParameters(const LatticeExtents lE, common::sourcecontents sC, common::sourcetypes sT, const int iterations):
+		TestParameters(lE, 10e-2), PrngSpinorStaggeredTestParameters(lE, iterations, false), sourcecontent(sC), sourcetype(sT) {}; // In calling the TestParameters ctor, the testPrecision is reduced, so as related tests can pass with a reasonable number of iterations!
+	const common::sourcecontents sourcecontent;
+	const common::sourcetypes sourcetype;
 };
 
 int countNonZeroElements(const su3vec * in, const int numberOfElements)
@@ -52,7 +53,7 @@ double normalize(double valueIn, const LatticeExtents lE)
 	return valueIn/= calculateSpinorfieldSize(lE) * 6;
 }
 
-ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSourceTestParameters & tP)
+ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSourceTestParameters tP)
 {
 	double mean, variance, nonzeroEntries;
 	if (tP.sourcecontent == common::sourcecontents::one)
@@ -79,6 +80,22 @@ ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSou
 	variance = sqrt(normalize(((0. - mean) * (0. - mean) * 3 + (1. - mean) * (1. - mean) * 3) * calculateSpinorfieldSize(tP.latticeExtents), tP.latticeExtents));
 	return ReferenceValues{mean, variance, nonzeroEntries};
 }
+
+ReferenceValues calculateReferenceValues_pointSource(const StaggeredFermionsSourceTestParameters tP)
+{
+	double mean, variance;
+	if (tP.sourcecontent == common::sourcecontents::one)
+	{
+		mean = normalize(1, tP.latticeExtents);
+	}
+	else
+		mean = 0.123456;
+
+	variance = sqrt((0. - mean) * (0. - mean) * ((calculateEvenOddSpinorfieldSize(tP.latticeExtents) - 1) * 24 + 23));
+
+	return ReferenceValues{mean, variance, 1};
+}
+
 
 struct SourceTester : public PrngSpinorStaggeredTester
 {
@@ -113,11 +130,34 @@ struct VolumeSourceTester : public SourceTester
 	}
 };
 
-void testVolumeSource(const LatticeExtents lE, const common::sourcecontents sC, const int iterations)
+struct PointSourceTester : public SourceTester
 {
-	StaggeredFermionsSourceTestParameters parametersForThisTest(lE, sC, iterations);
+	PointSourceTester(const ParameterCollection pC, const StaggeredFermionsSourceTestParameters tP, const int numberOfElements):
+		SourceTester("Point_source", pC, tP, calculateReferenceValues_pointSource(tP))
+	{
+		for (unsigned int i = 0; i < testParameters.iterations; i++)
+		{
+			code->create_point_source_stagg_eoprec_device(outSpinor, i,0,0);
+			outSpinor->dump(&hostOutput[i * numberOfElements]);
+		}
+	}
+};
+
+void testPointSource(const LatticeExtents lE, const common::sourcecontents sC, const common::sourcetypes sT,  const int iterations)
+{
+	StaggeredFermionsSourceTestParameters parametersForThisTest(lE, sC, sT, iterations);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
-	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent);
+	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent, parametersForThisTest.sourcetype);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	PointSourceTester( parameterCollection, parametersForThisTest, calculateEvenOddSpinorfieldSize(lE));
+}
+
+
+void testVolumeSource(const LatticeExtents lE, const common::sourcecontents sC, const common::sourcetypes sT, const int iterations)
+{
+	StaggeredFermionsSourceTestParameters parametersForThisTest(lE, sC, sT, iterations);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
+	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent, parametersForThisTest.sourcetype);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	VolumeSourceTester(parameterCollection, parametersForThisTest, calculateEvenOddSpinorfieldSize(lE));
 }
@@ -127,30 +167,39 @@ BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_1 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::one, 500);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::one, common::sourcetypes::volume, 500);
 	}
 
 	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_2, 2)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_2 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z4, 1000);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z4, common::sourcetypes::volume, 1000);
 	}
 
 	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_3, 2)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_3 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::gaussian, 2000);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::gaussian, common::sourcetypes::volume, 2000);
 	}
 
 	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_4, 2)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_4 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z2, 1000);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z2, common::sourcetypes::volume, 1000);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
+BOOST_AUTO_TEST_SUITE(SRC_POINT)
+
+	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
+	{
+		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, common::sourcetypes::point, 500 );
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
 

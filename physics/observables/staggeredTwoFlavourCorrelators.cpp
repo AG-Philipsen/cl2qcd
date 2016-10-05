@@ -21,9 +21,6 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
- /*Right now this file has not the full functionality, it is still in progress*/
-
 #include "staggeredTwoFlavourCorrelators.hpp"
 
 #include <fstream>
