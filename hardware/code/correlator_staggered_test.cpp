@@ -60,9 +60,9 @@ int countNonZeroElements(const su3vec * in, const int numberOfElements)
 	return result;
 }
 
-double normalize(double valueIn, const LatticeExtents lE)
+double normalizeEvenOdd(double valueIn, const LatticeExtents lE)
 {
-	return valueIn/= calculateSpinorfieldSize(lE) * 6;
+    return valueIn/= calculateEvenOddSpinorfieldSize(lE) * 6;
 }
 
 ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSourceTestParameters tP)
@@ -70,7 +70,7 @@ ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSou
 	double mean, variance, nonzeroEntries;
 	if (tP.sourcecontent == common::sourcecontents::one)
 	{
-		mean = normalize(3 * calculateSpinorfieldSize(tP.latticeExtents), tP.latticeExtents);
+		mean = normalizeEvenOdd(3 * calculateSpinorfieldSize(tP.latticeExtents), tP.latticeExtents);
 	}
 	else if (tP.sourcecontent == common::sourcecontents::gaussian or tP.sourcecontent == common::sourcecontents::z4 or tP.sourcecontent == common::sourcecontents::z2)
 	{
@@ -89,7 +89,7 @@ ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSou
 	}
 	else
 		nonzeroEntries = 123456;
-	variance = sqrt(normalize(((0. - mean) * (0. - mean) * 3 + (1. - mean) * (1. - mean) * 3) * calculateSpinorfieldSize(tP.latticeExtents), tP.latticeExtents));
+	variance = sqrt(normalizeEvenOdd(((0. - mean) * (0. - mean) * 3 + (1. - mean) * (1. - mean) * 3) * calculateSpinorfieldSize(tP.latticeExtents), tP.latticeExtents));
 	return ReferenceValues{mean, variance, nonzeroEntries};
 }
 
@@ -98,7 +98,7 @@ ReferenceValues calculateReferenceValues_pointSource(const StaggeredFermionsSour
 	double mean, variance;
 	if (tP.sourcecontent == common::sourcecontents::one)
 	{
-		mean = normalize(1, tP.latticeExtents);
+		mean = normalizeEvenOdd(1, tP.latticeExtents);
 	}
 	else
 		mean = 0.123456;
@@ -111,7 +111,7 @@ ReferenceValues calculateReferenceValues_pointSource(const StaggeredFermionsSour
 
 struct SourceTester : public PrngSpinorStaggeredTester
 {
-	SourceTester(const std::string kernelName, const ParameterCollection pC, const StaggeredFermionsSourceTestParameters tP, const ReferenceValues rV):
+	SourceTester(const std::string kernelName, const ParameterCollection pC, const StaggeredFermionsSourceTestParameters & tP, const ReferenceValues rV):
 	     PrngSpinorStaggeredTester(kernelName, pC, tP, calculateEvenOddSpinorfieldSize(tP.latticeExtents), rV), numberOfNonZeroEntries(0)
 	{
 		code = SpinorStaggeredTester::device->getCorrelatorStaggeredCode();
@@ -119,7 +119,7 @@ struct SourceTester : public PrngSpinorStaggeredTester
 	}
 	
 	virtual ~SourceTester(){
-		numberOfNonZeroEntries = countNonZeroElements (&hostOutput[0], numberOfElements);
+		numberOfNonZeroEntries = countNonZeroElements(&hostOutput[0], numberOfElements);
 		kernelResult.at(2) = numberOfNonZeroEntries;
 	}
 	
@@ -149,7 +149,7 @@ struct PointSourceTester : public SourceTester
 	{
 		for (unsigned int i = 0; i < testParameters.iterations; i++)
 		{
-			code->create_point_source_stagg_eoprec_device(outSpinor, i,0,0);
+			code->create_point_source_stagg_eoprec_device(outSpinor, i, 0, 0);
 			outSpinor->dump(&hostOutput[i * numberOfElements]);
 		}
 	}
@@ -161,7 +161,7 @@ void testPointSource(const LatticeExtents lE, const common::sourcecontents sC,  
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
 	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent, common::sourcetypes::point);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
-	PointSourceTester( parameterCollection, parametersForThisTest, calculateEvenOddSpinorfieldSize(lE));
+	PointSourceTester(parameterCollection, parametersForThisTest, calculateEvenOddSpinorfieldSize(lE));
 }
 
 
@@ -187,7 +187,7 @@ struct CorrelatorStaggeredTester : public EvenOddSpinorStaggeredTester
 		for( unsigned int i=0; i<tP.fillTypes.size(); i++ )
 		{
 			EvenOddSpinorStaggeredfieldCreator sf(tP.latticeExtents);
-			spinorStaggeredfields.push_back( new hardware::buffers::Plain<su3vec> (sf.numberOfElements, device) );
+			spinorStaggeredfields.push_back( new hardware::buffers::SU3vec (sf.numberOfElements, device) );
 			auto spinorStaggeredfield = sf.createSpinorfield(tP.fillTypes.at(i));
 			spinorStaggeredfields.at(i)->load(spinorStaggeredfield);
 			delete[] spinorStaggeredfield;
@@ -204,7 +204,7 @@ protected:
 	const int correlatorEntries;
 	const hardware::buffers::Plain<hmc_float> * CorrelatorResult;
 	const hardware::code::Correlator_staggered * code;
-	std::vector< const hardware::buffers::Plain<su3vec>* > spinorStaggeredfields;
+	std::vector< const hardware::buffers::SU3vec* > spinorStaggeredfields;
 };
 
 //struct ComponentwiseCorrelatorStaggeredTester : public CorrelatorStaggeredTester
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 
 	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
 	{
-		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, 500 );
+		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, 3);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

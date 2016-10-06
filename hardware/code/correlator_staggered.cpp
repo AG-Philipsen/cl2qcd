@@ -49,7 +49,7 @@ void hardware::code::Correlator_staggered::fill_kernels()
 
 	logger.debug() << "Creating Correlator_staggered kernels...";
 
-	correlator_staggered_ps = createKernel("correlator_staggered_ps") << basic_correlator_code << prng_code << "correlator_staggered_ps.cl";
+	correlator_staggered_ps = createKernel("correlator_staggered_ps") << basic_correlator_code << prng_code << "fermionobservables/correlator_staggered_ps.cl";
 
 	if(kernelParameters->getSourceType() == common::point)
 		// Tim: delete this throw here when point source implemented
@@ -110,7 +110,7 @@ void hardware::code::Correlator_staggered::get_work_sizes(const cl_kernel kernel
 void hardware::code::Correlator_staggered::create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const
 {
 	//Make check on "i" and throw if not 0,1,2
-	if(i < 0 || i > 2) throw Print_Error_Message("staggered Spinor Index i must be between 0 and 2!");
+	if(i < 0 || i > 2) throw Print_Error_Message("Color index i of staggered spinor must be between 0 and 2!", __FILE__, __LINE__);
     //query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -188,7 +188,15 @@ void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware
 
 size_t hardware::code::Correlator_staggered::get_read_write_size(const std::string& in) const
 {
-	if (in == "create_point_source_stagg_eoprec") {
+    //Depending on the compile-options, one has different sizes...
+    const size_t D = kernelParameters->getFloatSize();
+    //this returns the number of entries in an su3-matrix
+    const size_t S = kernelParameters->getSpinorFieldSize();
+    //factor for complex numbers
+    const int C = 2;
+    //NOTE: one staggered spinor has NCOLOR = 3 complex entries
+
+    if (in == "create_point_source_stagg_eoprec") {
 		return module_metric_not_implemented<size_t>();
 	}
 	if (in == "create_volume_source_stagg_eoprec") {
@@ -200,14 +208,6 @@ size_t hardware::code::Correlator_staggered::get_read_write_size(const std::stri
 	if (in == "create_zslice_source_stagg_eoprec") {
 		return module_metric_not_implemented<size_t>();
 	}
-	
-	//Depending on the compile-options, one has different sizes...
-	const size_t D = kernelParameters->getFloatSize();
-	//this returns the number of entries in an su3-matrix
-	const size_t S = kernelParameters->getSpinorFieldSize();
-	//factor for complex numbers
-	const int C = 2;
-	//NOTE: one staggered spinor has NC = 3 complex entries
 
 	if (in == "correlator_staggered_ps" ) {
 			//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
@@ -248,22 +248,17 @@ uint64_t hardware::code::Correlator_staggered::get_flop_size(const std::string& 
 void hardware::code::Correlator_staggered::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
+	if(create_point_source_stagg_eoprec)
+	        Opencl_Module::print_profiling(filename, create_point_source_stagg_eoprec);
 	if(create_volume_source_stagg_eoprec)
 		Opencl_Module::print_profiling(filename, create_volume_source_stagg_eoprec);
 
-	Opencl_Module::print_profiling(filename, number);
 	if(correlator_staggered_ps)
 		Opencl_Module::print_profiling(filename, correlator_staggered_ps);
-
-	Opencl_Module::print_profiling(filename, number);
-	if(create_point_source_stagg_eoprec)
-		Opencl_Module::print_profiling(filename, create_point_source_stagg_eoprec);
-
 }
 
 hardware::code::Correlator_staggered::Correlator_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParameters , const hardware::Device * device)
 	: Opencl_Module(kernelParameters, device), create_point_source_stagg_eoprec(0), create_volume_source_stagg_eoprec(0), correlator_staggered_ps(0)
-
 {
 	fill_kernels();
 }

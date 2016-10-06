@@ -38,7 +38,7 @@
 
 // this is the pseudoscalar pion correlator in t-direction from pointsources
 
-__kernel void staggeredPseudoscalarCorrelator(__global hmc_float * const restrict out, __global const staggeredStorageType * const restrict phi)
+__kernel void correlator_staggered_ps(__global hmc_float * const restrict out, __global const staggeredStorageType * const restrict phi)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -64,7 +64,7 @@ __kernel void staggeredPseudoscalarCorrelator(__global hmc_float * const restric
 					su3vec tmp = phi[get_n_eoprec(nspace, t)];
 					
 					// taking squarenorm:
-					summedSquarenorms += spinor_staggered_squarenorm(tmp);
+					summedSquarenorms += su3vec_squarenorm(tmp);
 				}
 			}
 		}
