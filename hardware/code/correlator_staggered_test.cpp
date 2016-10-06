@@ -27,12 +27,24 @@
 #include "SpinorStaggeredTester.hpp"
 #include "PrngSpinorTester.hpp"
 
+enum CorrelatorDirection {temporal=0, spatialX=1, spatialY=2, spatialZ=3};
+typedef std::string KernelIdentifier;
+
+
 struct StaggeredFermionsSourceTestParameters : public PrngSpinorStaggeredTestParameters
 {
 	StaggeredFermionsSourceTestParameters(const LatticeExtents lE, common::sourcecontents sC, common::sourcetypes sT, const int iterations):
 		TestParameters(lE, 10e-2), PrngSpinorStaggeredTestParameters(lE, iterations, false), sourcecontent(sC), sourcetype(sT) {}; // In calling the TestParameters ctor, the testPrecision is reduced, so as related tests can pass with a reasonable number of iterations!
 	const common::sourcecontents sourcecontent;
 	const common::sourcetypes sourcetype;
+};
+
+struct CorrelatorStaggeredTestParameters : public SpinorStaggeredTestParameters
+{
+	CorrelatorStaggeredTestParameters(LatticeExtents lE, CorrelatorDirection directionIn, SpinorFillTypes sF) :
+		TestParameters(lE), SpinorStaggeredTestParameters(lE, sF), direction(directionIn) {};
+	const double kappa=1.;
+	CorrelatorDirection direction;
 };
 
 int countNonZeroElements(const su3vec * in, const int numberOfElements)
@@ -143,52 +155,94 @@ struct PointSourceTester : public SourceTester
 	}
 };
 
-void testPointSource(const LatticeExtents lE, const common::sourcecontents sC, const common::sourcetypes sT,  const int iterations)
+void testPointSource(const LatticeExtents lE, const common::sourcecontents sC,  const int iterations)
 {
-	StaggeredFermionsSourceTestParameters parametersForThisTest(lE, sC, sT, iterations);
+	StaggeredFermionsSourceTestParameters parametersForThisTest(lE, sC, common::sourcetypes::point, iterations);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
-	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent, parametersForThisTest.sourcetype);
+	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent, common::sourcetypes::point);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	PointSourceTester( parameterCollection, parametersForThisTest, calculateEvenOddSpinorfieldSize(lE));
 }
 
 
-void testVolumeSource(const LatticeExtents lE, const common::sourcecontents sC, const common::sourcetypes sT, const int iterations)
+void testVolumeSource(const LatticeExtents lE, const common::sourcecontents sC, const int iterations)
 {
-	StaggeredFermionsSourceTestParameters parametersForThisTest(lE, sC, sT, iterations);
+	StaggeredFermionsSourceTestParameters parametersForThisTest(lE, sC, common::sourcetypes::volume, iterations);
 	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, true);
-	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent, parametersForThisTest.sourcetype);
+	hardware::code::OpenClKernelParametersMockupForStaggeredSourceTests kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.sourcecontent, common::sourcetypes::volume);
 	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
 	VolumeSourceTester(parameterCollection, parametersForThisTest, calculateEvenOddSpinorfieldSize(lE));
 }
+
+
+struct CorrelatorStaggeredTester : public EvenOddSpinorStaggeredTester
+{
+	CorrelatorStaggeredTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorStaggeredTestParameters tP):
+		EvenOddSpinorStaggeredTester(kI, pC, tP, rV), correlatorEntries(rV.size())
+	{
+		code = device->getCorrelatorStaggeredCode();
+		CorrelatorResult = new hardware::buffers::Plain<hmc_float>(correlatorEntries, device);
+		CorrelatorResult->clear();
+
+		for( unsigned int i=0; i<tP.fillTypes.size(); i++ )
+		{
+			EvenOddSpinorStaggeredfieldCreator sf(tP.latticeExtents);
+			spinorStaggeredfields.push_back( new hardware::buffers::Plain<su3vec> (sf.numberOfElements, device) );
+			auto spinorStaggeredfield = sf.createSpinorfield(tP.fillTypes.at(i));
+			spinorStaggeredfields.at(i)->load(spinorStaggeredfield);
+			delete[] spinorStaggeredfield;
+		}
+
+		code->pseudoScalarCorrelator(CorrelatorResult, spinorStaggeredfields.at(0));
+
+	};
+	~CorrelatorStaggeredTester()
+	{
+		CorrelatorResult->dump(&kernelResult.at(0));
+	}
+protected:
+	const int correlatorEntries;
+	const hardware::buffers::Plain<hmc_float> * CorrelatorResult;
+	const hardware::code::Correlator_staggered * code;
+	std::vector< const hardware::buffers::Plain<su3vec>* > spinorStaggeredfields;
+};
+
+//struct ComponentwiseCorrelatorStaggeredTester : public CorrelatorStaggeredTester
+//{
+//	ComponentwiseCorrelatorStaggeredTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorStaggeredTestParameters tP):
+//		CorrelatorStaggeredTester(kI, pC, rV, tP)
+//	{
+//		code->pseudoScalarCorrelator(CorrelatorResult, spinorStaggeredfields.at(0) );
+//	}
+//};
 
 
 BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_1 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::one, common::sourcetypes::volume, 500);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::one, 500);
 	}
 
 	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_2, 2)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_2 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z4, common::sourcetypes::volume, 1000);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z4, 1000);
 	}
 
 	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_3, 2)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_3 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::gaussian, common::sourcetypes::volume, 2000);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::gaussian, 2000);
 	}
 
 	BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(SRC_VOLUME_4, 2)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_4 )
 	{
-		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z2, common::sourcetypes::volume, 1000);
+		testVolumeSource(LatticeExtents{ns4, nt4}, common::sourcecontents::z2, 1000);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -198,7 +252,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 
 	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
 	{
-		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, common::sourcetypes::point, 500 );
+		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, 500 );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

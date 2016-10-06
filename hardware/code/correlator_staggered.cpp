@@ -256,8 +256,8 @@ void hardware::code::Correlator_staggered::print_profiling(const std::string& fi
 		Opencl_Module::print_profiling(filename, correlator_staggered_ps);
 
 	Opencl_Module::print_profiling(filename, number);
-		if(create_point_source_stagg_eoprec)
-			Opencl_Module::print_profiling(filename, create_point_source_stagg_eoprec);
+	if(create_point_source_stagg_eoprec)
+		Opencl_Module::print_profiling(filename, create_point_source_stagg_eoprec);
 
 }
 
