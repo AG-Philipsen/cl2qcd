@@ -47,18 +47,31 @@ struct CorrelatorStaggeredTestParameters : public SpinorStaggeredTestParameters
 	CorrelatorDirection direction;
 };
 
+bool compareToZero_su3vec(const su3vec in)
+{
+	if (in.e0.re == 0.)
+		if(in.e0.im == 0)
+			if(in.e1.re == 0)
+				if(in.e1.im == 0)
+					if(in.e2.re == 0)
+						if(in.e2.im == 0)
+							return true;
+	return false;
+}
+
+
 int countNonZeroElements(const su3vec * in, const int numberOfElements)
 {
 	int result = 0;
 	for (int i = 0; i< numberOfElements; i++)
 	{
-		if( ! in[i].e0.re == 0.) //su3vec are uniformly filled so the check is done on the first component only
-			result += 1;
-		if( ! in[i].e0.im == 0.)
+		if( !compareToZero_su3vec(in[i]) )
 			result += 1;
 	}
 	return result;
 }
+
+
 
 double normalizeEvenOdd(double valueIn, const LatticeExtents lE)
 {
@@ -103,7 +116,7 @@ ReferenceValues calculateReferenceValues_pointSource(const StaggeredFermionsSour
 	else
 		mean = 0.123456;
 
-	variance = sqrt((0. - mean) * (0. - mean) * ((calculateEvenOddSpinorfieldSize(tP.latticeExtents) - 1) * 24 + 23));
+	variance = sqrt((0. - mean) * (0. - mean) * ((calculateEvenOddSpinorfieldSize(tP.latticeExtents) - 1) * 6 + 5));
 
 	return ReferenceValues{mean, variance, 1};
 }
@@ -149,7 +162,7 @@ struct PointSourceTester : public SourceTester
 	{
 		for (unsigned int i = 0; i < testParameters.iterations; i++)
 		{
-			code->create_point_source_stagg_eoprec_device(outSpinor, i, 0, 0);
+			code->create_point_source_stagg_eoprec_device(outSpinor, i%3, 0, 0);
 			outSpinor->dump(&hostOutput[i * numberOfElements]);
 		}
 	}
@@ -175,9 +188,9 @@ void testVolumeSource(const LatticeExtents lE, const common::sourcecontents sC, 
 }
 
 
-struct CorrelatorStaggeredTester : public EvenOddSpinorStaggeredTester
+struct psCorrelatorStaggeredTester : public EvenOddSpinorStaggeredTester
 {
-	CorrelatorStaggeredTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorStaggeredTestParameters tP):
+	psCorrelatorStaggeredTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorStaggeredTestParameters tP):
 		EvenOddSpinorStaggeredTester(kI, pC, tP, rV), correlatorEntries(rV.size())
 	{
 		code = device->getCorrelatorStaggeredCode();
@@ -196,7 +209,7 @@ struct CorrelatorStaggeredTester : public EvenOddSpinorStaggeredTester
 		code->pseudoScalarCorrelator(CorrelatorResult, spinorStaggeredfields.at(0));
 
 	};
-	~CorrelatorStaggeredTester()
+	~psCorrelatorStaggeredTester()
 	{
 		CorrelatorResult->dump(&kernelResult.at(0));
 	}
@@ -207,15 +220,14 @@ protected:
 	std::vector< const hardware::buffers::SU3vec* > spinorStaggeredfields;
 };
 
-//struct ComponentwiseCorrelatorStaggeredTester : public CorrelatorStaggeredTester
-//{
-//	ComponentwiseCorrelatorStaggeredTester(const KernelIdentifier kI, const ParameterCollection pC, const ReferenceValues rV, const CorrelatorStaggeredTestParameters tP):
-//		CorrelatorStaggeredTester(kI, pC, rV, tP)
-//	{
-//		code->pseudoScalarCorrelator(CorrelatorResult, spinorStaggeredfields.at(0) );
-//	}
-//};
-
+void testpsStaggeredCorrelator( const KernelIdentifier kI, const LatticeExtents lE, const CorrelatorDirection cD, const SpinorFillTypes sF, const ReferenceValues rV)
+{
+	CorrelatorStaggeredTestParameters parametersForThisTest(lE, cD, sF);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents, false);
+	hardware::code::OpenClKernelParametersMockupForStaggeredCorrelators kernelParameters(parametersForThisTest.latticeExtents, parametersForThisTest.kappa, parametersForThisTest.direction);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	psCorrelatorStaggeredTester(kI, parameterCollection, rV, parametersForThisTest );
+}
 
 BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 
@@ -252,8 +264,29 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 
 	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
 	{
-		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, 3);
+		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, 10);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_T)
+
+	BOOST_AUTO_TEST_CASE( zero1 )
+	{
+		testpsStaggeredCorrelator("ps", LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero}, ReferenceValues(nt4, 0));
+	}
+
+	BOOST_AUTO_TEST_CASE( nonZero1 )
+	{
+		testpsStaggeredCorrelator("ps", LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one}, ReferenceValues(nt4, -12288));
+	}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+
+
+
+
 

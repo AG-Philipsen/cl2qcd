@@ -461,6 +461,28 @@ namespace hardware
 			const double kappa;
 		};
 
+		class OpenClKernelParametersMockupForStaggeredCorrelators : public OpenClKernelParametersMockupForSpinorStaggered
+			{
+			public:
+				OpenClKernelParametersMockupForStaggeredCorrelators(const LatticeExtents lE, const double kappaIn, const double directionIn) :
+					OpenClKernelParametersMockupForSpinorStaggered(lE, true), correlatorDirection(directionIn), kappa(kappaIn) {};
+
+				virtual int getCorrDir() const override
+				{
+					return correlatorDirection;
+				}
+				virtual double getKappa() const override
+				{
+					return kappa;
+				}
+				virtual bool getMeasureCorrelators() const override
+				{
+					return true;
+				}
+				const int correlatorDirection;
+				const double kappa;
+			};
+
 		struct OpenClKernelParametersMockupForSourceTests : public OpenClKernelParametersMockupForSpinorTests
 		{
 			OpenClKernelParametersMockupForSourceTests(const int nsIn, const int ntIn, const common::sourcecontents sC, const common::sourcetypes sT) :

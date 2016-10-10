@@ -52,8 +52,6 @@ void hardware::code::Correlator_staggered::fill_kernels()
 	correlator_staggered_ps = createKernel("correlator_staggered_ps") << basic_correlator_code << prng_code << "fermionobservables/correlator_staggered_ps.cl";
 
 	if(kernelParameters->getSourceType() == common::point)
-		// Tim: delete this throw here when point source implemented
-		//throw Print_Error_Message("Point source not implemented in Correlator_staggered module! Aborting...", __FILE__, __LINE__);
 		create_point_source_stagg_eoprec = createKernel("create_point_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_point_source.cl";
 	else if (kernelParameters->getSourceType() == common::volume)
 		create_volume_source_stagg_eoprec = createKernel("create_volume_source_stagg_eoprec") << basic_correlator_code << prng_code << "spinorfield_staggered_eo_volume_source.cl";

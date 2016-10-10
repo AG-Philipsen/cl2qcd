@@ -47,39 +47,36 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict out, _
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	//suppose that there are NTIME threads (one for each entry of the correlator)
 	
-	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size) {
+	//suppose that there are NTIME threads (one for each entry of the correlator) divided by two because of using even odd precondition	
+	
+	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size ) 
+	{
 		hmc_float summedSquarenorms = 0.;
 		uint3 coord;
-		int t = id_tmp;
 		
-		for(coord.x = 0; coord.x < NSPACE; coord.x++) 
+		for(coord.x = 0; coord.x < NSPACE; coord.x += 1 ) 
 		{
-			for(coord.y = 0; coord.y < NSPACE; coord.y++) 
+			for(coord.y = 0; coord.y < NSPACE; coord.y += 1 ) 
 			{
-				for(coord.z = 0; coord.z < NSPACE; coord.z++) 
+				for(coord.z = 0; coord.z < NSPACE; coord.z += 1 ) 
 				{
 					int nspace = get_nspace(coord);
-					su3vec tmp = phi[get_n_eoprec(nspace, t)];
+					su3vec temporalField = phi[get_n_eoprec(nspace, id_tmp)];
 					
 					// taking squarenorm:
-					summedSquarenorms += su3vec_squarenorm(tmp);
+					summedSquarenorms += su3vec_squarenorm(temporalField);
 				}
 			}
 		}
 		
 		//consider taking into account an normalization factor like in wilson case:
-		
 		//hmc_float fac = NSPACE * NSPACE * NSPACE;
-		//this line needs to be modified!
 		//out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 		
 		out[NTIME_OFFSET + id_tmp]= -64 * summedSquarenorms;
 		
-		
 	}
-
 
 	//LZ: print directly to stdout for debugging:
 	//#ifdef ENABLE_PRINTF
