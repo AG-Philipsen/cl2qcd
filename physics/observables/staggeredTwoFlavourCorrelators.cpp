@@ -229,4 +229,3 @@ void physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldA
     physics::lattices::release_staggeredfields_eo(invertedSources.first);
     physics::lattices::release_staggeredfields_eo(invertedSources.second);
 }
-

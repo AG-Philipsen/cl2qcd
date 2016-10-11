@@ -1,8 +1,9 @@
 /** @file
  * Basic OpenCL functionality
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright 2012, 2013, 2016 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra,
+ * Tim Breitenfelder
  *
  * This file is part of CL2QCD.
  *
