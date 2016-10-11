@@ -205,8 +205,7 @@ struct psCorrelatorStaggeredTester : public EvenOddSpinorStaggeredTester
 			delete[] spinorStaggeredfield;
 		}
 
-		//Call pseudoScalarCorrelator with also second field spinorStaggeredfields.at(1)
-		code->pseudoScalarCorrelator(CorrelatorResult, spinorStaggeredfields.at(0));
+		code->pseudoScalarCorrelator(CorrelatorResult, spinorStaggeredfields.at(0), spinorStaggeredfields.at(1));
 
 	};
 	~psCorrelatorStaggeredTester()
@@ -296,23 +295,44 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_T)
 
-	BOOST_AUTO_TEST_CASE( zero )
+	BOOST_AUTO_TEST_CASE( zero_zero )
 	{
-		testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero}, ReferenceValues(nt4, 0));
+		testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero}, ReferenceValues(nt4, 0));
 	}
 
-	BOOST_AUTO_TEST_CASE( one )
+	BOOST_AUTO_TEST_CASE( one_one )
 	{
-		testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one}, ReferenceValues(nt4, -12288));
+		testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one}, ReferenceValues(nt4, 3));
 	}
 
-	BOOST_AUTO_TEST_CASE( ascendingReal )
+	BOOST_AUTO_TEST_CASE( one_ascendingReal )
     {
-        testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingReal}, ReferenceValues(nt4, -12288));
+        testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingReal}, ReferenceValues(nt4, 8.5));
     }
 
-	BOOST_AUTO_TEST_CASE( ascendingComplex )
+	BOOST_AUTO_TEST_CASE( one_ascendingComplex )
+	{
+		testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex}, ReferenceValues(nt4, 47));
+	}
+
+	BOOST_AUTO_TEST_CASE( ascendingReal_ascendingReal )
     {
-        testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingComplex}, ReferenceValues(nt4, -12288));
+        testpsStaggeredCorrelator(LatticeExtents {ns4, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::ascendingReal}, ReferenceValues(nt4, 14));
     }
+
+	BOOST_AUTO_TEST_CASE( ascendingReal_ascendingComplex )
+    {
+        testpsStaggeredCorrelator(LatticeExtents {ns8, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::ascendingComplex}, ReferenceValues(nt4, 52.5));
+    }
+
+	BOOST_AUTO_TEST_CASE( ascendingComplex_ascendingReal )
+    {
+        testpsStaggeredCorrelator(LatticeExtents {ns8, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingReal}, ReferenceValues(nt4, 52.5));
+    }
+
+	BOOST_AUTO_TEST_CASE( ascendingComplex_ascendingComplex )
+    {
+        testpsStaggeredCorrelator(LatticeExtents {ns8, nt4}, CorrelatorDirection::temporal, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex}, ReferenceValues(nt4, 91));
+    }
+
 BOOST_AUTO_TEST_SUITE_END()

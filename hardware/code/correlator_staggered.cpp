@@ -167,8 +167,8 @@ void hardware::code::Correlator_staggered::create_volume_source_stagg_eoprec_dev
 	}
 }
 
-//Add field to this method source -> sourceEven and sourceOdd (also in .hpp)
-void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * source) const
+void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * invertedSourceEven,
+																														  const hardware::buffers::SU3vec * invertedSourceOdd) const
 {
 	int clerr;
 	//query work-sizes for kernel
@@ -179,10 +179,10 @@ void hardware::code::Correlator_staggered::pseudoScalarCorrelator(const hardware
 	//set arguments
 	clerr = clSetKernelArg(correlator_staggered_ps, 0, sizeof(cl_mem), correlator->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_staggered_ps, 1, sizeof(cl_mem), source->get_cl_buffer());
+	clerr = clSetKernelArg(correlator_staggered_ps, 1, sizeof(cl_mem), invertedSourceEven->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	//set new argument
+	clerr = clSetKernelArg(correlator_staggered_ps, 2, sizeof(cl_mem), invertedSourceOdd->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(correlator_staggered_ps , gs2, ls2);
 }

@@ -54,7 +54,7 @@ public:
      * Calculate the correlator on the device.
      * TODO: In future, if different correlators are added, think whether to do as in Wilson, overloading, or in a different way!
      */
-    void pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * in) const;
+    void pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * invertedSourcesEven, const hardware::buffers::SU3vec * invertedSourcesOdd) const;
 
 	/**
 	 * Print the profiling information to a file.

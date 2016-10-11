@@ -25,7 +25,8 @@
 // C(t)= - 64 * (-1)^t sum_{vec{x}} sum_{c,d} |[D^(-1)_f (vec{x}|0)]_{c,d}|^2
 // We drop the factor of -64*(-1)^t since it can be neglected for the final mass extraction 
 
-__kernel void correlator_staggered_ps(__global hmc_float * const restrict out, __global const staggeredStorageType * const restrict phi) //<- Put one additional field
+__kernel void correlator_staggered_ps(__global hmc_float * const restrict correlator, __global const staggeredStorageType * const restrict invertedSourceEven,
+ 																			   		  __global const staggeredStorageType * const restrict invertedSourceOdd) 
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -34,48 +35,38 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict out, _
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	
-	//suppose that there are NTIME threads (one for each entry of the correlator) divided by two because of using even odd precondition	
-	
 	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size ) 
 	{
 		hmc_float summedSquarenorms = 0.;
 		uint3 coord;
 		
-		for(coord.x = 0; coord.x < NSPACE; coord.x += 1 ) 
+		for(coord.x = 0; coord.x < NSPACE; coord.x++ ) 
 		{
-			for(coord.y = 0; coord.y < NSPACE; coord.y += 1 ) 
+			for(coord.y = 0; coord.y < NSPACE; coord.y++ ) 
 			{
-				for(coord.z = 0; coord.z < NSPACE; coord.z += 1 ) 
+				for(coord.z = 0; coord.z < NSPACE; coord.z++ ) 
 				{
-					//
-					// Here understand if field is even or odd and get temporalField accordingly from phiEven or from phiOdd
-					// ATTENTION: use get_su3vec_from_field_eo function (see spinorfield_staggered_eo.cl file)
-					//
-					
 					int nspace = get_nspace(coord);
-					su3vec temporalField = phi[get_n_eoprec(nspace, id_tmp)];
+					int tmp_idx = get_n_eoprec(nspace, id_tmp);
+					const bool sourceOnEvenSite = ((coord.x+coord.y+coord.z+id_tmp)%2 == 0) ? true : false;
+					su3vec temporalField;					
+					
+					if(sourceOnEvenSite)
+					{
+						temporalField = get_su3vec_from_field_eo(invertedSourceEven, tmp_idx);
+					}
+					else
+					{
+						temporalField = get_su3vec_from_field_eo(invertedSourceOdd, tmp_idx);
+					}
 					
 					// taking squarenorm:
 					summedSquarenorms += su3vec_squarenorm(temporalField);
 				}
 			}
 		}
-		
-		//consider taking into account an normalization factor like in wilson case:
-		//hmc_float fac = NSPACE * NSPACE * NSPACE;
-		//out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
-		
-		out[NTIME_OFFSET + id_tmp] += -64 * summedSquarenorms; //<-neglect factor -64 but put division by NSPACE^3
-		
+
+		hmc_float spatialVolume = NSPACE * NSPACE * NSPACE;
+		correlator[NTIME_OFFSET + id_tmp] += summedSquarenorms / spatialVolume ;		
 	}
-
-	//LZ: print directly to stdout for debugging:
-	//#ifdef ENABLE_PRINTF
-	//     if(id == 0) {
-	//       for(int t=0; t<NTIME; t++)
-	//  printf("%i\t(%.12e)\n", t, out[t]);
-	//     }
-	//#endif
-
 }
