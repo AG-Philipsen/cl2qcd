@@ -238,7 +238,6 @@ void testpsStaggeredCorrelator(const LatticeExtents lE, const CorrelatorDirectio
 // OCL test calls
 
 //********************************************** SOURCES *****************************************************
-
 BOOST_AUTO_TEST_SUITE(SRC_VOLUME)
 
 	BOOST_AUTO_TEST_CASE( SRC_VOLUME_1 )
@@ -281,18 +280,6 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 //********************************************** CORRELATORS *****************************************************
-
-/*
- * SpinorFillTypes{SpinorFillType::zero, SpinorFillType::zero}                          -->  0
- * SpinorFillTypes{SpinorFillType::one, SpinorFillType::one}                            -->  3
- * SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingReal}                  -->  8.5
- * SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex}               -->  47
- * SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::ascendingReal}        -->  14
- * SpinorFillTypes{SpinorFillType::ascendingReal, SpinorFillType::ascendingComplex}     -->  52.5      ns8
- * SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingReal}     -->  52.5      ns8
- * SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex}  -->  91        ns8
- */
-
 BOOST_AUTO_TEST_SUITE(CORRELATOR_PS_T)
 
 	BOOST_AUTO_TEST_CASE( zero_zero )

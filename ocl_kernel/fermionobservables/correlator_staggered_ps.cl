@@ -23,7 +23,7 @@
 
 // Correlator is given by:
 // C(t)= - 64 * (-1)^t sum_{vec{x}} sum_{c,d} |[D^(-1)_f (vec{x}|0)]_{c,d}|^2
-// We drop the factor of -64*(-1)^t since it can be neglected for the final mass extraction 
+// We drop the prefactor of -64*(-1)^t in the following since it can be neglected for the final mass extraction 
 
 __kernel void correlator_staggered_ps(__global hmc_float * const restrict correlator, __global const staggeredStorageType * const restrict invertedSourceEven,
  																			   		  __global const staggeredStorageType * const restrict invertedSourceOdd) 
@@ -60,7 +60,6 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict correl
 						temporalField = get_su3vec_from_field_eo(invertedSourceOdd, tmp_idx);
 					}
 					
-					// taking squarenorm:
 					summedSquarenorms += su3vec_squarenorm(temporalField);
 				}
 			}
