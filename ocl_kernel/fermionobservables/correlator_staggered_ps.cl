@@ -23,22 +23,9 @@
 
 // Correlator is given by:
 // C(t)= - 64 * (-1)^t sum_{vec{x}} sum_{c,d} |[D^(-1)_f (vec{x}|0)]_{c,d}|^2
-// We drop the factor of (-1)^t since it can be neglected for the statistical evaluation 
+// We drop the factor of -64*(-1)^t since it can be neglected for the final mass extraction 
 
-
-// Squarenormcalculation:
-//
-//hmc_float spinor_staggered_squarenorm(su3vec in)
-//
-// consider to use this function instead:
-// global_squarenorm_staggered_eoprec( __global const staggeredStorageType * const restrict x,
-//									  __global hmc_float * const restrict result, __local hmc_float * const restrict result_local )
-
-
-
-// this is the pseudoscalar pion correlator in t-direction from pointsources
-
-__kernel void correlator_staggered_ps(__global hmc_float * const restrict out, __global const staggeredStorageType * const restrict phi)
+__kernel void correlator_staggered_ps(__global hmc_float * const restrict out, __global const staggeredStorageType * const restrict phi) //<- Put one additional field
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -61,6 +48,11 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict out, _
 			{
 				for(coord.z = 0; coord.z < NSPACE; coord.z += 1 ) 
 				{
+					//
+					// Here understand if field is even or odd and get temporalField accordingly from phiEven or from phiOdd
+					// ATTENTION: use get_su3vec_from_field_eo function (see spinorfield_staggered_eo.cl file)
+					//
+					
 					int nspace = get_nspace(coord);
 					su3vec temporalField = phi[get_n_eoprec(nspace, id_tmp)];
 					
@@ -74,7 +66,7 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict out, _
 		//hmc_float fac = NSPACE * NSPACE * NSPACE;
 		//out[NTIME_OFFSET + id_tmp] += 2. * KAPPA * 2. * KAPPA * correlator / fac;
 		
-		out[NTIME_OFFSET + id_tmp]= -64 * summedSquarenorms;
+		out[NTIME_OFFSET + id_tmp] += -64 * summedSquarenorms; //<-neglect factor -64 but put division by NSPACE^3
 		
 	}
 

@@ -193,6 +193,7 @@ std::vector<hmc_float> physics::observables::staggered::calculatePseudoscalarCor
 		auto evenSiteinvertedSourceBuffer = invertedSourcesOnEvenSites.at(i)->get_buffers();
 		auto oddSiteinvertedSourceBuffer = invertedSourcesOnOddSites.at(i)->get_buffers();
 		auto code = correlatorResult->get_device()->getCorrelatorStaggeredCode();
+		//Merge the following two lines in one call to pseudoScalarCorrelator
 		code->pseudoScalarCorrelator(correlatorResult, evenSiteinvertedSourceBuffer[i]);
 		code->pseudoScalarCorrelator(correlatorResult, oddSiteinvertedSourceBuffer[i]);
 	}
