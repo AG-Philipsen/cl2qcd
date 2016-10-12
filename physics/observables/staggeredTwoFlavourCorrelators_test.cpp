@@ -43,8 +43,6 @@ void compare_staggered_correlator(std::string which, const std::pair<std::vector
 
 	std::vector<hmc_float> correlator = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, interfacesHandler);
 	logger.debug() << which;
-
-	std::cout << "#################################################################################################"<< std::endl;
 	for(auto tmp_corr: correlator)
 	{
 		logger.debug() << scientific << setprecision(14) << tmp_corr;
@@ -85,17 +83,18 @@ void test_staggered_correlator(const char* _params[], const std::vector<hmc_floa
 	for(size_t i = 0; i < num_sources; ++i) {
 		invertedSourcesOdd[i]->set_cold();
 	}
+//	logger.debug() << "######################################################################################";
+//	logger.debug() << invertedSourcesEven[0].log_squarenorm() ;
+//	logger.debug() << "######################################################################################";
 
 	auto invertedSources = std::make_pair(invertedSourcesEven, invertedSourcesOdd);
 
-
-	for(auto source: sources) {
+	logger.debug() << "######################################################################################";
+	for(auto source: invertedSourcesEven) {
 		log_squarenorm("Source: ", *source);
 	}
-
-	std::cout << "################################# N s = " << hP.getNs() << std::endl;
-	std::cout << "################################# N t = " << hP.getNt() << std::endl;
-//	Ns = 4, Nt = 8.
+	logger.debug() << "######################################################################################";
+	//	Ns = 4, Nt = 8.
 
 	compare_staggered_correlator("ps", invertedSources, ps_ref, interfacesHandler);
 
@@ -110,11 +109,10 @@ BOOST_AUTO_TEST_CASE(point_source)
 
 	const char * params[] = {"foo", "--sourcetype=point","--fermact=rooted_stagg", "--corr_dir=0", "--num_dev=1"};
 
-	hmc_float ps_tmp[] = {3., 3., 3., 3., 3., 3., 3., 3.};
-	std::vector<hmc_float> ps(8, 3.);
-//	std::vector<hmc_float> ps(ps_tmp, ps_tmp + sizeof(ps_tmp) / sizeof(hmc_float));
+	hmc_float refereceValuePerTimeslice = 1./(4*4*4*8)*12;
+	std::vector<hmc_float> referenceValue(8, refereceValuePerTimeslice);
 
-	test_staggered_correlator(params, ps);
+	test_staggered_correlator(params, referenceValue);
 }
 
 
