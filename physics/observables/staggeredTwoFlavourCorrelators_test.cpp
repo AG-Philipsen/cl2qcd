@@ -36,43 +36,37 @@
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
 
-void test_staggered_correlator(const char* params[], const std::vector<hmc_float>& ps_ref);
 
-BOOST_AUTO_TEST_CASE(point_source)
-{
-	using namespace physics::lattices;
-
-	const char * params[] = {"foo", "--sourcetype=point", "--corr_dir=0"};
-
-	hmc_float ps_tmp[] = {5.9989365191736104, 5.9685966494875613, 5.9273621601759441, 5.9971283038020733, 5.9813369771401304, 5.9760321595370245, 6.0879077700116371, 6.0659567780266324};
-	std::vector<hmc_float> ps(ps_tmp, ps_tmp + sizeof(ps_tmp) / sizeof(hmc_float));
-
-	test_staggered_correlator(params, ps);
-}
-
-void check_staggered_correlator(std::string which, const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >& invertedSources, const hardware::System& system, const std::vector<hmc_float>& ref, physics::InterfacesHandler & interfacesHandler)
+void compare_staggered_correlator(std::string which, const std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector<physics::lattices::Staggeredfield_eo*> >& invertedSources, const std::vector<hmc_float>& ref, physics::InterfacesHandler & interfacesHandler)
 {
 	using namespace std;
 
-	std::vector<hmc_float> result = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, interfacesHandler);
+	std::vector<hmc_float> correlator = physics::observables::staggered::calculatePseudoscalarCorrelator(invertedSources, interfacesHandler);
 	logger.debug() << which;
-	for(auto val: result) {
-		logger.debug() << scientific << setprecision(14) << val;
+
+	std::cout << "#################################################################################################"<< std::endl;
+	for(auto tmp_corr: correlator)
+	{
+		logger.debug() << scientific << setprecision(14) << tmp_corr;
 	}
-	BOOST_REQUIRE_EQUAL(result.size(), ref.size());
-	for(size_t i = 0; i < result.size(); ++i) {
-		BOOST_CHECK_CLOSE(result[i], ref[i], 0.1);
+
+	BOOST_REQUIRE_EQUAL(correlator.size(), ref.size());
+	for(size_t i = 0; i < correlator.size(); ++i)
+	{
+		BOOST_CHECK_CLOSE(correlator[i], ref[i], 0.1);
 	}
 }
+
 
 void test_staggered_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref)
 {
 	using namespace physics::lattices;
 
-	meta::Inputparameters params(3, _params);
+	meta::Inputparameters params(5, _params);
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
+//    hardware::HardwareParametersInterface * getHardwareParameters();
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	const physics::PRNG prng{system, &prngParameters};
@@ -99,9 +93,27 @@ void test_staggered_correlator(const char* _params[], const std::vector<hmc_floa
 		log_squarenorm("Source: ", *source);
 	}
 
-	check_staggered_correlator("ps", invertedSources, system, ps_ref, interfacesHandler);
+//	std::cout << "################################# N s = " << hP.getNs() << std::endl;
+//	std::cout << "################################# N t = " << hP.getNt() << std::endl;
+//	Ns = 4, Nt = 8.
+
+	compare_staggered_correlator("ps", invertedSources, ps_ref, interfacesHandler);
 
 	release_staggeredfields_eo(invertedSourcesEven);
 	release_staggeredfields_eo(invertedSourcesOdd);
 	release_staggeredfields_eo(sources);
 }
+
+BOOST_AUTO_TEST_CASE(point_source)
+{
+	using namespace physics::lattices;
+
+	const char * params[] = {"foo", "--sourcetype=point","--fermact=rooted_stagg", "--corr_dir=0", "--num_dev=1"};
+
+	hmc_float ps_tmp[] = {3., 3., 3., 3., 3., 3., 3., 3.};
+	std::vector<hmc_float> ps(ps_tmp, ps_tmp + sizeof(ps_tmp) / sizeof(hmc_float));
+
+	test_staggered_correlator(params, ps);
+}
+
+
