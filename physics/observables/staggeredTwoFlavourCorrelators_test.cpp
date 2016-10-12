@@ -93,8 +93,8 @@ void test_staggered_correlator(const char* _params[], const std::vector<hmc_floa
 		log_squarenorm("Source: ", *source);
 	}
 
-//	std::cout << "################################# N s = " << hP.getNs() << std::endl;
-//	std::cout << "################################# N t = " << hP.getNt() << std::endl;
+	std::cout << "################################# N s = " << hP.getNs() << std::endl;
+	std::cout << "################################# N t = " << hP.getNt() << std::endl;
 //	Ns = 4, Nt = 8.
 
 	compare_staggered_correlator("ps", invertedSources, ps_ref, interfacesHandler);
@@ -111,7 +111,8 @@ BOOST_AUTO_TEST_CASE(point_source)
 	const char * params[] = {"foo", "--sourcetype=point","--fermact=rooted_stagg", "--corr_dir=0", "--num_dev=1"};
 
 	hmc_float ps_tmp[] = {3., 3., 3., 3., 3., 3., 3., 3.};
-	std::vector<hmc_float> ps(ps_tmp, ps_tmp + sizeof(ps_tmp) / sizeof(hmc_float));
+	std::vector<hmc_float> ps(8, 3.);
+//	std::vector<hmc_float> ps(ps_tmp, ps_tmp + sizeof(ps_tmp) / sizeof(hmc_float));
 
 	test_staggered_correlator(params, ps);
 }
