@@ -56,12 +56,12 @@ void compare_staggered_correlator(std::string which, const std::pair<std::vector
 }
 
 
-void test_staggered_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref)
+void test_staggered_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref, bool zeroOrCold)
 {
 	using namespace physics::lattices;
 
 	meta::Inputparameters params(5, _params);
-    hardware::HardwareParametersImplementation hP(&params);
+    hardware::HardwareParametersImplementation hP(&params); //	Ns = 4, Nt = 8.
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
 //    hardware::HardwareParametersInterface * getHardwareParameters();
@@ -70,37 +70,45 @@ void test_staggered_correlator(const char* _params[], const std::vector<hmc_floa
 	const physics::PRNG prng{system, &prngParameters};
 
 	size_t num_sources = params.get_num_sources();
-	std::vector<physics::lattices::Staggeredfield_eo *> sources = create_staggeredfields_eo(system, num_sources, interfacesHandler);
-	for(size_t i = 0; i < num_sources; ++i) {
-		pseudo_randomize<Staggeredfield_eo, su3vec>(sources[i], i);
-	}
 	std::vector<physics::lattices::Staggeredfield_eo *> invertedSourcesEven = create_staggeredfields_eo(system, num_sources, interfacesHandler);
-	for(size_t i = 0; i < num_sources; ++i) {
-		invertedSourcesEven[i]->set_cold();
-	}
-
 	std::vector<physics::lattices::Staggeredfield_eo *> invertedSourcesOdd = create_staggeredfields_eo(system, num_sources, interfacesHandler);
-	for(size_t i = 0; i < num_sources; ++i) {
-		invertedSourcesOdd[i]->set_cold();
+
+	// zeroOrCold == false(0) -> Zero , zeroOrCold == true(1) -> Cold
+	if(zeroOrCold)
+	{
+		for(size_t i = 0; i < num_sources; ++i)
+		{
+			invertedSourcesEven[i]->set_cold();
+			invertedSourcesOdd[i]->set_cold();
+		}
 	}
-//	logger.debug() << "######################################################################################";
-//	logger.debug() << invertedSourcesEven[0].log_squarenorm() ;
-//	logger.debug() << "######################################################################################";
+	else
+	{
+		for(size_t i = 0; i < num_sources; ++i)
+		{
+			invertedSourcesEven[i]->set_zero();
+			invertedSourcesOdd[i]->set_zero();
+		}
+
+	}
 
 	auto invertedSources = std::make_pair(invertedSourcesEven, invertedSourcesOdd);
-
-	logger.debug() << "######################################################################################";
-	for(auto source: invertedSourcesEven) {
-		log_squarenorm("Source: ", *source);
-	}
-	logger.debug() << "######################################################################################";
-	//	Ns = 4, Nt = 8.
 
 	compare_staggered_correlator("ps", invertedSources, ps_ref, interfacesHandler);
 
 	release_staggeredfields_eo(invertedSourcesEven);
 	release_staggeredfields_eo(invertedSourcesOdd);
-	release_staggeredfields_eo(sources);
+
+	//	std::vector<physics::lattices::Staggeredfield_eo *> sources = create_staggeredfields_eo(system, num_sources, interfacesHandler);
+	//	for(size_t i = 0; i < num_sources; ++i)
+	//	{
+	//		pseudo_randomize<Staggeredfield_eo, su3vec>(sources[i], i);
+	//	}
+	//	for(auto source: invertedSourcesEven)
+	//	{
+	//		log_squarenorm("Source: ", *source);
+	//	}
+	//release_staggeredfields_eo(sources);
 }
 
 BOOST_AUTO_TEST_CASE(point_source)
@@ -108,11 +116,16 @@ BOOST_AUTO_TEST_CASE(point_source)
 	using namespace physics::lattices;
 
 	const char * params[] = {"foo", "--sourcetype=point","--fermact=rooted_stagg", "--corr_dir=0", "--num_dev=1"};
+	//	Ns = 4, Nt = 8.
 
-	hmc_float refereceValuePerTimeslice = 1./(4*4*4*8)*12;
-	std::vector<hmc_float> referenceValue(8, refereceValuePerTimeslice);
+	hmc_float referenceValuePerTimesliceZero = 0.;
+	std::vector<hmc_float> referenceValueZero(8, referenceValuePerTimesliceZero);
 
-	test_staggered_correlator(params, referenceValue);
+	hmc_float referenceValuePerTimesliceCold = 1./(4*4*4*8)*12;
+	std::vector<hmc_float> referenceValueCold(8, referenceValuePerTimesliceCold);
+
+	test_staggered_correlator(params, referenceValueZero, false);
+	test_staggered_correlator(params, referenceValueCold, true);
 }
 
 

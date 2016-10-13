@@ -34,6 +34,7 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict correl
 	int loc_idx = get_local_id(0);
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
+	// int counter = 0;
 
 	for(int id_tmp = id; id_tmp < NTIME_LOCAL; id_tmp += global_size ) 
 	{
@@ -47,7 +48,7 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict correl
 				for(coord.z = 0; coord.z < NSPACE; coord.z++ ) 
 				{
 					int nspace = get_nspace(coord);
-					int tmp_idx = get_n_eoprec(nspace, id_tmp);
+					int tmp_idx = get_n_eoprec(nspace, id_tmp);				
 					const bool sourceOnEvenSite = ((coord.x+coord.y+coord.z+id_tmp)%2 == 0) ? true : false;
 					su3vec temporalField;					
 					
@@ -61,6 +62,8 @@ __kernel void correlator_staggered_ps(__global hmc_float * const restrict correl
 					}
 					
 					summedSquarenorms += su3vec_squarenorm(temporalField);
+					// counter = counter + 1;
+					// printf("%d \t", counter );
 				}
 			}
 		}
