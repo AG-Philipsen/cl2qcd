@@ -56,15 +56,14 @@ void compare_staggered_correlator(std::string which, const std::pair<std::vector
 }
 
 
-void test_staggered_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref, bool zeroOrCold)
+void test_staggered_correlator(const char* _params[], const std::vector<hmc_float>& ps_ref, bool coldOrZero)
 {
 	using namespace physics::lattices;
 
-	meta::Inputparameters params(5, _params);
+	meta::Inputparameters params(6, _params);
     hardware::HardwareParametersImplementation hP(&params); //	Ns = 4, Nt = 8.
     hardware::code::OpenClKernelParametersImplementation kP(params);
     hardware::System system(hP, kP);
-//    hardware::HardwareParametersInterface * getHardwareParameters();
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	physics::PrngParametersImplementation prngParameters{params};
 	const physics::PRNG prng{system, &prngParameters};
@@ -73,8 +72,7 @@ void test_staggered_correlator(const char* _params[], const std::vector<hmc_floa
 	std::vector<physics::lattices::Staggeredfield_eo *> invertedSourcesEven = create_staggeredfields_eo(system, num_sources, interfacesHandler);
 	std::vector<physics::lattices::Staggeredfield_eo *> invertedSourcesOdd = create_staggeredfields_eo(system, num_sources, interfacesHandler);
 
-	// zeroOrCold == false(0) -> Zero , zeroOrCold == true(1) -> Cold
-	if(zeroOrCold)
+	if(coldOrZero)
 	{
 		for(size_t i = 0; i < num_sources; ++i)
 		{
@@ -98,31 +96,22 @@ void test_staggered_correlator(const char* _params[], const std::vector<hmc_floa
 
 	release_staggeredfields_eo(invertedSourcesEven);
 	release_staggeredfields_eo(invertedSourcesOdd);
-
-	//	std::vector<physics::lattices::Staggeredfield_eo *> sources = create_staggeredfields_eo(system, num_sources, interfacesHandler);
-	//	for(size_t i = 0; i < num_sources; ++i)
-	//	{
-	//		pseudo_randomize<Staggeredfield_eo, su3vec>(sources[i], i);
-	//	}
-	//	for(auto source: invertedSourcesEven)
-	//	{
-	//		log_squarenorm("Source: ", *source);
-	//	}
-	//release_staggeredfields_eo(sources);
 }
 
 BOOST_AUTO_TEST_CASE(point_source)
 {
 	using namespace physics::lattices;
 
-	const char * params[] = {"foo", "--sourcetype=point","--fermact=rooted_stagg", "--corr_dir=0", "--num_dev=1"};
-	//	Ns = 4, Nt = 8.
+	const char * params[] = {"foo", "--sourcetype=point", "--num_sources=3", "--fermact=rooted_stagg", "--corr_dir=0", "--num_dev=1"};
 
 	hmc_float referenceValuePerTimesliceZero = 0.;
 	std::vector<hmc_float> referenceValueZero(8, referenceValuePerTimesliceZero);
 
-	hmc_float referenceValuePerTimesliceCold = 1./(4*4*4*8)*12;
-	std::vector<hmc_float> referenceValueCold(8, referenceValuePerTimesliceCold);
+	unsigned int Nsources = 3;
+	unsigned int Nt = 8;
+	unsigned int Ns = 4;
+	hmc_float referenceValuePerTimesliceCold = 1./(Ns*Ns*Ns*Nt)*Nsources;
+	std::vector<hmc_float> referenceValueCold(Nt, referenceValuePerTimesliceCold);
 
 	test_staggered_correlator(params, referenceValueZero, false);
 	test_staggered_correlator(params, referenceValueCold, true);
