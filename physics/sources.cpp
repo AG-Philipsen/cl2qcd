@@ -188,7 +188,11 @@ void physics::set_point_source(const physics::lattices::Staggeredfield_eo * sour
 
 	device->getCorrelatorStaggeredCode()->create_point_source_stagg_eoprec_device(buffer, k, Index(params.getSourceX(), params.getSourceY(), params.getSourceZ(), params.getSourceT(), LatticeExtents(params.getNs(), params.getNt())).spatialIndex, local_t);
 
-	source->update_halo();
+	if(buffers.size() != 1){
+	    throw Print_Error_Message("Point source for staggered fermions not implemented for multiple devices!", __FILE__, __LINE__);
+	    source->update_halo();
+	}
+
 }
 
 
