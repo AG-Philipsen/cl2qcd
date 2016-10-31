@@ -210,7 +210,7 @@ public:
   ConvertToSoaTester(std::string inputfile) :
     GaugemomentumTester("convert to soa", inputfile, 1)
   {
-    BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+    BOOST_TEST_MESSAGE("NOT YET IMPLEMENTED!!");
   }
 };
 
@@ -229,7 +229,7 @@ public:
   ConvertFromSoaTester(std::string inputfile) :
     GaugemomentumTester("convert from soa", inputfile, 1)
   {
-    BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+    BOOST_TEST_MESSAGE("NOT YET IMPLEMENTED!!");
   }
 };
 

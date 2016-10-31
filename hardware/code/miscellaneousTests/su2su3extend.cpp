@@ -94,7 +94,7 @@ for(auto device: system.get_devices()) {
 		dummy.runExtendKernel();
 		dummy.verify();
 	}
-	BOOST_MESSAGE("Tested CPU");
+	BOOST_TEST_MESSAGE("Tested CPU");
 }
 
 BOOST_AUTO_TEST_CASE( GPU )
@@ -107,7 +107,7 @@ for(auto device: system.get_devices()) {
 		dummy.runExtendKernel();
 		dummy.verify();
 	}
-	BOOST_MESSAGE("Tested GPU");
+	BOOST_TEST_MESSAGE("Tested GPU");
 }
 
 void Test::fill_buffers()

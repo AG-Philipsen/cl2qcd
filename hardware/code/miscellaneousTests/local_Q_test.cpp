@@ -186,6 +186,6 @@ BOOST_AUTO_TEST_CASE( LOCAL_Q )
 	logger.info() << "Compare result to reference value";
 	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
 	logger.info() << "Done";
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 
 }

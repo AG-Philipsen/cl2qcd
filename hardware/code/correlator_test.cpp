@@ -248,7 +248,7 @@ void test_build(std::string inputfile)
 	for(auto device: system.get_devices()) {
 		device->get_correlator_code();
 	}
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 void test_src_volume(std::string inputfile)
@@ -313,7 +313,7 @@ void test_src_volume(std::string inputfile)
 	} else{
 	  testFloatSizeAgainstInputparameters(cpu_res, *params);
 	}
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 void test_src_zslice(std::string inputfile)
@@ -381,7 +381,7 @@ void test_src_zslice(std::string inputfile)
 	} else{
 	  testFloatSizeAgainstInputparameters(cpu_res, *params);
 	}
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 
@@ -562,7 +562,7 @@ BOOST_AUTO_TEST_SUITE(SRC_TSLICE)
 		} else{
 		  testFloatSizeAgainstInputparameters(cpu_res, *params);
 		}
-		BOOST_MESSAGE("Test done");
+		BOOST_TEST_MESSAGE("Test done");
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_TSLICE_1 )
@@ -667,7 +667,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 		} else{
 			testFloatSizeAgainstInputparameters(cpu_res, *params);
 		}
-		BOOST_MESSAGE("Test done");
+		BOOST_TEST_MESSAGE("Test done");
 	}
 
 	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )

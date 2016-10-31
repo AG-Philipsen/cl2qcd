@@ -117,7 +117,7 @@ void test_build(std::string inputfile)
 	auto params = createParameters("fermionsMerged/" + inputfile);
 	hardware::System system(*params);
 	TestGaugefield cpu(&system);
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
@@ -223,7 +223,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	delete[] sf_out;
 
 	testFloatAgainstInputparameters(cpu_res, *params);
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 void test_dslash_and_m_tm_inverse_sitediagonal(std::string inputfile)
@@ -295,7 +295,7 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	delete[] sf_out;
 
 	testFloatAgainstInputparameters(cpu_res, *params);
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 void test_m_tm_sitediagonal_and_gamma5_eo(std::string inputfile)

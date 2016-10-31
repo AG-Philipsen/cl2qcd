@@ -168,7 +168,7 @@ void test_build(std::string inputfile)
 	for(auto device: system.get_devices()) {
 		device->get_spinor_code();
 	}
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
@@ -223,7 +223,7 @@ void test_sf_saxpy_AND_squarenorm_eo(std::string inputfile)
 	logger.info() << cpu_res.re;
 
 	testFloatAgainstInputparameters(cpu_res.re, *params);
-	BOOST_MESSAGE("Test done");
+	BOOST_TEST_MESSAGE("Test done");
 }
 
 
