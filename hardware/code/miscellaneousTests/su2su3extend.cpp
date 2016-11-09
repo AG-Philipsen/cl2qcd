@@ -63,7 +63,7 @@ struct ExtendTester : public GaugefieldTester
 			extendCode.runExtendKernel(d_out, d_in, d_rand, NUM_ELEMENTS);
 			verify();
 		}
-		BOOST_MESSAGE("Tested CPU");
+		BOOST_TEST_MESSAGE("Tested CPU");
 	}
 	void verify();
 	void verify(hmc_complex, hmc_complex);
