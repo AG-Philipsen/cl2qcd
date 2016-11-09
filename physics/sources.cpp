@@ -233,8 +233,6 @@ std::vector<physics::lattices::Staggeredfield_eo *> physics::create_staggered_so
         sources.push_back(new physics::lattices::Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
 
-    logger.error() << "source = " << sourcesParameters.getSourceType();
-
     fill_sources(sources, prng, sourcesParameters);
 
     return sources;
