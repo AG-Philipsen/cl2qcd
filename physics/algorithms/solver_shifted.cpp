@@ -385,6 +385,7 @@ const std::vector<std::shared_ptr<FERMIONFIELD> > physics::algorithms::solvers::
 {
     if(hasSystemBeSolved) return x;
     if(squarenorm(b) == 0) {
+        logger.warn() << "CG-M solver called with zero field as r.h.s. -> trivial solution!";
         for (uint i = 0; i < sigma.size(); i++) x[i]->set_zero();
         hasSystemBeSolved = true;
         return x;

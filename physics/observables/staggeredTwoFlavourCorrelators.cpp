@@ -67,7 +67,8 @@ static std::pair<std::vector<physics::lattices::Staggeredfield_eo*>, std::vector
 createAndInvertSources(const hardware::System& system, const physics::PRNG& prng, const physics::lattices::Gaugefield& gaugefield,
                        const int numberOfSources, physics::InterfacesHandler& interfacesHandler)
 {
-	const std::vector<physics::lattices::Staggeredfield_eo *>  sources = physics::create_staggered_sources(system, prng, numberOfSources, interfacesHandler);
+    logger.info() << "Creating and inverting staggered sources...";
+    const std::vector<physics::lattices::Staggeredfield_eo *>  sources = physics::create_staggered_sources(system, prng, numberOfSources, interfacesHandler);
     const physics::SourcesParametersInterface & sourcesParameters = interfacesHandler.getSourcesParametersInterface();
 
     const int tpos = sourcesParameters.getSourceT();
@@ -141,6 +142,7 @@ createAndInvertSources(const hardware::System& system, const physics::PRNG& prng
         throw Print_Error_Message("Something went really wrong in \"createAndInvertSources\" since the number of inverted sources does not match the number of sources!");
 
     physics::lattices::release_staggeredfields_eo(sources);
+    logger.info() << "...done!";
     return std::make_pair(invertedSourcesEvenParts, invertedSourcesOddParts);
 
 }
