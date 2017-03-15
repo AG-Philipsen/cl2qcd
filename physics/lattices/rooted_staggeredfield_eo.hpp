@@ -37,7 +37,7 @@ namespace lattices {
 /**
  * Representation of a rooted staggeredfield (with eo preconditioning).
  */
-class Rooted_Staggeredfield_eo : public Staggeredfield_eo, public physics::algorithms::Rational_Coefficients{
+class Rooted_Staggeredfield_eo : public Staggeredfield_eo{
 
 public:
 	/**
@@ -66,6 +66,14 @@ public:
 	 *                      fermions. This circumvents possible numeric errors.
 	 */
 	void Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const hmc_float minEigenvalue, const hmc_float maxEigenvalue);
+
+	/**
+	 * This method returns the order of the approximation
+	 */
+	const physics::algorithms::Rational_Coefficients getRationalCoefficients() const noexcept;
+
+private:
+	physics::algorithms::Rational_Coefficients rationalCoefficients;
 };
 
 }

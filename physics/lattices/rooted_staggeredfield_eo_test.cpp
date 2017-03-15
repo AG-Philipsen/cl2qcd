@@ -120,17 +120,17 @@ BOOST_AUTO_TEST_CASE(rescale)
 				    2.3690543226274733968, 8.1633847494467222106,
 				    62.215004455600926292};
 	
-	int ord = sf.Get_order();
+	int ord = sf.getRationalCoefficients().Get_order();
 
 	sf.Rescale_Coefficients(approx, minEigenvalue, maxEigenvalue);
-	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref, 5.e-5);
-	std::vector<hmc_float> a = sf.Get_a();
-	std::vector<hmc_float> b = sf.Get_b();
+	BOOST_CHECK_CLOSE(sf.getRationalCoefficients().Get_a0(), a0_ref, 5.e-5);
+	std::vector<hmc_float> a = sf.getRationalCoefficients().Get_a();
+	std::vector<hmc_float> b = sf.getRationalCoefficients().Get_b();
 	
 	sf.Rescale_Coefficients(approx, minEigenvalueCons, maxEigenvalueCons);
-	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref_cons, 5.e-5);
-	std::vector<hmc_float> a_cons = sf.Get_a();
-	std::vector<hmc_float> b_cons = sf.Get_b();
+	BOOST_CHECK_CLOSE(sf.getRationalCoefficients().Get_a0(), a0_ref_cons, 5.e-5);
+	std::vector<hmc_float> a_cons = sf.getRationalCoefficients().Get_a();
+	std::vector<hmc_float> b_cons = sf.getRationalCoefficients().Get_b();
 	
 	//Test result: note that the precision is not so high since
 	//the reference code uses a slightly different method to calculate

@@ -92,12 +92,12 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     logger.debug() << "\t\t\tstart solver";
     std::vector<std::shared_ptr<Staggeredfield_eo> > X;
     std::vector<std::shared_ptr<Staggeredfield_eo> > Y;
-    for (int i = 0; i < phi.Get_order(); i++) {
+    for (int i = 0; i < phi.getRationalCoefficients().Get_order(); i++) {
         X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
         Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
     const MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-    cg_m(X, fm, gf, phi.Get_b(), phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
+    cg_m(X, fm, gf, phi.getRationalCoefficients().Get_b(), phi, system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
     logger.debug() << "\t\t\t  end solver";
 
     //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
@@ -106,12 +106,12 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     const D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
     physics::lattices::Gaugemomenta tmp(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
-    for (int i = 0; i < phi.Get_order(); i++) {
+    for (int i = 0; i < phi.getRationalCoefficients().Get_order(); i++) {
         Doe(Y[i].get(), gf, *X[i]);
         tmp.zero();
         fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
         fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
-        physics::lattices::saxpy(force, -1. * (phi.Get_a())[i], tmp);
+        physics::lattices::saxpy(force, -1. * (phi.getRationalCoefficients().Get_a())[i], tmp);
     }
 
     logger.debug() << "\t\t...end calc_fermion_force!";

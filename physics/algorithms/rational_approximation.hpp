@@ -67,7 +67,7 @@ public:
 	Rational_Coefficients(Rational_Coefficients&&) = default;
 	Rational_Coefficients& operator=(Rational_Coefficients&&) = default;
 	Rational_Coefficients& operator=(const Rational_Coefficients&) = delete;
-	Rational_Coefficients(const Rational_Coefficients&) = delete;
+	Rational_Coefficients(const Rational_Coefficients&) = default;
 	Rational_Coefficients() = delete;
     virtual ~Rational_Coefficients(){}
 
