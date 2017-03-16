@@ -97,15 +97,15 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
     //Temporary fields for shifted inverter
     logger.trace() << "\t\tstart solver...";
     std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > X;
-    for (int i = 0; i < out->getRationalCoefficients().Get_order(); i++)
+    for (int i = 0; i < out->getOrder(); i++)
         X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->getRationalCoefficients().Get_b(), orig, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
+    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->get_b(), orig, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
     logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
-    physics::lattices::sax(out, { out->getRationalCoefficients().Get_a0(), 0. }, orig);
-    for (int i = 0; i < out->getRationalCoefficients().Get_order(); i++)
-        physics::lattices::saxpy(out, { (out->getRationalCoefficients().Get_a())[i], 0. }, *X[i], *out);
+    physics::lattices::sax(out, { out->get_a0(), 0. }, orig);
+    for (int i = 0; i < out->getOrder(); i++)
+        physics::lattices::saxpy(out, { (out->get_a())[i], 0. }, *X[i], *out);
 
     log_squarenorm("Staggeredfield_eo after update", *out);
 }

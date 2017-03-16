@@ -232,17 +232,17 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
     //Temporary fields for shifted inverter
     logger.debug() << "\t\tstart solver...";
     std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > X;
-    for (int i = 0; i < phi.getRationalCoefficients().Get_order(); i++)
+    for (int i = 0; i < phi.getOrder(); i++)
         X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.getRationalCoefficients().Get_b(), phi, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
+    iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.get_b(), phi, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
     logger.debug() << "\t\t...end solver in " << iterations << " iterations";
 
     //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
     physics::lattices::Staggeredfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
-    sax(&tmp, { phi.getRationalCoefficients().Get_a0(), 0. }, phi);
-    for (int i = 0; i < phi.getRationalCoefficients().Get_order(); i++) {
-        saxpy(&tmp, { (phi.getRationalCoefficients().Get_a())[i], 0. }, *X[i], tmp);
+    sax(&tmp, { phi.get_a0(), 0. }, phi);
+    for (int i = 0; i < phi.getOrder(); i++) {
+        saxpy(&tmp, { (phi.get_a())[i], 0. }, *X[i], tmp);
     }
 
     logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";

@@ -70,7 +70,19 @@ public:
 	/**
 	 * This method returns the order of the approximation
 	 */
-	const physics::algorithms::Rational_Coefficients getRationalCoefficients() const noexcept;
+	int getOrder() const;
+	/**
+	 * Method to get the coefficient a0 of the approximation
+	 */
+	hmc_float get_a0() const;
+	/**
+	 * Method to get the coefficients a of the approximation
+	 */
+	std::vector<hmc_float> get_a() const;
+	/**
+	 * Method to get the coefficients b of the approximation
+	 */
+	std::vector<hmc_float> get_b() const;
 
 private:
 	physics::algorithms::Rational_Coefficients rationalCoefficients;

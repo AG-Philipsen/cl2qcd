@@ -43,8 +43,22 @@ void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const phy
 	rationalCoefficients = approx.Rescale_Coefficients(minEigenvalue, maxEigenvalue);
 }
 
-const physics::algorithms::Rational_Coefficients physics::lattices::Rooted_Staggeredfield_eo::getRationalCoefficients() const noexcept
+int physics::lattices::Rooted_Staggeredfield_eo::getOrder() const
 {
-	return rationalCoefficients;
+	return rationalCoefficients.Get_order();
 }
 
+hmc_float physics::lattices::Rooted_Staggeredfield_eo::get_a0() const
+{
+    return rationalCoefficients.Get_a0();
+}
+
+std::vector<hmc_float> physics::lattices::Rooted_Staggeredfield_eo::get_a() const
+{
+    return rationalCoefficients.Get_a();
+}
+
+std::vector<hmc_float> physics::lattices::Rooted_Staggeredfield_eo::get_b() const
+{
+    return rationalCoefficients.Get_b();
+}
