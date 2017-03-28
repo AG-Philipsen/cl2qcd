@@ -1,7 +1,8 @@
 /** @file
  * Implementation of the physics::lattices::Rooted_Staggeredfield_eo class
  *
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -24,18 +25,18 @@
 
 physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system,
                                                                       const RootedStaggeredfieldEoParametersInterface& rootedStaggeredfieldEoParametersInterface)
-	: Staggeredfield_eo(system, rootedStaggeredfieldEoParametersInterface),
-	  rationalCoefficients(std::max(rootedStaggeredfieldEoParametersInterface.getMetropolisRationalApproximationOrder(),
+	: rationalCoefficients(std::max(rootedStaggeredfieldEoParametersInterface.getMetropolisRationalApproximationOrder(),
               rootedStaggeredfieldEoParametersInterface.getMolecularDynamicsRationalApproximationOrder()))
 {
+    pseudofermions.emplace_back(system, rootedStaggeredfieldEoParametersInterface);
 }
 
 physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system,
                                                                       const RootedStaggeredfieldEoParametersInterface& rootedStaggeredfieldEoParametersInterface,
                                                                       const physics::algorithms::Rational_Approximation& approx)
-	: Staggeredfield_eo(system, rootedStaggeredfieldEoParametersInterface),
-	  rationalCoefficients(approx.Get_order(), approx.Get_a0(), approx.Get_a(), approx.Get_b())
+	: rationalCoefficients(approx.Get_order(), approx.Get_a0(), approx.Get_a(), approx.Get_b())
 {
+    pseudofermions.emplace_back(system, rootedStaggeredfieldEoParametersInterface);
 }
 
 void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const hmc_float minEigenvalue, const hmc_float maxEigenvalue)
@@ -62,3 +63,10 @@ std::vector<hmc_float> physics::lattices::Rooted_Staggeredfield_eo::get_b() cons
 {
     return rationalCoefficients.Get_b();
 }
+
+
+const physics::lattices::Staggeredfield_eo& physics::lattices::Rooted_Staggeredfield_eo::operator[](unsigned int index) const
+{
+    return pseudofermions[index];
+}
+

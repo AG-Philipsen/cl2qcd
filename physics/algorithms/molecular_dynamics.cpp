@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  * Copyright (c) 2012-2013 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -100,14 +100,16 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
     for (int i = 0; i < out->getOrder(); i++)
         X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->get_b(), orig, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
+    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->get_b(), orig[0], system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
     logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
-    physics::lattices::sax(out, { out->get_a0(), 0. }, orig);
+    //TODO: Ugly syntax &((*out)[0]) temporarily due to missing loop on multiple pseudofermions
+    //      When adding the loop, create tmpField=(*out)[0] and then use it as &tmpField (-> more readable)
+    physics::lattices::sax(&((*out)[0]), { out->get_a0(), 0. }, orig[0]);
     for (int i = 0; i < out->getOrder(); i++)
-        physics::lattices::saxpy(out, { (out->get_a())[i], 0. }, *X[i], *out);
+        physics::lattices::saxpy(&((*out)[0]), { (out->get_a())[i], 0. }, *X[i], (*out)[0]);
 
-    log_squarenorm("Staggeredfield_eo after update", *out);
+    log_squarenorm("Staggeredfield_eo after update", (*out)[0]);
 }
 
 /**

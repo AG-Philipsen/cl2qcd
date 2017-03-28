@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  * Copyright (c) 2012-2013 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -230,8 +230,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1[0], 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2[0], 321); //it will be B
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
@@ -258,8 +258,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1[0], 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2[0], 321); //it will be B
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
@@ -287,8 +287,8 @@ BOOST_AUTO_TEST_CASE(calc_tot_stagg_force_eo)
 		Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 		
 		//These are the same fields of the excplicit test D_KS_eo (second test)
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 123); //it will be A
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 321); //it will be B
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1[0], 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2[0], 321); //it will be B
 		
 		gm.zero();
 		calc_total_force(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());

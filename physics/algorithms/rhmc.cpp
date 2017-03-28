@@ -1,7 +1,7 @@
 /** @file
  * Implementation of the rhmc algorithm
  *
- * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -152,9 +152,9 @@ template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi
     const SPINORFIELD initial(system, interfacesHandler.getInterface<SPINORFIELD>());
 
     //init/update spinorfield phi
-    initial.set_gaussian(prng);
+    initial[0].set_gaussian(prng);
     //calc init energy for spinorfield
-    *spinor_energy_init = squarenorm(initial);
+    *spinor_energy_init = squarenorm(initial[0]);
     //update spinorfield
     md_update_spinorfield(phi, gf, initial, system, interfacesHandler, additionalParameters);
 }
