@@ -26,17 +26,18 @@
 namespace meta {
 class ParametersRhmc {
 public:
-	int get_md_approx_ord() const noexcept;
-	int get_metro_approx_ord() const noexcept;
-	int get_findminmax_iteration_block_size() const noexcept;
-	int get_findminmax_max() const noexcept;
+	unsigned int get_md_approx_ord() const noexcept;
+	unsigned int get_metro_approx_ord() const noexcept;
+	unsigned int get_findminmax_iteration_block_size() const noexcept;
+	unsigned int get_findminmax_max() const noexcept;
 	double get_findminmax_prec() const noexcept;
 	bool get_conservative() const noexcept;
 	double get_num_tastes() const noexcept;
-    int get_num_tastes_decimal_digits() const noexcept;
+    unsigned int get_num_tastes_decimal_digits() const noexcept;
+    unsigned int get_num_pseudofermions() const noexcept;
 	double get_approx_lower() const noexcept;
 	double get_approx_upper() const noexcept;
-	int get_rhmcsteps() const noexcept;
+	unsigned int get_rhmcsteps() const noexcept;
 	std::string get_approx_heatbath_file() const noexcept;
 	std::string get_approx_md_file() const noexcept;
 	std::string get_approx_metropolis_file() const noexcept;
@@ -50,32 +51,33 @@ protected:
 	 *  @TODO If read_rational_approximations_from_file is false it makes no sense to have the
 	 *        approx_*_file variables, but this is similar to the gauge configuration.
 	 */
-	int md_approx_ord;
-	int metro_approx_ord;
-	int findminmax_iteration_block_size;
-	int findminmax_max;
-	double findminmax_prec;
-	bool conservative; //this is for the strategy in findminmax_eigenvalues
+	unsigned int molecularDynamicsRationalApproximationOrder;
+	unsigned int metropolisTestRationalApproximationOrder;
+	unsigned int findMinMaxEigenvalueIterationBlockSize;
+	unsigned int findMinMaxEigenvalueMaxNumberOfIterations;
+	double findMinMaxEigenvaluePrecision;
+	bool beConservativeInFindMinMaxEigenvalue; //this is for the strategy in findminmax_eigenvalues
 	/**
      * @internal The variable num_tastes should naturally be an integer. But there is no reason that
      *           forbids to run the RHMC with a rational number of tastes. So we decide to declare it
      *           as double. Then, since we know that the power of the fermionic determinant is num_tastes/4
-     *           we must then deduce the correct fraction in order to instatiate the Rational Approximation
+     *           we must then deduce the correct fraction in order to instantiate the Rational Approximation
      *           objects. This is easily done using the command line parameter num_tastes_decimal_digits,
      *           that tells how many digits after the comma are considered as valid. To avoid any numeric
      *           problem one could have dealing with big numbers, we will limit this to be not bigger than 6
      *           (fair enough limit if one thinks to physical applications).
      * @enditernal
      */
-    double num_tastes; 
-    int num_tastes_decimal_digits;
-	double approx_lower;
-	double approx_upper; //range of validity of the Rational Approximation
-	int rhmcsteps;
-	bool read_rational_approximations_from_file;
-	std::string approx_heatbath_file;
-	std::string approx_md_file;
-	std::string approx_metropolis_file;
+    double numberOfTastes; 
+    unsigned int numberOfDecimalDigitsInNumberOfTastes;
+    unsigned int numberOfPseudofermions;
+	double lowerBoundForRationalApproximationRange;
+	double upperBoundForRationalApproximationRange; //range of validity of the Rational Approximation
+	unsigned int numberOfRhmcSteps;
+	bool readRationalApproximationsFromFile;
+	std::string heatbathRationalApproximationFilename;
+	std::string molecularDynamicsRationalApproximationFilename;
+	std::string metropolisTestRationalApproximationFilename;
 
 protected:
 	ParametersRhmc();

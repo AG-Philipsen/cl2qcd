@@ -102,7 +102,7 @@ void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::s
     zeta.store(std::vector<hmc_float>(numberOfEquations, 1.));        // zeta[i] = 1
     alpha_vec.store(std::vector<hmc_float>(numberOfEquations, 0.));   // alpha[i] = 0
     shift.store(sigma);
-    for (int i = 0; i < numberOfEquations; i++) {
+    for(unsigned int i = 0; i < numberOfEquations; i++) {
         x[i]->set_zero();    // x[i] = 0
         copyData(ps[i].get(), b);   // ps[i] = b
     }
@@ -180,7 +180,7 @@ template<typename FERMIONFIELD, typename FERMIONMATRIX>
 void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::checkFiledsSquarenormsForPossibleNaN()
 {
     if(logger.beDebug()){
-        for(int k = 0; k < numberOfEquations; k++){
+        for(unsigned int k = 0; k < numberOfEquations; k++){
             if(std::isnan(squarenorm(*x[k]))){
                 logger.fatal() << createLogPrefix() << "NAN occurred in x[" << k << "] squarenorm!";
                 throw SolverStuck(iterationNumber, __FILE__, __LINE__);
@@ -305,7 +305,7 @@ template<typename FERMIONFIELD, typename FERMIONMATRIX>
 void physics::algorithms::solvers::SolverShifted<FERMIONFIELD, FERMIONMATRIX>::debugMakeReportOfFieldsSquarenorm()
 {
     if(logger.beDebug()){
-        const int numberOfComponentsToBePrinted = numberOfEquations;
+        const unsigned int numberOfComponentsToBePrinted = numberOfEquations;
         if(numberOfComponentsToBePrinted > numberOfEquations)
             throw std::invalid_argument("In cg-m numberOfComponentsToBePrinted cannot be bigger than numberOfEquations!");
         if(iterationNumber == 0){

@@ -52,7 +52,7 @@ physics::algorithms::Rational_Coefficients::Rational_Coefficients(const int d, c
     }
 }
 
-int physics::algorithms::Rational_Coefficients::Get_order() const
+unsigned int physics::algorithms::Rational_Coefficients::Get_order() const
 {
 	return _d;
 }
@@ -164,7 +164,7 @@ void physics::algorithms::Rational_Approximation::Save_rational_approximation(st
     outputToFile << error << "\n\n" << Get_a0() << "\n";
     std::vector<hmc_float> a_tmp = Get_a();
     std::vector<hmc_float> b_tmp = Get_b();
-    for (int i = 0; i < Get_order(); i++)
+    for(unsigned int i = 0; i < Get_order(); i++)
         outputToFile << a_tmp[i] << "\t\t" << b_tmp[i] << "\n";
     outputToFile.close();
 }
@@ -240,7 +240,7 @@ namespace physics {
             os << "\t\t ++\t\t\t\t\t\t\t\t\t++\n";
             os << "\t\t ++        a0 = " << approx.Get_a0();
             os << "\t\t\t\t\t++\n";
-            for (int i = 0; i < approx.Get_order(); i++) {
+            for(unsigned int i = 0; i < approx.Get_order(); i++) {
                 if(i < 9) {
                     os << "\t\t ++      a[" << i + 1 << "] = " << approx.Get_a()[i] << "       ";
                     os << " b[" << i + 1 << "] = " << approx.Get_b()[i] << "\t++\n";

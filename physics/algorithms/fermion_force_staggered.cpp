@@ -92,7 +92,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     logger.debug() << "\t\t\tstart solver";
     std::vector<std::shared_ptr<Staggeredfield_eo> > X;
     std::vector<std::shared_ptr<Staggeredfield_eo> > Y;
-    for (int i = 0; i < phi.getOrder(); i++) {
+    for(unsigned int i = 0; i < phi.getOrder(); i++) {
         X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
         Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
@@ -106,7 +106,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     const D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
     physics::lattices::Gaugemomenta tmp(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
-    for (int i = 0; i < phi.getOrder(); i++) {
+    for(unsigned int i = 0; i < phi.getOrder(); i++) {
         Doe(Y[i].get(), gf, *X[i]);
         tmp.zero();
         fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);

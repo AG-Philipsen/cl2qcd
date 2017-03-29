@@ -74,7 +74,7 @@ public:
 	/**
 	 * This method returns the order of the approximation
 	 */
-	int Get_order() const;
+    unsigned int Get_order() const;
 	/**
 	 * Method to get the coefficient a0 of the approximation
 	 */

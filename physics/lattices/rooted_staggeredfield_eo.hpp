@@ -65,7 +65,7 @@ public:
 	/**
 	 * This method returns the order of the approximation
 	 */
-	int getOrder() const;
+	unsigned int getOrder() const;
 	/**
 	 * Method to get the coefficient a0 of the approximation
 	 */

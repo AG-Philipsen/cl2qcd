@@ -185,7 +185,7 @@ void rhmcExecutable::checkRhmcParameters(const meta::Inputparameters& p)
     if(p.get_use_chem_pot_re())
         throw Invalid_Parameters("RHMC available only WITHOUT real chemical potential!", "use_chem_pot_re=0", p.get_use_chem_pot_re());
     if(p.get_num_tastes_decimal_digits() > 6)
-        throw Invalid_Parameters("RHMC available only with 6-decimals num_tastes precision!", "num_tastes_decimal_digits<=6", p.get_num_tastes_decimal_digits());
+        throw Invalid_Parameters("RHMC available only with 6-decimals num_tastes precision!", "num_tastes_decimal_digits<=6", (int)p.get_num_tastes_decimal_digits());
     if((int)(p.get_num_tastes()*std::pow(10,p.get_num_tastes_decimal_digits()))%(4*(int)(std::pow(10,p.get_num_tastes_decimal_digits()))) == 0)
         throw Invalid_Parameters("RHMC not working with multiple of 4 tastes (there is no need of the rooting trick)!", "num_tastes%4 !=0", "num_tastes=" + std::to_string(p.get_num_tastes()));
     if(p.get_cg_iteration_block_size() == 0 || p.get_findminmax_iteration_block_size() == 0)

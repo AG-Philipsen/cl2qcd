@@ -104,7 +104,6 @@ void checkDefaults(const Inputparameters & params)
 #endif
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh_mp(), 100);
-
 	BOOST_REQUIRE_EQUAL(params.get_benchmarksteps(), 500);
 
 	//HMC specific parameters
@@ -118,10 +117,27 @@ void checkDefaults(const Inputparameters & params)
 	BOOST_REQUIRE_EQUAL(params.get_integrator(0), common::leapfrog);
 	BOOST_REQUIRE_EQUAL(params.get_integrator(1), common::leapfrog);
 	BOOST_REQUIRE_EQUAL(params.get_integrator(2), common::leapfrog);
-	//this is the optimal value...
-	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.1931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.1931833275037836); //this is the optimal value...
 	BOOST_REQUIRE_EQUAL(params.get_lambda(1), 0.1931833275037836);
 	BOOST_REQUIRE_EQUAL(params.get_lambda(2), 0.1931833275037836);
+
+	//RHMC specific parameters
+	BOOST_REQUIRE_EQUAL(params.get_md_approx_ord(), 8);
+	BOOST_REQUIRE_EQUAL(params.get_metro_approx_ord(), 15);
+	BOOST_REQUIRE_EQUAL(params.get_findminmax_iteration_block_size(), 25);
+	BOOST_REQUIRE_EQUAL(params.get_findminmax_max(), 5000);
+	BOOST_REQUIRE_EQUAL(params.get_findminmax_prec(), 0.001);
+	BOOST_REQUIRE_EQUAL(params.get_conservative(), false);
+	BOOST_REQUIRE_EQUAL(params.get_num_tastes(), 2);
+	BOOST_REQUIRE_EQUAL(params.get_num_tastes_decimal_digits(), 0);
+	BOOST_REQUIRE_EQUAL(params.get_num_pseudofermions(), 1);
+	BOOST_REQUIRE_EQUAL(params.get_approx_lower(), 1.e-5);
+	BOOST_REQUIRE_EQUAL(params.get_approx_upper(), 1.);
+	BOOST_REQUIRE_EQUAL(params.get_rhmcsteps(), 10);
+	BOOST_REQUIRE_EQUAL(params.get_approx_heatbath_file(), "Approx_Heatbath");
+	BOOST_REQUIRE_EQUAL(params.get_approx_md_file(), "Approx_MD");
+	BOOST_REQUIRE_EQUAL(params.get_approx_metropolis_file(), "Approx_Metropolis");
+	BOOST_REQUIRE_EQUAL(params.get_read_rational_approximations_from_file(), true);
 
 	//direction for the correlator
 	BOOST_REQUIRE_EQUAL(params.get_corr_dir(), 3);

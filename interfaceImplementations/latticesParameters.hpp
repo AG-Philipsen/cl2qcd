@@ -206,6 +206,10 @@ namespace physics {
                 {
                     return parameters.get_md_approx_ord();
                 }
+                unsigned getNumberOfPseudofermions() const override
+                {
+                    return parameters.get_num_pseudofermions();
+                }
             private:
                 const meta::Inputparameters& parameters;
         };

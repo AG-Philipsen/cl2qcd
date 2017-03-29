@@ -44,7 +44,7 @@ void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const phy
 	rationalCoefficients = approx.Rescale_Coefficients(minEigenvalue, maxEigenvalue);
 }
 
-int physics::lattices::Rooted_Staggeredfield_eo::getOrder() const
+unsigned int physics::lattices::Rooted_Staggeredfield_eo::getOrder() const
 {
 	return rationalCoefficients.Get_order();
 }

@@ -22,86 +22,91 @@
 
 using namespace meta;
 
-int ParametersRhmc::get_md_approx_ord() const noexcept
+unsigned int ParametersRhmc::get_md_approx_ord() const noexcept
 {
-	return md_approx_ord;
+	return molecularDynamicsRationalApproximationOrder;
 }
-int ParametersRhmc::get_metro_approx_ord() const noexcept
+unsigned int ParametersRhmc::get_metro_approx_ord() const noexcept
 {
-	return metro_approx_ord;
+	return metropolisTestRationalApproximationOrder;
 }
-int ParametersRhmc::get_findminmax_iteration_block_size() const noexcept
+unsigned int ParametersRhmc::get_findminmax_iteration_block_size() const noexcept
 {
-	return findminmax_iteration_block_size;
+	return findMinMaxEigenvalueIterationBlockSize;
 }
-int ParametersRhmc::get_findminmax_max() const noexcept
+unsigned int ParametersRhmc::get_findminmax_max() const noexcept
 {
-	return findminmax_max;
+	return findMinMaxEigenvalueMaxNumberOfIterations;
 }
 double ParametersRhmc::get_findminmax_prec() const noexcept
 {
-	return findminmax_prec;
+	return findMinMaxEigenvaluePrecision;
 }
 bool ParametersRhmc::get_conservative() const noexcept
 {
-	return conservative;
+	return beConservativeInFindMinMaxEigenvalue;
 }
 double ParametersRhmc::get_num_tastes() const noexcept
 {
-    return num_tastes;
+    return numberOfTastes;
 }
-int ParametersRhmc::get_num_tastes_decimal_digits() const noexcept
+unsigned int ParametersRhmc::get_num_tastes_decimal_digits() const noexcept
 {
-    return num_tastes_decimal_digits;
+    return numberOfDecimalDigitsInNumberOfTastes;
+}
+unsigned int ParametersRhmc::get_num_pseudofermions() const noexcept
+{
+    return numberOfPseudofermions;
 }
 double ParametersRhmc::get_approx_lower() const noexcept
 {
-	return approx_lower;
+	return lowerBoundForRationalApproximationRange;
 }
 double ParametersRhmc::get_approx_upper() const noexcept
 {
-	return approx_upper;
+	return upperBoundForRationalApproximationRange;
 }
-int ParametersRhmc::get_rhmcsteps() const noexcept
+unsigned int ParametersRhmc::get_rhmcsteps() const noexcept
 {
-	return rhmcsteps;
+	return numberOfRhmcSteps;
 }
 std::string ParametersRhmc::get_approx_heatbath_file() const noexcept
 {
-	return approx_heatbath_file;
+	return heatbathRationalApproximationFilename;
 }
 std::string ParametersRhmc::get_approx_md_file() const noexcept
 {
-	return approx_md_file;
+	return molecularDynamicsRationalApproximationFilename;
 }
 std::string ParametersRhmc::get_approx_metropolis_file() const noexcept
 {
-	return approx_metropolis_file;
+	return metropolisTestRationalApproximationFilename;
 }
 bool ParametersRhmc::get_read_rational_approximations_from_file() const noexcept
 {
-	return read_rational_approximations_from_file;
+	return readRationalApproximationsFromFile;
 }
 
 meta::ParametersRhmc::ParametersRhmc()
 	: options("RHMC options")
 {
 	options.add_options()
-	("md_approx_ord", po::value<int>(&md_approx_ord)->default_value(8))
-	("metro_approx_ord", po::value<int>(&metro_approx_ord)->default_value(15))
-	("findminmax_max", po::value<int>(&findminmax_max)->default_value(5000))
-	("findminmax_iteration_block_size", po::value<int>(&findminmax_iteration_block_size)->default_value(25), "find_minmax will check the residual only every N iterations")
-	("findminmax_prec", po::value<double>(&findminmax_prec)->default_value(1.e-3))
-	("conservative", po::value<bool>(&conservative)->default_value(false))
-	("num_tastes", po::value<double>(&num_tastes)->default_value(2))
-    ("num_tastes_decimal_digits", po::value<int>(&num_tastes_decimal_digits)->default_value(0))
-	("approx_lower", po::value<double>(&approx_lower)->default_value(1.e-5))
-	("approx_upper", po::value<double>(&approx_upper)->default_value(1.))
-	("rhmcsteps", po::value<int>(&rhmcsteps)->default_value(10))
-	("approx_heatbath_file", po::value<std::string>(&approx_heatbath_file)->default_value("Approx_Heatbath"))
-	("approx_md_file", po::value<std::string>(&approx_md_file)->default_value("Approx_MD"))
-	("approx_metropolis_file", po::value<std::string>(&approx_metropolis_file)->default_value("Approx_Metropolis"))
-	("read_rational_approximations_from_file", po::value<bool>(&read_rational_approximations_from_file)->default_value(true));
+	("md_approx_ord", po::value<unsigned int>(&molecularDynamicsRationalApproximationOrder)->default_value(8))
+	("metro_approx_ord", po::value<unsigned int>(&metropolisTestRationalApproximationOrder)->default_value(15))
+	("findminmax_max", po::value<unsigned int>(&findMinMaxEigenvalueMaxNumberOfIterations)->default_value(5000))
+	("findminmax_iteration_block_size", po::value<unsigned int>(&findMinMaxEigenvalueIterationBlockSize)->default_value(25), "find_minmax will check the residuum only every N iterations")
+	("findminmax_prec", po::value<double>(&findMinMaxEigenvaluePrecision)->default_value(1.e-3))
+	("conservative", po::value<bool>(&beConservativeInFindMinMaxEigenvalue)->default_value(false))
+	("num_tastes", po::value<double>(&numberOfTastes)->default_value(2))
+    ("num_tastes_decimal_digits", po::value<unsigned int>(&numberOfDecimalDigitsInNumberOfTastes)->default_value(0))
+    ("num_pseudofermions", po::value<unsigned int>(&numberOfPseudofermions)->default_value(1), "ONLY for staggered fermions!")
+	("approx_lower", po::value<double>(&lowerBoundForRationalApproximationRange)->default_value(1.e-5))
+	("approx_upper", po::value<double>(&upperBoundForRationalApproximationRange)->default_value(1.))
+	("rhmcsteps", po::value<unsigned int>(&numberOfRhmcSteps)->default_value(10))
+	("approx_heatbath_file", po::value<std::string>(&heatbathRationalApproximationFilename)->default_value("Approx_Heatbath"))
+	("approx_md_file", po::value<std::string>(&molecularDynamicsRationalApproximationFilename)->default_value("Approx_MD"))
+	("approx_metropolis_file", po::value<std::string>(&metropolisTestRationalApproximationFilename)->default_value("Approx_Metropolis"))
+	("read_rational_approximations_from_file", po::value<bool>(&readRationalApproximationsFromFile)->default_value(true));
 }
 
 meta::ParametersRhmc::~ParametersRhmc() = default;

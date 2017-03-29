@@ -102,12 +102,12 @@ namespace physics {
                     const physics::algorithms::SolversParametersInterface & parametersInterface;
                     bool hasSystemBeSolved;
                     unsigned int numberOfEquations;
-                    int iterationNumber;
+                    unsigned int iterationNumber;
                     hmc_float residuumValue;
                     klepsydra::Monotonic timer; /// @TODO: start timers synchronized with device(s)
                     klepsydra::Monotonic timer_noWarmup;
                     bool USE_ASYNC_COPY;     /// @todo make configurable from outside
-                    int MINIMUM_ITERATIONS;  /// @todo make configurable from outside
+                    unsigned int MINIMUM_ITERATIONS;  /// @todo make configurable from outside
 
 
                     //Auxiliary staggered fields
