@@ -25,10 +25,13 @@
 
 physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system,
                                                                       const RootedStaggeredfieldEoParametersInterface& rootedStaggeredfieldEoParametersInterface)
-	: rationalCoefficients(std::max(rootedStaggeredfieldEoParametersInterface.getMetropolisRationalApproximationOrder(),
-              rootedStaggeredfieldEoParametersInterface.getMolecularDynamicsRationalApproximationOrder()))
+    : rationalCoefficients(std::max(rootedStaggeredfieldEoParametersInterface.getMetropolisRationalApproximationOrder(),
+                                    rootedStaggeredfieldEoParametersInterface.getMolecularDynamicsRationalApproximationOrder()))
 {
-    pseudofermions.emplace_back(system, rootedStaggeredfieldEoParametersInterface);
+    const unsigned int numberOfPseudofermions = rootedStaggeredfieldEoParametersInterface.getNumberOfPseudofermions();
+    pseudofermions.reserve(numberOfPseudofermions);
+    for(unsigned int i=0; i<numberOfPseudofermions; i++)
+        pseudofermions.emplace_back(system, rootedStaggeredfieldEoParametersInterface);
 }
 
 physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hardware::System& system,
@@ -36,7 +39,10 @@ physics::lattices::Rooted_Staggeredfield_eo::Rooted_Staggeredfield_eo(const hard
                                                                       const physics::algorithms::Rational_Approximation& approx)
 	: rationalCoefficients(approx.Get_order(), approx.Get_a0(), approx.Get_a(), approx.Get_b())
 {
-    pseudofermions.emplace_back(system, rootedStaggeredfieldEoParametersInterface);
+    const unsigned int numberOfPseudofermions = rootedStaggeredfieldEoParametersInterface.getNumberOfPseudofermions();
+    pseudofermions.reserve(numberOfPseudofermions);
+    for(unsigned int i=0; i<numberOfPseudofermions; i++)
+        pseudofermions.emplace_back(system, rootedStaggeredfieldEoParametersInterface);
 }
 
 void physics::lattices::Rooted_Staggeredfield_eo::Rescale_Coefficients(const physics::algorithms::Rational_Approximation& approx, const hmc_float minEigenvalue, const hmc_float maxEigenvalue)
@@ -70,3 +76,12 @@ const physics::lattices::Staggeredfield_eo& physics::lattices::Rooted_Staggeredf
     return pseudofermions[index];
 }
 
+std::vector<physics::lattices::Staggeredfield_eo>::iterator physics::lattices::Rooted_Staggeredfield_eo::begin()
+{
+    return pseudofermions.begin();
+}
+
+std::vector<physics::lattices::Staggeredfield_eo>::iterator physics::lattices::Rooted_Staggeredfield_eo::end()
+{
+    return pseudofermions.end();
+}

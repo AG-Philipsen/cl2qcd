@@ -85,6 +85,12 @@ public:
      */
 	const physics::lattices::Staggeredfield_eo& operator[](unsigned int) const; //Only const access operator for the moment
 
+	/*
+	 * Methods to be able to make range based for loops on Rooted_Staggeredfield_eo objects
+	 */
+	std::vector<physics::lattices::Staggeredfield_eo>::iterator begin();
+	std::vector<physics::lattices::Staggeredfield_eo>::iterator end();
+
 private:
 	std::vector<physics::lattices::Staggeredfield_eo> pseudofermions;
 	physics::algorithms::Rational_Coefficients rationalCoefficients;
