@@ -54,7 +54,7 @@ public:
 	/**
 	 * Release resources
 	 */
-	virtual ~Staggeredfield_eo();
+	virtual ~Staggeredfield_eo(){}
 
 	/**
 	 * Staggeredfield_eo cannot be copied

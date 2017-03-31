@@ -30,10 +30,6 @@ physics::lattices::Staggeredfield_eo::Staggeredfield_eo(const hardware::System& 
 {
 }
 
-physics::lattices::Staggeredfield_eo::~Staggeredfield_eo()
-{
-}
-
 const std::vector<const hardware::buffers::SU3vec *> physics::lattices::Staggeredfield_eo::get_buffers() const noexcept
 {
 	return staggeredFieldEo.get_buffers();
