@@ -48,7 +48,6 @@ namespace physics {
 			Scalar& operator=(const Scalar&) = delete;
 			Scalar(const Scalar&) = delete;
 			Scalar() = delete;
-			Scalar(Scalar&&) = default;
 
 			/**
 			 * Retrieve the value

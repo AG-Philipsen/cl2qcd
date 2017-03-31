@@ -61,7 +61,6 @@ namespace physics {
 			Vector& operator=(const Vector&) = delete;
 			Vector(const Vector&) = delete;
 			Vector() = delete;
-			Vector(Vector&&) = default;
 
 			/**
 			 * Retrieve the values
