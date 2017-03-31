@@ -35,6 +35,15 @@ public:
 
 	virtual ~Staggeredfield_eo();
 
+    /**
+     * Staggeredfield_eo cannot be copied but only move-constructed
+     */
+    Staggeredfield_eo() = delete;
+    Staggeredfield_eo(const Staggeredfield_eo&) = delete;
+    Staggeredfield_eo& operator=(const Staggeredfield_eo&) = delete;
+    Staggeredfield_eo(Staggeredfield_eo&&); //own implementation since class own resources
+    Staggeredfield_eo& operator=(Staggeredfield_eo&&) = delete;
+
 	std::vector<const hardware::buffers::SU3vec *> allocate_buffers();
 
 	const std::vector<const hardware::buffers::SU3vec *> get_buffers() const noexcept;

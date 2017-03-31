@@ -39,9 +39,15 @@ std::vector<const hardware::buffers::SU3vec *> hardware::lattices::Staggeredfiel
 
 hardware::lattices::Staggeredfield_eo::~Staggeredfield_eo()
 {
-    for(auto buffer: buffers) {
-		delete buffer;
-	}
+    for(auto buffer: buffers)
+        delete buffer;
+}
+
+hardware::lattices::Staggeredfield_eo::Staggeredfield_eo(hardware::lattices::Staggeredfield_eo&& movedFrom)
+    : system(std::move(movedFrom.system)), //use move even though a copy is done (it is a const reference!)
+      buffers(std::move(movedFrom.buffers))
+{
+    (const_cast<std::vector<const hardware::buffers::SU3vec *>&>(movedFrom.buffers)).clear();
 }
 
 const std::vector<const hardware::buffers::SU3vec *> hardware::lattices::Staggeredfield_eo::get_buffers() const noexcept
