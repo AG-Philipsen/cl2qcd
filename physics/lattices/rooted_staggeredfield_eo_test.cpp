@@ -48,9 +48,9 @@ BOOST_AUTO_TEST_CASE(initialization)
 	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
+	BOOST_CHECK_NO_THROW(Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>()));
 	physics::algorithms::Rational_Approximation approx(3,1,4,1e-5,1);
-	Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+	BOOST_CHECK_NO_THROW(Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx));
 }
 
 BOOST_AUTO_TEST_CASE(initializationWithPseudofermions)
@@ -64,10 +64,24 @@ BOOST_AUTO_TEST_CASE(initializationWithPseudofermions)
     hardware::System system(hP, kP);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
 
+    BOOST_CHECK_NO_THROW(Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>()));
+}
+
+BOOST_AUTO_TEST_CASE(rangeBasedForLoopOnPseudofermions)
+{
+    using namespace physics::lattices;
+
+    const char * _params[] = {"foo", "--num_pseudofermions=3", "--fermact=rooted_stagg"};
+    meta::Inputparameters params(3, _params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+
     Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
     //Try a range based for loop
     for(const auto& myField : sf){
-        myField.get()->set_cold();
+    	BOOST_CHECK_NO_THROW(myField.get()->set_cold());
         logger.info() << "Squarenorm of cold fields: " << squarenorm(*myField);
     }
 
