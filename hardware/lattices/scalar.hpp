@@ -37,6 +37,10 @@ namespace lattices {
 public:
 	Scalar(const hardware::System& system) : system(system), buffers(create_scalar_buffers<SCALAR>(system)) { };
 
+	Scalar& operator=(const Scalar&) = delete;
+	Scalar(const Scalar&) = delete;
+	Scalar() = delete;
+
 	~Scalar();
 
 	SCALAR get() const;

@@ -35,6 +35,10 @@ public:
 	
 	Gaugemomenta(const hardware::System& system);
 
+	Gaugemomenta& operator=(const Gaugemomenta&) = delete;
+	Gaugemomenta(const Gaugemomenta&) = delete;
+	Gaugemomenta() = delete;
+
 	std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers() const;
 	const std::vector<const hardware::buffers::Gaugemomentum *> get_buffers() const noexcept;
 

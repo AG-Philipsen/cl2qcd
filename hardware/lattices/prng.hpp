@@ -31,8 +31,11 @@ class PRNG
 {
 public:
 	PRNG(const hardware::System& system, uint32_t seed, bool useSameRandomNumbers);
-	PRNG();
+
 	virtual ~PRNG();
+	PRNG& operator=(const PRNG&) = delete;
+	PRNG(const PRNG&) = delete;
+	PRNG() = delete;
 
 	const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers() const noexcept;
 

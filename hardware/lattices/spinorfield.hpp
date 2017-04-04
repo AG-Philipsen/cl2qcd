@@ -36,6 +36,10 @@ public:
 
 	Spinorfield(const hardware::System&, const bool place_on_host = false);
 
+    Spinorfield& operator=(const Spinorfield&) = delete;
+    Spinorfield(const Spinorfield&) = delete;
+    Spinorfield() = delete;
+
 	virtual ~Spinorfield();
 
 	const std::vector<const hardware::buffers::Plain<spinor> *> get_buffers() const noexcept;

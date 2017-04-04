@@ -35,8 +35,12 @@ class Gaugefield
 public:
 
 	virtual ~Gaugefield();
-	
+
 	Gaugefield(const hardware::System& system);
+
+	Gaugefield& operator=(const Gaugefield&) = delete;
+	Gaugefield(const Gaugefield&) = delete;
+	Gaugefield() = delete;
 
 	const std::vector<const hardware::buffers::SU3 *> get_buffers() const noexcept;
 	std::vector<const hardware::buffers::SU3 *> allocate_buffers();

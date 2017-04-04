@@ -41,6 +41,10 @@ public:
 
 	Spinorfield_eo(const hardware::System&);
 
+	Spinorfield_eo& operator=(const Spinorfield_eo&) = delete;
+	Spinorfield_eo(const Spinorfield_eo&) = delete;
+	Spinorfield_eo() = delete;
+
 	virtual ~Spinorfield_eo();
 
 	std::vector<const hardware::buffers::Spinor *> allocate_buffers();

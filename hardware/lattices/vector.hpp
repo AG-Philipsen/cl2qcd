@@ -34,7 +34,11 @@ namespace hardware {
 
 		public:
 			Vector(const size_t N, const hardware::System& system) : N(N), system(system), buffers(create_vector_buffers<SCALAR>(N, system)) { };
+
 			~Vector();
+			Vector& operator=(const Vector&) = delete;
+			Vector(const Vector&) = delete;
+			Vector() = delete;
 
 			std::vector<SCALAR> get() const;
 			void store(const std::vector<SCALAR> val) const;
