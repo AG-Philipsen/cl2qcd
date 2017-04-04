@@ -2,6 +2,7 @@
  * Tests of the fermion force algorithms
  *
  * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -205,8 +206,8 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 	
 		//These are the same fields of the excplicit test D_KS_eo (second test)
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1[0], 123); //it will be A
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2[0], 321); //it will be B
+		pseudo_randomize<Staggeredfield_eo, su3vec>(sf1[0].get(), 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(sf2[0].get(), 321); //it will be B
 	
 		gm.zero();
 		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
@@ -235,8 +236,8 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 	
 		//These are the same fields of the excplicit test D_KS_eo (second test)
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1[0], 123); //it will be A
-		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2[0], 321); //it will be B
+		pseudo_randomize<Staggeredfield_eo, su3vec>(sf1[0].get(), 123); //it will be A
+		pseudo_randomize<Staggeredfield_eo, su3vec>(sf2[0].get(), 321); //it will be B
 	
 		gm.zero();
 		physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());

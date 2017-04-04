@@ -83,16 +83,16 @@ public:
 	/**
      * This method returns the asked pseudofermion field
      */
-	const physics::lattices::Staggeredfield_eo& operator[](unsigned int) const; //Only const access operator for the moment
+	const std::unique_ptr<physics::lattices::Staggeredfield_eo>& operator[](unsigned int) const;
 
 	/*
 	 * Methods to be able to make range based for loops on Rooted_Staggeredfield_eo objects
 	 */
-	std::vector<physics::lattices::Staggeredfield_eo>::iterator begin();
-	std::vector<physics::lattices::Staggeredfield_eo>::iterator end();
+	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator begin();
+	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator end();
 
 private:
-	std::vector<physics::lattices::Staggeredfield_eo> pseudofermions;
+	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> > pseudofermions;
 	physics::algorithms::Rational_Coefficients rationalCoefficients;
 
 };

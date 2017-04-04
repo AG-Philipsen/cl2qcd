@@ -2,6 +2,7 @@
  * Unit test for the physics::lattices::Rooted_Staggeredfield_eo class
  *
  * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -66,8 +67,8 @@ BOOST_AUTO_TEST_CASE(initializationWithPseudofermions)
     Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
     //Try a range based for loop
     for(const auto& myField : sf){
-        myField.set_cold();
-        logger.info() << "Squarenorm of cold fields: " << squarenorm(myField);
+        myField.get()->set_cold();
+        logger.info() << "Squarenorm of cold fields: " << squarenorm(*myField);
     }
 
 }

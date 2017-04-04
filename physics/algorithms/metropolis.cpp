@@ -4,6 +4,7 @@
  * Copyright (c) 2013 Matthias Bach <bach@compeng.uni-frankfurt.de>
  * Copyright (c) 2012-2014 Christopher Pinke <pinke@th.physik.uni-frankfurt.de>
  * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -235,18 +236,18 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
     for(unsigned int i = 0; i < phi.getOrder(); i++)
         X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.get_b(), phi[0], system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
+    iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.get_b(), *phi[0], system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
     logger.debug() << "\t\t...end solver in " << iterations << " iterations";
 
     //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi
     physics::lattices::Staggeredfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
-    sax(&tmp, { phi.get_a0(), 0. }, phi[0]);
+    sax(&tmp, { phi.get_a0(), 0. }, *phi[0]);
     for(unsigned int i = 0; i < phi.getOrder(); i++) {
         saxpy(&tmp, { (phi.get_a())[i], 0. }, *X[i], tmp);
     }
 
     logger.trace() << "Calulated S_fermion, solver took " << iterations << " iterations.";
-    return scalar_product(phi[0], tmp).re;
+    return scalar_product(*phi[0], tmp).re;
 
 }
 

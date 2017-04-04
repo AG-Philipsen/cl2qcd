@@ -2,6 +2,7 @@
  * Implementation of the fermion_force functions
  *
  * Copyright (c) 2013, 2017 Alessandro Sciarra <sciarra@th.phys.uni-frankfurt.de>
+ * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -97,7 +98,7 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
         Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
     }
     const MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-    cg_m(X, fm, gf, phi.get_b(), phi[0], system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
+    cg_m(X, fm, gf, phi.get_b(), *phi[0], system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
     logger.debug() << "\t\t\t  end solver";
 
     //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
