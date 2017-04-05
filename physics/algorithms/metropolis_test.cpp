@@ -31,41 +31,96 @@
 #include "../../interfaceImplementations/hardwareParameters.hpp"
 #include "../../interfaceImplementations/openClKernelParameters.hpp"
 
-BOOST_AUTO_TEST_CASE(metropolis_staggered_rooted_spinorfield_eo)
+BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEo)
 {
-	using namespace physics::lattices;
-	physics::algorithms::Rational_Approximation approx(8, 1,2, 1.e-5,1);
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
-	meta::Inputparameters params(4, _params);
-	physics::InterfacesHandlerImplementation interfacesHandler{params};
-	hardware::HardwareParametersImplementation hP(&params);
-	hardware::code::OpenClKernelParametersImplementation kP(params);
-	hardware::System system(hP, kP);
-	physics::PrngParametersImplementation prngParameters{params};
-	physics::PRNG prng{system, &prngParameters};
+    using namespace physics::lattices;
+    physics::algorithms::Rational_Approximation approx(8, 1,2, 1.e-5,1);
+    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
+    meta::Inputparameters params(4, _params);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+    physics::PrngParametersImplementation prngParameters{params};
+    physics::PRNG prng{system, &prngParameters};
 
-	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
 
-	Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
+    Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
-	Rooted_Staggeredfield_eo phi(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+    Rooted_Staggeredfield_eo phi(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
 
-	hmc_float beta = 6.0;
-	hmc_float spinor_energy_init = 0.;
+    hmc_float beta = 6.0;
+    hmc_float spinor_energy_init = 0.;
+    gm.zero();
 
-	{
-		gm.zero();
-		phi[0].get()->set_zero();
-		const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
-											nullptr, spinor_energy_init, system, interfacesHandler);
-		BOOST_CHECK_EQUAL(0,obs.deltaH);
-	}
+    {
+        phi[0].get()->set_zero();
+        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
+                                                              nullptr, spinor_energy_init, system, interfacesHandler);
+        BOOST_CHECK_EQUAL(0,obs.deltaH);
+    }
 
-	{
-		gm.zero();
-		phi[0].get()->set_cold();
-		const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
-											nullptr, spinor_energy_init, system, interfacesHandler);
-		BOOST_CHECK_CLOSE(obs.deltaH, -4.999853415117, 0.01);
-	}
+    {
+        phi[0].get()->set_cold();
+        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
+                                                              nullptr, spinor_energy_init, system, interfacesHandler);
+        BOOST_CHECK_CLOSE(obs.deltaH, -4.999853415117, 0.01);
+    }
+
+    {
+        phi[0].get()->set_gaussian(prng);
+        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
+                                                              nullptr, spinor_energy_init, system, interfacesHandler);
+        BOOST_CHECK_CLOSE(obs.deltaH, -570.2704806215952, 0.01);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEoWithPseudofermions)
+{
+    using namespace physics::lattices;
+    physics::algorithms::Rational_Approximation approx(8, 1,2, 1.e-5,1);
+    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1", "--num_pseudofermions=2", "--log-level=DEBUG"};
+    meta::Inputparameters params(6, _params);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+    physics::PrngParametersImplementation prngParameters{params};
+    physics::PRNG prng{system, &prngParameters};
+
+    Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, false);
+
+    Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
+
+    Rooted_Staggeredfield_eo phi(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+
+    hmc_float beta = 6.0;
+    hmc_float spinor_energy_init = 0.;
+    gm.zero();
+
+    {
+        for(const auto& phi_j : phi)
+            phi_j.get()->set_zero();
+        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
+                                                              nullptr, spinor_energy_init, system, interfacesHandler);
+        BOOST_CHECK_EQUAL(0,obs.deltaH);
+    }
+
+    {
+        for(const auto& phi_j : phi)
+            phi_j.get()->set_cold();
+        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
+                                                              nullptr, spinor_energy_init, system, interfacesHandler);
+        BOOST_CHECK_CLOSE(obs.deltaH, -4.999853415117*2, 0.01);
+        //the reference value here is double the one of the metropolisStaggeredRootedSpinorfieldEo TEST_CASE with the same cold initialization of the spinorfield since we use the same Rational_Approximation
+    }
+
+    {
+        for(const auto& phi_j : phi)
+            phi_j.get()->set_gaussian(prng);
+        const hmc_observables obs = physics::algorithms::metropolis(0., beta, gf, gf, gm, gm, phi, spinor_energy_init,
+                                                              nullptr, spinor_energy_init, system, interfacesHandler);
+        BOOST_CHECK_CLOSE(obs.deltaH, -1059.318832641, 0.01);
+    }
 }
