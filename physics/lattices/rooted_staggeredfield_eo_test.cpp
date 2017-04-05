@@ -78,11 +78,21 @@ BOOST_AUTO_TEST_CASE(rangeBasedForLoopOnPseudofermions)
     hardware::System system(hP, kP);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
 
-    Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
-    //Try a range based for loop
-    for(const auto& myField : sf){
-    	BOOST_CHECK_NO_THROW(myField.get()->set_cold());
-        logger.info() << "Squarenorm of cold fields: " << squarenorm(*myField);
+    {
+        Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
+        //Try a range based for loop
+        for(const auto& myField : sf){
+            BOOST_CHECK_NO_THROW(myField.get()->set_cold());
+            logger.info() << "Squarenorm of cold fields: " << squarenorm(*myField);
+        }
+    }
+    {
+        const Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
+        //Try a range based for loop
+        for(const auto& myField : sf){
+            BOOST_CHECK_NO_THROW(myField.get()->set_cold());
+            logger.info() << "Squarenorm of cold fields: " << squarenorm(*myField);
+        }
     }
 
 }

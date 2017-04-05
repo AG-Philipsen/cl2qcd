@@ -82,7 +82,17 @@ std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator ph
     return pseudofermions.begin();
 }
 
+std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::const_iterator physics::lattices::Rooted_Staggeredfield_eo::begin() const
+{
+    return pseudofermions.begin();
+}
+
 std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator physics::lattices::Rooted_Staggeredfield_eo::end()
+{
+    return pseudofermions.end();
+}
+
+std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::const_iterator physics::lattices::Rooted_Staggeredfield_eo::end() const
 {
     return pseudofermions.end();
 }

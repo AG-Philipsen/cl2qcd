@@ -89,7 +89,9 @@ public:
 	 * Methods to be able to make range based for loops on Rooted_Staggeredfield_eo objects
 	 */
 	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator begin();
+	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::const_iterator begin() const;
 	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::iterator end();
+	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> >::const_iterator end() const;
 
 private:
 	std::vector<std::unique_ptr<physics::lattices::Staggeredfield_eo> > pseudofermions;
