@@ -21,7 +21,7 @@
 #include "rhmcExecutable.h"
 
 static int getRationalApproximationNumerator(double numTastes, int numTastesDecimalDigits);
-static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits);
+static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits, int numPseudoFermions);
 
 rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecutable(argc, argv, "rhmc")
 {
@@ -60,17 +60,17 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
         //This is the approx. to be used to generate the initial (pseudo)fermionic field
         approx_hb = new Rational_Approximation(parameters.get_metro_approx_ord(),
                     getRationalApproximationNumerator(parameters.get_num_tastes(), parameters.get_num_tastes_decimal_digits()),
-                    getRationalApproximationDenominator("HB",parameters.get_num_tastes_decimal_digits()),
+                    getRationalApproximationDenominator("HB",parameters.get_num_tastes_decimal_digits(), parameters.get_num_pseudofermions()),
                     parameters.get_approx_lower(), parameters.get_approx_upper(), false);
         //This is the approx. to be used to generate the initial (pseudo)fermionic field
         approx_md = new Rational_Approximation(parameters.get_md_approx_ord(),
                     getRationalApproximationNumerator(parameters.get_num_tastes(), parameters.get_num_tastes_decimal_digits()),
-                    getRationalApproximationDenominator("MD",parameters.get_num_tastes_decimal_digits()),
+                    getRationalApproximationDenominator("MD",parameters.get_num_tastes_decimal_digits(), parameters.get_num_pseudofermions()),
                     parameters.get_approx_lower(), parameters.get_approx_upper(), true);
         //This is the approx. to be used to generate the initial (pseudo)fermionic field
         approx_met = new Rational_Approximation(parameters.get_metro_approx_ord(),
                      getRationalApproximationNumerator(parameters.get_num_tastes(), parameters.get_num_tastes_decimal_digits()),
-                     getRationalApproximationDenominator("MET",parameters.get_num_tastes_decimal_digits()),
+                     getRationalApproximationDenominator("MET",parameters.get_num_tastes_decimal_digits(), parameters.get_num_pseudofermions()),
                      parameters.get_approx_lower(), parameters.get_approx_upper(), true);
         //Save the rational approximations to three different files for later reuse
         approx_hb->Save_rational_approximation(parameters.get_approx_heatbath_file());
@@ -220,11 +220,11 @@ static int getRationalApproximationNumerator(double numTastes, int numTastesDeci
     return (int)(numTastes*std::pow(10, numTastesDecimalDigits));
 }
 
-static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits){
+static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits, int numPseudoFermions){
     if(whichRationalApproximation == "HB")
-        return 8*(int)(std::pow(10, numTastesDecimalDigits));
+        return 8*(int)(std::pow(10, numTastesDecimalDigits))*numPseudoFermions;
     else if((whichRationalApproximation == "MD") || (whichRationalApproximation == "MET"))
-        return 4*(int)(std::pow(10, numTastesDecimalDigits));
+        return 4*(int)(std::pow(10, numTastesDecimalDigits))*numPseudoFermions;
     else
         throw Print_Error_Message("Invalid call to \"getRationalApproximationDenominator\" function!");
 }
