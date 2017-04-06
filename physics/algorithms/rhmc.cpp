@@ -152,10 +152,15 @@ template<class SPINORFIELD> static void init_spinorfield(const SPINORFIELD * phi
     const physics::AdditionalParameters& additionalParameters = interfacesHandler.getAdditionalParameters<SPINORFIELD>();
     const SPINORFIELD initial(system, interfacesHandler.getInterface<SPINORFIELD>());
 
-    //init/update spinorfield phi
-    initial[0]->set_gaussian(prng);
-    //calc init energy for spinorfield
-    *spinor_energy_init = squarenorm(*initial[0]);
+    //here the range based for loop on the vector of unique_ptrs to Staggeredfield_eo is done at this level, while md_update_spinorfield contains the same kind of loop
+    //a better idea could be to move the set_gaussian inside the fct md_update_spinorfield, which should at that point be called hbInitAndUpdateSpinorfield and should
+    //be implemented in an own mcHeatbath.cpp file
+    for(const auto& in_j : initial) {
+        //init/update spinorfield phi
+        in_j->set_gaussian(prng);
+        //calc init energy for spinorfield
+        *spinor_energy_init += squarenorm(*in_j);
+    }
     //update spinorfield
     md_update_spinorfield(phi, gf, initial, system, interfacesHandler, additionalParameters);
 }
