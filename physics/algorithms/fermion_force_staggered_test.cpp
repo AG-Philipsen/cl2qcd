@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(fermion_force_staggered_eo)
 }
 
 
-BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
+BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEo)
 {
 	using namespace physics::lattices;
 	using namespace physics::algorithms;
@@ -247,6 +247,76 @@ BOOST_AUTO_TEST_CASE(calc_fermion_force_staggered_eo)
 		physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(gm), 1932.6440761489629949, 1.e-6);
 	}	
+}
+
+BOOST_AUTO_TEST_CASE(calcFermionForceStaggeredEoWithPseudofermions)
+{
+    using namespace physics::lattices;
+    using namespace physics::algorithms;
+
+    Rational_Approximation approx(8, 1,2, 1.e-5,1);
+
+    {
+        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.125", "--num_dev=1", "--num_pseudofermions=2"};
+        meta::Inputparameters params(6, _params);
+        physics::InterfacesHandlerImplementation interfacesHandler{params};
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
+        physics::PrngParametersImplementation prngParameters{params};
+        physics::PRNG prng{system, &prngParameters};
+
+        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+        Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
+        Rooted_Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+        Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+
+        //These are the same fields of the excplicit test D_KS_eo (second test)
+        for(const auto& sf1_j : sf1)
+            pseudo_randomize<Staggeredfield_eo, su3vec>(sf1_j.get(), 123); //it will be A
+        for(const auto& sf2_j : sf2)
+            pseudo_randomize<Staggeredfield_eo, su3vec>(sf2_j.get(), 321); //it will be B
+
+        gm.zero();
+        physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+        BOOST_CHECK_CLOSE(squarenorm(gm), 8859.601572798847, 1.e-6);
+
+        gm.zero();
+        physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+        BOOST_CHECK_CLOSE(squarenorm(gm), 7382.6055389532539, 1.e-6);
+    }
+
+    {
+        using namespace physics::lattices;
+        using namespace physics::algorithms;
+        const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--use_chem_pot_im=true", "--mass=0.125", "--chem_pot_im=0.5678", "--num_dev=1", "--num_pseudofermions=2"};
+        meta::Inputparameters params(8, _params);
+        physics::InterfacesHandlerImplementation interfacesHandler{params};
+        hardware::HardwareParametersImplementation hP(&params);
+        hardware::code::OpenClKernelParametersImplementation kP(params);
+        hardware::System system(hP, kP);
+        physics::PrngParametersImplementation prngParameters{params};
+        physics::PRNG prng{system, &prngParameters};
+
+        Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+        Gaugemomenta gm(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
+        Rooted_Staggeredfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+        Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+
+        //These are the same fields of the excplicit test D_KS_eo (second test)
+        for(const auto& sf1_j : sf1)
+            pseudo_randomize<Staggeredfield_eo, su3vec>(sf1_j.get(), 123); //it will be A
+        for(const auto& sf2_j : sf2)
+            pseudo_randomize<Staggeredfield_eo, su3vec>(sf2_j.get(), 321); //it will be B
+
+        gm.zero();
+        physics::algorithms::calc_fermion_forces(&gm, gf, sf1, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+        BOOST_CHECK_CLOSE(squarenorm(gm), 9261.6702449050044, 1.e-6);
+
+        gm.zero();
+        physics::algorithms::calc_fermion_forces(&gm, gf, sf2, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+        BOOST_CHECK_CLOSE(squarenorm(gm), 7730.5763072596146, 1.e-6);
+    }
 }
 
 

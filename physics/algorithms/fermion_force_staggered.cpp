@@ -90,29 +90,31 @@ void physics::algorithms::calc_fermion_force(const physics::lattices::Gaugemomen
     const physics::algorithms::ForcesParametersInterface & parametersInterface = interfacesHandler.getForcesParametersInterface();
     logger.debug() << "\t\tcalc_fermion_force...";
 
-    logger.debug() << "\t\t\tstart solver";
-    std::vector<std::shared_ptr<Staggeredfield_eo> > X;
-    std::vector<std::shared_ptr<Staggeredfield_eo> > Y;
-    for(unsigned int i = 0; i < phi.getOrder(); i++) {
-        X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-        Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-    }
-    const MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
-    cg_m(X, fm, gf, phi.get_b(), *phi[0], system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
-    logger.debug() << "\t\t\t  end solver";
+    for(const auto& phi_j : phi){
+        logger.debug() << "\t\t\tstart solver";
+        std::vector<std::shared_ptr<Staggeredfield_eo> > X;
+        std::vector<std::shared_ptr<Staggeredfield_eo> > Y;
+        for(unsigned int i = 0; i < phi.getOrder(); i++) {
+            X.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+            Y.emplace_back(std::make_shared<Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+        }
+        const MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
+        cg_m(X, fm, gf, phi.get_b(), *phi_j, system, interfacesHandler, parametersInterface.getForcePreconditioning(), additionalParameters);
+        logger.debug() << "\t\t\t  end solver";
 
-    //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
-    //reconstruct the force. I will use a temporary Gaugemomenta to calculate the
-    //partial force (on the whole lattice) that will be later added to "force"
-    const D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
-    physics::lattices::Gaugemomenta tmp(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
+        //Now that I have X^i I can calculate Y^i = D_oe X_e^i and in the same for loop
+        //reconstruct the force. I will use a temporary Gaugemomenta to calculate the
+        //partial force (on the whole lattice) that will be later added to "force"
+        const D_KS_eo Doe(system, interfacesHandler.getInterface<physics::fermionmatrix::D_KS_eo>(), ODD);   //with ODD it is the Doe operator
+        physics::lattices::Gaugemomenta tmp(system, interfacesHandler.getInterface<physics::lattices::Gaugemomenta>());
 
-    for(unsigned int i = 0; i < phi.getOrder(); i++) {
-        Doe(Y[i].get(), gf, *X[i]);
-        tmp.zero();
-        fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
-        fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
-        physics::lattices::saxpy(force, -1. * (phi.get_a())[i], tmp);
+        for(unsigned int i = 0; i < phi.getOrder(); i++) {
+            Doe(Y[i].get(), gf, *X[i]);
+            tmp.zero();
+            fermion_force(&tmp, *Y[i], *X[i], gf, EVEN);
+            fermion_force(&tmp, *X[i], *Y[i], gf, ODD);
+            physics::lattices::saxpy(force, -1. * (phi.get_a())[i], tmp);
+        }
     }
 
     logger.debug() << "\t\t...end calc_fermion_force!";
