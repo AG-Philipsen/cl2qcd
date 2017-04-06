@@ -242,7 +242,7 @@ hmc_float physics::algorithms::calc_s_fermion(const physics::lattices::Gaugefiel
     iterations = physics::algorithms::solvers::cg_m(X, fm, gf, phi.get_b(), *phi_j, system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
     logger.debug() << "\t\t...end solver in " << iterations << " iterations";
 
-    //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,sf
+    //this is to reconstruct (MdagM)^{-\frac{N_f}{4}}\,\phi_j
     physics::lattices::Staggeredfield_eo tmp(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
     sax(&tmp, { phi.get_a0(), 0. }, *phi_j);
     for(unsigned int i = 0; i < phi.getOrder(); i++) {

@@ -80,8 +80,8 @@ BOOST_AUTO_TEST_CASE(metropolisStaggeredRootedSpinorfieldEoWithPseudofermions)
 {
     using namespace physics::lattices;
     physics::algorithms::Rational_Approximation approx(8, 1,2, 1.e-5,1);
-    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1", "--num_pseudofermions=2", "--log-level=DEBUG"};
-    meta::Inputparameters params(6, _params);
+    const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1", "--num_pseudofermions=2"};
+    meta::Inputparameters params(5, _params);
     physics::InterfacesHandlerImplementation interfacesHandler{params};
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
