@@ -218,6 +218,74 @@ BOOST_AUTO_TEST_CASE(md_update_spinorfield_eo)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(mdUpdateStaggeredRootedSpinorfieldEo)
+{
+	using namespace physics::lattices;
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1"};
+	meta::Inputparameters params(4, _params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+	hardware::System system(hP, kP);
+	physics::PrngParametersImplementation prngParameters{params};
+	physics::PRNG prng{system, &prngParameters};
+
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+	bool inv = 0;
+	physics::algorithms::Rational_Approximation approx(10,1,4,1e-5,1,inv);
+	Rooted_Staggeredfield_eo in(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
+	Rooted_Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+
+	pseudo_randomize<Staggeredfield_eo, su3vec>(in[0].get(), 13);
+	physics::algorithms::md_update_spinorfield(&out, gf, in, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+
+	BOOST_CHECK_CLOSE(squarenorm(*out[0].get()), 328.75052967496629, 1e-8);
+}
+
+BOOST_AUTO_TEST_CASE(mdUpdateStaggeredRootedSpinorfieldEoWithPseudofermions)
+{
+	using namespace physics::lattices;
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--num_dev=1", "--num_pseudofermions=2"};
+	meta::Inputparameters params(5, _params);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+	hardware::System system(hP, kP);
+	physics::PrngParametersImplementation prngParameters{params};
+	physics::PRNG prng{system, &prngParameters};
+
+	Gaugefield gf(system, &interfacesHandler.getInterface<physics::lattices::Gaugefield>(), prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+	bool inv = 0;
+	physics::algorithms::Rational_Approximation approx(10,1,4,1e-5,1,inv);
+	Rooted_Staggeredfield_eo in(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
+	Rooted_Staggeredfield_eo out(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx);
+
+	{
+        for(const auto& in_j : in)
+            pseudo_randomize<Staggeredfield_eo, su3vec>(in_j.get(), 13);
+        physics::algorithms::md_update_spinorfield(&out, gf, in, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+
+        for(const auto& out_j : out)
+            BOOST_CHECK_CLOSE(squarenorm(*out_j.get()), 328.75052967496629, 1e-8);
+    }
+    {
+        for(const auto& in_j : in)
+            in_j.get()->set_cold();
+        physics::algorithms::md_update_spinorfield(&out, gf, in, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+
+        for(const auto& out_j : out)
+            BOOST_CHECK_CLOSE(squarenorm(*out_j.get()), 0.66024054611635885, 1e-8);
+    }
+    {
+        for(const auto& in_j : in)
+            in_j.get()->set_gaussian(prng);
+        physics::algorithms::md_update_spinorfield(&out, gf, in, system, interfacesHandler, interfacesHandler.getAdditionalParameters<Rooted_Staggeredfield_eo>());
+
+        BOOST_CHECK_CLOSE(squarenorm(*out[0].get()), 455.28018993352305, 1e-8);
+        BOOST_CHECK_CLOSE(squarenorm(*out[1].get()), 538.11156457534264, 1e-8);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(md_update_spinorfield_mp)
 {
 	{

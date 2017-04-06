@@ -95,22 +95,24 @@ void physics::algorithms::md_update_spinorfield(const physics::lattices::Rooted_
     const physics::algorithms::MolecularDynamicsInterface & parametersInterface = interfacesHandler.getMolecularDynamicsInterface();
     const physics::fermionmatrix::MdagM_eo fm(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 
-    //Temporary fields for shifted inverter
-    logger.trace() << "\t\tstart solver...";
-    std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > X;
-    for (unsigned int i = 0; i < out->getOrder(); i++)
-        X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
-    //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
-    const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->get_b(), *orig[0], system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
-    logger.trace() << "\t\t...end solver in " << iterations << " iterations";
+    const unsigned int numberOfPseudofermions = interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>().getNumberOfPseudofermions();
+    for(unsigned int j=0; j<numberOfPseudofermions; j++){
+        logger.trace() << "\t\tstart solver...";
+        //Temporary fields for shifted inverter
+        std::vector<std::shared_ptr<physics::lattices::Staggeredfield_eo> > X;
+        for (unsigned int i = 0; i < out->getOrder(); i++)
+            X.emplace_back(std::make_shared<physics::lattices::Staggeredfield_eo>(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+        //Here the inversion must be performed with high precision, because it'll be used for Metropolis test
+        const int iterations = physics::algorithms::solvers::cg_m(X, fm, gf, out->get_b(), *orig[j], system, interfacesHandler, parametersInterface.getSolverPrec(), additionalParameters);
+        logger.trace() << "\t\t...end solver in " << iterations << " iterations";
 
-    //TODO: Ugly syntax &((*out)[0]) temporarily due to missing loop on multiple pseudofermions
-    //      When adding the loop, create tmpField=(*out)[0] and then use it as &tmpField (-> more readable)
-    physics::lattices::sax((*out)[0].get(), { out->get_a0(), 0. }, *orig[0]);
-    for (unsigned int i = 0; i < out->getOrder(); i++)
-        physics::lattices::saxpy((*out)[0].get(), { (out->get_a())[i], 0. }, *X[i], *((*out)[0].get()));
+        const physics::lattices::Staggeredfield_eo& pseudofermionInOut = *(*out)[j];
+        physics::lattices::sax(&pseudofermionInOut, { out->get_a0(), 0. }, *orig[j]);
+        for (unsigned int i = 0; i < out->getOrder(); i++)
+            physics::lattices::saxpy(&pseudofermionInOut, { (out->get_a())[i], 0. }, *X[i], pseudofermionInOut);
 
-    log_squarenorm("Staggeredfield_eo after update", *((*out)[0].get()));
+        log_squarenorm("Staggeredfield_eo after update", pseudofermionInOut);
+    }
 }
 
 /**
