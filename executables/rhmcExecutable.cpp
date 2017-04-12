@@ -44,9 +44,9 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
         if(approx_hb->Get_order() != parameters.get_metro_approx_ord() ||
            approx_md->Get_order() != parameters.get_md_approx_ord() ||
            approx_met->Get_order() != parameters.get_metro_approx_ord() ||
-           approx_hb->Get_exponent()*8 != parameters.get_num_tastes() ||
-           approx_md->Get_exponent()*4*(-1) != parameters.get_num_tastes() ||
-           approx_met->Get_exponent()*4*(-1) != parameters.get_num_tastes() ||
+           approx_hb->Get_exponent()*8*parameters.get_num_pseudofermions() != parameters.get_num_tastes() ||
+           approx_md->Get_exponent()*4*(-1)*parameters.get_num_pseudofermions() != parameters.get_num_tastes() ||
+           approx_met->Get_exponent()*4*(-1)*parameters.get_num_pseudofermions() != parameters.get_num_tastes() ||
            approx_hb->Get_lower_bound() != parameters.get_approx_lower() ||
            approx_md->Get_lower_bound() != parameters.get_approx_lower() ||
            approx_met->Get_lower_bound() != parameters.get_approx_lower() ||
