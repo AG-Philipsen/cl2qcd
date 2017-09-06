@@ -77,10 +77,11 @@ double normalizeEvenOdd(double valueIn, const LatticeExtents lE)
 //Reference Value Calculation for Sources
 ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSourceTestParameters tP)
 {
-	double mean, variance, nonzeroEntries;
+	double mean, variance, nonzeroEntriesPerIteration;
 	if (tP.sourcecontent == common::sourcecontents::one)
 	{
-		mean = normalizeEvenOdd(3 * calculateSpinorfieldSize(tP.latticeExtents), tP.latticeExtents);
+		mean = normalizeEvenOdd(3 * calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.latticeExtents);
+		logger.warn() << "mean = 3 * " << calculateSpinorfieldSize(tP.latticeExtents) << " / (6 * " << calculateEvenOddSpinorfieldSize(tP.latticeExtents) << ") = " << mean;
 	}
 	else if (tP.sourcecontent == common::sourcecontents::gaussian or tP.sourcecontent == common::sourcecontents::z4 or tP.sourcecontent == common::sourcecontents::z2)
 	{
@@ -89,18 +90,9 @@ ReferenceValues calculateReferenceValues_volumeSource(const StaggeredFermionsSou
 	else
 		mean = 0.123456;
 
-	if (tP.sourcecontent == common::sourcecontents::gaussian or tP.sourcecontent == common::sourcecontents::z4)
-	{
-		nonzeroEntries = calculateEvenOddSpinorfieldSize(tP.latticeExtents) * 2; //real and imaginary parts count separately in the counting
-	}
-	else if (tP.sourcecontent == common::sourcecontents::z2 or tP.sourcecontent == common::sourcecontents::one)
-	{
-		nonzeroEntries = calculateEvenOddSpinorfieldSize(tP.latticeExtents);
-	}
-	else
-		nonzeroEntries = 123456;
-	variance = sqrt(normalizeEvenOdd(((0. - mean) * (0. - mean) * 3 + (1. - mean) * (1. - mean) * 3) * calculateSpinorfieldSize(tP.latticeExtents), tP.latticeExtents));
-	return ReferenceValues{mean, variance, nonzeroEntries};
+	variance = sqrt(normalizeEvenOdd(((0. - mean) * (0. - mean) * 3 + (1. - mean) * (1. - mean) * 3) * calculateEvenOddSpinorfieldSize(tP.latticeExtents), tP.latticeExtents));
+	nonzeroEntriesPerIteration = calculateEvenOddSpinorfieldSize(tP.latticeExtents);
+	return ReferenceValues{mean, variance, nonzeroEntriesPerIteration};
 }
 
 ReferenceValues calculateReferenceValues_pointSource(const StaggeredFermionsSourceTestParameters tP)
@@ -129,7 +121,7 @@ struct SourceTester : public PrngSpinorStaggeredTester
 	}
 	
 	virtual ~SourceTester(){
-		numberOfNonZeroEntries = countNonZeroElements(&hostOutput[0], numberOfElements);
+		numberOfNonZeroEntries = countNonZeroElements(&hostOutput[0], testParameters.iterations*numberOfElements)/testParameters.iterations;
 		kernelResult.at(2) = numberOfNonZeroEntries;
 	}
 	
@@ -273,7 +265,7 @@ BOOST_AUTO_TEST_SUITE(SRC_POINT)
 
 	BOOST_AUTO_TEST_CASE( SRC_POINT_1 )
 	{
-		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, 10);
+		testPointSource( LatticeExtents{ns4, nt4}, common::sourcecontents::one, 3);
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

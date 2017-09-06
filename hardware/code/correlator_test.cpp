@@ -45,20 +45,21 @@ struct CorrelatorTestParameters : public SpinorTestParameters
 	CorrelatorDirection direction;
 };
 
-bool compareToZero_su3Vec(const su3vec in)
+bool compareToZero_su3vec(const su3vec in)
 {
-	if (in.e0.re == 0.)
-		if(in.e0.im == 0)
-			return true;
-	return false;
+    if (in.e0.re == 0. && in.e0.im == 0.)
+        if(in.e1.re == 0. && in.e1.im == 0.)
+            if(in.e2.re == 0. && in.e2.im == 0.)
+                return true;
+    return false;
 }
 
 bool compareToZero(const spinor in)
 {
-	if(compareToZero_su3Vec(in.e0))
-		if(compareToZero_su3Vec(in.e1))
-			if(compareToZero_su3Vec(in.e2))
-				if(compareToZero_su3Vec(in.e3))
+	if(compareToZero_su3vec(in.e0))
+		if(compareToZero_su3vec(in.e1))
+			if(compareToZero_su3vec(in.e2))
+				if(compareToZero_su3vec(in.e3))
 					return true;
 	return false;
 }
@@ -157,7 +158,7 @@ struct SourceTester : public PrngSpinorTester
 	}
 	~SourceTester()
 	{
-		numberOfNonZeroEntries = countNonZeroElements (&hostOutput[0], numberOfElements);
+		numberOfNonZeroEntries = countNonZeroElements(&hostOutput[0], testParameters.iterations*numberOfElements)/testParameters.iterations;
 		kernelResult.at(2) = numberOfNonZeroEntries;
 	}
 protected:
