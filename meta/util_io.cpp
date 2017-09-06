@@ -25,6 +25,7 @@
 #include "gitcommitid.h"
 #include "util.hpp"
 #include "../host_functionality/logger.hpp"
+#include "../executables/exceptions.h"
 
 using namespace std;
 
@@ -1001,10 +1002,18 @@ static void print_info_source(const meta::Inputparameters& params)
 	} else if(params.get_sourcecontent() == common::sourcecontents::gaussian) {
 		logger.info() << "## fill sources with gaussian noise";
 	}
-	if(params.get_sourcetype() == common::sourcetypes::point && params.get_num_sources() != 12) {
-		logger.fatal() << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!";
-		logger.fatal() << "## Number of sources: " << params.get_num_sources();
+	if(params.get_measure_correlators() && params.get_fermact() == common::action::rooted_stagg){
+	    if(params.get_sourcetype() == common::sourcetypes::point && params.get_num_sources() != 3) {
+	        logger.fatal() << "## Number of sources: " << params.get_num_sources();
+	        throw Print_Error_Message("Pointsource with number of sources different than \"3\" is chosen. This is will not give the full point-to-all propagator!");
+	    }
 	}
+    if(params.get_measure_correlators() && params.get_fermact() != common::action::rooted_stagg){
+        if(params.get_sourcetype() == common::sourcetypes::point && params.get_num_sources() != 12) {
+            logger.fatal() << "## Number of sources: " << params.get_num_sources();
+            throw Print_Error_Message("Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!");
+        }
+    }
 	if(params.get_sourcetype() == common::sourcetypes::point && params.get_sourcecontent() != common::sourcecontents::one) {
 		logger.warn() << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!";
 	}

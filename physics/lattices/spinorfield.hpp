@@ -114,7 +114,7 @@ class Spinorfield {
         hardware::System const& system;
         //TODO: turn the following pointer in a reference
         const SpinorfieldParametersInterface& spinorfieldParametersInterface;
-	hardware::lattices::Spinorfield spinorfield;
+    hardware::lattices::Spinorfield spinorfield;
         const bool place_on_host;
         void import(const spinor * const host) const;
 

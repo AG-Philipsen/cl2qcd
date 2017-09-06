@@ -57,6 +57,32 @@ static void test_sources(std::string type, int num_sources)
 	release_spinorfields(sources);
 }
 
+static void test_staggered_sources(std::string type, int num_sources)
+{
+    using namespace physics::lattices;
+
+    std::stringstream tmp;
+    tmp << "--num_sources=";
+    tmp << num_sources;
+    std::string n_sources_string = tmp.str();
+    std::string sourcetype_string = std::string("--sourcetype=") + type;
+    const char * _params[] = {"foo", n_sources_string.c_str(), sourcetype_string.c_str(), "--fermact=rooted_stagg"};
+    meta::Inputparameters params(4, _params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+    physics::PrngParametersImplementation prngParameters{params};
+    physics::PRNG prng{system, &prngParameters};
+
+    auto staggered_sources = create_staggered_sources(system, prng, params.get_num_sources(), interfacesHandler);
+
+    BOOST_REQUIRE_EQUAL(params.get_num_sources(), static_cast<const int>(staggered_sources.size()));
+
+    release_staggeredfields_eo(staggered_sources);
+}
+
+
 static void test_volume_source_stagg(std::string content)
 {
 	using namespace physics::lattices;
@@ -103,6 +129,13 @@ static void test_volume_source_stagg(std::string content)
 
 }
 
+
+static void test_point_source_stagg(std::string content)
+{
+	using namespace physics::lattices;
+	throw Print_Error_Message("method implementation is in process but not yet finished!");
+}
+
 BOOST_AUTO_TEST_CASE(sources)
 {
 	test_sources("point", 15);
@@ -111,7 +144,13 @@ BOOST_AUTO_TEST_CASE(sources)
 	test_sources("zslice", 1);
 }
 
-BOOST_AUTO_TEST_CASE(sources_stagg)
+BOOST_AUTO_TEST_CASE(sources_staggered)
+{
+    test_staggered_sources("point", 15);
+    test_staggered_sources("volume", 2);
+}
+
+BOOST_AUTO_TEST_CASE(pointsource_stagg)
 {
 	test_volume_source_stagg("one");
 	test_volume_source_stagg("z4");

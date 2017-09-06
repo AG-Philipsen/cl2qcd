@@ -461,6 +461,28 @@ namespace hardware
 			const double kappa;
 		};
 
+		class OpenClKernelParametersMockupForStaggeredCorrelators : public OpenClKernelParametersMockupForSpinorStaggered
+			{
+			public:
+				OpenClKernelParametersMockupForStaggeredCorrelators(const LatticeExtents lE, const double kappaIn, const double directionIn) :
+					OpenClKernelParametersMockupForSpinorStaggered(lE, true), correlatorDirection(directionIn), kappa(kappaIn) {};
+
+				virtual int getCorrDir() const override
+				{
+					return correlatorDirection;
+				}
+				virtual double getKappa() const override
+				{
+					return kappa;
+				}
+				virtual bool getMeasureCorrelators() const override
+				{
+					return true;
+				}
+				const int correlatorDirection;
+				const double kappa;
+			};
+
 		struct OpenClKernelParametersMockupForSourceTests : public OpenClKernelParametersMockupForSpinorTests
 		{
 			OpenClKernelParametersMockupForSourceTests(const int nsIn, const int ntIn, const common::sourcecontents sC, const common::sourcetypes sT) :
@@ -484,8 +506,8 @@ namespace hardware
 
 		struct OpenClKernelParametersMockupForStaggeredSourceTests : public OpenClKernelParametersMockupForSpinorStaggered
 		{
-			OpenClKernelParametersMockupForStaggeredSourceTests(const LatticeExtents lE, const common::sourcecontents sC) :
-				OpenClKernelParametersMockupForSpinorStaggered(lE, true), sC(sC) {};
+			OpenClKernelParametersMockupForStaggeredSourceTests(const LatticeExtents lE, const common::sourcecontents sC,  const common::sourcetypes sT) :
+				OpenClKernelParametersMockupForSpinorStaggered(lE, true), sC(sC), sT(sT) {};
 
 			virtual common::sourcecontents getSourceContent() const override
 			{
@@ -493,13 +515,14 @@ namespace hardware
 			}
 			virtual common::sourcetypes getSourceType() const override
 			{
-				return common::sourcetypes::volume;
+				return sT;
 			}
 			virtual bool getMeasureCorrelators() const override
 			{
 				return false;
 			}
 			const common::sourcecontents sC;
+			const common::sourcetypes sT;
 		};
 
 		class OpenClKernelParametersMockupForTwistedMass : public OpenClKernelParametersMockupForSpinorTests

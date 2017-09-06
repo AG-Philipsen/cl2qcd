@@ -29,6 +29,7 @@ add_library(observables
 	wilsonTwoFlavourChiralCondensate.cpp
 	wilsonTwoFlavourCorrelators.cpp
 	staggeredChiralCondensate.cpp
+	staggeredTwoFlavourCorrelators.cpp
 )
 
 target_link_libraries(observables
@@ -54,3 +55,5 @@ add_unit_test_withLibraries(physics::observables::wilson::twoFlavourChiralConden
 add_test(physics::observables::wilson::twoFlavourChiralCondensate_GPU wilsonTwoFlavourChiralCondensate_test --use_gpu=true)
 add_unit_test_withLibraries(physics::observables::wilson::twoFlavourCorrelators wilsonTwoFlavourCorrelators_test lattices observables)
 add_unit_test_withLibraries(physics::observables::staggered::ChiralCondensate staggeredChiralCondensate_test lattices observables)
+add_unit_test_withLibraries(physics::observables::staggered::twoFlavourCorrelators staggeredTwoFlavourCorrelators_test lattices observables)
+

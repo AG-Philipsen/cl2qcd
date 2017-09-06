@@ -1,8 +1,9 @@
 /** @file
  * Basic OpenCL functionality
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Copyright 2012, 2013, 2016 Lars Zeidlewicz, Christopher Pinke,
+ * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra,
+ * Tim Breitenfelder
  *
  * This file is part of CL2QCD.
  *
@@ -25,6 +26,7 @@
 
 #include "opencl_module.hpp"
 
+#include "../buffers/plain.hpp"
 #include "../buffers/su3vec.hpp"
 #include "../buffers/prng_buffer.hpp"
 #include "../../common_header_files/types_fermions.h"
@@ -44,7 +46,15 @@ public:
 
 	virtual ~Correlator_staggered();
 
+	void create_point_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, int i, int spacepos, int timepos) const;
+
 	void create_volume_source_stagg_eoprec_device(const hardware::buffers::SU3vec * inout, const hardware::buffers::PRNGBuffer * prng) const;
+
+    /**
+     * Calculate the correlator on the device.
+     * TODO: In future, if different correlators are added, think whether to do as in Wilson, overloading, or in a different way!
+     */
+    void pseudoScalarCorrelator(const hardware::buffers::Plain<hmc_float> * correlator, const hardware::buffers::SU3vec * invertedSourcesEven, const hardware::buffers::SU3vec * invertedSourcesOdd) const;
 
 	/**
 	 * Print the profiling information to a file.
@@ -100,8 +110,14 @@ private:
 	////////////////////////////////////
 	//kernels
 	///////////////////////////////////
-	//Type of source
+	//Types of source
+
+	cl_kernel create_point_source_stagg_eoprec;
 	cl_kernel create_volume_source_stagg_eoprec;
+
+	//Observables
+	//scalar correlators
+	cl_kernel correlator_staggered_ps;
 
 	ClSourcePackage basic_correlator_code;
 };

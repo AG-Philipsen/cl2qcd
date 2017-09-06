@@ -35,6 +35,27 @@ const std::vector<const hardware::buffers::SU3vec *> physics::lattices::Staggere
 	return staggeredFieldEo.get_buffers();
 }
 
+
+std::vector<physics::lattices::Staggeredfield_eo *> physics::lattices::create_staggeredfields_eo(const hardware::System& system, const size_t n,
+                                                                                                 physics::InterfacesHandler& interfacesHandler)
+{
+    std::vector<Staggeredfield_eo *> fields;
+    fields.reserve(n);
+
+    for(size_t i = 0; i < n; ++i) {
+        fields.push_back(new Staggeredfield_eo(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>()));
+    }
+
+    return fields;
+}
+
+void physics::lattices::release_staggeredfields_eo(const std::vector<physics::lattices::Staggeredfield_eo *> fields)
+{
+for(auto field: fields) {
+        delete field;
+    }
+}
+
 hmc_complex physics::lattices::scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right)
 {
 	const Scalar<hmc_complex> res(left.system);

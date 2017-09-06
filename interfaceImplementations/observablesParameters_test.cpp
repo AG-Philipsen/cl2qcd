@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(testWilsonChiralCondensateObservablesParameters)
     BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(test.getMubar()), boost::lexical_cast<std::string>(meta::get_mubar(*params)));
 }
 
-BOOST_AUTO_TEST_CASE(testWlsonCorrelatorsObservablesParameters)
+BOOST_AUTO_TEST_CASE(testWilsonCorrelatorsObservablesParameters)
 {
     auto params = createDefaultMetaInputparameters();
     physics::observables::WilsonTwoFlavourCorrelatorsParametersImplementation test(*params);
@@ -95,6 +95,21 @@ BOOST_AUTO_TEST_CASE(testWlsonCorrelatorsObservablesParameters)
     BOOST_CHECK_EQUAL(test.getNumberOfSources(), params->get_num_sources());
 }
 
+BOOST_AUTO_TEST_CASE(testStaggeredCorrelatorsObservablesParameters)
+{
+    auto params = createDefaultMetaInputparameters();
+    physics::observables::StaggeredTwoFlavourCorrelatorsParametersImplementation test(*params);
+
+    BOOST_CHECK_EQUAL(test.printToScreen(), params->get_print_to_screen());
+//    BOOST_CHECK_EQUAL(test.getCorrelatorDirection(), params->get_corr_dir());
+    BOOST_CHECK_EQUAL(test.getSourceType(), params->get_sourcetype());
+//    BOOST_CHECK_EQUAL(test.getNs(), params->get_nspace());
+    BOOST_CHECK_EQUAL(test.getNt(), params->get_ntime());
+    BOOST_CHECK_EQUAL(test.getCorrelatorFilename("conf.00000"), meta::get_ferm_obs_corr_file_name(*params, "conf.00000"));
+//    BOOST_CHECK_EQUAL(test.placeSourcesOnHost(), params->get_place_sources_on_host());
+    BOOST_CHECK_EQUAL(test.getNumberOfSources(), params->get_num_sources());
+    BOOST_CHECK_EQUAL(test.getSolverPrecision(), params->get_solver_prec());
+}
 
 
 

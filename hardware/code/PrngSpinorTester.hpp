@@ -90,6 +90,11 @@ private:
 	bool useSameRandomNumbers;
 };
 
+
+
+
+
+
 struct PrngSpinorStaggeredTestParameters: public SpinorStaggeredTestParameters
 {
 	PrngSpinorStaggeredTestParameters(const LatticeExtents latticeExtentsIn, const int iterationsIn, const bool runKolmogorovSmirnov = true) :
