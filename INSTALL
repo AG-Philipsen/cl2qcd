@@ -39,7 +39,7 @@ CMake, e.g.:
 
 mkdir -p .cmake/modules
 cd .cmake/modules
-wget http://gitorious.org/findopencl/findopencl/blobs/raw/master/FindOpenCL.cmake
+wget https://gitlab.com/Marix/FindOpenCL/raw/master/FindOpenCL.cmake
 
 and adding the following to .bashrc:
 alias cmake='cmake -DCMAKE_MODULE_PATH=~/.cmake/modules'
