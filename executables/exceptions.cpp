@@ -49,10 +49,10 @@ Invalid_Fermact::Invalid_Fermact(int fermact, bool muset, bool cswset) : std::in
 
 	error_message = "Invalid setting for fermionic sector: ";
 
-	if( muset == true && fermact != meta::action::twistedmass )
+	if( muset == true && fermact != common::action::twistedmass )
 		error_message.append("Value of twisted mass parameter mu is set but fermion action is not twisted mass.");
 
-	if( cswset == true && fermact != meta::action::clover )
+	if( cswset == true && fermact != common::action::clover )
 		error_message.append("Value of clover parameter csw is set but fermion action is not clover. ");
 
 	if( cswset == true && muset == true )

@@ -21,9 +21,11 @@
 #include "spinors.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <cassert>
+
+#include "flopUtilities.hpp"
+#include "flopUtilities.hpp"
 #include "gaugefield.hpp"
 #include "prng.hpp"
 
@@ -32,19 +34,19 @@ using namespace std;
 void hardware::code::Spinors::fill_kernels()
 {
 	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	if(get_parameters().get_use_eo()) {
+	if(kernelParameters->getUseEo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}
 	
-	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 	
 	logger.debug() << "Creating Spinors kernels...";
 	
 	//Reductions are really small kernels, so few needed options loaded by hands
-	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_squarenorm_reduction.cl";
-	scalar_product_reduction = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_scalar_product_reduction.cl";
+	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_squarenorm_reduction.cl";
+	scalar_product_reduction = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_scalar_product_reduction.cl";
 	
-	if(get_parameters().get_use_eo() ) {
+	if(kernelParameters->getUseEo() ) {
 		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
@@ -59,7 +61,7 @@ void hardware::code::Spinors::fill_kernels()
 		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		//merged kernels
-		if (get_parameters().get_use_merge_kernels_spinor() == true) {
+		if (kernelParameters->getUseMergeKernelsSpinor() == true) {
 			saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
 		} else {
 			saxpy_AND_squarenorm_eo = 0;
@@ -103,7 +105,7 @@ void hardware::code::Spinors::clear_kernels()
 	clerr = clReleaseKernel(scalar_product_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
-	if(get_parameters().get_use_eo()) {
+	if(kernelParameters->getUseEo()) {
 		clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(saxpy_eoprec);
@@ -152,8 +154,8 @@ void hardware::code::Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == generate_gaussian_spinorfield
 	   || kernel == generate_gaussian_spinorfield_eo) {
-		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), get_parameters())) {
-			*gs = hardware::buffers::get_prng_buffer_size(get_device(), get_parameters());
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers());
 		}
 	}
 
@@ -171,7 +173,7 @@ void hardware::code::Spinors::convert_from_eoprec_device(const hardware::buffers
 {
 	using namespace hardware::buffers;
 
-	const size_4 mem_size = get_device()->get_mem_lattice_size();
+	const size_4 mem_size = get_device()->getLocalLatticeMemoryExtents();
 
 	// check buffer sizes
 	const size_t in_size = in1->get_elements();
@@ -227,7 +229,7 @@ void hardware::code::Spinors::convert_to_eoprec_device(const hardware::buffers::
 {
 	using namespace hardware::buffers;
 
-	const size_4 mem_size = get_device()->get_mem_lattice_size();
+	const size_4 mem_size = get_device()->getLocalLatticeMemoryExtents();
 
 	// check buffer sizes
 	const size_t out_size = out1->get_elements();
@@ -738,9 +740,9 @@ void hardware::code::Spinors::saxpy_AND_squarenorm_eo_device(const hardware::buf
 size_t hardware::code::Spinors::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(get_parameters());
-	size_t S = get_spinorfieldsize(get_parameters());
-	size_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
+	size_t S = kernelParameters->getSpinorFieldSize();
+	size_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -857,8 +859,8 @@ size_t hardware::code::Spinors::get_read_write_size(const std::string& in) const
 
 uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 {
-	uint64_t S = get_spinorfieldsize(get_parameters());
-	uint64_t Seo = get_eoprec_spinorfieldsize(get_parameters());
+	uint64_t S = kernelParameters->getSpinorFieldSize();
+	uint64_t Seo = kernelParameters->getEoprecSpinorFieldSize();
 	//this is the same as in the function above
 	if (in == "generate_gaussian_spinorfield") {
 		//this kernel performs 12 multiplications per site
@@ -888,15 +890,15 @@ uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 	}
 	if (in == "saxpy") {
 		//this kernel performs on each site spinor_times_complex and spinor_add
-		return S * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) );
+		return S * (NDIM * NC * ( getFlopComplexMult() + 2) );
 	}
 	if (in == "sax") {
 		//this kernel performs on each site spinor_times_complex
-		return S * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
+		return S * (NDIM * NC * ( getFlopComplexMult() ) );
 	}
 	if (in == "saxsbypz") {
 		//this kernel performs on each 2 * site spinor_times_complex and 2 * spinor_add
-		return S * (NDIM * NC * 2 * ( meta::get_flop_complex_mult() + 2) );
+		return S * (NDIM * NC * 2 * ( getFlopComplexMult() + 2) );
 	}
 	if (in == "set_zero_spinorfield") {
 		//this kernel does not do any flop
@@ -904,15 +906,15 @@ uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 	}
 	if (in == "saxpy_eoprec") {
 		//this kernel performs on each site spinor_times_complex and spinor_add
-		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) );
+		return Seo * (NDIM * NC * ( getFlopComplexMult() + 2) );
 	}
 	if (in == "sax_eoprec") {
 		//this kernel performs on each site spinor_times_complex
-		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
+		return Seo * (NDIM * NC * ( getFlopComplexMult() ) );
 	}
 	if (in == "saxsbypz_eoprec") {
 		//this kernel performs on each 2 * site spinor_times_complex and 2 * spinor_add
-		return Seo * (NDIM * NC * 2 * ( meta::get_flop_complex_mult() + 2) );
+		return Seo * (NDIM * NC * 2 * ( getFlopComplexMult() + 2) );
 	}
 	if (in == "set_zero_spinorfield_eoprec") {
 		//this kernel does not do any flop
@@ -920,31 +922,31 @@ uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 	}
 	if (in == "scalar_product") {
 		//this kernel performs spinor*spinor on each site and then adds S-1 complex numbers
-		return S * meta::get_flop_spinor_spinor() + (S - 1) * 2;
+		return S * getFlopSpinorTimesSpinor() + (S - 1) * 2;
 	}
 	if (in == "scalar_product_reduction") {
 		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "global_squarenorm") {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
-		return S * meta::get_flop_spinor_sqnorm() + (S - 1) * 2;
+		return S * getFlopSpinorSquareNorm() + (S - 1) * 2;
 	}
 	if (in == "global_squarenorm_reduction") {
 		return module_metric_not_implemented<uint64_t>();
 	}
 	if (in == "scalar_product_eoprec") {
 		//this kernel performs spinor*spinor on each site and then adds S-1 complex numbers
-		return Seo * meta::get_flop_spinor_spinor() + (Seo - 1) * 2;
+		return Seo * getFlopSpinorTimesSpinor() + (Seo - 1) * 2;
 	}
 	if (in == "global_squarenorm_eoprec") {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
-		return Seo * meta::get_flop_spinor_sqnorm() + (Seo - 1) * 2;
+		return Seo * getFlopSpinorSquareNorm() + (Seo - 1) * 2;
 	}
 	//merged kernels
 	if (in == "saxpy_AND_squarenorm_eo") {
 		//the saxpy kernel performs on each site spinor_times_complex and spinor_add
 		//the squarenorm kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
-		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) )  + Seo * meta::get_flop_spinor_sqnorm() + (S - 1) * 2;
+		return Seo * (NDIM * NC * ( getFlopComplexMult() + 2) )  + Seo * getFlopSpinorSquareNorm() + (S - 1) * 2;
 	}
 
 
@@ -988,12 +990,12 @@ void hardware::code::Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::
 	convertSpinorfieldToSOA_eo_device(buf, &tmp);
 }
 
-hardware::code::Spinors::Spinors(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0), saxpy_AND_squarenorm_eo(0) 
+hardware::code::Spinors::Spinors(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0), saxpy_AND_squarenorm_eo(0)
 {
 	fill_kernels();
 
-	if(params.get_use_eo() ) {
+	if(kernelParameters.getUseEo() ) {
 		size_t foo1, foo2;
 		cl_uint groups;
 		this->get_work_sizes(scalar_product_eoprec, &foo1, &foo2, &groups);
@@ -1034,7 +1036,7 @@ void hardware::code::Spinors::generate_gaussian_spinorfield_device(const hardwar
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(in, &force_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_device(in, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
 		if(resid != resid) {
@@ -1061,7 +1063,7 @@ void hardware::code::Spinors::generate_gaussian_spinorfield_eo_device(const hard
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
+		get_device()->getSpinorCode()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
 		if(resid != resid) {
@@ -1069,16 +1071,6 @@ void hardware::code::Spinors::generate_gaussian_spinorfield_eo_device(const hard
 		}
 	}
 
-}
-
-size_t hardware::code::get_spinorfieldsize(const meta::Inputparameters& params)
-{
-	return get_vol4d(params);
-}
-
-size_t hardware::code::get_eoprec_spinorfieldsize(const meta::Inputparameters& params)
-{
-	return get_spinorfieldsize(params) / 2;
 }
 
 size_t hardware::code::get_spinorfieldsize(const size_4& params)

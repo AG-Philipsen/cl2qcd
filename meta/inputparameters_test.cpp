@@ -48,7 +48,7 @@ void checkDefaults(const Inputparameters & params)
 	BOOST_REQUIRE_EQUAL(params.get_nspace(), 4);
 	BOOST_REQUIRE_EQUAL(params.get_ntime(), 8);
 
-	BOOST_REQUIRE_EQUAL(params.get_startcondition(), Inputparameters::cold_start);
+	BOOST_REQUIRE_EQUAL(params.get_startcondition(), common::cold_start);
 	BOOST_REQUIRE_EQUAL(params.get_writefrequency(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_savefrequency(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_sourcefile(), "conf.00000");
@@ -61,7 +61,7 @@ void checkDefaults(const Inputparameters & params)
 	BOOST_REQUIRE_EQUAL(params.get_beta(), 4.0);
 	BOOST_REQUIRE_EQUAL(params.get_rho(), 0.);
 	BOOST_REQUIRE_EQUAL(params.get_rho_iter(), 0);
-	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), meta::action::wilson);
+	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), common::action::wilson);
 
 	//heatbath parameters
 	BOOST_REQUIRE_EQUAL(params.get_thermalizationsteps(), 0);
@@ -72,8 +72,8 @@ void checkDefaults(const Inputparameters & params)
 	BOOST_REQUIRE_EQUAL(params.get_measure_rectangles(), false);
 
 	//fermionic parameters
-	BOOST_REQUIRE_EQUAL(params.get_fermact(), meta::action::wilson);
-	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), meta::action::wilson);
+	BOOST_REQUIRE_EQUAL(params.get_fermact(), common::action::wilson);
+	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), common::action::wilson);
 	BOOST_REQUIRE_EQUAL(params.get_kappa(), 0.125);
 	BOOST_REQUIRE_EQUAL(params.get_mu(), 0.006);
 	BOOST_REQUIRE_EQUAL(params.get_csw(), 0.);
@@ -88,7 +88,7 @@ void checkDefaults(const Inputparameters & params)
 	BOOST_REQUIRE_EQUAL(params.get_chem_pot_im(), 0.);
 	BOOST_REQUIRE_EQUAL(params.get_use_eo(), true);
 	//at the moment, only 2 solvers are implemented..
-	BOOST_REQUIRE_EQUAL(params.get_solver(), Inputparameters::bicgstab);
+	BOOST_REQUIRE_EQUAL(params.get_solver(), common::bicgstab);
 	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), false);
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), 12);
 	BOOST_REQUIRE_EQUAL(params.get_source_x(), 0);
@@ -104,7 +104,6 @@ void checkDefaults(const Inputparameters & params)
 #endif
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh(), 100);
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh_mp(), 100);
-
 	BOOST_REQUIRE_EQUAL(params.get_benchmarksteps(), 500);
 
 	//HMC specific parameters
@@ -115,13 +114,30 @@ void checkDefaults(const Inputparameters & params)
 	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
 	BOOST_REQUIRE_EQUAL(params.get_hmcsteps(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_num_timescales(), 1);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(0), Inputparameters::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(1), Inputparameters::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(2), Inputparameters::leapfrog);
-	//this is the optimal value...
-	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.1931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(0), common::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(1), common::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(2), common::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.1931833275037836); //this is the optimal value...
 	BOOST_REQUIRE_EQUAL(params.get_lambda(1), 0.1931833275037836);
 	BOOST_REQUIRE_EQUAL(params.get_lambda(2), 0.1931833275037836);
+
+	//RHMC specific parameters
+	BOOST_REQUIRE_EQUAL(params.get_md_approx_ord(), 8);
+	BOOST_REQUIRE_EQUAL(params.get_metro_approx_ord(), 15);
+	BOOST_REQUIRE_EQUAL(params.get_findminmax_iteration_block_size(), 25);
+	BOOST_REQUIRE_EQUAL(params.get_findminmax_max(), 5000);
+	BOOST_REQUIRE_EQUAL(params.get_findminmax_prec(), 0.001);
+	BOOST_REQUIRE_EQUAL(params.get_conservative(), false);
+	BOOST_REQUIRE_EQUAL(params.get_num_tastes(), 2);
+	BOOST_REQUIRE_EQUAL(params.get_num_tastes_decimal_digits(), 0);
+	BOOST_REQUIRE_EQUAL(params.get_num_pseudofermions(), 1);
+	BOOST_REQUIRE_EQUAL(params.get_approx_lower(), 1.e-5);
+	BOOST_REQUIRE_EQUAL(params.get_approx_upper(), 1.);
+	BOOST_REQUIRE_EQUAL(params.get_rhmcsteps(), 10);
+	BOOST_REQUIRE_EQUAL(params.get_approx_heatbath_file(), "Approx_Heatbath");
+	BOOST_REQUIRE_EQUAL(params.get_approx_md_file(), "Approx_MD");
+	BOOST_REQUIRE_EQUAL(params.get_approx_metropolis_file(), "Approx_Metropolis");
+	BOOST_REQUIRE_EQUAL(params.get_read_rational_approximations_from_file(), true);
 
 	//direction for the correlator
 	BOOST_REQUIRE_EQUAL(params.get_corr_dir(), 3);
@@ -175,7 +191,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_nspace(), 32);
 	BOOST_REQUIRE_EQUAL(params.get_ntime(), 12);
 
-	BOOST_REQUIRE_EQUAL(params.get_startcondition(), Inputparameters::start_from_source);
+	BOOST_REQUIRE_EQUAL(params.get_startcondition(), common::start_from_source);
 	BOOST_REQUIRE_EQUAL(params.get_writefrequency(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_savefrequency(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_sourcefile(), "conf.11111");
@@ -188,7 +204,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_beta(), 4.1);
 	BOOST_REQUIRE_EQUAL(params.get_rho(), 0.1);
 	BOOST_REQUIRE_EQUAL(params.get_rho_iter(), 4);
-	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), meta::action::twistedmass);
+	BOOST_REQUIRE_EQUAL(params.get_gaugeact(), common::action::twistedmass);
 
 	//heatbath parameters
 	BOOST_REQUIRE_EQUAL(params.get_thermalizationsteps(), 10);
@@ -198,8 +214,8 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_measure_transportcoefficient_kappa(), true);
 
 	//fermionic parameters
-	BOOST_REQUIRE_EQUAL(params.get_fermact(), meta::action::tlsym);
-	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), meta::action::iwasaki);
+	BOOST_REQUIRE_EQUAL(params.get_fermact(), common::action::tlsym);
+	BOOST_REQUIRE_EQUAL(params.get_fermact_mp(), common::action::iwasaki);
 	BOOST_REQUIRE_EQUAL(params.get_kappa(), 0.25);
 	BOOST_REQUIRE_EQUAL(params.get_mu(), 0.06);
 	BOOST_REQUIRE_EQUAL(params.get_csw(), 0.1);
@@ -214,7 +230,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_chem_pot_im(), 0.12);
 	BOOST_REQUIRE_EQUAL(params.get_use_eo(), false);
 	//at the moment, only 2 solvers are implemented..
-	BOOST_REQUIRE_EQUAL(params.get_solver(), Inputparameters::cg);
+	BOOST_REQUIRE_EQUAL(params.get_solver(), common::cg);
 	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), true);
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), 3);
 	BOOST_REQUIRE_EQUAL(params.get_source_x(), 1);
@@ -236,9 +252,9 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
 	BOOST_REQUIRE_EQUAL(params.get_hmcsteps(), 98);
 	BOOST_REQUIRE_EQUAL(params.get_num_timescales(), 3);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(0), Inputparameters::twomn);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(1), Inputparameters::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator(2), Inputparameters::twomn);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(0), common::twomn);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(1), common::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(2), common::twomn);
 	//this is the optimal value...
 	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.11931833275037836);
 	BOOST_REQUIRE_EQUAL(params.get_lambda(1), 0.21931833275037836);

@@ -24,19 +24,22 @@
 
 #include "buffer.hpp"
 #include "../../common_header_files/types.h"
+#include "../../geometry/latticeExtents.hpp"
 
 namespace hardware {
 namespace buffers {
 
+size_t calculateGaugemomentumSize(LatticeExtents latticeExtentsIn) noexcept;
+
 /**
  * Check whether Gaugemomentum should be stored SOA style on this device
  */
-size_t check_Gaugemomentum_for_SOA(hardware::Device * device);
+size_t check_Gaugemomentum_for_SOA(const hardware::Device * device);
 
 /**
  * Get the stride for an Gaugemomentum buffer of the given number of elements on the given device
  */
-size_t get_Gaugemomentum_buffer_stride(size_t elems, Device * device);
+size_t get_Gaugemomentum_buffer_stride(const size_t elems, const Device * device);
 
 /*
  * A buffer storing Gaugemomentums on the device
@@ -51,7 +54,8 @@ public:
 	 * \param elems The size of the buffer in elements
 	 * \param device The device to locate the buffer on
 	 */
-	Gaugemomentum(size_t elems, Device * device);
+	Gaugemomentum(const size_t elems, const Device * device);
+	Gaugemomentum(const LatticeExtents lE, const Device * device);
 
 	/*
 	 * Gaugemomentum buffers cannot be copied
@@ -66,7 +70,7 @@ public:
 	 * This only works for AoS-Buffers. If the buffer is a SoA buffer
 	 * an std::logic_error will be thrown.
 	 */
-	void load(const ae *, size_t elems = 0, size_t offset = 0) const;
+	void load(const ae *, const size_t elems = 0, const size_t offset = 0) const;
 
 	/**
 	 * Store data from the buffer into the given pointer.
@@ -74,7 +78,7 @@ public:
 	 * This only works for AoS-Buffers. If the buffer is a SoA buffer
 	 * an std::logic_error will be thrown.
 	 */
-	void dump(ae *, size_t elems = 0, size_t offset = 0) const;
+	void dump(ae *, const size_t elems = 0, const size_t offset = 0) const;
 
 	/**
 	 * Load raw data from the given pointer into the buffer.
@@ -94,7 +98,7 @@ public:
 	 * \param elems Allows to limit the number of bytes dumped to the given memory
 	 * \param offset Allows to read the bytes at the given offset into the buffer
 	 */
-	void dump_raw(void *, size_t bytes = 0, size_t offset = 0) const;
+	void dump_raw(void *, const size_t bytes = 0, const size_t offset = 0) const;
 
 	void loadRect_raw(const void* src, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
 	void dumpRect_raw(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;

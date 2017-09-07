@@ -261,7 +261,7 @@ void Test::fill_buffers()
 
 void Device::fill_kernels()
 {
-	ClSourcePackage basic_opencl_code = get_device()->get_gaugefield_code()->get_sources();
+	ClSourcePackage basic_opencl_code = get_device()->getGaugefieldCode()->get_sources();
 	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
 	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
 	su3SOAKernel = createKernel("copySU3SOA") << basic_opencl_code << "types_fermions.h" << "../microbenchmarks/bandwidth.cl";
@@ -373,7 +373,7 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 		throw Opencl_Error(err);
 	}
 
-	cl_ulong eventTime = dev->get_profiling_data(kernel).get_total_time() / num_meas;
+	cl_ulong eventTime = dev->getProfilingData(kernel).get_total_time() / num_meas;
 
 	// format is: #groups #threads per group #elements #copied memory in bytes #copy time in mus #bandwidth in megabytes
 	// FIXME sizeof can give broken results in case of aligned types (gross size not equal to net content size)

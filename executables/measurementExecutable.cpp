@@ -20,13 +20,14 @@
 
 
 #include "measurementExecutable.h"
+#include "../physics/utilities.hpp"
 
 void measurementExecutable::checkStartconditions()
 {
   if(parameters.get_read_multiple_configs() ){
     logger.info() << "To work on multiple configurations, this executable requires the following parameter value(s) to work properly:";
     logger.info() << "startcondition:\tcontinue";
-    if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ) {
+    if(parameters.get_startcondition() != common::start_from_source ) {
       logger.fatal() << "Found wrong startcondition! Aborting..";
       throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
     }
@@ -51,14 +52,14 @@ void measurementExecutable::setIterationVariables()
 
 void measurementExecutable::initializeGaugefieldAccordingToIterationVariable()
 {
-	currentConfigurationName = meta::create_configuration_name(parameters, iteration);
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng, currentConfigurationName);
+	currentConfigurationName = physics::buildCheckpointName(parameters.get_config_prefix(), parameters.get_config_postfix(), parameters.get_config_number_digits(), iteration);
+	gaugefield = new physics::lattices::Gaugefield(*system, &(interfacesHandler->getInterface<physics::lattices::Gaugefield>()), *prng, currentConfigurationName);
 }
 
 void measurementExecutable::initializeGaugefieldAccordingToConfigurationGivenInSourcefileParameter()
 {
 	currentConfigurationName = parameters.get_sourcefile();
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+	gaugefield = new physics::lattices::Gaugefield(*system, &(interfacesHandler->getInterface<physics::lattices::Gaugefield>()), *prng);
 }
 
 void measurementExecutable::initializeGaugefield()

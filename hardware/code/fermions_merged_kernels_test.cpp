@@ -1,6 +1,7 @@
 /*
  * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ *   2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -18,515 +19,311 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testUtilities.hpp"
-
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../../physics/lattices/gaugefield.hpp"
-#include "../device.hpp"
-#include "spinors.hpp"
-#include "fermions.hpp"
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS
+#define BOOST_TEST_MODULE OPENCL_MODULE_FERMIONS_MERGED_KERNELS
 #include <boost/test/unit_test.hpp>
 
-//some functionality
-#include "test_util.h"
+#include "FermionTester.hpp"
 
-class TestGaugefield {
+const ReferenceValues calculateReferenceValues_saxpyAndGamma5EvenOdd(const int latticeVolume, const hmc_complex coefficient)
+{
+	if( coefficient.re == 0. and coefficient.im == 0.)
+	{
+		return ReferenceValues{ latticeVolume * (-144.) };
+	}
+	else if ( coefficient.re == -nonTrivialParameter and coefficient.im == 2.*nonTrivialParameter)
+	{
+		return ReferenceValues{ latticeVolume * (-161.7776640000001) };
+	}
+	return defaultReferenceValues();
+}
 
-public:
-	TestGaugefield(const hardware::System * system) : system(system), prng(*system), gf(*system, prng) {
-		BOOST_REQUIRE_EQUAL(system->get_devices().size(), 1);
-		const auto & inputfile = system->get_inputparameters();
-		meta::print_info_hmc(inputfile);
-	};
+const ReferenceValues calculateReferenceValues_mTmSitediagonalAndGamma5EvenOdd(const int latticeVolume, const TwistedMassMassParameters massParameters)
+{
+	if (massParameters.kappa == 0. and massParameters.mu == 0.)
+	{
+		return ReferenceValues{ latticeVolume * (-144.) };
+	}
+	if (massParameters.kappa == -4.*nonTrivialParameter and massParameters.mu == 11*nonTrivialParameter)
+	{
+		return ReferenceValues{ latticeVolume * (-127.905098563584) };
+	}
+	return defaultReferenceValues();
+}
 
-	const hardware::code::Fermions * get_device();
-	const hardware::buffers::SU3 * get_gaugefield();
+const ReferenceValues calculateReferenceValues_mTmSitediagonalMinusAndGamma5EvenOdd(const int latticeVolume, const TwistedMassMassParameters massParameters)
+{
+	if (massParameters.kappa == 0. and massParameters.mu == 0.)
+	{
+		return ReferenceValues{ latticeVolume * (-144.) };
+	}
+	if (massParameters.kappa == 2.*nonTrivialParameter and massParameters.mu == -5*nonTrivialParameter)
+	{
+		return ReferenceValues{ latticeVolume * (-147.65793214464) };
+	}
+	return defaultReferenceValues();
+}
 
-private:
-	const hardware::System * const system;
-	physics::PRNG prng;
-	const physics::lattices::Gaugefield gf;
+const ReferenceValues calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonalMinus(const int latticeVolume, const GaugefieldFillType gF, const TwistedMassMassParameters massParameters)
+{
+	if (gF == GaugefieldFillType::cold )
+	{
+		if (massParameters.kappa == 1. and massParameters.mu == 0.)
+		{
+			return ReferenceValues{ latticeVolume * (-2400.) };
+		}
+		if (massParameters.kappa == 3*nonTrivialParameter and massParameters.mu == -7*nonTrivialParameter)
+		{
+			return ReferenceValues{ latticeVolume * (-630.5134172436968) };
+		}
+	}
+	else if (gF == GaugefieldFillType::nonTrivial and massParameters.kappa == 3*nonTrivialParameter and massParameters.mu == -7*nonTrivialParameter)
+	{
+		return ReferenceValues{ latticeVolume * (-262.5581454299608) };
+	}
+	return defaultReferenceValues();
+}
+
+const ReferenceValues calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonal(const int latticeVolume, const GaugefieldFillType gF, const TwistedMassMassParameters massParameters)
+{
+	if (gF == GaugefieldFillType::cold )
+	{
+		if (massParameters.kappa == 1. and massParameters.mu == 0.)
+		{
+			return ReferenceValues{ latticeVolume * (-2400.) };
+		}
+		if (massParameters.kappa == -2*nonTrivialParameter and massParameters.mu == -8*nonTrivialParameter)
+		{
+			return ReferenceValues{ latticeVolume * (478.7145794216685) };
+		}
+	}
+	else if (gF == GaugefieldFillType::nonTrivial and massParameters.kappa == -2*nonTrivialParameter and massParameters.mu == -8*nonTrivialParameter)
+	{
+		return ReferenceValues{ latticeVolume * (191.461710119754) };
+	}
+	return defaultReferenceValues();
+}
+
+struct SaxpyAndGamma5EvenOddTestParameters: public FermionTestParameters
+{
+	SaxpyAndGamma5EvenOddTestParameters(const LatticeExtents latticeExtentsIn, const SpinorFillTypes spinorFillTypesIn, const hmc_complex coefficientIn) :
+		TestParameters(latticeExtentsIn), FermionTestParameters(latticeExtentsIn, spinorFillTypesIn), coefficient(coefficientIn) {};
+	const hmc_complex coefficient;
 };
 
-void fill_sf_with_one(spinor * sf_in, int size)
+struct SaxpyAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0 = hmc_complex_one;
-		sf_in[i].e0.e1 = hmc_complex_one;
-		sf_in[i].e0.e2 = hmc_complex_one;
-		sf_in[i].e1.e0 = hmc_complex_one;
-		sf_in[i].e1.e1 = hmc_complex_one;
-		sf_in[i].e1.e2 = hmc_complex_one;
-		sf_in[i].e2.e0 = hmc_complex_one;
-		sf_in[i].e2.e1 = hmc_complex_one;
-		sf_in[i].e2.e2 = hmc_complex_one;
-		sf_in[i].e3.e0 = hmc_complex_one;
-		sf_in[i].e3.e1 = hmc_complex_one;
-		sf_in[i].e3.e2 = hmc_complex_one;
+	SaxpyAndGamma5EvenOddTester(const ParameterCollection & pc, const SaxpyAndGamma5EvenOddTestParameters & tP) :
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("saxpy_AND_gamma5", pc, tP, calculateReferenceValues_saxpyAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.coefficient))
+	{
+		EvenOddSpinorfieldCreator sf(tP.SpinorTestParameters::latticeExtents);
+		const hardware::buffers::Spinor in2(tP.SpinorTestParameters::latticeExtents, device);
+		in2.load(sf.createSpinorfield(tP.fillTypes.at(1)));
+		code->saxpy_AND_gamma5_eo_device(in, &in2, tP.coefficient, out);
 	}
-	return;
-}
+};
 
-void fill_sf_with_random(spinor * sf_in, int size, int seed)
+struct MTmSitediagonalMinusAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
-	prng_init(seed);
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0.re = prng_double();
-		sf_in[i].e0.e1.re = prng_double();
-		sf_in[i].e0.e2.re = prng_double();
-		sf_in[i].e1.e0.re = prng_double();
-		sf_in[i].e1.e1.re = prng_double();
-		sf_in[i].e1.e2.re = prng_double();
-		sf_in[i].e2.e0.re = prng_double();
-		sf_in[i].e2.e1.re = prng_double();
-		sf_in[i].e2.e2.re = prng_double();
-		sf_in[i].e3.e0.re = prng_double();
-		sf_in[i].e3.e1.re = prng_double();
-		sf_in[i].e3.e2.re = prng_double();
-
-		sf_in[i].e0.e0.im = prng_double();
-		sf_in[i].e0.e1.im = prng_double();
-		sf_in[i].e0.e2.im = prng_double();
-		sf_in[i].e1.e0.im = prng_double();
-		sf_in[i].e1.e1.im = prng_double();
-		sf_in[i].e1.e2.im = prng_double();
-		sf_in[i].e2.e0.im = prng_double();
-		sf_in[i].e2.e1.im = prng_double();
-		sf_in[i].e2.e2.im = prng_double();
-		sf_in[i].e3.e0.im = prng_double();
-		sf_in[i].e3.e1.im = prng_double();
-		sf_in[i].e3.e2.im = prng_double();
+	MTmSitediagonalMinusAndGamma5EvenOddTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP) :
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_minus_AND_gamma5_eo", pc, tP,
+				calculateReferenceValues_mTmSitediagonalMinusAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters) )
+	{
+		code->M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, out, tP.massParameters.getMubar());
 	}
-	return;
-}
+};
 
-void fill_sf_with_random(spinor * sf_in, int size)
+struct MTmSitediagonalAndGamma5EvenOddTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
-	fill_sf_with_random(sf_in, size, 123456);
-}
-
-void test_build(std::string inputfile)
-{
-	logger.info() << "build opencl_module_hmc";
-	logger.info() << "Init device";
-	auto params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(*params);
-	TestGaugefield cpu(&system);
-	BOOST_TEST_MESSAGE("Test done");
-}
-
-hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in)
-{
-	hmc_float res = 0.;
-	for(size_t i = 0; i < NUM_ELEMS; i++) {
-		spinor tmp = in[i];
-		res +=
-		  tmp.e0.e0.re + tmp.e0.e0.im +
-		  tmp.e0.e1.re + tmp.e0.e1.im +
-		  tmp.e0.e2.re + tmp.e0.e2.im +
-		  tmp.e1.e0.re + tmp.e1.e0.im +
-		  tmp.e1.e1.re + tmp.e1.e1.im +
-		  tmp.e1.e2.re + tmp.e1.e2.im +
-		  tmp.e2.e0.re + tmp.e2.e0.im +
-		  tmp.e2.e1.re + tmp.e2.e1.im +
-		  tmp.e3.e2.re + tmp.e2.e2.im +
-		  tmp.e3.e0.re + tmp.e3.e0.im +
-		  tmp.e3.e1.re + tmp.e3.e1.im +
-		  tmp.e3.e2.re + tmp.e3.e2.im ;
+	MTmSitediagonalAndGamma5EvenOddTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP) :
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("m_tm_sitediagonal_AND_gamma5_eo", pc, tP,
+				calculateReferenceValues_mTmSitediagonalAndGamma5EvenOdd(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.massParameters))
+	{
+		code->M_tm_sitediagonal_AND_gamma5_eo_device(in, out, tP.massParameters.getMubar());
 	}
-	return res;
-}
+};
 
-const hardware::code::Fermions* TestGaugefield::get_device()
+struct DslashEvenOddAndMTmInverseSitediagonalMinusTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
-	return system->get_devices()[0]->get_fermion_code();
-}
-
-const hardware::buffers::SU3 * TestGaugefield::get_gaugefield()
-{
-	return gf.get_buffers().at(0);
-}
-
-
-void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
-{
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher)
-		kernelName = "dslash_AND_m_tm_inverse_sitediagonal";
-	else
-		kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	auto params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(*params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	auto * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params->get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	out.load(sf_in);
-
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(params->get_read_multiple_configs()) {
-		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params->get_kappa(), meta::get_mubar(*params));
-		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), EVEN, params->get_kappa(), meta::get_mubar(*params));
-	} else {
-		if(switcher)
-			device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params->get_kappa(), meta::get_mubar(*params));
-		else
-			device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, cpu.get_gaugefield(), ODD, params->get_kappa(), meta::get_mubar(*params));
+	DslashEvenOddAndMTmInverseSitediagonalMinusTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP, const bool evenOrOdd) :
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_AND_m_tm_inverse_sitediagonal_minus", pc, tP,
+				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonalMinus(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
+	{
+		code->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, out, gaugefieldBuffer, evenOrOdd, tP.massParameters.kappa,
+				tP.massParameters.getMubar());
 	}
-	out.dump(sf_out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
-	sqnorm.dump(&cpu_res);
-	logger.info() << cpu_res;
+};
 
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, *params);
-	BOOST_TEST_MESSAGE("Test done");
-}
-
-void test_dslash_and_m_tm_inverse_sitediagonal(std::string inputfile)
+struct DslashEvenOddAndMTmInverseSitediagonalTester : public FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>
 {
-	test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
-}
+	DslashEvenOddAndMTmInverseSitediagonalTester(const ParameterCollection & pc, const TwistedMassTestParameters & tP, const bool evenOrOdd) :
+		FermionmatrixTesterWithSumAsKernelResult<EvenOddFermionmatrixTester>("dslash_AND_m_tm_inverse_sitediagonal", pc, tP,
+				calculateReferenceValues_dslashEvenOddAndMTmInverseSitediagonal(calculateEvenOddSpinorfieldSize(tP.SpinorTestParameters::latticeExtents), tP.GaugefieldTestParameters::fillType, tP.massParameters) )
+	{
+		code->dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, out, gaugefieldBuffer, evenOrOdd, tP.massParameters.kappa,
+				tP.massParameters.getMubar());
+	}
+};
 
-void test_dslash_and_m_tm_inverse_sitediagonal_minus(std::string inputfile)
+void testSaxpyAndGamma5EvenOdd(const LatticeExtents lE, const SpinorFillTypes sF, const hmc_complex coefficient)
 {
-	test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
+	SaxpyAndGamma5EvenOddTestParameters parametersForThisTest{lE, sF, coefficient};
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForMergedFermionKernels kernelParameters(parametersForThisTest.ns, parametersForThisTest. nt);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	SaxpyAndGamma5EvenOddTester( parameterCollection, parametersForThisTest);
 }
 
-void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool switcher)
+template <class TesterClass>
+void runTest(const LatticeExtents lE, const SpinorFillType sF, const TwistedMassMassParameters mP)
 {
-	using namespace hardware::buffers;
-
-	std::string kernelName;
-	if(switcher) kernelName = "m_tm_sitedigaonal_AND_gamma5_eo";
-	else kernelName = "m_tm_sitediagonal_minus_AND_gamma5_eo";
-	printKernelInfo(kernelName);
-	logger.info() << "Init device";
-	auto params = createParameters("fermionsMerged/" + inputfile);
-	hardware::System system(*params);
-	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
-	auto * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
-
-	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = hardware::code::get_eoprec_spinorfieldsize(*params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params->get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
-	out.load(sf_in);
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	auto spinor_code = device->get_device()->get_spinor_code();
-
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back;
-	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
-
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-	logger.info() << "Run kernel";
-	if(switcher)
-		device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(*params));
-	else
-		device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(*params));
-	out.dump(sf_out);
-	logger.info() << "result:";
-	hmc_float cpu_res;
-	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
-	logger.info() << cpu_res;
-
-	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
-
-	testFloatAgainstInputparameters(cpu_res, *params);
-	BOOST_TEST_MESSAGE("Test done");
+	TwistedMassTestParameters parametersForThisTest{lE, sF, mP};
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass( parameterCollection, parametersForThisTest);
 }
 
-void test_m_tm_sitediagonal_and_gamma5_eo(std::string inputfile)
+template <class TesterClass>
+void runTest(const LatticeExtents lE, const SpinorFillType sF, const GaugefieldFillType gF, const TwistedMassMassParameters mP, const bool evenOrOdd)
 {
-	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, true);
+	TwistedMassTestParameters parametersForThisTest{lE, sF, gF, mP};
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns, parametersForThisTest.nt, true);
+	hardware::code::OpenClKernelParametersMockupForTwistedMass kernelParameters(parametersForThisTest.ns, parametersForThisTest.nt, true, true);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass( parameterCollection, parametersForThisTest, evenOrOdd);
 }
 
-void test_m_tm_sitediagonal_minus_and_gamma5_eo(std::string inputfile)
+void testMTmSitediagonalMinusAndGamma5EvenOdd(const LatticeExtents lE, const SpinorFillType sF, const TwistedMassMassParameters mP)
 {
-	test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, false);
+	runTest<MTmSitediagonalMinusAndGamma5EvenOddTester>( lE, sF, mP );
 }
 
-//CP: Note: this is the same test as in the "normal" opencl_module_fermions test, I left it here, too.
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
+void testMTmSitediagonalAndGamma5EvenOdd(const LatticeExtents lE, const SpinorFillType sF, const TwistedMassMassParameters mP)
 {
-	test_build("build_input_1");
+	runTest<MTmSitediagonalAndGamma5EvenOddTester>( lE, sF, mP );
 }
 
-BOOST_AUTO_TEST_CASE( BUILD_2 )
+void testDslashEvenOddAndMTmInverseSitediagonalMinus(const LatticeExtents lE, const SpinorFillType sF, const GaugefieldFillType gF, const TwistedMassMassParameters mP, const bool evenOrOdd)
 {
-	test_build("build_input_2");
+	runTest<DslashEvenOddAndMTmInverseSitediagonalMinusTester>( lE, sF, gF, mP, evenOrOdd );
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+void testDslashEvenOddAndMTmInverseSitediagonal(const LatticeExtents lE, const SpinorFillType sF, const GaugefieldFillType gF, const TwistedMassMassParameters mP, const bool evenOrOdd)
+{
+	runTest<DslashEvenOddAndMTmInverseSitediagonalTester>( lE, sF, gF, mP, evenOrOdd );
+}
 
+/**
+ * @todo: Add more parameters to dslash-tests (thetaT, thetaS, chem. pot., etc.)
+ */
 BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO )
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_1");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonal(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{1, 0.}, true);
+	}
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_2)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_2");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_2)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonal(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{1, 0.}, false);
+	}
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_3)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_3");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_3)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonal(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{-2*nonTrivialParameter, -8*nonTrivialParameter}, true);
+	}
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_4)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_4");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_4)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonal(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{-2*nonTrivialParameter, -8*nonTrivialParameter}, false);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_5)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonal(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{-2*nonTrivialParameter, -8*nonTrivialParameter}, true);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_6)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonal(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{-2*nonTrivialParameter, -8*nonTrivialParameter}, false);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO )
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_1");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonalMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{1, 0.}, true);
+	}
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_2)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_2");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_2)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonalMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{1, 0.}, false);
+	}
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_3)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_3");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_3)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonalMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{3.*nonTrivialParameter, -7*nonTrivialParameter}, true);
+	}
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_4)
-{
-	test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_4");
-}
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_4)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonalMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::cold, TwistedMassMassParameters{3.*nonTrivialParameter, -7*nonTrivialParameter}, false);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_5)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonalMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{3.*nonTrivialParameter, -7*nonTrivialParameter}, true);
+	}
+
+	BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_6)
+	{
+		testDslashEvenOddAndMTmInverseSitediagonalMinus(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, GaugefieldFillType::nonTrivial, TwistedMassMassParameters{3.*nonTrivialParameter, -7*nonTrivialParameter}, false);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO )
 
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_1)
-{
-	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_1");
-}
+	BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_1)
+	{
+		testMTmSitediagonalAndGamma5EvenOdd(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{0.,0.});
+	}
 
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_2)
-{
-	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_3)
-{
-	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_3");
-}
+	BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_2)
+	{
+		testMTmSitediagonalAndGamma5EvenOdd(LatticeExtents{ns8, nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{-4.*nonTrivialParameter,11.*nonTrivialParameter});
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO )
 
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_1)
-{
-	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_1");
-}
+	BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_1)
+	{
+		testMTmSitediagonalMinusAndGamma5EvenOdd(LatticeExtents{ns4, nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{0.,0.});
+	}
 
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_2)
-{
-	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
-{
-	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_3");
-}
+	BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_2)
+	{
+		testMTmSitediagonalMinusAndGamma5EvenOdd(LatticeExtents{ns4, nt8}, SpinorFillType::ascendingComplex, TwistedMassMassParameters{2.*nonTrivialParameter,-5.*nonTrivialParameter});
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#include "FermionTester.hpp"
-
 BOOST_AUTO_TEST_SUITE(SAXPY_AND_GAMMA5_EO )
-
-	class SaxpyAndGamma5EvenOddTester : public FermionTester
-	{
-	public:
-		SaxpyAndGamma5EvenOddTester(std::vector<std::string> parameterStrings, uint num) :
-			FermionTester("saxpy_AND_gamma5", parameterStrings, 1)
-		{
-			const hardware::buffers::Spinor in(spinorfieldEvenOddElements, device);
-			const hardware::buffers::Spinor in2(spinorfieldEvenOddElements, device);
-			const hardware::buffers::Spinor out(spinorfieldEvenOddElements, device);
-			hardware::buffers::Plain<hmc_complex> alpha(1, device);
-
-			if (num == 1){
-				in.load(createSpinorfield(spinorfieldEvenOddElements));
-				in2.load(createSpinorfield(spinorfieldEvenOddElements));
-			}
-			else{
-				in.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
-				in2.load(createSpinorfieldWithOnesAndMinusOneForGamma5Use(spinorfieldEvenOddElements));
-			}
-			alpha.load(&alpha_host);
-			
-			spinor * sf_in;
-			sf_in = new spinor[spinorfieldEvenOddElements];
-			
-			code->saxpy_AND_gamma5_eo_device(&in, &in2, alpha_host, &out);
-			out.dump(sf_in);
-			kernelResult[0] = count_sf(sf_in, spinorfieldEvenOddElements);
-	
-			delete sf_in;
-		}
-	};
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_1)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=0", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
+		testSaxpyAndGamma5EvenOdd(LatticeExtents{ns4, nt8}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex}, hmc_complex{0.,0.});
 	}
 
 	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_2)
 	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_3)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_4)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_5)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_6)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_7)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,1);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_8)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=0", "--test_ref_val=1536", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_9)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=1", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_10)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=0", "--rho=-1", "--test_ref_val=3072.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_11)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=0", "--test_ref_val=0.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_12)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=0", "--test_ref_val=3072.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_13)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=1", "--rho=-1", "--test_ref_val=1536.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
-	}
-
-	BOOST_AUTO_TEST_CASE(SAXPY_AND_GAMMA5_EO_14)
-	{
-		std::vector<std::string> parameterStrings {"--nspace=4", "--ntime=4", "--solver=cg", "--use_merge_kernels_fermion=true" , "--beta=-1", "--rho=-1", "--test_ref_val=4608.", "--test_ref_val2=0"};
-		SaxpyAndGamma5EvenOddTester tester(parameterStrings,2);
+		testSaxpyAndGamma5EvenOdd(LatticeExtents{ns4, nt12}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex}, hmc_complex{-nonTrivialParameter, 2.*nonTrivialParameter});
 	}
 	
 BOOST_AUTO_TEST_SUITE_END()

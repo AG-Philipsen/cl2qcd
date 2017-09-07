@@ -38,7 +38,10 @@
 #include "../hardware/system.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 #include "../physics/prng.hpp"
-#include "../physics/observables/gaugeObservables.h"
+#include "../physics/observables/gaugeObservables.hpp"
+#include "../physics/interfacesHandler.hpp"
+#include "../interfaceImplementations/hardwareParameters.hpp"
+#include "../interfaceImplementations/openClKernelParameters.hpp"
 
 class generalExecutable
 {
@@ -53,7 +56,7 @@ protected:
 	/**
 	* Initialize meta::Inputparametes and hardware::System objects
 	 */
-	//Protected since it makes no sense to allow the user to instatiate this class
+	//Protected since it makes no sense to allow the user to instantiate this class
 	generalExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters"); 
 
 	const char* ownName;
@@ -62,10 +65,14 @@ protected:
 	usetimer totalRuntimeOfExecutable;
 	usetimer initializationTimer;
 	usetimer performanceTimer;
-	meta::Inputparameters parameters;
+	const meta::Inputparameters parameters;
+	const physics::PrngParametersInterface * prngParameters;
+	const hardware::HardwareParametersImplementation * hP;
+	const hardware::code::OpenClKernelParametersImplementation * kP;
 	hardware::System * system;
 	physics::PRNG * prng;
 	physics::lattices::Gaugefield * gaugefield;
+	std::unique_ptr<physics::InterfacesHandler> interfacesHandler;
 	std::ofstream outputToFile;
 	const char* generalTimeOutputFilename = "general_time_output";
 

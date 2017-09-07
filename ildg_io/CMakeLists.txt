@@ -39,6 +39,7 @@ target_link_libraries(ildg_io
 	host_functionality
 	lime
 	sourcefileParameters
+	geometry
 )
 
 add_subdirectory(lime)

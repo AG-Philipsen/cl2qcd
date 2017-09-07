@@ -22,12 +22,11 @@
 #include "real.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 
 void hardware::code::Real::fill_kernels()
 {
-	basic_real_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_real.cl";
+	basic_real_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_real.cl";
 	
 	logger.debug() << "Creating Real kernels...";
 	
@@ -338,7 +337,7 @@ void hardware::code::Real::update_alpha_cgm_device(const hardware::buffers::Plai
 
 size_t hardware::code::Real::get_read_write_size(const std::string& in) const
 {
-	size_t D = meta::get_float_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
 	if (in == "ratio" || in == "product" || in == "sum" || in == "subtraction") {
 		//this kernel reads 2 real numbers and writes 1 real number
 		return D * (2 + 1);
@@ -366,7 +365,7 @@ uint64_t hardware::code::Real::get_flop_size(const std::string& in) const
 
 size_t hardware::code::Real::get_read_write_size_update(const std::string& in, const int numeq) const
 {
-	size_t D = meta::get_float_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
 	if (in == "update_alpha_cgm") {
 		if(numeq==0) 
 			throw Print_Error_Message("get_read_write_size_update with update_alpha_cgm and numeq=0", __FILE__, __LINE__);
@@ -422,8 +421,8 @@ void hardware::code::Real::print_profiling(const std::string& filename, int numb
 	Opencl_Module::print_profiling(filename, update_zeta_cgm);
 }
 
-hardware::code::Real::Real(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), get_elem_vec(0), set_elem_vec(0), ratio(0), product(0), sum(0),
+hardware::code::Real::Real(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), get_elem_vec(0), set_elem_vec(0), ratio(0), product(0), sum(0),
 	                                 difference(0), update_alpha_cgm(0), update_beta_cgm(0), update_zeta_cgm(0)
 {
 	fill_kernels();

@@ -2,6 +2,7 @@
  * Unit test for the physics::lattices::Rooted_Staggeredfield_eo class
  *
  * Copyright (c) 2013 Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+ * Copyright (c) 2017 Francesca Cuteri <cuteri@th.physik.uni-frankfurt.de>
  *
  * This file is part of CL2QCD.
  *
@@ -27,6 +28,9 @@
 #define BOOST_TEST_MODULE physics::lattice::Rooted_Staggeredfield_eo
 #include <boost/test/unit_test.hpp>
 
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 #include "../../host_functionality/logger.hpp"
 #include "../../meta/type_ops.hpp"
 #include <cmath>
@@ -38,15 +42,60 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Rooted_Staggeredfield_eo sf(system);
+	BOOST_CHECK_NO_THROW(Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>()));
 	physics::algorithms::Rational_Approximation approx(3,1,4,1e-5,1);
-	Rooted_Staggeredfield_eo sf2(approx, system);
-	
+	BOOST_CHECK_NO_THROW(Rooted_Staggeredfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>(), approx));
 }
 
+BOOST_AUTO_TEST_CASE(initializationWithPseudofermions)
+{
+    using namespace physics::lattices;
+
+    const char * _params[] = {"foo", "--num_pseudofermions=3", "--fermact=rooted_stagg"};
+    meta::Inputparameters params(3, _params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+
+    BOOST_CHECK_NO_THROW(Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>()));
+}
+
+BOOST_AUTO_TEST_CASE(rangeBasedForLoopOnPseudofermions)
+{
+    using namespace physics::lattices;
+
+    const char * _params[] = {"foo", "--num_pseudofermions=3", "--fermact=rooted_stagg"};
+    meta::Inputparameters params(3, _params);
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+    physics::InterfacesHandlerImplementation interfacesHandler{params};
+
+    {
+        Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
+        //Try a range based for loop
+        for(const auto& myField : sf){
+            BOOST_CHECK_NO_THROW(myField.get()->set_cold());
+            logger.info() << "Squarenorm of cold fields: " << squarenorm(*myField);
+        }
+    }
+    {
+        const Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
+        //Try a range based for loop
+        for(const auto& myField : sf){
+            BOOST_CHECK_NO_THROW(myField.get()->set_cold());
+            logger.info() << "Squarenorm of cold fields: " << squarenorm(*myField);
+        }
+    }
+
+}
 
 BOOST_AUTO_TEST_CASE(rescale)
 {
@@ -55,16 +104,21 @@ BOOST_AUTO_TEST_CASE(rescale)
 	
 	Rational_Approximation approx(15,1,4,1e-5,1,false);
 	
-	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg"};
-	meta::Inputparameters params(3, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
+	const char * _params[] = {"foo", "--ntime=4", "--fermact=rooted_stagg", "--mass=0.567", "--conservative=false", "--num_dev=1"};
+	meta::Inputparameters params(6, _params);
+	hardware::HardwareParametersImplementation hP(&params);
+	hardware::code::OpenClKernelParametersImplementation kP(params);
+	hardware::System system(hP, kP);
+	physics::InterfacesHandlerImplementation interfacesHandler{params};
+	physics::PrngParametersImplementation prngParameters(params);
+	physics::PRNG prng(system, &prngParameters);
 	
 	//Operator for the test
-	physics::fermionmatrix::MdagM_eo matrix(system, 0.567);
+	physics::fermionmatrix::MdagM_eo matrix(system, interfacesHandler.getInterface<physics::fermionmatrix::MdagM_eo>());
 	//This configuration for the Ref.Code is the same as for example dks_input_5
-	Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-	Rooted_Staggeredfield_eo sf(system);
+	const GaugefieldParametersImplementation gaugefieldParameters{ &params };
+	Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+	Rooted_Staggeredfield_eo sf(system, interfacesHandler.getInterface<physics::lattices::Rooted_Staggeredfield_eo>());
 	
 	//Min and max eigenvalues for conservative and not conservative case
 	hmc_float minEigenvalue = 0.3485318319429664;
@@ -109,17 +163,17 @@ BOOST_AUTO_TEST_CASE(rescale)
 				    2.3690543226274733968, 8.1633847494467222106,
 				    62.215004455600926292};
 	
-	int ord = sf.Get_order();
+	int ord = sf.getOrder();
 
 	sf.Rescale_Coefficients(approx, minEigenvalue, maxEigenvalue);
-	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref, 5.e-5);
-	std::vector<hmc_float> a = sf.Get_a();
-	std::vector<hmc_float> b = sf.Get_b();
+	BOOST_CHECK_CLOSE(sf.get_a0(), a0_ref, 5.e-5);
+	std::vector<hmc_float> a = sf.get_a();
+	std::vector<hmc_float> b = sf.get_b();
 	
 	sf.Rescale_Coefficients(approx, minEigenvalueCons, maxEigenvalueCons);
-	BOOST_CHECK_CLOSE(sf.Get_a0(), a0_ref_cons, 5.e-5);
-	std::vector<hmc_float> a_cons = sf.Get_a();
-	std::vector<hmc_float> b_cons = sf.Get_b();
+	BOOST_CHECK_CLOSE(sf.get_a0(), a0_ref_cons, 5.e-5);
+	std::vector<hmc_float> a_cons = sf.get_a();
+	std::vector<hmc_float> b_cons = sf.get_b();
 	
 	//Test result: note that the precision is not so high since
 	//the reference code uses a slightly different method to calculate

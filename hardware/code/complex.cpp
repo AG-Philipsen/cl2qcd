@@ -23,14 +23,14 @@
 #include "complex.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include "gaugefield.hpp"
 #include <string>
+#include "flopUtilities.hpp"
 
 void hardware::code::Complex::fill_kernels()
 {
-	basic_complex_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((get_parameters().get_precision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h";
+	basic_complex_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h";
 	
 	logger.debug() << "Creating Complex kernels...";
 	
@@ -187,7 +187,7 @@ void hardware::code::Complex::set_complex_to_difference_device(const hardware::b
 
 size_t hardware::code::Complex::get_read_write_size(const std::string& in) const
 {
-	size_t D = meta::get_float_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
 	//factor for complex numbers
 	int C = 2;
 	if (in == "convert_float_to_complex") {
@@ -212,7 +212,7 @@ uint64_t hardware::code::Complex::get_flop_size(const std::string& in) const
 		return 11;
 	}
 	if (in == "complex_product") {
-		return meta::get_flop_complex_mult();
+		return getFlopComplexMult();
 	}
 	if (in == "complex_sum") {
 		return 2;
@@ -235,8 +235,8 @@ void hardware::code::Complex::print_profiling(const std::string& filename, int n
 	Opencl_Module::print_profiling(filename, difference);
 }
 
-hardware::code::Complex::Complex(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), convert(0), ratio(0), product(0), sum(0), difference(0)
+hardware::code::Complex::Complex(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device), convert(0), ratio(0), product(0), sum(0), difference(0)
 {
 	fill_kernels();
 }

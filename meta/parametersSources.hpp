@@ -26,8 +26,6 @@
 namespace meta {
 class ParametersSources {
 public:
-	enum sourcetypes {point = 1, volume, timeslice, zslice};
-	enum sourcecontents {one = 1, z4, gaussian, z2};
 
 	int get_num_sources() const noexcept;
 	int get_source_x() const noexcept;
@@ -35,8 +33,8 @@ public:
 	int get_source_z() const noexcept;
 	int get_source_t() const noexcept;
 	bool get_place_sources_on_host() const noexcept;
-	sourcetypes get_sourcetype() const noexcept;
-	sourcecontents get_sourcecontent() const noexcept;
+	common::sourcetypes get_sourcetype() const noexcept;
+	common::sourcecontents get_sourcecontent() const noexcept;
 
 private:
 	po::options_description options;
@@ -55,8 +53,8 @@ protected:
 	ParametersSources & operator=(ParametersSources const&) = delete;
 	po::options_description & getOptions();
 
-	sourcetypes sourcetype;
-	sourcecontents sourcecontent;
+	common::sourcetypes sourcetype;
+	common::sourcecontents sourcecontent;
 };
 
 }

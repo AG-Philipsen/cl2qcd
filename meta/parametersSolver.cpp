@@ -45,11 +45,11 @@ int meta::ParametersSolver::get_iter_refresh_mp() const noexcept
 {
 	return iter_refresh_mp;
 }
-meta::ParametersSolver::solver meta::ParametersSolver::get_solver() const noexcept
+common::solver meta::ParametersSolver::get_solver() const noexcept
 {
 	return _solver;
 }
-meta::ParametersSolver::solver meta::ParametersSolver::get_solver_mp() const noexcept
+common::solver meta::ParametersSolver::get_solver_mp() const noexcept
 {
 	return _solver_mp;
 }

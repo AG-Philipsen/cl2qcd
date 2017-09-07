@@ -32,41 +32,39 @@
 #include "../physics/algorithms/hmc.hpp"
 #include <cmath>
 
-class hmcExecutable : public generationExecutable
-{
-public:
-  hmcExecutable(int argc, const char* argv[]);
+class hmcExecutable : public generationExecutable {
+    public:
+        hmcExecutable(int argc, const char* argv[]);
+        ~hmcExecutable();
+    protected:
+        // 	const std::string filenameForHmcLogfile = "hmc.log";
+        double acceptanceRate = 0;
+        hmc_observables observables;
 
-	~hmcExecutable();
-protected:
-// 	const std::string filenameForHmcLogfile = "hmc.log";
-	double acceptanceRate = 0;
-	hmc_observables observables;
+        /*
+         * Sets member variables that control the iterations during
+         * the generation of gaugefield configurations.
+         */
+        void setIterationParameters();
 
-	/*
-	 * Sets member variables that control the iterations during
-	 * the generation of gaugefield configurations.
-	 */
-	void setIterationParameters();
+        void printParametersToScreenAndFile();
 
-	void printParametersToScreenAndFile();
+        void writeHmcLogfile();
 
-	void writeHmcLogfile();
+        void thermalizeAccordingToSpecificAlgorithm() override;
 
-	void thermalizeAccordingToSpecificAlgorithm() override;
+        void generateAccordingToSpecificAlgorithm() override;
 
-	void generateAccordingToSpecificAlgorithm() override;
+        /**
+         * Measures HMC related observables
+         */
+        void performOnlineMeasurements() override;
 
-	/**
-	 * Measures HMC related observables
-	 */
-	void performOnlineMeasurements() override;
+        void printHmcObservables(const std::string& filename);
 
-	void printHmcObservables(const std::string& filename);
+        void printHmcObservablesToFile(const std::string& filename);
 
-	void printHmcObservablesToFile(const std::string& filename);
-
-	void printHmcObservablesToScreen();
+        void printHmcObservablesToScreen();
 };
 
 #endif /* HMCEXECUTABLE_H_ */

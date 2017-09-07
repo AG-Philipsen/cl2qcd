@@ -26,13 +26,15 @@
 #include "../lattices/gaugefield.hpp"
 #include "../prng.hpp"
 #include "../../common_header_files/types_hmc.h"
+#include "../interfacesHandler.hpp"
 
 namespace physics {
-namespace algorithms {
+    namespace algorithms {
 
-hmc_observables perform_hmc_step(const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng, const hardware::System& system);
+        hmc_observables perform_hmc_step(const physics::lattices::Gaugefield * gf, int iter, hmc_float rnd_number, physics::PRNG& prng,
+                                         const hardware::System& system, physics::InterfacesHandler& interfaceHandler);
 
-}
+    }
 }
 
 #endif /* _PHYSICS_ALGORITHMS_HMC_ */

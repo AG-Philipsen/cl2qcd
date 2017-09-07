@@ -25,12 +25,12 @@
 #include <cassert>
 #include "../device.hpp"
 
-hardware::code::Buffer::Buffer(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Buffer::Buffer(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 	_copy_16_bytes = createKernel("copy_16_bytes") << "buffer.cl";
 
-	auto base_code = get_device()->get_gaugefield_code()->get_sources();
+	auto base_code = get_device()->getGaugefieldCode()->get_sources();
 	_clear_bytes = createKernel("clear_bytes") << base_code << "buffer.cl";
 	_clear_float4 = createKernel("clear_float4") << base_code << "buffer.cl";
 }
@@ -61,7 +61,7 @@ void hardware::code::Buffer::clear(const hardware::buffers::Buffer * dest) const
 		if(err) {
 			throw Opencl_Error(err, "clSetKernelArg", __FILE__, __LINE__);
 		}
-		get_device()->enqueue_kernel(_clear_bytes);
+		get_device()->enqueueKernel(_clear_bytes);
 	} else {
 		cl_long elems = bytes / sizeof(cl_float4);
 		cl_int err = clSetKernelArg(_clear_float4, 0, sizeof(cl_mem), dest->get_cl_buffer());
@@ -72,7 +72,7 @@ void hardware::code::Buffer::clear(const hardware::buffers::Buffer * dest) const
 		if(err) {
 			throw Opencl_Error(err, "clSetKernelArg", __FILE__, __LINE__);
 		}
-		get_device()->enqueue_kernel(_clear_float4);
+		get_device()->enqueueKernel(_clear_float4);
 	}
 }
 

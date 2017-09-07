@@ -25,149 +25,85 @@
 
 #include "kernelTester.hpp"
 
+struct DoubleKernelTester : public KernelTester
+{
+	DoubleKernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface& hPI,
+			const hardware::code::OpenClKernelParametersInterface& kP, struct TestParameters tP, const ReferenceValues rV):
+		KernelTester(kernelNameIn, hPI, kP, tP, rV)
+	{
+		kernelResult.at(0) = 1;
+	}
+};
+
+struct ComplexKernelTester : public KernelTester
+{
+	ComplexKernelTester(std::string kernelNameIn, const hardware::HardwareParametersInterface& hPI,
+			const hardware::code::OpenClKernelParametersInterface& kP, struct TestParameters tP, const ReferenceValues rV) :
+		KernelTester(kernelNameIn, hPI, kP, tP, rV)
+	{
+		kernelResult.at(0) = 1.;
+		kernelResult.at(1) = 2.;
+	}
+};
+
 BOOST_AUTO_TEST_SUITE ( BUILD )
 
 	BOOST_AUTO_TEST_CASE( BUILD_1 )
 	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
-		BOOST_CHECK_NO_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists) );
-	}
-
-	BOOST_AUTO_TEST_CASE( BUILD_2 )
-	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatDoesNotExist = "filethatdoesnotexist";
-		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatDoesNotExist), meta::Inputparameters::parse_aborted  );
-	}
-
-	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT_1 )
-	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
-		int maximumNumberOfReferenceValues = 2;
-		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues + 1) , std::invalid_argument );
-	}
-
-	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT_2 )
-	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
-		int maximumNumberOfReferenceValues = 2;
-		int minimalTypeOfComparision = 1;
-		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues, minimalTypeOfComparision - 1), std::invalid_argument );
-	}
-
-	BOOST_AUTO_TEST_CASE( INVALID_ARGUMENT_3 )
-	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTesterEmpty_input";
-		int maximumNumberOfReferenceValues = 2;
-		int maximumTypeOfComparision = 3;
-		BOOST_REQUIRE_THROW(KernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, maximumNumberOfReferenceValues, maximumTypeOfComparision + 1), std::invalid_argument );
-	}
-	
-	BOOST_AUTO_TEST_CASE( BUILD_3 )
-	{
-		const char * _params[] = {"foo"};
-		meta::Inputparameters * parameter;
-		hardware::System * system;
-		hardware::Device * device;
-		
-		parameter = new meta::Inputparameters(1, _params);
-		system = new hardware::System(*parameter);
-		device = system->get_devices()[0];
-		
-		BOOST_CHECK_NO_THROW(KernelTester kernelTester(parameter, system, device) );
+		const hardware::HardwareParametersMockup params(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
+		const struct TestParameters testParams(LatticeExtents(4,4));
+		BOOST_CHECK_NO_THROW(KernelTester kernelTester("testMockup", params, kernelParameters, testParams, ReferenceValues{0} ) );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( DOUBLE )
 
-	class TrivialKernelTester : public KernelTester {
-	public:
-		TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-			KernelTester(kernelNameIn, inputfileIn) {
-			kernelResult[0] = 1;
-		}
-	};
-
 	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL )
 	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTester_input";
-		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
+		const hardware::HardwareParametersMockup params(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
+		const struct TestParameters testParams(LatticeExtents(4,4));
+
+		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1} );
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( DOUBLE_SMALL )
 
-	class TrivialKernelTester : public KernelTester {
-	public:
-	  TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn, double valueToCompare):
-		  KernelTester(kernelNameIn, inputfileIn, 1, 2) {
-			kernelResult[0] = valueToCompare;
-		}
-	};
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (FAILING_COMPARISON, 1)
 
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES (TRIVIALKERNEL_1, 1)
-
-	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL_1 )
+	BOOST_AUTO_TEST_CASE( FAILING_COMPARISON )
 	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTester_input";
-		double valueBiggerThanOne = 1.1;
-		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, valueBiggerThanOne);
+		const hardware::HardwareParametersMockup params(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
+		const struct TestParameters testParams(LatticeExtents(4,4));
+
+		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{0.});
 	}
 
-	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL_2 )
+	BOOST_AUTO_TEST_CASE( SUCCEEDING_COMPARISON )
 	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTester_input";
-		double valueSmallerThanOne = 0.9;
-		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists, valueSmallerThanOne);
+		const hardware::HardwareParametersMockup params(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
+		const struct TestParameters testParams(LatticeExtents(4,4));
+
+		DoubleKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( COMPLEX )
 
-	class TrivialKernelTester : public KernelTester {
-	public:
-		TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-			KernelTester(kernelNameIn, inputfileIn, 2) {
-			kernelResult[0] = 1.;
-			kernelResult[1] = 2.;
-		}
-	};
-
-	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL )
+	BOOST_AUTO_TEST_CASE( COMPARE_COMPLEX_NUMBERS )
 	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTester_input";
-		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
-	}
+		const hardware::HardwareParametersMockup params(4,4);
+		const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4,true);
+		const struct TestParameters testParams(LatticeExtents(4,4));
 
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE ( COMPLEX_ONE_REFERENCE_VALUE )
-
-	class TrivialKernelTester : public KernelTester {
-	public:
-		TrivialKernelTester(std::string kernelNameIn, std::string inputfileIn):
-			KernelTester(kernelNameIn, inputfileIn, 2, 3) {
-			kernelResult[0] = 1.;
-			kernelResult[1] = kernelResult[0];
-		}
-	};
-
-	BOOST_AUTO_TEST_CASE( TRIVIALKERNEL )
-	{
-		std::string nameOfKernel = "test";
-		std::string nameOfInputfileThatExists = "kernelTester_input";
-		TrivialKernelTester kernelTester(nameOfKernel, nameOfInputfileThatExists);
+		ComplexKernelTester kernelTester("test", params, kernelParameters, testParams, ReferenceValues{1.,2.});
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

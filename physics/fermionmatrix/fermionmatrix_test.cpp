@@ -23,18 +23,21 @@
 #include "fermionmatrix.hpp"
 
 #include "../lattices/util.hpp"
-#include <boost/type_traits.hpp>
-#include <boost/utility.hpp>
+#include "../../interfaceImplementations/interfacesHandler.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE physics::fermionmatrix::<fermionmatrix>
 #include <boost/test/unit_test.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/utility.hpp>
 
-//template<class FERMIONMATRIX> void test_fermionmatrix(const hmc_float refs[4], const int seed);
 template<class FERMIONMATRIX>
 typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatrix, FERMIONMATRIX>, void>::type
 test_fermionmatrix(const hmc_float refs[4], const int seed);
+
 template<class FERMIONMATRIX>
 typename boost::enable_if<boost::is_base_of<physics::fermionmatrix::Fermionmatrix_eo, FERMIONMATRIX>, void>::type
 test_fermionmatrix(const hmc_float refs[4], const int seed);
@@ -94,21 +97,26 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
-		physics::PRNG prng(system);
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+        physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
+		physics::PRNG prng{system, &prngParameters};
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		Gaugefield gf(system, prng, false);
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, seed);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[0], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[1], 0.01);
 	}
 
@@ -116,21 +124,26 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
-		physics::PRNG prng(system);
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+        physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
+		physics::PRNG prng{system, &prngParameters};
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield src(system);
-		Spinorfield_eo sf1(system);
-		Spinorfield_eo sf2(system);
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield src(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield_eo sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
+		Spinorfield_eo sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield_eo>());
 
 		pseudo_randomize<Spinorfield, spinor>(&src, seed);
 		convert_to_eoprec(&sf1, &sf2, src);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[2], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, interfacesHandler.getAdditionalParameters<Spinorfield_eo>());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[3], 0.01);
 	}
 }
@@ -143,20 +156,25 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=16"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
-		physics::PRNG prng(system);
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+        physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
+		physics::PRNG prng{system, &prngParameters};
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		Gaugefield gf(system, prng, false);
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
+		Gaugefield gf(system, &gaugefieldParameters, prng, false);
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, seed);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, seed + 1);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[0], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[1], 0.01);
 	}
 
@@ -164,20 +182,25 @@ test_fermionmatrix(const hmc_float refs[4], const int seed)
 		using namespace physics::lattices;
 		const char * _params[] = {"foo", "--ntime=4"};
 		meta::Inputparameters params(2, _params);
-		hardware::System system(params);
-		physics::PRNG prng(system);
-		FERMIONMATRIX matrix(ARG_DEF, ARG_DEF, system);
+		GaugefieldParametersImplementation gaugefieldParameters( &params );
+	    hardware::HardwareParametersImplementation hP(&params);
+	    hardware::code::OpenClKernelParametersImplementation kP(params);
+	    hardware::System system(hP, kP);
+        physics::InterfacesHandlerImplementation interfacesHandler{params};
+		physics::PrngParametersImplementation prngParameters{params};
+		physics::PRNG prng{system, &prngParameters};
+		FERMIONMATRIX matrix(system, interfacesHandler.getInterface<FERMIONMATRIX>());
 
-		Gaugefield gf(system, prng, std::string(SOURCEDIR) + "/hardware/code/conf.00200");
-		Spinorfield sf1(system);
-		Spinorfield sf2(system);
+		Gaugefield gf(system, &gaugefieldParameters, prng, std::string(SOURCEDIR) + "/ildg_io/conf.00200");
+		Spinorfield sf1(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
+		Spinorfield sf2(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>());
 
 		pseudo_randomize<Spinorfield, spinor>(&sf1, seed + 2);
 		pseudo_randomize<Spinorfield, spinor>(&sf2, seed + 3);
 
-		matrix(&sf2, gf, sf1);
+		matrix(&sf2, gf, sf1, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf2), refs[2], 0.01);
-		matrix(&sf1, gf, sf2);
+		matrix(&sf1, gf, sf2, interfacesHandler.getAdditionalParameters<Spinorfield>());
 		BOOST_CHECK_CLOSE(squarenorm(sf1), refs[3], 0.01);
 	}
 }

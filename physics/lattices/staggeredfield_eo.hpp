@@ -23,15 +23,16 @@
 #define _PHYSICS_LATTICES_STAGGEREDFIELD_EO_
 
 #include "../../hardware/system.hpp"
+#include "../../hardware/lattices/staggeredfield_eo.hpp"
 #include "../../hardware/buffers/su3vec.hpp"
 #include "../prng.hpp"
-//#include "spinorfield.hpp"
 #include "scalar.hpp"
 #include "vector.hpp"
 #include "../../common_header_files/types_fermions.h"
+#include "latticesInterfaces.hpp"
+#include "../interfacesHandler.hpp"
 //This is to make the template pseudo_randomize friend of this class
 #include "util.hpp"
-
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -49,12 +50,12 @@ public:
 	/**
 	 * Construct a staggeredfield based on the input-files of the system
 	 */
-	Staggeredfield_eo(const hardware::System&);
+	Staggeredfield_eo(const hardware::System&, const StaggeredfieldEoParametersInterface&);
 
 	/**
 	 * Release resources
 	 */
-	~Staggeredfield_eo();
+	virtual ~Staggeredfield_eo(){}
 
 	/**
 	 * Staggeredfield_eo cannot be copied
@@ -62,6 +63,7 @@ public:
 	Staggeredfield_eo& operator=(const Staggeredfield_eo&) = delete;
 	Staggeredfield_eo(const Staggeredfield_eo&) = delete;
 	Staggeredfield_eo() = delete;
+	Staggeredfield_eo(Staggeredfield_eo&&) = default;
 
 	/**
 	 * Get the buffers containing the staggeredfield state on the devices.
@@ -95,7 +97,8 @@ public:
 
 private:
 	hardware::System const& system;
-	const std::vector<const hardware::buffers::SU3vec *> buffers;
+	const StaggeredfieldEoParametersInterface& staggaredfieldEoParametersInterface;
+	hardware::lattices::Staggeredfield_eo staggeredFieldEo;
 	void import(const su3vec * const host) const;
 
 	friend hmc_complex scalar_product(const Staggeredfield_eo& left, const Staggeredfield_eo& right);
@@ -104,6 +107,15 @@ private:
 	friend void pseudo_randomize<Staggeredfield_eo, su3vec>(const Staggeredfield_eo* to, int seed);
 };
 
+/**
+ * Create n Staggeredfield_eo
+ */
+std::vector<Staggeredfield_eo *> create_staggeredfields_eo(const hardware::System& system, const size_t n, physics::InterfacesHandler& interfacesHandler);
+
+/**
+ * Release the given Staggeredfield_eo
+ */
+void release_staggeredfields_eo(const std::vector<Staggeredfield_eo *> fields);
 
 /**
  * Calculate the scalar product of two staggeredfields.
@@ -199,28 +211,6 @@ void sax_vec_and_squarenorm(const Vector<hmc_float>* res, const Vector<hmc_float
  */
 void log_squarenorm(const std::string& msg, const physics::lattices::Staggeredfield_eo& x);
 
-
-
-//So far not implemented, since only EO-preconditioning is used
-#if 0
-/**
- * Split the given Spinorfield into even and odd Spinorfield_eo.
- *
- * @param[out] even The even part
- * @param[out] odd  The odd part
- * @param[in]  in   The Spinorfield to split
- */
-void convert_to_eoprec(const Spinorfield_eo* even, const Spinorfield_eo* odd, const Spinorfield& in);
-
-/**
- * Merge the given even and odd Spinorfield_eo into one Spinorfield.
- *
- * @param[out] merged The merged Spinorfield
- * @param[in]  even   The even part
- * @param[in]  odd    The odd part
- */
-void convert_from_eoprec(const Spinorfield* merged, const Spinorfield_eo& even, const Spinorfield_eo& odd);
-#endif
 
 }
 }

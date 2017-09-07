@@ -22,35 +22,33 @@
 
 using namespace std;
 
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
-
-static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
+static std::string collect_build_options(const hardware::Device * device, const hardware::code::OpenClKernelParametersInterface& params)
 {
 	std::ostringstream options;
 	options.precision(16);
-	if(params.get_use_same_rnd_numbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
+	if(params.getUseSameRndNumbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
 #ifdef USE_PRNG_RANLUX
-	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params);
+	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device, params.getUseSameRndNumbers());
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
 	return options.str();
 }
 
-hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Prng::Prng(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 #ifdef USE_PRNG_RANLUX
 	logger.debug() << "Creating PRNG kernels...";
 	// the ranluxcl lies in the main directory, other than the remaining kernel
-	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "../ranluxcl/ranluxcl.cl" << "random.cl";
+	prng_code = ClSourcePackage(collect_build_options(get_device(), kernelParameters)) << "../ranluxcl/ranluxcl.cl" << "random.cl";
 	init_kernel = createKernel("prng_ranlux_init") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_") << "globaldefs.h" << "types.h" << "opencl_header.cl" <<  prng_code << "random_ranlux_init.cl";
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
 }
 
-hardware::code::PRNG::~PRNG()
+hardware::code::Prng::~Prng()
 {
 #ifdef USE_PRNG_RANLUX
 	logger.debug() << "Clearing PRNG kernels...";
@@ -61,13 +59,13 @@ hardware::code::PRNG::~PRNG()
 #endif // USE_PRNG_XXX
 }
 
-ClSourcePackage hardware::code::PRNG::get_sources() const noexcept
+ClSourcePackage hardware::code::Prng::get_sources() const noexcept
 {
 	return prng_code;
 }
 
 #ifdef USE_PRNG_RANLUX
-void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed) const
+void hardware::code::Prng::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed) const
 {
 	cl_int clerr;
 	size_t ls, gs;
@@ -77,7 +75,7 @@ void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buff
 	gs = buffer->get_elements();
 	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
 		/// @todo upgrade to newer ranluxcl to avoid this restcition
-		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", (int)get_parameters().get_host_seed());
+		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", (int)kernelParameters->getHostSeed());
 	}
 	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);

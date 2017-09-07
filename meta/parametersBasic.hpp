@@ -23,13 +23,14 @@
 
 #include <vector>
 #include <string>
+#include "../common_header_files/types.h"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
 namespace meta {
 //todo: move this elsewhere
-enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2, rooted_stagg };
+//enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2, rooted_stagg };
 }
 
 #endif

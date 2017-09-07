@@ -29,16 +29,20 @@
 #include "../system.hpp"
 #include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
-		Spinor dummy(meta::get_vol4d(system.get_inputparameters()), device);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	for(Device * device : system.get_devices())
+	{
+		Spinor dummy(system.getHardwareParameters()->getLatticeVolume(), device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -50,12 +54,16 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
-for(Device * device : system.get_devices()) {
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
+	for(Device * device : system.get_devices())
+	{
 		spinor* buf = new spinor[elems];
 		spinor* buf2 = new spinor[elems];
-		Spinor dummy(elems, device);
+		Spinor dummy(lE, device);
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);
 		dummy.load(buf);
@@ -71,13 +79,17 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) / 2;
-for(Device * device : system.get_devices()) {
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() / 2;
+	for(Device * device : system.get_devices())
+	{
 		spinor* buf = new spinor[elems];
 		spinor* buf2 = new spinor[elems];
-		Spinor dummy(elems, device);
-		Spinor dummy2(elems, device);
+		Spinor dummy(lE, device);
+		Spinor dummy2(lE, device);
 
 		fill(buf, elems, 1);
 		fill(buf2, elems, 2);

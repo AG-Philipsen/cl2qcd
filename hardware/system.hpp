@@ -23,23 +23,23 @@
 #define _HARDWARE_SYSTEM_HPP_
 
 #include "../meta/inputparameters.hpp"
+#include "hardwareParameters.hpp"
+#include "openClKernelParameters.hpp"
 #include "../common_header_files/types.h"
-#include "../meta/size_4.hpp"
+#include "../geometry/latticeGrid.hpp"
+#include "size_4.hpp"
 #include <map>
 #include <memory>
 #include <tuple>
 
 /**
  * This namespace contains potentially hardware specific code managing the system,
- * it's devices and the physical representations of data as well as their actual manipulations.
+ * its devices and the physical representations of data as well as their actual manipulations.
  */
 namespace hardware {
 
 	/**
-	 * OpenCL exception class,
-	 * thrown if an opencl error occurs.
-	 *
-	 * @todo merge with other one
+	 * @todo merge with other exceptions
 	 */ 
 	class OpenclException {
 		public:
@@ -52,113 +52,58 @@ namespace hardware {
 			std::string error_message;
 	};
 
-	// forward decleartion of used class
 	class Device;
 	class Transfer;
+	class OpenClCode;
 
-	/**
-	 * Representation of the system we are working on.
-	 *
-	 * Allows the querying and manipulation of the system and
-	 * its hardware.
-	 */
 	class System {
 
 	public:
 		/**
 		 * Create a new system representation.
 		 * You should usually only do this once per application.
-		 *
-		 * \param inputparams The inputparameters of the application
-		 * \param enableProfiling Whether we want to use profiling
 		 */
-		explicit System(const meta::Inputparameters&, const bool enable_profiling = false);
+		System(const hardware::HardwareParametersInterface &, const hardware::code::OpenClKernelParametersInterface &);
+		System(meta::Inputparameters&); //@todo: only for compatibility, remove!
 
 		~System();
 
-		/**
-		 * Get the devices of the system.
-		 */
 		const std::vector<Device*>& get_devices() const noexcept;
-
-		/**
-		 * Get the inputparameters of the system.
-		 */
-		const meta::Inputparameters& get_inputparameters() const noexcept;
+		const meta::Inputparameters& get_inputparameters() const noexcept; //@todo: remove
+		const hardware::HardwareParametersInterface * getHardwareParameters() const noexcept;
 
 		// non-copyable
 		System& operator=(const System&) = delete;
 		System(const System&) = delete;
 		System() = delete;
-
-		/**
-		 * Allow to use the context
-		 *
-		 * \deprecated This is not meant for wider application and only there to ease transition to the new architecture
-		 */
-		operator const cl_context&() const noexcept;
-
-		/**
-		 * Get the size of the device grid.
-		 */
-		size_4 get_grid_size();
+		cl_context getContext() const;
 
 		Transfer * get_transfer(size_t from, size_t to, unsigned id) const;
-
-		/**
-		 * Get the platform used.
-		 */
 		cl_platform_id get_platform() const;
 
 	private:
-
-		/**
-		 * The input paramters of the application
-		 */
-		const meta::Inputparameters& params;
-
-		/**
-		 * The devices of the system
-		 */
 		std::vector<Device*> devices;
-
-		/**
-		 * The OpenCL context used by the application
-		 */
 		cl_context context;
-
-		/**
-		 * The platform used by this system.
-		 */
 		cl_platform_id platform;
-
-		/**
-		 * The size of the device grid.
-		 */
-		size_4 grid_size;
+		LatticeGrid lG;
 
 		mutable std::map<std::tuple<size_t,size_t,unsigned>,std::unique_ptr<Transfer>> transfer_links;
 
 		void initOpenCLPlatforms();
 		void initOpenCLContext();
-		void initOpenCLDevices( const bool );
+		void initOpenCLDevices();
+		const hardware::HardwareParametersInterface * hardwareParameters;
+		const hardware::code::OpenClKernelParametersInterface * kernelParameters;
+		const hardware::OpenClCode * kernelBuilder;
+		//Remove when dependence on meta::InputParameters has been removed from physics package, for the moment it is needed in tests in physics!!!!
+		const meta::Inputparameters& inputparameters;
 	};
 
 	/**
 	 * Print the profiling information of kernels on this system on any device.
-	 *
-	 * \param system The system of which to print the profiling info
-	 * \param filename The file to write the profiling information to
 	 */
-	void print_profiling(const System& system, const std::string& filename);
-
-	/**
-	 * Print the profiling information of kernels on this system on any device.
-	 *
-	 * \param system The system of which to print the profiling info
-	 * \param filename The file to write the profiling information to
-	 */
-	void print_profiling(const System* system, const std::string& filename);
+	void print_profiling(const System& system, const std::string& filenameToWriteTo);
+	void print_profiling(const System* system, const std::string& filenameToWriteTo);
 }
 
 #endif /* _HARDWARE_SYSTEM_HPP_ */

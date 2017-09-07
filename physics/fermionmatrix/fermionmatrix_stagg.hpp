@@ -23,10 +23,11 @@
 #define _PHYSICS_FERMIONMATRIX_FERMIONMATRIX_STAGG_
 
 #include "../../hardware/code/fermions_staggered.hpp"
-
+#include "../../hardware/device.hpp"
 #include "../lattices/staggeredfield_eo.hpp"
 #include "../lattices/gaugefield.hpp"
-#include "../../hardware/device.hpp"
+#include "../additionalParameters.hpp"
+#include "fermionmatrixInterfaces.hpp"
 
 /**
  * This is the definition of the classes "Fermionmatrix_stagg"
@@ -46,38 +47,30 @@ void DKS_eo(const physics::lattices::Staggeredfield_eo * out, const physics::lat
  */
 class Fermionmatrix_stagg_basic {
 public:
-	/**
-	 * Get if the matrix is hermitian
-	 */
-	bool is_hermitian() const noexcept;
+	bool isHermitian() const noexcept;
+	bool hasMinimumEigenvalueThreshold() const noexcept;
+	virtual hmc_float getThresholdForMinimumEigenvalue(hmc_float mass) const;
 	/**
 	 * Get the net flops performed by this function.
 	 */
 	virtual cl_ulong get_flops() const = 0;
+	virtual ~Fermionmatrix_stagg_basic(){}
 
 protected:
-	Fermionmatrix_stagg_basic(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : _is_hermitian(herm), mass((_mass == ARG_DEF) ? system.get_inputparameters().get_mass() : _mass), system(system) { };
-
-	/**
-	 * Get the mass of the fermion.
-	 */
-	virtual hmc_float get_mass() const = 0;
+	Fermionmatrix_stagg_basic(const hardware::System& system, const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface,
+	                          bool herm, bool hasMinEigenThreshold)
+        : fermionmatrixStaggeredParametersInterface(fermionmatrixStaggeredParametersInterface), isMatrixHermitian(herm),
+          hasMatrixMinimumEigenvalueThreshold(hasMinEigenThreshold), system(system) {};
 	
 	/**
 	 * Get the system to operate on.
 	 */
 	const hardware::System& get_system() const noexcept;
+	const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface;
 
 private:
-	/**
-	 * Shows if matrix is hermitian.
-	 */
-	const bool _is_hermitian;
-
-	/**
-	 * Mass of the fermion.
-	 */
-	const hmc_float mass;
+	const bool isMatrixHermitian;
+	const bool hasMatrixMinimumEigenvalueThreshold;
 
 	/**
 	 * The system we are operating on.
@@ -94,23 +87,27 @@ public:
 	/**
 	 * Invoke the matrix function.
 	 */
-	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const = 0;
-	virtual hmc_float get_mass() const = 0;
+	virtual void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+	                         const physics::lattices::Staggeredfield_eo& in, const physics::AdditionalParameters* additionalParameters = NULL) const = 0;
+	virtual ~Fermionmatrix_stagg_eo(){}
 
 protected:
-	Fermionmatrix_stagg_eo(const hardware::System& system, bool herm, hmc_float _mass = ARG_DEF) : Fermionmatrix_stagg_basic(system, herm, _mass) { };
+	Fermionmatrix_stagg_eo(const hardware::System& system, const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface,
+	                       bool herm, bool hasMinEigenThreshold)
+        : Fermionmatrix_stagg_basic(system, fermionmatrixStaggeredParametersInterface, herm, hasMinEigenThreshold) {};
 };
 
 
 /**
  * Actual fermion matrices (using even-odd)
  */
-class D_KS_eo : public Fermionmatrix_stagg_eo {
+class D_KS_eo final : public Fermionmatrix_stagg_eo {
 public:
-	D_KS_eo(const hardware::System& system, bool evenodd) : Fermionmatrix_stagg_eo(system, false), evenodd(evenodd) { };
-	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
+	D_KS_eo(const hardware::System& system,  const FermionmatrixStaggeredParametersInterface& fermionmatrixStaggeredParametersInterface, bool evenodd)
+        : Fermionmatrix_stagg_eo(system, fermionmatrixStaggeredParametersInterface, false, false), evenodd(evenodd) {};
+	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+	                 const physics::lattices::Staggeredfield_eo& in, const physics::AdditionalParameters* additionalParameters = NULL) const override;
 	cl_ulong get_flops() const override;
-	hmc_float get_mass() const override;
 private:
 	//This variable is to switch between the Deo and Doe:
 	//   evenodd==EVEN  ---> Deo
@@ -119,12 +116,14 @@ private:
 };
 
 
-class MdagM_eo : public Fermionmatrix_stagg_eo {
+class MdagM_eo final : public Fermionmatrix_stagg_eo {
 public:
-	MdagM_eo(const hardware::System& system, hmc_float _mass, bool ul=EVEN) : Fermionmatrix_stagg_eo(system, true, _mass), tmp(system), upper_left(ul) { };
-	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Staggeredfield_eo& in) const override;
+	MdagM_eo(const hardware::System& system, const physics::FermionStaggeredEoParametersInterface& fermionStaggeredEoParametersInterface, bool ul=EVEN)
+        : Fermionmatrix_stagg_eo(system, fermionStaggeredEoParametersInterface, true, true), tmp(system, fermionStaggeredEoParametersInterface), upper_left(ul) {};
+	void operator() (const physics::lattices::Staggeredfield_eo * out, const physics::lattices::Gaugefield& gf,
+	                 const physics::lattices::Staggeredfield_eo& in, const physics::AdditionalParameters* additionalParameters = NULL) const override;
+	hmc_float getThresholdForMinimumEigenvalue(hmc_float mass) const override;
 	cl_ulong get_flops() const override;
-	hmc_float get_mass() const noexcept override;
 	bool get_upper_left() const;
 private:
 	physics::lattices::Staggeredfield_eo tmp;
@@ -134,33 +133,6 @@ private:
 	bool upper_left;
 };
 
-
-#if 0
-//This is the Wilson code that could be needed in some simulations for staggered.
-//In such a case, uncomment and adapt...
-
- class Fermionmatrix : public Fermionmatrix_basic {
-public:
-	/**
-	 * Invoke the matrix function.
-	 */
-	virtual void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const = 0;
-
-protected:
-	Fermionmatrix(bool herm, hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix_basic(system, herm, _kappa, _mubar) { };
-
-};
-
-/**
- * Actual fermion matrices (no even-odd)
- */
-class M : public Fermionmatrix {
-public:
-	M(hmc_float _kappa, hmc_float _mubar, const hardware::System& system) : Fermionmatrix(false, _kappa, _mubar, system) {  };
-	void operator() (const physics::lattices::Spinorfield * out, const physics::lattices::Gaugefield& gf, const physics::lattices::Spinorfield& in) const override;
-	cl_ulong get_flops() const override;
-};
-#endif
 
 
 }

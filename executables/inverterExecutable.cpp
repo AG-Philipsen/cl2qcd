@@ -23,6 +23,7 @@
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 #include "../physics/observables/wilsonTwoFlavourCorrelators.hpp"
 #include "../physics/observables/staggeredChiralCondensate.hpp"
+#include "../physics/observables/staggeredTwoFlavourCorrelators.hpp"
 
 inverterExecutable::inverterExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv, "inverter")
 {
@@ -51,21 +52,21 @@ void inverterExecutable::printParametersToScreenAndFile()
 
 void inverterExecutable::performApplicationSpecificMeasurements() {
     logger.info() << "Measure fermionic observables on configuration: " << currentConfigurationName;
-    physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit() );
-    if (parameters.get_fermact() == meta::action::rooted_stagg) {
+    physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit(), interfacesHandler->getGaugeObservablesParametersInterface());
+    if (parameters.get_fermact() == common::action::rooted_stagg) {
         if (parameters.get_measure_pbp()) {
             //NOTE: if parameters.get_read_multiple_configs()==1 maybe here the iteration number is not correct set as it is now
-            physics::observables::staggered::measureChiralCondensateAndWriteToFile(*gaugefield, gaugefield->get_trajectoryNumberAtInit());
+            physics::observables::staggered::measureChiralCondensateAndWriteToFile(*gaugefield, gaugefield->get_trajectoryNumberAtInit(), *interfacesHandler);
         }
         if (parameters.get_measure_correlators()) {
-            logger.warn() << "Correlators not yet implemented in the staggered case! Required measurement will not be done!";
+        	physics::observables::staggered::measurePseudoscalarCorrelatorOnGaugefieldAndWriteToFile(*gaugefield, currentConfigurationName, *interfacesHandler);
         }
     } else {
         if (parameters.get_measure_correlators()) {
-            physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefield(gaugefield, currentConfigurationName);
+            physics::observables::wilson::measureTwoFlavourDoubletCorrelatorsOnGaugefieldAndWriteToFile(gaugefield, currentConfigurationName, *interfacesHandler);
         }
         if (parameters.get_measure_pbp()) {
-            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName);
+            physics::observables::wilson::measureTwoFlavourChiralCondensateAndWriteToFile(gaugefield, currentConfigurationName, *interfacesHandler);
         }
     }
 }

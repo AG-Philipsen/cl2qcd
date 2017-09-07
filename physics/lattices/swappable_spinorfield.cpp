@@ -22,7 +22,7 @@
 
 #include "swappable_spinorfield.hpp"
 
-physics::lattices::SwappableSpinorfield::SwappableSpinorfield(const hardware::System& system, const bool place_on_host) : Spinorfield(system, place_on_host)
+physics::lattices::SwappableSpinorfield::SwappableSpinorfield(const hardware::System& system, const physics::lattices::SpinorfieldParametersInterface & spinorfieldParametersInterface, const bool place_on_host) : Spinorfield(system, spinorfieldParametersInterface, place_on_host)
 {
 	// nothing to do
 }
@@ -73,13 +73,13 @@ void physics::lattices::SwappableSpinorfield::swap_out()
 	clear_buffers();
 }
 
-std::vector<physics::lattices::Spinorfield *> physics::lattices::create_swappable_spinorfields(const hardware::System& system, const size_t n, const bool place_on_host)
+std::vector<physics::lattices::Spinorfield *> physics::lattices::create_swappable_spinorfields(const hardware::System& system, const size_t n, physics::InterfacesHandler & interfacesHandler, const bool place_on_host)
 {
 	std::vector<Spinorfield *> fields;
 	fields.reserve(n);
 
 	for(size_t i = 0; i < n; ++i) {
-		auto field = new SwappableSpinorfield(system, place_on_host);
+		auto field = new SwappableSpinorfield(system, interfacesHandler.getInterface<physics::lattices::Spinorfield>(), place_on_host);
 		field->swap_out();
 		fields.push_back(field);
 	}

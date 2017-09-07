@@ -152,7 +152,7 @@ public:
 	 * @todo Think how avoid this second parameter
 	 */
 	virtual size_t get_read_write_size_update(const std::string& in, const int numeq) const;
-	virtual uint64_t get_read_write_size(const std::string& in) const override;
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 protected:
 	/**
@@ -160,9 +160,13 @@ protected:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
+	/**
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
+	 */
+public:
+	Real(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device);
 private:
-	Real(const meta::Inputparameters& params, hardware::Device * device);
-
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

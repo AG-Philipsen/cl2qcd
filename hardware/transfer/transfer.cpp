@@ -59,15 +59,15 @@ std::unique_ptr<hardware::Transfer> hardware::create_transfer(hardware::Device *
 		logger.debug() << "Standard Transfer Performance: " << standard_performance << " GB/s - DirectGMA Performance: " << dgma_performance << " GB/s";
 
 		if(standard_performance > dgma_performance) {
-			logger.warn() << "DirectGMA performs badly from " << src->get_grid_pos() << " to " << dest->get_grid_pos() << ". Falling back to standard transfer methods.";
+			logger.warn() << "DirectGMA performs badly from " << src->getGridPos() << " to " << dest->getGridPos() << ". Falling back to standard transfer methods.";
 			return std::move(standard_transfer);
 		} else {
-			logger.debug() << "Using DirectGMA from " << src->get_grid_pos() << " to " << dest->get_grid_pos() << ".";
+			logger.debug() << "Using DirectGMA from " << src->getGridPos() << " to " << dest->getGridPos() << ".";
 			return std::move(dgma_transfer);
 		}
 
 	} catch(hardware::transfer::DGMAUnsupported) {
-		logger.warn() << "DirectGMA is unavailable from " << src->get_grid_pos() << " to " << dest->get_grid_pos() << ". Falling back to standard transfer methods.";
+		logger.warn() << "DirectGMA is unavailable from " << src->getGridPos() << " to " << dest->getGridPos() << ". Falling back to standard transfer methods.";
 		return std::move(standard_transfer);
 	}
 #endif

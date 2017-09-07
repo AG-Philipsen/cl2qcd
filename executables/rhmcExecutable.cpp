@@ -21,7 +21,7 @@
 #include "rhmcExecutable.h"
 
 static int getRationalApproximationNumerator(double numTastes, int numTastesDecimalDigits);
-static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits);
+static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits, int numPseudoFermions);
 
 rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecutable(argc, argv, "rhmc")
 {
@@ -44,9 +44,9 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
         if(approx_hb->Get_order() != parameters.get_metro_approx_ord() ||
            approx_md->Get_order() != parameters.get_md_approx_ord() ||
            approx_met->Get_order() != parameters.get_metro_approx_ord() ||
-           approx_hb->Get_exponent()*8 != parameters.get_num_tastes() ||
-           approx_md->Get_exponent()*4*(-1) != parameters.get_num_tastes() ||
-           approx_met->Get_exponent()*4*(-1) != parameters.get_num_tastes() ||
+           approx_hb->Get_exponent()*8*parameters.get_num_pseudofermions() != parameters.get_num_tastes() ||
+           approx_md->Get_exponent()*4*(-1)*parameters.get_num_pseudofermions() != parameters.get_num_tastes() ||
+           approx_met->Get_exponent()*4*(-1)*parameters.get_num_pseudofermions() != parameters.get_num_tastes() ||
            approx_hb->Get_lower_bound() != parameters.get_approx_lower() ||
            approx_md->Get_lower_bound() != parameters.get_approx_lower() ||
            approx_met->Get_lower_bound() != parameters.get_approx_lower() ||
@@ -60,17 +60,17 @@ rhmcExecutable::rhmcExecutable(int argc, const char* argv[]) :  generationExecut
         //This is the approx. to be used to generate the initial (pseudo)fermionic field
         approx_hb = new Rational_Approximation(parameters.get_metro_approx_ord(),
                     getRationalApproximationNumerator(parameters.get_num_tastes(), parameters.get_num_tastes_decimal_digits()),
-                    getRationalApproximationDenominator("HB",parameters.get_num_tastes_decimal_digits()),
+                    getRationalApproximationDenominator("HB",parameters.get_num_tastes_decimal_digits(), parameters.get_num_pseudofermions()),
                     parameters.get_approx_lower(), parameters.get_approx_upper(), false);
         //This is the approx. to be used to generate the initial (pseudo)fermionic field
         approx_md = new Rational_Approximation(parameters.get_md_approx_ord(),
                     getRationalApproximationNumerator(parameters.get_num_tastes(), parameters.get_num_tastes_decimal_digits()),
-                    getRationalApproximationDenominator("MD",parameters.get_num_tastes_decimal_digits()),
+                    getRationalApproximationDenominator("MD",parameters.get_num_tastes_decimal_digits(), parameters.get_num_pseudofermions()),
                     parameters.get_approx_lower(), parameters.get_approx_upper(), true);
         //This is the approx. to be used to generate the initial (pseudo)fermionic field
         approx_met = new Rational_Approximation(parameters.get_metro_approx_ord(),
                      getRationalApproximationNumerator(parameters.get_num_tastes(), parameters.get_num_tastes_decimal_digits()),
-                     getRationalApproximationDenominator("MET",parameters.get_num_tastes_decimal_digits()),
+                     getRationalApproximationDenominator("MET",parameters.get_num_tastes_decimal_digits(), parameters.get_num_pseudofermions()),
                      parameters.get_approx_lower(), parameters.get_approx_upper(), true);
         //Save the rational approximations to three different files for later reuse
         approx_hb->Save_rational_approximation(parameters.get_approx_heatbath_file());
@@ -118,7 +118,7 @@ void rhmcExecutable::thermalizeAccordingToSpecificAlgorithm()
 void rhmcExecutable::generateAccordingToSpecificAlgorithm()
 {
 	const double randomNumber = prng->get_double();
-	observables = physics::algorithms::perform_rhmc_step(*approx_hb, *approx_md, *approx_met, gaugefield, iteration, randomNumber, *prng, *system);
+	observables = physics::algorithms::perform_rhmc_step(*approx_hb, *approx_md, *approx_met, gaugefield, iteration, randomNumber, *prng, *system, *interfacesHandler);
 	acceptanceRate += observables.accept;
 }
 
@@ -128,7 +128,7 @@ void rhmcExecutable::performOnlineMeasurements()
 		std::string gaugeout_name = meta::get_rhmc_obs_file_name(parameters, "");
 		printRhmcObservables(gaugeout_name);
 		if (parameters.get_measure_pbp()) {
-			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration);
+			physics::observables::staggered:: measureChiralCondensateAndWriteToFile(*gaugefield, iteration, *interfacesHandler);
 		}
 	}
 }
@@ -176,8 +176,8 @@ void rhmcExecutable::printRhmcObservablesToScreen()
 
 void rhmcExecutable::checkRhmcParameters(const meta::Inputparameters& p)
 {
-    if(p.get_fermact() != meta::action::rooted_stagg)
-        throw Invalid_Parameters("Fermion action not suitable for RHMC!", meta::action::rooted_stagg, p.get_fermact());
+    if(p.get_fermact() != common::action::rooted_stagg)
+        throw Invalid_Parameters("Fermion action not suitable for RHMC!", common::action::rooted_stagg, p.get_fermact());
     if(!p.get_use_eo())
         throw Invalid_Parameters("RHMC available only WITH eo-prec!", "use_eo=1", p.get_use_eo());
     if(p.get_use_mp())
@@ -185,7 +185,7 @@ void rhmcExecutable::checkRhmcParameters(const meta::Inputparameters& p)
     if(p.get_use_chem_pot_re())
         throw Invalid_Parameters("RHMC available only WITHOUT real chemical potential!", "use_chem_pot_re=0", p.get_use_chem_pot_re());
     if(p.get_num_tastes_decimal_digits() > 6)
-        throw Invalid_Parameters("RHMC available only with 6-decimals num_tastes precision!", "num_tastes_decimal_digits<=6", p.get_num_tastes_decimal_digits());
+        throw Invalid_Parameters("RHMC available only with 6-decimals num_tastes precision!", "num_tastes_decimal_digits<=6", (int)p.get_num_tastes_decimal_digits());
     if((int)(p.get_num_tastes()*std::pow(10,p.get_num_tastes_decimal_digits()))%(4*(int)(std::pow(10,p.get_num_tastes_decimal_digits()))) == 0)
         throw Invalid_Parameters("RHMC not working with multiple of 4 tastes (there is no need of the rooting trick)!", "num_tastes%4 !=0", "num_tastes=" + std::to_string(p.get_num_tastes()));
     if(p.get_cg_iteration_block_size() == 0 || p.get_findminmax_iteration_block_size() == 0)
@@ -220,11 +220,11 @@ static int getRationalApproximationNumerator(double numTastes, int numTastesDeci
     return (int)(numTastes*std::pow(10, numTastesDecimalDigits));
 }
 
-static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits){
+static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits, int numPseudoFermions){
     if(whichRationalApproximation == "HB")
-        return 8*(int)(std::pow(10, numTastesDecimalDigits));
+        return 8*(int)(std::pow(10, numTastesDecimalDigits))*numPseudoFermions;
     else if((whichRationalApproximation == "MD") || (whichRationalApproximation == "MET"))
-        return 4*(int)(std::pow(10, numTastesDecimalDigits));
+        return 4*(int)(std::pow(10, numTastesDecimalDigits))*numPseudoFermions;
     else
         throw Print_Error_Message("Invalid call to \"getRationalApproximationDenominator\" function!");
 }

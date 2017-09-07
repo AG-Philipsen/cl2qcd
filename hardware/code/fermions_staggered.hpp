@@ -122,14 +122,14 @@ protected:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-private:
 	/**
-	 * Default constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
 	 */
-	Fermions_staggered(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Fermions_staggered(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.

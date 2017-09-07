@@ -24,6 +24,8 @@
 #define _PHYSICS_OBSERVABLES_CHIRAL_CONDENSATE_STAGG_
 
 #include "../lattices/gaugefield.hpp"
+#include "observablesInterfaces.hpp"
+#include "../interfacesHandler.hpp"
 
 namespace physics {
   namespace observables {
@@ -36,12 +38,13 @@ namespace physics {
        * @param[in] prng The actual random number generator
        * @param[in] system The system to operate on
        */
-      hmc_complex measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system);
+      hmc_complex measureChiralCondensate(const physics::lattices::Gaugefield& gf, const physics::PRNG& prng, const hardware::System& system,
+                                          physics::InterfacesHandler& interfacesHandler);
       
        /**
        * Calculate chiral condesate as above and write the result to file according to the Inputparameters options
        */
-      void measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration);
+      void measureChiralCondensateAndWriteToFile(const physics::lattices::Gaugefield& gf, int iteration, physics::InterfacesHandler& interfacesHandler);
       
     }
   }

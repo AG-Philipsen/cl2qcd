@@ -31,7 +31,7 @@
  *  @arg evenodd =  ODD means that the force will be calculated on  odd sites  @n
  * 
  * To make the code understandable, let us summarize the notation here. The force term here calculated
- * is not exactely the total fermion force (this explains the partial adjective), because of the rational
+ * is not exactly the total fermion force (this explains the partial adjective), because of the rational
  * approximation. This kernel will be then used to reconstruct the whole force term (see fermion_force.cpp
  * file documentation in physics/algorithms to further informations).
  * In the RHMC the time derivative of the momenta conjugated to links is

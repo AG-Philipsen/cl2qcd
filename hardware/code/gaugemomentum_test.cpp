@@ -23,220 +23,302 @@
 
 #include "GaugemomentumTester.hpp"
 
-BOOST_AUTO_TEST_SUITE(BUILD)
-
-BOOST_AUTO_TEST_CASE( BUILD_1 )
+ReferenceValues calculateReferenceValues_squarenorm(const LatticeExtents lE , const GaugeMomentumFilltype fillTypesIn)
 {
-  GaugemomentumTester tester("build", "opencl_module_gaugemomentum_build_input_1");
+	switch( fillTypesIn )
+	{
+		case GaugeMomentumFilltype::One :
+		{
+			return ReferenceValues{lE.getLatticeVolume() * NDIM * 8.};
+		}
+		case GaugeMomentumFilltype::Ascending:
+		{
+			return ReferenceValues{lE.getLatticeVolume() * NDIM * sumOfIntegersSquared(8)};
+		}
+		default:
+		{
+			return defaultReferenceValues();
+		}
+	}
 }
 
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( SQUARENORM )
-
-class SquarenormTester : public GaugemomentumTester
+ReferenceValues calculateReferenceValues_set_zero()
 {
-public:
-  SquarenormTester(std::string inputfile) :
-    GaugemomentumTester("gaugemomenta squarenorm", inputfile, 1)
+	return ReferenceValues{0.};
+}
+
+ReferenceValues calculateReferenceValues_saxpy(const LatticeExtents lE , double alphaIn)
+{
+	return ReferenceValues{(1. + alphaIn) * (1. + alphaIn) * lE.getLatticeVolume() * NDIM * sumOfIntegersSquared(8)};
+}
+
+ReferenceValues calculateReferenceValues_gaussian()
+{
+	return ReferenceValues{ 0., 1.};
+}
+
+struct SquarenormTester : public GaugemomentumTester
+{
+  SquarenormTester(const ParameterCollection pC, const GaugemomentumTestParameters tP) :
+  GaugemomentumTester("gaugemomenta squarenorm", pC, calculateReferenceValues_squarenorm(tP.latticeExtents, tP.fillType), tP)
   {
-    hardware::buffers::Gaugemomentum in(numberOfGaugemomentumElements, device);
-    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
+	GaugemomentumCreator gm(tP.latticeExtents);
+    gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
+    hardware::buffers::Gaugemomentum in(tP.latticeExtents, device);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(tP.fillType) ));
     calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
+  }
+private:
+    hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
+};
+
+struct SetZeroTester : public GaugemomentumTester
+{
+  SetZeroTester(const ParameterCollection pC, const GaugemomentumTestParameters tP) :
+  GaugemomentumTester("set zero", pC, calculateReferenceValues_set_zero(), tP)
+  {
+	GaugemomentumCreator gm(tP.latticeExtents);
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(GaugeMomentumFilltype::One) ));
+    code->set_zero_gaugemomentum(gaugemomentumBuffer);
+    calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
+  }
+private:
+  hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
+};
+
+struct SaxpyTester : public GaugemomentumTester
+{
+  SaxpyTester(const ParameterCollection pC, const GaugemomentumTestParameters tP) :
+  GaugemomentumTester("saxpy", pC, calculateReferenceValues_saxpy(tP.latticeExtents, tP.coefficient), tP)
+  {
+	GaugemomentumCreator gm(tP.latticeExtents);
+	gaugemomentumBuffer = new hardware::buffers::Gaugemomentum(tP.latticeExtents, this->device);
+    hardware::buffers::Gaugemomentum out(tP.latticeExtents, device);
+    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(tP.fillType) ));
+    code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>( gm.createGaugemomentumBasedOnFilltype(tP.fillType) ));
+    doubleBuffer->load(&tP.coefficient);
+
+    code->saxpy_device(gaugemomentumBuffer, &out, doubleBuffer, &out);
+    calcSquarenormAndStoreAsKernelResult(&out);
+  }
+private:
+  hardware::buffers::Gaugemomentum * gaugemomentumBuffer;
+};
+
+struct PrngGaugemomentumTestParameters: public GaugemomentumTestParameters
+{
+	PrngGaugemomentumTestParameters(const LatticeExtents lE, const int iterationsIn) :
+		GaugemomentumTestParameters(lE, 10e-4), iterations(iterationsIn) {};
+	const unsigned int iterations;
+};
+
+struct PrngGaugemomentumTester : public GaugemomentumTester
+{
+	PrngGaugemomentumTester(const std::string kernelName, const ParameterCollection pC, const PrngGaugemomentumTestParameters &tP, const int numberOfElements):
+		GaugemomentumTester(kernelName, pC, calculateReferenceValues_gaussian(), tP),
+		numberOfElements(numberOfElements),
+		mean(0.), variance(0.),
+		hostOutput(std::vector<ae> (numberOfElements * tP.iterations)),
+		testParameters(tP),
+		hostSeed(pC.kernelParameters.getHostSeed()),
+		useSameRandomNumbers(pC.hardwareParameters.useSameRandomNumbers())
+
+		{
+		prng_init(hostSeed);
+		prngStates = new hardware::buffers::PRNGBuffer(device, useSameRandomNumbers );
+		auto codePrng = device->getPrngCode();
+		codePrng->initialize(prngStates, hostSeed);
+		}
+
+		~PrngGaugemomentumTester()
+		{
+			calculateMean();
+			calculateVariance();
+
+			kernelResult.at(0) = mean;
+			kernelResult.at(1) = sqrt(variance);
+
+			delete prngStates;
+		}
+
+		double normalize (double valueIn)
+		{
+			return valueIn /= testParameters.iterations * numberOfElements * 8.;
+		}
+
+		void calculateMean()
+		{
+			for (unsigned int i = 0; i < testParameters.iterations; i++) {
+				mean += count_gm(&hostOutput[i * numberOfElements], numberOfElements);
+			}
+			mean = normalize(mean);
+		}
+
+		void calculateVariance()
+		{
+			for (unsigned int i = 0; i < testParameters.iterations; i++) {
+				variance += calc_var_gm(&hostOutput[i * numberOfElements], numberOfElements, mean);
+			}
+			variance = normalize(variance);
+		}
+protected:
+	const int numberOfElements;
+	double mean, variance;
+	std::vector<ae> hostOutput;
+	const PrngGaugemomentumTestParameters & testParameters;
+	const hardware::buffers::PRNGBuffer* prngStates;
+private:
+	uint32_t hostSeed;
+	bool useSameRandomNumbers;
+};
+
+struct GaussianTester : public PrngGaugemomentumTester
+{
+  GaussianTester(const ParameterCollection pC, const PrngGaugemomentumTestParameters tP) :
+  PrngGaugemomentumTester("gaussian gaugemomentum", pC, tP, calculateGaugemomentumSize(tP.latticeExtents)){}
+  ~GaussianTester()
+  {
+	const hardware::buffers::Gaugemomentum gm_out(numberOfElements, device);
+	for (unsigned int i = 0; i< testParameters.iterations; i++){
+	  code->generate_gaussian_gaugemomenta_device(&gm_out, prngStates);
+	  gm_out.dump(&hostOutput[i*numberOfElements]);
+	}
   }
 };
 
-BOOST_AUTO_TEST_CASE(SQUARENORM_1  )
+template<class TesterClass>
+void callTest(const LatticeExtents lE)
 {
-	SquarenormTester tester("squarenorm_input_1");
+	GaugemomentumTestParameters parametersForThisTest(lE);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-BOOST_AUTO_TEST_CASE(SQUARENORM_2  )
+template<class TesterClass>
+void performTest(const LatticeExtents lE, const int iterations)
 {
-	SquarenormTester tester("squarenorm_input_2");
+	PrngGaugemomentumTestParameters parametersForThisTest(lE, iterations);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_1  )
+template<class TesterClass>
+void callTest(const LatticeExtents lE, const GaugeMomentumFilltype gmF)
 {
-	SquarenormTester tester("squarenorm_reduction_input_1");
+	GaugemomentumTestParameters parametersForThisTest(lE, gmF);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_2  )
+template<class TesterClass>
+void callTest(const LatticeExtents lE, const GaugeMomentumFilltype gmF, const double alphaIn)
 {
-	SquarenormTester tester("squarenorm_reduction_input_2");
+	GaugemomentumTestParameters parametersForThisTest(lE, gmF, alphaIn);
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.latticeExtents);
+	hardware::code::OpenClKernelParametersMockupForSpinorTests kernelParameters(parametersForThisTest.latticeExtents);
+	ParameterCollection parameterCollection{hardwareParameters, kernelParameters};
+	TesterClass(parameterCollection, parametersForThisTest);
 }
 
-BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_3  )
+void testSquarenorm(const LatticeExtents lE, const GaugeMomentumFilltype gmF)
 {
-	SquarenormTester tester("squarenorm_reduction_input_3");
+	callTest<SquarenormTester>(lE, gmF);
 }
+
+void testSetZero(const LatticeExtents lE)
+{
+	callTest<SetZeroTester>(lE);
+}
+
+void testSaxpy(const LatticeExtents lE, const GaugeMomentumFilltype gmF, const double alpha)
+{
+	callTest<SaxpyTester>(lE, gmF, alpha);
+}
+
+void testGaussianGaugemomentum(const LatticeExtents lE, const int iterations)
+{
+	performTest<GaussianTester>(lE, iterations);
+}
+
+BOOST_AUTO_TEST_SUITE( SQUARENORM )
+
+	BOOST_AUTO_TEST_CASE(SQUARENORM_1  )
+	{
+		testSquarenorm(LatticeExtents{ns4, nt4}, GaugeMomentumFilltype::One);
+	}
+
+	BOOST_AUTO_TEST_CASE(SQUARENORM_2  )
+	{
+		testSquarenorm(LatticeExtents{ns4, nt4}, GaugeMomentumFilltype::Ascending);
+	}
+	BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_1  )
+	{
+		testSquarenorm(LatticeExtents{ns16, nt8}, GaugeMomentumFilltype::One);
+	}
+
+	BOOST_AUTO_TEST_CASE(SQUARENORM_REDUCTION_2  )
+	{
+		testSquarenorm(LatticeExtents{ns8, nt4}, GaugeMomentumFilltype::Ascending);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( SET_ZERO )
 
-class SetZeroTester : public GaugemomentumTester
-{
-public:
-  SetZeroTester(std::string inputfile) :
-    GaugemomentumTester("set zero", inputfile, 1)
-  {
-    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum() ));
-    code->set_zero_gaugemomentum(gaugemomentumBuffer);
-    calcSquarenormAndStoreAsKernelResult(gaugemomentumBuffer);
-  }
-};
-
-BOOST_AUTO_TEST_CASE( SET_ZERO_1 )
-{
-  SetZeroTester tester("set_zero_input_1");
-}
+	BOOST_AUTO_TEST_CASE( SET_ZERO_1 )
+	{
+		testSetZero(LatticeExtents{ns4, nt4});
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( SAXPY )
 
-class SaxpyTester : public GaugemomentumTester
-{
-public:
-  SaxpyTester(std::string inputfile) :
-    GaugemomentumTester("saxpy", inputfile, 1)
-  {
-    hardware::buffers::Gaugemomentum out(numberOfGaugemomentumElements, device);
-    code->importGaugemomentumBuffer(gaugemomentumBuffer, reinterpret_cast<ae*>( createGaugemomentum(123456) ));
-    code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>( createGaugemomentum(789101) ));
-    double alpha = parameters->get_tau();
-    doubleBuffer->load(&alpha);
+	BOOST_AUTO_TEST_CASE( SAXPY_1 )
+	{
+		testSaxpy(LatticeExtents{ns4, nt8}, GaugeMomentumFilltype::Ascending, nonTrivialParameter);
+	}
 
-    code->saxpy_device(gaugemomentumBuffer, &out, doubleBuffer, &out);
-    calcSquarenormAndStoreAsKernelResult(&out);
-  }
-};
-
-BOOST_AUTO_TEST_CASE( SAXPY_1 )
-{
-	SaxpyTester tester("saxpy_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( SAXPY_2 )
-{
-	SaxpyTester tester("saxpy_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( SAXPY_3 )
-{
-	SaxpyTester tester("saxpy_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( SAXPY_4 )
-{
-	SaxpyTester tester("saxpy_input_4");
-}
-
-BOOST_AUTO_TEST_CASE( SAXPY_5 )
-{
-	SaxpyTester tester("saxpy_input_5");
-}
+	BOOST_AUTO_TEST_CASE( SAXPY_2 )
+	{
+		testSaxpy(LatticeExtents{ns8, nt4}, GaugeMomentumFilltype::Ascending, -nonTrivialParameter);
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
 
-class GaussianTester : public GaugemomentumTester
-{
-public:
-  GaussianTester(std::string inputfile) :
-    GaugemomentumTester("gaussian gaugemomentum", inputfile, 1, 2)
-  {
-	physics::PRNG prng(*system);
-	auto prng_buf = prng.get_buffers().at(0);
-	double result = 0.;
-	double sum = 0.;
-	int iterations = parameters->get_integrationsteps(0);
-	ae * gm_out;
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(GENERATE_GAUSSIAN_GAUGEMOMENTA_1, 2)
 
-	gm_out = new ae[numberOfGaugemomentumElements * iterations];
-	BOOST_REQUIRE(gm_out);
-
-	for (int i = 0; i< iterations; i++){
-	  code->generate_gaussian_gaugemomenta_device(gaugemomentumBuffer, prng_buf);
-	  gaugemomentumBuffer->dump(&gm_out[i*numberOfGaugemomentumElements]);
-	  sum += count_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements);
+	BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 )
+	{
+	  testGaussianGaugemomentum(LatticeExtents{ns8, nt4}, 1000);
 	}
-	sum = sum/iterations/numberOfGaugemomentumElements/8;	
-	result= sum;
-
-	if(parameters->get_read_multiple_configs()  == false){
-	  double var=0.;
-	  for (int i=0; i<iterations; i++){
-	    var += calc_var_gm(&gm_out[i*numberOfGaugemomentumElements], numberOfGaugemomentumElements, sum);
-	  }
-	  var=var/iterations/numberOfGaugemomentumElements/8;
-	  
-	  result = sqrt(var);
-	}
-
-	kernelResult[0] = result;
-  }
-};
-
-BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 )
-{
-  GaussianTester tester("gaussian_input_1");
-}
-
-BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_2 )
-{
-  GaussianTester tester("gaussian_input_2");
-}
-
-BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_3 )
-{
-  GaussianTester tester("gaussian_input_3");
-}
-
-BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_4 )
-{
-  GaussianTester tester("gaussian_input_4");
-}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( CONVERT_TO_SOA )
 
-class ConvertToSoaTester : public GaugemomentumTester
-{
-public:
-  ConvertToSoaTester(std::string inputfile) :
-    GaugemomentumTester("convert to soa", inputfile, 1)
-  {
-    BOOST_TEST_MESSAGE("NOT YET IMPLEMENTED!!");
-  }
-};
-
-BOOST_AUTO_TEST_CASE( CONVERT_TO_SOA_1 )
-{
-  ConvertToSoaTester tester("");
-}
+	BOOST_AUTO_TEST_CASE( CONVERT_TO_SOA_1 )
+	{
+		BOOST_TEST_MESSAGE("NOT YET IMPLEMENTED!!");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( CONVERT_FROM_SOA )
 
-class ConvertFromSoaTester : public GaugemomentumTester
-{
-public:
-  ConvertFromSoaTester(std::string inputfile) :
-    GaugemomentumTester("convert from soa", inputfile, 1)
-  {
-    BOOST_TEST_MESSAGE("NOT YET IMPLEMENTED!!");
-  }
-};
-
-BOOST_AUTO_TEST_CASE( CONVERT_FROM_SOA_1 )
-{
-  ConvertFromSoaTester tester("");
-}
+	BOOST_AUTO_TEST_CASE( CONVERT_FROM_SOA_1 )
+	{
+		BOOST_TEST_MESSAGE("NOT YET IMPLEMENTED!!");
+	}
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -30,9 +30,15 @@
 typedef hmc_complex soa_storage_t;
 const size_t soa_storage_lanes = 3;
 
-static size_t calculate_su3vec_buffer_size(size_t elems, hardware::Device * device);
+static size_t calculate_su3vec_buffer_size(const size_t elems, const hardware::Device * device);
 
-hardware::buffers::SU3vec::SU3vec(size_t elems, hardware::Device * device)
+size_t hardware::buffers::calculateEvenOddSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept
+{
+	return latticeExtendsIn.getLatticeVolume() / 2;
+}
+
+
+hardware::buffers::SU3vec::SU3vec(const size_t elems, const hardware::Device * device)
 	: Buffer(calculate_su3vec_buffer_size(elems, device), device),
 	  elems(elems),
 	  soa(check_su3vec_for_SOA(device))
@@ -40,12 +46,22 @@ hardware::buffers::SU3vec::SU3vec(size_t elems, hardware::Device * device)
 	// nothing to do
 }
 
-size_t hardware::buffers::check_su3vec_for_SOA(hardware::Device * device)
+
+hardware::buffers::SU3vec::SU3vec(const LatticeExtents lE, const hardware::Device * device, const int fact)
+	: Buffer(calculate_su3vec_buffer_size(calculateEvenOddSpinorfieldSize(lE)*fact, device), device),
+	  elems(calculateEvenOddSpinorfieldSize(lE)*fact),
+	  soa(check_su3vec_for_SOA(device))
+{
+	// nothing to do
+}
+
+
+size_t hardware::buffers::check_su3vec_for_SOA(const hardware::Device * device)
 {
 	return device->get_prefers_soa();
 }
 
-static size_t calculate_su3vec_buffer_size(size_t elems, hardware::Device * device)
+static size_t calculate_su3vec_buffer_size(const size_t elems, const hardware::Device * device)
 {
 	using namespace hardware::buffers;
 	if(check_su3vec_for_SOA(device)) {
@@ -56,9 +72,9 @@ static size_t calculate_su3vec_buffer_size(size_t elems, hardware::Device * devi
 	}
 }
 
-size_t hardware::buffers::get_su3vec_buffer_stride(size_t elems, Device * device)
+size_t hardware::buffers::get_su3vec_buffer_stride(const size_t elems, const Device * device)
 {
-	return device->recommend_stride(elems, sizeof(soa_storage_t), soa_storage_lanes);
+	return device->recommendStride(elems, sizeof(soa_storage_t), soa_storage_lanes);
 }
 
 size_t hardware::buffers::SU3vec::get_elements() const noexcept
@@ -71,25 +87,25 @@ bool hardware::buffers::SU3vec::is_soa() const noexcept
 	return soa;
 }
 
-void hardware::buffers::SU3vec::load(const su3vec * ptr, size_t elems, size_t offset) const
+void hardware::buffers::SU3vec::load(const su3vec * ptr, const size_t elems, const size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
 		Plain<su3vec> plain(get_elements(), device);
 		plain.load(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
-		device->get_spinor_staggered_code()->convert_staggered_field_to_SoA_eo_device(this, &plain);
+		device->getSpinorStaggeredCode()->convert_staggered_field_to_SoA_eo_device(this, &plain);
 		device->synchronize();
 	} else {
 		Buffer::load(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
 	}
 }
 
-void hardware::buffers::SU3vec::dump(su3vec * ptr, size_t elems, size_t offset) const
+void hardware::buffers::SU3vec::dump(su3vec * ptr, const size_t elems, const size_t offset) const
 {
 	if(is_soa()) {
 		auto device = get_device();
 		Plain<su3vec> plain(get_elements(), device);
-		device->get_spinor_staggered_code()->convert_staggered_field_from_SoA_eo_device(&plain, this);
+		device->getSpinorStaggeredCode()->convert_staggered_field_from_SoA_eo_device(&plain, this);
 		plain.dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));
 	} else {
 		Buffer::dump(ptr, elems * sizeof(su3vec), offset * sizeof(su3vec));

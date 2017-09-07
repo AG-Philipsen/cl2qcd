@@ -26,8 +26,6 @@
 namespace meta {
 class ParametersConfig {
 public:
-	enum startcondition { cold_start = 1, hot_start, start_from_source };
-
 	size_t get_precision() const noexcept;
 
 	const std::vector<int> get_selected_devices() const noexcept;
@@ -39,7 +37,7 @@ public:
 	int get_ntime() const noexcept;
 
 	//should this go into IO?
-	startcondition get_startcondition() const noexcept;
+	common::startcondition get_startcondition() const noexcept;
 	std::string get_sourcefile() const noexcept;
 	bool get_ignore_checksum_errors() const noexcept;
 	bool get_print_to_screen() const noexcept;
@@ -102,7 +100,7 @@ protected:
 	ParametersConfig & operator=(ParametersConfig const&) = delete;
 	po::options_description & getOptions();
 
-	startcondition _startcondition;
+	common::startcondition _startcondition;
 };
 
 }

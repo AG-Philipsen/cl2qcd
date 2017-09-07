@@ -34,12 +34,12 @@ hardware::transfer::AsyncOclCopy::AsyncOclCopy(hardware::Device * const from, ha
 	: Transfer(from, to), src_cache(), dest_cache(), load_event(), transfer_event(), dump_event(), back_migration_event(), active_size(0)
 {
 	cl_int err;
-	transfer_queue = clCreateCommandQueue(system, to->get_id(), 0, &err);
+	transfer_queue = clCreateCommandQueue(system.getContext(), to->get_id(), 0, &err);
 	if(err) {
 		logger.error() << "Failed to create command queue for asynchroneous transfers. OpenCL Error: " << err;
 		throw Opencl_Error(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
 	}
-	back_migration_queue = clCreateCommandQueue(system, from->get_id(), 0, &err);
+	back_migration_queue = clCreateCommandQueue(system.getContext(), from->get_id(), 0, &err);
 	if(err) {
 		logger.error() << "Failed to create command queue for asynchroneous transfers. OpenCL Error: " << err;
 		throw Opencl_Error(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);

@@ -25,7 +25,6 @@
 
 #include <stdexcept>
 #include "../../hardware/buffers/buffer.hpp"
-#include "../../meta/type_ops.hpp"
 
 namespace physics {
 

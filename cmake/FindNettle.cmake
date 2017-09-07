@@ -44,4 +44,11 @@ ENDIF (APPLE)
 
 FIND_PATH(Nettle_INCLUDE_DIR nettle/nettle-meta.h DOC "Include for Nettle")
 
+# Also search relative to lib ( git build )
+IF ( NOT Nettle_INCLUDE_DIR )
+        GET_FILENAME_COMPONENT(_Nettle_LIB_DIR ${Nettle_LIBRARIES} PATH)
+        GET_FILENAME_COMPONENT(_Nettle_INC_CAND ${_Nettle_LIB_DIR}/../include ABSOLUTE)
+        FIND_PATH(Nettle_INCLUDE_DIR nettle/nettle-meta.h PATHS ${_Nettle_INC_CAND} )
+ENDIF ( NOT Nettle_INCLUDE_DIR )
+
 FIND_PACKAGE_HANDLE_STANDARD_ARGS( Nettle DEFAULT_MSG Nettle_LIBRARIES Nettle_INCLUDE_DIR )

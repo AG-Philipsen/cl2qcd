@@ -24,6 +24,7 @@
 #include "../device.hpp"
 #include "../../common_header_files/types.h"
 #include "../../meta/type_ops.hpp"
+#include "../interfaceMockups.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -72,11 +73,12 @@ template<typename T> void test(bool requireDouble = false)
 {
 	using namespace hardware;
 
-	const char * _params[] = {"foo"};
-	meta::Inputparameters params(1, _params);
-	System system(params);
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	const std::vector<Device*>& devices = system.get_devices();
-for(Device * device : devices) {
+	for(Device * device : devices)
+	{
 		if(!requireDouble || device->is_double_supported()) {
 			test<T>(1, device);
 			test<T>(1024, device);

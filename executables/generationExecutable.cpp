@@ -24,7 +24,7 @@
 generationExecutable::generationExecutable(int argc, const char* argv[], std::string parameterSet) : generalExecutable(argc, argv, parameterSet)
 {
 	initializationTimer.reset();
-	gaugefield = new physics::lattices::Gaugefield(*system, *prng);
+	gaugefield = new physics::lattices::Gaugefield(*system, &(interfacesHandler->getInterface<physics::lattices::Gaugefield>()), *prng);
 	initializationTimer.add();
 }
 
@@ -70,7 +70,7 @@ void generationExecutable::generateConfigurations()
 void generationExecutable::thermalize()
 {
 	logger.info() << "Start thermalization (" << parameters.get_thermalizationsteps() << " tr.)...";
-	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
+	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration, interfacesHandler->getGaugeObservablesParametersInterface());
 	//With this try and catch the warning is printed only if the user wants to make thermalization steps, not always, but this makes sense
 	try
 	{
@@ -79,7 +79,7 @@ void generationExecutable::thermalize()
 		    thermalizeAccordingToSpecificAlgorithm();
 	      }
 	}
-	catch(Print_Error_Message exception){
+	catch(Print_Error_Message& exception){
    	      logger.warn() << "The thermalization is not yet implemented!  It is just skipped.";
 	}
 	logger.info() << "...thermalization done";
@@ -101,7 +101,7 @@ void generationExecutable::generate()
 void generationExecutable::performOnlineMeasurements()
 {
 	if( ( (iteration + 1) % writeFrequency ) == 0 ) {
-          physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration);
+          physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration, interfacesHandler->getGaugeObservablesParametersInterface());
 	}
 }
 

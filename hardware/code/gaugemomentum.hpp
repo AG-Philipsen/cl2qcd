@@ -121,14 +121,14 @@ protected:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 	
-private:
 	/**
-	 * Constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
 	 */
-	Gaugemomentum(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Gaugemomentum(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

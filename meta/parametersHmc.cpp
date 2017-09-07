@@ -54,7 +54,7 @@ int ParametersHmc::get_num_timescales() const noexcept
 {
 	return num_timescales;
 }
-ParametersHmc::integrator ParametersHmc::get_integrator(size_t timescale) const noexcept
+common::integrator ParametersHmc::get_integrator(size_t timescale) const noexcept
 {
 	switch(timescale) {
 		case 0:

@@ -21,8 +21,8 @@
 #include "heatbath.hpp"
 
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "flopUtilities.hpp"
 #include "gaugefield.hpp"
 #include "prng.hpp"
 #include "spinors.hpp"
@@ -31,7 +31,7 @@ using namespace std;
 
 void hardware::code::Heatbath::fill_kernels()
 {
-	ClSourcePackage sources = get_basic_sources() << get_device()->get_prng_code()->get_sources() << "operations_geometry.cl" << "operations_complex.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+	ClSourcePackage sources = get_basic_sources() << get_device()->getPrngCode()->get_sources() << "operations_geometry.cl" << "operations_complex.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	logger.debug() << "Creating Heatbath kernels...";
 	
@@ -140,9 +140,9 @@ void hardware::code::Heatbath::get_work_sizes(const cl_kernel kernel, size_t * l
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_odd") == 0) {
 		if( get_device()->get_device_type() == CL_DEVICE_TYPE_GPU ) {
-			*gs = std::min(meta::get_volspace(get_parameters()) * get_parameters().get_ntime() / 2, hardware::buffers::get_prng_buffer_size(get_device(), get_parameters()));
+			*gs = std::min(kernelParameters->getSpatialLatticeVolume() * kernelParameters->getNt() / 2, hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers() ));
 		} else {
-			*gs = std::min(get_device()->get_num_compute_units(), hardware::buffers::get_prng_buffer_size(get_device(), get_parameters()));
+			*gs = std::min(get_device()->get_num_compute_units(), hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers() ));
 		}
 		*ls = get_device()->get_preferred_local_thread_num();
 		*num_groups = *gs / *ls;
@@ -153,11 +153,11 @@ void hardware::code::Heatbath::get_work_sizes(const cl_kernel kernel, size_t * l
 size_t hardware::code::Heatbath::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(get_parameters());
-	size_t R = meta::get_mat_size(get_parameters());
+	size_t D = kernelParameters->getFloatSize();
+	size_t R = kernelParameters->getMatSize();
 	//factor for complex numbers
 	int C = 2;
-	const size_t VOL4D = meta::get_vol4d(get_parameters());
+	const size_t VOL4D = kernelParameters->getLatticeVolume();
 	//this is the same as in the function above
 	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") || (in == "overrelax_even") || (in == "overrelax_odd")) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
@@ -168,16 +168,16 @@ size_t hardware::code::Heatbath::get_read_write_size(const std::string& in) cons
 
 uint64_t hardware::code::Heatbath::get_flop_size(const std::string& in) const
 {
-	const size_t VOL4D = meta::get_vol4d(get_parameters());
+	const size_t VOL4D = kernelParameters->getLatticeVolume();
 	//this is the same as in the function above
 	///@NOTE: I do not distinguish between su3 and 3x3 matrices. This is a difference if one use e.g. REC12, but here one wants to have the "netto" flops for comparability.
 	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") ) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 80 flops for the su2 update)
-		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 80));
+		return VOL4D / 2 * (4 * (NDIM - 1) * getFlopSu3MatrixTimesSu3Matrix() + 2 * (NDIM - 1) * 18 + NC * (2 * getFlopSu3MatrixTimesSu3Matrix() + 80));
 	}
 	if ( (in == "overrelax_even") || (in == "overrelax_odd")) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 58 flops for the su2 update)
-		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 58));
+		return VOL4D / 2 * (4 * (NDIM - 1) * getFlopSu3MatrixTimesSu3Matrix() + 2 * (NDIM - 1) * 18 + NC * (2 * getFlopSu3MatrixTimesSu3Matrix() + 58));
 	}
 	return 0;
 }
@@ -191,8 +191,8 @@ void hardware::code::Heatbath::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, overrelax_odd);
 }
 
-hardware::code::Heatbath::Heatbath(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device)
+hardware::code::Heatbath::Heatbath(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device)
+	: Opencl_Module(kernelParameters, device)
 {
 	fill_kernels();
 }

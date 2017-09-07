@@ -29,7 +29,7 @@ public:
 	double get_beta() const noexcept;
 	double get_rho() const noexcept;
 	int get_rho_iter() const noexcept;
-	action get_gaugeact() const noexcept;
+	common::action get_gaugeact() const noexcept;
 	bool get_use_smearing() const noexcept;
 
 private:
@@ -46,7 +46,7 @@ protected:
 	ParametersGauge & operator=(ParametersGauge const&) = delete;
 	po::options_description & getOptions();
 
-	action gaugeact;
+	common::action gaugeact;
 };
 
 }

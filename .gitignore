@@ -7,6 +7,11 @@
 *.pyc
 *.orig
 
+.cproject
+.metadata/
+.project
+.settings/
+
 \#*\#
 .\#*
 
@@ -20,5 +25,12 @@ time_measurement_1
 
 build
 debug
+doc/architecture
 
 README.html
+
+*.cproject
+*.project
+*.settings/
+
+/Debug/

@@ -25,6 +25,7 @@
 #include "buffer.hpp"
 #include "../../common_header_files/types.h"
 #include "../../common_header_files/types_fermions.h"
+#include "../../geometry/latticeExtents.hpp"
 
 namespace hardware {
 namespace buffers {
@@ -32,12 +33,12 @@ namespace buffers {
 /**
  * Check whether Spinor should be stored SOA style on this device
  */
-size_t check_Spinor_for_SOA(hardware::Device * device);
+size_t check_Spinor_for_SOA(const hardware::Device * device);
 
 /**
  * Get the stride for an Spinor buffer of the given number of elements on the given device
  */
-size_t get_Spinor_buffer_stride(size_t elems, Device * device);
+size_t get_Spinor_buffer_stride(const size_t elems, const Device * device);
 
 /*
  * A buffer storing Spinors on the device
@@ -52,7 +53,8 @@ public:
 	 * \param elems The size of the buffer in elements
 	 * \param device The device to locate the buffer on
 	 */
-	Spinor(size_t elems, Device * device);
+	Spinor(const size_t elems, const Device * device);
+	Spinor(const LatticeExtents lE, const Device * device);
 
 	/*
 	 * Spinor buffers cannot be copied
@@ -69,7 +71,7 @@ public:
 	 * \param elems Allows to limit the number of elements loaded from the given pointer
 	 * \param offset Allows to store the elements at the given offset into the buffer
 	 */
-	void load(const spinor *, size_t elems = 0, size_t offset = 0) const;
+	void load(const spinor *, const size_t elems = 0, const size_t offset = 0) const;
 
 	/**
 	 * Store data from the buffer into the given pointer.
@@ -79,7 +81,7 @@ public:
 	 * \param elems Allows to limit the number of elements dumped to the given pointer
 	 * \param offset Allows to read the elements at the given offset into the buffer
 	 */
-	void dump(spinor *, size_t elems = 0, size_t offset = 0) const;
+	void dump(spinor *, const size_t elems = 0, const size_t offset = 0) const;
 
 	/**
 	 * Load raw data from the given pointer into the buffer.
@@ -89,7 +91,7 @@ public:
 	 * \param elems Allows to limit the number of bytes loaded from the given memory
 	 * \param offset Allows to store the bytes at the given offset into the buffer
 	 */
-	void load_raw(const void *, size_t bytes = 0, size_t offset = 0) const;
+	void load_raw(const void *, const size_t bytes = 0, const size_t offset = 0) const;
 
 	/**
 	 * Store the raw data from the buffer into the given pointer.
@@ -99,7 +101,7 @@ public:
 	 * \param elems Allows to limit the number of bytes dumped to the given memory
 	 * \param offset Allows to read the bytes at the given offset into the buffer
 	 */
-	void dump_raw(void *, size_t bytes = 0, size_t offset = 0) const;
+	void dump_raw(void *, const size_t bytes = 0, const size_t offset = 0) const;
 
 	void loadRect_raw(const void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;
 	void dumpRect_raw(void* dest, const size_t *buffer_origin, const size_t *host_origin, const size_t *region, size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch, size_t host_slice_pitch) const;

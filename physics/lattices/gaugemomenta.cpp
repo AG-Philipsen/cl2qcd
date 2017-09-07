@@ -26,61 +26,40 @@
 #include "../../hardware/device.hpp"
 #include "../../hardware/code/gaugemomentum.hpp"
 #include "../../hardware/buffers/halo_update.hpp"
-#include "../../host_functionality/host_geometry.h"
+#include "../../geometry/index.hpp"
+#include "../../geometry/parallelization.hpp"
+
 #include <cstring>
 
-static std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system);
-static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const meta::Inputparameters& params);
-static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system);
-
-physics::lattices::Gaugemomenta::Gaugemomenta(const hardware::System& system)
-	: system(system), buffers(allocate_buffers(system))
-{
-}
-
-static  std::vector<const hardware::buffers::Gaugemomentum *> allocate_buffers(const hardware::System& system)
-{
-	using hardware::buffers::Gaugemomentum;
-
-	// only use device 0 for now
-	auto devices = system.get_devices();
-	std::vector<const Gaugemomentum*> buffers;
-	buffers.reserve(devices.size());
-	for(auto device: devices) {
-		buffers.push_back(new Gaugemomentum(NDIM * get_vol4d(device->get_mem_lattice_size()), device));
-	}
-	return buffers;
-}
+physics::lattices::Gaugemomenta::Gaugemomenta(const hardware::System& system, const GaugemomentaParametersInterface& parametersInterface)
+	: system(system), gaugemomentaParametersInterface(parametersInterface), gaugemomenta(system)
+{}
 
 physics::lattices::Gaugemomenta::~Gaugemomenta()
-{
-for(auto buffer: buffers) {
-		delete buffer;
-	}
-}
+{}
 
 const std::vector<const hardware::buffers::Gaugemomentum *> physics::lattices::Gaugemomenta::get_buffers() const noexcept
 {
-	return buffers;
+	return gaugemomenta.get_buffers();
 }
 
 void physics::lattices::Gaugemomenta::zero() const
 {
-for(auto buffer: buffers) {
-		buffer->get_device()->get_gaugemomentum_code()->set_zero_gaugemomentum(buffer);
+for(auto buffer: gaugemomenta.get_buffers()) {
+		buffer->get_device()->getGaugemomentumCode()->set_zero_gaugemomentum(buffer);
 	}
 }
 
 void physics::lattices::Gaugemomenta::gaussian(const physics::PRNG& prng) const
 {
-	size_t num_bufs = buffers.size();
+	size_t num_bufs = gaugemomenta.get_buffers().size();
 	auto prng_bufs = prng.get_buffers();
 	if(num_bufs != prng_bufs.size()) {
 		throw std::invalid_argument("The PRNG is using different devices than the gaugemomenta");
 	}
 	for(size_t i = 0; i < num_bufs; ++i) {
-		auto buf = buffers[i];
-		buf->get_device()->get_gaugemomentum_code()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
+		auto buf = gaugemomenta.get_buffers()[i];
+		buf->get_device()->getGaugemomentumCode()->generate_gaussian_gaugemomenta_device(buf, prng_bufs[i]);
 	}
 	update_halo();
 }
@@ -116,7 +95,7 @@ void physics::lattices::saxpy(const Gaugemomenta* out, const Scalar<hmc_float>& 
 	for(size_t i = 0; i < out_bufs.size(); ++i) {
 		auto out_buf = out_bufs[i];
 		auto device = out_buf->get_device();
-		device->get_gaugemomentum_code()->saxpy_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
+		device->getGaugemomentumCode()->saxpy_device(x_bufs[i], y_bufs[i], alpha_bufs[i], out_buf);
 	}
 }
 
@@ -141,7 +120,7 @@ void physics::lattices::squarenorm(const Scalar<hmc_float>* res, const Gaugemome
 		auto field_buf = field_buffers[i];
 		auto res_buf = res_buffers[i];
 		auto device = field_buf->get_device();
-		auto code = device->get_gaugemomentum_code();
+		auto code = device->getGaugemomentumCode();
 
 		code->set_float_to_gaugemomentum_squarenorm_device(field_buf, res_buf);
 	}
@@ -153,7 +132,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Gaugemomenta, 
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto gaugemomentum_code = devices[0]->get_gaugemomentum_code();
+	auto gaugemomentum_code = devices[0]->getGaugemomentumCode();
 	return gaugemomentum_code->get_flop_size("gaugemomentum_saxpy");
 }
 
@@ -161,7 +140,7 @@ template<> size_t physics::lattices::get_flops<physics::lattices::Gaugemomenta, 
 {
 	// assert single system
 	auto devices = system.get_devices();
-	auto gaugemomentum_code = devices[0]->get_gaugemomentum_code();
+	auto gaugemomentum_code = devices[0]->getGaugemomentumCode();
 	return gaugemomentum_code->get_flop_size("gaugemomentum_squarenorm");
 }
 
@@ -176,82 +155,15 @@ void physics::lattices::log_squarenorm(const std::string& msg, const physics::la
 
 void physics::lattices::Gaugemomenta::update_halo() const
 {
-	if(buffers.size() > 1) { // for a single device this will be a noop
-		// currently either all or none of the buffers must be SOA
-		if(buffers[0]->is_soa()) {
-			update_halo_soa(buffers, system);
-		} else {
-			update_halo_aos(buffers, system.get_inputparameters());
-		}
-	}
-}
-
-static void update_halo_aos(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const meta::Inputparameters& params)
-{
-	// check all buffers are non-soa
-	for(auto const buffer: buffers) {
-		if(buffer->is_soa()) {
-			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
-		}
-	}
-
-	hardware::buffers::update_halo<ae>(buffers, params, NDIM);
-}
-
-static void update_halo_soa(const std::vector<const hardware::buffers::Gaugemomentum *> buffers, const hardware::System& system)
-{
-	// check all buffers are non-soa
-	for(auto const buffer: buffers) {
-		if(!buffer->is_soa()) {
-			throw Print_Error_Message("Mixed SoA-AoS configuration halo update is not implemented, yet.", __FILE__, __LINE__);
-		}
-	}
-
-	hardware::buffers::update_halo_soa<ae>(buffers, system, .5, 2 * NDIM);
+	gaugemomenta.update_halo();
 }
 
 unsigned physics::lattices::Gaugemomenta::get_elements() const noexcept
 {
-	return meta::get_vol4d(system.get_inputparameters()) * NDIM;
+    return gaugemomentaParametersInterface.getNumberOfElements();
 }
 
 void physics::lattices::Gaugemomenta::import(const ae * const host) const
 {
-	logger.trace() << "importing gaugemomenta";
-	if(buffers.size() == 1) {
-		auto device = buffers[0]->get_device();
-		device->get_gaugemomentum_code()->importGaugemomentumBuffer(buffers[0], host);
-	} else {
-		auto const & params = system.get_inputparameters();
-		auto const _device = buffers.at(0)->get_device();
-		auto const local_size = _device->get_local_lattice_size();
-		size_4 const halo_size(local_size.x, local_size.y, local_size.z, _device->get_halo_size());
-		auto const grid_size = _device->get_grid_size();
-		if(grid_size.x != 1 || grid_size.y != 1 || grid_size.z != 1) {
-			throw Print_Error_Message("Not implemented!", __FILE__, __LINE__);
-		}
-		for(auto const buffer: buffers) {
-			auto device = buffer->get_device();
-			ae * mem_host = new ae[buffer->get_elements()];
-
-			size_4 offset(0, 0, 0, device->get_grid_pos().t * local_size.t);
-			logger.debug() << offset;
-			const size_t local_volume = get_vol4d(local_size) * NDIM;
-			memcpy(mem_host, &host[get_global_link_pos(0, offset, params)], local_volume * sizeof(ae));
-
-			const size_t halo_volume = get_vol4d(halo_size) * NDIM;
-			size_4 halo_offset(0, 0, 0, (offset.t + local_size.t) % params.get_ntime());
-			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume], &host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(ae));
-
-			halo_offset = size_4(0, 0, 0, (offset.t + params.get_ntime() - halo_size.t) % params.get_ntime());
-			logger.debug() << halo_offset;
-			memcpy(&mem_host[local_volume + halo_volume], &host[get_global_link_pos(0, halo_offset, params)], halo_volume * sizeof(ae));
-
-			device->get_gaugemomentum_code()->importGaugemomentumBuffer(buffer, mem_host);
-
-			delete[] mem_host;
-		}
-	}
-	logger.trace() << "import complete";
+	gaugemomenta.import(host);
 }

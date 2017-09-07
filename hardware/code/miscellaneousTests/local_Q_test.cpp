@@ -18,174 +18,52 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../../meta/util.hpp"
-#include "../../system.hpp"
-#include "../../device.hpp"
-#include "../../../physics/lattices/gaugefield.hpp"
-
-#include "../../../physics/observables/gaugeObservables.h"
-
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE localQ_test
 #include <boost/test/unit_test.hpp>
 
-class Device : public hardware::code::Opencl_Module {
+#include "testCode.hpp"
 
-	cl_kernel testKernel;
-	void fill_kernels();
-	void clear_kernels();
-protected:
-	virtual size_t get_read_write_size(const std::string&) const {
-		return 0;
-	};
-	virtual uint64_t get_flop_size(const std::string&) const {
-		return 0;
-	};
+const ReferenceValues calculateReferenceValue_localQ(const LatticeExtents lE)
+{
+	return ReferenceValues{ 72.00012210960028 * lE.getLatticeVolume() };
+}
 
-public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
-		fill_kernels();
-	};
-	~Device() {
-		clear_kernels();
-	};
+struct LocalQTestCode : public TestCode
+{
+	LocalQTestCode(const hardware::code::OpenClKernelParametersInterface & kP, hardware::Device * device):
+		TestCode(kP, device)
+	{
+		testKernel = createKernel("localQ_test") << get_device()->getGaugefieldCode()->get_sources()  << "../hardware/code/miscellaneousTests/localQ_test.cl";
+	}
 
-	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls);
+	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, const int gs, const int ls) override
+	{
+		err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+		err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
+		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+
+		get_device()->enqueue_kernel(testKernel, gs, ls);
+	}
 };
 
-class Dummyfield {
-public:
-	Dummyfield(const hardware::System& system) : params(system.get_inputparameters()), device(params, system.get_devices().at(0)), prng(system), gf(system, prng) {
-		fill_buffers();
-	};
-	~Dummyfield() {
-		clear_buffers();
+struct LocalQTester : public OtherKernelTester
+{
+	LocalQTester(const ParameterCollection pC, const GaugefieldTestParameters tP):
+		OtherKernelTester("local_Q_test", pC, tP, calculateReferenceValue_localQ(tP.latticeExtents))
+	{
+		testCode = new LocalQTestCode(pC.kernelParameters, device);
+		testCode->runTestKernel(OtherKernelTester::gaugefieldBuffer, out, gs, ls);
 	}
-	hmc_float runTestKernel();
-private:
-	void fill_buffers();
-	void clear_buffers();
-	const hardware::buffers::Plain<hmc_float> * out;
-	hmc_float * host_out;
-	const meta::Inputparameters& params;
-	Device device;
-	physics::PRNG prng;
-public:
-	physics::lattices::Gaugefield gf;
 };
-
-void Dummyfield::fill_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	int NUM_ELEMENTS = meta::get_vol4d(params);
-
-	host_out = new hmc_float[NUM_ELEMENTS];
-	BOOST_REQUIRE(host_out);
-
-	out = new hardware::buffers::Plain<hmc_float>(NUM_ELEMENTS, device.get_device());
-}
-
-void Device::fill_kernels()
-{
-  testKernel = createKernel("localQ_test") << get_device()->get_gaugefield_code()->get_sources()  << "../hardware/code/miscellaneousTests/localQ_test.cl";
-}
-
-void Dummyfield::clear_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	delete out;
-	delete[] host_out;
-}
-
-void Device::clear_kernels()
-{
-	clReleaseKernel(testKernel);
-}
-
-void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls)
-{
-	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	get_device()->enqueue_kernel(testKernel, gs, ls);
-}
-
-hmc_float Dummyfield::runTestKernel()
-{
-	hmc_float res = 0;
-	int gs = 0, ls = 0;
-	if(device.get_device()->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_vol4d(params);
-		ls = 64;
-	} else {
-		gs = device.get_device()->get_num_compute_units();
-		ls = 1;
-	}
-	device.runTestKernel(gf.get_buffers()[0], out, gs, ls);
-
-	//copy the result of the kernel to host
-	out->dump(host_out);
-
-	//sum up all elements in the result buffer
-	int NUM_ELEMENTS = meta::get_vol4d(params);
-	for(int i = 0; i < NUM_ELEMENTS; i++) {
-		res += host_out[i];
-	}
-	return res;
-}
 
 BOOST_AUTO_TEST_CASE( LOCAL_Q )
 {
-	logger.info() << "Test kernel";
-	logger.info() << "\tlocal_Q_test";
-	logger.info() << "against reference value";
-
-	int param_expect = 4;
-	logger.info() << "expect parameters:";
-	logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
-	//get number of parameters
-	int num_par = boost::unit_test::framework::master_test_suite().argc;
-	if(num_par < param_expect) {
-		logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
-		exit(-1);
-	}
-
-	//get input file that has been passed as an argument
-	const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
-	logger.info() << "inputfile used: " << inputfile;
-	//get use_gpu = true/false that has been passed as an argument
-	const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
-	logger.info() << "GPU usage: " << gpu_opt;
-	//get use_rec12 = true/false that has been passed as an argument
-	const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
-	logger.info() << "rec12 usage: " << rec12_opt;
-
-	logger.info() << "Init device";
-	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt, "--device=0"};
-	meta::Inputparameters params(param_expect + 1, _params_cpu);
-	hardware::System system(params);
-	Dummyfield cpu(system);
-	logger.info() << "gaugeobservables: ";
-	physics::observables::measureGaugeObservablesAndWriteToFile(&cpu.gf, 0);
-	logger.info() << "Run kernel";
-	hmc_float cpu_res;
-	cpu_res = cpu.runTestKernel();
-	logger.info() << "result:";
-	logger.info() << cpu_res;
-
-	logger.info() << "Choosing reference value and acceptance precision";
-	hmc_float ref_val = params.get_test_ref_value();
-	logger.info() << "reference value:\t" << ref_val;
-	hmc_float prec = params.get_solver_prec();
-	logger.info() << "acceptance precision: " << prec;
-
-	logger.info() << "Compare result to reference value";
-	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
-	logger.info() << "Done";
-	BOOST_TEST_MESSAGE("Test done");
-
+	GaugefieldTestParameters parametersForThisTest {LatticeExtents{4,4}, GaugefieldFillType::nonTrivial};
+	hardware::HardwareParametersMockup hardwareParameters(parametersForThisTest.ns,parametersForThisTest.nt);
+	hardware::code::OpenClKernelParametersMockup kernelParameters(parametersForThisTest.ns,parametersForThisTest.nt);
+	ParameterCollection parameterCollection(hardwareParameters, kernelParameters);
+	LocalQTester tester(parameterCollection, parametersForThisTest);
 }

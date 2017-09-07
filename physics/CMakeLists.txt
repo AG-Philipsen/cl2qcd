@@ -24,10 +24,12 @@
 
 add_library(prng
 	prng.cpp
-	../host_functionality/host_random.cpp
+	utilities.cpp
 )
 target_link_libraries(prng
 	ranlux
+	hardware
+	host_functionality
 )
 
 add_library(physics
@@ -40,9 +42,8 @@ add_modules(physics
 	observables
 )
 target_link_libraries(physics
-	prng
-	meta
 	hardware
+	prng
 	host_functionality
 	ildg_io
 )
@@ -55,3 +56,4 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/prngstate_brokenTag  prngstate_broke
 
 add_unit_test_withLibraries(physics::PRNG prng_test prng meta hardware)
 add_unit_test_withLibraries(physics::<sources> sources_test physics)
+add_unit_test_withLibraries(physics::<utilities> utilities_test physics)

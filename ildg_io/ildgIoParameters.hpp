@@ -23,8 +23,7 @@
 #ifndef ILDGIOPARAMETERS_HPP_
 #define ILDGIOPARAMETERS_HPP_
 
-#include "../meta/inputparameters.hpp"
-#include "../meta/util.hpp"
+#include "../interfaceImplementations/latticesParameters.hpp"
 
 class IldgIoParametersInterface
 {
@@ -43,43 +42,44 @@ public:
 class Inputparameters : public IldgIoParametersInterface
 {
 public:
-	Inputparameters (const meta::Inputparameters * parametersIn) : parameters(parametersIn) {} ;
+	Inputparameters (const physics::lattices::GaugefieldParametersInterface * parametersIn) : parameters(parametersIn) {} ;
 	virtual bool ignoreChecksumErrors() const
 	{
-		return parameters->get_ignore_checksum_errors();
+		return parameters->ignoreChecksumErrorsInIO();
 	}
 	virtual int getNumberOfElements() const
 	{
-		return meta::get_vol4d(*parameters) * NDIM;
+		return parameters->getNumberOfElements();
 	}
 	virtual int getNs() const
 	{
-		return parameters->get_nspace();
+		return parameters->getNs();
 	}
 	virtual int getNt() const
 	{
-		return parameters->get_ntime();
+		return parameters->getNt();
 	}
 	virtual int getPrecision() const
 	{
-		return parameters->get_precision();
+		return parameters->getPrecision();
 	}
 	virtual double getKappa() const
 	{
-		return parameters->get_kappa();
+		return parameters->getKappa();
 	}
 	virtual double getMu() const
 	{
-		return parameters->get_mu();
+		return parameters->getMu();
 	}
 	virtual double getBeta() const
 	{
-		return parameters->get_beta();
+		return parameters->getBeta();
 	}
 private:
-	const meta::Inputparameters * parameters;
+	const physics::lattices::GaugefieldParametersInterface * parameters;
 };
 
+//TODO: this abstract class can be removed, the interface above is sufficient
 class IldgIoParameters
 {
 public:

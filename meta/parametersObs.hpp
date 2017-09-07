@@ -26,13 +26,12 @@
 namespace meta {
 class ParametersObs {
 public:
-	enum pbp_version {std = 1, tm_one_end_trick};
 
 	bool get_measure_transportcoefficient_kappa() const noexcept;
 	bool get_measure_rectangles() const noexcept;
 	bool get_measure_correlators() const noexcept;
 	bool get_measure_pbp() const noexcept;
-	pbp_version get_pbp_version() const noexcept;
+	common::pbp_version get_pbp_version() const noexcept;
 	int get_corr_dir() const noexcept;
 	int get_pbp_measurements() const noexcept;
 
@@ -53,7 +52,7 @@ protected:
 	ParametersObs & operator=(ParametersObs const&) = delete;
 	po::options_description & getOptions();
 
-	pbp_version pbp_version_;
+	common::pbp_version pbp_version_;
 };
 
 }

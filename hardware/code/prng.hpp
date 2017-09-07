@@ -40,11 +40,11 @@ namespace code {
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class PRNG : public Opencl_Module {
+class Prng : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~PRNG();
+	virtual ~Prng();
 
 	ClSourcePackage get_sources() const noexcept;
 
@@ -75,13 +75,14 @@ protected:
 		return 0;
 	};
 
-private:
-
 	/**
-	 * @param[in] params points to an instance of inputparameters
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
 	 */
-	PRNG(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Prng(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
+private:
 	/**
 	 * A set of sources required to use the PRNG.
 	 */

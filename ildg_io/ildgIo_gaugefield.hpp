@@ -25,6 +25,8 @@
 
 #include "../common_header_files/types.h"
 #include "../executables/exceptions.h"
+#include "../geometry/latticeExtents.hpp"
+#include "../geometry/index.hpp"
 
 //todo: remove this eventually if there is a more general interface for readers and writers
 #include "lime/limeFileReader.hpp"

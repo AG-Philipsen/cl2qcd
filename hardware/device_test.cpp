@@ -27,20 +27,22 @@
 
 #include "system.hpp"
 #include "device.hpp"
-#include "hardware_test_util.hpp"
+#include "hardwareTestUtilities.hpp"
+#include "interfaceMockups.hpp"
 
 void querrySomeInformationsFromDevice( const hardware::Device * device )
 {
 	BOOST_REQUIRE_NE(device->get_preferred_local_thread_num(), 0);
 	BOOST_REQUIRE_NE(device->get_preferred_global_thread_num(), 0);
-	const size_t recommended_stride = device->recommend_stride(1024, 16, 2);
+	const size_t recommended_stride = device->recommendStride(1024, 16, 2);
 	BOOST_REQUIRE_GE(recommended_stride, 1024);
 }
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
-	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-	hardware::System system(params);
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	atLeastOneDeviceMustExistForSanityOfSystem( &system );
 
 	for(const hardware::Device * device : system.get_devices())
@@ -51,12 +53,13 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 BOOST_AUTO_TEST_CASE(compile)
 {
-	meta::Inputparameters params(dummyNumberOfRuntimeArguments, dummyRuntimeArguments);
-	hardware::System system(params);
+	const hardware::HardwareParametersMockup hardwareParameters(4,4);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(4,4);
+	hardware::System system( hardwareParameters, kernelParameters );
 	atLeastOneDeviceMustExistForSanityOfSystem( &system );
 
 	for(const hardware::Device * device : system.get_devices())
 	{
-		device->create_kernel("foo", "") << "../hardware/device_test.cl";
+		device->createKernel("foo", "") << "../hardware/device_test.cl";
 	}
 }

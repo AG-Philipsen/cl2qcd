@@ -66,12 +66,14 @@ public:
 	 */
 	void virtual print_profiling(const std::string& filename, int number) const override;
 
-private:
 	/**
-	 * @param[in] params points to an instance of inputparameters
+	 * @todo: the constructor must be public at the moment in order to be called from OpenClCode class.
+	 * 	It may be made private again in the future!
 	 */
-	Heatbath(const meta::Inputparameters& params, hardware::Device * device);
+public:
+	Heatbath(const hardware::code::OpenClKernelParametersInterface& kernelParams, const hardware::Device * device);
 
+private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.

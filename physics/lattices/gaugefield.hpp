@@ -1,7 +1,7 @@
 /** @file
  * Declaration of the physics::lattices::Gaugefield class
  *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
+ * Copyright 2012, 2013, 2015 Lars Zeidlewicz, Christopher Pinke,
  * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
  *
  * This file is part of CL2QCD.
@@ -26,8 +26,8 @@
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/su3.hpp"
 #include "../prng.hpp"
-#include "../../hardware/code/gaugefield.hpp"
-#include "../../meta/inputparameters.hpp"
+#include "latticesInterfaces.hpp"
+#include "../../hardware/lattices/gaugefield.hpp"
 
 /**
  * This namespace contains the lattices of the various kind,
@@ -45,17 +45,17 @@ namespace physics {
 			/**
 			 * Construct a gaugefield based on the input-files of the system
 			 */
-			Gaugefield(const hardware::System&, const physics::PRNG&);
+			Gaugefield(const hardware::System&, const GaugefieldParametersInterface * parameters, const physics::PRNG&);
 
 			/**
 			 * Construct a gaugefield based on the given ILDG file.
 			 */
-			Gaugefield(const hardware::System&, const physics::PRNG&, std::string);
+			Gaugefield(const hardware::System&, const GaugefieldParametersInterface * parameters, const physics::PRNG&, std::string);
 
 			/**
 			 * Construct a gaugefield that has been initialized hot or cold
 			 */
-			Gaugefield(const hardware::System&, const physics::PRNG&, bool hot);
+			Gaugefield(const hardware::System&, const GaugefieldParametersInterface * parameters, const physics::PRNG&, bool hot);
 
 			/**
 			 * Release resources
@@ -93,7 +93,6 @@ namespace physics {
 
 			/**
 			 * Smear the gaugefield.
-			 *
 			 * Creates a backup which can be restored via the unsmear command.
 			 */
 			void smear();
@@ -109,21 +108,21 @@ namespace physics {
 
 			/**
 			 * Update the halo cells of each buffer from its neighbours.
-			 *
 			 * On a single device this will be a no-op.
 			 */
 			void update_halo() const;
 
+			std::string getName(int = -1) const noexcept;
 			const physics::PRNG * getPrng() const;
 			const hardware::System * getSystem() const;
-			const meta::Inputparameters * getParameters() const;
+			const GaugefieldParametersInterface * getParameters() const;
 			
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
-			std::vector<const hardware::buffers::SU3 *> buffers;
-			std::vector<const hardware::buffers::SU3 *> unsmeared_buffers;
-			const meta::Inputparameters * parameters;
+			const GaugefieldParametersInterface * latticeObjectParameters;
+
+			hardware::lattices::Gaugefield gaugefield;
 
 			/**
 			 * Utility functions for construction.
@@ -134,7 +133,10 @@ namespace physics {
 
 			int trajectoryNumberAtInit;
 		};
+
 	}
 }
+
+
 
 #endif /*_PHYSICS_LATTICES_GAUGEFIELD_ */

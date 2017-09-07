@@ -29,16 +29,20 @@
 #include "../system.hpp"
 #include "../../meta/util.hpp"
 #include "../../meta/type_ops.hpp"
+#include "../interfaceMockups.hpp"
 
 BOOST_AUTO_TEST_CASE(initialization)
 {
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-for(Device * device : system.get_devices()) {
-
-		SU3 dummy(meta::get_vol4d(system.get_inputparameters()) * NDIM, device);
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	for(Device * device : system.get_devices())
+	{
+		SU3 dummy(system.getHardwareParameters()->getLatticeVolume() * NDIM, device);
 		const cl_mem * tmp = dummy;
 		BOOST_CHECK(tmp);
 		BOOST_CHECK(*tmp);
@@ -50,12 +54,16 @@ BOOST_AUTO_TEST_CASE(import_export)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) * NDIM;
-for(Device * device : system.get_devices()) {
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
+	for(Device * device : system.get_devices())
+	{
 		Matrixsu3* buf(new Matrixsu3[elems]);
 		Matrixsu3* buf2(new Matrixsu3[elems]);
-		SU3 dummy(elems, device);
+		SU3 dummy(lE, device);
 		if(dummy.is_soa()) {
 			BOOST_CHECK_THROW(dummy.load(buf), std::logic_error);
 			BOOST_CHECK_THROW(dummy.dump(buf), std::logic_error);
@@ -76,14 +84,18 @@ BOOST_AUTO_TEST_CASE(copy)
 	using namespace hardware;
 	using namespace hardware::buffers;
 
-	System system(meta::Inputparameters(0, 0));
-	const size_t elems = meta::get_vol4d(system.get_inputparameters()) * NDIM;
-for(Device * device : system.get_devices()) {
+	LatticeExtents lE(4,4);
+	const hardware::HardwareParametersMockup hardwareParameters(lE);
+	const hardware::code::OpenClKernelParametersMockup kernelParameters(lE);
+	hardware::System system( hardwareParameters, kernelParameters );
+	const size_t elems = system.getHardwareParameters()->getLatticeVolume() * NDIM;
+	for(Device * device : system.get_devices())
+	{
 		if(!check_SU3_for_SOA(device)) {
 			Matrixsu3* buf(new Matrixsu3[elems]);
 			Matrixsu3* buf2(new Matrixsu3[elems]);
-			SU3 dummy(elems, device);
-			SU3 dummy2(elems, device);
+			SU3 dummy(lE, device);
+			SU3 dummy2(lE, device);
 
 			fill(buf, elems, 1);
 			fill(buf2, elems, 2);

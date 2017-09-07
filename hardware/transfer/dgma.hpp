@@ -22,7 +22,13 @@
 #ifndef _HARDWARE_TRANSFER_DGMA_HPP_
 #define _HARDWARE_TRANSFER_DGMA_HPP_
 
+//TODO: This header should not be comipled on Apple since DGMA won't be available.
+//      Avoid ifdef in this case.
+#ifdef __APPLE__
+#include <OpenCL/cl_ext.h>
+#else
 #include <CL/cl_ext.h>
+#endif
 
 #ifdef CL_MEM_BUS_ADDRESSABLE_AMD // make sure definitions for DGMA are available
 

@@ -24,17 +24,20 @@
 
 #include "../lattices/gaugefield.hpp"
 #include "../lattices/spinorfield.hpp"
+#include "observablesInterfaces.hpp"
+#include "../interfacesHandler.hpp"
 
-namespace physics{
+namespace physics {
+    namespace observables {
+        namespace wilson {
 
-	namespace observables{
+            std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr,
+                                                        const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system,
+                                                        physics::InterfacesHandler& interfacesHandler);
+            void measureTwoFlavourDoubletCorrelatorsOnGaugefieldAndWriteToFile(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName,
+                                                                 physics::InterfacesHandler & interfacesHandler);
 
-		namespace wilson{
-
-		  std::vector<hmc_float> calculate_correlator(const std::string& type, const std::vector<physics::lattices::Spinorfield*>& corr, const std::vector<physics::lattices::Spinorfield*>& sources, const hardware::System& system);
-
-			void measureTwoFlavourDoubletCorrelatorsOnGaugefield(const physics::lattices::Gaugefield * gaugefield, std::string currentConfigurationName);
+        }
     }
-  }
 }
 #endif

@@ -25,6 +25,7 @@
 #include "gitcommitid.h"
 #include "util.hpp"
 #include "../host_functionality/logger.hpp"
+#include "../executables/exceptions.h"
 
 using namespace std;
 
@@ -52,7 +53,7 @@ void meta::print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## NTIME:   " << params.get_ntime();
 	logger.info() << "## NDIM:    " << NDIM;
 	logger.info() << "## NCOLOR:  " << NC;
-	if(params.get_fermact() != meta::action::rooted_stagg) logger.info() << "## NSPIN:   " << NSPIN;
+	if(params.get_fermact() != common::action::rooted_stagg) logger.info() << "## NSPIN:   " << NSPIN;
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Computational parameters:";
 	logger.info() << "## PREC:    " << params.get_precision();
@@ -80,15 +81,15 @@ void meta::print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## Writefrequency:  " << params.get_writefrequency();
 	logger.info() << "## Savefrequency:  " << params.get_savefrequency();
 	switch(params.get_startcondition()) {
-		case Inputparameters::start_from_source: {
+		case common::start_from_source: {
 			std::string sf = params.get_sourcefile();
 			logger.info() << "## sourcefile = " << sf;
 		}
 		break;
-		case Inputparameters::cold_start:
+		case common::cold_start:
 			logger.info() << "## COLD start";
 			break;
-		case Inputparameters::hot_start:
+		case common::hot_start:
 			logger.info() << "## HOT start";
 			break;
 	}
@@ -139,15 +140,15 @@ void meta::print_info_global(std::ostream* os, const meta::Inputparameters& para
 	*os  << "## Writefrequency:  " << params.get_writefrequency() << endl;
 	*os  << "## Savefrequency:  " << params.get_savefrequency() << endl;
 	switch(params.get_startcondition()) {
-		case Inputparameters::start_from_source: {
+		case common::start_from_source: {
 			std::string sf = params.get_sourcefile();
 			*os << "## sourcefile = " << sf << endl;;
 		}
 		break;
-		case Inputparameters::cold_start:
+		case common::cold_start:
 			*os << "## cold start" << endl;;
 			break;
-		case Inputparameters::hot_start:
+		case common::hot_start:
 			*os << "## hot start" << endl;;
 			break;
 	}
@@ -206,21 +207,21 @@ static void print_info_fermion(const meta::Inputparameters& params)
 	else
 		logger.info() << "## do not use imag. chem. pot.";
 	logger.info() << "##" ;
-	if(params.get_fermact() == meta::action::wilson) {
+	if(params.get_fermact() == common::action::wilson) {
 		logger.info() <<  "## fermion action: unimproved Wilson";
 		logger.info() << "## kappa  = " << params.get_kappa();
 	}
-	if(params.get_fermact() == meta::action::twistedmass) {
+	if(params.get_fermact() == common::action::twistedmass) {
 		logger.info() <<  "## fermion action: twisted mass Wilson";
 		logger.info() << "## kappa  = " << params.get_kappa();
 		logger.info() << "## mu     = " << params.get_mu();
 	}
-	if(params.get_fermact() == meta::action::clover) {
+	if(params.get_fermact() == common::action::clover) {
 		logger.info() <<  "## fermion action: clover Wilson";
 		logger.info() << "## kappa  = " << params.get_kappa();
 		logger.info() << "## csw    = " << params.get_csw();
 	}
-	if(params.get_fermact() == meta::action::rooted_stagg) {
+	if(params.get_fermact() == common::action::rooted_stagg) {
 		logger.info() <<  "## fermion action: staggered standard ";
 		logger.info() << "## mass           = " << params.get_mass();
 		logger.info() << "## Num. of tastes = " << params.get_num_tastes();
@@ -232,15 +233,15 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(params.get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
-	if(params.get_fermact() != meta::action::rooted_stagg) {
+	if(params.get_fermact() != common::action::rooted_stagg) {
 		switch(params.get_solver()) {
-			case Inputparameters::cg:
+			case common::cg:
 				logger.info() << "## Use CG-solver for inversions" ;
 				break;
-			case Inputparameters::bicgstab:
+			case common::bicgstab:
 				logger.info() << "## Use BiCGStab for inversions";
 				break;
-			case Inputparameters::bicgstab_save:
+			case common::bicgstab_save:
 				logger.info() << "## Use BiCGStab-SAVE for inversions";
 				break;
 		}
@@ -288,21 +289,21 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 	else
 		*os  << "## do not use imag. chem. pot." << endl;
 	*os  << "##" << endl;
-	if(params.get_fermact() == meta::action::wilson) {
+	if(params.get_fermact() == common::action::wilson) {
 		*os <<  "## fermion action: unimproved Wilson" << endl;
 		*os  << "## kappa  = " << params.get_kappa() << endl;
 	}
-	if(params.get_fermact() == meta::action::twistedmass) {
+	if(params.get_fermact() == common::action::twistedmass) {
 		*os <<  "## fermion action: twisted mass Wilson" << endl;
 		*os  << "## kappa  = " << params.get_kappa() << endl;
 		*os  << "## mu     = " << params.get_mu() << endl;
 	}
-	if(params.get_fermact() == meta::action::clover) {
+	if(params.get_fermact() == common::action::clover) {
 		*os <<  "## fermion action: clover Wilson" << endl;
 		*os  << "## kappa  = " << params.get_kappa() << endl;
 		*os  << "## csw    = " << params.get_csw() << endl;
 	}
-	if(params.get_fermact() == meta::action::rooted_stagg) {
+	if(params.get_fermact() == common::action::rooted_stagg) {
 		*os <<  "## fermion action: staggered standard " << endl;
 		*os << "## mass           = " << params.get_mass() << endl;
 		*os << "## Num. of tastes = " << params.get_num_tastes() << endl;
@@ -314,15 +315,15 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(params.get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
-	if(params.get_fermact() != meta::action::rooted_stagg) {
+	if(params.get_fermact() != common::action::rooted_stagg) {
 		switch(params.get_solver()) {
-			case Inputparameters::cg:
+			case common::cg:
 				*os << "## Use CG-solver for inversions" << endl;
 				break;
-			case Inputparameters::bicgstab:
+			case common::bicgstab:
 				*os << "## Use BiCGStab for inversions" << endl;
 				break;
-			case Inputparameters::bicgstab_save:
+			case common::bicgstab_save:
 				*os << "## Use BiCGStab-SAVE for inversions" << endl;
 				break;
 		}
@@ -357,10 +358,10 @@ static void print_info_gauge(std::ostream* os, const meta::Inputparameters& para
 	*os << "## Gauge parameters:" << endl;
 	*os << "##" << endl;
 	*os << "## beta:  " << params.get_beta() << endl;
-	if(params.get_gaugeact() == meta::action::wilson) {
+	if(params.get_gaugeact() == common::action::wilson) {
 		*os <<  "## gauge action: unimproved Wilson" << endl;
 	}
-	if(params.get_gaugeact() == meta::action::tlsym) {
+	if(params.get_gaugeact() == common::action::tlsym) {
 		*os <<  "## gauge action: tree level Symanzik" << endl;
 		*os << "## c0  = " << get_c0(params) << endl;
 		*os << "## c1  = " << get_c1(params) << endl;
@@ -375,10 +376,10 @@ static void print_info_gauge(const meta::Inputparameters& params)
 	logger.info() << "## Gauge parameters:";
 	logger.info() << "##" ;
 	logger.info() << "## beta:  " << params.get_beta();
-	if(params.get_gaugeact() == meta::action::wilson) {
+	if(params.get_gaugeact() == common::action::wilson) {
 		logger.info() <<  "## gauge action: unimproved Wilson";
 	}
-	if(params.get_gaugeact() == meta::action::tlsym) {
+	if(params.get_gaugeact() == common::action::tlsym) {
 		logger.info() <<  "## gauge action: tree level Symanzik";
 		logger.info() << "## c0  = " << get_c0(params);
 		logger.info() << "## c1  = " << get_c1(params);
@@ -410,10 +411,10 @@ static void print_info_integrator(int number, const meta::Inputparameters& param
 	string integrator_name;
 	bool print_lambda = false;
 	switch(params.get_integrator(number)) {
-		case Inputparameters::leapfrog:
+		case common::leapfrog:
 			integrator_name = "LEAPFROG";
 			break;
-		case Inputparameters::twomn:
+		case common::twomn:
 			integrator_name = "2MN";
 			print_lambda = true;
 			break;
@@ -434,10 +435,10 @@ static void print_info_integrator(std::ostream* os, int number, const meta::Inpu
 	string integrator_name;
 	bool print_lambda = false;
 	switch(params.get_integrator(number)) {
-		case Inputparameters::leapfrog:
+		case common::leapfrog:
 			integrator_name = "LEAPFROG";
 			break;
-		case Inputparameters::twomn:
+		case common::twomn:
 			integrator_name = "2MN";
 			print_lambda = true;
 			break;
@@ -479,29 +480,29 @@ void meta::print_info_hmc(const Inputparameters& params)
 	if(params.get_use_mp() == true) {
 		logger.info() << "##  ";
 		logger.info() <<  "## use mass preconditioning:";
-		if(params.get_fermact_mp() == meta::action::wilson) {
+		if(params.get_fermact_mp() == common::action::wilson) {
 			logger.info() <<  "## mp action: unimproved Wilson";
 			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
 		}
-		if(params.get_fermact_mp() == meta::action::twistedmass) {
+		if(params.get_fermact_mp() == common::action::twistedmass) {
 			logger.info() <<  "## mp action: twisted mass Wilson";
 			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
 			logger.info() << "## mu_mp     = " << params.get_mu_mp();
 		}
-		if(params.get_fermact_mp() == meta::action::clover) {
+		if(params.get_fermact_mp() == common::action::clover) {
 			logger.info() <<  "## mp action: clover Wilson";
 			logger.info() << "## kappa_mp  = " << params.get_kappa_mp();
 			logger.info() << "## csw_mp   = " << params.get_csw_mp();
 		}
 		logger.info() << "##" ;
 		switch(params.get_solver_mp()) {
-			case Inputparameters::cg:
+			case common::cg:
 				logger.info() << "## Use CG-solver for mp inversions" ;
 				break;
-			case Inputparameters::bicgstab:
+			case common::bicgstab:
 				logger.info() << "## Use BiCGStab for mp inversions";
 				break;
-			case Inputparameters::bicgstab_save:
+			case common::bicgstab_save:
 				logger.info() << "## Use BiCGStab-SAVE for mp inversions";
 				break;
 		}
@@ -541,29 +542,29 @@ void meta::print_info_hmc(std::ostream* os, const Inputparameters& params)
 	if(params.get_use_mp() == true) {
 		*os << "##  " << '\n';
 		*os <<  "## use mass preconditioning:"  << '\n';
-		if(params.get_fermact_mp() == meta::action::wilson) {
+		if(params.get_fermact_mp() == common::action::wilson) {
 			*os <<  "## mp action: unimproved Wilson"  << '\n';
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 		}
-		if(params.get_fermact_mp() == meta::action::twistedmass) {
+		if(params.get_fermact_mp() == common::action::twistedmass) {
 			*os <<  "## mp action: twisted mass Wilson"  << '\n';
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 			*os << "## mu_mp     = " << params.get_mu_mp()  << '\n';
 		}
-		if(params.get_fermact_mp() == meta::action::clover) {
+		if(params.get_fermact_mp() == common::action::clover) {
 			*os <<  "## mp action: clover Wilson" << endl;
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 			*os << "## csw_mp   = " << params.get_csw_mp()  << '\n';
 		}
 		*os << "##"  << endl;
 		switch(params.get_solver_mp()) {
-			case Inputparameters::cg:
+			case common::cg:
 				*os << "## Use CG-solver for mp inversions" << endl;
 				break;
-			case Inputparameters::bicgstab:
+			case common::bicgstab:
 				*os << "## Use BiCGStab for mp inversions" << endl;
 				break;
-			case Inputparameters::bicgstab_save:
+			case common::bicgstab_save:
 				*os << "## Use BiCGStab-SAVE for mp inversions" << endl;
 				break;
 		}
@@ -860,14 +861,14 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	if (params.get_measure_pbp() == true) {
 		logger.info() << "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix();
 		logger.info() << "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix();
-		if(params.get_pbp_version() == Inputparameters::pbp_version::std )
+		if(params.get_pbp_version() == common::pbp_version::std )
 			logger.info() << "## measure chiral condensate in standard version";
-		if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ) {
+		if(params.get_pbp_version() == common::pbp_version::tm_one_end_trick ) {
 			logger.info() << "## measure chiral condensate in twisted-mass one end trick version";
-			if(params.get_fermact() != meta::action::twistedmass)
+			if(params.get_fermact() != common::action::twistedmass)
 				logger.fatal() << "## using the one end trick without twisted-mass action!";
 		}
-		if(params.get_sourcetype() == Inputparameters::point)
+		if(params.get_sourcetype() == common::point)
 			logger.warn() << "## calculating chiral condensate without stochastic estimators!";
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )) {
@@ -894,14 +895,14 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	if (params.get_measure_pbp() == true) {
 		*os << "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix() << endl;
 		*os << "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix() << endl;
-		if(params.get_pbp_version() == Inputparameters::pbp_version::std )
+		if(params.get_pbp_version() == common::pbp_version::std )
 			*os << "## measure chiral condensate in standard version" << endl;
-		if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ) {
+		if(params.get_pbp_version() == common::pbp_version::tm_one_end_trick ) {
 			*os << "## measure chiral condensate in twisted-mass one end trick version" << endl;
-			if(params.get_fermact() != meta::action::twistedmass)
+			if(params.get_fermact() != common::action::twistedmass)
 				*os << "## using the one end trick without twisted-mass action!" << endl;
 		}
-		if(params.get_sourcetype() == Inputparameters::point)
+		if(params.get_sourcetype() == common::point)
 			*os << "## calculating chiral condensate without stochastic estimators!" << endl;
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )) {
@@ -979,33 +980,41 @@ static void print_info_source(const meta::Inputparameters& params)
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Source parameters:";
 	logger.info() << "##";
-	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
+	if(params.get_sourcetype() == common::sourcetypes::point) {
 		logger.info() << "## Use pointsource for inversion" ;
 		logger.info() << "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t();
-	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
+	} else if(params.get_sourcetype() == common::sourcetypes::volume) {
 		logger.info() << "## Use volume sources for inversion" ;
 		logger.info() << "## Number of sources: " << params.get_num_sources();
-	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
+	} else if(params.get_sourcetype() == common::sourcetypes::timeslice) {
 		logger.info() << "## Use timeslice sources for inversion" ;
 		logger.info() << "## Use timeslice: " << params.get_source_t();
 		logger.info() << "## Number of sources: " << params.get_num_sources();
-	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
+	} else if(params.get_sourcetype() == common::sourcetypes::zslice) {
 		logger.info() << "## Use zslice sources for inversion" ;
 		logger.info() << "## Use zslice: " << params.get_source_z();
 		logger.info() << "## Number of sources: " << params.get_num_sources();
 	}
-	if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one) {
+	if(params.get_sourcecontent() == common::sourcecontents::one) {
 		logger.info() << "## fill sources with one";
-	}  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4) {
+	}  else if(params.get_sourcecontent() == common::sourcecontents::z4) {
 		logger.info() << "## fill sources with z4 noise";
-	} else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian) {
+	} else if(params.get_sourcecontent() == common::sourcecontents::gaussian) {
 		logger.info() << "## fill sources with gaussian noise";
 	}
-	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12) {
-		logger.fatal() << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!";
-		logger.fatal() << "## Number of sources: " << params.get_num_sources();
+	if(params.get_measure_correlators() && params.get_fermact() == common::action::rooted_stagg){
+	    if(params.get_sourcetype() == common::sourcetypes::point && params.get_num_sources() != 3) {
+	        logger.fatal() << "## Number of sources: " << params.get_num_sources();
+	        throw Print_Error_Message("Pointsource with number of sources different than \"3\" is chosen. This is will not give the full point-to-all propagator!");
+	    }
 	}
-	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one) {
+    if(params.get_measure_correlators() && params.get_fermact() != common::action::rooted_stagg){
+        if(params.get_sourcetype() == common::sourcetypes::point && params.get_num_sources() != 12) {
+            logger.fatal() << "## Number of sources: " << params.get_num_sources();
+            throw Print_Error_Message("Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!");
+        }
+    }
+	if(params.get_sourcetype() == common::sourcetypes::point && params.get_sourcecontent() != common::sourcecontents::one) {
 		logger.warn() << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!";
 	}
 }
@@ -1015,33 +1024,33 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters& pa
 	*os << "## **********************************************************" << endl;
 	*os << "## Source parameters:" << endl;
 	*os << "##" << endl;
-	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
+	if(params.get_sourcetype() == common::sourcetypes::point) {
 		*os << "## Use pointsource for inversion" << endl;
 		*os << "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t() << endl;
-	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
+	} else if(params.get_sourcetype() == common::sourcetypes::volume) {
 		*os << "## Use volume sources for inversion" << endl;
 		*os << "## Number of sources: " << params.get_num_sources() << endl;
-	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
+	} else if(params.get_sourcetype() == common::sourcetypes::timeslice) {
 		*os << "## Use timeslice sources for inversion" << endl;
 		*os << "## Use timeslice: " << params.get_source_t() << endl;
 		*os << "## Number of sources: " << params.get_num_sources() << endl;
-	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
+	} else if(params.get_sourcetype() == common::sourcetypes::zslice) {
 		*os << "## Use zslice sources for inversion" << endl;
 		*os << "## Use zslice: " << params.get_source_z() << endl;
 		*os << "## Number of sources: " << params.get_num_sources() << endl;
 	}
-	if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one) {
+	if(params.get_sourcecontent() == common::sourcecontents::one) {
 		*os << "## fill sources with one" << endl;
-	}  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4) {
+	}  else if(params.get_sourcecontent() == common::sourcecontents::z4) {
 		*os << "## fill sources with z4 noise" << endl;
-	} else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian) {
+	} else if(params.get_sourcecontent() == common::sourcecontents::gaussian) {
 		*os << "## fill sources with gaussian noise" << endl;
 	}
-	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12) {
+	if(params.get_sourcetype() == common::sourcetypes::point && params.get_num_sources() != 12) {
 		*os << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!" << endl;
 		*os << "## Number of sources: " << params.get_num_sources() << endl;
 	}
-	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one) {
+	if(params.get_sourcetype() == common::sourcetypes::point && params.get_sourcecontent() != common::sourcecontents::one) {
 		*os << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!" << endl;
 	}
 }

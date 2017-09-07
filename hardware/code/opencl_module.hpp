@@ -23,10 +23,9 @@
 
 #include "../../common_header_files/types.h"
 
-#include "../../meta/inputparameters.hpp"
+#include "../openClKernelParameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "../../meta/util.hpp"
 #include "../device.hpp"
 
 #include "../buffers/3x3.hpp"
@@ -59,16 +58,10 @@ class Opencl_Module {
 
 public:
 	/**
-	 * Get a pointer to inputparameters
-	 * @return parameters
-	 */
-	const meta::Inputparameters& get_parameters() const noexcept;
-
-	/**
 	 * Get OpenCL device
 	 * @return device
 	 */
-	hardware::Device * get_device() const noexcept;
+	const hardware::Device * get_device() const noexcept;
 
 	/**
 	 * Print the profiling information to a file.
@@ -85,12 +78,8 @@ public:
 	ClSourcePackage get_basic_sources() const noexcept;
 
 protected:
-	/**
-	 * Protected constructor to keep this class abstract.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device);
+	Opencl_Module(const hardware::code::OpenClKernelParametersInterface& kernelParameters, const hardware::Device * device);
+	~Opencl_Module();
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -145,17 +134,14 @@ protected:
 	 */
 	void print_profiling(const std::string& filename, const cl_kernel& kernel) const;
 
-private:
+	const hardware::code::OpenClKernelParametersInterface * kernelParameters;
 
-	/**
-	 * The input parameters this modules is parametrized for.
-	 */
-	const meta::Inputparameters& parameters;
+private:
 
 	/**
 	 * The device used by this module
 	 */
-	hardware::Device * const device;
+	const hardware::Device * device;
 	
 	/**
 	 * The basic source used by all modules (children classes of this)

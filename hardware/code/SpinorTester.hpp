@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Christopher Pinke
+ * Copyright 2014, 2015 Christopher Pinke
  *
  * This file is part of CL2QCD.
  *
@@ -17,67 +17,82 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPINORTESTER_HPP_
-#define SPINORTESTER_HPP_
+#pragma once
 
 #include "kernelTester.hpp"
-
-#include "../../meta/util.hpp"
-#include "../../host_functionality/host_random.h"
-#include "../../physics/prng.hpp"
 #include "spinors.hpp"
-#include "complex.hpp"
 
-enum fillType{ zero, one, zeroOne, oneZero, ascending};
+//@todo: move to common place
+//@todo: rename to FillType
+enum SpinorFillType{ zero, one, zeroOne, oneZero, ascendingReal, ascendingComplex};
+typedef std::vector<SpinorFillType> SpinorFillTypes;
+typedef std::vector<hmc_complex> ComplexNumbers;
+typedef std::vector<hmc_float> RealNumbers;
+typedef size_t NumberOfSpinors;
 
-class SpinorTester : public KernelTester {
-public:
-	SpinorTester(std::string kernelName, std::string inputfileIn, int numberOfValues = 1, int typeOfComparision = 1);
-	SpinorTester(std::string kernelName,  std::vector<std::string> parameterStrings, int numberOfValues = 1, int typeOfComparision = 1, std::vector<double> expectedResult = std::vector<double> ());
-	SpinorTester(meta::Inputparameters * parameters, const hardware::System * system, hardware::Device * device);
-	~SpinorTester();
-	
-protected:
-	std::string getSpecificInputfile(std::string inputfileIn);
-	
-	bool allocatedObjects;
+int calculateSpinorfieldSize(LatticeExtents latticeExtendsIn) noexcept;
+int calculateEvenOddSpinorfieldSize(const LatticeExtents latticeExtendsIn) noexcept;
 
-	spinor * createSpinorfield( fillType );
-	spinor * createSpinorfield(size_t numberOfElements, int seed = 123456);
-	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, int seed = 123456);
-	void fill_with_one(spinor * in, int size);
-	void fill_with_zero_one(spinor * in, int size);
-	void fill_with_one_zero(spinor * in, int size);
-	void fill_with_ascending(spinor * in, int size);
-	void fill_with_one_minusone_for_gamma5_use(spinor * in, int size);
-	void fill_with_random(spinor * in, int size, int seed);
-	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity();
-	spinor * createSpinorfieldWithOnesAndMinusOneForGamma5Use(size_t numberOfElements);	
-	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
-	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
-	void fill_with_one_eo(spinor * in, int size, bool eo);
-	hmc_float count_sf(spinor * in, int size);
-	hmc_float calc_var(hmc_float in, hmc_float mean);
-	hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
-	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
-	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
-	void fillTwoSpinorfieldsWithRandomNumbers(spinor * sf_in1, spinor * sf_in2, int size, int seed = 123456);
-	
-	void setMembers();
-	
-	const hardware::code::Spinors * code;
-	physics::PRNG * prng;
+hmc_float count_sf(spinor * in, int size);
+hmc_float calc_var(hmc_float in, hmc_float mean);
+hmc_float calc_var_sf(spinor * in, int size, hmc_float sum);
 
-	hardware::buffers::Plain<double> * doubleBuffer;
-	
-	size_t spinorfieldElements;
-	size_t spinorfieldEvenOddElements;
-	bool useRandom;
-	bool evenOrOdd;
-	bool calcVariance;
-	hmc_complex alpha_host;
-	hmc_complex beta_host;
-	int iterations;
+struct SpinorTestParameters: public virtual TestParameters
+{
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn) :
+		TestParameters(latticeExtendsIn), fillTypes(SpinorFillType::one) {};
+	SpinorTestParameters(const LatticeExtents latticeExtendsIn, const SpinorFillTypes fillTypesIn) :
+		TestParameters(latticeExtendsIn), fillTypes(fillTypesIn) {};
+
+	const SpinorFillTypes fillTypes;
 };
 
-#endif
+class SpinorTester: public KernelTester
+{
+public:
+	SpinorTester(std::string kernelName, const ParameterCollection, const SpinorTestParameters &, const ReferenceValues );
+protected:
+	void calcSquarenormAndStoreAsKernelResult(const hardware::buffers::Plain<spinor> * in);
+	void calcSquarenormEvenOddAndStoreAsKernelResult(const hardware::buffers::Spinor * in);
+
+	const hardware::code::Spinors * code;
+	hardware::buffers::Plain<double> * doubleBuffer;
+};
+
+struct SpinorfieldCreator
+{
+	SpinorfieldCreator(const size_t numberOfElementsIn): numberOfElements(numberOfElementsIn) {};
+	spinor * createSpinorfield(SpinorFillType);
+
+	size_t numberOfElements;
+};
+
+struct NonEvenOddSpinorfieldCreator : public SpinorfieldCreator
+{
+	NonEvenOddSpinorfieldCreator(LatticeExtents lE): SpinorfieldCreator(calculateSpinorfieldSize(lE)), latticeExtents(lE){};
+	spinor * createSpinorfieldWithOnesAndZerosDependingOnSiteParity(const bool fillEvenSites);
+	LatticeExtents latticeExtents;
+};
+
+struct EvenOddSpinorfieldCreator : public SpinorfieldCreator
+{
+	EvenOddSpinorfieldCreator(LatticeExtents lE): SpinorfieldCreator(calculateEvenOddSpinorfieldSize(lE)), latticeExtents(lE){};
+	//todo: these should not be visible here, but be accessible via a fillType
+	void fillTwoSpinorBuffers(const hardware::buffers::Spinor * in1, const SpinorFillType fillTypeIn1, const hardware::buffers::Spinor * in2, const SpinorFillType fillTypeIn2);
+	void fillTwoSpinorfieldsDependingOnParity(spinor * sf_in1, spinor * sf_in2, int size);
+	void fillTwoSpinorBuffersDependingOnParity(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2);
+	LatticeExtents latticeExtents;
+};
+
+struct NonEvenOddSpinorTester : public SpinorTester
+{
+	NonEvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
+		SpinorTester(kernelName, pC, tP, rV) {};
+};
+
+struct EvenOddSpinorTester : public SpinorTester
+{
+	EvenOddSpinorTester(const std::string kernelName, const ParameterCollection pC, const SpinorTestParameters & tP, const ReferenceValues & rV) :
+		SpinorTester(kernelName, pC, tP, rV) {};
+};
+

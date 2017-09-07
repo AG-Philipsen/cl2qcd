@@ -190,4 +190,16 @@ typedef hmc_float aeStorageType;
 typedef ae aeStorageType;
 #endif
 
+#ifndef _INKERNEL_ //Kernels will not take namespaces etc.
+namespace common {
+	enum startcondition { cold_start = 1, hot_start, start_from_source };
+	enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2, rooted_stagg };
+	enum integrator { leapfrog = 1, twomn };
+	enum pbp_version {std = 1, tm_one_end_trick};
+	enum solver { cg = 1, bicgstab, bicgstab_save };
+	enum sourcetypes {point = 1, volume, timeslice, zslice};
+	enum sourcecontents {one = 1, z4, gaussian, z2};
+}
+#endif
+
 #endif /* _TYPESH_ */

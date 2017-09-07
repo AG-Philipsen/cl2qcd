@@ -33,6 +33,10 @@
 #include "../../hardware/code/gaugemomentum.hpp"
 #include "util.hpp"
 #include "../../meta/util.hpp"
+#include "../../interfaceImplementations/latticesParameters.hpp"
+#include "../../interfaceImplementations/physicsParameters.hpp"
+#include "../../interfaceImplementations/hardwareParameters.hpp"
+#include "../../interfaceImplementations/openClKernelParameters.hpp"
 
 static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed);
 
@@ -42,10 +46,13 @@ BOOST_AUTO_TEST_CASE(initialization)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Gaugemomenta gm(system);
+	Gaugemomenta gm(system, gaugemomentaParametersInterface);
 
 	BOOST_REQUIRE_NE(gm.get_buffers().size(), 0u);
 }
@@ -56,10 +63,13 @@ BOOST_AUTO_TEST_CASE(zero)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Gaugemomenta gm(system);
+	Gaugemomenta gm(system, gaugemomentaParametersInterface);
 
 	// fill all buffers with noise
 	for(auto buffer: gm.get_buffers()) {
@@ -73,7 +83,7 @@ BOOST_AUTO_TEST_CASE(zero)
 	for(auto buffer: gm.get_buffers()) {
 		size_t num_elems = buffer->get_elements();
 		ae * host_mem = new ae[num_elems];
-		buffer->get_device()->get_gaugemomentum_code()->exportGaugemomentumBuffer(host_mem, buffer);
+		buffer->get_device()->getGaugemomentumCode()->exportGaugemomentumBuffer(host_mem, buffer);
 		const ae zero = {0, 0, 0, 0, 0, 0, 0, 0};
 		for(size_t i = 0; i < num_elems; ++i) {
 			BOOST_REQUIRE_EQUAL(host_mem[i], zero);
@@ -86,7 +96,7 @@ static void fill_buffer(const hardware::buffers::Gaugemomentum * buf, int seed)
 	size_t num_elems = buf->get_elements();
 	ae * host_mem = new ae[num_elems];
 	fill(host_mem, num_elems, seed);
-	buf->get_device()->get_gaugemomentum_code()->importGaugemomentumBuffer(buf, host_mem);
+	buf->get_device()->getGaugemomentumCode()->importGaugemomentumBuffer(buf, host_mem);
 }
 
 BOOST_AUTO_TEST_CASE(gaussian)
@@ -95,11 +105,15 @@ BOOST_AUTO_TEST_CASE(gaussian)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Gaugemomenta gm(system);
-	physics::PRNG prng(system);
+	Gaugemomenta gm(system, gaugemomentaParametersInterface);
+	physics::PrngParametersImplementation prngParameters(params);
+	physics::PRNG prng(system, &prngParameters);
 
 	// fill with zeros
 	gm.zero();
@@ -118,11 +132,15 @@ BOOST_AUTO_TEST_CASE(squarenorm)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
+	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
 	logger.debug() << "Devices: " << system.get_devices().size();
 
-	Gaugemomenta gm(system);
-	physics::PRNG prng(system);
+	Gaugemomenta gm(system, gaugemomentaParametersInterface);
+	physics::PrngParametersImplementation prngParameters(params);
+	physics::PRNG prng(system, &prngParameters);
 
 	// only two very simple tests
 
@@ -161,14 +179,18 @@ BOOST_AUTO_TEST_CASE(saxpy)
 
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+	physics::PrngParametersImplementation prngParameters(params);
+	physics::PRNG prng(system, &prngParameters);
 
-	Gaugemomenta gauss(system);
+	Gaugemomenta gauss(system, gaugemomentaParametersInterface);
 	gauss.gaussian(prng);
-	Gaugemomenta zz(system);
+	Gaugemomenta zz(system, gaugemomentaParametersInterface);
 	zz.zero();
-	Gaugemomenta gm(system);
+	Gaugemomenta gm(system, gaugemomentaParametersInterface);
 
 	physics::lattices::saxpy(&gm, 1., gauss, zz);
 	BOOST_CHECK_CLOSE(physics::lattices::squarenorm(gm), physics::lattices::squarenorm(gauss), 1.e-8);
@@ -185,10 +207,14 @@ BOOST_AUTO_TEST_CASE(halo_update)
 	// simple test, squarenorm should not get changed by halo exchange
 	const char * _params[] = {"foo", "--ntime=16"};
 	meta::Inputparameters params(2, _params);
-	hardware::System system(params);
-	physics::PRNG prng(system);
+	physics::lattices::GaugemomentaParametersImplementation gaugemomentaParametersInterface{params};
+    hardware::HardwareParametersImplementation hP(&params);
+    hardware::code::OpenClKernelParametersImplementation kP(params);
+    hardware::System system(hP, kP);
+	physics::PrngParametersImplementation prngParameters(params);
+	physics::PRNG prng(system, &prngParameters);
 
-	const Gaugemomenta gm(system);
+	const Gaugemomenta gm(system, gaugemomentaParametersInterface);
 
 	gm.gaussian(prng);
 	orig_squarenorm = physics::lattices::squarenorm(gm);
