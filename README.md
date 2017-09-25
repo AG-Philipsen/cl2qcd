@@ -11,6 +11,14 @@ It provides the following executables:
 
 CL2QCD has been heavily optimized for AMD GPUs, providing world-class performance, but can also be used on NVIDIA GPUs and x86 CPUs.
 
+:warning: Note for users :bangbang:
+-----------------------------------
+
+Unfortunately, due to a migration from a different repository hosting service, the history of CL2QCD had to be fully rewritten.
+Please consider to clone it again, if you did before the **25.09.2017**.
+We apologise for any inconvenience this may cause.
+
+
 Installation
 ------------
 
