@@ -12,11 +12,11 @@
 #
 # CL2QCD is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+# along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------#
 
 function errecho() {
@@ -146,17 +146,64 @@ function GiveAdviceAboutAstyle() {
     errecho '  http://astyle.sourceforge.net/\n\n' 11
 }
 
+function PrintReportOnFilesWithWrongOrMissingHeader() {
+    errecho "=====================================================================================================\n" 14
+    errecho "   Here a list of files with wrong or missing license header:\n" 202
+    for file in "$@"; do
+        errecho "     - ${file}\n" 11
+    done
+    errecho "=====================================================================================================\n\n" 14
+}
+
+function AskUser()
+{
+    # Allows us to read user input below, assigns stdin to keyboard
+    exec < /dev/tty
+    errecho "$1  [Y/N]  " 14
+}
+
+function UserSaidYes()
+{
+    local userAnswer
+    while read userAnswer; do
+        if [ "$userAnswer" = "Y" ]; then
+            exec <&-
+            return 0
+        elif [ "$userAnswer" = "N" ]; then
+            exec <&-
+            return 1
+        else
+            errecho "\n Please enter Y (yes) or N (no): " 11
+        fi
+    done
+}
+
+function UserSaidNo()
+{
+    if UserSaidYes; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+function PrintSuggestionToFixHeader() {
+    errecho "The correct license header can be found in the\n" 202
+    errecho "   $CL2QCD_headerFile\n" 11
+    errecho "file.\n\n" 202
+}
+
 function PrintReportOnFilesWithStyleErrors() {
     errecho "=================================================================================================\n" 14
     errecho "   Here a list of the affected files:\n" 202
     for file in "$@"; do
-        errecho "     - ${file}\n" 208
+        errecho "     - ${file}\n" 11
     done
     errecho "\n"
-    errecho " Please fix before committing. Don't forget to run git add before trying to commit again.\n" 202
+    errecho " Please fix before committing. Don't forget to run \"git add\" before trying to commit again.\n" 202
     errecho " If the whole file is to be committed, this should work (run from the top-level directory):\n" 202
     errecho "\n"
     errecho "    astyle ${astyleParameters} $file; git add $file; git commit" 11
     errecho "\n"
-    errecho "=================================================================================================\n" 14
+    errecho "=================================================================================================\n\n" 14
 }

@@ -39,13 +39,14 @@
 #
 # CL2QCD is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+# along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+readonly CL2QCD_repositoryTopLevelPath="$(git rev-parse --show-toplevel)"
 readonly CL2QCD_hooksFolder="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 readonly CL2QCD_failureExitCode=1
 source ${CL2QCD_hooksFolder}/auxiliaryFunctions.bash || exit $CL2QCD_failureExitCode
@@ -120,28 +121,56 @@ stagedAndPartiallyStagedFiles=( "${stagedFiles[@]}" "${partiallyStagedFiles[@]}"
 # Remove all files that are staged *AND* partially staged -> we get only the fully staged files
 fullyStagedFiles=( $(tr ' ' '\n' <<< "${stagedAndPartiallyStagedFiles[@]}" | sort | uniq -u) )
 
-errecho "\n"
-errecho "Fixing  trailing whitespaces and newline at EOF in fully staged files:\n" 39
-for FILE in "${fullyStagedFiles[@]}"; do
-    errecho "   - $FILE\n" 87
+if [ ${#fullyStagedFiles[@]} -ne 0 ]; then
+    errecho "\n"
+    errecho "Fixing trailing whitespaces and newline at EOF in fully staged files:\n" 39
+    for file in "${fullyStagedFiles[@]}"; do
+        errecho "   - $file\n" 87
 
-    # Strip trailing whitespace
-    sed -i 's/[[:space:]]*$//' "$FILE"
+        # Strip trailing whitespace
+        sed -i 's/[[:space:]]*$//' "$file"
 
-    # Add newline to the end of the file
-    sed -i '$a\' "$FILE" # 'a\' appends the following text, which is nothing, in this case!
-    # The code "$a\" just says "match the last line of the file, and add nothing to it."
-    # But, implicitly, sed adds the newline to every line it processes if it is not already there.
+        # Add newline to the end of the file
+        sed -i '$a\' "$file" # 'a\' appends the following text, which is nothing, in this case!
+        # The code "$a\" just says "match the last line of the file, and add nothing to it."
+        # But, implicitly, sed adds the newline to every line it processes if it is not already there.
 
-    # Remove empty (w/o spaces) lines at the end of the file (http://sed.sourceforge.net/sed1line.txt)
-    sed -i -e :a -e '/^\n*$/{$d;N;};/\n$/ba' "$FILE"
-    # Alternative in awk, but it needs a temporary file
-    # awk '/^$/{emptyLines=emptyLines"\n"; next} {printf "%s", emptyLines; emptyLines=""; print}'
+        # Remove empty (w/o spaces) lines at the end of the file (http://sed.sourceforge.net/sed1line.txt)
+        sed -i -e :a -e '/^\n*$/{$d;N;};/\n$/ba' "$file"
+        # Alternative in awk, but it needs a temporary file
+        # awk '/^$/{emptyLines=emptyLines"\n"; next} {printf "%s", emptyLines; emptyLines=""; print}'
 
-    # Stage all changes
-    git add "$FILE"
-done
-errecho "\n"
+        # Stage all changes
+        git add "$file"
+    done
+fi
+#-----------------------------------------------------------------------------
+# Check CL2QCD header in staged files
+if [ ${#stagedFiles[@]} -ne 0 ]; then
+    CL2QCD_headerFile="${CL2QCD_repositoryTopLevelPath}/LICENSE/header.txt"
+    numberOfExpectedTextLines=$(sed '/^$/d' "${CL2QCD_headerFile}" | wc -l)
+    filesWithWrongOrMissingHeader=()
+    errecho "\n"
+    errecho "Checking header of staged files..." 39
+    for file in "${stagedFiles[@]}"; do
+        if [ $(grep -cE "[.](bash|c|C|cl|cmake|cpp|h|hpp|m|nb|py|sh)$" <<< "$file") -eq 1 ]; then
+            numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | wc -l)
+            if [ $numberOfMatchingLines -ne $numberOfExpectedTextLines ]; then
+                filesWithWrongOrMissingHeader+=( "$file" )
+            fi
+        fi
+    done
+    if [ ${#filesWithWrongOrMissingHeader[@]} -ne 0 ]; then
+        errecho "\n"
+        PrintReportOnFilesWithWrongOrMissingHeader "${filesWithWrongOrMissingHeader[@]}"
+        AskUser "Would you like to continue the commit without fixing the header of the files?"
+        if UserSaidNo; then
+            AbortCommit "Files with wrong or missing CL2QCD header found!" PrintSuggestionToFixHeader
+        fi
+    else
+        printf " \e[92mdone!\e[0m\n"
+    fi
+fi
 
 #-----------------------------------------------------------------------------
 #If there are still whitespace errors, print the offending file names and fail.
@@ -178,7 +207,7 @@ if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
         if [ ${#filesWithCodeStyleErrors[@]} -ne 0 ]; then
             AbortCommit "Code style error found!" PrintReportOnFilesWithStyleErrors "${filesWithCodeStyleErrors[@]}"
         else
-            errecho " done!\n\n" 39
+            errecho " done!\n" 39
         fi
     fi
 fi
