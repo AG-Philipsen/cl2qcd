@@ -1,14 +1,34 @@
 #!/bin/bash
 #
-# Check that the code follows a consistant code style
+# Check that the code follows a consistent code style and that
+# some given rules are respected by what is about to be committed.
 #
-# This code has been "stolen" from PyGit and slightly modified
-# by Matthias Bach <bach@compeng.uni-frankfurt.de>
+# LIST OF CHECKS:
+#  1) Check if user name and email are set and reasonable
+#  2) Check branch on which the commit is being done
+#  3) Prevent non-ASCII characters in filenames
+#  4) Go through fully staged files and
+#      - remove trailing spaces at end of lines
+#      - add end of line at the end of file
+#      - remove empty lines at the end of the file
+#      - run astyle on the file
+#  5) Make whitespace git check
 #
-# Copy this too .git/hooks to enforce proper coding style on
-# commited files
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# The code style check  has been "stolen" from PyGit and slightly
+# modified by Matthias Bach <bach@compeng.uni-frankfurt.de>
+#
+# The rest of the hook has been taken from BaHaMAS and adapted
+# by Alessandro Sciarra <sciarra@th.physik.uni-frankfurt.de>
+#
+# Copy this script to .git/hooks to enforce proper coding style on
+# committed files (or use automatic hooks setup)
 #
 # Copyright (c) 2012, 2013 Matthias Bach
+#               2017 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -24,39 +44,141 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
+#-----------------------------------------------------------------------------
 
-# Check for existence of astyle, and error out if not present.
-if ! builtin type -P astyle; then
-      echo "CL2QCD git pre-commit hook:"
-      echo "Did not find astyle, please install it before continuing."
-      exit 1
+readonly CL2QCD_hooksFolder="$(dirname "$(readlink -f "$BASH_SOURCE")")"
+readonly CL2QCD_failureExitCode=1
+source ${CL2QCD_hooksFolder}/auxiliaryFunctions.bash || exit $CL2QCD_failureExitCode
+
+#-----------------------------------------------------------------------------
+#Check for committer identity.
+readonly userName="$(git config --get user.name)"
+readonly userEmail="$(git config --get user.email)"
+if [ "$userName" = '' ] || [ "$userEmail" = '' ]; then
+    AbortCommit "User information not configured!" GiveAdviceAboutUserNameAndEmail
+fi
+if [[ ! $userName =~ ^[A-Z][[:alpha:]]+\ [A-Z][[:alpha:]]+$ ]]; then
+    AbortCommit "User name not allowed." GiveAdviceAboutUserNameFormat
+fi
+if [[ ! $userEmail =~ ^[^@]*@[^@]*$ ]]; then
+    AbortCommit "User email not allowed." GiveAdviceAboutUserEmailFormat
 fi
 
-ASTYLE_PARAMETERS="--options=astylerc"
+#-----------------------------------------------------------------------------
+#Check branch: direct commit on 'develop' should not be done
+readonly actualBranch="$(git rev-parse --abbrev-ref HEAD)"
 
-echo "--Checking style--"
-for file in `git diff-index --cached --name-only HEAD --diff-filter=ACMR| grep -e "\.c$" -e "\.cpp$" -e "\.h$" -e "\.hpp$" -e "\.cl$"` ; do
-    # nf is the temporary checkout. This makes sure we check against the
-    # revision in the index (and not the checked out version).
-    nf=`git checkout-index --temp ${file} | cut -f 1`
-    newfile=`mktemp /tmp/${nf}.XXXXXX` || exit 1
-    astyle ${ASTYLE_PARAMETERS} < $nf > $newfile 2>> /dev/null
-    diff -u -p "${nf}" "${newfile}"
-    r=$?
-    rm "${newfile}"
-    rm "${nf}"
-    if [ $r != 0 ] ; then
-echo "================================================================================================="
-echo " Code style error in: $file                                                                      "
-echo "                                                                                                 "
-echo " Please fix before committing. Don't forget to run git add before trying to commit again.        "
-echo " If the whole file is to be committed, this should work (run from the top-level directory):      "
-echo "                                                                                                 "
-echo "   astyle ${ASTYLE_PARAMETERS} $file; git add $file; git commit"
-echo "                                                                                                 "
-echo "================================================================================================="
-        exit 1
-    fi
+if [ "$actualBranch" = 'develop' ]; then
+    AbortCommit "Direct commits on \"$actualBranch\" branch should be avoided!" GiveAdviceAboutBranch
+fi
+
+#-----------------------------------------------------------------------------
+#Check added filenames (modified from pre-commit.sample)
+headSHA="$(git rev-parse --verify HEAD 2>/dev/null)"
+if [ "$headSHA" != '' ]; then
+    againstSHAToCompareWidth=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    againstSHAToCompareWidth=$(git hash-object -t tree /dev/null) # it gives 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+# If you want to allow non-ASCII filenames set this variable to true.
+allownonascii=$(git config --bool hooks.allownonascii)
+
+# Cross platform projects tend to avoid non-ASCII filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+#
+# NOTE: the use of brackets around a tr range is ok here, (it's
+#       even required, for portability to Solaris 10's /usr/bin/tr), since
+#       the square bracket bytes happen to fall in the designated range.
+if [ "$allownonascii" != 'true' ] && [ $(git diff --cached --name-only --diff-filter=A -z $againstSHAToCompareWidth | LC_ALL=C tr -d '[ -~]\0' | wc -c) -ne 0 ]; then
+    AbortCommit 'Attempt to add a non-ASCII file name.' GiveAdviceAboutNonASCIICharacters
+fi
+
+#-----------------------------------------------------------------------------
+#Do not allow spaces in filenames
+if [ $(git diff --cached --name-only --diff-filter=A -z $againstSHAToCompareWidth | grep -c '[ ]') -ne 0 ]; then
+    AbortCommit "Spaces are not allowed in filenames!"
+fi
+
+#-----------------------------------------------------------------------------
+# Work on tab/spaces in files (only those fully stages, since after
+# modification we have to add them and if done on partially staged
+# they would be then fully staged against user willing!
+# (adapted from https://gist.github.com/larsxschneider/3957621)
+# NOTE: Assume no spaces in filenames (checked above)
+stagedFiles=( $(git diff-index --name-only --cached --diff-filter=AM $againstSHAToCompareWidth | sort | uniq) )
+partiallyStagedFiles=( $(git status --porcelain --untracked-files=no | # Find all staged files
+                                egrep -i '^(A|M)M '                  | # Filter only partially staged files
+                                sed -e 's/^[AM]M[[:space:]]*//'      | # Remove leading git info
+                                sort | uniq) )                         # Remove duplicates
+
+# Merge staged files and partially staged files
+stagedAndPartiallyStagedFiles=( "${stagedFiles[@]}" "${partiallyStagedFiles[@]}" )
+
+# Remove all files that are staged *AND* partially staged -> we get only the fully staged files
+fullyStagedFiles=( $(tr ' ' '\n' <<< "${stagedAndPartiallyStagedFiles[@]}" | sort | uniq -u) )
+
+errecho "\n"
+errecho "Fixing  trailing whitespaces and newline at EOF in fully staged files:\n" 39
+for FILE in "${fullyStagedFiles[@]}"; do
+    errecho "   - $FILE\n" 87
+
+    # Strip trailing whitespace
+    sed -i 's/[[:space:]]*$//' "$FILE"
+
+    # Add newline to the end of the file
+    sed -i '$a\' "$FILE" # 'a\' appends the following text, which is nothing, in this case!
+    # The code "$a\" just says "match the last line of the file, and add nothing to it."
+    # But, implicitly, sed adds the newline to every line it processes if it is not already there.
+
+    # Remove empty (w/o spaces) lines at the end of the file (http://sed.sourceforge.net/sed1line.txt)
+    sed -i -e :a -e '/^\n*$/{$d;N;};/\n$/ba' "$FILE"
+    # Alternative in awk, but it needs a temporary file
+    # awk '/^$/{emptyLines=emptyLines"\n"; next} {printf "%s", emptyLines; emptyLines=""; print}'
+
+    # Stage all changes
+    git add "$FILE"
 done
-echo "--Checking style pass--"
+errecho "\n"
 
+#-----------------------------------------------------------------------------
+#If there are still whitespace errors, print the offending file names and fail.
+if ! git diff-index --check --cached $againstSHAToCompareWidth >/dev/null 2>&1; then
+    AbortCommit "Whitespace errors present in staged files!" GiveAdviceAboutWhitespaceError
+fi
+
+#-----------------------------------------------------------------------------
+# Get list of staged files which have to be checked with respect to style
+listOfFilesToBeChecked=( $(git diff-index --cached --name-only HEAD --diff-filter=ACMR | grep -e "\.c$" -e "\.cpp$" -e "\.h$" -e "\.hpp$" -e "\.cl$") )
+if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
+    # Check for existence of astyle, and error out if not present.
+    if ! builtin type -P astyle; then
+        AbortCommit "The program \"astyle\" was not found!" GiveAdviceAboutAstyle
+    else
+        errecho "\n"
+        errecho "Checking style of code... " 39
+        astyleParameters="--options=astylerc"
+        filesWithCodeStyleErrors=()
+        for file in "${listOfFilesToBeChecked[@]}"; do
+            # nf is the temporary checkout. This makes sure we check against the
+            # revision in the index (and not the checked out version).
+            nf=`git checkout-index --temp ${file} | cut -f 1`
+            newfile=`mktemp /tmp/${nf}.XXXXXX` || exit 1
+            astyle ${astyleParameters} < $nf > $newfile 2>> /dev/null
+            diff -u -p "${nf}" "${newfile}"
+            r=$?
+            rm "${newfile}"
+            rm "${nf}"
+            if [ $r != 0 ] ; then
+                filesWithCodeStyleErrors+=( "${file}" )
+            fi
+        done
+        if [ ${#filesWithCodeStyleErrors[@]} -ne 0 ]; then
+            AbortCommit "Code style error found!" PrintReportOnFilesWithStyleErrors "${filesWithCodeStyleErrors[@]}"
+        else
+            errecho " done!\n\n" 39
+        fi
+    fi
+fi
