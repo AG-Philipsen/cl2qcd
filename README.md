@@ -54,7 +54,7 @@ License
 
 CL2QCD itself is licensed under the [GPLv3](LICENSE).
 
-### Third-party code
+#### Third-party code
 
 This version of CL2QCD includes some bundled third-party code licensed under different licenses.
 
