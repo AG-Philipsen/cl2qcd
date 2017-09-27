@@ -14,6 +14,7 @@ It provides the possibility of producing gauge configurations using different al
 
 CL2QCD has been heavily optimized for AMD GPUs, providing world-class performance, but can also be used on NVIDIA GPUs and x86 CPUs.
 
+
 :warning: Note for users :bangbang:
 -----------------------------------
 
@@ -27,11 +28,6 @@ Installation
 
 See [INSTALL](INSTALL) for installation instructions.
 
-License
--------
-
-CL2QCD itself is licensed under the [GPLv3](LICENSE/LICENSE).
-However some bundled third-party code is licensed under [different licenses](LICENSE/thirdPartyCode.md).
 
 Publications
 ------------
@@ -51,3 +47,19 @@ Many technical details on CL2QCD and the optimizations included can be found in 
 A more recent overview of the code, with a detailed description about the implementation of the staggered formulation, can be found in &sect;3.2 of the PhD Thesis of Alessandro Sciarra.
 
 * A. Sciarra, [*&laquo;The QCD phase diagram at purely imaginary chemical potential from the lattice&raquo;*](https://github.com/AxelKrypton/PhD_Thesis), PhD Thesis, Goethe Universistät Frankfurt am Main, 2016.
+
+
+License
+-------
+
+CL2QCD itself is licensed under the [GPLv3](LICENSE).
+
+### Third-party code
+
+This version of CL2QCD includes some bundled third-party code licensed under different licenses.
+
+* Ranlux is distributed under the terms of the GNU General Public (GPL), but it originally was distributed under the [GPLv2](ranlux/COPYING).
+* Ranluxcl is distributed under the terms of an MIT license. For details look into the respective [source file](ranluxcl/ranluxcl.cl).
+* Einhard is distributed under the the terms of the GNU General Public (GPL)
+* Klepsydra is distributed under the the terms of the GNU General Public (GPL)
+* The CPP bindings for OpenCL are copyrighted by Khronos and may be [distributed freely](hacks/cl_hpp/CL/cl.hpp).

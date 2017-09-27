@@ -46,7 +46,6 @@
 # along with CL2QCD. If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
-readonly CL2QCD_repositoryTopLevelPath="$(git rev-parse --show-toplevel)"
 readonly CL2QCD_hooksFolder="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 readonly CL2QCD_failureExitCode=1
 source ${CL2QCD_hooksFolder}/auxiliaryFunctions.bash || exit $CL2QCD_failureExitCode
@@ -147,7 +146,7 @@ fi
 #-----------------------------------------------------------------------------
 # Check CL2QCD header in staged files
 if [ ${#stagedFiles[@]} -ne 0 ]; then
-    readonly CL2QCD_headerFile="${CL2QCD_repositoryTopLevelPath}/LICENSE/header.txt"
+    readonly CL2QCD_headerFile="${CL2QCD_hooksFolder}/header.txt"
     readonly numberOfExpectedTextLines=$(sed '/^$/d' "${CL2QCD_headerFile}" | wc -l)
     readonly expectedCopyright='Copyright \(c\) ([2][0-9]{3}[,-]?[ ]?)*'"$(date +%Y) ${userName}"
     filesWithWrongOrMissingHeader=()
