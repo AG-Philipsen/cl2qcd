@@ -28,7 +28,7 @@
 # committed files (or use automatic hooks setup)
 #
 # Copyright (c) 2012, 2013 Matthias Bach
-#               2017 Alessandro Sciarra
+# Copyright (c) 2017 Alessandro Sciarra
 #
 # This file is part of CL2QCD.
 #
@@ -55,6 +55,7 @@ source ${CL2QCD_hooksFolder}/auxiliaryFunctions.bash || exit $CL2QCD_failureExit
 #Check for committer identity.
 readonly userName="$(git config --get user.name)"
 readonly userEmail="$(git config --get user.email)"
+
 if [ "$userName" = '' ] || [ "$userEmail" = '' ]; then
     AbortCommit "User information not configured!" GiveAdviceAboutUserNameAndEmail
 fi
@@ -68,23 +69,22 @@ fi
 #-----------------------------------------------------------------------------
 #Check branch: direct commit on 'develop' should not be done
 readonly actualBranch="$(git rev-parse --abbrev-ref HEAD)"
-
 if [ "$actualBranch" = 'develop' ]; then
     AbortCommit "Direct commits on \"$actualBranch\" branch should be avoided!" GiveAdviceAboutBranch
 fi
 
 #-----------------------------------------------------------------------------
 #Check added filenames (modified from pre-commit.sample)
-headSHA="$(git rev-parse --verify HEAD 2>/dev/null)"
+readonly headSHA="$(git rev-parse --verify HEAD 2>/dev/null)"
 if [ "$headSHA" != '' ]; then
-    againstSHAToCompareWidth=HEAD
+    readonly againstSHAToCompareWidth=HEAD
 else
     # Initial commit: diff against an empty tree object
-    againstSHAToCompareWidth=$(git hash-object -t tree /dev/null) # it gives 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+    readonly againstSHAToCompareWidth=$(git hash-object -t tree /dev/null) # it gives 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 fi
 
 # If you want to allow non-ASCII filenames set this variable to true.
-allownonascii=$(git config --bool hooks.allownonascii)
+readonly allownonascii=$(git config --bool hooks.allownonascii)
 
 # Cross platform projects tend to avoid non-ASCII filenames; prevent
 # them from being added to the repository. We exploit the fact that the
@@ -109,17 +109,17 @@ fi
 # they would be then fully staged against user willing!
 # (adapted from https://gist.github.com/larsxschneider/3957621)
 # NOTE: Assume no spaces in filenames (checked above)
-stagedFiles=( $(git diff-index --name-only --cached --diff-filter=AM $againstSHAToCompareWidth | sort | uniq) )
-partiallyStagedFiles=( $(git status --porcelain --untracked-files=no | # Find all staged files
-                                egrep -i '^(A|M)M '                  | # Filter only partially staged files
-                                sed -e 's/^[AM]M[[:space:]]*//'      | # Remove leading git info
-                                sort | uniq) )                         # Remove duplicates
+readonly stagedFiles=( $(git diff-index --name-only --cached --diff-filter=AM $againstSHAToCompareWidth | sort | uniq) )
+readonly partiallyStagedFiles=( $(git status --porcelain --untracked-files=no | # Find all staged files
+                                         egrep -i '^(A|M)M '                  | # Filter only partially staged files
+                                         sed -e 's/^[AM]M[[:space:]]*//'      | # Remove leading git info
+                                         sort | uniq) )                         # Remove duplicates
 
 # Merge staged files and partially staged files
-stagedAndPartiallyStagedFiles=( "${stagedFiles[@]}" "${partiallyStagedFiles[@]}" )
+readonly stagedAndPartiallyStagedFiles=( "${stagedFiles[@]}" "${partiallyStagedFiles[@]}" )
 
 # Remove all files that are staged *AND* partially staged -> we get only the fully staged files
-fullyStagedFiles=( $(tr ' ' '\n' <<< "${stagedAndPartiallyStagedFiles[@]}" | sort | uniq -u) )
+readonly fullyStagedFiles=( $(tr ' ' '\n' <<< "${stagedAndPartiallyStagedFiles[@]}" | sort | uniq -u) )
 
 if [ ${#fullyStagedFiles[@]} -ne 0 ]; then
     errecho "\n"
@@ -147,22 +147,32 @@ fi
 #-----------------------------------------------------------------------------
 # Check CL2QCD header in staged files
 if [ ${#stagedFiles[@]} -ne 0 ]; then
-    CL2QCD_headerFile="${CL2QCD_repositoryTopLevelPath}/LICENSE/header.txt"
-    numberOfExpectedTextLines=$(sed '/^$/d' "${CL2QCD_headerFile}" | wc -l)
+    readonly CL2QCD_headerFile="${CL2QCD_repositoryTopLevelPath}/LICENSE/header.txt"
+    readonly numberOfExpectedTextLines=$(sed '/^$/d' "${CL2QCD_headerFile}" | wc -l)
+    readonly expectedCopyright='Copyright \(c\) ([2][0-9]{3}[,-]?[ ]?)*'"$(date +%Y) ${userName}"
     filesWithWrongOrMissingHeader=()
+    filesWithMissingCopyright=()
     errecho "\n"
     errecho "Checking header of staged files..." 39
     for file in "${stagedFiles[@]}"; do
         if [ $(grep -cE "[.](bash|c|C|cl|cmake|cpp|h|hpp|m|nb|py|sh)$" <<< "$file") -eq 1 ]; then
-            numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | wc -l)
+            readonly numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | wc -l)
             if [ $numberOfMatchingLines -ne $numberOfExpectedTextLines ]; then
-                filesWithWrongOrMissingHeader+=( "$file" )
+                filesWithWrongOrMissingHeader+=( "${file}" )
+            fi
+            if [ $(grep -cE "$expectedCopyright" "${file}") -eq 0 ]; then
+                filesWithMissingCopyright+=( "${file}" )
             fi
         fi
     done
-    if [ ${#filesWithWrongOrMissingHeader[@]} -ne 0 ]; then
+    if [ ${#filesWithMissingCopyright[@]} -ne 0 ] || [ ${#filesWithWrongOrMissingHeader[@]} -ne 0 ]; then
         errecho "\n"
-        PrintReportOnFilesWithWrongOrMissingHeader "${filesWithWrongOrMissingHeader[@]}"
+        if [ ${#filesWithWrongOrMissingHeader[@]} -ne 0 ]; then
+            PrintReportOnFilesWithWrongOrMissingHeader "${filesWithWrongOrMissingHeader[@]}"
+        fi
+        if [ ${#filesWithMissingCopyright[@]} -ne 0 ]; then
+            PrintReportOnFilesWithMissingCopyright "${filesWithMissingCopyright[@]}"
+        fi
         AskUser "Would you like to continue the commit without fixing the header of the files?"
         if UserSaidNo; then
             AbortCommit "Files with wrong or missing CL2QCD header found!" PrintSuggestionToFixHeader
@@ -180,7 +190,7 @@ fi
 
 #-----------------------------------------------------------------------------
 # Get list of staged files which have to be checked with respect to style
-listOfFilesToBeChecked=( $(git diff-index --cached --name-only HEAD --diff-filter=ACMR | grep -e "\.c$" -e "\.cpp$" -e "\.h$" -e "\.hpp$" -e "\.cl$") )
+readonly listOfFilesToBeChecked=( $(git diff-index --cached --name-only HEAD --diff-filter=ACMR | grep -e "\.c$" -e "\.cpp$" -e "\.h$" -e "\.hpp$" -e "\.cl$") )
 if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
     # Check for existence of astyle, and error out if not present.
     if ! builtin type -P astyle; then
@@ -188,13 +198,13 @@ if [ ${#listOfFilesToBeChecked[@]} -ne 0 ]; then
     else
         errecho "\n"
         errecho "Checking style of code... " 39
-        astyleParameters="--options=astylerc"
+        readonly astyleParameters="--options=astylerc"
         filesWithCodeStyleErrors=()
         for file in "${listOfFilesToBeChecked[@]}"; do
             # nf is the temporary checkout. This makes sure we check against the
             # revision in the index (and not the checked out version).
             nf=`git checkout-index --temp ${file} | cut -f 1`
-            newfile=`mktemp /tmp/${nf}.XXXXXX` || exit 1
+            newfile=`mktemp /tmp/${nf}.XXXXXX` || exit $CL2QCD_failureExitCode
             astyle ${astyleParameters} < $nf > $newfile 2>> /dev/null
             diff -u -p "${nf}" "${newfile}"
             r=$?

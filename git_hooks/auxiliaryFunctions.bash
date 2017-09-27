@@ -43,6 +43,37 @@ function AbortCommit() {
     exit $CL2QCD_failureExitCode
 }
 
+function AskUser()
+{
+    exec < /dev/tty #Allows us to read user input below, assigns stdin to keyboard
+    errecho "$1  [Y/N]  " 14
+}
+
+function UserSaidYes()
+{
+    local userAnswer
+    while read userAnswer; do
+        if [ "$userAnswer" = "Y" ]; then
+            exec <&- #Closes stdin descriptor
+            return 0
+        elif [ "$userAnswer" = "N" ]; then
+            exec <&- #Closes stdin descriptor
+            return 1
+        else
+            errecho "\n Please enter Y (yes) or N (no): " 11
+        fi
+    done
+}
+
+function UserSaidNo()
+{
+    if UserSaidYes; then
+        return 1
+    else
+        return 0
+    fi
+}
+
 #------------------------------------#
 # commit-msg hook specific functions #
 #------------------------------------#
@@ -155,42 +186,22 @@ function PrintReportOnFilesWithWrongOrMissingHeader() {
     errecho "=====================================================================================================\n\n" 14
 }
 
-function AskUser()
-{
-    # Allows us to read user input below, assigns stdin to keyboard
-    exec < /dev/tty
-    errecho "$1  [Y/N]  " 14
-}
-
-function UserSaidYes()
-{
-    local userAnswer
-    while read userAnswer; do
-        if [ "$userAnswer" = "Y" ]; then
-            exec <&-
-            return 0
-        elif [ "$userAnswer" = "N" ]; then
-            exec <&-
-            return 1
-        else
-            errecho "\n Please enter Y (yes) or N (no): " 11
-        fi
+function PrintReportOnFilesWithMissingCopyright() {
+    errecho "=====================================================================================================\n" 14
+    errecho "   Here a list of files with missing copyright statement in the header:\n" 202
+    for file in "$@"; do
+        errecho "     - ${file}\n" 11
     done
-}
-
-function UserSaidNo()
-{
-    if UserSaidYes; then
-        return 1
-    else
-        return 0
-    fi
+    errecho "=====================================================================================================\n\n" 14
 }
 
 function PrintSuggestionToFixHeader() {
     errecho "The correct license header can be found in the\n" 202
     errecho "   $CL2QCD_headerFile\n" 11
-    errecho "file.\n\n" 202
+    errecho "file. If only the copyright statement is missing add\n" 202
+    errecho "   Copyright (c) [past-years]$(date +%Y) $userName\n" 11
+    errecho "in the header before the license part The [past-years] part may contain other years and\n" 202
+    errecho "you should use a comma separated list, using a \"-\" to concatenate consecutive years.\n\n" 202
 }
 
 function PrintReportOnFilesWithStyleErrors() {
