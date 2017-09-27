@@ -54,9 +54,8 @@ License
 
 CL2QCD itself is licensed under the [GPLv3](LICENSE).
 
-#### Third-party code
 
-This version of CL2QCD includes some bundled third-party code licensed under different licenses.
+However, it includes some bundled third-party code licensed under different licenses.
 
 * Ranlux is distributed under the terms of the GNU General Public (GPL), but it originally was distributed under the [GPLv2](ranlux/COPYING).
 * Ranluxcl is distributed under the terms of an MIT license. For details look into the respective [source file](ranluxcl/ranluxcl.cl).
