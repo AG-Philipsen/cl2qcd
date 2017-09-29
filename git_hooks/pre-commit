@@ -7,12 +7,15 @@
 #  1) Check if user name and email are set and reasonable
 #  2) Check branch on which the commit is being done
 #  3) Prevent non-ASCII characters in filenames
-#  4) Go through fully staged files and
+#  4) Make whitespace git check
+#  5) Go through fully staged files and
 #      - remove trailing spaces at end of lines
 #      - add end of line at the end of file
 #      - remove empty lines at the end of the file
-#      - run astyle on the file
-#  5) Make whitespace git check
+#  6) Go through staged files and
+#      - check copyright statement
+#      - check license notice
+#      - check code style using astyle
 #
 # Called by "git commit" with no arguments.  The hook should
 # exit with non-zero status after issuing an appropriate message if
@@ -58,10 +61,10 @@ readonly userEmail="$(git config --get user.email)"
 if [ "$userName" = '' ] || [ "$userEmail" = '' ]; then
     AbortCommit "User information not configured!" GiveAdviceAboutUserNameAndEmail
 fi
-if [[ ! $userName =~ ^[A-Z][[:alpha:]]+\ [A-Z][[:alpha:]]+$ ]]; then
+if [[ ! $userName =~ ^[A-Z][a-z]+(\ [A-Z][a-z]+)+$ ]]; then
     AbortCommit "User name not allowed." GiveAdviceAboutUserNameFormat
 fi
-if [[ ! $userEmail =~ ^[^@]*@[^@]*$ ]]; then
+if [[ ! $userEmail =~ ^[^@]+@[^@]+$ ]]; then
     AbortCommit "User email not allowed." GiveAdviceAboutUserEmailFormat
 fi
 
