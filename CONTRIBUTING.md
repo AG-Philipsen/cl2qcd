@@ -139,7 +139,7 @@ Still, you can use your favourite style developing the code, but you should run 
 This hooks enforces the [commit rules](#commit-rules), together with some more style check.
 
 * The commit is aborted if
-  * the first line of the commit has more than **60** characters;
+  * the first line of the commit has more than **50** characters;
   * the first line of the commit has less than **8** characters;
   * the first line does not begin with a character;
   * the second line is not empty;

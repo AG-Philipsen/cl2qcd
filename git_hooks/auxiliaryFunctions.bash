@@ -116,7 +116,7 @@ function IsFirstLineTooShort() {
 }
 
 function IsFirstLineTooLong() {
-    [ $(cat "$1" | head -1 | grep -c '^..\{60\}') -gt 0 ]  && return 0 || return 1
+    [ $(cat "$1" | head -1 | grep -c '^..\{50\}') -gt 0 ]  && return 0 || return 1
 }
 
 function IsSecondLineNotEmpty() {

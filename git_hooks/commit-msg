@@ -74,7 +74,7 @@ if IsFirstLineNotStartingWithLetter "$commitMessageFile"; then
 elif IsFirstLineTooShort "$commitMessageFile"; then
     AbortCommit "The first line of your commit must be at least 8 chars long!" GiveAdviceToResumeCommit
 elif IsFirstLineTooLong "$commitMessageFile"; then
-    AbortCommit "The first line of your commit exceeds the 60-char limit!" GiveAdviceToResumeCommit
+    AbortCommit "The first line of your commit exceeds the 50-char limit!" GiveAdviceToResumeCommit
 elif IsSecondLineNotEmpty "$commitMessageFile"; then
     AbortCommit "The second line of your commit must be empty!" GiveAdviceToResumeCommit
 elif IsAnyOfTheLinesAfterTheSecondTooLong "$commitMessageFile"; then
