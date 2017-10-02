@@ -143,8 +143,8 @@ function GiveAdviceAboutUserNameAndEmail() {
 function GiveAdviceAboutUserNameFormat() {
     errecho 'Please, configure your user.name using the command\n' 202
     errecho '   git config --global user.name "Your Name"\n' 11
-    errecho 'where your name has to be formed by two word starting with\n' 202
-    errecho 'capital letter and separated by one space.\n\n' 202
+    errecho 'where your name has to be formed by at least two words starting\n' 202
+    errecho 'with capital letter and separated by one space.\n\n' 202
     errecho 'Omit the "--global" option to set your infortmation only in the local repository.\n\n' 208
 }
 
@@ -153,6 +153,16 @@ function GiveAdviceAboutUserEmailFormat() {
     errecho '   git config --global user.email "you@yourdomain.com"\n' 11
     errecho 'where your email has to be in a valid format as shown here above.\n\n' 202
     errecho 'Omit the "--global" option to set your infortmation only in the local repository.\n\n' 208
+}
+
+function GiveAdviceAboutCommitterNameFormat() {
+    errecho 'The committer name must be composed by at least two words starting\n' 202
+    errecho 'with capital letter and separated by one space.\n\n' 202
+}
+
+function GiveAdviceAboutCommitterEmailFormat() {
+    errecho 'The committer email must be a valid email address, for example\n' 202
+    errecho '   "xxx@yourdomain.com"\n\n' 11
 }
 
 function GiveAdviceAboutNonASCIICharacters() {

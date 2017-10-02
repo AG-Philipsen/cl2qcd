@@ -54,9 +54,27 @@ readonly CL2QCD_failureExitCode=1
 source ${CL2QCD_hooksFolder}/auxiliaryFunctions.bash || exit $CL2QCD_failureExitCode
 
 #-----------------------------------------------------------------------------
-#Check for committer identity.
-readonly userName="$(git config --get user.name)"
-readonly userEmail="$(git config --get user.email)"
+#Check for committer identity as such and check if it exists in history
+if [ "$GIT_AUTHOR_NAME" != '' ]; then
+    readonly userName="$GIT_AUTHOR_NAME"
+else
+    readonly userName="$(git config --get user.name)"
+fi
+if [ "$GIT_AUTHOR_EMAIL" != '' ]; then
+    readonly userEmail="$GIT_AUTHOR_EMAIL"
+else
+    readonly userEmail="$(git config --get user.email)"
+fi
+if [ "$GIT_COMMITTER_NAME" != '' ]; then
+    readonly committerName="$GIT_COMMITTER_NAME"
+else
+    readonly committerName="$(git config --get user.name)"
+fi
+if [ "$GIT_COMMITTER_EMAIL" != '' ]; then
+    readonly committerEmail="$GIT_COMMITTER_EMAIL"
+else
+    readonly committerEmail="$(git config --get user.email)"
+fi
 
 if [ "$userName" = '' ] || [ "$userEmail" = '' ]; then
     AbortCommit "User information not configured!" GiveAdviceAboutUserNameAndEmail
@@ -66,6 +84,32 @@ if [[ ! $userName =~ ^[A-Z][a-z]+(\ [A-Z][a-z]+)+$ ]]; then
 fi
 if [[ ! $userEmail =~ ^[^@]+@[^@]+$ ]]; then
     AbortCommit "User email not allowed." GiveAdviceAboutUserEmailFormat
+fi
+if [[ ! $committerName =~ ^[A-Z][a-z]+(\ [A-Z][a-z]+)+$ ]]; then
+    AbortCommit "Committer name not allowed." GiveAdviceAboutCommitterNameFormat
+fi
+if [[ ! $committerEmail =~ ^[^@]+@[^@]+$ ]]; then
+    AbortCommit "Committer email not allowed." GiveAdviceAboutCommitterEmailFormat
+fi
+
+readarray -t existingUserOrCommitterNamesAndEmails <<< "$(cat <(git log --all --format='%an %ae') <(git log --all --format='%cn %ce') | sort -u)"
+readonly existingUserOrCommitterNamesAndEmails
+newUser=0
+for userOrCommitterNameAndEmail in "${existingUserOrCommitterNamesAndEmails[@]}"; do
+    if [ "$userOrCommitterNameAndEmail" = "$userName $userEmail" ] || [ "$userOrCommitterNameAndEmail" = "$committerName $committerEmail"]; then
+        newUser=1
+        break
+    fi
+done
+if [ $newUser -eq 0 ]; then
+    errecho "\n"
+    errecho '\e[1mWARNING:\e[21m A new author and/or committer name(s) and/or email(s) has(have) been found.\n' 202
+    errecho "              Author:   $userName  <$userEmail>\n" 11
+    errecho "           Committer:   $committerName  <$committerEmail>\n\n" 11
+    AskUser "Would you like to continue the commit creating, then, a new author ot committer?" 202
+    if UserSaidNo; then
+        AbortCommit "Author and/or committer name(s) and/or email(s) to be checked!"
+    fi
 fi
 
 #-----------------------------------------------------------------------------

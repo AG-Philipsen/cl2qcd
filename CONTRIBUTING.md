@@ -2,7 +2,7 @@ How to contribute
 =================
 
 If you arrived on these page, it is probable that you are going to contribute to CL2QCD and, then, first of all, thanks for your work.
-If instead you are here for another purpose, we hope you will find what you sarch.
+If instead you are here for another purpose, we hope you will find what you search.
 
 CL2QCD grew over the years and it has become quite a large code.
 A uniform style and way of behaving by all the authors is crucial to contribute keeping it clean and ordered.
@@ -37,13 +37,13 @@ Uniforming the style
 
 ### Commit rules
 
-Around in the web, it is plenty of advices about how writing a good commit message.
+Around in the web, it is plenty of advice about how writing a good commit message.
 Reading here and there, we came up with our standard, which we report in the following.
 
 ##### Rules that MUST be respected
 
 1. Limit the subject line to **50** characters, but use at least **8**
-1. Capitalize the subject line
+1. Capitalise the subject line
 1. Do not end the subject line with a period
 1. Separate subject from body with a blank line
 1. Wrap the body at **72** characters
@@ -56,7 +56,7 @@ Reading here and there, we came up with our standard, which we report in the fol
 
 We encourage you to read [more about them](https://chris.beams.io/posts/git-commit/).
 It should not be so hard to get used to the above rules.
-However, to be sure to fullfil them, you should use the [git hooks](#using-the-distributed-git-hooks) distributed in the repository, which can be automatically set up.
+However, to be sure to fulfil them, you should use the [git hooks](#using-the-distributed-git-hooks) distributed in the repository, which can be automatically set up.
 
 
 ### Editing existing files or creating new ones
@@ -112,7 +112,7 @@ Again, to be sure to have done everything according to our standard, we encourag
 ### Using the distributed git hooks
 
 CL2QCD contains a set of git hooks which are meant to help the developer to respect the common style and to minimise the risk of violating the community rules.
-Executing the [`createHooksSymlink.bash`](git_hooks/createHooksSymlink.bash) will set up the availble hooks.
+Executing the [`createHooksSymlink.bash`](git_hooks/createHooksSymlink.bash) will set up the available hooks.
 Since [`astyle`](http://astyle.sourceforge.net/) is used to uniform the code style in the remote repository, you need to have it installed.
 Still, you can use your favourite style developing the code, but you should run `astyle` on the modified files before committing them.
 
@@ -121,6 +121,7 @@ Still, you can use your favourite style developing the code, but you should run 
 * It checks that git user name and the git email are set and reasonable.
    * The user name should contain only capitalised words with alphabetic characters, i.e. [[A-Za-z]](https://en.wikipedia.org/wiki/Regular_expression#Character_classes).
    * The email should be a valid one, preferably an institutional one.
+* It checks the user and committer identities and ask for confirmation in case they are not present in history.
 * It checks the branch name on which the commit is being done.
 * It prevents non-ASCII characters in filenames.
 * It makes the whitespace git check.
@@ -148,7 +149,7 @@ This hooks enforces the [commit rules](#commit-rules), together with some more s
   * any character among `.?!` at the end of the first line is repetitively removed (e.g. `commit..!!!` becomes `commit`);
   * trailing spaces at begin and end of the first two lines are removed.
 
-#### Useful tipps
+#### Useful information
 
 Most of the editors have the possibility to help you in typing a commit message.
 
