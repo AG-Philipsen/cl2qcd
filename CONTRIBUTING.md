@@ -1,7 +1,7 @@
 How to contribute
 =================
 
-If you arrived on these page, it is probable that you are going to contribute to CL2QCD and, then, first of all, thanks for your work.
+If you arrived on this page, it is probable that you are going to contribute to CL2QCD and, then, first of all, thanks for your work.
 If instead you are here for another purpose, we hope you will find what you search.
 
 CL2QCD grew over the years and it has become quite a large code.
@@ -21,7 +21,7 @@ To contribute to the project as external contributor, a natural, quite common an
 * Create a branch from where you want to base your work.
   **Avoid** to work directly on the `master` branch!
 * Develop the code as you wish regarding the content, but respect the style you find.
-* Commit your changes without violating [our rules](#commit-rules).
+* Commit your changes without violating our [commit rules](#commit-rules).
 * Be sure to have tested the new code.
   In any case run **all** the existing tests (running `ctest` in your `build` folder) to check that nothing was accidentally broken.
   Test your code on CPUs as well as on GPUs and, if possible, on different devices.
@@ -68,10 +68,10 @@ Here in the following, some guidelines for authors are provided in order to reac
 * If you are contributing for the first time, add you name and contact address (email) to the file [AUTHORS](AUTHORS.md).
 * If you create a new file, add copyright and license remarks to a comment at the top of the file (after a possible [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) and short introductory comments).
   Templates are provided below.
-  Copyright remarks should not only use the **(c)** symbol, but also the term **copyright**.
+  Copyright remarks should not only use the **(c)** symbol, but also the term **Copyright**.
 * When editing an existing file, ensure there is a copyright remark with your name.
   If there is none, add one directly below any existing copyright remarks.
-  If there is already a copyright remark with your name, ensure it contains the current name.
+  If there is already a copyright remark with your name, ensure it contains the current year.
   Otherwise add the current year.
   The years should form a comma-separated list.
   If more than two subsequent years are given, the list can be merged into a range.
@@ -132,7 +132,7 @@ Still, you can use your favourite style developing the code, but you should run 
 * It goes through all staged files and
    * it checks the copyright statement;
    * it checks the license notice;
-   * it checks the code style using astyle (which must to be installed).
+   * it checks the code style using astyle (which must be installed).
 
 #### `commit-msg`
 
