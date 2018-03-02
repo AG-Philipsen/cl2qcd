@@ -33,8 +33,8 @@
         hmc_float splaq;
         hmc_complex poly;
         hmc_float deltaH;
-        hmc_float prob;
         int accept;
+        hmc_float timeTrajectory;
         hmc_float rectangles;
     };
 #endif

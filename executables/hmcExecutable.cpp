@@ -92,30 +92,37 @@ void hmcExecutable::printHmcObservables(const std::string& filename)
 
 void hmcExecutable::printHmcObservablesToFile(const std::string& filename)
 {
-    const hmc_float exp_deltaH = std::exp(observables.deltaH);
     outputToFile.open(filename.c_str(), std::ios::out | std::ios::app);
     if(!outputToFile.is_open())
         throw File_Exception(filename);
-    outputToFile << iteration << "\t";
-    outputToFile.width(8);
-    outputToFile.precision(15);
-    outputToFile << observables.plaq << "\t" << observables.tplaq << "\t" << observables.splaq;
-    outputToFile << "\t" << observables.poly.re << "\t" << observables.poly.im << "\t"
-            << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im);
-    outputToFile << "\t" << observables.deltaH << "\t" << exp_deltaH << "\t" << observables.prob << "\t" << observables.accept;
-    //print number of iterations used in inversions with full and force precision
+    const std::streamsize shortPrecision = 4, longPrecision = 15;
+    const std::streamsize shortWidth = shortPrecision + 6, longWidth = longPrecision + 10; //+1 is always needed for the period, +4 is for e+XX in case of extreme values, +10 to give some breath
+    outputToFile.precision(longPrecision);
+    outputToFile << std::setw(8) << iteration //statistics up to 1e8-1
+                 << ' ' << std::setw(longWidth) << observables.plaq
+                 << ' ' << std::setw(longWidth) << observables.tplaq
+                 << ' ' << std::setw(longWidth) << observables.splaq
+                 << ' ' << std::setw(longWidth) << observables.poly.re
+                 << ' ' << std::setw(longWidth) << observables.poly.im
+                 << ' ' << std::setw(longWidth) << sqrt(observables.poly.re * observables.poly.re + observables.poly.im * observables.poly.im)
+                 << ' ' << std::setw(longWidth) << observables.deltaH;
+    outputToFile.precision(shortPrecision);
+    outputToFile << ' ' << std::setw(6) << observables.accept //we print 0 or 1 with some space around, but not too much
+                 << ' ' << std::setw(shortWidth) << observables.timeTrajectory;
+
     /**
-     * @todo: The counters should be implemented once the solver class is used!"
-     * until then, only write "0"!
+     * @TODO: Add here to the files the number of iterations used in inversions with high and low precision.
+     *        The counters should be implemented once the solver class is used! Something like:
+     *            int iter0 = 0;
+     *            int iter1 = 0;
+     *            outputToFile << "\t" << iter0 << "\t" << iter1;
+     *            if(parameters.get_use_mp()) {
+     *                outputToFile << "\t" << iter0 << "\t" << iter1;
+     *            }
      */
-    int iter0 = 0;
-    int iter1 = 0;
-    outputToFile << "\t" << iter0 << "\t" << iter1;
-    if(parameters.get_use_mp()) {
-        outputToFile << "\t" << iter0 << "\t" << iter1;
-    }
     if(meta::get_use_rectangles(parameters)) {
-        outputToFile << "\t" << observables.rectangles;
+        outputToFile.precision(longPrecision);
+        outputToFile << ' ' << std::setw(longWidth) << observables.rectangles;
     }
     outputToFile << std::endl;
     outputToFile.close();

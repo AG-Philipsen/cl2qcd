@@ -86,8 +86,9 @@ template<class SPINORFIELD> static hmc_observables perform_hmc_step(const physic
     //metropolis step: afterwards, the updated config is again in gaugefield and p
     logger.trace() << "\tHMC [MET]:\tperform Metropolis step: ";
     //this call calculates also the HMC-Observables
-    const hmc_observables obs = metropolis(rnd_number, parametersInterface.getBeta(), *gf, new_u, p, new_p, phi, spinor_energy_init, phi_mp.get(), spinor_energy_init_mp,
-            system, interfacesHandler);
+    hmc_observables obs = metropolis(rnd_number, parametersInterface.getBeta(), *gf, new_u, p, new_p, phi, spinor_energy_init,
+                                     phi_mp.get(), spinor_energy_init_mp, system, interfacesHandler);
+    obs.timeTrajectory = step_timer.getTime() / 1e6f; //in seconds
 
     if(obs.accept == 1) {
         // perform the change nonprimed->primed !
@@ -97,7 +98,7 @@ template<class SPINORFIELD> static hmc_observables perform_hmc_step(const physic
         logger.info() << "\tHMC [MET]:\tnew configuration rejected";
     }
     logger.info() << "\tHMC:\tfinished trajectory " << iter;
-    logger.info() << "\tHMC:\tstep duration (ms): " << step_timer.getTime() / 1e3f;
+    logger.info() << "\tHMC:\tstep duration (ms): " << obs.timeTrajectory * 1e3f;
 
     return obs;
 }

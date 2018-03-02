@@ -104,8 +104,9 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
 	    maxEigenvalue *= 1.05;
 	phi.Rescale_Coefficients(approx3, minEigenvalue, maxEigenvalue);
     //this call calculates also the HMC-Observables
-    const hmc_observables obs = metropolis(rnd_number, parametersInterface.getBeta(), *gf, new_u, p, new_p, phi, spinor_energy_init,
-                                           phi_mp.get(), spinor_energy_init_mp, system, interfacesHandler);
+    hmc_observables obs = metropolis(rnd_number, parametersInterface.getBeta(), *gf, new_u, p, new_p, phi, spinor_energy_init,
+                                     phi_mp.get(), spinor_energy_init_mp, system, interfacesHandler);
+    obs.timeTrajectory = step_timer.getTime() / 1e6f; //in seconds
 
     if(obs.accept == 1) {
         // perform the change nonprimed->primed !
@@ -115,7 +116,7 @@ template<class SPINORFIELD> static hmc_observables perform_rhmc_step(const physi
         logger.info() << "\tRHMC [MET]:\tnew configuration rejected";
     }
     logger.info() << "\tRHMC:\tfinished trajectory " << iter;
-    logger.info() << "\tRHMC:\tstep duration (ms): " << step_timer.getTime() / 1e3f;
+    logger.info() << "\tRHMC:\tstep duration (ms): " << obs.timeTrajectory * 1e3f;
 
 	//The optimal number of pseudofermion is calculated according to http://arxiv.org/abs/hep-lat/0608015v1
 	std::ostringstream reportOnConditionNumber;
