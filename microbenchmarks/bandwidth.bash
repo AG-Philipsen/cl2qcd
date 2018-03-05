@@ -30,4 +30,3 @@ RESULT_PREFIX=$1
 ./bandwidth --groups=$NUM_COMPUTE_UNITS --threads=$MAX_NATIVE_GROUP_SIZE --su3 | grep -v '^\[' > "$RESULT_PREFIX.sweepthreads.maxthreads.su3.chunk.dat"
 ./bandwidth --groups=$NUM_COMPUTE_UNITS --threads=$MAX_NATIVE_GROUP_SIZE --single | grep -v '^\[' > "$RESULT_PREFIX.sweepthreads.maxthreads.float.single.dat"
 ./bandwidth --groups=$NUM_COMPUTE_UNITS --threads=$MAX_NATIVE_GROUP_SIZE --su3 --single | grep -v '^\[' > "$RESULT_PREFIX.sweepthreads.maxthreads.su3.single.dat"
-
