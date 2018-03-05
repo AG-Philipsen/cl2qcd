@@ -202,7 +202,7 @@ if [ ${#stagedFiles[@]} -ne 0 ]; then
     errecho "Checking header of staged files..." 39
     for file in "${stagedFiles[@]}"; do
         if [ $(grep -cE "[.](bash|c|C|cl|cmake|cpp|h|hpp|m|nb|py|sh)$" <<< "$file") -eq 1 ]; then
-            readonly numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | wc -l)
+            numberOfMatchingLines=$(grep -o -f "${CL2QCD_headerFile}" "${file}" | wc -l)
             if [ $numberOfMatchingLines -ne $numberOfExpectedTextLines ]; then
                 filesWithWrongOrMissingHeader+=( "${file}" )
             fi
