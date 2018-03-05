@@ -1,15 +1,15 @@
 /** @file
- * 
+ *
  * Copyright (c) Mike Clark - 25th May 2005
- * 
+ *
  * alg_remez.C
- * 
+ *
  * AlgRemez is an implementation of the Remez algorithm, which in this
  * case is used for generating the optimal nth root rational
  * approximation.
- * 
+ *
  * Note this class requires the gnu multiprecision (GNU MP) library.
- * 
+ *
  */
 
 #include<math.h>
@@ -19,7 +19,7 @@
 #include "../../host_functionality/logger.hpp"
 
 // Constructor
-physics::algorithms::AlgRemez::AlgRemez(double lower, double upper, long precision) 
+physics::algorithms::AlgRemez::AlgRemez(double lower, double upper, long precision)
 {
   prec = precision;
   bigfloat::setDefaultPrecision(prec);
@@ -32,7 +32,7 @@ physics::algorithms::AlgRemez::AlgRemez(double lower, double upper, long precisi
     logger.trace() << "Approximation bounds are [" << (double)apstrt << "," << (double)apend << "]";
     logger.trace() << "Precision of arithmetic is " << precision;
   }
-  
+
   alloc = 0;
   n = 0;
   d = 0;
@@ -95,13 +95,13 @@ void physics::algorithms::AlgRemez::setBounds(double lower, double upper)
 }
 
 // Generate the rational approximation x^(pnum/pden)
-double physics::algorithms::AlgRemez::generateApprox(int degree, unsigned long pnum, 
+double physics::algorithms::AlgRemez::generateApprox(int degree, unsigned long pnum,
 				unsigned long pden)
 {
   return generateApprox(degree, degree, pnum, pden);
 }
 
-double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_degree, 
+double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_degree,
 				unsigned long pnum, unsigned long pden)
 {
   double *a_param = 0;
@@ -110,7 +110,7 @@ double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_deg
 }
 
 // Generate the rational approximation x^(pnum/pden)
-double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_degree, 
+double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_degree,
 				unsigned long pnum, unsigned long pden,
 				int a_len, double *a_param, int *a_pow)
 {
@@ -174,7 +174,7 @@ double physics::algorithms::AlgRemez::generateApprox(int num_degree, int den_deg
   } else {
     foundRoots = 1;
   }
-  
+
   delete [] step;
 
   // Return the maximum error in the approximation
@@ -201,10 +201,10 @@ int physics::algorithms::AlgRemez::getPFE(double *Res, double *Pole, double *Nor
 
   bigfloat *r = new bigfloat[n];
   bigfloat *p = new bigfloat[d];
-  
+
   for (int i=0; i<n; i++) r[i] = roots[i];
   for (int i=0; i<d; i++) p[i] = poles[i];
-  
+
   // Perform a partial fraction expansion
   pfe(r, p, norm);
 
@@ -240,7 +240,7 @@ int physics::algorithms::AlgRemez::getIPFE(double *Res, double *Pole, double *No
 
   bigfloat *r = new bigfloat[d];
   bigfloat *p = new bigfloat[n];
-  
+
   // Want the inverse function
   for (int i=0; i<n; i++) {
     r[i] = poles[i];
@@ -337,7 +337,7 @@ void physics::algorithms::AlgRemez::search(bigfloat *step) {
 	ensign = emsign;
       }
     }
-  
+
     while(yn >= ym) {		// March until error becomes smaller.
       if (++steps > 10) break;
       ym = yn;
@@ -372,7 +372,7 @@ void physics::algorithms::AlgRemez::search(bigfloat *step) {
     step[i] = q * delta;
   }
   step[neq] = step[neq-1];
-  
+
   for (i = 0; i < neq; i++) {	// Insert new locations for the zeros.
     xm = xx[i] - step[i];
     if (xm <= apstrt) continue;
@@ -393,7 +393,7 @@ void physics::algorithms::AlgRemez::equations(void) {
 
   bigfloat *AA = new bigfloat[(neq)*(neq)];
   bigfloat *BB = new bigfloat[neq];
-  
+
   for (i = 0; i < neq; i++) {	// set up the equations for solution by simq()
     ip = neq * i;		// offset to 1st element of this row of matrix
     x = xx[i];			// the guess for this row
@@ -433,7 +433,7 @@ bigfloat physics::algorithms::AlgRemez::approx(const bigfloat x) {
 
   // Work backwards toward the constant term.
   yn = param[n];		// Highest order numerator coefficient
-  for (i = n-1; i >= 0; i--) yn = x * yn  +  param[i]; 
+  for (i = n-1; i >= 0; i--) yn = x * yn  +  param[i];
   yd = x + param[n+d];	// Highest degree coefficient = 1.0
   for (i = n+d-1; i > n; i--) yd = x * yd  +  param[i];
 
@@ -452,7 +452,7 @@ bigfloat physics::algorithms::AlgRemez::getErr(bigfloat x, int *sign) {
     e = -e;
   }
   else *sign = 1;
-  
+
   return(e);
 }
 
@@ -490,7 +490,7 @@ int physics::algorithms::AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[]
 
   nm1 = n - 1;
   // Initialize IPS and X
-  
+
   ij = 0;
   for (i = 0; i < n; i++) {
     IPS[i] = i;
@@ -507,11 +507,11 @@ int physics::algorithms::AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[]
     }
     X[i] = (bigfloat)1.0 / rownrm;
   }
-  
+
   for (k = 0; k < nm1; k++) {
     big = 0.0;
     idxpiv = 0;
-    
+
     for (i = k; i < n; i++) {
       ip = IPS[i];
       ipk = n*ip + k;
@@ -521,7 +521,7 @@ int physics::algorithms::AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[]
 	idxpiv = i;
       }
     }
-    
+
     if (big == (bigfloat)0l) {
       logger.warn() << "In AlgRemez::simq. simq big=0";
       delete [] IPS;
@@ -557,7 +557,7 @@ int physics::algorithms::AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[]
     return(3);
   }
 
-  
+
   ip = IPS[0];
   X[0] = B[ip];
   for (i = 1; i < n; i++) {
@@ -570,10 +570,10 @@ int physics::algorithms::AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[]
     }
     X[i] = B[ip] - sum;
   }
-  
+
   ipn = n * IPS[n-1] + n - 1;
   X[n-1] = X[n-1] / A[ipn];
-  
+
   for (iback = 1; iback < n; iback++) {
     //i goes (n-1),...,1
     i = nm1 - iback;
@@ -581,11 +581,11 @@ int physics::algorithms::AlgRemez::simq(bigfloat A[], bigfloat B[], bigfloat X[]
     nip = n*ip;
     sum = 0.0;
     aa = A+nip+i+1;
-    for (j= i + 1; j < n; j++) 
+    for (j= i + 1; j < n; j++)
       sum += *aa++ * X[j];
     X[i] = (X[i] - sum) / A[nip+i];
   }
-  
+
   delete [] IPS;
   return(0);
 }
@@ -614,7 +614,7 @@ int physics::algorithms::AlgRemez::root() {
     poly[0] = -poly[0]/roots[i];
     for (j=1; j<=i; j++) poly[j] = (poly[j-1] - poly[j])/roots[i];
   }
-  
+
  // Now find the denominator roots
   poly[d] = 1l;
   for (i=0; i<d; i++) poly[i] = param[n+1+i];
@@ -665,7 +665,7 @@ bigfloat physics::algorithms::AlgRemez::polyDiff(bigfloat x, bigfloat *poly, lon
 
 
 // Newton's method to calculate roots
-bigfloat physics::algorithms::AlgRemez::rtnewt(bigfloat *poly, long i, bigfloat x1, 
+bigfloat physics::algorithms::AlgRemez::rtnewt(bigfloat *poly, long i, bigfloat x1,
 			  bigfloat x2, bigfloat xacc) {
   int j;
   bigfloat df, dx, f, rtn;
@@ -693,7 +693,7 @@ void physics::algorithms::AlgRemez::pfe(bigfloat *res, bigfloat *poles, bigfloat
   bigfloat *numerator = new bigfloat[n];
   bigfloat *denominator = new bigfloat[d];
 
-  // Construct the polynomials explicitly 
+  // Construct the polynomials explicitly
   for (i=1; i<n; i++) {
     numerator[i] = 0l;
     denominator[i] = 0l;
@@ -727,7 +727,7 @@ void physics::algorithms::AlgRemez::pfe(bigfloat *res, bigfloat *poles, bigfloat
       if (i!=j) res[i] /= poles[i]-poles[j];
     }
     res[i] *= norm;
-  }  
+  }
 
   // res now holds the residues
   j = 0;
