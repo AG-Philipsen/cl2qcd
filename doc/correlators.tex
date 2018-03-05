@@ -78,14 +78,14 @@ Hence, the pseudo-scalar with $\Gamma\gamma_5=1$ can be calculated as
 \begin{equation}
 C_{PS}  \sim \sum_i \left| \phi^{(i)} \right|^2\;.
 \end{equation}
-For the other correlators an explicit evaluation of the Dirac structure is necessary. 
+For the other correlators an explicit evaluation of the Dirac structure is necessary.
 
 
 \section{Mathematica File}
-The Mathematica file \verb+correlators.nb+ allows to extract the necessary structure, see comments there. The solutions $\phi$ are encoded as a matrix: $\phi^{(i)}_j = \phi_{ij}$. If you use the correlator function, remember that the matrix input needed corresponds to $\Gamma\gamma_5$; e.\,g.\ the pseudo-scalar structure is obtained via
+The Mathematica file \verb+tools/correlators.m+ in the \verb+cl2qcd+ main folder allows to extract the necessary structure, see comments there. The solutions $\phi$ are encoded as a matrix: $\phi^{(i)}_j = \phi_{ij}$. If you use the correlator function, remember that the matrix input needed corresponds to $\Gamma\gamma_5$; e.\,g.\ the pseudo-scalar structure is obtained via
 \begin{verbatim}
 correlator[unit,phi]
-\end{verbatim} 
+\end{verbatim}
 Unfortunately, Mathematica is not intelligent enough (or my knowledge of that program is too limited) in order to simplify the output so that this needs to be done ``manually''. All correlators should be sums/differences of either the squarnorm or the real part of entries of $\phi$. Note that we have only encoded the Dirac-structure. Summation of colour space is still needed (but trivial since we always consider colour singlet correlators).
 
 
