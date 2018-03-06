@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "../common_header_files/types.h"
+#include "../common_header_files/types.hpp"
 #include "../executables/exceptions.hpp"
 
 namespace physics{

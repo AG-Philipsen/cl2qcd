@@ -24,7 +24,7 @@
 #define BOOST_TEST_MODULE meta::parametersHmc
 #include <boost/test/unit_test.hpp>
 
-#include "../common_header_files/types.h"
+#include "../common_header_files/types.hpp"
 
 #include "parametersHmc.hpp"
 

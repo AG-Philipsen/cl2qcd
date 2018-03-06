@@ -22,7 +22,7 @@
 #ifndef ILDGIO_HPP_
 #define ILDGIO_HPP_
 
-#include "../common_header_files/types.h"
+#include "../common_header_files/types.hpp"
 #include <string>
 #include <vector>
 #include "../physics/lattices/latticesInterfaces.hpp"
@@ -32,4 +32,4 @@ namespace ildgIo {
 	void writeGaugefieldToFile(std::string, std::vector<Matrixsu3> &, const physics::lattices::GaugefieldParametersInterface *, int);
 }
 
-#endif 
+#endif

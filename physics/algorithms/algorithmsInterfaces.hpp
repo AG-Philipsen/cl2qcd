@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "../../common_header_files/types.h"
+#include "../../common_header_files/types.hpp"
 
 namespace physics{
 	namespace algorithms{
@@ -121,4 +121,3 @@ namespace physics{
 
 	}
 }
-

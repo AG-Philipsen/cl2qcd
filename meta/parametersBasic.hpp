@@ -23,7 +23,7 @@
 
 #include <vector>
 #include <string>
-#include "../common_header_files/types.h"
+#include "../common_header_files/types.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;

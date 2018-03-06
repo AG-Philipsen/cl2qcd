@@ -203,7 +203,7 @@ static std::vector<std::string> collect_build_files()
 	std::vector<std::string> out;
 	out.push_back("opencl_header.cl");
 	out.push_back("globaldefs.hpp");
-	out.push_back("types.h");
+	out.push_back("types.hpp");
 
 	return out;
 }

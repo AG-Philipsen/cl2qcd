@@ -27,7 +27,7 @@
 #include "hardwareParameters.hpp"
 #include "opencl_compiler.hpp"
 #include "profiling_data.hpp"
-#include "../common_header_files/types.h"
+#include "../common_header_files/types.hpp"
 #include "size_4.hpp"
 #include "../geometry/latticeGrid.hpp"
 

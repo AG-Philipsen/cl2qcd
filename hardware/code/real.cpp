@@ -26,10 +26,10 @@
 
 void hardware::code::Real::fill_kernels()
 {
-	basic_real_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_real.cl";
-	
+	basic_real_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.hpp" << "operations_real.cl";
+
 	logger.debug() << "Creating Real kernels...";
-	
+
 	//Setting operations kernel
 	get_elem_vec = createKernel("get_elem_vector") << basic_real_code << "real_access_vector_element.cl";
 	set_elem_vec = createKernel("set_elem_vector") << basic_real_code << "real_access_vector_element.cl";
@@ -49,7 +49,7 @@ void hardware::code::Real::clear_kernels()
 	cl_int clerr = CL_SUCCESS;
 
 	logger.debug() << "Clearing Real kernels...";
-	
+
 	//Setting operations kernel
 	clerr = clReleaseKernel(get_elem_vec);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -139,7 +139,7 @@ void hardware::code::Real::set_real_to_vector_element_device(const hardware::buf
 
 	clerr = clSetKernelArg(get_elem_vec, 1, sizeof(cl_int), &index);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(get_elem_vec, 2, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -158,7 +158,7 @@ void hardware::code::Real::set_vector_element_to_real_device(const hardware::buf
 
 	clerr = clSetKernelArg(set_elem_vec, 1, sizeof(cl_int), &index);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(set_elem_vec, 2, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -255,22 +255,22 @@ void hardware::code::Real::update_zeta_cgm_device(const hardware::buffers::Plain
 
 	clerr = clSetKernelArg(update_zeta_cgm, 1, sizeof(cl_mem), zeta_prev_prev->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_zeta_cgm, 2, sizeof(cl_mem), sbeta_prev->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_zeta_cgm, 3, sizeof(cl_mem), sbeta_pres->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_zeta_cgm, 4, sizeof(cl_mem), salpha_prev->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_zeta_cgm, 5, sizeof(cl_mem), sigma->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_zeta_cgm, 6, sizeof(int), &numeq);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_zeta_cgm, 7, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -293,10 +293,10 @@ void hardware::code::Real::update_beta_cgm_device(const hardware::buffers::Plain
 
 	clerr = clSetKernelArg(update_beta_cgm, 2, sizeof(cl_mem), zeta_prev->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_beta_cgm, 3, sizeof(int), &numeq);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_beta_cgm, 4, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -316,7 +316,7 @@ void hardware::code::Real::update_alpha_cgm_device(const hardware::buffers::Plai
 
 	clerr = clSetKernelArg(update_alpha_cgm, 1, sizeof(cl_mem), zeta_pres->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_alpha_cgm, 2, sizeof(cl_mem), beta_pres->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -328,7 +328,7 @@ void hardware::code::Real::update_alpha_cgm_device(const hardware::buffers::Plai
 
 	clerr = clSetKernelArg(update_alpha_cgm, 5, sizeof(int), &numeq);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	clerr = clSetKernelArg(update_alpha_cgm, 6, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -346,7 +346,7 @@ size_t hardware::code::Real::get_read_write_size(const std::string& in) const
 		//this kernel reads 1 real number and writes 1 real number
 		return D * (1 + 1);
 	}
-	
+
 	logger.warn() << "No if entered in Real::get_read_write_size, returning 0...";
 	return 0;
 }
@@ -358,7 +358,7 @@ uint64_t hardware::code::Real::get_flop_size(const std::string& in) const
 	if (in == "get_elem_vector" || in == "set_elem_vector") {
 		return 0;
 	}
-	
+
 	logger.warn() << "No if entered in Real::get_flop_size, returning 0...";
 	return 0;
 }
@@ -367,19 +367,19 @@ size_t hardware::code::Real::get_read_write_size_update(const std::string& in, c
 {
 	size_t D = kernelParameters->getFloatSize();
 	if (in == "update_alpha_cgm") {
-		if(numeq==0) 
+		if(numeq==0)
 			throw Print_Error_Message("get_read_write_size_update with update_alpha_cgm and numeq=0", __FILE__, __LINE__);
 		//this kernel reads 3 vectors of float, 3 float, 1 int and writes 1 vector of float
 		return (4 * numeq + 3 ) * D + sizeof(int);
 	}
 	if (in == "update_beta_cgm") {
-		if(numeq==0) 
+		if(numeq==0)
 			throw Print_Error_Message("get_read_write_size_update with update_beta_cgm and numeq=0", __FILE__, __LINE__);
 		//this kernel reads 2 vectors of float, 1 float, 1 int and writes 1 vector of float
 		return (3 * numeq + 1 ) * D + sizeof(int);
 	}
 	if (in == "update_zeta_cgm") {
-		if(numeq==0) 
+		if(numeq==0)
 			throw Print_Error_Message("get_read_write_size_update with update_zeta_cgm and numeq=0", __FILE__, __LINE__);
 		//this kernel reads 3 vectors of float, 2 float, 1 int and writes 1 vector of float
 		return (4 * numeq + 2 ) * D + sizeof(int);
@@ -390,17 +390,17 @@ size_t hardware::code::Real::get_read_write_size_update(const std::string& in, c
 uint64_t hardware::code::Real::get_flop_size_update(const std::string& in, const int numeq) const
 {
 	if (in == "update_alpha_cgm") {
-		if(numeq==0) 
+		if(numeq==0)
 			throw Print_Error_Message("get_flop_size_update with update_alpha_cgm and numeq=0", __FILE__, __LINE__);
 		return 4 * numeq;
 	}
 	if (in == "update_beta_cgm") {
-		if(numeq==0) 
+		if(numeq==0)
 			throw Print_Error_Message("get_flop_size_update with update_beta_cgm and numeq=0", __FILE__, __LINE__);
 		return 2 * numeq;
 	}
 	if (in == "update_zeta_cgm") {
-		if(numeq==0) 
+		if(numeq==0)
 			throw Print_Error_Message("get_flop_size_update with update_zeta_cgm and numeq=0", __FILE__, __LINE__);
 		return 11 * numeq;
 	}

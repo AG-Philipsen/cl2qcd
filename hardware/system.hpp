@@ -25,7 +25,7 @@
 #include "../meta/inputparameters.hpp"
 #include "hardwareParameters.hpp"
 #include "openClKernelParameters.hpp"
-#include "../common_header_files/types.h"
+#include "../common_header_files/types.hpp"
 #include "../geometry/latticeGrid.hpp"
 #include "size_4.hpp"
 #include <map>
@@ -40,7 +40,7 @@ namespace hardware {
 
 	/**
 	 * @todo merge with other exceptions
-	 */ 
+	 */
 	class OpenclException {
 		public:
 			OpenclException(int clerr);

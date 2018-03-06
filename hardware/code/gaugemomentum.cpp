@@ -52,7 +52,7 @@ void hardware::code::Gaugemomentum::fill_kernels()
 
 	logger.debug() << "Creating Gaugemomentum kernels...";
 
-	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "gaugemomentum_squarenorm_reduction.cl";
+	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.hpp" << "gaugemomentum_squarenorm_reduction.cl";
 
 	_set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_gaugemomentum_code <<  "gaugemomentum_zero.cl";
 	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_gaugemomentum_code << prng_code << "gaugemomentum_gaussian.cl";

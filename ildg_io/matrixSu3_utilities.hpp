@@ -22,7 +22,7 @@
 #ifndef _MATRIXSU3UTILITIES_HPP_
 #define _MATRIXSU3UTILITIES_HPP_
 
-#include "../common_header_files/types.h"
+#include "../common_header_files/types.hpp"
 #include "../common_header_files/operations_complex.hpp"
 
 #include <vector>

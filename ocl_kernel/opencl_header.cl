@@ -39,7 +39,7 @@
 #endif
 #endif
 
-/// this requires "globaldefs.hpp" and  "types.h"
+/// this requires "globaldefs.hpp" and  "types.hpp"
 #ifdef _USE_BLOCKED_LOOPS_
 #define PARALLEL_FOR(VAR, LIMIT) \
 size_t _block_size = (LIMIT + get_global_size(0) - 1) / get_global_size(0); \

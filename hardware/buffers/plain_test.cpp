@@ -22,7 +22,7 @@
 #include "plain.hpp"
 #include "../system.hpp"
 #include "../device.hpp"
-#include "../../common_header_files/types.h"
+#include "../../common_header_files/types.hpp"
 #include "../../meta/type_ops.hpp"
 #include "../interfaceMockups.hpp"
 

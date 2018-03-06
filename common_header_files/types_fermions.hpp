@@ -23,7 +23,7 @@
 #ifndef _TYPES_FERMIONSH_
 #define _TYPES_FERMIONSH_
 
-// relies on "types.h"
+// relies on "types.hpp"
 
 typedef struct {
 	hmc_complex e0;

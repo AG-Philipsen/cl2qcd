@@ -22,7 +22,7 @@
 #ifndef _PHYSICS_ALGORITHMS_RATIONAL_APPROX_
 #define _PHYSICS_ALGORITHMS_RATIONAL_APPROX_
 
-#include "../../common_header_files/types.h"
+#include "../../common_header_files/types.hpp"
 #include "alg_remez.h"
 #include "../fermionmatrix/fermionmatrix_stagg.hpp"
 #include <iostream>

@@ -23,7 +23,7 @@
 #define _HARDWARE_BUFFERS_3X3_
 
 #include "buffer.hpp"
-#include "../../common_header_files/types.h"
+#include "../../common_header_files/types.hpp"
 
 namespace hardware {
 namespace buffers {

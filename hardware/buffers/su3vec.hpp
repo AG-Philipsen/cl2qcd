@@ -24,7 +24,7 @@
 #define _HARDWARE_BUFFERS_SU3VEC_
 
 #include "buffer.hpp"
-#include "../../common_header_files/types.h"
+#include "../../common_header_files/types.hpp"
 #include "../../common_header_files/types_fermions.hpp"
 #include "../../geometry/latticeExtents.hpp"
 

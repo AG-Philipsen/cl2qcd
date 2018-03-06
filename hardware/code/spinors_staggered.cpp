@@ -50,9 +50,9 @@ void hardware::code::Spinors_staggered::fill_kernels()
 	logger.debug() << "Creating Spinors_staggered kernels...";
 
 	//Reductions are really small kernels, so few needed options loaded by hands
-	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_staggered_squarenorm_reduction.cl";
-	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.hpp" << "spinorfield_staggered_scalar_product_reduction.cl";
-	scalar_product_real_reduction_stagg = createKernel("scalar_product_real_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.hpp" << "spinorfield_staggered_scalar_product_reduction.cl";
+	global_squarenorm_reduction_stagg = createKernel("global_squarenorm_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.hpp" << "spinorfield_staggered_squarenorm_reduction.cl";
+	scalar_product_reduction_stagg = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.hpp" << "operations_complex.hpp" << "spinorfield_staggered_scalar_product_reduction.cl";
+	scalar_product_real_reduction_stagg = createKernel("scalar_product_real_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.hpp" << "operations_complex.hpp" << "spinorfield_staggered_scalar_product_reduction.cl";
 
 	//In staggered formulation either eo or non-eo kernels are built!!
 	if(kernelParameters->getUseEo()){

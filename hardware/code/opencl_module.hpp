@@ -21,7 +21,7 @@
 #ifndef _HARDWARE_CODE_OPENCLMODULE_
 #define _HARDWARE_CODE_OPENCLMODULE_
 
-#include "../../common_header_files/types.h"
+#include "../../common_header_files/types.hpp"
 
 #include "../openClKernelParameters.hpp"
 #include "../opencl_compiler.hpp"
@@ -70,7 +70,7 @@ public:
 	 * @param number task-id
 	 */
 	void virtual print_profiling(const std::string& filename, int number) const;
-	
+
 	/**
 	 * Returns the sources for all children modules.
 	 * @return basic_sources
@@ -142,7 +142,7 @@ private:
 	 * The device used by this module
 	 */
 	const hardware::Device * device;
-	
+
 	/**
 	 * The basic source used by all modules (children classes of this)
 	 */
