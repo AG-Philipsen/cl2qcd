@@ -26,7 +26,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "sources.hpp"
-#include "test_util_staggered.h"
+#include "test_util_staggered.hpp"
 #include <sstream>
 #include "../interfaceImplementations/interfacesHandler.hpp"
 #include "../interfaceImplementations/hardwareParameters.hpp"
@@ -93,7 +93,7 @@ static void test_volume_source_stagg(std::string content)
  	options.push_back("--sourcetype=volume");
 	std::string tmp = "--sourcecontent=" + content;
 	options.push_back(tmp.c_str());
-	
+
 	meta::Inputparameters params(5, &(options[0]));
     hardware::HardwareParametersImplementation hP(&params);
     hardware::code::OpenClKernelParametersImplementation kP(params);
@@ -104,7 +104,7 @@ static void test_volume_source_stagg(std::string content)
 
 	Staggeredfield_eo source(system, interfacesHandler.getInterface<physics::lattices::Staggeredfield_eo>());
 	set_volume_source(&source, prng);
-	
+
 	//The following lines are to be used to produce the ref_vec file needed to get the ref_value
 	//---> Comment them out when the reference values have been obtained!
 	/*
@@ -114,7 +114,7 @@ static void test_volume_source_stagg(std::string content)
 	}
 	return;
 	// */
-	
+
 	hmc_float sqnorm = squarenorm(source);
 	//Lattice is here 8^4 and we have even-odd preconditioning
 	logger.info() << "source content: " << content << " and squarnorm of volume source is " << sqnorm;

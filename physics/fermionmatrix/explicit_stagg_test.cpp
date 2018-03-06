@@ -28,7 +28,7 @@
 
 #include "../lattices/util.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "../test_util_staggered.h"
+#include "../test_util_staggered.hpp"
 #include "../../hardware/code/spinors.hpp"
 #include "../../interfaceImplementations/interfacesHandler.hpp"
 #include "../../interfaceImplementations/hardwareParameters.hpp"
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf1, 13);
 		pseudo_randomize<Staggeredfield_eo, su3vec>(&sf2, 31);
-		
+
 
 	//The following lines are to be used to produce the ref_vec file needed to get the ref_value
 	//---> Comment them out when the reference values have been obtained!
@@ -111,4 +111,3 @@ BOOST_AUTO_TEST_CASE(D_KS_eo)
 	}
 
 }
-
