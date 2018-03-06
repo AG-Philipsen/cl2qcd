@@ -23,8 +23,8 @@
 #include "SpinorStaggeredTester.hpp"
 #include "prng.hpp"
 #include "../../host_functionality/host_random.h" //@todo: remove this in the end!
-#include "Kolmogorov_Smirnov.h"
-#include "Normal_RNG_tests.h"
+#include "Kolmogorov_Smirnov.hpp"
+#include "Normal_RNG_tests.hpp"
 
 struct PrngSpinorTestParameters : public SpinorTestParameters
 {

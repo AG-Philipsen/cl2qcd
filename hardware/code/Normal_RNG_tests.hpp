@@ -77,7 +77,7 @@ bool mean_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float mu
 }
 
 /**
- * This function repeats the mean test on an ensemble of set of samples. We know that the 
+ * This function repeats the mean test on an ensemble of set of samples. We know that the
  * mean_test_single_set should success with a probability equal to the integral between
  * mu-num_sigma*sigma and mu+num_sigma*sigma of the normal distribution used to draw data.
  * This integral is equal to Erf[num_sigma/sqrt(2)]. This function print to the shell
@@ -105,7 +105,7 @@ void mean_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sig
     BOOST_CHECK(fabs(success_exp-success_teo)<1);
   else if(num_sigma>=2.9 && num_sigma<3.9)
     BOOST_CHECK(fabs(success_exp-success_teo)<0.25);
-  else 
+  else
     BOOST_CHECK(fabs(success_exp-success_teo)<0.1);
 }
 
@@ -129,7 +129,7 @@ void mean_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num_sig
 bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_float sigma=1){
   hmc_float data_variance=variance(a);
   hmc_float variance_std_dev=sqrt(2./(a.size()-1))*sigma*sigma;
-  if(data_variance>=(sigma*sigma-num_sigma*variance_std_dev) && 
+  if(data_variance>=(sigma*sigma-num_sigma*variance_std_dev) &&
      data_variance<=(sigma*sigma+num_sigma*variance_std_dev))
     return true;
   else{
@@ -139,9 +139,9 @@ bool variance_test_single_set(vector<hmc_float> a, hmc_float num_sigma, hmc_floa
     return false;
   }
 }
-  
+
 /**
- * This function repeats the variance test on an ensemble of set of samples. We know that the 
+ * This function repeats the variance test on an ensemble of set of samples. We know that the
  * variance_test_single_set should success with a probability equal to the integral between
  * mu-num_sigma*sigma and mu+num_sigma*sigma of the normal distribution used to draw data.
  * This integral is equal to Erf[num_sigma/sqrt(2)]. This function print to the shell
@@ -169,7 +169,7 @@ void variance_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num
     BOOST_CHECK(fabs(success_exp-success_teo)<1);
   else if(num_sigma>=2.9 && num_sigma<3.9)
     BOOST_CHECK(fabs(success_exp-success_teo)<0.5);
-  else 
+  else
     BOOST_CHECK(fabs(success_exp-success_teo)<0.25);
   //Note that "Typically, sample variances will be more variable than the normal
   //approximation predicts. This means our tests will fail more often than predicted. But
@@ -178,4 +178,3 @@ void variance_test_multiple_set(vector<vector<hmc_float>> samples, hmc_float num
   //do a more careful job of testing the distribution of the samples and have a solid theoretical
   //justification."
 }
-  

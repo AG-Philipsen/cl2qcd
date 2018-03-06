@@ -67,7 +67,7 @@ void test_nc(){
 //Function that construct Fn(x_i). Take a large number of samples n.
 //For each sample x_i we can compare the actual proportion of samples
 //less than x_i to the proportion of samples we would expect to have
-//seen. In other words, we will compare the empirical distribution 
+//seen. In other words, we will compare the empirical distribution
 //function with the theoretical distribution function.
 //The empirical distribution is defined as:
 //
@@ -94,7 +94,7 @@ vector<double> F(double mu=0, double sigma=1){
   for(int i=0; i<100; i++)
     out.push_back(nc(mu+(-5+0.1*i)*sigma,mu,sigma));
   return out;
-}  
+}
 
 //This function calculates K+ that is defined as sqrt(n)*max[Fn(x)-F(x)]
 double Kplus(vector<double> sample, double mu=0, double sigma=1){
@@ -129,6 +129,4 @@ double Kolmogorov_Smirnov(vector<vector<double>> samples, double mu=0, double si
   for(uint i=0; i<samples.size(); i++)
     Kp.push_back(Kplus(samples[i],mu,sigma));
   return how_often_between(Kp);
-}  
-
-
+}

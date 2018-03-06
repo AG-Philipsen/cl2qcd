@@ -24,8 +24,6 @@
 #define BOOST_TEST_MODULE HARDWARE_CODE_SPINORS_STAGGERED
 
 #include "SpinorStaggeredTester.hpp"
-//#include "Kolmogorov_Smirnov.h"
-//#include "Normal_RNG_tests.h"
 #include "PrngSpinorTester.hpp"
 
 #include "../../host_functionality/logger.hpp"
@@ -929,7 +927,7 @@ BOOST_AUTO_TEST_SUITE(SQUARENORM)
 	{
 		testNonEvenOddSquarenorm(  LatticeExtents{ns16, nt16}, SpinorFillTypes{ SpinorFillType::one} );
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
@@ -943,7 +941,7 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT)
 	{
 		testNonEvenOddScalarProduct( LatticeExtents{ns4, nt4}, SpinorFillTypes{ SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex} );
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REDUCTION_1 )
 	{
 		testNonEvenOddScalarProduct( LatticeExtents{ns8, nt8}, SpinorFillTypes{ SpinorFillType::one, SpinorFillType::one} );
@@ -1001,7 +999,7 @@ BOOST_AUTO_TEST_SUITE(SAX)
 	{
 		testNonEvenOddSax( LatticeExtents{ns16,nt4}, ComplexNumbers {{1.,1.}} );
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY)
@@ -1010,7 +1008,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 	{
 		testNonEvenOddSaxpy( LatticeExtents{ns4, nt4}, ComplexNumbers{{0.,0.}} );
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_2 )
 	{
 		testNonEvenOddSaxpy( LatticeExtents{ns8,nt4}, ComplexNumbers{{1.,0.}} );
@@ -1026,7 +1024,7 @@ BOOST_AUTO_TEST_SUITE(SAXPY)
 		testNonEvenOddSaxpy ( LatticeExtents{ns8,nt8}, ComplexNumbers{{1.,1.}} );
 
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPBYPZ)
@@ -1100,17 +1098,17 @@ BOOST_AUTO_TEST_SUITE(CONVERT_EO)
 	{
 	    testConvertToEvenOdd( LatticeExtents {ns4, nt4}, true );
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_2 )
 	{
 		testConvertToEvenOdd( LatticeExtents {ns8, nt4}, false );
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_3 )
 	{
 		testConvertFromEvenOdd( LatticeExtents{ns4, nt4}, true );
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( CONVERT_EO_4 )
 	{
 		testConvertFromEvenOdd( LatticeExtents{ns8, nt4}, false );
@@ -1124,22 +1122,22 @@ BOOST_AUTO_TEST_SUITE(SQUARENORM_EO)
 	{
 		testEvenOddSquarenorm( LatticeExtents{ns4,nt4}, SpinorFillTypes{SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_2 )
 	{
 		testEvenOddSquarenorm( LatticeExtents{ns4,nt4}, SpinorFillTypes{SpinorFillType::ascendingComplex});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_1 )
 	{
 		testEvenOddSquarenorm( LatticeExtents{ns8,nt8}, SpinorFillTypes{SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_2 )
 	{
 		testEvenOddSquarenorm( LatticeExtents{ns12,nt12}, SpinorFillTypes{SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SQUARENORM_EO_REDUCTION_3 )
 	{
 		testEvenOddSquarenorm( LatticeExtents{ns16,nt16}, SpinorFillTypes{SpinorFillType::one});
@@ -1153,7 +1151,7 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 	{
 		testEvenOddScalarProductComplex  ( LatticeExtents{ns8,nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_EO_2 )
 	{
 		testEvenOddScalarProductComplex  ( LatticeExtents{ns4,nt12}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::ascendingComplex});
@@ -1183,27 +1181,27 @@ BOOST_AUTO_TEST_SUITE(SCALAR_PRODUCT_EO)
 	{
 		testEvenOddScalarProductComplex  ( LatticeExtents{ns16,nt16}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_1 )
 	{
 		testEvenOddScalarProductReal  ( LatticeExtents{ns8,nt4}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_2 )
 	{
 		testEvenOddScalarProductReal  ( LatticeExtents{ns4,nt4}, SpinorFillTypes{SpinorFillType::ascendingComplex, SpinorFillType::ascendingComplex});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_REDUCTION_1 )
 	{
 		testEvenOddScalarProductReal  ( LatticeExtents{ns8,nt8}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_REDUCTION_2 )
 	{
 		testEvenOddScalarProductReal  ( LatticeExtents{ns12,nt12}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SCALAR_PRODUCT_REAL_EO_REDUCTION_3 )
 	{
 		testEvenOddScalarProductReal  ( LatticeExtents{ns16,nt16}, SpinorFillTypes{SpinorFillType::one, SpinorFillType::one});
@@ -1270,17 +1268,17 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 	{
 	    testEvenOddSaxArgComplex( LatticeExtents{ns16,nt8}, ComplexNumbers {{1.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_REAL_EO_1 )
 	{
 	    testEvenOddSaxReal( LatticeExtents{ns4,nt4}, RealNumbers {0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_REAL_EO_2 )
 	{
 	    testEvenOddSaxReal( LatticeExtents{ns8,nt4}, RealNumbers {1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_REAL_EO_3 )
 	{
 	    testEvenOddSaxReal( LatticeExtents{ns4,nt8}, RealNumbers {-1.});
@@ -1290,12 +1288,12 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 	{
 	    testEvenOddSaxArgReal( LatticeExtents{ns4,nt4}, RealNumbers {0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_ARG_REAL_EO_2 )
 	{
 	    testEvenOddSaxArgReal( LatticeExtents{ns8,nt4}, RealNumbers {1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_ARG_REAL_EO_3 )
 	{
 	    testEvenOddSaxArgReal( LatticeExtents{ns4,nt8}, RealNumbers {-1.});
@@ -1305,17 +1303,17 @@ BOOST_AUTO_TEST_SUITE(SAX_EO)
 	{
 	    testEvenOddSaxVecReal( LatticeExtents{ns4,nt4}, RealNumbers{1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_REAL_VEC_EO_2 )
 	{
 	    testEvenOddSaxVecReal( LatticeExtents{ns8,nt4}, RealNumbers {1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_REAL_VEC_EO_3 )
 	{
 	    testEvenOddSaxVecReal( LatticeExtents{ns4,nt8}, RealNumbers {-1.});
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPY_EO)
@@ -1359,17 +1357,17 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 	{
 	    testEvenOddSaxpyArgComplex( LatticeExtents{ns16,nt8}, ComplexNumbers {{1.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_1 )
 	{
 	    testEvenOddSaxpyReal( LatticeExtents{ns4,nt4}, RealNumbers {0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_2 )
 	{
 	    testEvenOddSaxpyReal( LatticeExtents{ns8,nt4}, RealNumbers {1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_EO_3 )
 	{
 	    testEvenOddSaxpyReal( LatticeExtents{ns4,nt8}, RealNumbers {-1.});
@@ -1379,12 +1377,12 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 	{
 	    testEvenOddSaxpyArgReal( LatticeExtents{ns4,nt4}, RealNumbers {0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_ARG_REAL_EO_2 )
 	{
 	    testEvenOddSaxpyArgReal( LatticeExtents{ns8,nt4}, RealNumbers {1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_ARG_REAL_EO_3 )
 	{
 	    testEvenOddSaxpyArgReal( LatticeExtents{ns4,nt8}, RealNumbers {-1.});
@@ -1394,12 +1392,12 @@ BOOST_AUTO_TEST_SUITE(SAXPY_EO)
 	{
 	    testEvenOddSaxpyVecReal( LatticeExtents{ns4,nt4}, RealNumbers {0.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_2 )
 	{
 	    testEvenOddSaxpyVecReal( LatticeExtents{ns8,nt4}, RealNumbers {1.});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPY_REAL_VEC_EO_3 )
 	{
 	    testEvenOddSaxpyVecReal( LatticeExtents{ns4,nt8}, RealNumbers {-1.});
@@ -1413,42 +1411,42 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_2 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_3 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_4 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_5 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_6 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_7 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_8 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_CPLX_EO_9 )
 	{
 	    testEvenOddSaxpbyComplex( LatticeExtents {ns8, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
@@ -1458,42 +1456,42 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_2 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_3 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_4 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_5 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_6 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_7 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_8 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_CPLX_EO_9 )
 	{
 	    testEvenOddSaxpbyArgComplex( LatticeExtents {ns8, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
@@ -1503,17 +1501,17 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 	{
 	    testEvenOddSaxpbyReal( LatticeExtents {ns4, nt4}, RealNumbers {{0.},{0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_REAL_EO_2 )
 	{
 	    testEvenOddSaxpbyReal( LatticeExtents {ns8, nt4}, RealNumbers {{1.},{0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_REAL_EO_3 )
 	{
 	    testEvenOddSaxpbyReal( LatticeExtents {ns12, nt4}, RealNumbers {{-1.},{0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_REAL_EO_4 )
 	{
 	    testEvenOddSaxpbyReal( LatticeExtents {ns4, nt12}, RealNumbers {{-0.5},{-0.5}});
@@ -1523,17 +1521,17 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 	{
 	    testEvenOddSaxpbyArgReal( LatticeExtents {ns4, nt4}, RealNumbers {{0.},{0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_REAL_EO_2 )
 	{
 	    testEvenOddSaxpbyArgReal( LatticeExtents {ns8, nt4}, RealNumbers {{1.},{0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_REAL_EO_3 )
 	{
 	    testEvenOddSaxpbyArgReal( LatticeExtents {ns12, nt4}, RealNumbers {{-1.},{0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBY_ARG_REAL_EO_4 )
 	{
 	    testEvenOddSaxpbyArgReal( LatticeExtents {ns4, nt12}, RealNumbers {{-0.5},{-0.5}});
@@ -1558,7 +1556,7 @@ BOOST_AUTO_TEST_SUITE(SAXPBY_EO)
 	{
 	    testEvenOddSaxpbyVecReal( LatticeExtents {ns4, nt12}, RealNumbers {{-0.5},{-0.5}});
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SAXPBYPZ_EO)
@@ -1567,42 +1565,42 @@ BOOST_AUTO_TEST_SUITE(SAXPBYPZ_EO)
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_2 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_3 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_4 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_5 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_6 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_7 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_8 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_EO_9 )
 	{
 	    testEvenOddSaxpbypzComplex( LatticeExtents {ns8, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
@@ -1612,47 +1610,47 @@ BOOST_AUTO_TEST_SUITE(SAXPBYPZ_EO)
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns4, nt4}, ComplexNumbers {{0.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_2 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns8, nt4}, ComplexNumbers {{1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_3 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns4, nt8}, ComplexNumbers {{0.,1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_4 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns8, nt8}, ComplexNumbers {{0.,-1.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_5 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns12, nt4}, ComplexNumbers {{-1.,0.},{0.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_6 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns4, nt12}, ComplexNumbers {{0.,0.},{-1.,0.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_7 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns12, nt12}, ComplexNumbers {{0.,0.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_8 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns16, nt8}, ComplexNumbers {{0.,1.},{0.,-1.}});
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAXPBYPZ_ARG_EO_9 )
 	{
 	    testEvenOddSaxpbypzArgComplex( LatticeExtents {ns8, nt16}, ComplexNumbers {{-0.5,0.},{-0.5,0.}});
 	}
-	
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GAUSSIAN_EO)
@@ -1672,22 +1670,22 @@ BOOST_AUTO_TEST_SUITE(SAX_VEC_AND_SQNORM)
 	{
 		testEvenOddSaxVecAndSqnorm( LatticeExtents {ns4,nt4}, ComplexNumbers {{0.,0.}}, 3);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_2 )
 	{
 		testEvenOddSaxVecAndSqnorm(  LatticeExtents {ns4,nt4}, ComplexNumbers {{1.,0.}}, 5);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_3 )
 	{
 		testEvenOddSaxVecAndSqnorm(  LatticeExtents {ns4,nt4}, ComplexNumbers {{1.,0.1}}, 5);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_4 )
 	{
 		testEvenOddSaxVecAndSqnorm(  LatticeExtents {ns4,nt4}, ComplexNumbers {{0.,1.}}, 5);
 	}
-	
+
 	BOOST_AUTO_TEST_CASE( SAX_VEC_AND_SQNORM_5 )
 	{
 		testEvenOddSaxVecAndSqnorm(  LatticeExtents {ns4,nt4}, ComplexNumbers {{0.01,0.025}}, 15);
