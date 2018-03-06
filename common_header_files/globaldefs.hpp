@@ -66,5 +66,3 @@
 #endif //_INKERNEL_
 
 #endif
-
-

@@ -20,7 +20,7 @@
 #pragma once
 
 #include "latticeExtents.hpp"
-#include "../common_header_files/globaldefs.h"
+#include "../common_header_files/globaldefs.hpp"
 #include "../hardware/size_4.hpp" //todo: remove!
 
 typedef uint latticeIndex;

@@ -23,7 +23,7 @@
 #ifndef _RANDOMH_
 #define _RANDOMH_
 
-#include "../common_header_files/globaldefs.h"
+#include "../common_header_files/globaldefs.hpp"
 #include "../common_header_files/types.h"
 #include <cmath>
 #include "host_use_timer.hpp"

@@ -52,7 +52,7 @@ static std::string collect_build_options(const hardware::Device * device, const 
 
 	std::ostringstream options;
 	options.precision(16);
-	
+
 	options << "-I " << SOURCEDIR;
 	options << " -D _INKERNEL_";
 	options << " -D NSPACE=" << kernelParameters.getNs();
@@ -128,11 +128,11 @@ static std::string collect_build_options(const hardware::Device * device, const 
 	options << " -D SPINORFIELDSIZE_GLOBAL=" << kernelParameters.getSpinorFieldSize();
 	options << " -D SPINORFIELDSIZE_LOCAL=" << get_vol4d(local_size);
 	options << " -D SPINORFIELDSIZE_MEM=" << get_vol4d(mem_size);
-	
+
 	options << " -D GAUGEMOMENTASIZE_GLOBAL=" << kernelParameters.getLatticeVolume() * NDIM;
 	options << " -D GAUGEMOMENTASIZE_LOCAL=" << get_vol4d(local_size) * NDIM;
 	options << " -D GAUGEMOMENTASIZE_MEM=" << get_vol4d(mem_size) * NDIM;
-	
+
 	if(check_Gaugemomentum_for_SOA(device)) {
 		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(get_vol4d(mem_size)*NDIM, device);
 	}
@@ -178,7 +178,7 @@ static std::string collect_build_options(const hardware::Device * device, const 
 
 	//This is mainly for molecular dynamics
 	options <<  " -D BETA=" << kernelParameters.getBeta();
-	
+
 	//Options for correlators
 	if(kernelParameters.getFermact() != common::action::rooted_stagg){
 		hmc_float kappa_tmp = kernelParameters.getKappa();
@@ -188,13 +188,13 @@ static std::string collect_build_options(const hardware::Device * device, const 
 	options << " -D NUM_SOURCES=" << kernelParameters.getNumSources();
 	//CP: give content of sources as compile parameters
 	options << " -D SOURCE_CONTENT=" << kernelParameters.getSourceContent();
-	
+
 	//Options for heatbath
 	if(kernelParameters.getUseAniso() == true) {
 		options << " -D _ANISO_";
 		options << " -D XI_0=" << kernelParameters.getXi0();
 	}
-	
+
 	return options.str();
 }
 
@@ -202,7 +202,7 @@ static std::vector<std::string> collect_build_files()
 {
 	std::vector<std::string> out;
 	out.push_back("opencl_header.cl");
-	out.push_back("globaldefs.h");
+	out.push_back("globaldefs.hpp");
 	out.push_back("types.h");
 
 	return out;

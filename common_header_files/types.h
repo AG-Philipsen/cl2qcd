@@ -23,7 +23,7 @@
 #ifndef _TYPESH_
 #define _TYPESH_
 
-/// this definitions rely on "globaldefs.h"
+/// this definitions rely on "globaldefs.hpp"
 
 #ifndef _INKERNEL_
 #ifdef __APPLE__
