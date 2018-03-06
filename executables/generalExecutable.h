@@ -32,7 +32,7 @@
 
 #include "../common_header_files/types.h"
 #include "../host_functionality/host_use_timer.h"
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 #include "../host_functionality/logger.hpp"
 #include "../meta/util.hpp"
 #include "../hardware/system.hpp"
@@ -57,7 +57,7 @@ protected:
 	* Initialize meta::Inputparametes and hardware::System objects
 	 */
 	//Protected since it makes no sense to allow the user to instantiate this class
-	generalExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters"); 
+	generalExecutable(int argc, const char* argv[], std::string parameterSet = "all parameters");
 
 	const char* ownName;
 	std::string filenameForLogfile;

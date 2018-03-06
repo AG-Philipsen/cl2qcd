@@ -20,7 +20,7 @@
 
 #include "SourcefileParameters_utilities.hpp"
 
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 
 #include <iterator>
 #include <boost/regex.hpp>
@@ -87,7 +87,7 @@ public:
 static std::map<std::string, ParserMap_xlf> createParserMap_xlf()
 {
 	std::map<std::string, ParserMap_xlf> parserMap;
-	
+
 	parserMap["plaquette"].re = boost::regex ("plaquette\\s*=\\s*[\\+\\-]*\\d+[.]*\\d*");
 	parserMap["trajectory_nr"].re = boost::regex ("trajectory nr\\s+=\\s+[\\+\\-]*\\d+");
 	parserMap["beta"].re = boost::regex ("beta\\s*=\\s*[\\+\\-]*\\d+[.]*\\d*");
@@ -99,7 +99,7 @@ static std::map<std::string, ParserMap_xlf> createParserMap_xlf()
 	parserMap["mubar"].re = boost::regex ("mubar\\s+=\\s+[\\+\\-]*\\d+[.]*\\d*");
 	parserMap["epsilonbar"].re = boost::regex ("epsilonbar\\s+=\\s+[\\+\\-]*\\d+[.]*\\d*");
  	parserMap["date"].re = boost::regex ("date\\s+=\\s+[\\s\\.a-zA-Z\\d\\:]+");
-	
+
 	return parserMap;
 }
 
@@ -125,12 +125,12 @@ static void mapStringToParserMap(std::string str, std::map<std::string, ParserMa
 {
 	logger.trace() << "Going through string:";
 	logger.trace() << str;
-	
+
 	//todo: find out about ::iterator
 	for (std::map<std::string, ParserMap_xlf>::iterator it = parserMap.begin(); it != parserMap.end(); it++)
 	{
 		logger.trace() << "Check for \"" + it->first + "\"";
-		
+
 		//todo: make this more beautiful
 		//http://stackoverflow.com/questions/10058606/c-splitting-a-string-by-a-character
 		//start/end points of tokens in str
@@ -146,7 +146,7 @@ static void mapStringToParserMap(std::string str, std::map<std::string, ParserMa
 			logger.trace() << "Found match for \"" << it->first << "\":";
 			for (int i = 0; i<(int) tokens.size(); i++)
 				logger.trace() << tokens[i];
-			
+
 			it->second.str = removeNewlines( tokens[0] );
 			it->second.value =  trimStringBeforeEqual(it->second.str);
 			logger.trace() << "Match for \"" + it->first << "\": " + it->second.str;
@@ -201,18 +201,18 @@ void goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(const char * bu
 
 	if (reader != NULL) {
 		returnValue = xmlTextReaderRead(reader);
-		while (returnValue == 1) 
+		while (returnValue == 1)
 		{
 			extractXmlValuesBasedOnMap(reader, &parserMap);
 			returnValue = xmlTextReaderRead(reader);
 		}
-		if (returnValue == -1) 
+		if (returnValue == -1)
 		{
 			throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
 		}
 		xmlFreeTextReader(reader);
-	} 
-	else 
+	}
+	else
 		throw Print_Error_Message( "There was an error in the XML parser...", __FILE__, __LINE__);
 }
 
@@ -246,13 +246,13 @@ static void fillParserMap_scidacChecksum(std::map<std::string, std::string> & pa
 static void setParametersToValues_scidacChecksum(Sourcefileparameters & parameters, std::map <std::string, std::string> parserMap)
 {
 	uint32_t suma, sumb;
-	
+
 	std::stringstream tmp, tmp2;
 	tmp << parserMap["suma"];
 	tmp >> std::hex >> suma;
 	tmp2 << parserMap["sumb"];
 	tmp2 >> std::hex >> sumb;
-	
+
 	parameters.checksum =  Checksum(suma, sumb);
 }
 
@@ -272,16 +272,16 @@ int calcNumberOfEntriesForGaugefield(const Sourcefileparameters params)
 int calcNumberOfEntriesBasedOnFieldType(const Sourcefileparameters params) throw(Print_Error_Message)
 {
 	std::string fieldType = params.field;
-	
-	if(fieldType == "diracFermion") 
+
+	if(fieldType == "diracFermion")
 	{
 		return calcNumberOfEntriesForDiracFermionfield( params );
-	} 
-	else if( fieldType == "su3gauge") 
+	}
+	else if( fieldType == "su3gauge")
 	{
 		return calcNumberOfEntriesForGaugefield( params );
-	} 
-	else 
+	}
+	else
 	{
 		throw Print_Error_Message("Unknown ildg field type \"" + fieldType + "\"", __FILE__, __LINE__);
 	}
@@ -292,9 +292,9 @@ void sourcefileParameters::setFromLimeEntry_ildg(Sourcefileparameters & paramete
 {
 	std::map<std::string, std::string> parserMap;
 	fillParserMap_ildg(parserMap);
-			
+
 	goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, numberOfBytes, parserMap);
-			
+
 	setParametersToValues_ildg(parameters, parserMap);
 	parameters.num_entries = calcNumberOfEntriesBasedOnFieldType(parameters);
 }
@@ -306,4 +306,3 @@ void sourcefileParameters::setFromLimeEntry_scidacChecksum(Sourcefileparameters 
 	goThroughBufferWithXmlReaderAndExtractInformationBasedOnMap(buffer, numberOfBytes, parserMap);
 	setParametersToValues_scidacChecksum(parameters, parserMap);
 }
-	

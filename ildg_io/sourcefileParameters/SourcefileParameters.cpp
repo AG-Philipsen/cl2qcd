@@ -20,7 +20,7 @@
 
 #include "SourcefileParameters.hpp"
 
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 #include "../host_functionality/logger.hpp"
 
 Sourcefileparameters::Sourcefileparameters()
@@ -31,7 +31,7 @@ Sourcefileparameters::Sourcefileparameters()
 Sourcefileparameters::Sourcefileparameters(const IldgIoParameters * parameters, int trajectoryNumber, double plaquette, Checksum checksumIn, std::string hmcVersion)
 {
 	set_defaults();
-	
+
 	lx = parameters->getNs();
 	ly = parameters->getNs();
 	lz = parameters->getNs();
@@ -42,9 +42,9 @@ Sourcefileparameters::Sourcefileparameters(const IldgIoParameters * parameters, 
 	beta = parameters->getBeta();
 	kappa = parameters->getKappa();
 	mu = parameters->getMu();
-	
+
 	hmcversion = hmcVersion;
-	
+
 	checksum = checksumIn;
 }
 
@@ -111,9 +111,9 @@ void Sourcefileparameters::set_defaults()
 	epssq = 0;
 	kappa_solver = 0;
 	mu_solver = 0;
-	
+
 	numberOfFermionFieldsRead = 0;
-	
+
 	field = "";
 	date = "";
 	hmcversion = "";
@@ -139,7 +139,7 @@ std::string Sourcefileparameters::getInfo_xlfInfo()
 {
 	time_t current_time = getCurrentTime();
 	const char * date = getDateFromTime(current_time);
-	
+
 	std::string xlfInfo = "";
 	xlfInfo += "plaquette = " + boost::lexical_cast<std::string>(this->plaquettevalue) + "\n";
 	xlfInfo += "trajectory nr = " + boost::lexical_cast<std::string>(this->trajectorynr) + "\n";
@@ -152,14 +152,14 @@ std::string Sourcefileparameters::getInfo_xlfInfo()
 	xlfInfo += "mubar = " + boost::lexical_cast<std::string>(this->mubar) + "\n";
 	xlfInfo += "epsilonbar = " + boost::lexical_cast<std::string>(this->epsilonbar) + "\n";
 	xlfInfo += "date = " + boost::lexical_cast<std::string>(date) + "\n";
-	
+
 	return xlfInfo;
 }
 
 std::string Sourcefileparameters::getInfo_ildgFormat_gaugefield()
 {
 	std::string description = "su3gauge";
-	
+
 	std::string ildgFormat = "";
 	ildgFormat += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ildgFormat xmlns=\"http://www.lqcd.org/ildg\"\n            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n            xsi:schemaLocation=\"http://www.lqcd.org/ildg filefmt.xsd\">\n  <version>1.0</version>\n";
 	ildgFormat += "  <field>" + description + "</field>\n";
@@ -169,7 +169,7 @@ std::string Sourcefileparameters::getInfo_ildgFormat_gaugefield()
 	ildgFormat += "  <lz>" + boost::lexical_cast<std::string>(this->lz) + "</lz>\n";
 	ildgFormat += "  <lt>" + boost::lexical_cast<std::string>(this->lt) + "</lt>\n";
 	ildgFormat += "</ildgFormat>";
-	
+
 	return ildgFormat;
 }
 
@@ -186,7 +186,7 @@ std::string Sourcefileparameters::getInfo_scidacChecksum()
 	}
 	return scidac_checksum;
 }
-	
+
 static void checkMajorParameter_int(int int1, int int2, std::string message)
 {
 	if(int1 != int2) {
@@ -201,18 +201,18 @@ static void checkMinorParameter_double(double value1, double value2, std::string
 		logger.warn() << "\tExpected: " << value1 << "\tFound: " << value2;
 	}
 }
-	
+
 //todo: add check on plaquette
 void Sourcefileparameters::checkAgainstInputparameters(const IldgIoParameters * parameters)
 {
 	logger.info() << "Checking sourcefile parameters against inputparameters...";
-	
+
 	checkMajorParameter_int(this->lt, parameters->getNt(), "lt");
 	checkMajorParameter_int(this->lx, parameters->getNs(), "lx");
 	checkMajorParameter_int(this->ly, parameters->getNs(), "ly");
 	checkMajorParameter_int(this->lz, parameters->getNs(), "lz");
 	checkMajorParameter_int(this->prec, parameters->getPrecision(), "precision");
-	
+
 	checkMinorParameter_double(this->beta, parameters->getBeta(), "beta" );
 	checkMinorParameter_double(this->kappa, parameters->getKappa(), "kappa" );
 	checkMinorParameter_double(this->mu, parameters->getMu(), "mu" );
@@ -224,7 +224,7 @@ void Sourcefileparameters::checkAgainstChecksum(Checksum checksum, bool ignoreCh
 		logger.error() << "Checksum of data does not match checksum given in file.";
 		logger.error() << "Calculated Checksum: " << checksum;
 		logger.error() << "Embedded Checksum:   " << this->checksum;
-		if(!ignoreChecksumErrors) 
+		if(!ignoreChecksumErrors)
 		{
 			throw File_Exception(filename);
 		}

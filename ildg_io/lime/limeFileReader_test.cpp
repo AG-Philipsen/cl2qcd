@@ -26,7 +26,7 @@
 
 #include "limeFileReader.hpp"
 
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 
 int expectedPrecision = 64;
 std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/conf.00200";
@@ -34,7 +34,7 @@ std::string nameOfExistingGaugefieldFile = std::string(SOURCEDIR) + "/ildg_io/co
 BOOST_AUTO_TEST_CASE(readInLimeFile_failureWithFileException)
 {
   std::string nameOfNonexistingLimeFile = "thisfileshouldnotbethere";
-	
+
 	BOOST_CHECK_THROW(LimeFileReader srcFileParams(nameOfNonexistingLimeFile, expectedPrecision), File_Exception);
 }
 

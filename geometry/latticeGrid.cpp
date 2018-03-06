@@ -19,7 +19,7 @@
 
 #include "latticeGrid.hpp"
 #include <stdexcept>
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 #include "../host_functionality/logger.hpp"
 
 LatticeGrid::LatticeGrid(const uint numberOfDevices, const LatticeExtents lE) :

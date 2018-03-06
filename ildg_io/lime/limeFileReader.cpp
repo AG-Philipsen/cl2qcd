@@ -22,22 +22,22 @@
 
 #include "../../host_functionality/logger.hpp"
 #include <boost/lexical_cast.hpp>
-#include "../../executables/exceptions.h"
+#include "../../executables/exceptions.hpp"
 #include "../sourcefileParameters/SourcefileParameters_utilities.hpp"
 
 int checkLimeEntryForFermionInformations(std::string lime_type, LimeEntryTypes limeEntryTypes)
 {
-	return ( 
-		limeEntryTypes["propagator"] == lime_type || 
-		limeEntryTypes["inverter"] == lime_type || 
+	return (
+		limeEntryTypes["propagator"] == lime_type ||
+		limeEntryTypes["inverter"] == lime_type ||
 		limeEntryTypes["etmc-propagator"] == lime_type
 		) ? 1 : 0;
 }
 
 bool checkLimeEntryForBinaryData(std::string lime_type, LimeEntryTypes limeEntryTypes)
 {
-	return	( 
-		limeEntryTypes["scidac binary data"] == lime_type || 
+	return	(
+		limeEntryTypes["scidac binary data"] == lime_type ||
 		limeEntryTypes["ildg binary data"] == lime_type
 		) ? true : false;
 }
@@ -53,11 +53,11 @@ void checkIfFileExists(std::string file) throw(File_Exception)
 	return;
 }
 
-LimeFileReader::LimeFileReader(std::string filenameIn, int precision) : 
+LimeFileReader::LimeFileReader(std::string filenameIn, int precision) :
 	LimeFileReader_basic(filenameIn), desiredPrecision(precision)
 {
 	checkIfFileExists(filename);
-	
+
 	extractMetadataFromLimeFile();
 }
 
@@ -101,16 +101,16 @@ void LimeFileReader::extractBinaryDataFromLimeEntry( LimeHeaderData limeHeaderDa
 
 void checkPrecision(int desiredPrecision, int actualPrecision) throw(Print_Error_Message)
 {
-	if(desiredPrecision != actualPrecision) 
+	if(desiredPrecision != actualPrecision)
 		throw Print_Error_Message("\nThe desired precision and the one from the sourcefile do not match. Aborting", __FILE__, __LINE__);
 }
 
 void LimeFileReader::extractMetadataFromLimeFile()
 {
 	readMetaDataFromLimeFile();
-	
+
 	this->parameters.printMetaDataToScreen(filename);
-	
+
 	//todo: this may be unified with a check against the inputparameters..
 	checkPrecision(desiredPrecision, this->parameters.prec);
 }
@@ -127,9 +127,9 @@ void LimeFileReader::readLimeFile(char ** destination, size_t expectedNumberOfBy
 {
 	//TODO: this construction is not nice, but currently necessary as the file is potentially read multiple times
 	openFile();
-	
+
 	goThroughLimeRecords(destination, expectedNumberOfBytes);
-	
+
 	closeFile();
 }
 
@@ -145,7 +145,7 @@ void checkLimeRecordReadForFailure(int returnValueFromLimeRecordRead)
 void LimeFileReader::goThroughLimeRecords(char ** destination, size_t expectedNumberOfBytes)
 {
 	int statusOfLimeReader = LIME_SUCCESS;
-	while( (statusOfLimeReader = limeReaderNextRecord(limeReader)) != LIME_EOF ) 
+	while( (statusOfLimeReader = limeReaderNextRecord(limeReader)) != LIME_EOF )
 	{
 		checkLimeRecordReadForFailure(statusOfLimeReader);
 		extractInformationFromLimeEntry(destination, expectedNumberOfBytes);
@@ -156,13 +156,13 @@ void LimeFileReader::extractInformationFromLimeEntry(char ** destination, size_t
 {
 	LimeHeaderData limeHeaderData(limeReader);
 	logger.trace() << "Found entry in LIME file of type \"" + limeHeaderData.limeEntryType + "\"";
-	if (limeHeaderData.MB_flag != LIME_ERR_MBME) 
+	if (limeHeaderData.MB_flag != LIME_ERR_MBME)
 	{
 		if( ! limeFileProp.readMetaData )
 		{
 			this->limeFileProp += extractMetaDataFromLimeEntry(limeHeaderData);
 		}
-		else 
+		else
 		{
 			extractBinaryDataFromLimeEntry(limeHeaderData, destination, expectedNumberOfBytes);
 		}
@@ -187,7 +187,7 @@ char * createBufferAndReadLimeDataIntoIt(LimeReader * r, size_t nbytes)
 {
 	char * buffer = new char[nbytes + 1];
 	int error = limeReaderReadData(buffer, &nbytes, r);
-	if(error != 0) 
+	if(error != 0)
 		throw Print_Error_Message("Error while reading data from LIME file...", __FILE__, __LINE__);
 	buffer[nbytes] = 0;
 	return buffer;
@@ -201,7 +201,7 @@ void LimeFileReader::handleLimeEntry_xlf(Sourcefileparameters & parameters, char
 		return;
 	}
 	logger_readLimeEntry( lime_type);
-	
+
 	sourcefileParameters::setFromLimeEntry_xlf(parameters, buffer);
 }
 
@@ -230,7 +230,7 @@ void LimeFileReader::handleLimeEntry_inverter(std::string lime_type) throw(std::
 		throw std::logic_error("parsing of inverter infos is not implemented yet. Aborting...");
 		//todo: implement similar to xlf infos parsing
 		//parameters: "solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
-		
+
 		//todo: this should be moved elsewhere!
 		this->parameters.numberOfFermionFieldsRead++;
 	}
@@ -254,7 +254,7 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 
 	if ( checkLimeEntryForBinaryData(limeHeaderData.limeEntryType, limeEntryTypes) == 1)
 	{
-		props.numberOfBinaryDataEntries = 1;		
+		props.numberOfBinaryDataEntries = 1;
 	}
 	//todo: create class for the different cases
 	else
@@ -264,15 +264,15 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 		char * buffer = createBufferAndReadLimeDataIntoIt(limeReader,  limeHeaderData.numberOfBytes);
 		std::string lime_type = limeHeaderData.limeEntryType;
 
-		if(limeEntryTypes["scidac checksum"] == lime_type) 
+		if(limeEntryTypes["scidac checksum"] == lime_type)
 		{
-			handleLimeEntry_scidacChecksum(buffer, lime_type, limeHeaderData.numberOfBytes); 
+			handleLimeEntry_scidacChecksum(buffer, lime_type, limeHeaderData.numberOfBytes);
 		}
 		else if( limeEntryTypes["inverter"] == lime_type )
 		{
 			handleLimeEntry_inverter(lime_type);
 		}
-		else if(limeEntryTypes["xlf"]  == lime_type ) 
+		else if(limeEntryTypes["xlf"]  == lime_type )
 		{
 			handleLimeEntry_xlf(this->parameters, buffer, lime_type);
 		}
@@ -288,7 +288,7 @@ LimeFileProperties LimeFileReader::extractMetaDataFromLimeEntry(LimeHeaderData l
 		{
 			logger.warn() << "Do not know LIME entry type \"" + lime_type + "\"";
 		}
-		
+
 		delete[] buffer;
 		logger_readLimeEntrySuccess();
 	}

@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exceptions.h"
+#include "exceptions.hpp"
 
 #include "../meta/inputparameters.hpp"
 #include <sstream>
@@ -166,5 +166,3 @@ const char* Print_Error_Message::what() const noexcept
 {
 	return error_message.c_str();
 }
-
-

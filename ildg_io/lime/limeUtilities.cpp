@@ -22,7 +22,7 @@
 
 #include "../host_functionality/logger.hpp"
 #include <boost/lexical_cast.hpp>
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 
 LimeHeaderData::LimeHeaderData(LimeReader *r)
 {
@@ -37,8 +37,8 @@ LimeFileProperties::LimeFileProperties() :
 	numberOfEntries(0), numberOfBinaryDataEntries(0), numberOfFermionicEntries(0), readMetaData(false)
 {}
 
- LimeFileProperties::LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) : 
- 	numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries) 
+LimeFileProperties::LimeFileProperties(int numberOfEntries,  int numberOfBinaryDataEntries) :
+                                       numberOfEntries(numberOfEntries), numberOfBinaryDataEntries(numberOfBinaryDataEntries)
 {}
 
 void LimeFileProperties::operator+=(LimeFileProperties other)
@@ -52,11 +52,11 @@ LimeFilePropertiesCollector:: ~LimeFilePropertiesCollector()
 {
 	logger.trace() << "Found " << numberOfEntries << " LIME records.";
 	logger.trace() << "Found " << numberOfBinaryDataEntries << " binary entries in LIME file";
-	if (numberOfFermionicEntries > 0) 
+	if (numberOfFermionicEntries > 0)
 	{
 		logger.trace() << "\tfile contains " << numberOfFermionicEntries << " fermion entries." ;
-	} 
-	else 
+	}
+	else
 	{
 		logger.trace() << "\tfile does not contain informations about fermions";
 	}
@@ -76,4 +76,3 @@ void LimeFileReader_basic::closeFile()
 	limeDestroyReader(limeReader);
 	fclose(outputfile);
 }
-

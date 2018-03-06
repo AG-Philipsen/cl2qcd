@@ -24,7 +24,7 @@
 #include <functional>
 #include "../system.hpp"
 #include "../buffers/plain.hpp"
-#include "../../executables/exceptions.h"
+#include "../../executables/exceptions.hpp"
 #include "../../meta/type_ops.hpp"
 
 namespace hardware {
@@ -48,9 +48,9 @@ public:
 	void sum() const;
 
 	SCALAR get_sum() const;
-	
+
 	void store(const SCALAR& val) const;
-	
+
 	const std::vector<const hardware::buffers::Plain<SCALAR> *> get_buffers() const noexcept;
 
 private:

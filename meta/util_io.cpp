@@ -25,7 +25,7 @@
 #include "gitcommitid.h"
 #include "util.hpp"
 #include "../host_functionality/logger.hpp"
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 
 using namespace std;
 
@@ -1087,4 +1087,3 @@ std::string meta::createLogfileName(const char* name)
 {
 	return std::string(name) + std::string(".log");
 }
-

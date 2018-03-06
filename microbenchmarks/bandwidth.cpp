@@ -30,7 +30,7 @@
 #include "../hardware/device.hpp"
 #include "../hardware/code/gaugefield.hpp"
 #include "../host_functionality/logger.hpp"
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 #include "../klepsydra/klepsydra.hpp"
 
 #include "../common_header_files/types_fermions.h"

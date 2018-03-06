@@ -20,12 +20,6 @@
  */
 
 #include "rational_approximation.hpp"
-//#include "alg_remez.h"
-//#include "../../types.h"
-//#include "../../exceptions.h"
-//#include "../../logger.hpp"
-//#include <fstream>
-//#include <cmath>
 
 //Rational_Coefficients class
 
@@ -255,4 +249,3 @@ namespace physics {
         }
     }
 }
-

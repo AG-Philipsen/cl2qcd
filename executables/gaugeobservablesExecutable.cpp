@@ -20,7 +20,7 @@
 
 #include "gaugeobservablesExecutable.h"
 #include "../meta/parametersConfig.hpp"
-#include "exceptions.h"
+#include "exceptions.hpp"
 
 gaugeobservablesExecutable::gaugeobservablesExecutable(int argc, const char* argv[]) : measurementExecutable(argc, argv, "gaugeobservables")
 {
@@ -53,4 +53,3 @@ void gaugeobservablesExecutable::performApplicationSpecificMeasurements()
 {
 	physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, gaugefield->get_trajectoryNumberAtInit(), interfacesHandler->getGaugeObservablesParametersInterface());
 }
-

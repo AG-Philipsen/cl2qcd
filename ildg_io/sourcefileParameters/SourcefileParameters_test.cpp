@@ -26,7 +26,7 @@
 
 #include "SourcefileParameters.hpp"
 
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 
 // TODO: Remove all occurences of meta::Inputparameters and Inputparameters. The tests should only use IlgdIoParameters_gaugefield!!
 
@@ -53,16 +53,16 @@ void checkDefaults(Sourcefileparameters toCheck)
   BOOST_REQUIRE_EQUAL(toCheck.epssq, 0);
   BOOST_REQUIRE_EQUAL(toCheck.kappa_solver, 0);
   BOOST_REQUIRE_EQUAL(toCheck.mu_solver, 0);
-	
+
   BOOST_REQUIRE_EQUAL(toCheck.numberOfFermionFieldsRead, 0);
-	
+
 	BOOST_REQUIRE_EQUAL(toCheck.field, "");
 	BOOST_REQUIRE_EQUAL(toCheck.date, "");
 	BOOST_REQUIRE_EQUAL(toCheck.hmcversion, "");
 	BOOST_REQUIRE_EQUAL(toCheck.solvertype, "");
 	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver, "");
 	BOOST_REQUIRE_EQUAL(toCheck.date_solver, "");
-	
+
 	Checksum checksum;
 	BOOST_REQUIRE(toCheck.checksum == checksum);
 }
@@ -96,18 +96,18 @@ void checkSpecificParameters(Sourcefileparameters toCheck)
   BOOST_REQUIRE_EQUAL(toCheck.epssq, 0);
   BOOST_REQUIRE_EQUAL(toCheck.kappa_solver, 0);
   BOOST_REQUIRE_EQUAL(toCheck.mu_solver, 0);
-	
+
   BOOST_REQUIRE_EQUAL(toCheck.numberOfFermionFieldsRead, 0);
-	
+
 	BOOST_REQUIRE_EQUAL(toCheck.field, "");
 	BOOST_REQUIRE_EQUAL(toCheck.date, "");
 	BOOST_REQUIRE_EQUAL(toCheck.hmcversion, "3.95");
 	BOOST_REQUIRE_EQUAL(toCheck.solvertype, "");
 	BOOST_REQUIRE_EQUAL(toCheck.hmcversion_solver, "");
 	BOOST_REQUIRE_EQUAL(toCheck.date_solver, "");
-	
+
 	Checksum checksum(1,2);
-	BOOST_REQUIRE(toCheck.checksum == checksum);	
+	BOOST_REQUIRE(toCheck.checksum == checksum);
 }
 
 BOOST_AUTO_TEST_CASE(initFromParameters)
@@ -116,14 +116,14 @@ BOOST_AUTO_TEST_CASE(initFromParameters)
 	double plaquette = -4.321;
 	std::string hmcVersion = "3.95";
 	Checksum checksum(1,2);
-	const char * _params[] = {"foo", 
+	const char * _params[] = {"foo",
 		"--ntime=41", "--nspace=65", "--kappa=-12.345", "--prec=32", "--beta=4.5", "--mu=23.41"
 	};
 	meta::Inputparameters parameters(7, _params);
 	const physics::lattices::GaugefieldParametersImplementation tmp (&parameters);
 	Inputparameters test2( &tmp );
 	IldgIoParameters_gaugefield test(&test2);
-	
+
 	Sourcefileparameters srcFileParams(&test, trajectoryNumber, plaquette, checksum, hmcVersion);
 	checkSpecificParameters(srcFileParams);
 }
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstParameters_exception)
 	double plaquette = -4.321;
 	std::string hmcVersion = "3.95";
 	Checksum checksum(1,2);
-	const char * _params[] = {"foo", 
+	const char * _params[] = {"foo",
 		"--ntime=41", "--nspace=65", "--prec=32", "--beta=4.5",  "--kappa=-12.345", "--mu=23.41"
 	};
 	int numberOfParameters = 7;
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum)
 {
 	Checksum checksum;
 	Sourcefileparameters values;
-	
+
 	BOOST_REQUIRE(checksum == values.checksum);
 }
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exception)
 {
 	Checksum checksum(1,2);
 	Sourcefileparameters values;
-	
+
 	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, false, "nameOfFile"), File_Exception );
 }
 
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_noExceptionByParameters)
 {
 	Checksum checksum(1,2);
 	Sourcefileparameters values;
-	
+
 	const char * _params[] = {"foo", "--ignore_checksum_errors=true" };
 
 	meta::Inputparameters parameters(2, _params);
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_noExceptionByParameters)
 	Inputparameters test2( &tmp );
 	IldgIoParameters_gaugefield test(&test2);
 	Sourcefileparameters srcFileParams(&test, 123, 4.56, checksum, "8.9");
-	
+
 	BOOST_CHECK_NO_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"));
 }
 
@@ -190,14 +190,14 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exceptionByParameters)
 {
 	Checksum checksum(1,2);
 	Sourcefileparameters values;
-	
+
 	const char * _params[] = {"foo", "--ignore_checksum_errors=false" };
 	meta::Inputparameters parameters(2, _params);
 	const physics::lattices::GaugefieldParametersImplementation tmp (&parameters);
 	Inputparameters test2( &tmp );
 	IldgIoParameters_gaugefield test(&test2);
 	Sourcefileparameters srcFileParams(&test, 123, 4.56, checksum, "8.9");
-	
+
 	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"),  File_Exception);
 }
 
@@ -205,13 +205,13 @@ BOOST_AUTO_TEST_CASE(checkAgainstChecksum_exceptionByParameters_defaultSetting)
 {
 	Checksum checksum(1,2);
 	Sourcefileparameters values;
-	
+
 	const char * _params[] = {"foo"};
 	meta::Inputparameters parameters(1, _params);
 	const physics::lattices::GaugefieldParametersImplementation tmp (&parameters);
 	Inputparameters test2( &tmp );
 	IldgIoParameters_gaugefield test(&test2);
 	Sourcefileparameters srcFileParams(&test, 123, 4.56, checksum, "8.9");
-	
+
 	BOOST_REQUIRE_THROW(values.checkAgainstChecksum(checksum, parameters.get_ignore_checksum_errors(), "nameOfFile"),  File_Exception);
 }

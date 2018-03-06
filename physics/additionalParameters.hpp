@@ -22,7 +22,7 @@
 #pragma once
 
 #include "../common_header_files/types.h"
-#include "../executables/exceptions.h"
+#include "../executables/exceptions.hpp"
 
 namespace physics{
 
@@ -38,4 +38,3 @@ namespace physics{
     inline AdditionalParameters::~AdditionalParameters(){}
 
 }
-

@@ -24,7 +24,7 @@
 #include <functional>
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/plain.hpp"
-#include "../../executables/exceptions.h"
+#include "../../executables/exceptions.hpp"
 
 namespace hardware {
 	namespace lattices {
