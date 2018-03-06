@@ -21,9 +21,9 @@
 #ifndef SU3HEATBATHBENCHMARK_H_
 #define SU3HEATBATHBENCHMARK_H_
 
-#include "benchmarkExecutable.h"
 #include "../physics/lattices/gaugefield.hpp"
 #include "../physics/algorithms/su3heatbath.hpp"
+#include "benchmarkExecutable.hpp"
 
 class su3heatbathBenchmark : public benchmarkExecutable
 {
@@ -39,4 +39,3 @@ protected:
 };
 
 #endif /* SU3HEATBATHBENCHMARK_H_ */
-

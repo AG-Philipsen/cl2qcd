@@ -28,9 +28,9 @@
 #ifndef HMCEXECUTABLE_H_
 #define HMCEXECUTABLE_H_
 
-#include "generationExecutable.h"
 #include "../physics/algorithms/hmc.hpp"
 #include <cmath>
+#include "generationExecutable.hpp"
 
 class hmcExecutable : public generationExecutable {
     public:

@@ -18,12 +18,12 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "rhmcExecutable.h"
+#include "rhmcExecutable.hpp"
 
 /**
  * @attention The RHMC algorithm is still under development. Its physical correctness is
  *            being tested and the performance is not optimized at all. Take it into account
- *            if you want to use it. 
+ *            if you want to use it.
  */
 
 int main(int argc, const char* argv[])

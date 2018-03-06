@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "inverterExecutable.h"
+#include "inverterExecutable.hpp"
 
 int main(int argc, const char* argv[])
 {
@@ -44,4 +44,3 @@ int main(int argc, const char* argv[])
 
 	return 0;
 }
-

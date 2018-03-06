@@ -21,11 +21,11 @@
 #ifndef DSLASHBENCHMARK_H_
 #define DSLASHBENCHMARK_H_
 
-#include "benchmarkExecutable.h"
 #include "../physics/lattices/spinorfield_eo.hpp"
 #include "../hardware/code/fermions.hpp"
 #include "../hardware/code/spinors.hpp"
 #include "../physics/fermionmatrix/fermionmatrix.hpp"
+#include "benchmarkExecutable.hpp"
 
 class dslashBenchmark : public benchmarkExecutable
 {

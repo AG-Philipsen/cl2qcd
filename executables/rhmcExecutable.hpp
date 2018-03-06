@@ -28,20 +28,20 @@
 #ifndef RHMCEXECUTABLE_H_
 #define RHMCEXECUTABLE_H_
 
-#include "generationExecutable.h"
 #include "../physics/algorithms/rhmc.hpp"
 #include "../physics/algorithms/rational_approximation.hpp"
 #include "../physics/observables/staggeredChiralCondensate.hpp"
 #include <cmath>
+#include "generationExecutable.hpp"
 
 class rhmcExecutable : public generationExecutable {
 public:
 	rhmcExecutable(int argc, const char* argv[]);
 	~rhmcExecutable();
-	
+
 protected:
 	double acceptanceRate = 0;
-	hmc_observables observables; 
+	hmc_observables observables;
 
 	/*
 	 * Sets member variables that control the iterations during
@@ -67,7 +67,7 @@ protected:
 	void printRhmcObservablesToFile(const std::string& filename);
 
 	void printRhmcObservablesToScreen();
-	
+
 private:
 	physics::algorithms::Rational_Approximation *approx_hb, *approx_md, *approx_met;
 	void checkRhmcParameters(const meta::Inputparameters& p);

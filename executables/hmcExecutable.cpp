@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "hmcExecutable.h"
+#include "hmcExecutable.hpp"
 
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 
@@ -125,4 +125,3 @@ void hmcExecutable::printHmcObservablesToScreen()
     logger.info() << "\tHMC [OBS]:\t" << iteration << std::setw(8) << std::setfill(' ') << "\t" << std::setprecision(15) << observables.plaq << "\t"
             << observables.poly.re << "\t" << observables.poly.im;
 }
-

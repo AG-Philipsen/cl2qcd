@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "rhmcExecutable.h"
+#include "rhmcExecutable.hpp"
 
 static int getRationalApproximationNumerator(double numTastes, int numTastesDecimalDigits);
 static int getRationalApproximationDenominator(std::string whichRationalApproximation, int numTastesDecimalDigits, int numPseudoFermions);
@@ -170,7 +170,7 @@ void rhmcExecutable::printRhmcObservablesToFile(const std::string& filename)
 
 void rhmcExecutable::printRhmcObservablesToScreen()
 {
-	logger.info() << "\tRHMC [OBS]:\t" << iteration << std::setw(8) << std::setfill(' ') << "\t" << std::setprecision(15) 
+	logger.info() << "\tRHMC [OBS]:\t" << iteration << std::setw(8) << std::setfill(' ') << "\t" << std::setprecision(15)
 		      << observables.plaq << "\t" << observables.poly.re << "\t" << observables.poly.im;
 }
 
@@ -228,6 +228,3 @@ static int getRationalApproximationDenominator(std::string whichRationalApproxim
     else
         throw Print_Error_Message("Invalid call to \"getRationalApproximationDenominator\" function!");
 }
-
-
-

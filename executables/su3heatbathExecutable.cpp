@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "su3heatbathExecutable.h"
+#include "su3heatbathExecutable.hpp"
 
 su3heatbathExecutable::su3heatbathExecutable(int argc, const char* argv[]) :
   generationExecutable(argc, argv, "su3heatbath")
@@ -63,4 +63,3 @@ void su3heatbathExecutable::thermalizeAccordingToSpecificAlgorithm() {
 void su3heatbathExecutable::generateAccordingToSpecificAlgorithm() {
 	physics::algorithms::su3heatbath(*gaugefield, *prng, overrelaxSteps);
 }
-

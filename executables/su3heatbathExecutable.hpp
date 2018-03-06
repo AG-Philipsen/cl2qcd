@@ -21,8 +21,8 @@
 #ifndef SU3HEATBATHEXECUTABLE_H_
 #define SU3HEATBATHEXECUTABLE_H_
 
-#include "generationExecutable.h"
 #include "../physics/algorithms/su3heatbath.hpp"
+#include "generationExecutable.hpp"
 
 class su3heatbathExecutable: public generationExecutable
 {

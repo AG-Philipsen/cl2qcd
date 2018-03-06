@@ -19,7 +19,8 @@
  */
 
 
-#include "measurementExecutable.h"
+#include "measurementExecutable.hpp"
+
 #include "../physics/utilities.hpp"
 
 void measurementExecutable::checkStartconditions()
@@ -76,7 +77,7 @@ void measurementExecutable::initializeGaugefield()
 void measurementExecutable::performMeasurements()
 {
 	logger.trace() << "Perform inversion(s) on device..";
-	
+
 	for (;iteration < iterationEnd; iteration += iterationIncrement)
 	{
 	  performMeasurementsForSpecificIteration();
@@ -93,8 +94,3 @@ void measurementExecutable::performMeasurementsForSpecificIteration()
 	delete gaugefield;
 	performanceTimer.add();
 }
-
-
-
-
-

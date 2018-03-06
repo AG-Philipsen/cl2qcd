@@ -18,7 +18,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gaugeobservablesExecutable.h"
+#include "gaugeobservablesExecutable.hpp"
+
 #include "../meta/parametersConfig.hpp"
 #include "exceptions.hpp"
 

@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "su3heatbathExecutable.h"
+#include "su3heatbathExecutable.hpp"
 
 int main(int argc, const char* argv[])
 {

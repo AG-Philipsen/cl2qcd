@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "hmcExecutable.h"
+#include "hmcExecutable.hpp"
 
 int main(int argc, const char* argv[])
 {

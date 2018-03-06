@@ -1,9 +1,6 @@
 /** @file
  *
- * Everything required by gaugeobservable's main()
- *
- * Copyright 2012, 2013 Lars Zeidlewicz, Christopher Pinke,
- * Matthias Bach, Christian Schäfer, Stefano Lottini, Alessandro Sciarra
+ * Everything required by inverter's main()
  *
  * This file is part of CL2QCD.
  *
@@ -20,28 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef _INVERTERH_
+#define _INVERTERH_
 
-#ifndef GAUGEOBSERVABLESEXECUTABLE_H_
-#define GAUGEOBSERVABLESEXECUTABLE_H_
+#include "measurementExecutable.hpp"
 
-#include "measurementExecutable.h"
-
-class gaugeobservablesExecutable : public measurementExecutable
+/**
+ * Inverter executable which measures fermionic observables on gaugefield configurations.
+ */
+class inverterExecutable : public measurementExecutable
 {
 public:
-	gaugeobservablesExecutable(int argc, const char* argv[]);
+	/**
+	 * Constructor.
+	 * Writes Logfile.
+	 */
+	inverterExecutable(int argc, const char* argv[]);
 
 protected:
-	std::string filenameForGaugeobservables;
+	const std::string 	filenameForInverterLogfile = "inverter.log";
+	std::string 		filenameForTwoFlavourDoubletChiralCondensateData;
+	std::string 		filenameForTwoFlavourDoubletCorrelatorData;
 
-	void writeGaugeobservablesLogfile();
+	void writeInverterLogfile();
 
 	void printParametersToScreenAndFile();
 
 	/**
-	 * Performs measurements of gauge observables on possibly multiple gaugefield configurations.
+	 * Performs measurements of fermionic observables on possibly multiple gaugefield configurations.
 	 */
 	void performApplicationSpecificMeasurements();
 };
 
-#endif /* GAUGEOBSERVABLESEXECUTABLE_H_ */
+#endif /* _INVERTERH_ */

@@ -19,7 +19,7 @@
  */
 
 
-#include "generationExecutable.h"
+#include "generationExecutable.hpp"
 
 generationExecutable::generationExecutable(int argc, const char* argv[], std::string parameterSet) : generalExecutable(argc, argv, parameterSet)
 {
@@ -104,4 +104,3 @@ void generationExecutable::performOnlineMeasurements()
           physics::observables::measureGaugeObservablesAndWriteToFile(gaugefield, iteration, interfacesHandler->getGaugeObservablesParametersInterface());
 	}
 }
-

@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "inverterExecutable.h"
+#include "inverterExecutable.hpp"
 
 #include "../physics/observables/wilsonTwoFlavourChiralCondensate.hpp"
 #include "../physics/observables/wilsonTwoFlavourCorrelators.hpp"
@@ -70,4 +70,3 @@ void inverterExecutable::performApplicationSpecificMeasurements() {
         }
     }
 }
-

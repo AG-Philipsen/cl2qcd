@@ -21,11 +21,11 @@
 #ifndef DKSBENCHMARK_H_
 #define DKSBENCHMARK_H_
 
-#include "benchmarkExecutable.h"
 #include "../physics/lattices/staggeredfield_eo.hpp"
 #include "../hardware/code/fermions_staggered.hpp"
 #include "../hardware/code/spinors_staggered.hpp"
 #include "../physics/fermionmatrix/fermionmatrix_stagg.hpp"
+#include "benchmarkExecutable.hpp"
 
 class dksBenchmark : public benchmarkExecutable {
 public:
@@ -50,4 +50,3 @@ protected:
 };
 
 #endif /* DSLASHBENCHMARK_H_ */
-

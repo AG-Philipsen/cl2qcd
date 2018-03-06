@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "benchmarkExecutable.h"
+#include "benchmarkExecutable.hpp"
 
 benchmarkExecutable::benchmarkExecutable(int argc, const char* argv[]) : generalExecutable (argc, argv)
 {
@@ -36,7 +36,7 @@ void benchmarkExecutable::benchmark()
     {
       throw Print_Error_Message( "Profiling is not enabled. Aborting...\n", __FILE__, __LINE__);
     }
-    if(system->get_devices().size() != 1) 
+    if(system->get_devices().size() != 1)
       {
 	throw Print_Error_Message("There must be exactly one device chosen for this benchmark to be performed. Aborting...\n", __FILE__, __LINE__);
       }
@@ -61,19 +61,19 @@ void benchmarkExecutable::benchmarkMultipleDevices()
   gaugefield->update_halo();
   // ensure that the kernels are already built
   enqueueSpecificKernelForBenchmarkingMultipleDevices();
-  
+
   synchronizeAllDevices();
-  
+
   logger.info() << "Perform " << benchmarkSteps << " benchmarking steps.";
   klepsydra::Monotonic timer;
   for(int iteration = 0; iteration < benchmarkSteps; ++iteration) {
     enqueueSpecificKernelForBenchmarkingMultipleDevices();
   }
   synchronizeAllDevices();
-  
+
   executionTime = timer.getTime();
   logger.info() << "Benchmarking done" ;
-  
+
   printProfilingDataToScreen();
   performanceTimer.add();
 }
@@ -84,4 +84,3 @@ void benchmarkExecutable::synchronizeAllDevices()
     dev->synchronize();
   }
 }
-
