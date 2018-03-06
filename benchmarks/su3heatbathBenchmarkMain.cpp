@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../executables/su3heatbathBenchmark.h"
+#include "../executables/su3heatbathBenchmark.hpp"
 #include "../meta/util.hpp"
 
 int main(int argc, const char* argv[])

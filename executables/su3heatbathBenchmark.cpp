@@ -19,7 +19,7 @@
  */
 
 
-#include "su3heatbathBenchmark.h"
+#include "su3heatbathBenchmark.hpp"
 
 su3heatbathBenchmark::su3heatbathBenchmark(int argc, const char* argv[]) :
   benchmarkExecutable(argc, argv)

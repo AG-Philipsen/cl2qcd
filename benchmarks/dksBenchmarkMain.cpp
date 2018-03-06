@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../executables/dksBenchmark.h"
+#include "../executables/dksBenchmark.hpp"
 #include "../meta/util.hpp"
 
 int main(int argc, const char* argv[])

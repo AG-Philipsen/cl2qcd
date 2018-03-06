@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dksBenchmark.h"
+#include "dksBenchmark.hpp"
 
 dksBenchmark::dksBenchmark(int argc, const char* argv[]) : benchmarkExecutable(argc, argv)
 {
@@ -54,4 +54,3 @@ void dksBenchmark::printProfilingDataToScreen()
   logger.info() << "D_KS_eo memory: " << gbytes << " GB/S";
   logger.info() << "Measured TIME: " << executionTime / 1.e3 << "msec";
 }
-
