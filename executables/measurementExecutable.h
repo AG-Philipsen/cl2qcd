@@ -28,7 +28,7 @@
 #ifndef MEASUREMENTEXECUTABLE_H_
 #define MEASUREMENTEXECUTABLE_H_
 
-#include "generalExecutable.h"
+#include "generalExecutable.hpp"
 
 class measurementExecutable : public generalExecutable
 {

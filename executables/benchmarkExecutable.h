@@ -27,8 +27,8 @@
 #ifndef BENCHMARKEXECUTABLE_H_
 #define BENCHMARKEXECUTABLE_H_
 
-#include "generalExecutable.h"
 #include "../hardware/device.hpp"
+#include "generalExecutable.hpp"
 
 class benchmarkExecutable : public generalExecutable
 {

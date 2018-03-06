@@ -18,7 +18,8 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "generalExecutable.h"
+#include "generalExecutable.hpp"
+
 #include "../interfaceImplementations/interfacesHandler.hpp"
 
 void generalExecutable::printParametersToScreenAndFile()
@@ -123,4 +124,3 @@ void generalExecutable::printGeneralTimesToFile()
     }
     return;
 }
-
