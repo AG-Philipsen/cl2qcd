@@ -51,4 +51,3 @@ protected:
 };
 
 #endif /* DSLASHBENCHMARK_H_ */
-

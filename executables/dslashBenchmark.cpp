@@ -25,7 +25,7 @@
  * according to the Hybrid Monte Carlo (HMC) algorithm.
  */
 
-#include "dslashBenchmark.h"
+#include "dslashBenchmark.hpp"
 
 dslashBenchmark::dslashBenchmark(int argc, const char* argv[]) :
   benchmarkExecutable(argc, argv)
@@ -61,4 +61,3 @@ void dslashBenchmark::printProfilingDataToScreen()
   logger.info() << "Dslash performance: " << gflops << " GFLOPS";
   logger.info() << "Dslash memory: " << gbytes << " GB/S";
 }
-
