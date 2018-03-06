@@ -23,12 +23,12 @@
 #ifndef _HARDWARE_CODE_FERMIONS_
 #define _HARDWARE_CODE_FERMIONS_
 
+#include "../../host_functionality/host_use_timer.hpp"
 #include "opencl_module.hpp"
 
 #include "../buffers/plain.hpp"
 #include "../buffers/su3.hpp"
 #include "../buffers/spinor.hpp"
-#include "../../host_functionality/host_use_timer.h"
 
 namespace hardware {
 

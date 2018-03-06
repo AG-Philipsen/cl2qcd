@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "host_random.h"
+#include "host_random.hpp"
 
 #include <cstdio>
 #include "logger.hpp"

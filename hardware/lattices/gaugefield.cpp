@@ -19,12 +19,12 @@
 
 #include "gaugefield.hpp"
 #include "../../host_functionality/logger.hpp"
-#include "../../host_functionality/host_operations_gaugefield.h"
-#include "../../host_functionality/host_random.h"
 #include "../device.hpp"
 #include "../buffers/halo_update.hpp"
 #include "../code/gaugefield.hpp"
 #include "../../geometry/parallelization.hpp"
+#include "../../host_functionality/host_operations_gaugefield.hpp"
+#include "../../host_functionality/host_random.hpp"
 
 static Matrixsu3 random_matrixsu3();
 
@@ -50,7 +50,7 @@ std::vector<const hardware::buffers::SU3 *> hardware::lattices::Gaugefield::allo
 	std::vector<const SU3 *> buffers;
 
 	auto const devices = system.get_devices();
-	for(auto device: devices) 
+	for(auto device: devices)
 	{
 		buffers.push_back(new SU3(device->getLocalLatticeMemoryExtents().getLatticeVolume() * 4, device)); //todo: do not calculate here!
 	}
@@ -59,7 +59,7 @@ std::vector<const hardware::buffers::SU3 *> hardware::lattices::Gaugefield::allo
 
 void hardware::lattices::Gaugefield::release_buffers(std::vector<const hardware::buffers::SU3 *>* buffers)
 {
-	for(auto buffer: *buffers) 
+	for(auto buffer: *buffers)
 	{
 		delete buffer;
 	}
@@ -158,7 +158,7 @@ void hardware::lattices::Gaugefield::set_cold() const
 {
 	using hardware::Device;
 
-	for(auto buffer: buffers) 
+	for(auto buffer: buffers)
 	{
 		size_t elems = buffer->get_elements();
 		Matrixsu3 * tmp = new Matrixsu3[elems];
@@ -181,7 +181,7 @@ void hardware::lattices::Gaugefield::set_hot() const
 {
 	using hardware::Device;
 
-	for(auto buffer: buffers) 
+	for(auto buffer: buffers)
 	{
 		size_t elems = buffer->get_elements();
 		Matrixsu3 * tmp = new Matrixsu3[elems];

@@ -31,11 +31,11 @@
 #include <fstream>
 
 #include "../common_header_files/types.h"
-#include "../host_functionality/host_use_timer.h"
 #include "../executables/exceptions.hpp"
 #include "../host_functionality/logger.hpp"
 #include "../meta/util.hpp"
 #include "../hardware/system.hpp"
+#include "../host_functionality/host_use_timer.hpp"
 #include "../physics/lattices/gaugefield.hpp"
 #include "../physics/prng.hpp"
 #include "../physics/observables/gaugeObservables.hpp"

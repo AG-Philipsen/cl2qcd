@@ -18,8 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "host_use_timer.h"
-
+#include "host_use_timer.hpp"
 #include "logger.hpp"
 
 void usetimer::reset()

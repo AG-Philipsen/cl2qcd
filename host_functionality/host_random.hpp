@@ -25,8 +25,8 @@
 
 #include "../common_header_files/globaldefs.h"
 #include "../common_header_files/types.h"
-#include "host_use_timer.h"
 #include <cmath>
+#include "host_use_timer.hpp"
 
 /**
  * Seed the host prng.

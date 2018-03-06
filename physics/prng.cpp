@@ -22,12 +22,13 @@
 
 #include "prng.hpp"
 
-#include "../host_functionality/host_random.h"
 #include "../hardware/buffers/prng_buffer.hpp"
 #include <fstream>
 #include <stdexcept>
 #include "../hardware/device.hpp"
 #include "../hardware/code/prng.hpp"
+
+#include "../host_functionality/host_random.hpp"
 #include "utilities.hpp"
 
 //http://www.ridgesolutions.ie/index.php/2013/05/30/boost-link-error-undefined-reference-to-boostfilesystemdetailcopy_file/

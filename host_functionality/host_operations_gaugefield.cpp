@@ -18,7 +18,7 @@
  * along with CL2QCD.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "host_operations_gaugefield.h"
+#include "host_operations_gaugefield.hpp"
 
 //taken from the opencl-file
 

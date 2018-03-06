@@ -18,7 +18,6 @@
  */
 
 #include "GaugefieldTester.hpp"
-//#include "../../host_functionality/host_operations_gaugefield.h"
 
 Matrixsu3 unit_matrixsu3()
 {
