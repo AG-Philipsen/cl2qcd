@@ -38,4 +38,3 @@ struct hmc_observables {
 #endif
 
 #endif // _TYPES_HMC
-

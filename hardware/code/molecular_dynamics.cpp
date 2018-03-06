@@ -40,7 +40,7 @@ static bool use_multipass_gauge_force_tlsym(const hardware::Device * device)
 
 void hardware::code::Molecular_Dynamics::fill_kernels()
 {
-	basic_molecular_dynamics_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.hpp" << "types_hmc.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_gaugemomentum.cl";
+	basic_molecular_dynamics_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.hpp" << "types_hmc.hpp" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_gaugemomentum.cl";
 
 	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 
