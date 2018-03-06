@@ -46,10 +46,10 @@ hardware::code::Gaugemomentum::~Gaugemomentum()
 
 void hardware::code::Gaugemomentum::fill_kernels()
 {
-	basic_gaugemomentum_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_hmc.h" << "operations_gaugemomentum.cl";
-	
+	basic_gaugemomentum_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.hpp" << "types_hmc.h" << "operations_gaugemomentum.cl";
+
 	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
-	
+
 	logger.debug() << "Creating Gaugemomentum kernels...";
 
 	gaugemomentum_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "gaugemomentum_squarenorm_reduction.cl";
@@ -70,9 +70,9 @@ void hardware::code::Gaugemomentum::fill_kernels()
 void hardware::code::Gaugemomentum::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
-	
+
 	logger.debug() << "Clearing Gaugemomentum kernels...";
-	
+
 	clerr = clReleaseKernel(gaugemomentum_squarenorm_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(generate_gaussian_gaugemomenta);
@@ -101,7 +101,7 @@ void hardware::code::Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_
 			*gs = hardware::buffers::get_prng_buffer_size(get_device(), kernelParameters->getUseSameRndNumbers());
 		}
 	} else if(kernel == gaugemomentum_squarenorm) {
-		if(*ls != 1) { 
+		if(*ls != 1) {
 		  *ls = 128;
 		  *num_groups = *gs / *ls;
 		}

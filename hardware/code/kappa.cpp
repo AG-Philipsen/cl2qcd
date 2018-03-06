@@ -28,17 +28,17 @@ using namespace std;
 
 void hardware::code::Kappa::fill_kernels()
 {
-	ClSourcePackage sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+	ClSourcePackage sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.hpp" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	logger.debug() << "Creating TK clover kernels...";
-	
+
 	kappa_clover_gpu = createKernel("kappa_clover_gpu") << sources << "opencl_tk_kappa.cl";
 }
 
 void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta) const
 {
 	cl_int clerr = CL_SUCCESS;
-	
+
 	logger.debug() << "Clearing TK clover kernels...";
 
 	size_t local_work_size;

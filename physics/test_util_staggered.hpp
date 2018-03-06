@@ -31,7 +31,7 @@
  * #include "lattices/gaugefield.hpp"
  * #include "lattices/staggeredfield_eo.hpp"
  * #include "../meta/util.hpp"
- * #include "../common_header_files/operations_complex.h"
+ * #include "../common_header_files/operations_complex.hpp"
  * #include "../hardware/device.hpp"
  * #include "../hardware/code/fermions_staggered.hpp"
  * #include "../hardware/code/spinors.hpp"

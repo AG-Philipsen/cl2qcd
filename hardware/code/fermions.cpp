@@ -32,13 +32,13 @@ using namespace std;
 
 void hardware::code::Fermions::fill_kernels()
 {
-	sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	sources = get_basic_sources() << "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.h" << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(kernelParameters->getUseEo()) {
 		sources = sources << "operations_spinorfield_eo.cl";
 	}
 
 	logger.debug() << "Creating Fermions kernels...";
-	
+
 	if(kernelParameters->getFermact() == common::action::wilson) {
 		M_wilson = createKernel("M_wilson") << sources << "fermionmatrix.cl" << "fermionmatrix_m.cl";
 	} else if(kernelParameters->getFermact() == common::action::twistedmass) {
@@ -49,7 +49,7 @@ void hardware::code::Fermions::fill_kernels()
 	} else {
 		throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ", __FILE__, __LINE__);
 	}
-	
+
 	gamma5 = createKernel("gamma5") << sources << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
 	//Kernels needed if eoprec is used
 	if(kernelParameters->getUseEo() == true) {
@@ -77,7 +77,7 @@ void hardware::code::Fermions::fill_kernels()
 void hardware::code::Fermions::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
-	
+
 	logger.debug() << "Clearing Fermions kernels...";
 
 	if(M_wilson) {
@@ -174,7 +174,7 @@ void hardware::code::Fermions::clear_kernels()
 void hardware::code::Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
-	
+
 	//Query specific sizes for kernels if needed
 	if(kernel == saxpy_AND_gamma5_eo){
 		if(*ls > 64) {

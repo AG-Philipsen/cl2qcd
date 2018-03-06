@@ -30,10 +30,10 @@
 
 void hardware::code::Complex::fill_kernels()
 {
-	basic_complex_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h";
-	
+	basic_complex_code = ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.hpp";
+
 	logger.debug() << "Creating Complex kernels...";
-	
+
 	convert = createKernel("convert_float_to_complex") << basic_complex_code << "complex_convert.cl";
 	ratio = createKernel("complex_ratio") << basic_complex_code << "complex_ratio.cl";
 	product = createKernel("complex_product") << basic_complex_code << "complex_product.cl";
@@ -46,7 +46,7 @@ void hardware::code::Complex::clear_kernels()
 	cl_int clerr = CL_SUCCESS;
 
 	logger.debug() << "Clearing Complex kernels...";
-	
+
 	clerr = clReleaseKernel(convert);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(ratio);
@@ -220,7 +220,7 @@ uint64_t hardware::code::Complex::get_flop_size(const std::string& in) const
 	if (in == "complex_subtraction") {
 		return 2;
 	}
-	
+
 	logger.warn() << "No if entered in Complex::get_flop_size, returning 0...";
 	return 0;
 }

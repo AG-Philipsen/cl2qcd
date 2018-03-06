@@ -33,19 +33,19 @@ using namespace std;
 
 void hardware::code::Spinors::fill_kernels()
 {
-	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.h" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(kernelParameters->getUseEo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}
-	
+
 	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
-	
+
 	logger.debug() << "Creating Spinors kernels...";
-	
+
 	//Reductions are really small kernels, so few needed options loaded by hands
 	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction")  << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "spinorfield_squarenorm_reduction.cl";
-	scalar_product_reduction = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.h" << "spinorfield_scalar_product_reduction.cl";
-	
+	scalar_product_reduction = createKernel("scalar_product_reduction") << ClSourcePackage("-I " + std::string(SOURCEDIR) + " -D _INKERNEL_" + ((kernelParameters->getPrecision() == 64) ? (std::string(" -D _USEDOUBLEPREC_") + " -D _DEVICE_DOUBLE_EXTENSION_KHR_") : "")) << "types.h" << "operations_complex.hpp" << "spinorfield_scalar_product_reduction.cl";
+
 	if(kernelParameters->getUseEo() ) {
 		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
@@ -96,7 +96,7 @@ void hardware::code::Spinors::fill_kernels()
 void hardware::code::Spinors::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
-	
+
 	logger.debug() << "Clearing Spinors kernels...";
 
 	//Reductions
