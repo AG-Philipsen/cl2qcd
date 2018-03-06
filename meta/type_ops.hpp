@@ -23,7 +23,7 @@
 #define _META_TYPE_OPS_
 
 #include "../common_header_files/types.h"
-#include "../common_header_files/types_fermions.h"
+#include "../common_header_files/types_fermions.hpp"
 #include "../common_header_files/operations_complex.hpp"
 
 #include <ostream>

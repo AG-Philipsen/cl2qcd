@@ -28,7 +28,7 @@
 #include "../prng.hpp"
 #include "spinorfield.hpp"
 #include "scalar.hpp"
-#include "../../common_header_files/types_fermions.h"
+#include "../../common_header_files/types_fermions.hpp"
 #include "latticesInterfaces.hpp"
 #include "../../hardware/lattices/spinorfield_eo.hpp"
 

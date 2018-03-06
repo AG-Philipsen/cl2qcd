@@ -43,7 +43,7 @@ void hardware::code::Correlator_staggered::fill_kernels()
 		throw Print_Error_Message("Correlator_staggered module asked to be built but without even-odd preconditionig! Aborting... ", __FILE__, __LINE__);
 	}
 
-	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.h" << "operations_su3vec.cl" << "spinorfield_staggered_eo.cl";
+	basic_correlator_code = get_basic_sources() << "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.hpp" << "operations_su3vec.cl" << "spinorfield_staggered_eo.cl";
 
 	ClSourcePackage prng_code = get_device()->getPrngCode()->get_sources();
 

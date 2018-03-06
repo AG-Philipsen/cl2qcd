@@ -28,7 +28,7 @@
 #include "../prng.hpp"
 #include "scalar.hpp"
 #include "vector.hpp"
-#include "../../common_header_files/types_fermions.h"
+#include "../../common_header_files/types_fermions.hpp"
 #include "latticesInterfaces.hpp"
 #include "../interfacesHandler.hpp"
 //This is to make the template pseudo_randomize friend of this class
@@ -89,7 +89,7 @@ public:
 	 * Update the halos of the spinorfield buffers.
 	 */
 	void update_halo() const;
-	
+
 	/**
 	 * Get the number of elements of the field, namely the lattice volume.
 	 */
@@ -216,4 +216,3 @@ void log_squarenorm(const std::string& msg, const physics::lattices::Staggeredfi
 }
 
 #endif /*_PHYSICS_LATTICES_SPINORFIELD_EO_ */
-

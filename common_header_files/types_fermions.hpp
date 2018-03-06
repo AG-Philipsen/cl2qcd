@@ -65,4 +65,3 @@ typedef su3vec staggeredStorageType;
 #endif
 
 #endif /* _TYPES_FERMIONSH_ */
-

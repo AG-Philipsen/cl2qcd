@@ -24,7 +24,7 @@
 #include "../buffers/spinor.hpp"
 #include "spinorfield.hpp"
 #include "scalar.hpp"
-#include "../../common_header_files/types_fermions.h"
+#include "../../common_header_files/types_fermions.hpp"
 
 
 namespace hardware {

@@ -33,7 +33,7 @@ using namespace std;
 
 void hardware::code::Spinors::fill_kernels()
 {
-	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.hpp" << "types_fermions.hpp" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(kernelParameters->getUseEo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}

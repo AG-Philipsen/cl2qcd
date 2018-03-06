@@ -22,7 +22,7 @@
 
 #include "../system.hpp"
 #include "../buffers/su3vec.hpp"
-#include "../../common_header_files/types_fermions.h"
+#include "../../common_header_files/types_fermions.hpp"
 
 namespace hardware {
 
@@ -56,7 +56,7 @@ private:
 	hardware::System const& system;
 	const std::vector<const hardware::buffers::SU3vec *> buffers;
 };
-	
+
 }
 }
 #endif /*_HARDWARE_LATTICES_SPINORFIELD_EO_ */

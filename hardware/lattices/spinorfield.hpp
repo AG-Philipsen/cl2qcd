@@ -23,7 +23,7 @@
 #include "../system.hpp"
 #include "../device.hpp"
 #include "../buffers/plain.hpp"
-#include "../../common_header_files/types_fermions.h"
+#include "../../common_header_files/types_fermions.hpp"
 
 
 namespace hardware {

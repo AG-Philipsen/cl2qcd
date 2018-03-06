@@ -38,7 +38,7 @@ void hardware::code::Spinors_staggered::fill_kernels()
 		throw Print_Error_Message("Fermions_staggered module asked to be built but action set not to rooted_stagg! Aborting... ", __FILE__, __LINE__);
 	}
 
-	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.hpp"  << "types_fermions.h" << "operations_su3vec.cl";
+	basic_fermion_code = get_basic_sources() <<  "operations_geometry.cl" << "operations_complex.hpp"  << "types_fermions.hpp" << "operations_su3vec.cl";
 	if(kernelParameters->getUseEo()) {
 		basic_fermion_code = basic_fermion_code << "spinorfield_staggered_eo.cl";;
 	} else {

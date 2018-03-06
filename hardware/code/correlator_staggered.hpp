@@ -29,7 +29,7 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/su3vec.hpp"
 #include "../buffers/prng_buffer.hpp"
-#include "../../common_header_files/types_fermions.h"
+#include "../../common_header_files/types_fermions.hpp"
 
 namespace hardware {
 
